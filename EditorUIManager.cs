@@ -29,7 +29,7 @@ namespace FS_LevelEditor
         void SetupEditorUI()
         {
             SetupObjectsCategories();
-            SetupCurrentCategoryDisplayBg();
+            CreateObjectsBackground();
             SetupCurrentCategoryButtons();
         }
 
@@ -60,7 +60,7 @@ namespace FS_LevelEditor
             categoryButtons[EditorController.Instance.currentCategoryID].GetComponent<UIToggle>().Set(true);
         }
 
-        void SetupCurrentCategoryDisplayBg()
+        void CreateObjectsBackground()
         {
             GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
 
@@ -81,6 +81,9 @@ namespace FS_LevelEditor
         void SetupCurrentCategoryButtons()
         {
             GameObject template = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/ColorSelection/ColorSwatch");
+
+            currentCategoryButtons.Clear();
+            currentCategoryBG.DeleteAllChildren();
 
             for (int i = 0; i < EditorController.Instance.allCategoriesObjects[EditorController.Instance.currentCategoryID].Count; i++)
             {

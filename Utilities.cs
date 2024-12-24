@@ -59,5 +59,13 @@ namespace FS_LevelEditor
 
             return currentChild;
         }
+
+        public static void DeleteAllChildren(this GameObject obj)
+        {
+            foreach (GameObject child in GetChilds(obj))
+            {
+                GameObject.Destroy(child);
+            }
+        }
     }
 }
