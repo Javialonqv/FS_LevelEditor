@@ -27,10 +27,17 @@ namespace FS_LevelEditor
 
         void Update()
         {
-            Cursor.lockState = CursorLockMode.Locked;
 
             MoveCamera();
-            RotateCamera();
+            if (Input.GetMouseButton(1))
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                RotateCamera();
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
+            }
             ManageDownAndUp();
         }
 
