@@ -51,8 +51,6 @@ namespace FS_LevelEditor
 
             if (Physics.Raycast(ray, out hit, Mathf.Infinity))
             {
-                Melon<Core>.Logger.Msg("hit");
-
                 previewObject.transform.position = hit.point;
             }
         }
