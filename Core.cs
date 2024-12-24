@@ -36,14 +36,15 @@ namespace FS_LevelEditor
         {
             if (Input.GetKeyDown(KeyCode.Keypad5))
             {
-                SetupEditorUI();
+                SetupEditorBasics();
                 SpawnBase();
 
                 new GameObject("EditorController").AddComponent<EditorController>();
+                new GameObject("EditorUIManager").AddComponent<EditorUIManager>();
             }
         }
 
-        void SetupEditorUI()
+        void SetupEditorBasics()
         {
             GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
             GameObject.Find("MainMenu/Camera/Holder/Navigation").SetActive(false);
