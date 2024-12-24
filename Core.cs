@@ -10,7 +10,7 @@ namespace FS_LevelEditor
 {
     public class Core : MelonMod
     {
-        GameObject groundObj;
+        public GameObject groundObj;
 
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
 
@@ -38,6 +38,8 @@ namespace FS_LevelEditor
             {
                 SetupEditorUI();
                 SpawnBase();
+
+                new GameObject("EditorController").AddComponent<EditorController>();
             }
         }
 

@@ -347,6 +347,7 @@
 	<ItemGroup>
 		<Compile Include="Core.cs" />
 		<Compile Include="EditorCameraMovement.cs" />
+		<Compile Include="EditorController.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
