@@ -108,10 +108,6 @@ namespace FS_LevelEditor
                         previewObject.transform.rotation = hit.collider.transform.rotation;
                     }
                 }
-                else
-                {
-                    Melon<Core>.Logger.Msg(hit.collider.gameObject.name);
-                }
 
                 if (Input.GetMouseButtonDown(0))
                 {
