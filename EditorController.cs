@@ -43,6 +43,10 @@ namespace FS_LevelEditor
             {
                 PreviewObject();
             }
+            else
+            {
+                previewObject.SetActive(false);
+            }
         }
 
         public void ChangeCategory(int categoryID)
@@ -85,12 +89,17 @@ namespace FS_LevelEditor
 
             if (Physics.Raycast(ray, out hit, Mathf.Infinity))
             {
+                previewObject.SetActive(true);
                 previewObject.transform.position = hit.point;
 
                 if (Input.GetMouseButtonDown(0))
                 {
                     Melon<Core>.Logger.Msg(hit.normal);
                 }
+            }
+            else
+            {
+                previewObject.SetActive(false);
             }
         }
 
