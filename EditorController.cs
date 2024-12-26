@@ -22,6 +22,8 @@ namespace FS_LevelEditor
         public List<Dictionary<string, GameObject>> allCategoriesObjects = new List<Dictionary<string, GameObject>>();
         public string currentObjectName = "";
 
+        GameObject levelObjectsParent;
+
         GameObject previewObject = null;
 
         void Awake()
@@ -35,6 +37,9 @@ namespace FS_LevelEditor
             previewObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
             previewObject.GetComponent<BoxCollider>().enabled = false;
             previewObject.transform.localScale = Vector3.one * 0.5f;
+
+            levelObjectsParent = new GameObject("LevelObjects");
+            levelObjectsParent.transform.position = Vector3.zero;
         }
 
         void Update()
@@ -91,15 +96,35 @@ namespace FS_LevelEditor
             {
                 previewObject.SetActive(true);
                 previewObject.transform.position = hit.point;
+                previewObject.transform.up = hit.normal;
 
                 if (Input.GetMouseButtonDown(0))
                 {
                     Melon<Core>.Logger.Msg(hit.normal);
+                    PlaceObject();
                 }
             }
             else
             {
                 previewObject.SetActive(false);
+            }
+        }
+
+        void PlaceObject()
+        {
+            GameObject obj = Instantiate(previewObject, levelObjectsParent.transform);
+
+            foreach (var collider in obj.TryGetComponents<Collider>())
+            {
+                collider.enabled = true;
+            }
+            foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
+            {
+                foreach (var material in renderer.materials)
+                {
+                    material.SetInt("_ZWrite", 1);
+                    material.color = new Color(1f, 1f, 1f, 1f);
+                }
             }
         }
 
