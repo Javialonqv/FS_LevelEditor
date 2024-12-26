@@ -68,7 +68,15 @@ namespace FS_LevelEditor
                     position.x += width * 2f;
                     position.z += height * 2f;
 
-                    GameObject.Instantiate(groundObj).transform.position = position;
+                    GameObject obj = GameObject.Instantiate(groundObj);
+                    obj.transform.position = position;
+                    foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
+                    {
+                        foreach (var material in renderer.materials)
+                        {
+                            material.SetInt("_ZWrite", 1);
+                        }
+                    }
                 }
             }
         }
