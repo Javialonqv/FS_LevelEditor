@@ -98,6 +98,21 @@ namespace FS_LevelEditor
                 previewObject.transform.position = hit.point;
                 previewObject.transform.up = hit.normal;
 
+                if (hit.collider.gameObject.name.StartsWith("StaticPos"))
+                {
+                    Melon<Core>.Logger.Msg("Is static");
+                    if (hit.collider.transform.parent.name == currentObjectName)
+                    {
+                        Melon<Core>.Logger.Msg("perfection");
+                        previewObject.transform.position = hit.collider.transform.position;
+                        previewObject.transform.rotation = hit.collider.transform.rotation;
+                    }
+                }
+                else
+                {
+                    Melon<Core>.Logger.Msg(hit.collider.gameObject.name);
+                }
+
                 if (Input.GetMouseButtonDown(0))
                 {
                     Melon<Core>.Logger.Msg(hit.normal);
@@ -113,6 +128,7 @@ namespace FS_LevelEditor
         void PlaceObject()
         {
             GameObject obj = Instantiate(previewObject, levelObjectsParent.transform);
+            obj.name = allCategoriesObjects[currentCategoryID][currentObjectName].name;
 
             foreach (var collider in obj.TryGetComponents<Collider>())
             {

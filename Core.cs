@@ -69,6 +69,7 @@ namespace FS_LevelEditor
                     position.z += height * 2f;
 
                     GameObject obj = GameObject.Instantiate(groundObj);
+                    obj.name = "Ground";
                     obj.transform.position = position;
                     foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
                     {
