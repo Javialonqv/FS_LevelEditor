@@ -22,21 +22,22 @@ namespace FS_LevelEditor
 
         void Start()
         {
-
+            
         }
 
         void Update()
         {
-
             MoveCamera();
             if (Input.GetMouseButton(1))
             {
                 Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
                 RotateCamera();
             }
             else
             {
                 Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
             }
             ManageDownAndUp();
         }
