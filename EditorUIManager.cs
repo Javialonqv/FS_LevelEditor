@@ -14,12 +14,19 @@ namespace FS_LevelEditor
     [RegisterTypeInIl2Cpp]
     public class EditorUIManager : MonoBehaviour
     {
+        public static EditorUIManager Instance;
+
         GameObject editorUIParent;
 
         List<GameObject> categoryButtons = new List<GameObject>();
 
         GameObject currentCategoryBG;
         List<GameObject> currentCategoryButtons = new List<GameObject>();
+
+        void Awake()
+        {
+            Instance = this;
+        }
 
         void Start()
         {
@@ -54,6 +61,16 @@ namespace FS_LevelEditor
                 categoryButton.GetComponent<UIToggle>().onChange.Clear();
                 categoryButton.GetComponent<UIToggle>().Set(false);
 
+                EventDelegate onChange = new EventDelegate(EditorController.Instance, "ChangeCategory");
+                EventDelegate.Parameter parameter = new EventDelegate.Parameter
+                {
+                    field = "categoryID",
+                    value = i,
+                    obj = EditorController.Instance
+                };
+                onChange.mParameters = new EventDelegate.Parameter[] { parameter };
+                categoryButton.GetComponent<UIToggle>().onChange.Add(onChange);
+
                 categoryButtons.Add(categoryButton);
             }
 
@@ -78,7 +95,7 @@ namespace FS_LevelEditor
             bgSprite.height = 150;
         }
 
-        void SetupCurrentCategoryButtons()
+        public void SetupCurrentCategoryButtons()
         {
             GameObject template = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/ColorSelection/ColorSwatch");
 
@@ -99,6 +116,17 @@ namespace FS_LevelEditor
 
                 currentCategoryButton.GetChildWithName("ColorName").GetComponent<UILabel>().text = currentCategoryObj.Key;
                 currentCategoryButton.GetComponent<UIButton>().onClick.Clear();
+
+                EventDelegate onChange = new EventDelegate(EditorController.Instance, "SelectObject");
+                EventDelegate.Parameter parameter = new EventDelegate.Parameter
+                {
+                    field = "objName",
+                    value = currentCategoryObj.Key,
+                    obj = EditorController.Instance
+                };
+                onChange.mParameters = new EventDelegate.Parameter[] { parameter };
+                currentCategoryButton.GetComponent<UIButton>().onClick.Add(onChange);
+
                 currentCategoryButton.GetComponent<UIButtonScale>().mScale = Vector3.one * 0.8f;
 
                 currentCategoryButtons.Add(currentCategoryButton);

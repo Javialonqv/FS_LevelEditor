@@ -67,5 +67,17 @@ namespace FS_LevelEditor
                 GameObject.Destroy(child);
             }
         }
+
+        public static T[] TryGetComponents<T>(this GameObject obj) where T : Component
+        {
+            if (obj.TryGetComponent<T>(out T component))
+            {
+                return obj.GetComponents<T>();
+            }
+            else
+            {
+                return obj.GetComponentsInChildren<T>();
+            }
+        }
     }
 }

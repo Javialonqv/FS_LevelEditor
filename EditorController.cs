@@ -20,6 +20,7 @@ namespace FS_LevelEditor
         public string currentCategory = "";
         public int currentCategoryID = 0;
         public List<Dictionary<string, GameObject>> allCategoriesObjects = new List<Dictionary<string, GameObject>>();
+        public string currentObjectName = "";
 
         GameObject previewObject = null;
 
@@ -44,6 +45,39 @@ namespace FS_LevelEditor
             }
         }
 
+        public void ChangeCategory(int categoryID)
+        {
+            if (currentCategoryID == categoryID) return;
+
+            currentCategoryID = categoryID;
+            currentCategory = categories[currentCategoryID];
+            EditorUIManager.Instance.SetupCurrentCategoryButtons();
+        }
+
+        public void SelectObject(string objName)
+        {
+            if (currentObjectName == objName) return;
+
+            currentObjectName = objName;
+            Melon<Core>.Logger.Msg(objName);
+
+            Destroy(previewObject);
+            previewObject = Instantiate(allCategoriesObjects[currentCategoryID][currentObjectName]);
+
+            foreach (var collider in previewObject.TryGetComponents<Collider>())
+            {
+                collider.enabled = false;
+            }
+            foreach (var renderer in previewObject.TryGetComponents<MeshRenderer>())
+            {
+                foreach (var material in renderer.materials)
+                {
+                    material.SetInt("_ZWrite", 1);
+                    material.color = new Color(0f, 0.666f, 0.894f, 1f);
+                }
+            }
+        }
+
         void PreviewObject()
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -52,6 +86,11 @@ namespace FS_LevelEditor
             if (Physics.Raycast(ray, out hit, Mathf.Infinity))
             {
                 previewObject.transform.position = hit.point;
+
+                if (Input.GetMouseButtonDown(0))
+                {
+                    Melon<Core>.Logger.Msg(hit.normal);
+                }
             }
         }
 
