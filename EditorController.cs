@@ -185,7 +185,7 @@ namespace FS_LevelEditor
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, -1, QueryTriggerInteraction.Ignore))
             {
                 obj = hit.collider.transform.parent.gameObject;
                 return true;
