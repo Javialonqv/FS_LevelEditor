@@ -23,6 +23,8 @@ namespace FS_LevelEditor
         GameObject currentCategoryBG;
         List<GameObject> currentCategoryButtons = new List<GameObject>();
 
+        GameObject selectedObjPanel;
+
         void Awake()
         {
             Instance = this;
@@ -38,7 +40,9 @@ namespace FS_LevelEditor
             SetupObjectsCategories();
             CreateObjectsBackground();
             SetupCurrentCategoryButtons();
+            CreateSelectedObjPanel();
         }
+
 
         void SetupObjectsCategories()
         {
@@ -117,7 +121,7 @@ namespace FS_LevelEditor
                 currentCategoryButton.GetChildWithName("ColorName").GetComponent<UILabel>().text = currentCategoryObj.Key;
                 currentCategoryButton.GetComponent<UIButton>().onClick.Clear();
 
-                EventDelegate onChange = new EventDelegate(EditorController.Instance, "SelectObject");
+                EventDelegate onChange = new EventDelegate(EditorController.Instance, "SelectObjectToBuild");
                 EventDelegate.Parameter parameter = new EventDelegate.Parameter
                 {
                     field = "objName",
@@ -131,6 +135,67 @@ namespace FS_LevelEditor
 
                 currentCategoryButtons.Add(currentCategoryButton);
             }
+        }
+
+        public void CreateSelectedObjPanel()
+        {
+            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            selectedObjPanel = new GameObject("CurrentSelectedObjPanel");
+            selectedObjPanel.transform.parent = editorUIParent.transform;
+            selectedObjPanel.transform.localPosition = new Vector3(-700f, -220f, 0f);
+            selectedObjPanel.transform.localScale = Vector3.one;
+
+            UISprite headerSprite = selectedObjPanel.AddComponent<UISprite>();
+            headerSprite.atlas = template.GetComponent<UISprite>().atlas;
+            headerSprite.spriteName = "Square_Border_Beveled_HighOpacity";
+            headerSprite.type = UIBasicSprite.Type.Sliced;
+            headerSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            headerSprite.width = 520;
+            headerSprite.height = 60;
+
+            GameObject headerText = new GameObject("Label");
+            headerText.transform.parent = selectedObjPanel.transform;
+            headerText.transform.localPosition = Vector3.zero;
+            headerText.transform.localScale = Vector3.one;
+
+            UILabel headerLabel = headerText.AddComponent<UILabel>();
+            headerLabel.font = labelTemplate.GetComponent<UILabel>().font;
+            headerLabel.fontSize = 27;
+            headerLabel.text = "No Object Selected";
+            headerLabel.depth = 1;
+            headerLabel.width = 520;
+            headerLabel.height = 60;
+
+            GameObject selectedObjPanelBody = new GameObject("Body");
+            selectedObjPanelBody.transform.parent = selectedObjPanel.transform;
+            selectedObjPanelBody.transform.localPosition = new Vector3(0f, -160f, 0f);
+            selectedObjPanelBody.transform.localScale = Vector3.one;
+
+            UISprite bodySprite = selectedObjPanelBody.AddComponent<UISprite>();
+            bodySprite.atlas = template.GetComponent<UISprite>().atlas;
+            bodySprite.spriteName = "Square_Border_Beveled_HighOpacity";
+            bodySprite.type = UIBasicSprite.Type.Sliced;
+            bodySprite.color = new Color(0.0039f, 0.3568f, 0.3647f, 1f);
+            bodySprite.depth = -1;
+            bodySprite.width = 500;
+            bodySprite.height = 300;
+
+            SetSelectedObjPanelAsNone();
+        }
+
+        public void SetSelectedObjPanelAsNone()
+        {
+            selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "No Object Selected";
+            selectedObjPanel.GetChildWithName("Body").SetActive(false);
+            selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
+        }
+        public void SetSelectedObject(string objName)
+        {
+            selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = objName;
+            selectedObjPanel.GetChildWithName("Body").SetActive(true);
+            selectedObjPanel.transform.localPosition = new Vector3(-700f, -220, 0f);
         }
     }
 }

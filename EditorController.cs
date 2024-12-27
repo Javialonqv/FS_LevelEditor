@@ -20,11 +20,14 @@ namespace FS_LevelEditor
         public string currentCategory = "";
         public int currentCategoryID = 0;
         public List<Dictionary<string, GameObject>> allCategoriesObjects = new List<Dictionary<string, GameObject>>();
+        public GameObject currentSelectedObj;
         public string currentObjectName = "";
 
         GameObject levelObjectsParent;
-
         GameObject previewObject = null;
+
+        public enum Mode { Building, Selection, Deletion }
+        public Mode currentMode = Mode.Building;
 
         void Awake()
         {
@@ -37,6 +40,7 @@ namespace FS_LevelEditor
             previewObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
             previewObject.GetComponent<BoxCollider>().enabled = false;
             previewObject.transform.localScale = Vector3.one * 0.5f;
+            previewObject.name = "Default";
 
             levelObjectsParent = new GameObject("LevelObjects");
             levelObjectsParent.transform.position = Vector3.zero;
@@ -52,6 +56,24 @@ namespace FS_LevelEditor
             {
                 previewObject.SetActive(false);
             }
+
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                ChangeMode(Mode.Building);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                ChangeMode(Mode.Selection);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                ChangeMode(Mode.Deletion);
+            }
+        }
+
+        public void ChangeMode(Mode mode)
+        {
+            currentMode = mode;
         }
 
         public void ChangeCategory(int categoryID)
@@ -63,11 +85,12 @@ namespace FS_LevelEditor
             EditorUIManager.Instance.SetupCurrentCategoryButtons();
         }
 
-        public void SelectObject(string objName)
+        public void SelectObjectToBuild(string objName)
         {
             if (currentObjectName == objName) return;
 
             currentObjectName = objName;
+            currentSelectedObj = allCategoriesObjects[currentCategoryID][currentObjectName];
             Melon<Core>.Logger.Msg(objName);
 
             Destroy(previewObject);
@@ -100,16 +123,14 @@ namespace FS_LevelEditor
 
                 if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                 {
-                    Melon<Core>.Logger.Msg("Is static");
                     if (hit.collider.transform.parent.name == currentObjectName)
                     {
-                        Melon<Core>.Logger.Msg("perfection");
                         previewObject.transform.position = hit.collider.transform.position;
                         previewObject.transform.rotation = hit.collider.transform.rotation;
                     }
                 }
 
-                if (Input.GetMouseButtonDown(0))
+                if (Input.GetMouseButtonDown(0) && previewObject.name != "Default")
                 {
                     Melon<Core>.Logger.Msg(hit.normal);
                     PlaceObject();
@@ -138,6 +159,38 @@ namespace FS_LevelEditor
                     material.color = new Color(1f, 1f, 1f, 1f);
                 }
             }
+
+            SetSelectedObj(obj);
+        }
+
+        void SetSelectedObj(GameObject obj)
+        {
+            if (currentSelectedObj == obj) return;
+
+            if (currentSelectedObj != null)
+            {
+                foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
+                {
+                    foreach (var material in renderer.materials)
+                    {
+                        material.SetInt("_ZWrite", 1);
+                        material.color = new Color(1f, 1f, 1f, 1f);
+                    }
+                }
+            }
+
+            currentSelectedObj = obj;
+
+            foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
+            {
+                foreach (var material in renderer.materials)
+                {
+                    material.SetInt("_ZWrite", 1);
+                    material.color = new Color(0f, 1f, 0f, 1f);
+                }
+            }
+
+            EditorUIManager.Instance.SetSelectedObject(obj.name);
         }
 
         void LoadAssetBundle()
