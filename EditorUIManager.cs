@@ -183,6 +183,24 @@ namespace FS_LevelEditor
             bodySprite.height = 300;
 
             SetSelectedObjPanelAsNone();
+            CreateNoAttributesPanel();
+        }
+
+        void CreateNoAttributesPanel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject noAttributes = new GameObject("NoAttributes");
+            noAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            noAttributes.transform.localPosition = Vector3.zero;
+            noAttributes.transform.localScale = Vector3.one;
+
+            UILabel label = noAttributes.AddComponent<UILabel>();
+            label.font = labelTemplate.GetComponent<UILabel>().font;
+            label.fontSize = 27;
+            label.width = 500;
+            label.height = 200;
+            label.text = "No Attributes for this object.";
         }
 
         public void SetSelectedObjPanelAsNone()
