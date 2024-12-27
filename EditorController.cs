@@ -84,6 +84,11 @@ namespace FS_LevelEditor
                 MoveObject(collidingArrow);
             }
 
+            if (Input.GetKeyDown(KeyCode.Delete) && currentSelectedObj != null)
+            {
+                DeleteSelectedObj();
+            }
+
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 ChangeMode(Mode.Building);
@@ -312,9 +317,15 @@ namespace FS_LevelEditor
                 moveObjectsArrows.transform.parent = currentSelectedObj.transform;
                 moveObjectsArrows.transform.localPosition = Vector3.zero;
                 moveObjectsArrows.transform.localRotation = Quaternion.identity;
-            }
 
-            EditorUIManager.Instance.SetSelectedObject(obj.name);
+                EditorUIManager.Instance.SetSelectedObject(obj.name);
+            }
+        }
+
+        void DeleteSelectedObj()
+        {
+            Destroy(currentSelectedObj);
+            SetSelectedObj(null);
         }
 
         void LoadAssetBundle()
