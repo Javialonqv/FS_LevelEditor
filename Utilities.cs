@@ -79,5 +79,12 @@ namespace FS_LevelEditor
                 return obj.GetComponentsInChildren<T>();
             }
         }
+
+        public static Vector3 GetMousePositionInWorld()
+        {
+            Vector3 mouseScreenPosition = Input.mousePosition;
+            mouseScreenPosition.z = Camera.main.nearClipPlane;
+            return Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+        }
     }
 }

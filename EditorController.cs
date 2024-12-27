@@ -14,6 +14,8 @@ namespace FS_LevelEditor
     {
         public static EditorController Instance { get; private set; }
 
+        GameObject moveObjectsArrows;
+
         GameObject rootBundleObject;
         public List<string> categories = new List<string>();
 
@@ -28,6 +30,12 @@ namespace FS_LevelEditor
 
         public enum Mode { Building, Selection, Deletion }
         public Mode currentMode = Mode.Building;
+
+        enum Arrow { None, X, Y, Z }
+        Arrow collidingArrow;
+        Vector3 mousePositionWhenArrowClick;
+        Vector3 objPositionWhenArrowClick;
+        Plane movementPlane;
 
         void Awake()
         {
@@ -48,7 +56,13 @@ namespace FS_LevelEditor
 
         void Update()
         {
-            if (!Input.GetMouseButton(1) && currentMode == Mode.Building)
+            if (Input.GetMouseButtonDown(0))
+            {
+                Melon<Core>.Logger.Msg("GOTCHA!");
+                collidingArrow = GetCollidingWithAnArrow();
+            }
+
+            if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == Arrow.None)
             {
                 PreviewObject();
             }
@@ -57,12 +71,17 @@ namespace FS_LevelEditor
                 previewObject.SetActive(false);
             }
 
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection)
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == Arrow.None)
             {
                 if (SelectObjectWithRay(out GameObject obj))
                 {
                     SetSelectedObj(obj);
                 }
+            }
+
+            if (Input.GetMouseButton(0))
+            {
+                MoveObject(collidingArrow);
             }
 
             if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -197,9 +216,72 @@ namespace FS_LevelEditor
             }
         }
 
+        Arrow GetCollidingWithAnArrow()
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
+
+            foreach (var hit in hits)
+            {
+                if (hit.collider.transform.parent != null)
+                {
+                    if (hit.collider.transform.parent.name == "MoveObjectArrows")
+                    {
+                        Melon<Core>.Logger.Msg("YES!!");
+                        mousePositionWhenArrowClick = Utilities.GetMousePositionInWorld();
+                        objPositionWhenArrowClick = currentSelectedObj.transform.position;
+
+                        movementPlane = new Plane(Camera.main.transform.forward, objPositionWhenArrowClick);
+
+                        if (hit.collider.name == "X") return Arrow.X;
+                        if (hit.collider.name == "Y") return Arrow.Y;
+                        if (hit.collider.name == "Z") return Arrow.Z;
+                    }
+                }
+            }
+
+            return Arrow.None;
+        }
+
+        void MoveObject(Arrow direction)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            if (movementPlane.Raycast(ray, out float distance))
+            {
+                Vector3 mouseWorldPosition = ray.GetPoint(distance);
+                Vector3 displacement = mouseWorldPosition - objPositionWhenArrowClick;
+
+                float movementDistance = Vector3.Dot(displacement, GetAxisDirection(collidingArrow, currentSelectedObj));
+
+                currentSelectedObj.transform.position = objPositionWhenArrowClick + GetAxisDirection(collidingArrow, currentSelectedObj) * (movementDistance * 1f);
+            }
+        }
+
+        Vector3 GetAxisDirection(Arrow arrow, GameObject obj)
+        {
+            if (arrow == Arrow.X) return obj.transform.right;
+            if (arrow == Arrow.Y) return obj.transform.up;
+            if (arrow == Arrow.Z) return obj.transform.forward;
+
+            return Vector3.zero;
+        }
+
+        Vector3 GetMouseWorldPosition()
+        {
+            Vector3 mouseScreenPosition = Input.mousePosition;
+            mouseScreenPosition.z = Vector3.Distance(Camera.main.transform.position, currentSelectedObj.transform.localPosition); // Distancia desde la cámara.
+            return Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+        }
+
         void SetSelectedObj(GameObject obj)
         {
             if (currentSelectedObj == obj) return;
+
+            moveObjectsArrows.SetActive(false);
+            moveObjectsArrows.transform.parent = null;
+            moveObjectsArrows.transform.localPosition = Vector3.zero;
+            moveObjectsArrows.transform.localRotation = Quaternion.identity;
 
             if (currentSelectedObj != null)
             {
@@ -215,13 +297,21 @@ namespace FS_LevelEditor
 
             currentSelectedObj = obj;
 
-            foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
+            if (currentSelectedObj != null)
             {
-                foreach (var material in renderer.materials)
+                foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
                 {
-                    material.SetInt("_ZWrite", 1);
-                    material.color = new Color(0f, 1f, 0f, 1f);
+                    foreach (var material in renderer.materials)
+                    {
+                        material.SetInt("_ZWrite", 1);
+                        material.color = new Color(0f, 1f, 0f, 1f);
+                    }
                 }
+
+                moveObjectsArrows.SetActive(true);
+                moveObjectsArrows.transform.parent = currentSelectedObj.transform;
+                moveObjectsArrows.transform.localPosition = Vector3.zero;
+                moveObjectsArrows.transform.localRotation = Quaternion.identity;
             }
 
             EditorUIManager.Instance.SetSelectedObject(obj.name);
@@ -256,6 +346,16 @@ namespace FS_LevelEditor
                 }
 
                 allCategoriesObjects.Add(categoryObjects);
+            }
+
+            moveObjectsArrows = Instantiate(bundle.Load<GameObject>("MoveObjectArrows"));
+            moveObjectsArrows.name = "MoveObjectArrows";
+            moveObjectsArrows.transform.localPosition = Vector3.zero;
+            moveObjectsArrows.SetActive(false);
+
+            foreach (var collider in moveObjectsArrows.TryGetComponents<Collider>())
+            {
+                collider.gameObject.layer = LayerMask.NameToLayer("ARROWS");
             }
 
             bundle.Unload(false);
