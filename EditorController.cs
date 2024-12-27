@@ -74,9 +74,13 @@ namespace FS_LevelEditor
                 {
                     SetSelectedObj(obj);
                 }
+                else
+                {
+                    SetSelectedObj(null);
+                }
             }
 
-            if (Input.GetMouseButton(0))
+            if (Input.GetMouseButton(0) && collidingArrow != Arrow.None)
             {
                 MoveObject(collidingArrow);
             }
