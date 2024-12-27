@@ -18,9 +18,9 @@ namespace FS_LevelEditor
 
         GameObject editorUIParent;
 
-        List<GameObject> categoryButtons = new List<GameObject>();
+        public List<GameObject> categoryButtons = new List<GameObject>();
 
-        GameObject currentCategoryBG;
+        public GameObject currentCategoryBG;
         List<GameObject> currentCategoryButtons = new List<GameObject>();
 
         GameObject selectedObjPanel;

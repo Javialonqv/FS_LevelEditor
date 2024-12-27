@@ -48,13 +48,21 @@ namespace FS_LevelEditor
 
         void Update()
         {
-            if (!Input.GetMouseButton(1))
+            if (!Input.GetMouseButton(1) && currentMode == Mode.Building)
             {
                 PreviewObject();
             }
             else
             {
                 previewObject.SetActive(false);
+            }
+
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection)
+            {
+                if (SelectObjectWithRay(out GameObject obj))
+                {
+                    SetSelectedObj(obj);
+                }
             }
 
             if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -65,15 +73,24 @@ namespace FS_LevelEditor
             {
                 ChangeMode(Mode.Selection);
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha3))
-            {
-                ChangeMode(Mode.Deletion);
-            }
         }
 
         public void ChangeMode(Mode mode)
         {
             currentMode = mode;
+
+            switch (currentMode)
+            {
+                case Mode.Building:
+                    EditorUIManager.Instance.categoryButtons.ForEach(button => button.SetActive(true));
+                    EditorUIManager.Instance.currentCategoryBG.SetActive(true);
+                    break;
+
+                case Mode.Selection:
+                    EditorUIManager.Instance.categoryButtons.ForEach(button => button.SetActive(false));
+                    EditorUIManager.Instance.currentCategoryBG.SetActive(false);
+                    break;
+            }
         }
 
         public void ChangeCategory(int categoryID)
@@ -161,6 +178,23 @@ namespace FS_LevelEditor
             }
 
             SetSelectedObj(obj);
+        }
+
+        bool SelectObjectWithRay(out GameObject obj)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+            {
+                obj = hit.collider.transform.parent.gameObject;
+                return true;
+            }
+            else
+            {
+                obj = null;
+                return false;
+            }
         }
 
         void SetSelectedObj(GameObject obj)
