@@ -39,6 +39,15 @@ namespace FS_LevelEditor
 
             return null;
         }
+        public static bool ExistsChildWithName(this GameObject obj, string name)
+        {
+            foreach (GameObject child in GetChilds(obj))
+            {
+                if (child.name == name) return true;
+            }
+
+            return false;
+        }
 
         public static GameObject GetChildAt(this GameObject obj, string path)
         {

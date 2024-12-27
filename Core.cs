@@ -37,10 +37,11 @@ namespace FS_LevelEditor
             if (Input.GetKeyDown(KeyCode.Keypad5))
             {
                 SetupEditorBasics();
-                SpawnBase();
 
                 new GameObject("EditorController").AddComponent<EditorController>();
                 new GameObject("EditorUIManager").AddComponent<EditorUIManager>();
+
+                SpawnBase();
             }
         }
 
@@ -68,8 +69,8 @@ namespace FS_LevelEditor
                     position.x += width * 2f;
                     position.z += height * 2f;
 
-                    GameObject obj = GameObject.Instantiate(groundObj);
-                    obj.name = "Ground";
+                    GameObject obj = GameObject.Instantiate(groundObj, EditorController.Instance.levelObjectsParent.transform);
+                    obj.name = EditorController.Instance.GetObjectNameToInstantiate("Ground");
                     obj.transform.position = position;
                     foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
                     {

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using MelonLoader;
+using System.Text.RegularExpressions;
 
 namespace FS_LevelEditor
 {
@@ -25,7 +26,7 @@ namespace FS_LevelEditor
         public GameObject currentSelectedObj;
         public string currentObjectName = "";
 
-        GameObject levelObjectsParent;
+        public GameObject levelObjectsParent;
         GameObject previewObject = null;
 
         public enum Mode { Building, Selection, Deletion }
@@ -41,32 +42,28 @@ namespace FS_LevelEditor
         {
             Instance = this;
             LoadAssetBundle();
+
+            levelObjectsParent = new GameObject("LevelObjects");
+            levelObjectsParent.transform.position = Vector3.zero;
         }
 
         void Start()
         {
-            previewObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            previewObject.GetComponent<BoxCollider>().enabled = false;
-            previewObject.transform.localScale = Vector3.one * 0.5f;
-            previewObject.name = "Default";
-
-            levelObjectsParent = new GameObject("LevelObjects");
-            levelObjectsParent.transform.position = Vector3.zero;
+            
         }
 
         void Update()
         {
             if (Input.GetMouseButtonDown(0))
             {
-                Melon<Core>.Logger.Msg("GOTCHA!");
                 collidingArrow = GetCollidingWithAnArrow();
             }
 
-            if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == Arrow.None)
+            if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == Arrow.None && previewObject != null)
             {
                 PreviewObject();
             }
-            else
+            else if (previewObject != null)
             {
                 previewObject.SetActive(false);
             }
@@ -164,14 +161,14 @@ namespace FS_LevelEditor
 
                 if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                 {
-                    if (hit.collider.transform.parent.name == currentObjectName)
+                    if (GetInstantiateObjectOriginalName(hit.collider.transform.parent.name) == currentObjectName)
                     {
                         previewObject.transform.position = hit.collider.transform.position;
                         previewObject.transform.rotation = hit.collider.transform.rotation;
                     }
                 }
 
-                if (Input.GetMouseButtonDown(0) && previewObject.name != "Default")
+                if (Input.GetMouseButtonDown(0))
                 {
                     Melon<Core>.Logger.Msg(hit.normal);
                     PlaceObject();
@@ -186,7 +183,7 @@ namespace FS_LevelEditor
         void PlaceObject()
         {
             GameObject obj = Instantiate(previewObject, levelObjectsParent.transform);
-            obj.name = allCategoriesObjects[currentCategoryID][currentObjectName].name;
+            obj.name = GetObjectNameToInstantiate(allCategoriesObjects[currentCategoryID][currentObjectName].name);
 
             foreach (var collider in obj.TryGetComponents<Collider>())
             {
@@ -326,6 +323,30 @@ namespace FS_LevelEditor
         {
             Destroy(currentSelectedObj);
             SetSelectedObj(null);
+        }
+
+        public string GetObjectNameToInstantiate(string originalName)
+        {
+            int identifier = 0;
+            string name = originalName + " " + identifier;
+
+            while (levelObjectsParent.ExistsChildWithName(name))
+            {
+                identifier++;
+                name = originalName + " " + identifier;
+            }
+
+            return name;
+        }
+
+        public string GetInstantiateObjectOriginalName(string instantiatedName)
+        {
+            if (Regex.IsMatch(instantiatedName, @"\d+$"))
+            {
+                return Regex.Replace(instantiatedName, @"\d+$", "").Trim();
+            }
+
+            return instantiatedName;
         }
 
         void LoadAssetBundle()
