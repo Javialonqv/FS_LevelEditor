@@ -284,13 +284,6 @@ namespace FS_LevelEditor
             return Vector3.zero;
         }
 
-        Vector3 GetMouseWorldPosition()
-        {
-            Vector3 mouseScreenPosition = Input.mousePosition;
-            mouseScreenPosition.z = Vector3.Distance(Camera.main.transform.position, currentSelectedObj.transform.localPosition); // Distancia desde la cámara.
-            return Camera.main.ScreenToWorldPoint(mouseScreenPosition);
-        }
-
         void SetSelectedObj(GameObject obj)
         {
             if (currentSelectedObj == obj) return;
