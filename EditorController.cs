@@ -27,6 +27,7 @@ namespace FS_LevelEditor
         // Avaiable objects from all of the categories.
         public List<Dictionary<string, GameObject>> allCategoriesObjects = new List<Dictionary<string, GameObject>>();
         public string currentObjectToBuildName = "";
+        GameObject currentObjectToBuild;
         GameObject previewObjectToBuildObj = null;
 
         // Related to current selected object for level building.
@@ -142,10 +143,11 @@ namespace FS_LevelEditor
             if (currentObjectToBuildName == objName) return;
 
             currentObjectToBuildName = objName;
+            currentObjectToBuild = allCategoriesObjects[currentCategoryID][currentObjectToBuildName];
 
             // Destroy the preview object and create another one with the mew selected model.
             Destroy(previewObjectToBuildObj);
-            previewObjectToBuildObj = Instantiate(allCategoriesObjects[currentCategoryID][currentObjectToBuildName]);
+            previewObjectToBuildObj = Instantiate(currentObjectToBuild);
 
             // Disable collision of the preview object.
             foreach (var collider in previewObjectToBuildObj.TryGetComponents<Collider>())
@@ -183,7 +185,7 @@ namespace FS_LevelEditor
                     if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
                     {
                         // Also, only snap if the hitten object trigger is the same as the preview object.
-                        if (GetInstantiateObjectOriginalName(hit.collider.transform.parent.name) == currentObjectToBuildName)
+                        if (GetOriginalNameOfInstantiatedObject(hit.collider.transform.parent.name) == currentObjectToBuildName)
                         {
                             previewObjectToBuildObj.transform.position = hit.collider.transform.position;
                             previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
@@ -206,7 +208,7 @@ namespace FS_LevelEditor
         void PlaceObject()
         {
             GameObject obj = Instantiate(previewObjectToBuildObj, levelObjectsParent.transform);
-            obj.name = GetObjectNameToInstantiate(allCategoriesObjects[currentCategoryID][currentObjectToBuildName].name);
+            obj.name = GetObjectNameToInstantiate(currentObjectToBuildName);
 
             foreach (var collider in obj.TryGetComponents<Collider>())
             {
@@ -363,7 +365,7 @@ namespace FS_LevelEditor
         /// </summary>
         /// <param name="instantiatedName"></param>
         /// <returns></returns>
-        public string GetInstantiateObjectOriginalName(string instantiatedName)
+        public string GetOriginalNameOfInstantiatedObject(string instantiatedName)
         {
             if (Regex.IsMatch(instantiatedName, @"\d+$"))
             {
