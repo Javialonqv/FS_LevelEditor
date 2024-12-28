@@ -20,11 +20,6 @@ namespace FS_LevelEditor
         float xRotation = 0f;
         float yRotation = 0f;
 
-        void Start()
-        {
-            
-        }
-
         void Update()
         {
             MoveCamera();

@@ -21,6 +21,7 @@ namespace FS_LevelEditor
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
+            // Debug option to know the camera position when using Free Cam from Unity Explorer.
 #if DEBUG
             if (sceneName.Contains("Menu"))
             {
@@ -34,6 +35,7 @@ namespace FS_LevelEditor
 
         public override void OnUpdate()
         {
+            // Keybind to open the level editor.
             if (Input.GetKeyDown(KeyCode.Keypad5))
             {
                 SetupEditorBasics();
@@ -47,15 +49,19 @@ namespace FS_LevelEditor
 
         void SetupEditorBasics()
         {
+            // Disable Menu UI elements.
             GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
             GameObject.Find("MainMenu/Camera/Holder/Navigation").SetActive(false);
 
+            // Disable the Menu Level objects.
             GameObject.Find("Level").SetActive(false);
 
+            // Set camera's new position and rotation.
             GameObject.Destroy(GameObject.Find("Main Camera").GetComponent<Animation>());
             GameObject.Find("Main Camera").transform.position = new Vector3(-15f, 125f, -75f);
             GameObject.Find("Main Camera").transform.localEulerAngles = new Vector3(45f, 0f, 0f);
 
+            // Add the camera movement component to... well... the camera.
             GameObject.Find("Main Camera").AddComponent<EditorCameraMovement>();
         }
 
