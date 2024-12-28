@@ -34,7 +34,6 @@ namespace FS_LevelEditor
 
         enum Arrow { None, X, Y, Z }
         Arrow collidingArrow;
-        Vector3 mousePositionWhenArrowClick;
         Vector3 objPositionWhenArrowClick;
         Plane movementPlane;
 
@@ -233,8 +232,6 @@ namespace FS_LevelEditor
                 {
                     if (hit.collider.transform.parent.name == "MoveObjectArrows")
                     {
-                        Melon<Core>.Logger.Msg("YES!!");
-                        mousePositionWhenArrowClick = Utilities.GetMousePositionInWorld();
                         objPositionWhenArrowClick = currentSelectedObj.transform.position;
 
                         movementPlane = new Plane(Camera.main.transform.forward, objPositionWhenArrowClick);
