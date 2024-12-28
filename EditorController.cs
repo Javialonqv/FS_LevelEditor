@@ -131,7 +131,6 @@ namespace FS_LevelEditor
             if (currentObjectName == objName) return;
 
             currentObjectName = objName;
-            currentSelectedObj = allCategoriesObjects[currentCategoryID][currentObjectName];
             Melon<Core>.Logger.Msg(objName);
 
             Destroy(previewObject);
