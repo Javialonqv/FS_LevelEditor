@@ -178,10 +178,13 @@ namespace FS_LevelEditor
 
                 if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                 {
-                    if (GetInstantiateObjectOriginalName(hit.collider.transform.parent.name) == currentObjectToBuildName)
+                    if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
                     {
-                        previewObjectToBuild.transform.position = hit.collider.transform.position;
-                        previewObjectToBuild.transform.rotation = hit.collider.transform.rotation;
+                        if (GetInstantiateObjectOriginalName(hit.collider.transform.parent.name) == currentObjectToBuildName)
+                        {
+                            previewObjectToBuild.transform.position = hit.collider.transform.position;
+                            previewObjectToBuild.transform.rotation = hit.collider.transform.rotation;
+                        }
                     }
                 }
 

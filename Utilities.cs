@@ -95,5 +95,28 @@ namespace FS_LevelEditor
             mouseScreenPosition.z = Camera.main.nearClipPlane;
             return Camera.main.ScreenToWorldPoint(mouseScreenPosition);
         }
+
+        public static bool ItsTheOnlyHittedObjectByRaycast(Ray ray, float rayDistance, GameObject desiredObj)
+        {
+            RaycastHit[] hits = Physics.RaycastAll(ray, rayDistance);
+            bool objFound = false;
+
+            foreach (var hit in hits)
+            {
+                if (hit.collider != null)
+                {
+                    if (hit.collider.gameObject == desiredObj)
+                    {
+                        objFound = true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return objFound;
+        }
     }
 }
