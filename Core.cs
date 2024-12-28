@@ -3,7 +3,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "1.0.0", "Javier", null)]
+[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "1.0.0", "Javialon_qv", null)]
 [assembly: MelonGame("Haze Games", "Fractal Space")]
 
 namespace FS_LevelEditor
