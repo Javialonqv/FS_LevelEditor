@@ -27,10 +27,10 @@ namespace FS_LevelEditor
         // Avaiable objects from all of the categories.
         public List<Dictionary<string, GameObject>> allCategoriesObjects = new List<Dictionary<string, GameObject>>();
         public string currentObjectToBuildName = "";
+        GameObject previewObjectToBuildObj = null;
 
         // Related to current selected object for level building.
         public GameObject levelObjectsParent;
-        GameObject previewObjectToBuild = null;
         public GameObject currentSelectedObj;
 
         // Selected mode.
@@ -52,11 +52,6 @@ namespace FS_LevelEditor
             levelObjectsParent.transform.position = Vector3.zero;
         }
 
-        void Start()
-        {
-            
-        }
-
         void Update()
         {
             // When click, check if it's clicking a gizmos arrow.
@@ -66,14 +61,14 @@ namespace FS_LevelEditor
             }
 
             // If it's not rotating camera, and it's building, and it's NOT clicking a gizmos arrow and there's actually a selected object to build, preview that object.
-            if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == GizmosArrow.None && previewObjectToBuild != null)
+            if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == GizmosArrow.None && previewObjectToBuildObj != null)
             {
                 PreviewObject();
             }
             // If not, at least if the preview object isn't null, disable it.
-            else if (previewObjectToBuild != null)
+            else if (previewObjectToBuildObj != null)
             {
-                previewObjectToBuild.SetActive(false);
+                previewObjectToBuildObj.SetActive(false);
             }
 
             // If click and it's on selection and it's NOT clicking a gizmos arrow.
@@ -143,19 +138,22 @@ namespace FS_LevelEditor
 
         public void SelectObjectToBuild(string objName)
         {
+            // Do nothing if trying to select the same object as the last selected one.
             if (currentObjectToBuildName == objName) return;
 
             currentObjectToBuildName = objName;
-            Melon<Core>.Logger.Msg(objName);
 
-            Destroy(previewObjectToBuild);
-            previewObjectToBuild = Instantiate(allCategoriesObjects[currentCategoryID][currentObjectToBuildName]);
+            // Destroy the preview object and create another one with the mew selected model.
+            Destroy(previewObjectToBuildObj);
+            previewObjectToBuildObj = Instantiate(allCategoriesObjects[currentCategoryID][currentObjectToBuildName]);
 
-            foreach (var collider in previewObjectToBuild.TryGetComponents<Collider>())
+            // Disable collision of the preview object.
+            foreach (var collider in previewObjectToBuildObj.TryGetComponents<Collider>())
             {
                 collider.enabled = false;
             }
-            foreach (var renderer in previewObjectToBuild.TryGetComponents<MeshRenderer>())
+            // Also change it's color to blue.
+            foreach (var renderer in previewObjectToBuildObj.TryGetComponents<MeshRenderer>())
             {
                 foreach (var material in renderer.materials)
                 {
@@ -170,39 +168,44 @@ namespace FS_LevelEditor
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
+            // If it hits an object.
             if (Physics.Raycast(ray, out hit, Mathf.Infinity))
             {
-                previewObjectToBuild.SetActive(true);
-                previewObjectToBuild.transform.position = hit.point;
-                previewObjectToBuild.transform.up = hit.normal;
+                // Set the preview object posiiton to the hit point.
+                previewObjectToBuildObj.SetActive(true);
+                previewObjectToBuildObj.transform.position = hit.point;
+                previewObjectToBuildObj.transform.up = hit.normal;
 
+                // But if the hit is an static pos trigger...
                 if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                 {
+                    // Set the preview position to a snapped to grid position only if is pressing the ctrl key or if it's the only object it's colliding to.
                     if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
                     {
+                        // Also, only snap if the hitten object trigger is the same as the preview object.
                         if (GetInstantiateObjectOriginalName(hit.collider.transform.parent.name) == currentObjectToBuildName)
                         {
-                            previewObjectToBuild.transform.position = hit.collider.transform.position;
-                            previewObjectToBuild.transform.rotation = hit.collider.transform.rotation;
+                            previewObjectToBuildObj.transform.position = hit.collider.transform.position;
+                            previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
                         }
                     }
                 }
 
+                // If press left click while previewing, place the object :)
                 if (Input.GetMouseButtonDown(0))
                 {
-                    Melon<Core>.Logger.Msg(hit.normal);
                     PlaceObject();
                 }
             }
-            else
+            else // Disable the preview object if it's not hitting nothing in the world space.
             {
-                previewObjectToBuild.SetActive(false);
+                previewObjectToBuildObj.SetActive(false);
             }
         }
 
         void PlaceObject()
         {
-            GameObject obj = Instantiate(previewObjectToBuild, levelObjectsParent.transform);
+            GameObject obj = Instantiate(previewObjectToBuildObj, levelObjectsParent.transform);
             obj.name = GetObjectNameToInstantiate(allCategoriesObjects[currentCategoryID][currentObjectToBuildName].name);
 
             foreach (var collider in obj.TryGetComponents<Collider>())
@@ -336,6 +339,11 @@ namespace FS_LevelEditor
             SetSelectedObj(null);
         }
 
+        /// <summary>
+        /// Generates an object name with an identifier to be instantiated in the editor.
+        /// </summary>
+        /// <param name="originalName">The original object's name.</param>
+        /// <returns>A generated name with an identificator.</returns>
         public string GetObjectNameToInstantiate(string originalName)
         {
             int identifier = 0;
@@ -350,6 +358,11 @@ namespace FS_LevelEditor
             return name;
         }
 
+        /// <summary>
+        /// Returns the original name of the object by taking the "with identifier name" of an object.
+        /// </summary>
+        /// <param name="instantiatedName"></param>
+        /// <returns></returns>
         public string GetInstantiateObjectOriginalName(string instantiatedName)
         {
             if (Regex.IsMatch(instantiatedName, @"\d+$"))
