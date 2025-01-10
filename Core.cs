@@ -43,8 +43,9 @@ namespace FS_LevelEditor
 
         public override void OnUpdate()
         {
+#if DEBUG
             // Keybind to open the level editor.
-            if (Input.GetKeyDown(KeyCode.Keypad5))
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.L))
             {
                 SetupEditorBasics();
 
@@ -53,6 +54,7 @@ namespace FS_LevelEditor
 
                 SpawnBase();
             }
+#endif
         }
 
         // LE stands for "Level Editor" lmao.
