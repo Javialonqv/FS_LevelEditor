@@ -13,17 +13,20 @@ namespace FS_LevelEditor
         public enum ObjectType
         {
             Ground,
-            LargeGround
+            LargeGround,
+            Wall
         }
         public static readonly Dictionary<string, ObjectType> typeNameToEnum = new Dictionary<string, ObjectType>()
         {
             { "Ground", ObjectType.Ground },
-            { "Large Ground", ObjectType.LargeGround }
+            { "Large Ground", ObjectType.LargeGround },
+            { "Wall", ObjectType.Wall }
         };
         public static readonly Dictionary<ObjectType, string> typeEnumToName = new Dictionary<ObjectType, string>()
         {
             { ObjectType.Ground, "Ground" },
-            { ObjectType.LargeGround, "Large Ground" }
+            { ObjectType.LargeGround, "Large Ground" },
+            { ObjectType.Wall, "Wall" }
         };
 
         public ObjectType objectType;
