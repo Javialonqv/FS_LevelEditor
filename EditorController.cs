@@ -185,7 +185,7 @@ namespace FS_LevelEditor
                     if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
                     {
                         // Also, only snap if the hitten object trigger is the same as the preview object.
-                        if (GetOriginalNameOfInstantiatedObject(hit.collider.transform.parent.name) == currentObjectToBuildName)
+                        if (hit.collider.transform.parent.GetComponent<LE_Object>().objectName == currentObjectToBuildName)
                         {
                             previewObjectToBuildObj.transform.position = hit.collider.transform.position;
                             previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
@@ -208,7 +208,7 @@ namespace FS_LevelEditor
         void PlaceObject()
         {
             GameObject obj = Instantiate(previewObjectToBuildObj, levelObjectsParent.transform);
-            obj.name = GetObjectNameToInstantiate(currentObjectToBuildName);
+            obj.AddComponent<LE_Object>().Init(currentObjectToBuildName);
 
             foreach (var collider in obj.TryGetComponents<Collider>())
             {
@@ -341,39 +341,39 @@ namespace FS_LevelEditor
             SetSelectedObj(null);
         }
 
-        /// <summary>
-        /// Generates an object name with an identifier to be instantiated in the editor.
-        /// </summary>
-        /// <param name="originalName">The original object's name.</param>
-        /// <returns>A generated name with an identificator.</returns>
-        public string GetObjectNameToInstantiate(string originalName)
-        {
-            int identifier = 0;
-            string name = originalName + " " + identifier;
+        ///// <summary>
+        ///// Generates an object name with an identifier to be instantiated in the editor.
+        ///// </summary>
+        ///// <param name="originalName">The original object's name.</param>
+        ///// <returns>A generated name with an identificator.</returns>
+        //public string GetObjectNameToInstantiate(string originalName)
+        //{
+        //    int identifier = 0;
+        //    string name = originalName + " " + identifier;
 
-            while (levelObjectsParent.ExistsChildWithName(name))
-            {
-                identifier++;
-                name = originalName + " " + identifier;
-            }
+        //    while (levelObjectsParent.ExistsChildWithName(name))
+        //    {
+        //        identifier++;
+        //        name = originalName + " " + identifier;
+        //    }
 
-            return name;
-        }
+        //    return name;
+        //}
 
-        /// <summary>
-        /// Returns the original name of the object by taking the "with identifier name" of an object.
-        /// </summary>
-        /// <param name="instantiatedName"></param>
-        /// <returns></returns>
-        public string GetOriginalNameOfInstantiatedObject(string instantiatedName)
-        {
-            if (Regex.IsMatch(instantiatedName, @"\d+$"))
-            {
-                return Regex.Replace(instantiatedName, @"\d+$", "").Trim();
-            }
+        ///// <summary>
+        ///// Returns the original name of the object by taking the "with identifier name" of an object.
+        ///// </summary>
+        ///// <param name="instantiatedName"></param>
+        ///// <returns></returns>
+        //public string GetOriginalNameOfInstantiatedObject(string instantiatedName)
+        //{
+        //    if (Regex.IsMatch(instantiatedName, @"\d+$"))
+        //    {
+        //        return Regex.Replace(instantiatedName, @"\d+$", "").Trim();
+        //    }
 
-            return instantiatedName;
-        }
+        //    return instantiatedName;
+        //}
 
         void LoadAssetBundle()
         {
