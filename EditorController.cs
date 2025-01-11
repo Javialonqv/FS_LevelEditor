@@ -333,6 +333,10 @@ namespace FS_LevelEditor
 
                 EditorUIManager.Instance.SetSelectedObject(obj.name);
             }
+            else
+            {
+                EditorUIManager.Instance.SetSelectedObjPanelAsNone();
+            }
         }
 
         void DeleteSelectedObj()
