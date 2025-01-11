@@ -44,7 +44,7 @@ namespace FS_LevelEditor
 
             int id = 0;
             LE_Object[] objects = EditorController.Instance.levelObjectsParent.GetComponentsInChildren<LE_Object>();
-            while (objects.Any(x => x.objectID == id))
+            while (objects.Any(x => x.objectID == id && x.objectName == objectName))
             {
                 id++;
             }
