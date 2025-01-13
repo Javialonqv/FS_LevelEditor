@@ -76,7 +76,7 @@ namespace FS_LevelEditor
             if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None)
             {
                 // If it's selecting an object, well, set it as the selected one, otherwise, deselect the last selected object if there's one.
-                if (SelectObjectWithRay(out GameObject obj))
+                if (CanSelectObjectWithRay(out GameObject obj))
                 {
                     SetSelectedObj(obj);
                 }
@@ -111,7 +111,7 @@ namespace FS_LevelEditor
         }
 
         // For now, this method only disables and enables the "building" UI, with the objects available to build.
-        public void ChangeMode(Mode mode)
+        void ChangeMode(Mode mode)
         {
             currentMode = mode;
 
@@ -126,43 +126,6 @@ namespace FS_LevelEditor
                     EditorUIManager.Instance.categoryButtons.ForEach(button => button.SetActive(false));
                     EditorUIManager.Instance.currentCategoryBG.SetActive(false);
                     break;
-            }
-        }
-
-        public void ChangeCategory(int categoryID)
-        {
-            if (currentCategoryID == categoryID) return;
-
-            currentCategoryID = categoryID;
-            currentCategory = categories[currentCategoryID];
-            EditorUIManager.Instance.SetupCurrentCategoryButtons();
-        }
-
-        public void SelectObjectToBuild(string objName)
-        {
-            // Do nothing if trying to select the same object as the last selected one.
-            if (currentObjectToBuildName == objName) return;
-
-            currentObjectToBuildName = objName;
-            currentObjectToBuild = allCategoriesObjects[currentCategoryID][currentObjectToBuildName];
-
-            // Destroy the preview object and create another one with the mew selected model.
-            Destroy(previewObjectToBuildObj);
-            previewObjectToBuildObj = Instantiate(currentObjectToBuild);
-
-            // Disable collision of the preview object.
-            foreach (var collider in previewObjectToBuildObj.TryGetComponents<Collider>())
-            {
-                collider.enabled = false;
-            }
-            // Also change it's color to blue.
-            foreach (var renderer in previewObjectToBuildObj.TryGetComponents<MeshRenderer>())
-            {
-                foreach (var material in renderer.materials)
-                {
-                    material.SetInt("_ZWrite", 1);
-                    material.color = new Color(0f, 0.666f, 0.894f, 1f);
-                }
             }
         }
 
@@ -197,7 +160,7 @@ namespace FS_LevelEditor
                 // If press left click while previewing, place the object :)
                 if (Input.GetMouseButtonDown(0))
                 {
-                    PlaceObject();
+                    InstanceObjectInThePreviewObjectPos();
                 }
             }
             else // Disable the preview object if it's not hitting nothing in the world space.
@@ -206,7 +169,7 @@ namespace FS_LevelEditor
             }
         }
 
-        void PlaceObject()
+        void InstanceObjectInThePreviewObjectPos()
         {
             GameObject obj = Instantiate(previewObjectToBuildObj, levelObjectsParent.transform);
             LE_Object.AddComponentToObject(obj, currentObjectToBuildName);
@@ -227,48 +190,6 @@ namespace FS_LevelEditor
             SetSelectedObj(obj);
         }
 
-        bool SelectObjectWithRay(out GameObject obj)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, -1, QueryTriggerInteraction.Ignore))
-            {
-                obj = hit.collider.transform.parent.gameObject;
-                return true;
-            }
-            else
-            {
-                obj = null;
-                return false;
-            }
-        }
-
-        GizmosArrow GetCollidingWithAnArrow()
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
-
-            foreach (var hit in hits)
-            {
-                if (hit.collider.transform.parent != null)
-                {
-                    if (hit.collider.transform.parent.name == "MoveObjectArrows")
-                    {
-                        objPositionWhenArrowClick = currentSelectedObj.transform.position;
-
-                        movementPlane = new Plane(Camera.main.transform.forward, objPositionWhenArrowClick);
-
-                        if (hit.collider.name == "X") return GizmosArrow.X;
-                        if (hit.collider.name == "Y") return GizmosArrow.Y;
-                        if (hit.collider.name == "Z") return GizmosArrow.Z;
-                    }
-                }
-            }
-
-            return GizmosArrow.None;
-        }
-
         void MoveObject(GizmosArrow direction)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -284,16 +205,7 @@ namespace FS_LevelEditor
             }
         }
 
-        Vector3 GetAxisDirection(GizmosArrow arrow, GameObject obj)
-        {
-            if (arrow == GizmosArrow.X) return obj.transform.right;
-            if (arrow == GizmosArrow.Y) return obj.transform.up;
-            if (arrow == GizmosArrow.Z) return obj.transform.forward;
-
-            return Vector3.zero;
-        }
-
-        void SetSelectedObj(GameObject obj)
+        public void SetSelectedObj(GameObject obj)
         {
             if (currentSelectedObj == obj) return;
 
@@ -389,5 +301,133 @@ namespace FS_LevelEditor
 
             bundle.Unload(false);
         }
+
+        public void PlaceObject(string objName, Vector3 position, Quaternion rotation, bool setAsSelected = true)
+        {
+            GameObject template = allCategoriesObjects[currentCategoryID][objName];
+            GameObject obj = Instantiate(template, levelObjectsParent.transform);
+
+            obj.transform.localPosition = position;
+            obj.transform.localRotation = rotation;
+
+            LE_Object.AddComponentToObject(obj, objName);
+
+            foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
+            {
+                foreach (var material in renderer.materials)
+                {
+                    material.SetInt("_ZWrite", 1);
+                    material.color = new Color(1f, 1f, 1f, 1f);
+                }
+            }
+
+            obj.SetActive(true);
+
+            if (setAsSelected)
+            {
+                SetSelectedObj(obj);
+            }
+        }
+
+        #region Methods called from UI buttons
+        public void ChangeCategory(int categoryID)
+        {
+            if (currentCategoryID == categoryID) return;
+
+            currentCategoryID = categoryID;
+            currentCategory = categories[currentCategoryID];
+            EditorUIManager.Instance.SetupCurrentCategoryButtons();
+        }
+
+        public void SelectObjectToBuild(string objName)
+        {
+            // Do nothing if trying to select the same object as the last selected one.
+            if (currentObjectToBuildName == objName) return;
+
+            currentObjectToBuildName = objName;
+            currentObjectToBuild = allCategoriesObjects[currentCategoryID][currentObjectToBuildName];
+
+            // Destroy the preview object and create another one with the mew selected model.
+            Destroy(previewObjectToBuildObj);
+            previewObjectToBuildObj = Instantiate(currentObjectToBuild);
+
+            // Disable collision of the preview object.
+            foreach (var collider in previewObjectToBuildObj.TryGetComponents<Collider>())
+            {
+                collider.enabled = false;
+            }
+            // Also change it's color to blue.
+            foreach (var renderer in previewObjectToBuildObj.TryGetComponents<MeshRenderer>())
+            {
+                foreach (var material in renderer.materials)
+                {
+                    material.SetInt("_ZWrite", 1);
+                    material.color = new Color(0f, 0.666f, 0.894f, 1f);
+                }
+            }
+        }
+        #endregion
+
+        #region Some Utilities
+        /// <summary>
+        /// Selects an object with a ray from the camera and current mouse position, to see if an object can be detected.
+        /// </summary>
+        /// <param name="obj">If there's an object, the instance of that object, otherwise, null.</param>
+        /// <returns>A bool that represents if there was an object there.</returns>
+        bool CanSelectObjectWithRay(out GameObject obj)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, -1, QueryTriggerInteraction.Ignore))
+            {
+                obj = hit.collider.transform.parent.gameObject;
+                return true;
+            }
+            else
+            {
+                obj = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Returns if a ray from the mouse position to real world is colliding with a gizmos arrow of an object.
+        /// </summary>
+        /// <returns></returns>
+        GizmosArrow GetCollidingWithAnArrow()
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
+
+            foreach (var hit in hits)
+            {
+                if (hit.collider.transform.parent != null)
+                {
+                    if (hit.collider.transform.parent.name == "MoveObjectArrows")
+                    {
+                        objPositionWhenArrowClick = currentSelectedObj.transform.position;
+
+                        movementPlane = new Plane(Camera.main.transform.forward, objPositionWhenArrowClick);
+
+                        if (hit.collider.name == "X") return GizmosArrow.X;
+                        if (hit.collider.name == "Y") return GizmosArrow.Y;
+                        if (hit.collider.name == "Z") return GizmosArrow.Z;
+                    }
+                }
+            }
+
+            return GizmosArrow.None;
+        }
+
+        Vector3 GetAxisDirection(GizmosArrow arrow, GameObject obj)
+        {
+            if (arrow == GizmosArrow.X) return obj.transform.right;
+            if (arrow == GizmosArrow.Y) return obj.transform.up;
+            if (arrow == GizmosArrow.Z) return obj.transform.forward;
+
+            return Vector3.zero;
+        }
+        #endregion
     }
 }

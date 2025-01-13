@@ -120,16 +120,7 @@ namespace FS_LevelEditor
                     position.x += width * 2f;
                     position.z += height * 2f;
 
-                    GameObject obj = GameObject.Instantiate(groundObj, EditorController.Instance.levelObjectsParent.transform);
-                    LE_Object.AddComponentToObject(obj, "Ground");
-                    obj.transform.position = position;
-                    foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
-                    {
-                        foreach (var material in renderer.materials)
-                        {
-                            material.SetInt("_ZWrite", 1);
-                        }
-                    }
+                    EditorController.Instance.PlaceObject("Ground", position, Quaternion.identity, false);
                 }
             }
         }
