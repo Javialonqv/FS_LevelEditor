@@ -110,6 +110,7 @@ namespace FS_LevelEditor
             }
         }
 
+        // For now, this method only disables and enables the "building" UI, with the objects available to build.
         public void ChangeMode(Mode mode)
         {
             currentMode = mode;
@@ -185,7 +186,7 @@ namespace FS_LevelEditor
                     if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
                     {
                         // Also, only snap if the hitten object trigger is the same as the preview object.
-                        if (hit.collider.transform.parent.GetComponent<LE_Object>().objectName == currentObjectToBuildName)
+                        if (hit.collider.transform.parent.GetComponent<LE_Object>().objectOriginalName == currentObjectToBuildName)
                         {
                             previewObjectToBuildObj.transform.position = hit.collider.transform.position;
                             previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
@@ -208,7 +209,7 @@ namespace FS_LevelEditor
         void PlaceObject()
         {
             GameObject obj = Instantiate(previewObjectToBuildObj, levelObjectsParent.transform);
-            obj.AddComponent<LE_Object>().Init(currentObjectToBuildName);
+            LE_Object.AddComponentToObject(obj, currentObjectToBuildName);
 
             foreach (var collider in obj.TryGetComponents<Collider>())
             {
