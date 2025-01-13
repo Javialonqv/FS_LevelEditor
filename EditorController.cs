@@ -223,7 +223,7 @@ namespace FS_LevelEditor
                 return true;
             }
 
-            if (triggerObj.name == "Global" && !existsSpecificTriggerForThisObjToBuild) return true;
+            if (triggerObj.transform.parent.name == "Global" && !existsSpecificTriggerForThisObjToBuild) return true;
 
             return false;
         }
