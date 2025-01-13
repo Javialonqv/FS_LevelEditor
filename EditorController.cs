@@ -205,53 +205,6 @@ namespace FS_LevelEditor
             }
         }
 
-        public void SetSelectedObj(GameObject obj)
-        {
-            if (currentSelectedObj == obj) return;
-
-            gizmosArrows.SetActive(false);
-            gizmosArrows.transform.parent = null;
-            gizmosArrows.transform.localPosition = Vector3.zero;
-            gizmosArrows.transform.localRotation = Quaternion.identity;
-
-            if (currentSelectedObj != null)
-            {
-                foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
-                {
-                    foreach (var material in renderer.materials)
-                    {
-                        material.SetInt("_ZWrite", 1);
-                        material.color = new Color(1f, 1f, 1f, 1f);
-                    }
-                }
-            }
-
-            currentSelectedObj = obj;
-
-            if (currentSelectedObj != null)
-            {
-                foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
-                {
-                    foreach (var material in renderer.materials)
-                    {
-                        material.SetInt("_ZWrite", 1);
-                        material.color = new Color(0f, 1f, 0f, 1f);
-                    }
-                }
-
-                gizmosArrows.SetActive(true);
-                gizmosArrows.transform.parent = currentSelectedObj.transform;
-                gizmosArrows.transform.localPosition = Vector3.zero;
-                gizmosArrows.transform.localRotation = Quaternion.identity;
-
-                EditorUIManager.Instance.SetSelectedObject(obj.name);
-            }
-            else
-            {
-                EditorUIManager.Instance.SetSelectedObjPanelAsNone();
-            }
-        }
-
         void DeleteSelectedObj()
         {
             Destroy(currentSelectedObj);
@@ -300,6 +253,53 @@ namespace FS_LevelEditor
             }
 
             bundle.Unload(false);
+        }
+
+        public void SetSelectedObj(GameObject obj)
+        {
+            if (currentSelectedObj == obj) return;
+
+            gizmosArrows.SetActive(false);
+            gizmosArrows.transform.parent = null;
+            gizmosArrows.transform.localPosition = Vector3.zero;
+            gizmosArrows.transform.localRotation = Quaternion.identity;
+
+            if (currentSelectedObj != null)
+            {
+                foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
+                {
+                    foreach (var material in renderer.materials)
+                    {
+                        material.SetInt("_ZWrite", 1);
+                        material.color = new Color(1f, 1f, 1f, 1f);
+                    }
+                }
+            }
+
+            currentSelectedObj = obj;
+
+            if (currentSelectedObj != null)
+            {
+                foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
+                {
+                    foreach (var material in renderer.materials)
+                    {
+                        material.SetInt("_ZWrite", 1);
+                        material.color = new Color(0f, 1f, 0f, 1f);
+                    }
+                }
+
+                gizmosArrows.SetActive(true);
+                gizmosArrows.transform.parent = currentSelectedObj.transform;
+                gizmosArrows.transform.localPosition = Vector3.zero;
+                gizmosArrows.transform.localRotation = Quaternion.identity;
+
+                EditorUIManager.Instance.SetSelectedObject(obj.name);
+            }
+            else
+            {
+                EditorUIManager.Instance.SetSelectedObjPanelAsNone();
+            }
         }
 
         public void PlaceObject(string objName, Vector3 position, Quaternion rotation, bool setAsSelected = true)

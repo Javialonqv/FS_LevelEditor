@@ -81,5 +81,19 @@ namespace FS_LevelEditor
 
             gameObject.name = objectFullNameWithID;
         }
+
+        public virtual void SetProperty(string name, object value)
+        {
+            
+        }
+
+        public virtual object GetProperty(string name)
+        {
+            return null;
+        }
+        public virtual T GetProperty<T>(string name)
+        {
+            return default(T);
+        }
     }
 }
