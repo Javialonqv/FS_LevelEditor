@@ -151,9 +151,11 @@ namespace FS_LevelEditor
                         // Also, only snap if the hitten object trigger is the same as the preview object.
                         if (hit.collider.transform.parent.GetComponent<LE_Object>().objectOriginalName == currentObjectToBuildName)
                         {
-                            previewObjectToBuildObj.transform.position = hit.collider.transform.position;
-                            previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
+
                         }
+
+                        previewObjectToBuildObj.transform.position = hit.collider.transform.position;
+                        previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
                     }
                 }
 
