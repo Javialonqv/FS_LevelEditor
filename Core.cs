@@ -120,7 +120,7 @@ namespace FS_LevelEditor
                     position.x += width * 2f;
                     position.z += height * 2f;
 
-                    EditorController.Instance.PlaceObject("Ground", position, Quaternion.identity, false);
+                    EditorController.Instance.PlaceObject("Ground", position, Vector3.zero, false);
                 }
             }
         }

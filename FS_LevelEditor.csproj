@@ -349,7 +349,9 @@
 		<Compile Include="EditorCameraMovement.cs" />
 		<Compile Include="EditorController.cs" />
 		<Compile Include="EditorUIManager.cs" />
+		<Compile Include="LevelData.cs" />
 		<Compile Include="LE_Object.cs" />
+		<Compile Include="LE_ObjectData.cs" />
 		<Compile Include="LE_UIButtonActionCtrl.cs" />
 		<Compile Include="Utilities.cs" />
 	</ItemGroup>

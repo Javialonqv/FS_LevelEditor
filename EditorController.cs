@@ -108,6 +108,16 @@ namespace FS_LevelEditor
             {
                 ChangeMode(Mode.Selection);
             }
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad7))
+            {
+                LevelData.SaveLevelData();
+            }
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad8))
+            {
+                LevelData.LoadLevelData();
+            }
         }
 
         // For now, this method only disables and enables the "building" UI, with the objects available to build.
@@ -302,13 +312,13 @@ namespace FS_LevelEditor
             }
         }
 
-        public void PlaceObject(string objName, Vector3 position, Quaternion rotation, bool setAsSelected = true)
+        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
         {
             GameObject template = allCategoriesObjects[currentCategoryID][objName];
             GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
             obj.transform.localPosition = position;
-            obj.transform.localRotation = rotation;
+            obj.transform.localEulerAngles = eulerAngles;
 
             LE_Object.AddComponentToObject(obj, objName);
 
@@ -327,6 +337,8 @@ namespace FS_LevelEditor
             {
                 SetSelectedObj(obj);
             }
+
+            return obj;
         }
 
         #region Methods called from UI buttons
