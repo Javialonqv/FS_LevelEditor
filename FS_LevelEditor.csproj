@@ -357,6 +357,10 @@
 	<ItemGroup>
 	  <EmbeddedResource Include="level_editor" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Level Objects\" />
+	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;D:\Games\SteamLibrary\steamapps\common\Fractal Space\Mods&quot;" />
