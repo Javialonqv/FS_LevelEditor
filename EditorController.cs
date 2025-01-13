@@ -151,7 +151,7 @@ namespace FS_LevelEditor
                     if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
                     {
                         // Also, only snap if the hitten object trigger CAN be used with the current selected object.
-                        if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hit.collider.transform.parent.name))
+                        if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hit.collider.transform.gameObject))
                         {
                             previewObjectToBuildObj.transform.position = hit.collider.transform.position;
                             previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
@@ -192,20 +192,40 @@ namespace FS_LevelEditor
             SetSelectedObj(obj);
         }
 
-        bool CanUseThatSnapToGridTrigger(string objToBuildName, string triggerParentObjName)
+        bool CanUseThatSnapToGridTrigger(string objToBuildName, GameObject triggerObj)
         {
-            if (triggerParentObjName == "Global") return true;
+            GameObject triggerRootObj = triggerObj.transform.parent.parent.gameObject;
+            bool existsSpecificTriggerForThisObjToBuild = false;
 
-            List<string> availableObjectsForTrigger = triggerParentObjName.Split('|').ToList();
+            // First, check if the object already has a specific trigger set for it, just to make sure it doesn't pick up the global one ;)
+            foreach (GameObject rootChild in triggerRootObj.GetChilds())
+            {
+                List<string> availableObjectsForTriggerInCurrentChild = rootChild.name.Split('|').ToList();
+                for (int i = 0; i < availableObjectsForTriggerInCurrentChild.Count; i++)
+                {
+                    availableObjectsForTriggerInCurrentChild[i] = availableObjectsForTriggerInCurrentChild[i].Trim();
+                }
+
+                if (availableObjectsForTriggerInCurrentChild.Contains(objToBuildName))
+                {
+                    existsSpecificTriggerForThisObjToBuild = true;
+                }
+            }
+
+            // Then, check if the object CAN use that trigger the player is clicking.
+            List<string> availableObjectsForTrigger = triggerObj.transform.parent.name.Split('|').ToList();
             for (int i = 0; i < availableObjectsForTrigger.Count; i++)
             {
                 availableObjectsForTrigger[i] = availableObjectsForTrigger[i].Trim();
             }
-            availableObjectsForTrigger.ForEach(x => Melon<Core>.Logger.Msg("Obj:" + x));
+            if (availableObjectsForTrigger.Contains(objToBuildName))
+            {
+                return true;
+            }
 
-            Melon<Core>.Logger.Msg("building: " + objToBuildName);
+            if (triggerObj.name == "Global" && !existsSpecificTriggerForThisObjToBuild) return true;
 
-            return availableObjectsForTrigger.Contains(objToBuildName);
+            return false;
         }
 
         void MoveObject(GizmosArrow direction)
