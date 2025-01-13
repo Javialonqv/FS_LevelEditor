@@ -146,17 +146,16 @@ namespace FS_LevelEditor
                 // But if the hit is an static pos trigger...
                 if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                 {
+                    Melon<Core>.Logger.Msg($"Hitting trigger with name: {hit.collider.gameObject.name} which parent is: {hit.collider.transform.parent.name}");
                     // Set the preview position to a snapped to grid position only if is pressing the ctrl key or if it's the only object it's colliding to.
                     if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
                     {
-                        // Also, only snap if the hitten object trigger is the same as the preview object.
-                        if (hit.collider.transform.parent.GetComponent<LE_Object>().objectOriginalName == currentObjectToBuildName)
+                        // Also, only snap if the hitten object trigger CAN be used with the current selected object.
+                        if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hit.collider.transform.parent.name))
                         {
-
+                            previewObjectToBuildObj.transform.position = hit.collider.transform.position;
+                            previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
                         }
-
-                        previewObjectToBuildObj.transform.position = hit.collider.transform.position;
-                        previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
                     }
                 }
 
@@ -191,6 +190,22 @@ namespace FS_LevelEditor
             }
 
             SetSelectedObj(obj);
+        }
+
+        bool CanUseThatSnapToGridTrigger(string objToBuildName, string triggerParentObjName)
+        {
+            if (triggerParentObjName == "Global") return true;
+
+            List<string> availableObjectsForTrigger = triggerParentObjName.Split('|').ToList();
+            for (int i = 0; i < availableObjectsForTrigger.Count; i++)
+            {
+                availableObjectsForTrigger[i] = availableObjectsForTrigger[i].Trim();
+            }
+            availableObjectsForTrigger.ForEach(x => Melon<Core>.Logger.Msg("Obj:" + x));
+
+            Melon<Core>.Logger.Msg("building: " + objToBuildName);
+
+            return availableObjectsForTrigger.Contains(objToBuildName);
         }
 
         void MoveObject(GizmosArrow direction)
