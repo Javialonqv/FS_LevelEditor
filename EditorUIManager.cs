@@ -65,7 +65,7 @@ namespace FS_LevelEditor
                 categoryButton.GetComponent<UIToggle>().onChange.Clear();
                 categoryButton.GetComponent<UIToggle>().Set(false);
 
-                EventDelegate onChange = new EventDelegate(EditorController.Instance, "ChangeCategory");
+                EventDelegate onChange = new EventDelegate(EditorController.Instance, nameof(EditorController.ChangeCategory));
                 EventDelegate.Parameter parameter = new EventDelegate.Parameter
                 {
                     field = "categoryID",
@@ -121,7 +121,7 @@ namespace FS_LevelEditor
                 currentCategoryButton.GetChildWithName("ColorName").GetComponent<UILabel>().text = currentCategoryObj.Key;
                 currentCategoryButton.GetComponent<UIButton>().onClick.Clear();
 
-                EventDelegate onChange = new EventDelegate(EditorController.Instance, "SelectObjectToBuild");
+                EventDelegate onChange = new EventDelegate(EditorController.Instance, nameof(EditorController.SelectObjectToBuild));
                 EventDelegate.Parameter parameter = new EventDelegate.Parameter
                 {
                     field = "objName",
