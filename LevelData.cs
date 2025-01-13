@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using System.Runtime.Serialization.Formatters.Binary;
+using MelonLoader;
 
 namespace FS_LevelEditor
 {
@@ -13,6 +14,7 @@ namespace FS_LevelEditor
     public class LevelData
     {
         public List<LE_ObjectData> objects = new List<LE_ObjectData>();
+        static readonly string testLevelFilePath = Path.Combine(Application.persistentDataPath, "test_level.dat");
 
         LevelData()
         {
@@ -36,15 +38,22 @@ namespace FS_LevelEditor
 
         public static void SaveLevelData(LevelData data = null)
         {
-            if (data == null)
+            try
             {
-                data = CreateLevelData();
-            }
+                if (data == null)
+                {
+                    data = CreateLevelData();
+                }
 
-            FileStream stream = File.Create(Path.Combine(Application.persistentDataPath, "test_level.dat"));
-            BinaryFormatter bf = new BinaryFormatter();
+                FileStream stream = File.Create(testLevelFilePath);
+                BinaryFormatter bf = new BinaryFormatter();
 #pragma warning disable SYSLIB0011
-            bf.Serialize(stream, data);
+                bf.Serialize(stream, data);
+            }
+            catch
+            {
+                Melon<Core>.Logger.Msg("Level saved! Path: " + testLevelFilePath);
+            }
         }
 
         public static void LoadLevelData()
@@ -52,7 +61,7 @@ namespace FS_LevelEditor
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
             objectsParent.DeleteAllChildren();
 
-            FileStream stream = File.Open(Path.Combine(Application.persistentDataPath, "test_level.dat"), FileMode.Open);
+            FileStream stream = File.Open(testLevelFilePath, FileMode.Open);
             BinaryFormatter bf = new BinaryFormatter();
 
             LevelData data = (LevelData)bf.Deserialize(stream);
