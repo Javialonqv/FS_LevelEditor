@@ -42,6 +42,7 @@ namespace FS_LevelEditor
         enum GizmosArrow { None, X, Y, Z }
         GizmosArrow collidingArrow;
         Vector3 objPositionWhenArrowClick;
+        Vector3 offsetObjPositionAndMosueWhenClick;
         Plane movementPlane;
 
         void Awake()
@@ -203,7 +204,7 @@ namespace FS_LevelEditor
 
                 float movementDistance = Vector3.Dot(displacement, GetAxisDirection(collidingArrow, currentSelectedObj));
 
-                currentSelectedObj.transform.position = objPositionWhenArrowClick + GetAxisDirection(collidingArrow, currentSelectedObj) * (movementDistance * 1f);
+                currentSelectedObj.transform.position = objPositionWhenArrowClick + GetAxisDirection(collidingArrow, currentSelectedObj) * (movementDistance * 1f) + offsetObjPositionAndMosueWhenClick;
             }
         }
 
@@ -409,6 +410,11 @@ namespace FS_LevelEditor
                     if (hit.collider.transform.parent.name == "MoveObjectArrows")
                     {
                         objPositionWhenArrowClick = currentSelectedObj.transform.position;
+
+                        offsetObjPositionAndMosueWhenClick = Vector3.zero;
+                        if (hit.collider.name == "X") offsetObjPositionAndMosueWhenClick.x = objPositionWhenArrowClick.x - hit.point.x;
+                        if (hit.collider.name == "Y") offsetObjPositionAndMosueWhenClick.y = objPositionWhenArrowClick.y - hit.point.y;
+                        if (hit.collider.name == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - hit.point.z;
 
                         movementPlane = new Plane(Camera.main.transform.forward, objPositionWhenArrowClick);
 
