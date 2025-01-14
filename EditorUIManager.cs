@@ -54,6 +54,8 @@ namespace FS_LevelEditor
             editorUIParent.transform.parent = GameObject.Find("MainMenu/Camera/Holder").transform;
             editorUIParent.transform.localScale = Vector3.one;
 
+            editorUIParent.AddComponent<UIPanel>().depth = 2;
+
             GameObject buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/Tabs/1_Taser");
 
             for (int i = 0; i < EditorController.Instance.categories.Count; i++)
