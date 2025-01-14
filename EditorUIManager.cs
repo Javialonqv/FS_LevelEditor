@@ -37,6 +37,10 @@ namespace FS_LevelEditor
 
         void SetupEditorUI()
         {
+            // Disable Menu UI elements.
+            GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
+            GameObject.Find("MainMenu/Camera/Holder/Navigation").SetActive(false);
+
             SetupObjectsCategories();
             CreateObjectsBackground();
             SetupCurrentCategoryButtons();
@@ -214,6 +218,13 @@ namespace FS_LevelEditor
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = objName;
             selectedObjPanel.GetChildWithName("Body").SetActive(true);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -220, 0f);
+        }
+
+
+        public void DeleteUI()
+        {
+            Destroy(editorUIParent);
+            GameObject.Find("MainMenu/Camera/Holder/Navigation").SetActive(true);
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using MelonLoader;
 using System.Text.RegularExpressions;
+using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor
 {
@@ -109,6 +110,13 @@ namespace FS_LevelEditor
             {
                 ChangeMode(Mode.Selection);
             }
+
+            // Shortcut for exiting LE.
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                EditorUIManager.Instance.DeleteUI();
+                SceneManager.LoadScene("Menu_PC");
+            }
         }
 
         // For now, this method only disables and enables the "building" UI, with the objects available to build.
@@ -146,7 +154,7 @@ namespace FS_LevelEditor
                 // But if the hit is an static pos trigger...
                 if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                 {
-                    Melon<Core>.Logger.Msg($"Hitting trigger with name: {hit.collider.gameObject.name} which parent is: {hit.collider.transform.parent.name}");
+                    //Melon<Core>.Logger.Msg($"Hitting trigger with name: {hit.collider.gameObject.name} which parent is: {hit.collider.transform.parent.name}");
                     // Set the preview position to a snapped to grid position only if is pressing the ctrl key or if it's the only object it's colliding to.
                     if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
                     {

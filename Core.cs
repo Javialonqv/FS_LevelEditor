@@ -94,10 +94,6 @@ namespace FS_LevelEditor
 
         void SetupEditorBasics()
         {
-            // Disable Menu UI elements.
-            GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
-            GameObject.Find("MainMenu/Camera/Holder/Navigation").SetActive(false);
-
             // Disable the Menu Level objects.
             GameObject.Find("Level").SetActive(false);
 
