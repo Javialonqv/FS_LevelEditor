@@ -60,6 +60,7 @@ namespace FS_LevelEditor
 
         void Start()
         {
+            // Disable occlusion culling.
             Camera.main.useOcclusionCulling = false;
         }
 
