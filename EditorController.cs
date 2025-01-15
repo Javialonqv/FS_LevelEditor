@@ -8,6 +8,7 @@ using UnityEngine;
 using MelonLoader;
 using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
+using Il2Cpp;
 
 namespace FS_LevelEditor
 {
@@ -46,6 +47,8 @@ namespace FS_LevelEditor
         Vector3 offsetObjPositionAndMosueWhenClick;
         Plane movementPlane;
 
+        public bool isEditorPaused = false;
+
         void Awake()
         {
             Instance = this;
@@ -57,6 +60,21 @@ namespace FS_LevelEditor
 
         void Update()
         {
+            // Shortcut for exiting LE.
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (!isEditorPaused)
+                {
+                    EditorUIManager.Instance.ShowPause();
+                }
+                else
+                {
+                    EditorUIManager.Instance.Resume();
+                }
+            }
+
+            if (isEditorPaused) return;
+
             // When click, check if it's clicking a gizmos arrow.
             if (Input.GetMouseButtonDown(0))
             {
@@ -109,13 +127,6 @@ namespace FS_LevelEditor
             else if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 ChangeMode(Mode.Selection);
-            }
-
-            // Shortcut for exiting LE.
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                EditorUIManager.Instance.DeleteUI();
-                SceneManager.LoadScene("Menu_PC");
             }
         }
 

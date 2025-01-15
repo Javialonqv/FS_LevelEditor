@@ -22,6 +22,8 @@ namespace FS_LevelEditor
 
         void Update()
         {
+            if (EditorController.Instance.isEditorPaused) return;
+
             MoveCamera();
             if (Input.GetMouseButton(1))
             {

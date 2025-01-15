@@ -8,6 +8,7 @@ using Il2CppVLB;
 using MelonLoader;
 using UnityEngine;
 using System.Reflection;
+using System.Collections;
 
 namespace FS_LevelEditor
 {
@@ -25,6 +26,10 @@ namespace FS_LevelEditor
 
         GameObject selectedObjPanel;
 
+        GameObject occluderForWhenPaused;
+        public GameObject pauseMenu;
+        GameObject navigation;
+
         void Awake()
         {
             Instance = this;
@@ -35,16 +40,35 @@ namespace FS_LevelEditor
             SetupEditorUI();
         }
 
+        void Update()
+        {
+            // For some reason the occluder sometimes is disabled, so I need to force it to be enabled EVERYTIME.
+            occluderForWhenPaused.SetActive(EditorController.Instance.isEditorPaused);
+        }
+
         void SetupEditorUI()
         {
             // Disable Menu UI elements.
             GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
             GameObject.Find("MainMenu/Camera/Holder/Navigation").SetActive(false);
 
+            GetReferences();
+
+            SetupPauseWhenInEditor();
+
             SetupObjectsCategories();
             CreateObjectsBackground();
             SetupCurrentCategoryButtons();
             CreateSelectedObjPanel();
+        }
+
+        void GetReferences()
+        {
+            GameObject uiParentObj = GameObject.Find("MainMenu/Camera/Holder/");
+
+            occluderForWhenPaused = uiParentObj.GetChildWithName("Occluder");
+            pauseMenu = uiParentObj.GetChildWithName("Main");
+            navigation = uiParentObj.GetChildWithName("Navigation");
         }
 
 
@@ -53,8 +77,6 @@ namespace FS_LevelEditor
             editorUIParent = new GameObject("LevelEditor");
             editorUIParent.transform.parent = GameObject.Find("MainMenu/Camera/Holder").transform;
             editorUIParent.transform.localScale = Vector3.one;
-
-            editorUIParent.AddComponent<UIPanel>().depth = 2;
 
             GameObject buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/Tabs/1_Taser");
 
@@ -222,6 +244,65 @@ namespace FS_LevelEditor
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -220, 0f);
         }
 
+
+        public void SetupPauseWhenInEditor()
+        {
+            // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.
+            pauseMenu.AddComponent<EditorPauseLargeButtonsSetter>();
+
+            // Setup the resume button, to actually resume the editor scene and not load another scene, which is the defualt behaviour of that button.
+            Destroy(pauseMenu.GetChildAt("LargeButtons/1_Resume").GetComponent<ButtonController>());
+            pauseMenu.GetChildAt("LargeButtons/1_Resume").GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.Resume)));
+
+            Destroy(pauseMenu.GetChildAt("LargeButtons/7_Exit").GetComponent<ButtonController>());
+            pauseMenu.GetChildAt("LargeButtons/7_Exit").GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.ExitToMenu)));
+        }
+        public void ShowPause()
+        {
+            // Disable the editor UI and enable the navigation bar.
+            editorUIParent.SetActive(false);
+            navigation.SetActive(true);
+
+            // Set the occluder color, it's opaque by defualt for some reason (Anyways, Charles and his weird systems...).
+            occluderForWhenPaused.GetComponent<UISprite>().color = new Color(0f, 0f, 0f, 0.9f);
+
+            // Enable the pause panel and play its animations.
+            pauseMenu.SetActive(true);
+            pauseMenu.GetComponent<TweenAlpha>().Play();
+            pauseMenu.GetComponent<TweenScale>().Play();
+
+            // Set the paused variable in the LE controller.
+            EditorController.Instance.isEditorPaused = true;
+        }
+        public void Resume()
+        {
+            MelonCoroutines.Start(Coroutine());
+
+            IEnumerator Coroutine()
+            {
+                // Disable the navigation bar.
+                navigation.SetActive(false);
+
+                // Play the pause menu animations backwards.
+                pauseMenu.GetComponent<TweenAlpha>().PlayReverse();
+                pauseMenu.GetComponent<TweenScale>().PlayReverse();
+
+                // Threshold to wait for the pause animation to end.
+                yield return new WaitForSecondsRealtime(0.3f);
+
+                // Enable the LE UI.
+                editorUIParent.SetActive(true);
+
+                // And set the paused variable in the controller as false.
+                EditorController.Instance.isEditorPaused = false;
+            }
+        }
+        public void ExitToMenu()
+        {
+            pauseMenu.RemoveComponent<EditorPauseLargeButtonsSetter>();
+
+            MenuController.GetInstance().ReturnToMainMenu();
+        }
 
         public void DeleteUI()
         {

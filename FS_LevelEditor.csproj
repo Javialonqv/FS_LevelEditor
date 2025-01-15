@@ -348,6 +348,7 @@
 		<Compile Include="Core.cs" />
 		<Compile Include="EditorCameraMovement.cs" />
 		<Compile Include="EditorController.cs" />
+		<Compile Include="EditorPauseLargeButtonsSetter.cs" />
 		<Compile Include="EditorUIManager.cs" />
 		<Compile Include="LE_Object.cs" />
 		<Compile Include="LE_UIButtonActionCtrl.cs" />

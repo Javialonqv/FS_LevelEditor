@@ -35,9 +35,11 @@ namespace FS_LevelEditor
             }
 #endif
 
-            if (sceneName.Contains("Menu") && levelEditorUIButton == null)
+            if (sceneName.Contains("Menu"))
             {
-                CreateLEButton();
+                if (levelEditorUIButton == null) CreateLEButton();
+
+                levelEditorUIButton.SetActive(true);
             }
         }
 
@@ -63,7 +65,7 @@ namespace FS_LevelEditor
             // The game disables the existing LE button since it detects we aren't in the unity editor or debugging, so I need to create a copy of the button.
             GameObject defaultLEButton = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/6_LevelEditor");
             levelEditorUIButton = GameObject.Instantiate(defaultLEButton, defaultLEButton.transform.parent);
-            levelEditorUIButton.name = "6_LevelEditor";
+            levelEditorUIButton.name = "6_Javi's LevelEditor";
 
             // And why not? Destroy the old button, since we don't need it anymore ;)
             GameObject.Destroy(defaultLEButton);
