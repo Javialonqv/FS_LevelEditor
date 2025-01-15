@@ -58,6 +58,11 @@ namespace FS_LevelEditor
             levelObjectsParent.transform.position = Vector3.zero;
         }
 
+        void Start()
+        {
+            Camera.main.useOcclusionCulling = false;
+        }
+
         void Update()
         {
             // Shortcut for exiting LE.
