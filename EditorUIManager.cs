@@ -48,11 +48,11 @@ namespace FS_LevelEditor
 
         void SetupEditorUI()
         {
+            GetReferences();
+
             // Disable Menu UI elements.
             pauseMenu.SetActive(false);
             navigation.SetActive(false);
-
-            GetReferences();
 
             SetupPauseWhenInEditor();
 
