@@ -49,8 +49,8 @@ namespace FS_LevelEditor
         void SetupEditorUI()
         {
             // Disable Menu UI elements.
-            GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
-            GameObject.Find("MainMenu/Camera/Holder/Navigation").SetActive(false);
+            pauseMenu.SetActive(false);
+            navigation.SetActive(false);
 
             GetReferences();
 
@@ -299,6 +299,7 @@ namespace FS_LevelEditor
         }
         public void ExitToMenu()
         {
+            // Remove this component, since this component is only needed when inside of LE.
             pauseMenu.RemoveComponent<EditorPauseLargeButtonsSetter>();
 
             MenuController.GetInstance().ReturnToMainMenu();
