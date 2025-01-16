@@ -125,6 +125,9 @@ namespace FS_LevelEditor
             bgSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             bgSprite.width = 1800;
             bgSprite.height = 150;
+
+            BoxCollider collider = currentCategoryBG.AddComponent<BoxCollider>();
+            collider.size = new Vector3(1800f, 150f, 1f);
         }
 
         public void SetupCurrentCategoryButtons()
@@ -183,6 +186,9 @@ namespace FS_LevelEditor
             headerSprite.width = 520;
             headerSprite.height = 60;
 
+            BoxCollider headerCollider = selectedObjPanel.AddComponent<BoxCollider>();
+            headerCollider.size = new Vector3(520f, 60f, 1f);
+
             GameObject headerText = new GameObject("Label");
             headerText.transform.parent = selectedObjPanel.transform;
             headerText.transform.localPosition = Vector3.zero;
@@ -209,6 +215,9 @@ namespace FS_LevelEditor
             bodySprite.depth = -1;
             bodySprite.width = 500;
             bodySprite.height = 300;
+
+            BoxCollider bodyCollider = selectedObjPanel.AddComponent<BoxCollider>();
+            bodyCollider.size = new Vector3(500f, 300f, 1f);
 
             SetSelectedObjPanelAsNone();
             CreateNoAttributesPanel();
