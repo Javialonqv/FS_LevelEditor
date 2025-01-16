@@ -209,7 +209,6 @@ namespace FS_LevelEditor
             {
                 foreach (var material in renderer.materials)
                 {
-                    material.SetInt("_ZWrite", 1);
                     material.color = new Color(1f, 1f, 1f, 1f);
                 }
             }
@@ -333,7 +332,6 @@ namespace FS_LevelEditor
                 {
                     foreach (var material in renderer.materials)
                     {
-                        material.SetInt("_ZWrite", 1);
                         material.color = new Color(1f, 1f, 1f, 1f);
                     }
                 }
@@ -347,7 +345,6 @@ namespace FS_LevelEditor
                 {
                     foreach (var material in renderer.materials)
                     {
-                        material.SetInt("_ZWrite", 1);
                         material.color = new Color(0f, 1f, 0f, 1f);
                     }
                 }
@@ -379,7 +376,6 @@ namespace FS_LevelEditor
             {
                 foreach (var material in renderer.materials)
                 {
-                    material.SetInt("_ZWrite", 1);
                     material.color = new Color(1f, 1f, 1f, 1f);
                 }
             }
@@ -424,7 +420,6 @@ namespace FS_LevelEditor
             {
                 foreach (var material in renderer.materials)
                 {
-                    material.SetInt("_ZWrite", 1);
                     material.color = new Color(0f, 0.666f, 0.894f, 1f);
                 }
             }
