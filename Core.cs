@@ -116,8 +116,8 @@ namespace FS_LevelEditor
                 for (int height = 0; height < 3; height++)
                 {
                     Vector3 position = groundBaseTopLeftPivot;
-                    position.x += width * 2f;
-                    position.z += height * 2f;
+                    position.x += width * 4f;
+                    position.z += height * 4f;
 
                     EditorController.Instance.PlaceObject("Ground", position, Quaternion.identity, false);
                 }
