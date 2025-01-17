@@ -21,7 +21,7 @@ namespace FS_LevelEditor
             ORANGE_GROUND,
             LARGE_GROUND,
             WALL,
-            WINDOW
+            WINDOW,
         }
 
         public ObjectType objectType;

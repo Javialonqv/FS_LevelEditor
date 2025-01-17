@@ -137,9 +137,9 @@ namespace FS_LevelEditor
             currentCategoryButtons.Clear();
             currentCategoryBG.DeleteAllChildren();
 
-            for (int i = 0; i < EditorController.Instance.allCategoriesObjects[EditorController.Instance.currentCategoryID].Count; i++)
+            for (int i = 0; i < EditorController.Instance.allCategoriesObjectsSorted[EditorController.Instance.currentCategoryID].Count; i++)
             {
-                var currentCategoryObj = EditorController.Instance.allCategoriesObjects[EditorController.Instance.currentCategoryID].ToList()[i];
+                var currentCategoryObj = EditorController.Instance.allCategoriesObjectsSorted[EditorController.Instance.currentCategoryID].ToList()[i];
 
                 GameObject currentCategoryButton = Instantiate(template, currentCategoryBG.transform);
                 currentCategoryButton.name = currentCategoryObj.Key;

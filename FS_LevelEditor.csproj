@@ -346,11 +346,6 @@
 
 	<ItemGroup>
 		<Compile Include="Core.cs" />
-		<Compile Include="EditorCameraMovement.cs" />
-		<Compile Include="EditorController.cs" />
-		<Compile Include="EditorUIManager.cs" />
-		<Compile Include="LE_Object.cs" />
-		<Compile Include="LE_UIButtonActionCtrl.cs" />
 		<Compile Include="Level Editor Itself\EditorCameraMovement.cs" />
 		<Compile Include="Level Editor Itself\EditorController.cs" />
 		<Compile Include="UI Related\EditorPauseLargeButtonsSetter.cs" />

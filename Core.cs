@@ -93,7 +93,7 @@ namespace FS_LevelEditor
             new GameObject("EditorUIManager").AddComponent<EditorUIManager>();
 
             SpawnBase();
-            CreateProvicionalLight();
+            CreateProvicionalLight(new Vector3(-13f, 130f, -56f), new Vector3(45f, 0f, 0f));
         }
 
         void SetupEditorBasics()
@@ -125,20 +125,23 @@ namespace FS_LevelEditor
             }
         }
 
-        void CreateProvicionalLight()
+        public GameObject CreateProvicionalLight(Vector3 position, Vector3 rotation)
         {
             GameObject lightObj = new GameObject("Provisional Level Light");
             lightObj.transform.parent = EditorController.Instance.levelObjectsParent.transform;
 
             lightObj.AddComponent<Light>().type = LightType.Directional;
+            lightObj.AddComponent<LE_Object>().objectOriginalName = "ProvisionalLight";
 
-            lightObj.transform.localPosition = new Vector3(-13f, 130f, -56f);
-            lightObj.transform.localEulerAngles = new Vector3(45f, 0f, 0f);
+            lightObj.transform.localPosition = position;
+            lightObj.transform.localEulerAngles = rotation;
 
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.transform.parent = lightObj.transform;
             cube.transform.localPosition = Vector3.zero;
             cube.transform.localRotation = Quaternion.identity;
+
+            return lightObj;
         }
 
         void LoadAssetBundle()

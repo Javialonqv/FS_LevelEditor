@@ -7,16 +7,18 @@ using UnityEngine.SceneManagement;
 using UnityEngine;
 using System.Runtime.Serialization.Formatters.Binary;
 using MelonLoader;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace FS_LevelEditor
 {
     [Serializable]
     public class LevelData
     {
-        public List<LE_ObjectData> objects = new List<LE_ObjectData>();
+        public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
         static readonly string testLevelFilePath = Path.Combine(Application.persistentDataPath, "test_level.dat");
 
-        LevelData()
+        public LevelData()
         {
 
         }
@@ -38,21 +40,25 @@ namespace FS_LevelEditor
 
         public static void SaveLevelData(LevelData data = null)
         {
+            if (data == null)
+            {
+                data = CreateLevelData();
+                Melon<Core>.Logger.Msg("Creating save data!");
+            }
+
             try
             {
-                if (data == null)
+                var options = new JsonSerializerOptions
                 {
-                    data = CreateLevelData();
-                }
+                    WriteIndented = true,
+                };
+                File.WriteAllText(testLevelFilePath, JsonSerializer.Serialize(data, options));
 
-                FileStream stream = File.Create(testLevelFilePath);
-                BinaryFormatter bf = new BinaryFormatter();
-#pragma warning disable SYSLIB0011
-                bf.Serialize(stream, data);
-            }
-            catch
-            {
                 Melon<Core>.Logger.Msg("Level saved! Path: " + testLevelFilePath);
+            }
+            catch (Exception e)
+            {
+                throw e;
             }
         }
 
@@ -61,10 +67,7 @@ namespace FS_LevelEditor
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
             objectsParent.DeleteAllChildren();
 
-            FileStream stream = File.Open(testLevelFilePath, FileMode.Open);
-            BinaryFormatter bf = new BinaryFormatter();
-
-            LevelData data = (LevelData)bf.Deserialize(stream);
+            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(testLevelFilePath));
 
             foreach (LE_ObjectData obj in data.objects)
             {
@@ -79,9 +82,9 @@ namespace FS_LevelEditor
     [Serializable]
     public struct Vector3Serializable
     {
-        public float x;
-        public float y;
-        public float z;
+        public float x { get; set; }
+        public float y { get; set; }
+        public float z { get; set; }
 
         public Vector3Serializable(float x, float y, float z)
         {

@@ -27,7 +27,8 @@ namespace FS_LevelEditor
         public int currentCategoryID = 0;
 
         // Avaiable objects from all of the categories.
-        public List<Dictionary<string, GameObject>> allCategoriesObjects = new List<Dictionary<string, GameObject>>();
+        public List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
+        public Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
         public string currentObjectToBuildName = "";
         GameObject currentObjectToBuild;
         GameObject previewObjectToBuildObj = null;
@@ -344,9 +345,10 @@ namespace FS_LevelEditor
                 foreach (var obj in categoryObj.GetChilds())
                 {
                     categoryObjects.Add(obj.name, obj);
+                    allCategoriesObjects.Add(obj.name, obj);
                 }
 
-                allCategoriesObjects.Add(categoryObjects);
+                allCategoriesObjectsSorted.Add(categoryObjects);
             }
 
             gizmosArrows = Instantiate(bundle.Load<GameObject>("MoveObjectArrows"));
@@ -409,7 +411,12 @@ namespace FS_LevelEditor
 
         public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
         {
-            GameObject template = allCategoriesObjects[currentCategoryID][objName];
+            if (objName == "ProvisionalLight")
+            {
+                return Melon<Core>.Instance.CreateProvicionalLight(position, eulerAngles);
+            }
+
+            GameObject template = allCategoriesObjects[objName];
             GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
             obj.transform.localPosition = position;
@@ -459,7 +466,7 @@ namespace FS_LevelEditor
             }
 
             currentObjectToBuildName = objName;
-            currentObjectToBuild = allCategoriesObjects[currentCategoryID][currentObjectToBuildName];
+            currentObjectToBuild = allCategoriesObjectsSorted[currentCategoryID][currentObjectToBuildName];
 
             // Destroy the preview object and create another one with the mew selected model.
             Destroy(previewObjectToBuildObj);
