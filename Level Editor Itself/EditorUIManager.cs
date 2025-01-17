@@ -153,19 +153,42 @@ namespace FS_LevelEditor
                 currentCategoryButton.GetComponent<UIButton>().onClick.Clear();
 
                 EventDelegate onChange = new EventDelegate(EditorController.Instance, nameof(EditorController.SelectObjectToBuild));
-                EventDelegate.Parameter parameter = new EventDelegate.Parameter
+                EventDelegate.Parameter onChangeParameter = new EventDelegate.Parameter
                 {
                     field = "objName",
                     value = currentCategoryObj.Key,
                     obj = EditorController.Instance
                 };
-                onChange.mParameters = new EventDelegate.Parameter[] { parameter };
+                onChange.mParameters = new EventDelegate.Parameter[] { onChangeParameter };
                 currentCategoryButton.GetComponent<UIButton>().onClick.Add(onChange);
+
+                EventDelegate onChangeUI = new EventDelegate(this, nameof(SetCurrentObjButtonAsSelected));
+                EventDelegate.Parameter onChangeUIParameter = new EventDelegate.Parameter
+                {
+                    field = "selectedButton",
+                    value = currentCategoryButton,
+                    obj = this
+                };
+                onChangeUI.mParameters = new EventDelegate.Parameter[] { onChangeUIParameter };
+                currentCategoryButton.GetComponent<UIButton>().onClick.Add(onChangeUI);
 
                 currentCategoryButton.GetComponent<UIButtonScale>().mScale = Vector3.one * 0.8f;
 
                 currentCategoryButtons.Add(currentCategoryButton);
             }
+
+            currentCategoryButtons[0].GetComponent<UIButton>().OnClick();
+        }
+
+        public void SetCurrentObjButtonAsSelected(GameObject selectedButton)
+        {
+            Melon<Core>.Logger.Msg(selectedButton.name);
+            foreach (var obj in currentCategoryButtons)
+            {
+                obj.GetChildWithName("ActiveSwatch").SetActive(false);
+            }
+
+            selectedButton.GetChildWithName("ActiveSwatch").SetActive(true);
         }
 
         public void CreateSelectedObjPanel()
