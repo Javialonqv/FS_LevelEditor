@@ -66,6 +66,7 @@ namespace FS_LevelEditor
 
         void Update()
         {
+            Melon<Core>.Logger.Msg(UICamera.hoveredObject.name);
             // Shortcut for exiting LE.
             if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -87,8 +88,9 @@ namespace FS_LevelEditor
                 collidingArrow = GetCollidingWithAnArrow();
             }
 
-            // If it's not rotating camera, and it's building, and it's NOT clicking a gizmos arrow and there's actually a selected object to build, preview that object.
-            if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == GizmosArrow.None && previewObjectToBuildObj != null)
+            // If it's not rotating camera, and it's building, and it's NOT clicking a gizmos arrow and there's actually a selected object to build AND the mouse isn't over
+            // a UI element... preview that object.
+            if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == GizmosArrow.None && previewObjectToBuildObj != null && !Utilities.IsMouseOverUIElement())
             {
                 PreviewObject();
             }
@@ -98,8 +100,8 @@ namespace FS_LevelEditor
                 previewObjectToBuildObj.SetActive(false);
             }
 
-            // If click and it's on selection and it's NOT clicking a gizmos arrow.
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None)
+            // If click and it's on selection and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element...
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement())
             {
                 // If it's selecting an object, well, set it as the selected one, otherwise, deselect the last selected object if there's one.
                 if (CanSelectObjectWithRay(out GameObject obj))

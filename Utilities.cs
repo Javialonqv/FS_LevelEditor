@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Il2Cpp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -135,6 +136,16 @@ namespace FS_LevelEditor
             {
                 return false;
             }
+        }
+
+        public static bool IsMouseOverUIElement()
+        {
+            if (UICamera.hoveredObject != null)
+            {
+                return UICamera.hoveredObject.name != "MainMenu";
+            }
+
+            return false;
         }
     }
 }
