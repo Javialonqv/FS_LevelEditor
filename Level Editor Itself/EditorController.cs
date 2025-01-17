@@ -438,6 +438,14 @@ namespace FS_LevelEditor
             // Do nothing if trying to select the same object as the last selected one.
             if (currentObjectToBuildName == objName) return;
 
+            if (objName == "None")
+            {
+                currentObjectToBuildName = "";
+                currentObjectToBuild = null;
+                Destroy(previewObjectToBuildObj);
+                return;
+            }
+
             currentObjectToBuildName = objName;
             currentObjectToBuild = allCategoriesObjects[currentCategoryID][currentObjectToBuildName];
 
