@@ -16,6 +16,9 @@ namespace FS_LevelEditor
         public enum ObjectType
         {
             GROUND,
+            CYAN_GROUND,
+            RED_GROUND,
+            ORANGE_GROUND,
             LARGE_GROUND,
             WALL,
             WINDOW

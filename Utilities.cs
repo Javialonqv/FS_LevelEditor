@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Il2Cpp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -117,6 +118,34 @@ namespace FS_LevelEditor
             }
 
             return objFound;
+        }
+
+        /// <summary>
+        /// Removes a component from an object.
+        /// </summary>
+        /// <typeparam name="T">The component type to remove.</typeparam>
+        /// <returns>If a component was found and could be deleted.</returns>
+        public static bool RemoveComponent<T>(this GameObject obj) where T : Component
+        {
+            if (obj.TryGetComponent<T>(out T component))
+            {
+                GameObject.Destroy(component);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool IsMouseOverUIElement()
+        {
+            if (UICamera.hoveredObject != null)
+            {
+                return UICamera.hoveredObject.name != "MainMenu";
+            }
+
+            return false;
         }
     }
 }

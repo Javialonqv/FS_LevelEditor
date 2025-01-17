@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "1.0.0", "Javialon_qv", null)]
+[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "PROTOTYPE 0.0.1", "Javialon_qv", null)]
 [assembly: MelonGame("Haze Games", "Fractal Space")]
 
 namespace FS_LevelEditor
@@ -35,9 +35,11 @@ namespace FS_LevelEditor
             }
 #endif
 
-            if (sceneName.Contains("Menu") && levelEditorUIButton == null)
+            if (sceneName.Contains("Menu"))
             {
-                CreateLEButton();
+                if (levelEditorUIButton == null) CreateLEButton();
+
+                levelEditorUIButton.SetActive(true);
             }
         }
 
@@ -63,6 +65,7 @@ namespace FS_LevelEditor
             // The game disables the existing LE button since it detects we aren't in the unity editor or debugging, so I need to create a copy of the button.
             GameObject defaultLEButton = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/6_LevelEditor");
             levelEditorUIButton = GameObject.Instantiate(defaultLEButton, defaultLEButton.transform.parent);
+            levelEditorUIButton.name = "6_Javi's LevelEditor";
 
             // And why not? Destroy the old button, since we don't need it anymore ;)
             GameObject.Destroy(defaultLEButton);
@@ -90,14 +93,11 @@ namespace FS_LevelEditor
             new GameObject("EditorUIManager").AddComponent<EditorUIManager>();
 
             SpawnBase();
+            CreateProvicionalLight();
         }
 
         void SetupEditorBasics()
         {
-            // Disable Menu UI elements.
-            GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
-            GameObject.Find("MainMenu/Camera/Holder/Navigation").SetActive(false);
-
             // Disable the Menu Level objects.
             GameObject.Find("Level").SetActive(false);
 
@@ -117,12 +117,28 @@ namespace FS_LevelEditor
                 for (int height = 0; height < 3; height++)
                 {
                     Vector3 position = groundBaseTopLeftPivot;
-                    position.x += width * 2f;
-                    position.z += height * 2f;
+                    position.x += width * 4f;
+                    position.z += height * 4f;
 
                     EditorController.Instance.PlaceObject("Ground", position, Vector3.zero, false);
                 }
             }
+        }
+
+        void CreateProvicionalLight()
+        {
+            GameObject lightObj = new GameObject("Provisional Level Light");
+            lightObj.transform.parent = EditorController.Instance.levelObjectsParent.transform;
+
+            lightObj.AddComponent<Light>().type = LightType.Directional;
+
+            lightObj.transform.localPosition = new Vector3(-13f, 130f, -56f);
+            lightObj.transform.localEulerAngles = new Vector3(45f, 0f, 0f);
+
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.parent = lightObj.transform;
+            cube.transform.localPosition = Vector3.zero;
+            cube.transform.localRotation = Quaternion.identity;
         }
 
         void LoadAssetBundle()
