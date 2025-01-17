@@ -66,8 +66,7 @@ namespace FS_LevelEditor
 
         void Update()
         {
-            Melon<Core>.Logger.Msg(UICamera.hoveredObject.name);
-            // Shortcut for exiting LE.
+            // Shortcut for pausing LE.
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 if (!isEditorPaused)
