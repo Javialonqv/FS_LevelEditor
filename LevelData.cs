@@ -76,6 +76,8 @@ namespace FS_LevelEditor
 
                 objClassInstance.objectID = obj.objectID;
             }
+
+            Melon<Core>.Logger.Msg("Level loaded!");
         }
     }
 
