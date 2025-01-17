@@ -158,37 +158,71 @@ namespace FS_LevelEditor
 
         void PreviewObject()
         {
+            // Get all of the possible rays and short them, since Unity doesn't short them by defualt.
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
+            System.Array.Sort(hits, (hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
 
-            // If it hits an object.
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+            // If it hits at least one object.
+            if (hits.Length > 0)
             {
-                // Set the preview object posiiton to the hit point.
-                previewObjectToBuildObj.SetActive(true);
-                previewObjectToBuildObj.transform.position = hit.point;
-                previewObjectToBuildObj.transform.up = hit.normal;
+                // Detect if hte first ray hit is colliding with a snap trigger.
+                bool firstRayIsATrigger = hits[0].collider.gameObject.name.StartsWith("StaticPos");
 
-                // But if the hit is an static pos trigger...
-                if (hit.collider.gameObject.name.StartsWith("StaticPos"))
+                foreach (var hit in hits)
                 {
-                    //Melon<Core>.Logger.Msg($"Hitting trigger with name: {hit.collider.gameObject.name} which parent is: {hit.collider.transform.parent.name}");
-                    // Set the preview position to a snapped to grid position only if is pressing the ctrl key or if it's the only object it's colliding to.
-                    if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
+                    bool snapNow = false;
+                    bool breakAtTheEnd = false;
+
+                    // If the hit is an static pos trigger (snap trigger)...
+                    if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                     {
-                        // Also, only snap if the hitten object trigger CAN be used with the current selected object.
-                        if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hit.collider.transform.gameObject))
+                        // Set the preview position to a snapped to grid position only if is pressing the ctrl key or if it's the only object it's colliding to.
+                        if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
                         {
-                            previewObjectToBuildObj.transform.position = hit.collider.transform.position;
-                            previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
+                            // Also, only snap if the hitten object trigger CAN be used with the current selected object.
+                            if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hit.collider.transform.gameObject))
+                            {
+                                previewObjectToBuildObj.SetActive(true);
+                                previewObjectToBuildObj.transform.position = hit.collider.transform.position;
+                                previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
+
+                                // We don't need anything else, if the user wants to use snap to grid and this is the correct trigger to use, use this and break the loop.
+                                snapNow = true;
+                                breakAtTheEnd = true;
+
+                            }
+                            // If the user actually wants to use snap, but this isn't the right trigger BUT the first one was a trigger, start looping again till find the correct one.
+                            else if (firstRayIsATrigger)
+                            {
+                                continue;
+                            }
                         }
                     }
-                }
+                    else // If we couldn't find any compatible triggers, just use the default behaviour and break the loop at the end, since we only care about the trigger that are
+                         // BEFORE the object itself.
+                    {
+                        breakAtTheEnd = true;
+                    }
 
-                // If press left click while previewing, place the object :)
-                if (Input.GetMouseButtonDown(0))
-                {
-                    InstanceObjectInThePreviewObjectPos();
+                    // If no correct trigger was found, use the default behaviour.
+                    if (!snapNow)
+                    {
+                        // Set the preview object posiiton to the hit point.
+                        previewObjectToBuildObj.SetActive(true);
+                        previewObjectToBuildObj.transform.position = hit.point;
+                        previewObjectToBuildObj.transform.up = hit.normal;
+                        Melon<Core>.Logger.Msg("NO TRIGGER FOUND");
+                    }
+
+                    // If press left click while previewing, place the object :)
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        InstanceObjectInThePreviewObjectPos();
+                        break;
+                    }
+
+                    if (breakAtTheEnd) break;
                 }
             }
             else // Disable the preview object if it's not hitting nothing in the world space.
