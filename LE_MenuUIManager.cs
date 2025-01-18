@@ -18,6 +18,9 @@ namespace FS_LevelEditor
         public bool inLEMenu;
 
         GameObject mainMenu;
+        AudioSource uiSoundSource;
+        AudioClip okSound;
+        AudioClip hidePageSound;
 
         GameObject levelEditorUIButton;
         public GameObject leMenuPanel;
@@ -51,6 +54,12 @@ namespace FS_LevelEditor
         void GetSomeReferences()
         {
             mainMenu = GameObject.Find("MainMenu/Camera/Holder/Main");
+            uiSoundSource = GameObject.Find("MainMenu/UISound").GetComponent<AudioSource>();
+            // Ik this isn't the best way to get these clips, but it works, so... I'mn not touching it again lol.
+            okSound = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/2_Chapters").GetComponent<ButtonController>().m_pressSound;
+            okSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            hidePageSound = MenuController.GetInstance().hidePageSound;
+            hidePageSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
         }
 
         // LE stands for "Level Editor" lmao.
@@ -217,8 +226,8 @@ namespace FS_LevelEditor
             {
                 if (inLEMenu)
                 {
-                    //uiSoundSource.clip = OST_UIManager.Instance.sfxLoader.okSoundClip;
-                    //uiSoundSource.Play();
+                    uiSoundSource.clip = okSound;
+                    uiSoundSource.Play();
 
                     mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(true);
                     leMenuPanel.SetActive(true);
@@ -231,8 +240,8 @@ namespace FS_LevelEditor
                 }
                 else
                 {
-                    //uiSoundSource.clip = OST_UIManager.Instance.sfxLoader.exitSoundClip;
-                    //uiSoundSource.Play();
+                    uiSoundSource.clip = hidePageSound;
+                    uiSoundSource.Play();
 
                     mainMenu.SetActive(true);
                     mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
