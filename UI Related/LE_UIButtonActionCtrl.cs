@@ -15,15 +15,7 @@ namespace FS_LevelEditor
     {
         public void OnClick()
         {
-            //MelonCoroutines.Start(Init());
             LE_MenuUIManager.Instance.SwitchBetweenMenuAndLEMenu();
-
-            IEnumerator Init()
-            {
-                StartCoroutine(MenuController.m_instance.ExitGameRoutine());
-                yield return new WaitForSeconds(0.5f);
-                Melon<Core>.Instance.SetupTheWholeEditor();
-            }
         }
     }
 }

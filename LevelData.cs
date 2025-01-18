@@ -95,11 +95,12 @@ namespace FS_LevelEditor
             if (!Directory.Exists(levelsDirectory)) return levelName;
 
             string[] existingLevels = Directory.GetFiles(levelsDirectory);
-            while (existingLevels.Contains(levelName))
+            while (existingLevels.Any(lvl => Path.GetFileNameWithoutExtension(lvl) == levelName))
             {
                 levelName = $"{levelName} {counter}";
             }
 
+            Melon<Core>.Logger.Msg("To return: " + levelName);
             return levelName;
         }
     }

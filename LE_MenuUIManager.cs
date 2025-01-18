@@ -215,6 +215,24 @@ namespace FS_LevelEditor
             sprite.height = 50;
             sprite.depth = 1;
             sprite.transform.localPosition = new Vector3(-80f, 2f, 0f);
+
+            // Set OnClick action, which is creating a new level with a new name.
+            UIButton button = addButton.AddComponent<UIButton>();
+            button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.CreateNewLevel)));
+        }
+
+        void CreateNewLevel()
+        {
+            MelonCoroutines.Start(Init());
+
+            IEnumerator Init()
+            {
+                //StartCoroutine(MenuController.m_instance.ExitGameRoutine());
+                SwitchBetweenMenuAndLEMenu();
+                yield return new WaitForSeconds(0.5f);
+                Melon<Core>.Instance.SetupTheWholeEditor();
+                EditorController.Instance.levelName = LevelData.GetAvailableLevelName();
+            }
         }
 
 
