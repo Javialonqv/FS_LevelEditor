@@ -233,6 +233,7 @@ namespace FS_LevelEditor
             LevelData[] levels = LevelData.GetLevelsList();
             GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
 
+            // Manage correctly when the parent already exists or no, since the whole UI is on DontDestroyOnLoad :').
             if (lvlButtonsParent == null)
             {
                 lvlButtonsParent = new GameObject("LevelButtons");
@@ -251,13 +252,15 @@ namespace FS_LevelEditor
             {
                 LevelData data = levels[i];
 
-                if (i % 5 == 0 || i == 0)
+                if (i % 5 == 0 || i == 0) // Idk bro, this is literally copied from the OST mod LOL.
                 {
+                    // Create a grid.
                     currentGrid = new GameObject($"Grid {(int)(i / 5)}");
                     currentGrid.transform.parent = lvlButtonsParent.transform;
                     currentGrid.transform.localPosition = new Vector3(0f, 150f, 0f);
                     currentGrid.transform.localScale = Vector3.one;
 
+                    // Add the UIGrid component, ofc.
                     UIGrid grid = currentGrid.AddComponent<UIGrid>();
                     grid.arrangement = UIGrid.Arrangement.Vertical;
                     grid.cellWidth = 1640f;
@@ -311,6 +314,7 @@ namespace FS_LevelEditor
                 counter++;
             }
 
+            // If there are more than 5 levels, create the buttons to travel between lists.
             if (levels.Length > 5)
             {
                 CreatePreviousListButton();
@@ -320,47 +324,57 @@ namespace FS_LevelEditor
 
         public void CreatePreviousListButton()
         {
+            // Create the button.
             GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
             GameObject btnPrevious = Instantiate(btnTemplate, lvlButtonsParent.transform);
             btnPrevious.name = "BtnPrevious";
             btnPrevious.transform.localPosition = new Vector3(-840f, -70f, 0f);
 
+            // Remove unnecesary components.
             GameObject.Destroy(btnPrevious.GetComponent<ButtonController>());
             GameObject.Destroy(btnPrevious.GetComponent<OptionsButton>());
 
+            // Adjust the sprite and the collider as well.
             UISprite sprite = btnPrevious.GetComponent<UISprite>();
             sprite.width = 30;
             sprite.height = 100;
             BoxCollider collider = btnPrevious.GetComponent<BoxCollider>();
             collider.size = new Vector3(30f, 100f);
 
+            // Adjust the label, removing the FUCKING UILocalize.
             GameObject.Destroy(btnPrevious.GetChildAt("Background/Label").GetComponent<UILocalize>());
             UILabel label = btnPrevious.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.text = "<";
 
+            // Set the button on click action.
             UIButton button = btnPrevious.GetComponent<UIButton>();
             button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.PreviousLevelsList)));
         }
         public void CreateNextListButton()
         {
+            // Create the button.
             GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
             GameObject btnNext = Instantiate(btnTemplate, lvlButtonsParent.transform);
             btnNext.name = "BtnNext";
             btnNext.transform.localPosition = new Vector3(840f, -70f, 0f);
 
+            // Remove unnecesary components.
             GameObject.Destroy(btnNext.GetComponent<ButtonController>());
             GameObject.Destroy(btnNext.GetComponent<OptionsButton>());
 
+            // Adjust the sprite and the collider as well.
             UISprite sprite = btnNext.GetComponent<UISprite>();
             sprite.width = 30;
             sprite.height = 100;
             BoxCollider collider = btnNext.GetComponent<BoxCollider>();
             collider.size = new Vector3(30f, 100f);
 
+            // Adjust the label, removing the FUCKING UILocalize.
             GameObject.Destroy(btnNext.GetChildAt("Background/Label").GetComponent<UILocalize>());
             UILabel label = btnNext.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.text = ">";
 
+            // Set the button on click action.
             UIButton button = btnNext.GetComponent<UIButton>();
             button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.NextLevelsList)));
         }
