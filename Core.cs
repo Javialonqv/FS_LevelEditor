@@ -11,6 +11,8 @@ namespace FS_LevelEditor
 {
     public class Core : MelonMod
     {
+        public static string currentSceneName;
+
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
 
         public override void OnInitializeMelon()
@@ -20,6 +22,8 @@ namespace FS_LevelEditor
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
+            currentSceneName = sceneName;
+
             // Debug option to know the camera position when using Free Cam from Unity Explorer.
 #if DEBUG
             if (sceneName.Contains("Menu"))

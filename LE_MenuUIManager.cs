@@ -51,6 +51,7 @@ namespace FS_LevelEditor
                 SwitchBetweenMenuAndLEMenu();
             }
 #endif
+            levelEditorUIButton.SetActive(Core.currentSceneName.Contains("Menu"));
         }
 
         void GetSomeReferences()
