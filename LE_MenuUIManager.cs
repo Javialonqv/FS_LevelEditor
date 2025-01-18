@@ -302,10 +302,11 @@ namespace FS_LevelEditor
 
                 SwitchBetweenMenuAndLEMenu();
                 Melon<Core>.Instance.SetupTheWholeEditor();
+                EditorController.Instance.levelName = LevelData.GetAvailableLevelName();
+                LevelData.SaveLevelData(EditorController.Instance.levelName);
 
                 yield return new WaitForSecondsRealtime(1.5f);
                 InGameUIManager.Instance.StartTotalFadeIn(3, true);
-                EditorController.Instance.levelName = LevelData.GetAvailableLevelName();
             }
         }
         void LoadLevel(string levelName)
