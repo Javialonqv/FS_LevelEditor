@@ -150,6 +150,9 @@ namespace FS_LevelEditor
             sprite.height = 50;
             sprite.depth = 1;
             sprite.transform.localPosition = new Vector3(-80f, 2f, 0f);
+
+            UIButton button = backButton.AddComponent<UIButton>();
+            button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.SwitchBetweenMenuAndLEMenu)));
         }
 
         public void CreateAddButton()
