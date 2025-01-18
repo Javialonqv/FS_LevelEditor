@@ -309,7 +309,7 @@ namespace FS_LevelEditor
                     obj = this
                 };
                 onClick.mParameters = new EventDelegate.Parameter[] { parameter };
-                //button.onClick.Add(onClick);
+                button.onClick.Add(onClick);
 
                 counter++;
             }
