@@ -121,6 +121,15 @@ namespace FS_LevelEditor
 
             return levels.ToArray();
         }
+
+        public static void DeleteLevel(string levelName)
+        {
+            string path = Path.Combine(levelsDirectory, levelName + ".lvl");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
     }
 
     [Serializable]

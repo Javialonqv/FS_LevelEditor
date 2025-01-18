@@ -311,6 +311,48 @@ namespace FS_LevelEditor
                 onClick.mParameters = new EventDelegate.Parameter[] { parameter };
                 button.onClick.Add(onClick);
 
+                #region Create Delete Button
+                GameObject deleteBtn = Instantiate(btnTemplate, lvlButton.transform);
+                deleteBtn.name = "DeleteBtn";
+                deleteBtn.transform.localPosition = new Vector3(750f, 0f, 0f);
+
+                Destroy(deleteBtn.GetComponent<ButtonController>());
+                Destroy(deleteBtn.GetComponent<OptionsButton>());
+                Destroy(deleteBtn.GetChildAt("Background/Label"));
+
+                UISprite deleteSprite = deleteBtn.GetComponent<UISprite>();
+                deleteSprite.width = 70;
+                deleteSprite.height = 70;
+                deleteSprite.depth = 1;
+                BoxCollider deleteCollider = deleteBtn.GetComponent<BoxCollider>();
+                deleteCollider.size = new Vector3(70f, 70f, 0f);
+
+                UIButtonColor deleteButtonColor = deleteBtn.GetComponent<UIButtonColor>();
+                deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
+                deleteButtonColor.hover = new Color(1f, 0f, 0f, 1f);
+                deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
+
+                UISprite trashSprite = deleteBtn.GetChildWithName("Background").GetComponent<UISprite>();
+                trashSprite.name = "Trash";
+                trashSprite.SetExternalSprite("Trash");
+                trashSprite.width = 40;
+                trashSprite.height = 50;
+                trashSprite.color = Color.white;
+                trashSprite.transform.localPosition = Vector3.zero;
+                trashSprite.enabled = true;
+
+                UIButton deleteButton = deleteBtn.GetComponent<UIButton>();
+                EventDelegate deleteOnClick = new EventDelegate(this, nameof(LE_MenuUIManager.DeleteLevel));
+                EventDelegate.Parameter deleteOnClickParameter = new EventDelegate.Parameter
+                {
+                    field = "levelName",
+                    value = data.levelName,
+                    obj = this
+                };
+                deleteOnClick.mParameters = new EventDelegate.Parameter[] { deleteOnClickParameter };
+                deleteButton.onClick.Add(deleteOnClick);
+                #endregion
+
                 counter++;
             }
 
@@ -417,6 +459,11 @@ namespace FS_LevelEditor
                 EditorController.Instance.levelName = levelName;
                 LevelData.LoadLevelData(levelName);
             }
+        }
+        void DeleteLevel(string levelName)
+        {
+            LevelData.DeleteLevel(levelName);
+            CreateLevelsList();
         }
 
 
