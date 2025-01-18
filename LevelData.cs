@@ -103,6 +103,20 @@ namespace FS_LevelEditor
             Melon<Core>.Logger.Msg("To return: " + levelName);
             return levelName;
         }
+
+        public static LevelData[] GetLevelsList()
+        {
+            string[] levelsPaths = Directory.GetFiles(levelsDirectory);
+            List<LevelData> levels = new List<LevelData>();
+
+            foreach (string levelPath in levelsPaths)
+            {
+                LevelData levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath));
+                levels.Add(levelData);
+            }
+
+            return levels.ToArray();
+        }
     }
 
     [Serializable]
