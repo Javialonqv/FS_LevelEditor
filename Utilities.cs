@@ -165,5 +165,37 @@ namespace FS_LevelEditor
             tween.ignoreTimeScale = true;
             if (reversed) tween.PlayReverse(); else tween.PlayForward();
         }
+
+        public static void CangeChildIndex(this GameObject child, int newIndex)
+        {
+            if (child.transform.parent == null)
+            {
+                Debug.LogError("The GameObject has no parent!");
+                return;
+            }
+
+            Transform parent = child.transform.parent;
+            int childCount = parent.childCount;
+
+            // Make sure te new index is inside of the child count of the parent.
+            newIndex = Mathf.Clamp(newIndex, 0, childCount - 1);
+
+            // Change the child index.
+            child.transform.SetSiblingIndex(newIndex);
+        }
+        public static void ChangeChildIndexToLastOne(this GameObject child)
+        {
+            if (child.transform.parent == null)
+            {
+                Debug.LogError("The GameObject has no parent!");
+                return;
+            }
+
+            Transform parent = child.transform.parent;
+            int lastIndex = parent.childCount - 1;
+
+            // Move the child to the last index.
+            child.transform.SetSiblingIndex(lastIndex);
+        }
     }
 }
