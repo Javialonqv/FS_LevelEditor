@@ -28,6 +28,8 @@ namespace FS_LevelEditor
         GameObject backButton;
         GameObject addButton;
         GameObject lvlButtonsParent;
+        List<GameObject> lvlButtonsGrids = new List<GameObject>();
+        int currentLevelsGridID;
 
         void Awake()
         {
@@ -240,13 +242,34 @@ namespace FS_LevelEditor
             else
             {
                 lvlButtonsParent.DeleteAllChildren();
+                lvlButtonsGrids.Clear();
             }
 
             int counter = 0;
-            foreach (LevelData data in levels)
+            GameObject currentGrid = null;
+            for (int i = 0; i < levels.Length; i++)
             {
+                LevelData data = levels[i];
+
+                if (i % 5 == 0 || i == 0)
+                {
+                    currentGrid = new GameObject($"Grid {(int)(i / 5)}");
+                    currentGrid.transform.parent = lvlButtonsParent.transform;
+                    currentGrid.transform.localPosition = new Vector3(0f, 150f, 0f);
+                    currentGrid.transform.localScale = Vector3.one;
+
+                    UIGrid grid = currentGrid.AddComponent<UIGrid>();
+                    grid.arrangement = UIGrid.Arrangement.Vertical;
+                    grid.cellWidth = 1640f;
+                    grid.cellHeight = 110f;
+
+                    if (i != 0) currentGrid.SetActive(false);
+
+                    lvlButtonsGrids.Add(currentGrid);
+                }
+
                 // Create the level button and set some things on it.
-                GameObject lvlButton = Instantiate(btnTemplate, lvlButtonsParent.transform);
+                GameObject lvlButton = Instantiate(btnTemplate, currentGrid.transform);
                 lvlButton.name = $"Level {counter}";
                 // Set the button position dinamicly.
                 lvlButton.transform.localPosition = new Vector3(0f, 100f, 0f) + (new Vector3(0f, -110f, 0f) * counter);
@@ -283,10 +306,63 @@ namespace FS_LevelEditor
                     obj = this
                 };
                 onClick.mParameters = new EventDelegate.Parameter[] { parameter };
-                button.onClick.Add(onClick);
+                //button.onClick.Add(onClick);
 
                 counter++;
             }
+
+            if (levels.Length > 5)
+            {
+                CreatePreviousListButton();
+                CreateNextListButton();
+            }
+        }
+
+        public void CreatePreviousListButton()
+        {
+            GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            GameObject btnPrevious = Instantiate(btnTemplate, lvlButtonsParent.transform);
+            btnPrevious.name = "BtnPrevious";
+            btnPrevious.transform.localPosition = new Vector3(-840f, -70f, 0f);
+
+            GameObject.Destroy(btnPrevious.GetComponent<ButtonController>());
+            GameObject.Destroy(btnPrevious.GetComponent<OptionsButton>());
+
+            UISprite sprite = btnPrevious.GetComponent<UISprite>();
+            sprite.width = 30;
+            sprite.height = 100;
+            BoxCollider collider = btnPrevious.GetComponent<BoxCollider>();
+            collider.size = new Vector3(30f, 100f);
+
+            GameObject.Destroy(btnPrevious.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            UILabel label = btnPrevious.GetChildAt("Background/Label").GetComponent<UILabel>();
+            label.text = "<";
+
+            UIButton button = btnPrevious.GetComponent<UIButton>();
+            button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.PreviousLevelsList)));
+        }
+        public void CreateNextListButton()
+        {
+            GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            GameObject btnNext = Instantiate(btnTemplate, lvlButtonsParent.transform);
+            btnNext.name = "BtnNext";
+            btnNext.transform.localPosition = new Vector3(840f, -70f, 0f);
+
+            GameObject.Destroy(btnNext.GetComponent<ButtonController>());
+            GameObject.Destroy(btnNext.GetComponent<OptionsButton>());
+
+            UISprite sprite = btnNext.GetComponent<UISprite>();
+            sprite.width = 30;
+            sprite.height = 100;
+            BoxCollider collider = btnNext.GetComponent<BoxCollider>();
+            collider.size = new Vector3(30f, 100f);
+
+            GameObject.Destroy(btnNext.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            UILabel label = btnNext.GetChildAt("Background/Label").GetComponent<UILabel>();
+            label.text = ">";
+
+            UIButton button = btnNext.GetComponent<UIButton>();
+            button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.NextLevelsList)));
         }
 
 
@@ -369,6 +445,25 @@ namespace FS_LevelEditor
                     leMenuPanel.SetActive(false);
                 }
             }
+        }
+
+        public void PreviousLevelsList()
+        {
+            if (currentLevelsGridID <= 0) return;
+            currentLevelsGridID--;
+
+            lvlButtonsGrids.ForEach(grid => grid.SetActive(false));
+
+            lvlButtonsGrids[currentLevelsGridID].SetActive(true);
+        }
+        public void NextLevelsList()
+        {
+            if (currentLevelsGridID >= lvlButtonsGrids.Count - 1) return;
+            currentLevelsGridID++;
+
+            lvlButtonsGrids.ForEach(grid => grid.SetActive(false));
+
+            lvlButtonsGrids[currentLevelsGridID].SetActive(true);
         }
     }
 }
