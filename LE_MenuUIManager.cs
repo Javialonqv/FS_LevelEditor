@@ -23,6 +23,7 @@ namespace FS_LevelEditor
         public GameObject leMenuPanel;
         GameObject leMenuButtonsParent;
         GameObject backButton;
+        GameObject addButton;
 
         void Awake()
         {
@@ -36,6 +37,7 @@ namespace FS_LevelEditor
             CreateLEButton();
             CreateLEMenuPanel();
             CreateBackButton();
+            CreateAddButton();
         }
 
         void Update()
@@ -119,6 +121,7 @@ namespace FS_LevelEditor
             GameObject template = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
             backButton = Instantiate(template, leMenuButtonsParent.transform);
             backButton.name = "BackButton";
+            backButton.transform.localPosition = new Vector3(-690f, 290f, 0f);
 
             backButton.GetComponent<UISprite>().width = 250;
             backButton.GetComponent<UISprite>().height = 80;
@@ -128,7 +131,43 @@ namespace FS_LevelEditor
             backButton.GetChildAt("Background/Label").GetComponent<UILabel>().text = "Back";
             backButton.GetChildAt("Background/Label").GetComponent<UILabel>().fontSize = 35;
 
-            backButton.transform.localPosition = new Vector3(-690f, 290f, 0f);
+            UISprite sprite = new GameObject("Image").AddComponent<UISprite>();
+            sprite.transform.parent = backButton.GetChildWithName("Background").transform;
+            sprite.transform.localScale = Vector3.one;
+            sprite.SetExternalSprite("BackArrow");
+            sprite.color = new Color(0.6235f, 1f, 0.9843f, 1f);
+            sprite.width = 30;
+            sprite.height = 50;
+            sprite.depth = 1;
+            sprite.transform.localPosition = new Vector3(-80.012f, 1.98f, 0f);
+            sprite.gameObject.name = "Image";
+        }
+
+        public void CreateAddButton()
+        {
+            GameObject template = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            addButton = Instantiate(template, leMenuButtonsParent.transform);
+            addButton.name = "BackButton";
+            addButton.transform.localPosition = new Vector3(690f, 290f, 0f);
+
+            addButton.GetComponent<UISprite>().width = 250;
+            addButton.GetComponent<UISprite>().height = 80;
+            addButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
+
+            GameObject.Destroy(addButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            addButton.GetChildAt("Background/Label").GetComponent<UILabel>().text = "Add";
+            addButton.GetChildAt("Background/Label").GetComponent<UILabel>().fontSize = 35;
+
+            UISprite sprite = new GameObject("Image").AddComponent<UISprite>();
+            sprite.transform.parent = addButton.GetChildWithName("Background").transform;
+            sprite.transform.localScale = Vector3.one;
+            sprite.SetExternalSprite("Plus");
+            sprite.color = new Color(0.6235f, 1f, 0.9843f, 1f);
+            sprite.width = 50;
+            sprite.height = 50;
+            sprite.depth = 1;
+            sprite.transform.localPosition = new Vector3(-80.012f, 1.98f, 0f);
+            sprite.gameObject.name = "Image";
         }
 
 
