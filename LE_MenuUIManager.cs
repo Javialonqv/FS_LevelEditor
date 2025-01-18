@@ -207,7 +207,7 @@ namespace FS_LevelEditor
             label.transform.localPosition = new Vector3(25f, 0f, 0f);
             label.width = 360;
             label.height = 67;
-            label.text = "Add";
+            label.text = "New";
             label.fontSize = 35;
 
             // Set the in-button sprite data.
