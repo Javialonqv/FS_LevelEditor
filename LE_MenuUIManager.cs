@@ -27,6 +27,7 @@ namespace FS_LevelEditor
         GameObject leMenuButtonsParent;
         GameObject backButton;
         GameObject addButton;
+        GameObject lvlButtonsParent;
 
         void Awake()
         {
@@ -41,6 +42,7 @@ namespace FS_LevelEditor
             CreateLEMenuPanel();
             CreateBackButton();
             CreateAddButton();
+            //CreateLevelsList();
         }
 
         void Update()
@@ -173,7 +175,7 @@ namespace FS_LevelEditor
             sprite.transform.localPosition = new Vector3(-45f, 3f, 0f);
 
             // Set OnClick action, which is go back lol.
-            UIButton button = backButton.AddComponent<UIButton>();
+            UIButton button = backButton.GetComponent<UIButton>();
             button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.SwitchBetweenMenuAndLEMenu)));
         }
 
@@ -220,9 +222,72 @@ namespace FS_LevelEditor
             sprite.transform.localPosition = new Vector3(-45f, 5f, 0f);
 
             // Set OnClick action, which is creating a new level with a new name.
-            UIButton button = addButton.AddComponent<UIButton>();
+            UIButton button = addButton.GetComponent<UIButton>();
             button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.CreateNewLevel)));
         }
+
+        public void CreateLevelsList()
+        {
+            LevelData[] levels = LevelData.GetLevelsList();
+            GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+
+            if (lvlButtonsParent == null)
+            {
+                lvlButtonsParent = new GameObject("LevelButtons");
+                lvlButtonsParent.transform.parent = leMenuButtonsParent.transform;
+            }
+            else
+            {
+                lvlButtonsParent.DeleteAllChildren();
+            }
+
+            int counter = 0;
+            foreach (LevelData data in levels)
+            {
+                // Create the level button and set some things on it.
+                GameObject lvlButton = Instantiate(btnTemplate, lvlButtonsParent.transform);
+                lvlButton.name = $"Level {counter}";
+                // Set the button position dinamicly.
+                lvlButton.transform.localPosition = new Vector3(0f, 100f, 0f) + (new Vector3(0f, -110f, 0f) * counter);
+
+                // Remove innecesary components.
+                Destroy(lvlButton.GetComponent<ButtonController>());
+                Destroy(lvlButton.GetComponent<OptionsButton>());
+
+                // Set the sprite's size, as well in the BoxCollider.
+                UISprite sprite = lvlButton.GetComponent<UISprite>();
+                sprite.width = 1640;
+                sprite.height = 100;
+                BoxCollider collider = lvlButton.GetComponent<BoxCollider>();
+                collider.size = new Vector3(1640f, 100f);
+
+                // Change the label text.
+                Destroy(lvlButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+                UILabel label = lvlButton.GetChildAt("Background/Label").GetComponent<UILabel>();
+                label.text = data.levelName;
+
+                // Set button's new scale properties.
+                UIButtonScale buttonScale = lvlButton.GetComponent<UIButtonScale>();
+                buttonScale.mScale = Vector3.one;
+                buttonScale.hover = new Vector3(1.02f, 1.02f, 1.02f);
+                buttonScale.pressed = new Vector3(1.01f, 1.01f, 1.01f);
+
+                // Set button's action.
+                UIButton button = lvlButton.GetComponent<UIButton>();
+                EventDelegate onClick = new EventDelegate(this, nameof(LE_MenuUIManager.LoadLevel));
+                EventDelegate.Parameter parameter = new EventDelegate.Parameter
+                {
+                    field = "levelName",
+                    value = data.levelName,
+                    obj = this
+                };
+                onClick.mParameters = new EventDelegate.Parameter[] { parameter };
+                button.onClick.Add(onClick);
+
+                counter++;
+            }
+        }
+
 
         void CreateNewLevel()
         {
@@ -242,12 +307,36 @@ namespace FS_LevelEditor
                 EditorController.Instance.levelName = LevelData.GetAvailableLevelName();
             }
         }
+        void LoadLevel(string levelName)
+        {
+            MelonCoroutines.Start(Init());
+
+            IEnumerator Init()
+            {
+                // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
+                InGameUIManager.Instance.StartTotalFadeOut(3, true);
+                yield return new WaitForSecondsRealtime(1.5f);
+
+                SwitchBetweenMenuAndLEMenu();
+                Melon<Core>.Instance.SetupTheWholeEditor();
+
+                yield return new WaitForSecondsRealtime(1.5f);
+                InGameUIManager.Instance.StartTotalFadeIn(3, true);
+                EditorController.Instance.levelName = levelName;
+                LevelData.LoadLevelData(levelName);
+            }
+        }
 
 
         public void SwitchBetweenMenuAndLEMenu()
         {
             // Switch!
             inLEMenu = !inLEMenu;
+
+            if (inLEMenu)
+            {
+                CreateLevelsList();
+            }
 
             MelonCoroutines.Start(Animation());
 
