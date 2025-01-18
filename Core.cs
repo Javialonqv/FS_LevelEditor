@@ -35,6 +35,7 @@ namespace FS_LevelEditor
             if (sceneName.Contains("Menu"))
             {
                 if (LE_MenuUIManager.Instance == null) new GameObject("LE_MEnuUIManager").AddComponent<LE_MenuUIManager>();
+                if (ExternalSpriteLoader.Instance == null) new GameObject("LE_ExternalSpriteLoader").AddComponent<ExternalSpriteLoader>();
             }
         }
 
