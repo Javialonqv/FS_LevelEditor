@@ -45,10 +45,12 @@ namespace FS_LevelEditor
 
         void Update()
         {
+#if DEBUG
             if (Input.GetKeyDown(KeyCode.F3))
             {
                 SwitchBetweenMenuAndLEMenu();
             }
+#endif
         }
 
         void GetSomeReferences()
