@@ -11,13 +11,11 @@ namespace FS_LevelEditor
 {
     public class Core : MelonMod
     {
-        public GameObject groundObj;
-
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
 
         public override void OnInitializeMelon()
         {
-            LoadAssetBundle();
+            
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -112,20 +110,6 @@ namespace FS_LevelEditor
             cube.transform.localRotation = Quaternion.identity;
 
             return lightObj;
-        }
-
-        void LoadAssetBundle()
-        {
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FS_LevelEditor.level_editor");
-            byte[] bytes = new byte[stream.Length];
-            stream.Read(bytes);
-
-            Il2CppAssetBundle bundle = Il2CppAssetBundleManager.LoadFromMemory(bytes);
-
-            groundObj = bundle.Load<GameObject>("Ground");
-            groundObj.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-            bundle.Unload(false);
         }
     }
 }
