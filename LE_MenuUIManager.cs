@@ -227,10 +227,15 @@ namespace FS_LevelEditor
 
             IEnumerator Init()
             {
-                //StartCoroutine(MenuController.m_instance.ExitGameRoutine());
+                // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
+                InGameUIManager.Instance.StartTotalFadeOut(3, true);
+                yield return new WaitForSecondsRealtime(1.5f);
+
                 SwitchBetweenMenuAndLEMenu();
-                yield return new WaitForSeconds(0.5f);
                 Melon<Core>.Instance.SetupTheWholeEditor();
+
+                yield return new WaitForSecondsRealtime(1.5f);
+                InGameUIManager.Instance.StartTotalFadeIn(3, true);
                 EditorController.Instance.levelName = LevelData.GetAvailableLevelName();
             }
         }
