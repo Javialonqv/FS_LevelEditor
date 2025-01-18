@@ -152,7 +152,7 @@ namespace FS_LevelEditor
             UILabel label = backButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.SetAnchor((Transform)null);
             label.CheckAnchors();
-            label.transform.localPosition = new Vector3(30f, 0f, 0f);
+            label.transform.localPosition = new Vector3(25f, 0f, 0f);
             label.width = 360;
             label.height = 67;
             label.text = "Back";
@@ -164,10 +164,10 @@ namespace FS_LevelEditor
             sprite.transform.localScale = Vector3.one;
             sprite.SetExternalSprite("BackArrow");
             sprite.color = new Color(0.6235f, 1f, 0.9843f, 1f);
-            sprite.width = 30;
-            sprite.height = 50;
+            sprite.width = 20;
+            sprite.height = 30;
             sprite.depth = 1;
-            sprite.transform.localPosition = new Vector3(-80f, 2f, 0f);
+            sprite.transform.localPosition = new Vector3(-45f, 3f, 0f);
 
             // Set OnClick action, which is go back lol.
             UIButton button = backButton.AddComponent<UIButton>();
@@ -199,7 +199,7 @@ namespace FS_LevelEditor
             UILabel label = addButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.SetAnchor((Transform)null);
             label.CheckAnchors();
-            label.transform.localPosition = new Vector3(30f, 0f, 0f);
+            label.transform.localPosition = new Vector3(25f, 0f, 0f);
             label.width = 360;
             label.height = 67;
             label.text = "Add";
@@ -211,10 +211,10 @@ namespace FS_LevelEditor
             sprite.transform.localScale = Vector3.one;
             sprite.SetExternalSprite("Plus");
             sprite.color = new Color(0.6235f, 1f, 0.9843f, 1f);
-            sprite.width = 50;
-            sprite.height = 50;
+            sprite.width = 30;
+            sprite.height = 30;
             sprite.depth = 1;
-            sprite.transform.localPosition = new Vector3(-80f, 2f, 0f);
+            sprite.transform.localPosition = new Vector3(-45f, 5f, 0f);
 
             // Set OnClick action, which is creating a new level with a new name.
             UIButton button = addButton.AddComponent<UIButton>();
