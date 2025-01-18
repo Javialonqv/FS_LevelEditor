@@ -235,8 +235,6 @@ namespace FS_LevelEditor
                     mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(true);
                     leMenuPanel.SetActive(true);
                     leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
-                    //settingsWindow.GetComponent<TweenAlpha>().ResetToBeginning();
-                    //settingsWindow.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
                     leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
                     yield return new WaitForSecondsRealtime(0.2f);
                     mainMenu.SetActive(false);

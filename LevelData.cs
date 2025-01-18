@@ -18,11 +18,7 @@ namespace FS_LevelEditor
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
         static readonly string testLevelFilePath = Path.Combine(Application.persistentDataPath, "test_level.dat");
 
-        public LevelData()
-        {
-
-        }
-
+        // Create a LeveData instance with all of the current objects in the level.
         public static LevelData CreateLevelData()
         {
             LevelData data = new LevelData();
@@ -40,6 +36,7 @@ namespace FS_LevelEditor
 
         public static void SaveLevelData(LevelData data = null)
         {
+            // If the LevelData to save is null, create a new one with the objects in the current level.
             if (data == null)
             {
                 data = CreateLevelData();
@@ -48,6 +45,7 @@ namespace FS_LevelEditor
 
             try
             {
+                // Serialize and save the level in JSON format.
                 var options = new JsonSerializerOptions
                 {
                     WriteIndented = true,
@@ -62,6 +60,7 @@ namespace FS_LevelEditor
             }
         }
 
+        // This method is for loading the saved level in the LE.
         public static void LoadLevelData()
         {
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
