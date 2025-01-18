@@ -17,6 +17,8 @@ namespace FS_LevelEditor
     {
         public static EditorController Instance { get; private set; }
 
+        public string levelName = "test_level";
+
         GameObject gizmosArrows;
 
         GameObject editorObjectsRootFromBundle;
@@ -139,12 +141,12 @@ namespace FS_LevelEditor
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad7))
             {
-                LevelData.SaveLevelData();
+                LevelData.SaveLevelData(levelName);
             }
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad8))
             {
-                LevelData.LoadLevelData();
+                LevelData.LoadLevelData(levelName);
             }
         }
 

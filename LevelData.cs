@@ -16,7 +16,7 @@ namespace FS_LevelEditor
     public class LevelData
     {
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
-        static readonly string testLevelFilePath = Path.Combine(Application.persistentDataPath, "test_level.dat");
+        static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
 
         // Create a LeveData instance with all of the current objects in the level.
         public static LevelData CreateLevelData()
@@ -34,7 +34,7 @@ namespace FS_LevelEditor
             return data;
         }
 
-        public static void SaveLevelData(LevelData data = null)
+        public static void SaveLevelData(string levelName, LevelData data = null)
         {
             // If the LevelData to save is null, create a new one with the objects in the current level.
             if (data == null)
@@ -50,9 +50,16 @@ namespace FS_LevelEditor
                 {
                     WriteIndented = true,
                 };
-                File.WriteAllText(testLevelFilePath, JsonSerializer.Serialize(data, options));
 
-                Melon<Core>.Logger.Msg("Level saved! Path: " + testLevelFilePath);
+                if (!Directory.Exists(levelsDirectory))
+                {
+                    Directory.CreateDirectory(levelsDirectory);
+                }
+
+                string filePath = Path.Combine(levelsDirectory, levelName + ".lvl");
+                File.WriteAllText(filePath, JsonSerializer.Serialize(data, options));
+
+                Melon<Core>.Logger.Msg("Level saved! Path: " + filePath);
             }
             catch (Exception e)
             {
@@ -61,12 +68,13 @@ namespace FS_LevelEditor
         }
 
         // This method is for loading the saved level in the LE.
-        public static void LoadLevelData()
+        public static void LoadLevelData(string levelName)
         {
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
             objectsParent.DeleteAllChildren();
 
-            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(testLevelFilePath));
+            string filePath = Path.Combine(levelsDirectory, levelName + ".lvl");
+            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
 
             foreach (LE_ObjectData obj in data.objects)
             {
@@ -76,7 +84,23 @@ namespace FS_LevelEditor
                 objClassInstance.objectID = obj.objectID;
             }
 
-            Melon<Core>.Logger.Msg("Level loaded!");
+            Melon<Core>.Logger.Msg($"\"{levelName}\" level loaded!");
+        }
+
+        public static string GetAvailableLevelName()
+        {
+            string levelName = "New Level";
+            int counter = 1;
+
+            if (!Directory.Exists(levelsDirectory)) return levelName;
+
+            string[] existingLevels = Directory.GetFiles(levelsDirectory);
+            while (existingLevels.Contains(levelName))
+            {
+                levelName = $"{levelName} {counter}";
+            }
+
+            return levelName;
         }
     }
 
