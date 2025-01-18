@@ -107,7 +107,11 @@ namespace FS_LevelEditor
             if (ExternalSpriteLoader.Instance.spriteAtlas.GetSprite(spriteName) != null)
             {
                 sprite.atlas = ExternalSpriteLoader.Instance.spriteAtlas;
-                sprite.name = spriteName;
+                sprite.spriteName = spriteName;
+            }
+            else
+            {
+                Melon<Core>.Logger.Error($"Can't find sprite of name \"{spriteName}\".");
             }
         }
     }
