@@ -235,6 +235,7 @@ namespace FS_LevelEditor
             {
                 lvlButtonsParent = new GameObject("LevelButtons");
                 lvlButtonsParent.transform.parent = leMenuButtonsParent.transform;
+                lvlButtonsParent.transform.localScale = Vector3.one;
             }
             else
             {
