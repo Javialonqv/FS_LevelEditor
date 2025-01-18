@@ -118,20 +118,25 @@ namespace FS_LevelEditor
 
         public void CreateBackButton()
         {
+            // Get the template, spawn the copy and set some parameters.
             GameObject template = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
             backButton = Instantiate(template, leMenuButtonsParent.transform);
             backButton.name = "BackButton";
             backButton.transform.localPosition = new Vector3(-690f, 290f, 0f);
 
+            // Remove unnecesary components.
             GameObject.Destroy(backButton.GetComponent<ButtonController>());
             GameObject.Destroy(backButton.GetComponent<OptionsButton>());
 
+            // Set the sprite width and height, and in the box collider as well.
             backButton.GetComponent<UISprite>().width = 250;
             backButton.GetComponent<UISprite>().height = 80;
             backButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
 
+            // Destroy the FUCKING UILocalize component, I hate it.
             GameObject.Destroy(backButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
 
+            // Set the label data.
             UILabel label = backButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.SetAnchor((Transform)null);
             label.CheckAnchors();
@@ -141,6 +146,7 @@ namespace FS_LevelEditor
             label.text = "Back";
             label.fontSize = 35;
 
+            // Set the in-button sprite data.
             UISprite sprite = new GameObject("Image").AddComponent<UISprite>();
             sprite.transform.parent = backButton.GetChildWithName("Background").transform;
             sprite.transform.localScale = Vector3.one;
@@ -151,26 +157,33 @@ namespace FS_LevelEditor
             sprite.depth = 1;
             sprite.transform.localPosition = new Vector3(-80f, 2f, 0f);
 
+            // Set OnClick action, which is go back lol.
             UIButton button = backButton.AddComponent<UIButton>();
             button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.SwitchBetweenMenuAndLEMenu)));
         }
 
+        // The same shit as the CreateBackButton function.
         public void CreateAddButton()
         {
+            // Get the template, spawn the copy and set some parameters.
             GameObject template = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
             addButton = Instantiate(template, leMenuButtonsParent.transform);
             addButton.name = "AddButton";
             addButton.transform.localPosition = new Vector3(690f, 290f, 0f);
 
+            // Remove unnecesary components.
             GameObject.Destroy(addButton.GetComponent<ButtonController>());
             GameObject.Destroy(addButton.GetComponent<OptionsButton>());
 
+            // Set the sprite width and height, and in the box collider as well.
             addButton.GetComponent<UISprite>().width = 250;
             addButton.GetComponent<UISprite>().height = 80;
             addButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
 
+            // Destroy the FUCKING UILocalize component, I hate it.
             GameObject.Destroy(addButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
 
+            // Set the label data.
             UILabel label = addButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.SetAnchor((Transform)null);
             label.CheckAnchors();
@@ -180,6 +193,7 @@ namespace FS_LevelEditor
             label.text = "Add";
             label.fontSize = 35;
 
+            // Set the in-button sprite data.
             UISprite sprite = new GameObject("Image").AddComponent<UISprite>();
             sprite.transform.parent = addButton.GetChildWithName("Background").transform;
             sprite.transform.localScale = Vector3.one;
