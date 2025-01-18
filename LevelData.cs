@@ -15,13 +15,15 @@ namespace FS_LevelEditor
     [Serializable]
     public class LevelData
     {
+        public string levelName { get; set; }
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
         static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
 
         // Create a LeveData instance with all of the current objects in the level.
-        public static LevelData CreateLevelData()
+        public static LevelData CreateLevelData(string levelName)
         {
             LevelData data = new LevelData();
+            data.levelName = levelName;
 
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
 
@@ -39,7 +41,7 @@ namespace FS_LevelEditor
             // If the LevelData to save is null, create a new one with the objects in the current level.
             if (data == null)
             {
-                data = CreateLevelData();
+                data = CreateLevelData(levelName);
                 Melon<Core>.Logger.Msg("Creating save data!");
             }
 
