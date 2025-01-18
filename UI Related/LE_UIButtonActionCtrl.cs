@@ -15,7 +15,8 @@ namespace FS_LevelEditor
     {
         public void OnClick()
         {
-            MelonCoroutines.Start(Init());
+            //MelonCoroutines.Start(Init());
+            LE_MenuUIManager.Instance.SwitchBetweenMenuAndLEMenu();
 
             IEnumerator Init()
             {

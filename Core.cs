@@ -11,8 +11,6 @@ namespace FS_LevelEditor
 {
     public class Core : MelonMod
     {
-        GameObject levelEditorUIButton;
-
         public GameObject groundObj;
 
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
@@ -34,12 +32,9 @@ namespace FS_LevelEditor
                 cube.transform.rotation = Quaternion.identity;
             }
 #endif
-
             if (sceneName.Contains("Menu"))
             {
-                if (levelEditorUIButton == null) CreateLEButton();
-
-                levelEditorUIButton.SetActive(true);
+                if (LE_MenuUIManager.Instance == null) new GameObject("LE_MEnuUIManager").AddComponent<LE_MenuUIManager>();
             }
         }
 
@@ -57,32 +52,6 @@ namespace FS_LevelEditor
                 SpawnBase();
             }
 #endif
-        }
-
-        // LE stands for "Level Editor" lmao.
-        void CreateLEButton()
-        {
-            // The game disables the existing LE button since it detects we aren't in the unity editor or debugging, so I need to create a copy of the button.
-            GameObject defaultLEButton = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/6_LevelEditor");
-            levelEditorUIButton = GameObject.Instantiate(defaultLEButton, defaultLEButton.transform.parent);
-            levelEditorUIButton.name = "6_Javi's LevelEditor";
-
-            // And why not? Destroy the old button, since we don't need it anymore ;)
-            GameObject.Destroy(defaultLEButton);
-
-            // Change the button's label text.
-            GameObject.Destroy(levelEditorUIButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            levelEditorUIButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Level Editor";
-
-            // Change the button's on click action.
-            GameObject.Destroy(levelEditorUIButton.GetComponent<ButtonController>());
-
-            // So... I just realized if you add a class to a gameobject with also a UIButton, the button will automatically call a "OnClick" function inside of the class if it exists,
-            // without adding it manually to the UIButton via code... good to know :)
-            LE_UIButtonActionCtrl onClickClass = levelEditorUIButton.AddComponent<LE_UIButtonActionCtrl>();
-
-            // Finally, enable the button.
-            levelEditorUIButton.SetActive(true);
         }
 
         public void SetupTheWholeEditor()

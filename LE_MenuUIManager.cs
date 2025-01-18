@@ -1,0 +1,173 @@
+﻿using Il2Cpp;
+using MelonLoader;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+
+namespace FS_LevelEditor
+{
+    [MelonLoader.RegisterTypeInIl2Cpp]
+    public class LE_MenuUIManager : MonoBehaviour
+    {
+        public static LE_MenuUIManager Instance;
+
+        public bool inLEMenu;
+
+        GameObject mainMenu;
+
+        GameObject levelEditorUIButton;
+        public GameObject leMenuPanel;
+        GameObject leMenuButtonsParent;
+        GameObject backButton;
+
+        void Awake()
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
+        void Start()
+        {
+            GetSomeReferences();
+            CreateLEButton();
+            CreateLEMenuPanel();
+            CreateBackButton();
+        }
+
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.F3))
+            {
+                SwitchBetweenMenuAndLEMenu();
+            }
+        }
+
+        void GetSomeReferences()
+        {
+            mainMenu = GameObject.Find("MainMenu/Camera/Holder/Main");
+        }
+
+        // LE stands for "Level Editor" lmao.
+        void CreateLEButton()
+        {
+            // The game disables the existing LE button since it detects we aren't in the unity editor or debugging, so I need to create a copy of the button.
+            GameObject defaultLEButton = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/6_LevelEditor");
+            levelEditorUIButton = GameObject.Instantiate(defaultLEButton, defaultLEButton.transform.parent);
+            levelEditorUIButton.name = "6_Javi's LevelEditor";
+
+            // And why not? Destroy the old button, since we don't need it anymore ;)
+            GameObject.Destroy(defaultLEButton);
+
+            // Change the button's label text.
+            GameObject.Destroy(levelEditorUIButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            levelEditorUIButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Level Editor";
+
+            // Change the button's on click action.
+            GameObject.Destroy(levelEditorUIButton.GetComponent<ButtonController>());
+
+            // So... I just realized if you add a class to a gameobject with also a UIButton, the button will automatically call a "OnClick" function inside of the class if it exists,
+            // without adding it manually to the UIButton via code... good to know :)
+            LE_UIButtonActionCtrl onClickClass = levelEditorUIButton.AddComponent<LE_UIButtonActionCtrl>();
+
+            // Finally, enable the button.
+            levelEditorUIButton.SetActive(true);
+        }
+
+        // And yes, this whole function is directly copied from the OST mod (almost), DON'T JUDGE ME.
+        public void CreateLEMenuPanel()
+        {
+            // Get the Options menu and create a copy.
+            GameObject originalOptionsMenu = GameObject.Find("MainMenu/Camera/Holder/Options");
+            leMenuPanel = GameObject.Instantiate(originalOptionsMenu, originalOptionsMenu.transform.parent);
+
+            // Change the name of the copy.
+            leMenuPanel.name = "LE_Menu";
+
+            // Remove the OptionsController and UILocalize components so I can change the title of the panel.
+            GameObject.Destroy(leMenuPanel.GetComponent<OptionsController>());
+            GameObject.Destroy(leMenuPanel.transform.GetChild(2).GetComponent<UILocalize>());
+
+            // Change the title of the panel.
+            leMenuPanel.transform.GetChild(2).GetComponent<UILabel>().text = "Level Editor";
+
+            // Destroy the tabs and disable everything inside of the Game_Options object.
+            GameObject.Destroy(leMenuPanel.GetChildWithName("Tabs"));
+            leMenuPanel.GetChildWithName("Game_Options").SetActive(true);
+            leMenuButtonsParent = leMenuPanel.GetChildAt("Game_Options/Buttons");
+            leMenuButtonsParent.DisableAllChildren();
+
+            // Disable the damn lines.
+            leMenuPanel.GetChildAt("Game_Options/HorizontalLine").SetActive(false);
+            leMenuPanel.GetChildAt("Game_Options/VerticalLine").SetActive(false);
+
+            // Reset the scale of the new custom menu to one.
+            leMenuPanel.transform.localScale = Vector3.one;
+
+            // Add a UIPanel so the TweenScale can work.
+            UIPanel panel = leMenuPanel.AddComponent<UIPanel>();
+            leMenuPanel.GetComponent<TweenAlpha>().mRect = panel;
+
+            leMenuPanel.GetChildWithName("Window").AddComponent<TweenAlpha>().duration = 0.2f;
+        }
+
+        public void CreateBackButton()
+        {
+            GameObject template = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            backButton = Instantiate(template, leMenuButtonsParent.transform);
+            backButton.name = "BackButton";
+
+            backButton.GetComponent<UISprite>().width = 250;
+            backButton.GetComponent<UISprite>().height = 80;
+            backButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
+
+            GameObject.Destroy(backButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            backButton.GetChildAt("Background/Label").GetComponent<UILabel>().text = "Back";
+            backButton.GetChildAt("Background/Label").GetComponent<UILabel>().fontSize = 35;
+
+            backButton.transform.localPosition = new Vector3(-690f, 290f, 0f);
+        }
+
+
+        public void SwitchBetweenMenuAndLEMenu()
+        {
+            // Switch!
+            inLEMenu = !inLEMenu;
+
+            MelonCoroutines.Start(Animation());
+
+            IEnumerator Animation()
+            {
+                if (inLEMenu)
+                {
+                    //uiSoundSource.clip = OST_UIManager.Instance.sfxLoader.okSoundClip;
+                    //uiSoundSource.Play();
+
+                    mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(true);
+                    leMenuPanel.SetActive(true);
+                    leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
+                    //settingsWindow.GetComponent<TweenAlpha>().ResetToBeginning();
+                    //settingsWindow.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
+                    leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
+                    yield return new WaitForSecondsRealtime(0.2f);
+                    mainMenu.SetActive(false);
+                }
+                else
+                {
+                    //uiSoundSource.clip = OST_UIManager.Instance.sfxLoader.exitSoundClip;
+                    //uiSoundSource.Play();
+
+                    mainMenu.SetActive(true);
+                    mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
+                    leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(true);
+                    leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
+                    yield return new WaitForSecondsRealtime(0.2f);
+                    leMenuPanel.SetActive(false);
+                }
+            }
+        }
+    }
+}

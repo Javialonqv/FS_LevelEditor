@@ -77,6 +77,13 @@ namespace FS_LevelEditor
                 GameObject.Destroy(child);
             }
         }
+        public static void DisableAllChildren(this GameObject obj)
+        {
+            foreach (GameObject child in GetChilds(obj))
+            {
+                child.SetActive(false);
+            }
+        }
 
         public static T[] TryGetComponents<T>(this GameObject obj) where T : Component
         {
@@ -146,6 +153,17 @@ namespace FS_LevelEditor
             }
 
             return false;
+        }
+
+        public static void PlayIgnoringTimeScale(this TweenAlpha tween, bool reversed)
+        {
+            tween.ignoreTimeScale = true;
+            if (reversed) tween.PlayReverse(); else tween.PlayForward();
+        }
+        public static void PlayIgnoringTimeScale(this TweenScale tween, bool reversed)
+        {
+            tween.ignoreTimeScale = true;
+            if (reversed) tween.PlayReverse(); else tween.PlayForward();
         }
     }
 }
