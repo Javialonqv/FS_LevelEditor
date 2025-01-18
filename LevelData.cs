@@ -108,6 +108,8 @@ namespace FS_LevelEditor
 
         public static LevelData[] GetLevelsList()
         {
+            if (!Directory.Exists(levelsDirectory)) Directory.CreateDirectory(levelsDirectory);
+
             string[] levelsPaths = Directory.GetFiles(levelsDirectory);
             List<LevelData> levels = new List<LevelData>();
 
