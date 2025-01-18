@@ -42,7 +42,6 @@ namespace FS_LevelEditor
             if (data == null)
             {
                 data = CreateLevelData(levelName);
-                Melon<Core>.Logger.Msg("Creating save data!");
             }
 
             try
@@ -61,7 +60,7 @@ namespace FS_LevelEditor
                 string filePath = Path.Combine(levelsDirectory, levelName + ".lvl");
                 File.WriteAllText(filePath, JsonSerializer.Serialize(data, options));
 
-                Melon<Core>.Logger.Msg("Level saved! Path: " + filePath);
+                Logger.Log("Level saved! Path: " + filePath);
             }
             catch (Exception e)
             {
@@ -86,7 +85,7 @@ namespace FS_LevelEditor
                 objClassInstance.objectID = obj.objectID;
             }
 
-            Melon<Core>.Logger.Msg($"\"{levelName}\" level loaded!");
+            Logger.Log($"\"{levelName}\" level loaded!");
         }
 
         public static string GetAvailableLevelName()
@@ -104,7 +103,6 @@ namespace FS_LevelEditor
                 counter++;
             }
 
-            Melon<Core>.Logger.Msg("To return: " + toReturn);
             return toReturn;
         }
 

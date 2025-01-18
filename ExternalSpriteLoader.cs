@@ -100,7 +100,7 @@ namespace FS_LevelEditor
         {
             if (ExternalSpriteLoader.Instance == null)
             {
-                Melon<Core>.Logger.Error("External Sprite Loader not initialized yet.");
+                Logger.Error("External Sprite Loader not initialized yet.");
                 return;
             }
 
@@ -111,7 +111,7 @@ namespace FS_LevelEditor
             }
             else
             {
-                Melon<Core>.Logger.Error($"Can't find sprite of name \"{spriteName}\".");
+                Logger.Error($"Can't find sprite of name \"{spriteName}\".");
             }
         }
     }

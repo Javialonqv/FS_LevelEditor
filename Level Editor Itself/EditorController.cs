@@ -225,7 +225,6 @@ namespace FS_LevelEditor
                         previewObjectToBuildObj.SetActive(true);
                         previewObjectToBuildObj.transform.position = hit.point;
                         previewObjectToBuildObj.transform.up = hit.normal;
-                        Melon<Core>.Logger.Msg("NO TRIGGER FOUND");
                     }
 
                     // If press left click while previewing, place the object :)

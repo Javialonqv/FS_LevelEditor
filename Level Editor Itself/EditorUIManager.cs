@@ -182,7 +182,6 @@ namespace FS_LevelEditor
 
         public void SetCurrentObjButtonAsSelected(GameObject selectedButton)
         {
-            Melon<Core>.Logger.Msg(selectedButton.name);
             foreach (var obj in currentCategoryButtons)
             {
                 obj.GetChildWithName("ActiveSwatch").SetActive(false);

@@ -51,9 +51,8 @@ namespace FS_LevelEditor
             }
             else
             {
-#if DEBUG
-                Melon<Core>.Logger.Warning($"Can't find class of name \"{className}\" for object: \"{originalObjName}\", using default LE_Object class.");
-#endif
+                Logger.DebugWarning($"Can't find class of name \"{className}\" for object: \"{originalObjName}\", using default LE_Object class.");
+
                 LE_Object instancedComponent = targetObj.AddComponent<LE_Object>();
                 instancedComponent.Init(originalObjName);
                 return instancedComponent;
