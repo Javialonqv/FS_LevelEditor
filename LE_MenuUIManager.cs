@@ -232,6 +232,7 @@ namespace FS_LevelEditor
         {
             LevelData[] levels = LevelData.GetLevelsList();
             GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            currentLevelsGridID = 0;
 
             // Manage correctly when the parent already exists or no, since the whole UI is on DontDestroyOnLoad :').
             if (lvlButtonsParent == null)
