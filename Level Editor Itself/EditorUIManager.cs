@@ -279,15 +279,22 @@ namespace FS_LevelEditor
 
         public void SetupPauseWhenInEditor()
         {
+            // Setup the resume button, to actually resume the editor scene and not load another scene, which is the defualt behaviour of that button.
+            GameObject originalResumeBtn = pauseMenu.GetChildAt("LargeButtons/1_Resume");
+            GameObject resumeBtnWhenInsideLE = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
+            resumeBtnWhenInsideLE.name = "1_ResumeWhenInEditor";
+            Destroy(resumeBtnWhenInsideLE.GetComponent<ButtonController>());
+            resumeBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.Resume)));
+
+            // Same with exit button.
+            GameObject originalExitBtn = pauseMenu.GetChildAt("LargeButtons/7_Exit");
+            GameObject exitBtnWhenInsideLE = Instantiate(originalExitBtn, originalExitBtn.transform.parent);
+            exitBtnWhenInsideLE.name = "7_ExitWhenInEditor";
+            Destroy(exitBtnWhenInsideLE.GetComponent<ButtonController>());
+            exitBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.ExitToMenu)));
+
             // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.
             pauseMenu.AddComponent<EditorPauseLargeButtonsSetter>();
-
-            // Setup the resume button, to actually resume the editor scene and not load another scene, which is the defualt behaviour of that button.
-            Destroy(pauseMenu.GetChildAt("LargeButtons/1_Resume").GetComponent<ButtonController>());
-            pauseMenu.GetChildAt("LargeButtons/1_Resume").GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.Resume)));
-
-            Destroy(pauseMenu.GetChildAt("LargeButtons/7_Exit").GetComponent<ButtonController>());
-            pauseMenu.GetChildAt("LargeButtons/7_Exit").GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.ExitToMenu)));
         }
         public void ShowPause()
         {
