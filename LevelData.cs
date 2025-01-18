@@ -92,18 +92,20 @@ namespace FS_LevelEditor
         public static string GetAvailableLevelName()
         {
             string levelName = "New Level";
+            string toReturn = levelName;
             int counter = 1;
 
             if (!Directory.Exists(levelsDirectory)) return levelName;
 
             string[] existingLevels = Directory.GetFiles(levelsDirectory);
-            while (existingLevels.Any(lvl => Path.GetFileNameWithoutExtension(lvl) == levelName))
+            while (existingLevels.Any(lvl => Path.GetFileNameWithoutExtension(lvl) == toReturn))
             {
-                levelName = $"{levelName} {counter}";
+                toReturn = $"{levelName} {counter}";
+                counter++;
             }
 
-            Melon<Core>.Logger.Msg("To return: " + levelName);
-            return levelName;
+            Melon<Core>.Logger.Msg("To return: " + toReturn);
+            return toReturn;
         }
 
         public static LevelData[] GetLevelsList()
