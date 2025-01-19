@@ -21,6 +21,7 @@ namespace FS_LevelEditor
         AudioSource uiSoundSource;
         AudioClip okSound;
         AudioClip hidePageSound;
+        public GameObject navigationBarButtonsParent;
 
         GameObject levelEditorUIButton;
         public GameObject leMenuPanel;
@@ -59,6 +60,25 @@ namespace FS_LevelEditor
             {
                 levelEditorUIButton.SetActive(Core.currentSceneName.Contains("Menu"));
             }
+
+            // To exit from the LE menu with the ESC key.
+            if (Input.GetKeyDown(KeyCode.Escape) && inLEMenu)
+            {
+                SwitchBetweenMenuAndLEMenu();
+            }
+
+            // To exit from the LE menu with the navigation bar buttons.
+            if (inLEMenu)
+            {
+                NavigationAction action = navigationBarButtonsParent.transform.GetChild(0).GetComponent<NavigationAction>();
+                if (action.assignedActionType != NavigationBarController.ActionType.BACK)
+                {
+                    navigationBarButtonsParent.DisableAllChildren();
+                    action.gameObject.SetActive(true);
+                    action.Setup(Localization.Get("Back").ToUpper(), "Keyboard_Black_Esc", NavigationBarController.ActionType.BACK);
+                    action.onButtonClick = new Action<NavigationBarController.ActionType>(ExitLEMenuInNavigationBarButton);
+                }
+            }
         }
 
         void GetSomeReferences()
@@ -70,6 +90,8 @@ namespace FS_LevelEditor
             okSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
             hidePageSound = MenuController.GetInstance().hidePageSound;
             hidePageSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            navigationBarButtonsParent = GameObject.Find("MainMenu/Camera/Holder/Navigation/Holder/Bar/ActionsHolder/");
         }
 
         // LE stands for "Level Editor" lmao.
@@ -468,6 +490,13 @@ namespace FS_LevelEditor
         }
 
 
+        public void ExitLEMenuInNavigationBarButton(NavigationBarController.ActionType type)
+        {
+            if (type == NavigationBarController.ActionType.BACK && inLEMenu)
+            {
+                SwitchBetweenMenuAndLEMenu();
+            }
+        }
         public void SwitchBetweenMenuAndLEMenu()
         {
             // Switch!
@@ -476,6 +505,14 @@ namespace FS_LevelEditor
             if (inLEMenu)
             {
                 CreateLevelsList();
+            }
+            else
+            {
+                // Put the navigation bar exit button to its original state one we exit from the LE menu.
+                NavigationAction action = navigationBarButtonsParent.transform.GetChild(0).GetComponent<NavigationAction>();
+                action.transform.parent.gameObject.EnableAllChildren();
+                action.Setup(Localization.Get("Exit").ToUpper(), "Keyboard_Black_Esc", NavigationBarController.ActionType.QUIT);
+                action.onButtonClick = new Action<NavigationBarController.ActionType>(NavigationBarController.Instance.ManualButtonPressed);
             }
 
             MelonCoroutines.Start(Animation());
