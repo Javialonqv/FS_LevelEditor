@@ -84,6 +84,13 @@ namespace FS_LevelEditor
                 child.SetActive(false);
             }
         }
+        public static void EnableAllChildren(this GameObject obj)
+        {
+            foreach (GameObject child in GetChilds(obj))
+            {
+                child.SetActive(true);
+            }
+        }
 
         public static T[] TryGetComponents<T>(this GameObject obj) where T : Component
         {
