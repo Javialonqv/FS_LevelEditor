@@ -21,7 +21,7 @@ namespace FS_LevelEditor
         AudioSource uiSoundSource;
         AudioClip okSound;
         AudioClip hidePageSound;
-        public GameObject navigationBarButtonsParent;
+        GameObject navigationBarButtonsParent;
 
         GameObject levelEditorUIButton;
         public GameObject leMenuPanel;
@@ -45,7 +45,6 @@ namespace FS_LevelEditor
             CreateLEMenuPanel();
             CreateBackButton();
             CreateAddButton();
-            //CreateLevelsList();
         }
 
         void Update()
@@ -252,7 +251,7 @@ namespace FS_LevelEditor
 
         public void CreateLevelsList()
         {
-            LevelData[] levels = LevelData.GetLevelsList();
+            Dictionary<string, LevelData> levels = LevelData.GetLevelsList();
             GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
             currentLevelsGridID = 0;
 
@@ -269,11 +268,14 @@ namespace FS_LevelEditor
                 lvlButtonsGrids.Clear();
             }
 
+            List<string> keys = new List<string>(levels.Keys);
+
             int counter = 0;
             GameObject currentGrid = null;
-            for (int i = 0; i < levels.Length; i++)
+            for (int i = 0; i < levels.Count; i++)
             {
-                LevelData data = levels[i];
+                string levelFileNameWithoutExtension = keys[i];
+                LevelData data = levels[levelFileNameWithoutExtension];
 
                 if (i % 5 == 0 || i == 0) // Idk bro, this is literally copied from the OST mod LOL.
                 {
@@ -327,11 +329,17 @@ namespace FS_LevelEditor
                 EventDelegate onClick = new EventDelegate(this, nameof(LE_MenuUIManager.LoadLevel));
                 EventDelegate.Parameter parameter = new EventDelegate.Parameter
                 {
+                    field = "levelFileNameWithoutExtension",
+                    value = levelFileNameWithoutExtension,
+                    obj = this
+                };
+                EventDelegate.Parameter parameter2 = new EventDelegate.Parameter
+                {
                     field = "levelName",
                     value = data.levelName,
                     obj = this
                 };
-                onClick.mParameters = new EventDelegate.Parameter[] { parameter };
+                onClick.mParameters = new EventDelegate.Parameter[] { parameter, parameter2 };
                 button.onClick.Add(onClick);
 
                 #region Create Delete Button
@@ -368,8 +376,8 @@ namespace FS_LevelEditor
                 EventDelegate deleteOnClick = new EventDelegate(this, nameof(LE_MenuUIManager.DeleteLevel));
                 EventDelegate.Parameter deleteOnClickParameter = new EventDelegate.Parameter
                 {
-                    field = "levelName",
-                    value = data.levelName,
+                    field = "levelFileNameWithoutExtension",
+                    value = levelFileNameWithoutExtension,
                     obj = this
                 };
                 deleteOnClick.mParameters = new EventDelegate.Parameter[] { deleteOnClickParameter };
@@ -380,7 +388,7 @@ namespace FS_LevelEditor
             }
 
             // If there are more than 5 levels, create the buttons to travel between lists.
-            if (levels.Length > 5)
+            if (levels.Count> 5)
             {
                 CreatePreviousListButton();
                 CreateNextListButton();
@@ -458,13 +466,14 @@ namespace FS_LevelEditor
                 SwitchBetweenMenuAndLEMenu();
                 Melon<Core>.Instance.SetupTheWholeEditor();
                 EditorController.Instance.levelName = LevelData.GetAvailableLevelName();
-                LevelData.SaveLevelData(EditorController.Instance.levelName);
+                EditorController.Instance.levelFileNameWithoutExtension = EditorController.Instance.levelName;
+                LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
 
                 yield return new WaitForSecondsRealtime(1.5f);
                 InGameUIManager.Instance.StartTotalFadeIn(3, true);
             }
         }
-        void LoadLevel(string levelName)
+        void LoadLevel(string levelFileNameWithoutExtension, string levelName)
         {
             MelonCoroutines.Start(Init());
 
@@ -480,12 +489,13 @@ namespace FS_LevelEditor
                 yield return new WaitForSecondsRealtime(1.5f);
                 InGameUIManager.Instance.StartTotalFadeIn(3, true);
                 EditorController.Instance.levelName = levelName;
-                LevelData.LoadLevelData(levelName);
+                EditorController.Instance.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
+                LevelData.LoadLevelData(levelFileNameWithoutExtension);
             }
         }
-        void DeleteLevel(string levelName)
+        void DeleteLevel(string levelFileNameWithoutExtension)
         {
-            LevelData.DeleteLevel(levelName);
+            LevelData.DeleteLevel(levelFileNameWithoutExtension);
             CreateLevelsList();
         }
 

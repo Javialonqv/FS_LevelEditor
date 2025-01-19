@@ -36,7 +36,7 @@ namespace FS_LevelEditor
             return data;
         }
 
-        public static void SaveLevelData(string levelName, LevelData data = null)
+        public static void SaveLevelData(string levelName, string levelFileNameWithoutExtension, LevelData data = null)
         {
             // If the LevelData to save is null, create a new one with the objects in the current level.
             if (data == null)
@@ -57,7 +57,7 @@ namespace FS_LevelEditor
                     Directory.CreateDirectory(levelsDirectory);
                 }
 
-                string filePath = Path.Combine(levelsDirectory, levelName + ".lvl");
+                string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
                 File.WriteAllText(filePath, JsonSerializer.Serialize(data, options));
 
                 Logger.Log("Level saved! Path: " + filePath);
@@ -69,12 +69,12 @@ namespace FS_LevelEditor
         }
 
         // This method is for loading the saved level in the LE.
-        public static void LoadLevelData(string levelName)
+        public static void LoadLevelData(string levelFileNameWithoutExtension)
         {
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
             objectsParent.DeleteAllChildren();
 
-            string filePath = Path.Combine(levelsDirectory, levelName + ".lvl");
+            string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
 
             foreach (LE_ObjectData obj in data.objects)
@@ -85,7 +85,7 @@ namespace FS_LevelEditor
                 objClassInstance.objectID = obj.objectID;
             }
 
-            Logger.Log($"\"{levelName}\" level loaded!");
+            Logger.Log($"\"{data.levelName}\" level loaded!");
         }
 
         public static string GetAvailableLevelName()
@@ -106,25 +106,25 @@ namespace FS_LevelEditor
             return toReturn;
         }
 
-        public static LevelData[] GetLevelsList()
+        public static Dictionary<string, LevelData> GetLevelsList()
         {
             if (!Directory.Exists(levelsDirectory)) Directory.CreateDirectory(levelsDirectory);
 
             string[] levelsPaths = Directory.GetFiles(levelsDirectory);
-            List<LevelData> levels = new List<LevelData>();
+            Dictionary<string, LevelData> levels = new Dictionary<string, LevelData>();
 
             foreach (string levelPath in levelsPaths)
             {
                 LevelData levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath));
-                levels.Add(levelData);
+                levels.Add(Path.GetFileNameWithoutExtension(levelPath), levelData);
             }
 
-            return levels.ToArray();
+            return levels;
         }
 
-        public static void DeleteLevel(string levelName)
+        public static void DeleteLevel(string levelFileNameWithoutExtension)
         {
-            string path = Path.Combine(levelsDirectory, levelName + ".lvl");
+            string path = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             if (File.Exists(path))
             {
                 File.Delete(path);

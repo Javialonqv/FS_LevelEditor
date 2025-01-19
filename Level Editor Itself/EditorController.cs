@@ -18,6 +18,7 @@ namespace FS_LevelEditor
         public static EditorController Instance { get; private set; }
 
         public string levelName = "test_level";
+        public string levelFileNameWithoutExtension = "test_level";
 
         GameObject gizmosArrows;
 
@@ -141,12 +142,12 @@ namespace FS_LevelEditor
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad7))
             {
-                LevelData.SaveLevelData(levelName);
+                LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
             }
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad8))
             {
-                LevelData.LoadLevelData(levelName);
+                LevelData.LoadLevelData(levelFileNameWithoutExtension);
             }
         }
 
