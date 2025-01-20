@@ -110,7 +110,7 @@ namespace FS_LevelEditor
         {
             if (!Directory.Exists(levelsDirectory)) Directory.CreateDirectory(levelsDirectory);
 
-            string[] levelsPaths = Directory.GetFiles(levelsDirectory);
+            string[] levelsPaths = Directory.GetFiles(levelsDirectory, "*.lvl");
             Dictionary<string, LevelData> levels = new Dictionary<string, LevelData>();
 
             foreach (string levelPath in levelsPaths)
