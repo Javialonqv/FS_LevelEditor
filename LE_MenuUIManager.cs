@@ -351,14 +351,17 @@ namespace FS_LevelEditor
                 button.onClick.Add(onClick);
 
                 #region Create Delete Button
+                // Create the button and set its name and positon.
                 GameObject deleteBtn = Instantiate(btnTemplate, lvlButton.transform);
                 deleteBtn.name = "DeleteBtn";
                 deleteBtn.transform.localPosition = new Vector3(750f, 0f, 0f);
 
+                // Destroy some unnecesary components and the label, since we're going to add a SPRITE.
                 Destroy(deleteBtn.GetComponent<ButtonController>());
                 Destroy(deleteBtn.GetComponent<OptionsButton>());
                 Destroy(deleteBtn.GetChildAt("Background/Label"));
 
+                // Adjust the button sprite and create the BoxCollider as well.
                 UISprite deleteSprite = deleteBtn.GetComponent<UISprite>();
                 deleteSprite.width = 70;
                 deleteSprite.height = 70;
@@ -366,11 +369,13 @@ namespace FS_LevelEditor
                 BoxCollider deleteCollider = deleteBtn.GetComponent<BoxCollider>();
                 deleteCollider.size = new Vector3(70f, 70f, 0f);
 
+                // Adjust the button color with red color variants.
                 UIButtonColor deleteButtonColor = deleteBtn.GetComponent<UIButtonColor>();
                 deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
                 deleteButtonColor.hover = new Color(1f, 0f, 0f, 1f);
                 deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
 
+                // Create another sprite "inside" of the button one.
                 UISprite trashSprite = deleteBtn.GetChildWithName("Background").GetComponent<UISprite>();
                 trashSprite.name = "Trash";
                 trashSprite.SetExternalSprite("Trash");
@@ -380,6 +385,7 @@ namespace FS_LevelEditor
                 trashSprite.transform.localPosition = Vector3.zero;
                 trashSprite.enabled = true;
 
+                // Adjust what should the button execute when clicked.
                 UIButton deleteButton = deleteBtn.GetComponent<UIButton>();
                 EventDelegate deleteOnClick = new EventDelegate(this, nameof(LE_MenuUIManager.DeleteLevel));
                 EventDelegate.Parameter deleteOnClickParameter = new EventDelegate.Parameter
@@ -393,14 +399,17 @@ namespace FS_LevelEditor
                 #endregion
 
                 #region Create Edit Button
+                // Create the button and set its name and positon.
                 GameObject renameBtnObj = Instantiate(btnTemplate, lvlButton.transform);
                 renameBtnObj.name = "EditBtn";
                 renameBtnObj.transform.localPosition = new Vector3(650f, 0f, 0f);
 
+                // Destroy some unnecesary components and the label, since we're going to add a SPRITE.
                 Destroy(renameBtnObj.GetComponent<ButtonController>());
                 Destroy(renameBtnObj.GetComponent<OptionsButton>());
                 Destroy(renameBtnObj.GetChildAt("Background/Label"));
 
+                // Adjust the button sprite and create the BoxCollider as well.
                 UISprite renameSprite = renameBtnObj.GetComponent<UISprite>();
                 renameSprite.width = 70;
                 renameSprite.height = 70;
@@ -408,11 +417,13 @@ namespace FS_LevelEditor
                 BoxCollider renameCollider = renameBtnObj.GetComponent<BoxCollider>();
                 renameCollider.size = new Vector3(70f, 70f, 0f);
 
+                // Adjust the button color with blue color variants.
                 UIButtonColor renameButtonColor = renameBtnObj.GetComponent<UIButtonColor>();
                 renameButtonColor.defaultColor = new Color(0f, 0f, 0.8f, 1f);
                 renameButtonColor.hover = new Color(0f, 0f, 1f, 1f);
                 renameButtonColor.pressed = new Color(0f, 0f, 0.5f, 1f);
 
+                // Create another sprite "inside" of the button one.
                 UISprite pencilSprite = renameBtnObj.GetChildWithName("Background").GetComponent<UISprite>();
                 pencilSprite.name = "Pencil";
                 pencilSprite.SetExternalSprite("Pencil");
@@ -422,6 +433,7 @@ namespace FS_LevelEditor
                 pencilSprite.transform.localPosition = Vector3.zero;
                 pencilSprite.enabled = true;
 
+                // Adjust what should the button execute when clicked.
                 UIButton renameButton = renameBtnObj.GetComponent<UIButton>();
                 EventDelegate renameOnClick = new EventDelegate(this, nameof(LE_MenuUIManager.OnRenameLevelButtonClick));
                 EventDelegate.Parameter renameOnClickParameter = new EventDelegate.Parameter

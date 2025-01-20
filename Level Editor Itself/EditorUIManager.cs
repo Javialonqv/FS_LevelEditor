@@ -303,9 +303,11 @@ namespace FS_LevelEditor
         }
         public void PlaySavingLevelLabel()
         {
+            // If the coroutine was already played, stop it if it's currently playing to "restart" it.
             if (savingLevelLabelRoutine != null) MelonCoroutines.Stop(savingLevelLabelRoutine);
-            savingLevelLabelRoutine = (Coroutine)MelonCoroutines.Start(Coroutine());
 
+            // Execute the coroutine.
+            savingLevelLabelRoutine = (Coroutine)MelonCoroutines.Start(Coroutine());
             IEnumerator Coroutine()
             {
                 savingLevelLabel.SetActive(true);
