@@ -406,6 +406,8 @@ namespace FS_LevelEditor
             // Remove this component, since this component is only needed when inside of LE.
             pauseMenu.RemoveComponent<EditorPauseLargeButtonsSetter>();
 
+            DeleteUI();
+
             MenuController.GetInstance().ReturnToMainMenu();
         }
         public void SaveLevelWithPauseMenuButton()
@@ -416,8 +418,9 @@ namespace FS_LevelEditor
 
         public void DeleteUI()
         {
+            MelonCoroutines.Stop(savingLevelLabelRoutine);
             Destroy(editorUIParent);
-            GameObject.Find("MainMenu/Camera/Holder/Navigation").SetActive(true);
+            Destroy(pauseMenu.GetChildWithName("SavingLevelInPauseMenu"));
         }
     }
 }
