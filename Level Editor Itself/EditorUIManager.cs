@@ -339,6 +339,15 @@ namespace FS_LevelEditor
             Destroy(exitBtnWhenInsideLE.GetComponent<ButtonController>());
             exitBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.ExitToMenu)));
 
+            // Create a save level button.
+            GameObject saveLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
+            GameObject saveLevelButton = Instantiate(saveLevelButtonTemplate, saveLevelButtonTemplate.transform.parent);
+            saveLevelButton.name = "2_SaveLevel";
+            Destroy(saveLevelButton.GetComponent<ButtonController>());
+            Destroy(saveLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            saveLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
+            saveLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.SaveLevel)));
+
             // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.
             pauseMenu.AddComponent<EditorPauseLargeButtonsSetter>();
         }
@@ -386,6 +395,10 @@ namespace FS_LevelEditor
             pauseMenu.RemoveComponent<EditorPauseLargeButtonsSetter>();
 
             MenuController.GetInstance().ReturnToMainMenu();
+        }
+        public void SaveLevel()
+        {
+            LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
         }
 
         public void DeleteUI()
