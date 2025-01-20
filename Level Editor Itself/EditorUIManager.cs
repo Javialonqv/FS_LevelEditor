@@ -26,6 +26,7 @@ namespace FS_LevelEditor
 
         GameObject selectedObjPanel;
         GameObject savingLevelLabel;
+        GameObject savingLevelLabelInPauseMenu;
         Coroutine savingLevelLabelRoutine;
 
         GameObject occluderForWhenPaused;
@@ -300,6 +301,12 @@ namespace FS_LevelEditor
             tween.duration = 2f;
 
             savingLevelLabel.SetActive(false);
+
+
+            savingLevelLabelInPauseMenu = Instantiate(savingLevelLabel, pauseMenu.transform);
+            savingLevelLabelInPauseMenu.name = "SavingLevelInPauseMenu";
+            savingLevelLabelInPauseMenu.transform.localPosition = new Vector3(0f, -425f, 0f);
+            savingLevelLabelInPauseMenu.SetActive(false);
         }
         public void PlaySavingLevelLabel()
         {
@@ -311,14 +318,19 @@ namespace FS_LevelEditor
             IEnumerator Coroutine()
             {
                 savingLevelLabel.SetActive(true);
+                savingLevelLabelInPauseMenu.SetActive(true);
 
                 TweenAlpha tween = savingLevelLabel.GetComponent<TweenAlpha>();
+                TweenAlpha tweenInPauseMenu = savingLevelLabelInPauseMenu.GetComponent<TweenAlpha>();
                 tween.ResetToBeginning();
                 tween.PlayForward();
+                tweenInPauseMenu.ResetToBeginning();
+                tweenInPauseMenu.PlayForward();
 
                 yield return new WaitForSecondsRealtime(2f);
 
                 savingLevelLabel.SetActive(false);
+                savingLevelLabelInPauseMenu.SetActive(false);
             }
         }
 
@@ -399,6 +411,7 @@ namespace FS_LevelEditor
         public void SaveLevel()
         {
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
+            PlaySavingLevelLabel();
         }
 
         public void DeleteUI()
