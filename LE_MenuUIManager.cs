@@ -311,6 +311,11 @@ namespace FS_LevelEditor
                 UISprite sprite = lvlButton.GetComponent<UISprite>();
                 sprite.width = 1640;
                 sprite.height = 100;
+                // If the data is null that means this .lvl file isn't a valid level file, put the sprite color red.
+                if (data == null)
+                {
+                    sprite.color = new Color(0.3897f, 0.212f, 0.212f, 1f);
+                }
                 BoxCollider collider = lvlButton.GetComponent<BoxCollider>();
                 collider.size = new Vector3(1640f, 100f);
 
@@ -322,33 +327,44 @@ namespace FS_LevelEditor
                 label.width = 1200;
                 label.height = 67;
                 label.alignment = NGUIText.Alignment.Left;
-                label.text = data.levelName;
+                // If the data is null put a warning in the beginning of the text, followed by the name of the file without extension, otherwise, put the real level name as usually.
+                label.text = data != null ? data.levelName : $"[c][ffff00][INVALID LEVEL FILE][-][/c] {levelFileNameWithoutExtension}";
                 label.fontSize = 40;
                 label.transform.localPosition = new Vector3(-180f, 0f, 0f);
 
-                // Set button's new scale properties.
-                UIButtonScale buttonScale = lvlButton.GetComponent<UIButtonScale>();
-                buttonScale.mScale = Vector3.one;
-                buttonScale.hover = new Vector3(1.02f, 1.02f, 1.02f);
-                buttonScale.pressed = new Vector3(1.01f, 1.01f, 1.01f);
+                // Only setup UIButtonScale and UIButton when is a valid level file, otherwise destroy the UIButton, UIButtonScale and UIButtonColor.
+                if (data != null)
+                {
+                    // Set button's new scale properties.
+                    UIButtonScale buttonScale = lvlButton.GetComponent<UIButtonScale>();
+                    buttonScale.mScale = Vector3.one;
+                    buttonScale.hover = new Vector3(1.02f, 1.02f, 1.02f);
+                    buttonScale.pressed = new Vector3(1.01f, 1.01f, 1.01f);
 
-                // Set button's action.
-                UIButton button = lvlButton.GetComponent<UIButton>();
-                EventDelegate onClick = new EventDelegate(this, nameof(LE_MenuUIManager.LoadLevel));
-                EventDelegate.Parameter parameter = new EventDelegate.Parameter
+                    // Set button's action.
+                    UIButton button = lvlButton.GetComponent<UIButton>();
+                    EventDelegate onClick = new EventDelegate(this, nameof(LE_MenuUIManager.LoadLevel));
+                    EventDelegate.Parameter parameter = new EventDelegate.Parameter
+                    {
+                        field = "levelFileNameWithoutExtension",
+                        value = levelFileNameWithoutExtension,
+                        obj = this
+                    };
+                    EventDelegate.Parameter parameter2 = new EventDelegate.Parameter
+                    {
+                        field = "levelName",
+                        value = data.levelName,
+                        obj = this
+                    };
+                    onClick.mParameters = new EventDelegate.Parameter[] { parameter, parameter2 };
+                    button.onClick.Add(onClick);
+                }
+                else
                 {
-                    field = "levelFileNameWithoutExtension",
-                    value = levelFileNameWithoutExtension,
-                    obj = this
-                };
-                EventDelegate.Parameter parameter2 = new EventDelegate.Parameter
-                {
-                    field = "levelName",
-                    value = data.levelName,
-                    obj = this
-                };
-                onClick.mParameters = new EventDelegate.Parameter[] { parameter, parameter2 };
-                button.onClick.Add(onClick);
+                    Destroy(lvlButton.GetComponent<UIButton>());
+                    Destroy(lvlButton.GetComponent<UIButtonScale>());
+                    Destroy(lvlButton.GetComponent<UIButtonColor>());
+                }
 
                 #region Create Delete Button
                 // Create the button and set its name and positon.
@@ -398,59 +414,63 @@ namespace FS_LevelEditor
                 deleteButton.onClick.Add(deleteOnClick);
                 #endregion
 
-                #region Create Edit Button
-                // Create the button and set its name and positon.
-                GameObject renameBtnObj = Instantiate(btnTemplate, lvlButton.transform);
-                renameBtnObj.name = "EditBtn";
-                renameBtnObj.transform.localPosition = new Vector3(650f, 0f, 0f);
-
-                // Destroy some unnecesary components and the label, since we're going to add a SPRITE.
-                Destroy(renameBtnObj.GetComponent<ButtonController>());
-                Destroy(renameBtnObj.GetComponent<OptionsButton>());
-                Destroy(renameBtnObj.GetChildAt("Background/Label"));
-
-                // Adjust the button sprite and create the BoxCollider as well.
-                UISprite renameSprite = renameBtnObj.GetComponent<UISprite>();
-                renameSprite.width = 70;
-                renameSprite.height = 70;
-                renameSprite.depth = 1;
-                BoxCollider renameCollider = renameBtnObj.GetComponent<BoxCollider>();
-                renameCollider.size = new Vector3(70f, 70f, 0f);
-
-                // Adjust the button color with blue color variants.
-                UIButtonColor renameButtonColor = renameBtnObj.GetComponent<UIButtonColor>();
-                renameButtonColor.defaultColor = new Color(0f, 0f, 0.8f, 1f);
-                renameButtonColor.hover = new Color(0f, 0f, 1f, 1f);
-                renameButtonColor.pressed = new Color(0f, 0f, 0.5f, 1f);
-
-                // Create another sprite "inside" of the button one.
-                UISprite pencilSprite = renameBtnObj.GetChildWithName("Background").GetComponent<UISprite>();
-                pencilSprite.name = "Pencil";
-                pencilSprite.SetExternalSprite("Pencil");
-                pencilSprite.width = 40;
-                pencilSprite.height = 50;
-                pencilSprite.color = Color.white;
-                pencilSprite.transform.localPosition = Vector3.zero;
-                pencilSprite.enabled = true;
-
-                // Adjust what should the button execute when clicked.
-                UIButton renameButton = renameBtnObj.GetComponent<UIButton>();
-                EventDelegate renameOnClick = new EventDelegate(this, nameof(LE_MenuUIManager.OnRenameLevelButtonClick));
-                EventDelegate.Parameter renameOnClickParameter = new EventDelegate.Parameter
+                // The edit button woun't work in invalid level files.
+                if (data != null)
                 {
-                    field = "levelFileNameWithoutExtension",
-                    value = levelFileNameWithoutExtension,
-                    obj = this
-                };
-                EventDelegate.Parameter renameOnClickParameter2 = new EventDelegate.Parameter
-                {
-                    field = "lvlButtonLabelObj",
-                    value = label.gameObject,
-                    obj = this
-                };
-                renameOnClick.mParameters = new EventDelegate.Parameter[] { renameOnClickParameter, renameOnClickParameter2 };
-                renameButton.onClick.Add(renameOnClick);
-                #endregion
+                    #region Create Edit Button
+                    // Create the button and set its name and positon.
+                    GameObject renameBtnObj = Instantiate(btnTemplate, lvlButton.transform);
+                    renameBtnObj.name = "EditBtn";
+                    renameBtnObj.transform.localPosition = new Vector3(650f, 0f, 0f);
+
+                    // Destroy some unnecesary components and the label, since we're going to add a SPRITE.
+                    Destroy(renameBtnObj.GetComponent<ButtonController>());
+                    Destroy(renameBtnObj.GetComponent<OptionsButton>());
+                    Destroy(renameBtnObj.GetChildAt("Background/Label"));
+
+                    // Adjust the button sprite and create the BoxCollider as well.
+                    UISprite renameSprite = renameBtnObj.GetComponent<UISprite>();
+                    renameSprite.width = 70;
+                    renameSprite.height = 70;
+                    renameSprite.depth = 1;
+                    BoxCollider renameCollider = renameBtnObj.GetComponent<BoxCollider>();
+                    renameCollider.size = new Vector3(70f, 70f, 0f);
+
+                    // Adjust the button color with blue color variants.
+                    UIButtonColor renameButtonColor = renameBtnObj.GetComponent<UIButtonColor>();
+                    renameButtonColor.defaultColor = new Color(0f, 0f, 0.8f, 1f);
+                    renameButtonColor.hover = new Color(0f, 0f, 1f, 1f);
+                    renameButtonColor.pressed = new Color(0f, 0f, 0.5f, 1f);
+
+                    // Create another sprite "inside" of the button one.
+                    UISprite pencilSprite = renameBtnObj.GetChildWithName("Background").GetComponent<UISprite>();
+                    pencilSprite.name = "Pencil";
+                    pencilSprite.SetExternalSprite("Pencil");
+                    pencilSprite.width = 40;
+                    pencilSprite.height = 50;
+                    pencilSprite.color = Color.white;
+                    pencilSprite.transform.localPosition = Vector3.zero;
+                    pencilSprite.enabled = true;
+
+                    // Adjust what should the button execute when clicked.
+                    UIButton renameButton = renameBtnObj.GetComponent<UIButton>();
+                    EventDelegate renameOnClick = new EventDelegate(this, nameof(LE_MenuUIManager.OnRenameLevelButtonClick));
+                    EventDelegate.Parameter renameOnClickParameter = new EventDelegate.Parameter
+                    {
+                        field = "levelFileNameWithoutExtension",
+                        value = levelFileNameWithoutExtension,
+                        obj = this
+                    };
+                    EventDelegate.Parameter renameOnClickParameter2 = new EventDelegate.Parameter
+                    {
+                        field = "lvlButtonLabelObj",
+                        value = label.gameObject,
+                        obj = this
+                    };
+                    renameOnClick.mParameters = new EventDelegate.Parameter[] { renameOnClickParameter, renameOnClickParameter2 };
+                    renameButton.onClick.Add(renameOnClick);
+                    #endregion
+                }
 
                 counter++;
             }
