@@ -130,6 +130,16 @@ namespace FS_LevelEditor
                 File.Delete(path);
             }
         }
+
+        public static void RenameLevel(string levelFileNameWithoutExtension, string newLevelName)
+        {
+            var levels = GetLevelsList();
+            LevelData toRename = levels[levelFileNameWithoutExtension];
+
+            toRename.levelName = newLevelName;
+
+            SaveLevelData(newLevelName, levelFileNameWithoutExtension, toRename);
+        }
     }
 
     [Serializable]

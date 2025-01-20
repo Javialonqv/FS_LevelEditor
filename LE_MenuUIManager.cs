@@ -1,4 +1,5 @@
 ﻿using Il2Cpp;
+using Il2CppInControl;
 using MelonLoader;
 using System;
 using System.Collections;
@@ -316,7 +317,13 @@ namespace FS_LevelEditor
                 // Change the label text.
                 Destroy(lvlButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
                 UILabel label = lvlButton.GetChildAt("Background/Label").GetComponent<UILabel>();
+                label.SetAnchor((Transform)null);
+                label.CheckAnchors();
+                label.width = 360;
+                label.height = 67;
                 label.text = data.levelName;
+                label.fontSize = 40;
+                label.transform.localPosition = new Vector3(-600f, 0f, 0f);
 
                 // Set button's new scale properties.
                 UIButtonScale buttonScale = lvlButton.GetComponent<UIButtonScale>();
@@ -382,6 +389,54 @@ namespace FS_LevelEditor
                 };
                 deleteOnClick.mParameters = new EventDelegate.Parameter[] { deleteOnClickParameter };
                 deleteButton.onClick.Add(deleteOnClick);
+                #endregion
+
+                #region Create Edit Button
+                GameObject renameBtnObj = Instantiate(btnTemplate, lvlButton.transform);
+                renameBtnObj.name = "EditBtn";
+                renameBtnObj.transform.localPosition = new Vector3(650f, 0f, 0f);
+
+                Destroy(renameBtnObj.GetComponent<ButtonController>());
+                Destroy(renameBtnObj.GetComponent<OptionsButton>());
+                Destroy(renameBtnObj.GetChildAt("Background/Label"));
+
+                UISprite renameSprite = renameBtnObj.GetComponent<UISprite>();
+                renameSprite.width = 70;
+                renameSprite.height = 70;
+                renameSprite.depth = 1;
+                BoxCollider renameCollider = renameBtnObj.GetComponent<BoxCollider>();
+                renameCollider.size = new Vector3(70f, 70f, 0f);
+
+                UIButtonColor renameButtonColor = renameBtnObj.GetComponent<UIButtonColor>();
+                renameButtonColor.defaultColor = new Color(0f, 0f, 0.8f, 1f);
+                renameButtonColor.hover = new Color(0f, 0f, 1f, 1f);
+                renameButtonColor.pressed = new Color(0f, 0f, 0.5f, 1f);
+
+                UISprite pencilSprite = renameBtnObj.GetChildWithName("Background").GetComponent<UISprite>();
+                pencilSprite.name = "Pencil";
+                pencilSprite.SetExternalSprite("Pencil");
+                pencilSprite.width = 40;
+                pencilSprite.height = 50;
+                pencilSprite.color = Color.white;
+                pencilSprite.transform.localPosition = Vector3.zero;
+                pencilSprite.enabled = true;
+
+                UIButton renameButton = renameBtnObj.GetComponent<UIButton>();
+                EventDelegate renameOnClick = new EventDelegate(this, nameof(LE_MenuUIManager.OnRenameLevelButtonClick));
+                EventDelegate.Parameter renameOnClickParameter = new EventDelegate.Parameter
+                {
+                    field = "levelFileNameWithoutExtension",
+                    value = levelFileNameWithoutExtension,
+                    obj = this
+                };
+                EventDelegate.Parameter renameOnClickParameter2 = new EventDelegate.Parameter
+                {
+                    field = "lvlButtonLabelObj",
+                    value = label.gameObject,
+                    obj = this
+                };
+                renameOnClick.mParameters = new EventDelegate.Parameter[] { renameOnClickParameter, renameOnClickParameter2 };
+                renameButton.onClick.Add(renameOnClick);
                 #endregion
 
                 counter++;
@@ -497,6 +552,57 @@ namespace FS_LevelEditor
         {
             LevelData.DeleteLevel(levelFileNameWithoutExtension);
             CreateLevelsList();
+        }
+        void OnRenameLevelButtonClick(string levelFileNameWithoutExtension, GameObject lvlButtonLabelObj)
+        {
+            // If the label already has an UIInput component, that means it already is initialized, just select it.
+            if (lvlButtonLabelObj.TryGetComponent<UIInput>(out UIInput component))
+            {
+                component.isSelected = true;
+            }
+
+            // Get the UILabel component.
+            UILabel label = lvlButtonLabelObj.GetComponent<UILabel>();
+
+            // Create a UIInput component.
+            UIInput input = lvlButtonLabelObj.AddComponent<UIInput>();
+
+            // Set the UILabel on it, set the default text as the last one the UILabel had and select it automatically.
+            input.label = label;
+            input.text = input.label.text;
+            input.isSelected = true;
+
+            // Highlight the whole text on it.
+            input.selectionStart = 0;
+            input.selectionEnd = label.text.Length;
+
+            // Set the method for when the user finishes typing the new name (OnSubmit).
+            EventDelegate onSubmit = new EventDelegate(this, nameof(LE_MenuUIManager.RenameLevel));
+            EventDelegate.Parameter parameter1 = new EventDelegate.Parameter
+            {
+                field = "levelFileNameWithoutExtension",
+                value = levelFileNameWithoutExtension,
+                obj = this
+            };
+            EventDelegate.Parameter parameter2 = new EventDelegate.Parameter
+            {
+                field = "input",
+                value = input,
+                obj = this
+            };
+            onSubmit.mParameters = new EventDelegate.Parameter[] { parameter1, parameter2 };
+            input.onSubmit.Add(onSubmit);
+
+            // So.... for some reason the damn NGUI doesn't call the OnSubmit function when it should, so I had to create my own fix... FUCK!
+            lvlButtonLabelObj.AddComponent<UIInputSubmitFix>();
+        }
+        void RenameLevel(string levelFileNameWithoutExtension, UIInput input)
+        {
+            // Trim the text.
+            input.text = input.text.Trim();
+
+            // Rename the level.
+            LevelData.RenameLevel(levelFileNameWithoutExtension, input.text);
         }
 
 
