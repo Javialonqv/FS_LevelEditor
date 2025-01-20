@@ -319,11 +319,12 @@ namespace FS_LevelEditor
                 UILabel label = lvlButton.GetChildAt("Background/Label").GetComponent<UILabel>();
                 label.SetAnchor((Transform)null);
                 label.CheckAnchors();
-                label.width = 360;
+                label.width = 1200;
                 label.height = 67;
+                label.alignment = NGUIText.Alignment.Left;
                 label.text = data.levelName;
                 label.fontSize = 40;
-                label.transform.localPosition = new Vector3(-600f, 0f, 0f);
+                label.transform.localPosition = new Vector3(-180f, 0f, 0f);
 
                 // Set button's new scale properties.
                 UIButtonScale buttonScale = lvlButton.GetComponent<UIButtonScale>();
