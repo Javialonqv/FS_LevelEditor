@@ -358,7 +358,7 @@ namespace FS_LevelEditor
             Destroy(saveLevelButton.GetComponent<ButtonController>());
             Destroy(saveLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
             saveLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
-            saveLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.SaveLevel)));
+            saveLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.SaveLevelWithPauseMenuButton)));
 
             // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.
             pauseMenu.AddComponent<EditorPauseLargeButtonsSetter>();
@@ -408,7 +408,7 @@ namespace FS_LevelEditor
 
             MenuController.GetInstance().ReturnToMainMenu();
         }
-        public void SaveLevel()
+        public void SaveLevelWithPauseMenuButton()
         {
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
             PlaySavingLevelLabel();
