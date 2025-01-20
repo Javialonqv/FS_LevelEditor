@@ -115,7 +115,12 @@ namespace FS_LevelEditor
 
             foreach (string levelPath in levelsPaths)
             {
-                LevelData levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath));
+                LevelData levelData = null;
+                try
+                {
+                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath));
+                }
+                catch { }
                 levels.Add(Path.GetFileNameWithoutExtension(levelPath), levelData);
             }
 
