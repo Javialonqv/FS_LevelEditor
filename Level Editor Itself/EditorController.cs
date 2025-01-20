@@ -143,11 +143,7 @@ namespace FS_LevelEditor
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad7))
             {
                 LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
-            }
-
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Keypad8))
-            {
-                LevelData.LoadLevelData(levelFileNameWithoutExtension);
+                EditorUIManager.Instance.PlaySavingLevelLabel();
             }
         }
 

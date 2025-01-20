@@ -25,6 +25,8 @@ namespace FS_LevelEditor
         List<GameObject> currentCategoryButtons = new List<GameObject>();
 
         GameObject selectedObjPanel;
+        GameObject savingLevelLabel;
+        Coroutine savingLevelLabelRoutine;
 
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
@@ -60,6 +62,7 @@ namespace FS_LevelEditor
             CreateObjectsBackground();
             SetupCurrentCategoryButtons();
             CreateSelectedObjPanel();
+            CreateSavingLevelLabel();
         }
 
         void GetReferences()
@@ -273,6 +276,48 @@ namespace FS_LevelEditor
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = objName;
             selectedObjPanel.GetChildWithName("Body").SetActive(true);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -220, 0f);
+        }
+
+        void CreateSavingLevelLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            savingLevelLabel = new GameObject("SavingLevel");
+            savingLevelLabel.transform.parent = editorUIParent.transform;
+            savingLevelLabel.transform.localScale = Vector3.one;
+            savingLevelLabel.transform.localPosition = new Vector3(0f, 510f, 0f);
+
+            UILabel label = savingLevelLabel.AddComponent<UILabel>();
+            label.font = labelTemplate.GetComponent<UILabel>().font;
+            label.text = "Saving...";
+            label.width = 150;
+            label.height = 50;
+            label.fontSize = 32;
+
+            TweenAlpha tween = savingLevelLabel.AddComponent<TweenAlpha>();
+            tween.from = 1f;
+            tween.to = 0f;
+            tween.duration = 2f;
+
+            savingLevelLabel.SetActive(false);
+        }
+        public void PlaySavingLevelLabel()
+        {
+            if (savingLevelLabelRoutine != null) MelonCoroutines.Stop(savingLevelLabelRoutine);
+            savingLevelLabelRoutine = (Coroutine)MelonCoroutines.Start(Coroutine());
+
+            IEnumerator Coroutine()
+            {
+                savingLevelLabel.SetActive(true);
+
+                TweenAlpha tween = savingLevelLabel.GetComponent<TweenAlpha>();
+                tween.ResetToBeginning();
+                tween.PlayForward();
+
+                yield return new WaitForSecondsRealtime(2f);
+
+                savingLevelLabel.SetActive(false);
+            }
         }
 
 
