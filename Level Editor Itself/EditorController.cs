@@ -531,7 +531,19 @@ namespace FS_LevelEditor
                         if (hit.collider.name == "Y") offsetObjPositionAndMosueWhenClick.y = objPositionWhenArrowClick.y - hit.point.y;
                         if (hit.collider.name == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - hit.point.z;
 
-                        movementPlane = new Plane(Camera.main.transform.forward, objPositionWhenArrowClick);
+                        //movementPlane = new Plane(Camera.main.transform.forward, objPositionWhenArrowClick);
+                        if (hit.collider.name == "X" || hit.collider.name == "Z")
+                        {
+                            movementPlane = new Plane(currentSelectedObj.transform.up, objPositionWhenArrowClick);
+                        }
+                        else if (hit.collider.name == "Y")
+                        {
+                            Vector3 cameraPosition = Camera.main.transform.position;
+                            Vector3 directionToCamera = cameraPosition - objPositionWhenArrowClick;
+                            Vector3 planeNormal = new Vector3(directionToCamera.normalized.x, 0f, directionToCamera.normalized.z);
+
+                            movementPlane = new Plane(planeNormal, objPositionWhenArrowClick);
+                        }
 
                         if (hit.collider.name == "X") return GizmosArrow.X;
                         if (hit.collider.name == "Y") return GizmosArrow.Y;
