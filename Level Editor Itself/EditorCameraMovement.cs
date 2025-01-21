@@ -24,12 +24,12 @@ namespace FS_LevelEditor
         {
             if (EditorController.Instance.isEditorPaused) return;
 
-            MoveCamera();
             if (Input.GetMouseButton(1))
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
                 RotateCamera();
+                MoveCamera();
             }
             else
             {
