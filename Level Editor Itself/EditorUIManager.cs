@@ -360,6 +360,10 @@ namespace FS_LevelEditor
             saveLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
             saveLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.SaveLevelWithPauseMenuButton)));
 
+            // Change exit button behaviour in the navigation bar.
+            NavigationAction exitButtonFromNavigation = navigation.GetChildAt("Holder/Bar/ActionsHolder").transform.GetChild(0).GetComponent<NavigationAction>();
+            exitButtonFromNavigation.onButtonClick = new Action<NavigationBarController.ActionType>(ExitToMenuFromNavigationBarButton);
+
             // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.
             pauseMenu.AddComponent<EditorPauseLargeButtonsSetter>();
         }
@@ -406,12 +410,19 @@ namespace FS_LevelEditor
         }
         public void ExitToMenu()
         {
+            // Save data automatically.
+            LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
+
             // Remove this component, since this component is only needed when inside of LE.
             pauseMenu.RemoveComponent<EditorPauseLargeButtonsSetter>();
 
             DeleteUI();
 
             MenuController.GetInstance().ReturnToMainMenu();
+        }
+        public void ExitToMenuFromNavigationBarButton(NavigationBarController.ActionType type)
+        {
+            ExitToMenu();
         }
         public void SaveLevelWithPauseMenuButton()
         {
@@ -421,7 +432,12 @@ namespace FS_LevelEditor
 
         public void DeleteUI()
         {
-            MelonCoroutines.Stop(savingLevelLabelRoutine);
+            // If the coroutine was already played, stop it if it's currently playing to "restart" it.
+            if (savingLevelLabelRoutine != null) MelonCoroutines.Stop(savingLevelLabelRoutine);
+
+            NavigationAction exitButtonFromNavigation = navigation.GetChildAt("Holder/Bar/ActionsHolder").transform.GetChild(0).GetComponent<NavigationAction>();
+            exitButtonFromNavigation.onButtonClick = new Action<NavigationBarController.ActionType>(NavigationBarController.Instance.ManualButtonPressed);
+
             Destroy(editorUIParent);
             Destroy(pauseMenu.GetChildWithName("SavingLevelInPauseMenu"));
         }
