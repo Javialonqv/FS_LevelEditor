@@ -18,12 +18,14 @@ namespace FS_LevelEditor
 
         public bool inLEMenu;
 
+        // Variables outside of LE menu.
         GameObject mainMenu;
         AudioSource uiSoundSource;
         AudioClip okSound;
         AudioClip hidePageSound;
         GameObject navigationBarButtonsParent;
 
+        // Variables for objects/things related to LE menu.
         GameObject levelEditorUIButton;
         public GameObject leMenuPanel;
         GameObject leMenuButtonsParent;
