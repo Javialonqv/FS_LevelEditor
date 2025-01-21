@@ -308,7 +308,7 @@ namespace FS_LevelEditor
                 GameObject lvlButton = Instantiate(btnTemplate, lvlButtonParent.transform);
                 lvlButton.name = "Button";
                 // Set the button position to zero.
-                lvlButton.transform.localPosition = Vector3.zero;
+                lvlButton.transform.localPosition = new Vector3(-110f, 0f, 0f);
 
                 // Remove innecesary components.
                 Destroy(lvlButton.GetComponent<ButtonController>());
@@ -316,7 +316,7 @@ namespace FS_LevelEditor
 
                 // Set the sprite's size, as well in the BoxCollider.
                 UISprite sprite = lvlButton.GetComponent<UISprite>();
-                sprite.width = 1640;
+                sprite.width = 1420;
                 sprite.height = 100;
                 // If the data is null that means this .lvl file isn't a valid level file, put the sprite color red.
                 if (data == null)
@@ -324,7 +324,7 @@ namespace FS_LevelEditor
                     sprite.color = new Color(0.3897f, 0.212f, 0.212f, 1f);
                 }
                 BoxCollider collider = lvlButton.GetComponent<BoxCollider>();
-                collider.size = new Vector3(1640f, 100f);
+                collider.size = new Vector3(1420f, 100f);
 
                 // Change the label text.
                 Destroy(lvlButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
@@ -337,7 +337,7 @@ namespace FS_LevelEditor
                 // If the data is null put a warning in the beginning of the text, followed by the name of the file without extension, otherwise, put the real level name as usually.
                 label.text = data != null ? data.levelName : $"[c][ffff00][INVALID LEVEL FILE][-][/c] {levelFileNameWithoutExtension}";
                 label.fontSize = 40;
-                label.transform.localPosition = new Vector3(-180f, 0f, 0f);
+                label.transform.localPosition = new Vector3(-80f, 0f, 0f);
 
                 // Only setup UIButtonScale and UIButton when is a valid level file, otherwise destroy the UIButton, UIButtonScale and UIButtonColor.
                 if (data != null)
