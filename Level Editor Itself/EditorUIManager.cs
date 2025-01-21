@@ -381,6 +381,9 @@ namespace FS_LevelEditor
         }
         public void Resume()
         {
+            // If you're resuming BUT if the pause menu is disabled itself, then is likely cause the user is in another submenu (like options), in that cases.. don't do anything.
+            if (!pauseMenu.activeSelf) return;
+
             MelonCoroutines.Start(Coroutine());
 
             IEnumerator Coroutine()
