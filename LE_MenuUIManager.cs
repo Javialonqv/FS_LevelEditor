@@ -299,11 +299,16 @@ namespace FS_LevelEditor
                     lvlButtonsGrids.Add(currentGrid);
                 }
 
+                // Create the level button parent.
+                GameObject lvlButtonParent = new GameObject($"Level {counter}");
+                lvlButtonParent.transform.parent = currentGrid.transform;
+                lvlButtonParent.transform.localScale = Vector3.one;
+
                 // Create the level button and set some things on it.
-                GameObject lvlButton = Instantiate(btnTemplate, currentGrid.transform);
-                lvlButton.name = $"Level {counter}";
-                // Set the button position dinamicly.
-                lvlButton.transform.localPosition = new Vector3(0f, 100f, 0f) + (new Vector3(0f, -110f, 0f) * counter);
+                GameObject lvlButton = Instantiate(btnTemplate, lvlButtonParent.transform);
+                lvlButton.name = "Button";
+                // Set the button position to zero.
+                lvlButton.transform.localPosition = Vector3.zero;
 
                 // Remove innecesary components.
                 Destroy(lvlButton.GetComponent<ButtonController>());
@@ -370,7 +375,7 @@ namespace FS_LevelEditor
 
                 #region Create Delete Button
                 // Create the button and set its name and positon.
-                GameObject deleteBtn = Instantiate(btnTemplate, lvlButton.transform);
+                GameObject deleteBtn = Instantiate(btnTemplate, lvlButtonParent.transform);
                 deleteBtn.name = "DeleteBtn";
                 deleteBtn.transform.localPosition = new Vector3(750f, 0f, 0f);
 
@@ -421,7 +426,7 @@ namespace FS_LevelEditor
                 {
                     #region Create Edit Button
                     // Create the button and set its name and positon.
-                    GameObject renameBtnObj = Instantiate(btnTemplate, lvlButton.transform);
+                    GameObject renameBtnObj = Instantiate(btnTemplate, lvlButtonParent.transform);
                     renameBtnObj.name = "EditBtn";
                     renameBtnObj.transform.localPosition = new Vector3(650f, 0f, 0f);
 
