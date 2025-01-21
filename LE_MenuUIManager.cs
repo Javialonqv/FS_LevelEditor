@@ -39,9 +39,10 @@ namespace FS_LevelEditor
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            Init();
         }
 
-        void Start()
+        void Init()
         {
             GetSomeReferences();
             CreateLEButton();
@@ -58,7 +59,7 @@ namespace FS_LevelEditor
                 SwitchBetweenMenuAndLEMenu();
             }
 #endif
-            if (EditorUIManager.Instance == null)
+            if (EditorUIManager.Instance == null && levelEditorUIButton != null)
             {
                 levelEditorUIButton.SetActive(Core.currentSceneName.Contains("Menu"));
             }
@@ -80,6 +81,14 @@ namespace FS_LevelEditor
                     action.Setup(Localization.Get("Back").ToUpper(), "Keyboard_Black_Esc", NavigationBarController.ActionType.BACK);
                     action.onButtonClick = new Action<NavigationBarController.ActionType>(ExitLEMenuInNavigationBarButton);
                 }
+            }
+        }
+
+        public void OnSceneLoaded()
+        {
+            if (leMenuPanel == null)
+            {
+                Init();
             }
         }
 
