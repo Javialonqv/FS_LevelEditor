@@ -117,6 +117,18 @@ namespace FS_LevelEditor
                 }
             }
 
+            // If click and it's on deletion and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element..
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Deletion && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement())
+            {
+                // If it's clicking an object.
+                if (CanSelectObjectWithRay(out GameObject obj))
+                {
+                    // Yep, I'm lazy and Ik this isn't the best way of doing it... but it works I think :D
+                    SetSelectedObj(obj);
+                    DeleteSelectedObj();
+                }
+            }
+
             // If it's clicking a gizmos arrow.
             if (Input.GetMouseButton(0) && collidingArrow != GizmosArrow.None)
             {
@@ -139,6 +151,10 @@ namespace FS_LevelEditor
             {
                 ChangeMode(Mode.Selection);
             }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                ChangeMode(Mode.Deletion);
+            }
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S))
             {
@@ -160,6 +176,7 @@ namespace FS_LevelEditor
                     break;
 
                 case Mode.Selection:
+                case Mode.Deletion:
                     EditorUIManager.Instance.categoryButtons.ForEach(button => button.SetActive(false));
                     EditorUIManager.Instance.currentCategoryBG.SetActive(false);
                     break;
