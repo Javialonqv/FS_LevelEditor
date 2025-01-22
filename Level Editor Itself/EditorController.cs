@@ -161,6 +161,11 @@ namespace FS_LevelEditor
                 LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
                 EditorUIManager.Instance.PlaySavingLevelLabel();
             }
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.D))
+            {
+                DuplicateSelectedObject();
+            }
         }
 
         // For now, this method only disables and enables the "building" UI, with the objects available to build.
@@ -463,6 +468,14 @@ namespace FS_LevelEditor
             }
 
             return obj;
+        }
+
+        void DuplicateSelectedObject()
+        {
+            if (currentSelectedObj == null) return;
+
+            LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
+            PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles);
         }
 
         #region Methods called from UI buttons
