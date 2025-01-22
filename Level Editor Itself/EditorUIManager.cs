@@ -28,6 +28,7 @@ namespace FS_LevelEditor
         GameObject savingLevelLabel;
         GameObject savingLevelLabelInPauseMenu;
         Coroutine savingLevelLabelRoutine;
+        UILabel currentModeLabel;
 
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
@@ -64,6 +65,7 @@ namespace FS_LevelEditor
             SetupCurrentCategoryButtons();
             CreateSelectedObjPanel();
             CreateSavingLevelLabel();
+            CreateCurrentModeLabel();
         }
 
         void GetReferences()
@@ -332,6 +334,29 @@ namespace FS_LevelEditor
                 savingLevelLabel.SetActive(false);
                 savingLevelLabelInPauseMenu.SetActive(false);
             }
+        }
+
+        void CreateCurrentModeLabel()
+        {
+            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject currentModeLabelObj = new GameObject("CurrentModeLabel");
+            currentModeLabelObj.transform.parent = editorUIParent.transform;
+            currentModeLabelObj.transform.localScale = Vector3.one;
+            currentModeLabelObj.transform.localPosition = new Vector3(0f, -515f, 0f);
+
+            currentModeLabel = currentModeLabelObj.AddComponent<UILabel>();
+            currentModeLabel.font = template.GetComponent<UILabel>().font;
+            currentModeLabel.width = 500;
+            currentModeLabel.height = 50;
+            currentModeLabel.fontSize = 35;
+            SetCurrentModeLabelText(EditorController.Mode.Building);
+
+            currentModeLabelObj.SetActive(true);
+        }
+        public void SetCurrentModeLabelText(EditorController.Mode mode)
+        {
+            currentModeLabel.text = $"[c][ffff00]Current mode:[-][/c] {mode.ToString()}";
         }
 
 

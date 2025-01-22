@@ -164,6 +164,8 @@ namespace FS_LevelEditor
                     EditorUIManager.Instance.currentCategoryBG.SetActive(false);
                     break;
             }
+
+            EditorUIManager.Instance.SetCurrentModeLabelText(currentMode);
         }
 
         void PreviewObject()
