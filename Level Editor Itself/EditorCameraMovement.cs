@@ -24,7 +24,7 @@ namespace FS_LevelEditor
         {
             if (EditorController.Instance.isEditorPaused) return;
 
-            if (Input.GetMouseButton(1))
+            if (Input.GetMouseButton(1) && !Input.GetMouseButton(0))
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
