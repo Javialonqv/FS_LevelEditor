@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -49,6 +50,8 @@ namespace FS_LevelEditor
             CreateLEMenuPanel();
             CreateBackButton();
             CreateAddButton();
+            CreateCurrentModVersionLabel();
+            CreateCreditsLabel();
         }
 
         void Update()
@@ -259,6 +262,55 @@ namespace FS_LevelEditor
             // Set OnClick action, which is creating a new level with a new name.
             UIButton button = addButton.GetComponent<UIButton>();
             button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.CreateNewLevel)));
+        }
+
+        // Functions literally copied and pasted from the old taser mod LOL.
+        void CreateCurrentModVersionLabel()
+        {
+            // Create a copy of the menu title and change its partent to the options' parent.
+            GameObject version = GameObject.Instantiate(leMenuPanel.GetChildWithName("Title"));
+            version.transform.parent = leMenuPanel.transform;
+            version.name = "CurrentModVersion";
+
+            // Ik this this inaccessible code, it's just I'll change that bool when I release the public build.
+            string currentModVersion = "v" + Assembly.GetExecutingAssembly().GetCustomAttribute<MelonInfoAttribute>().Version;
+#if DEBUG
+            currentModVersion += " DEV BUILD";
+#endif
+
+            // Destroy the FUCKING UI LOCALIZE COMPONENT.
+            GameObject.Destroy(version.GetComponent<UILocalize>());
+
+            // Change its label text and font size too.
+            UILabel versionLabel = version.GetComponent<UILabel>();
+            versionLabel.text = currentModVersion;
+            versionLabel.fontSize = 30;
+            versionLabel.alignment = NGUIText.Alignment.Right;
+            versionLabel.width = 800;
+
+            // Reset scale to one.
+            version.transform.localScale = Vector3.one;
+
+            // Change its position to the top-right.
+            version.transform.localPosition = new Vector3(430f, 416.4f, 0f);
+        }
+        void CreateCreditsLabel()
+        {
+            GameObject credits = GameObject.Instantiate(leMenuPanel.GetChildWithName("Title"));
+            credits.transform.parent = leMenuPanel.transform;
+            credits.name = "Credits";
+
+            GameObject.Destroy(credits.GetComponent<UILocalize>());
+
+            UILabel creditsLabel = credits.GetComponent<UILabel>();
+            creditsLabel.text = "Created by Javialon_qv";
+            creditsLabel.fontSize = 25;
+            creditsLabel.alignment = NGUIText.Alignment.Left;
+            creditsLabel.width = 800;
+
+            creditsLabel.transform.localScale = Vector3.one;
+
+            creditsLabel.transform.localPosition = new Vector3(-430f, -368f, 0f);
         }
 
         public void CreateLevelsList()
