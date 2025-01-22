@@ -20,7 +20,9 @@ namespace FS_LevelEditor
             RED_GROUND,
             ORANGE_GROUND,
             LARGE_GROUND,
+            GROUND_2,
             WALL,
+            X_WALL,
             WINDOW,
         }
 
