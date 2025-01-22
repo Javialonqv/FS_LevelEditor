@@ -16,7 +16,10 @@ namespace FS_LevelEditor
     public class LevelData
     {
         public string levelName { get; set; }
+        public Vector3Serializable cameraPosition { get; set; }
+        public Vector3Serializable cameraRotation { get; set; }
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
+
         static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
 
         // Create a LeveData instance with all of the current objects in the level.
@@ -24,6 +27,8 @@ namespace FS_LevelEditor
         {
             LevelData data = new LevelData();
             data.levelName = levelName;
+            data.cameraPosition = Camera.main.transform.position;
+            data.cameraRotation = Camera.main.transform.eulerAngles;
 
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
 
@@ -76,6 +81,9 @@ namespace FS_LevelEditor
 
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
+
+            Camera.main.transform.position = data.cameraPosition;
+            Camera.main.transform.eulerAngles = data.cameraRotation;
 
             foreach (LE_ObjectData obj in data.objects)
             {
