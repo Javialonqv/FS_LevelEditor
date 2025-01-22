@@ -65,6 +65,8 @@ namespace FS_LevelEditor
 
         void ManageDownAndUp()
         {
+            if (!Input.GetMouseButton(1)) return;
+
             if (Input.GetKey(KeyCode.LeftShift))
             {
                 Vector3 toMove = transform.up * -1f * downAndUpSpeed * Time.deltaTime;
