@@ -166,6 +166,8 @@ namespace FS_LevelEditor
             {
                 DuplicateSelectedObject();
             }
+
+            ManageObjectRotationShortcuts();
         }
 
         // For now, this method only disables and enables the "building" UI, with the objects available to build.
@@ -476,6 +478,28 @@ namespace FS_LevelEditor
 
             LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
             PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles);
+        }
+
+        void ManageObjectRotationShortcuts()
+        {
+            if (currentSelectedObj == null) return;
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
+            {
+                currentSelectedObj.transform.localRotation = Quaternion.identity;
+            }
+            else if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.R))
+            {
+                currentSelectedObj.transform.Rotate(15f, 0f, 0f);
+            }
+            else if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.R))
+            {
+                currentSelectedObj.transform.Rotate(0f, 0f, 15f);
+            }
+            else if (Input.GetKeyDown(KeyCode.R))
+            {
+                currentSelectedObj.transform.Rotate(0f, 15f, 0f);
+            }
         }
 
         #region Methods called from UI buttons
