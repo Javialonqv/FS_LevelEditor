@@ -91,6 +91,7 @@ namespace FS_LevelEditor
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
 
                 objClassInstance.objectID = obj.objectID;
+                objInstance.name = objClassInstance.objectFullNameWithID;
             }
 
             Logger.Log($"\"{data.levelName}\" level loaded!");
