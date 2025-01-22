@@ -298,16 +298,22 @@ namespace FS_LevelEditor
 
         void MoveObject(GizmosArrow direction)
         {
+            // Get the ray from the camera.
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
+            // If the ray can collide with the "invisible" plane.
             if (movementPlane.Raycast(ray, out float distance))
             {
-                Vector3 mouseWorldPosition = ray.GetPoint(distance);
-                Vector3 displacement = mouseWorldPosition - objPositionWhenArrowClick;
+                // IT WORKS, DON'T EVEN DARE TO TOUCH THIS EVER AGAIN!
+
+                Vector3 hitWorldPosition = ray.GetPoint(distance);
+                Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
 
                 float movementDistance = Vector3.Dot(displacement, GetAxisDirection(collidingArrow, currentSelectedObj));
 
-                currentSelectedObj.transform.position = objPositionWhenArrowClick + GetAxisDirection(collidingArrow, currentSelectedObj) * (movementDistance * 1f) + offsetObjPositionAndMosueWhenClick;
+                Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
+
+                currentSelectedObj.transform.localPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
             }
         }
 
@@ -518,20 +524,18 @@ namespace FS_LevelEditor
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
 
+            // Loop foreach all of the collisions of the ray.
             foreach (var hit in hits)
             {
                 if (hit.collider.transform.parent != null)
                 {
+                    // If one of them are the move object gizmos...
                     if (hit.collider.transform.parent.name == "MoveObjectArrows")
                     {
-                        objPositionWhenArrowClick = currentSelectedObj.transform.position;
+                        // Save the position of the object from the first time we clicked.
+                        objPositionWhenArrowClick = currentSelectedObj.transform.localPosition;
 
-                        offsetObjPositionAndMosueWhenClick = Vector3.zero;
-                        if (hit.collider.name == "X") offsetObjPositionAndMosueWhenClick.x = objPositionWhenArrowClick.x - hit.point.x;
-                        if (hit.collider.name == "Y") offsetObjPositionAndMosueWhenClick.y = objPositionWhenArrowClick.y - hit.point.y;
-                        if (hit.collider.name == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - hit.point.z;
-
-                        //movementPlane = new Plane(Camera.main.transform.forward, objPositionWhenArrowClick);
+                        // Create the panel with the rigt normals.
                         if (hit.collider.name == "X" || hit.collider.name == "Z")
                         {
                             movementPlane = new Plane(currentSelectedObj.transform.up, objPositionWhenArrowClick);
@@ -545,6 +549,21 @@ namespace FS_LevelEditor
                             movementPlane = new Plane(planeNormal, objPositionWhenArrowClick);
                         }
 
+                        // Then get the right offset of the arrows.
+                        offsetObjPositionAndMosueWhenClick = Vector3.zero;
+                        if (movementPlane.Raycast(ray, out float enter))
+                        {
+                            Vector3 collisionOnPlane = ray.GetPoint(enter);
+                            collisionOnPlane = RotatePositionAroundPivot(collisionOnPlane, objPositionWhenArrowClick, Quaternion.Inverse(currentSelectedObj.transform.rotation));
+
+                            if (hit.collider.name == "X") offsetObjPositionAndMosueWhenClick.x = objPositionWhenArrowClick.x - collisionOnPlane.x;
+                            if (hit.collider.name == "Y") offsetObjPositionAndMosueWhenClick.y = objPositionWhenArrowClick.y - collisionOnPlane.y;
+                            if (hit.collider.name == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - collisionOnPlane.z;
+
+                            Logger.DebugLog(offsetObjPositionAndMosueWhenClick);
+                        }
+
+                        // Finally, return the final result of the gizmos arrow we touched.
                         if (hit.collider.name == "X") return GizmosArrow.X;
                         if (hit.collider.name == "Y") return GizmosArrow.Y;
                         if (hit.collider.name == "Z") return GizmosArrow.Z;
@@ -562,6 +581,17 @@ namespace FS_LevelEditor
             if (arrow == GizmosArrow.Z) return obj.transform.forward;
 
             return Vector3.zero;
+        }
+
+        Vector3 RotatePositionAroundPivot(Vector3 position, Vector3 pivot, Quaternion rotation)
+        {
+            // I DON'T WANNA TOUCH THIS FUCKING CODE IN MY LIFE!!!
+
+            Vector3 positionInCenterOfWorld = position - pivot;
+            Vector3 rotatedPosition = rotation * positionInCenterOfWorld;
+            Vector3 rotatedPositionWithOriginalPivot = rotatedPosition + pivot;
+
+            return rotatedPositionWithOriginalPivot;
         }
         #endregion
     }
