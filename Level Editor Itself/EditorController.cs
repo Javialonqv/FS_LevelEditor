@@ -40,6 +40,8 @@ namespace FS_LevelEditor
         public GameObject levelObjectsParent;
         public GameObject currentSelectedObj;
         LE_Object currentSelectedObjComponent;
+        // When there's just one object selected, that object in in the currentSelectedObj variable.
+        // But when there are multiple objects selected, this list contains em and "currentSelectedObj" is "multipleSelectedObjsParent".
         public List<GameObject> currentSelectedObjects = new List<GameObject>();
         public bool multipleObjectsSelected = false;
         public GameObject multipleSelectedObjsParent;
@@ -470,8 +472,8 @@ namespace FS_LevelEditor
                 }
             }
 
-            // If is pressing control, the object isn't null and it's NOT duplicating objects at this moment, 
-            if (Input.GetKey(KeyCode.LeftControl) && obj != null && !isDuplicatingObj)
+            // If is pressing control, the object isn't null and it's not the selecteed objects parent and it's NOT duplicating objects at this moment:
+            if (Input.GetKey(KeyCode.LeftControl) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj)
             {
                 // If there was another object selected before, add it to the selected objects list too.
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
@@ -480,7 +482,7 @@ namespace FS_LevelEditor
                     if (!currentSelectedObjects.Contains(currentSelectedObj)) currentSelectedObjects.Add(currentSelectedObj);
                 }
                 // And add the most recent now, ofc lol (but only if it hasn't been selected yet).
-                if(!currentSelectedObjects.Contains(obj) && obj != multipleSelectedObjsParent) currentSelectedObjects.Add(obj);
+                if(!currentSelectedObjects.Contains(obj)) currentSelectedObjects.Add(obj);
 
                 // Set the bool.
                 if (currentSelectedObjects.Count > 1) multipleObjectsSelected = true;
