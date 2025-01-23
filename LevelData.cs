@@ -30,12 +30,22 @@ namespace FS_LevelEditor
             data.cameraPosition = Camera.main.transform.position;
             data.cameraRotation = Camera.main.transform.eulerAngles;
 
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = EditorController.Instance.levelObjectsParent.transform);
+            }
+
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
 
             foreach (GameObject obj in objectsParent.GetChilds())
             {
                 LE_ObjectData objData = new LE_ObjectData(obj.GetComponent<LE_Object>());
                 data.objects.Add(objData);
+            }
+
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = EditorController.Instance.multipleSelectedObjsParent.transform);
             }
 
             return data;

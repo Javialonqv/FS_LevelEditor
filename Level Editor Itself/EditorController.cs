@@ -40,6 +40,10 @@ namespace FS_LevelEditor
         public GameObject levelObjectsParent;
         public GameObject currentSelectedObj;
         LE_Object currentSelectedObjComponent;
+        public List<GameObject> currentSelectedObjects = new List<GameObject>();
+        public bool multipleObjectsSelected = false;
+        public GameObject multipleSelectedObjsParent;
+        bool isDuplicatingObj = false;
 
         // Selected mode.
         public enum Mode { Building, Selection, Deletion }
@@ -64,6 +68,9 @@ namespace FS_LevelEditor
 
             levelObjectsParent = new GameObject("LevelObjects");
             levelObjectsParent.transform.position = Vector3.zero;
+
+            multipleSelectedObjsParent = new GameObject("MultipleSelectedObjsParent");
+            multipleSelectedObjsParent.transform.position = Vector3.zero;
         }
 
         void Start()
@@ -373,7 +380,19 @@ namespace FS_LevelEditor
 
         void DeleteSelectedObj()
         {
-            Destroy(currentSelectedObj);
+            if (multipleObjectsSelected)
+            {
+                foreach (var obj in currentSelectedObj.GetChilds())
+                {
+                    if (obj.name == "MoveObjectArrows" || obj.name == "SnapToGridCube") continue;
+
+                    Destroy(obj);
+                }
+            }
+            else
+            {
+                Destroy(currentSelectedObj);
+            }
             SetSelectedObj(null);
         }
 
@@ -451,8 +470,50 @@ namespace FS_LevelEditor
                 }
             }
 
-            currentSelectedObj = obj;
-            currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
+            // If is pressing control, the object isn't null and it's NOT duplicating objects at this moment, 
+            if (Input.GetKey(KeyCode.LeftControl) && obj != null && !isDuplicatingObj)
+            {
+                // If there was another object selected before, add it to the selected objects list too.
+                if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
+                {
+                    // But only if it hasn't been selected yet.
+                    if (!currentSelectedObjects.Contains(currentSelectedObj)) currentSelectedObjects.Add(currentSelectedObj);
+                }
+                // And add the most recent now, ofc lol (but only if it hasn't been selected yet).
+                if(!currentSelectedObjects.Contains(obj) && obj != multipleSelectedObjsParent) currentSelectedObjects.Add(obj);
+
+                // Set the bool.
+                if (currentSelectedObjects.Count > 1) multipleObjectsSelected = true;
+                else multipleObjectsSelected = false;
+
+                // Get the center position of the whole objects.
+                Vector3 centeredPosition = Vector3.zero;
+                foreach (var objInList in currentSelectedObjects) { centeredPosition += objInList.transform.position; }
+                centeredPosition /= currentSelectedObjects.Count;
+
+                // Remove the parent from the selected objects, set the new parent position and put the parent in the objects again.
+                currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
+                multipleSelectedObjsParent.transform.position = centeredPosition;
+                multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
+                currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform);
+
+                // The "main" selected object now is the parent of the selected objects.
+                currentSelectedObj = multipleSelectedObjsParent;
+            }
+            else
+            {
+                // If don't press Ctrl, just remvoe the parent for all of the objects and clear the list.
+                currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
+                currentSelectedObjects.Clear();
+
+                // Work as always (the normal selection system lol).
+                currentSelectedObj = obj;
+                multipleObjectsSelected = false; // Set the bool again.
+                if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
+                {
+                    currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
+                }
+            }
 
             if (currentSelectedObj != null)
             {
@@ -518,8 +579,31 @@ namespace FS_LevelEditor
         {
             if (currentSelectedObj == null) return;
 
-            LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
-            PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles);
+            if (multipleObjectsSelected)
+            {
+                // Create a copy of every object inside of the selected objects list.
+                List<GameObject> newSelectedObjectsList = new List<GameObject>();
+                foreach (var obj in currentSelectedObjects)
+                {
+                    LE_Object objComponent = obj.GetComponent<LE_Object>();
+                    newSelectedObjectsList.Add(PlaceObject(objComponent.objectOriginalName, objComponent.transform.position, objComponent.transform.eulerAngles, false));
+                }
+
+                // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
+                SetSelectedObj(null);
+                currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
+                currentSelectedObjects.Clear(); // Clear the list, just in case.
+                currentSelectedObjects = newSelectedObjectsList; // Replace the list with the new one with the copied objects.
+                currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform); // Set the parents on it.
+                SetSelectedObj(multipleSelectedObjsParent); // Select the selected objects parent again.
+            }
+            else
+            {
+                isDuplicatingObj = true;
+                LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
+                PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles);
+                isDuplicatingObj = false;
+            }
         }
 
         void ManageObjectRotationShortcuts()
