@@ -39,6 +39,7 @@ namespace FS_LevelEditor
         // Related to current selected object for level building.
         public GameObject levelObjectsParent;
         public GameObject currentSelectedObj;
+        LE_Object currentSelectedObjComponent;
 
         // Selected mode.
         public enum Mode { Building, Selection, Deletion }
@@ -50,6 +51,9 @@ namespace FS_LevelEditor
         Vector3 objPositionWhenArrowClick;
         Vector3 offsetObjPositionAndMosueWhenClick;
         Plane movementPlane;
+
+        GameObject snapToGridCube;
+        bool startSnapToGridWithCurrentSelectedObj = false;
 
         public bool isEditorPaused = false;
 
@@ -168,6 +172,37 @@ namespace FS_LevelEditor
             }
 
             ManageObjectRotationShortcuts();
+
+            if (Input.GetKey(KeyCode.V) && currentSelectedObj != null)
+            {
+                snapToGridCube.SetActive(true);
+                gizmosArrows.SetActive(false);
+
+                if (Input.GetMouseButtonDown(0))
+                {
+                    if (IsClickingSnapToGridCube())
+                    {
+                        startSnapToGridWithCurrentSelectedObj = true;
+                    }
+                }
+                if (Input.GetMouseButton(0) && startSnapToGridWithCurrentSelectedObj)
+                {
+                    AlignSelectedObjectToGrid();
+                }
+                if (Input.GetMouseButtonUp(0))
+                {
+                    startSnapToGridWithCurrentSelectedObj = false;
+                }
+            }
+            else
+            {
+                snapToGridCube.SetActive(false);
+
+                if (currentSelectedObj != null)
+                {
+                    gizmosArrows.SetActive(true);
+                }
+            }
         }
 
         // For now, this method only disables and enables the "building" UI, with the objects available to build.
@@ -384,6 +419,11 @@ namespace FS_LevelEditor
                 collider.gameObject.layer = LayerMask.NameToLayer("ARROWS");
             }
 
+            snapToGridCube = Instantiate(bundle.Load<GameObject>("SnapToGridCube"));
+            snapToGridCube.name = "SnapToGridCube";
+            snapToGridCube.transform.localPosition = Vector3.zero;
+            snapToGridCube.SetActive(false);
+
             bundle.Unload(false);
         }
 
@@ -395,6 +435,10 @@ namespace FS_LevelEditor
             gizmosArrows.transform.parent = null;
             gizmosArrows.transform.localPosition = Vector3.zero;
             gizmosArrows.transform.localRotation = Quaternion.identity;
+
+            snapToGridCube.transform.parent = null;
+            snapToGridCube.transform.localPosition = Vector3.zero;
+            snapToGridCube.transform.localRotation = Quaternion.identity;
 
             if (currentSelectedObj != null)
             {
@@ -408,6 +452,7 @@ namespace FS_LevelEditor
             }
 
             currentSelectedObj = obj;
+            currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
 
             if (currentSelectedObj != null)
             {
@@ -423,6 +468,10 @@ namespace FS_LevelEditor
                 gizmosArrows.transform.parent = currentSelectedObj.transform;
                 gizmosArrows.transform.localPosition = Vector3.zero;
                 gizmosArrows.transform.localRotation = Quaternion.identity;
+
+                snapToGridCube.transform.parent = currentSelectedObj.transform;
+                snapToGridCube.transform.localPosition = Vector3.zero;
+                snapToGridCube.transform.localRotation = Quaternion.identity;
 
                 EditorUIManager.Instance.SetSelectedObject(obj.name);
             }
@@ -492,6 +541,51 @@ namespace FS_LevelEditor
             else if (Input.GetKeyDown(KeyCode.R))
             {
                 currentSelectedObj.transform.Rotate(0f, 15f, 0f);
+            }
+        }
+
+        void AlignSelectedObjectToGrid()
+        {
+            // Get all of the possible rays and short them, since Unity doesn't short them by defualt.
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
+            System.Array.Sort(hits, (hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+
+            // If it hits at least one object.
+            if (hits.Length > 0)
+            {
+                // Detect if hte first ray hit is colliding with a snap trigger.
+                bool firstRayIsATrigger = hits[0].collider.gameObject.name.StartsWith("StaticPos");
+
+                foreach (var hit in hits)
+                {
+                    // If the hit is an static pos trigger (snap trigger)...
+                    if (hit.collider.gameObject.name.StartsWith("StaticPos"))
+                    {
+                        // Only if the snap trigger is NOT from the current selected object.
+                        if (hit.collider.transform.parent.parent.gameObject != currentSelectedObj)
+                        {
+                            // AND ONLY (lol) if that trigger actually CAN be used with the selected object.
+                            if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectOriginalName, hit.collider.gameObject))
+                            {
+                                currentSelectedObj.transform.position = hit.collider.transform.position;
+                                currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
+
+                                return;
+                            }
+                        }
+                    }
+                    // If the hitten object is the current selected one, keep iterating...
+                    else if (hit.collider.transform.parent.gameObject == currentSelectedObj)
+                    {
+                        continue;
+                    }
+                    // Otherwise, return and do nothing.
+                    else
+                    {
+                        return;
+                    }
+                }
             }
         }
 
@@ -608,8 +702,6 @@ namespace FS_LevelEditor
                             if (hit.collider.name == "X") offsetObjPositionAndMosueWhenClick.x = objPositionWhenArrowClick.x - collisionOnPlane.x;
                             if (hit.collider.name == "Y") offsetObjPositionAndMosueWhenClick.y = objPositionWhenArrowClick.y - collisionOnPlane.y;
                             if (hit.collider.name == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - collisionOnPlane.z;
-
-                            Logger.DebugLog(offsetObjPositionAndMosueWhenClick);
                         }
 
                         // Finally, return the final result of the gizmos arrow we touched.
@@ -621,6 +713,20 @@ namespace FS_LevelEditor
             }
 
             return GizmosArrow.None;
+        }
+
+        bool IsClickingSnapToGridCube()
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
+
+            // Loop foreach all of the collisions of the ray.
+            foreach (var hit in hits)
+            {
+                if (hit.collider.gameObject.name == "SnapToGridCube") return true;
+            }
+
+            return false;
         }
 
         Vector3 GetAxisDirection(GizmosArrow arrow, GameObject obj)
