@@ -116,6 +116,37 @@ namespace FS_LevelEditor
                 previewObjectToBuildObj.SetActive(false);
             }
 
+            if (Input.GetKey(KeyCode.V) && currentSelectedObj != null)
+            {
+                snapToGridCube.SetActive(true);
+                gizmosArrows.SetActive(false);
+
+                if (Input.GetMouseButtonDown(0))
+                {
+                    if (IsClickingSnapToGridCube())
+                    {
+                        startSnapToGridWithCurrentSelectedObj = true;
+                    }
+                }
+                if (Input.GetMouseButton(0) && startSnapToGridWithCurrentSelectedObj)
+                {
+                    AlignSelectedObjectToGrid();
+                }
+                if (Input.GetMouseButtonUp(0))
+                {
+                    startSnapToGridWithCurrentSelectedObj = false;
+                }
+            }
+            else
+            {
+                snapToGridCube.SetActive(false);
+
+                if (currentSelectedObj != null)
+                {
+                    gizmosArrows.SetActive(true);
+                }
+            }
+
             // If click and it's on selection and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element...
             if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement())
             {
@@ -181,37 +212,6 @@ namespace FS_LevelEditor
             }
 
             ManageObjectRotationShortcuts();
-
-            if (Input.GetKey(KeyCode.V) && currentSelectedObj != null)
-            {
-                snapToGridCube.SetActive(true);
-                gizmosArrows.SetActive(false);
-
-                if (Input.GetMouseButtonDown(0))
-                {
-                    if (IsClickingSnapToGridCube())
-                    {
-                        startSnapToGridWithCurrentSelectedObj = true;
-                    }
-                }
-                if (Input.GetMouseButton(0) && startSnapToGridWithCurrentSelectedObj)
-                {
-                    AlignSelectedObjectToGrid();
-                }
-                if (Input.GetMouseButtonUp(0))
-                {
-                    startSnapToGridWithCurrentSelectedObj = false;
-                }
-            }
-            else
-            {
-                snapToGridCube.SetActive(false);
-
-                if (currentSelectedObj != null)
-                {
-                    gizmosArrows.SetActive(true);
-                }
-            }
         }
 
         // For now, this method only disables and enables the "building" UI, with the objects available to build.
@@ -473,7 +473,7 @@ namespace FS_LevelEditor
             }
 
             // If is pressing control, the object isn't null and it's not the selecteed objects parent and it's NOT duplicating objects at this moment:
-            if (Input.GetKey(KeyCode.LeftControl) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj)
+            if ((Input.GetKey(KeyCode.LeftControl) || startSnapToGridWithCurrentSelectedObj) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj)
             {
                 // If there was another object selected before, add it to the selected objects list too.
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
@@ -504,13 +504,20 @@ namespace FS_LevelEditor
             }
             else
             {
-                // If don't press Ctrl, just remvoe the parent for all of the objects and clear the list.
-                currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
-                currentSelectedObjects.Clear();
+                // If don't press Ctrl AND the obj trying to select isn't the selected objects parent, just remvoe the parent for all of the objects and clear the list.
+                if (obj != multipleSelectedObjsParent)
+                {
+                    currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
+                    currentSelectedObjects.Clear();
+                    multipleObjectsSelected = false; // Set the bool again.
+                }
+                else // Otherwise, if it IS... set this bool again to true.
+                {
+                    multipleObjectsSelected = true;
+                }
 
                 // Work as always (the normal selection system lol).
                 currentSelectedObj = obj;
-                multipleObjectsSelected = false; // Set the bool again.
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
                 {
                     currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
@@ -595,7 +602,7 @@ namespace FS_LevelEditor
                 SetSelectedObj(null);
                 currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
                 currentSelectedObjects.Clear(); // Clear the list, just in case.
-                currentSelectedObjects = newSelectedObjectsList; // Replace the list with the new one with the copied objects.
+                currentSelectedObjects = new List<GameObject>(newSelectedObjectsList); // Replace the list with the new one with the copied objects.
                 currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform); // Set the parents on it.
                 SetSelectedObj(multipleSelectedObjsParent); // Select the selected objects parent again.
             }
@@ -640,16 +647,26 @@ namespace FS_LevelEditor
             // If it hits at least one object.
             if (hits.Length > 0)
             {
-                // Detect if hte first ray hit is colliding with a snap trigger.
-                bool firstRayIsATrigger = hits[0].collider.gameObject.name.StartsWith("StaticPos");
-
                 foreach (var hit in hits)
                 {
                     // If the hit is an static pos trigger (snap trigger)...
                     if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                     {
                         // Only if the snap trigger is NOT from the current selected object.
-                        if (hit.collider.transform.parent.parent.gameObject != currentSelectedObj)
+                        bool isFromTheSameObject = false;
+                        if (multipleObjectsSelected)
+                        {
+                            foreach (var obj in currentSelectedObjects)
+                            {
+                                if (hit.collider.transform.parent.parent.gameObject == obj) isFromTheSameObject = true;
+                            }
+                        }
+                        else
+                        {
+                            if (hit.collider.transform.parent.parent.gameObject == currentSelectedObj) isFromTheSameObject = true;
+                        }
+
+                        if (!isFromTheSameObject)
                         {
                             // AND ONLY (lol) if that trigger actually CAN be used with the selected object.
                             if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectOriginalName, hit.collider.gameObject))
