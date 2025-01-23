@@ -9,7 +9,7 @@ namespace FS_LevelEditor
     [Serializable]
     public class LE_ObjectData
     {
-        public LE_Object.ObjectType objectType { get; set; }
+        public LE_Object.ObjectType? objectType { get; set; }
         public int objectID { get; set; }
         public string objectOriginalName { get; set; }
         public string objectFullNameWithID

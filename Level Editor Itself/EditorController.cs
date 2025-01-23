@@ -290,29 +290,22 @@ namespace FS_LevelEditor
         {
             GameObject triggerRootObj = triggerObj.transform.parent.parent.gameObject;
             bool existsSpecificTriggerForThisObjToBuild = false;
+            LE_Object.ObjectType? objToBuildType = LE_Object.ConvertNameToObjectType(objToBuildName);
 
             // First, check if the object already has a specific trigger set for it, just to make sure it doesn't pick up the global one ;)
             foreach (GameObject rootChild in triggerRootObj.GetChilds())
             {
-                List<string> availableObjectsForTriggerInCurrentChild = rootChild.name.Split('|').ToList();
-                for (int i = 0; i < availableObjectsForTriggerInCurrentChild.Count; i++)
-                {
-                    availableObjectsForTriggerInCurrentChild[i] = availableObjectsForTriggerInCurrentChild[i].Trim();
-                }
+                List<LE_Object.ObjectType?> availableObjectsForTriggerInCurrentChild = rootChild.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim())).ToList();
 
-                if (availableObjectsForTriggerInCurrentChild.Contains(objToBuildName))
+                if (availableObjectsForTriggerInCurrentChild.Contains(objToBuildType))
                 {
                     existsSpecificTriggerForThisObjToBuild = true;
                 }
             }
 
             // Then, check if the object CAN use that trigger the player is clicking.
-            List<string> availableObjectsForTrigger = triggerObj.transform.parent.name.Split('|').ToList();
-            for (int i = 0; i < availableObjectsForTrigger.Count; i++)
-            {
-                availableObjectsForTrigger[i] = availableObjectsForTrigger[i].Trim();
-            }
-            if (availableObjectsForTrigger.Contains(objToBuildName))
+            List<LE_Object.ObjectType?> availableObjectsForTrigger = triggerObj.transform.parent.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim())).ToList();
+            if (availableObjectsForTrigger.Contains(objToBuildType))
             {
                 return true;
             }

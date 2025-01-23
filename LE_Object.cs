@@ -16,17 +16,22 @@ namespace FS_LevelEditor
         public enum ObjectType
         {
             GROUND,
-            CYAN_GROUND,
-            RED_GROUND,
-            ORANGE_GROUND,
-            LARGE_GROUND,
-            GROUND_2,
-            WALL,
-            X_WALL,
-            WINDOW,
+            WALL
         }
 
-        public ObjectType objectType;
+        public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
+        {
+            { "CYAN_GROUND", ObjectType.GROUND },
+            { "RED_GROUND", ObjectType.GROUND },
+            { "ORANGE_GROUND", ObjectType.GROUND },
+            { "LARGE_GROUND", ObjectType.GROUND },
+            { "GROUND_2", ObjectType.GROUND },
+
+            { "X_WALL", ObjectType.WALL },
+            { "WINDOW", ObjectType.WALL },
+        };
+
+        public ObjectType? objectType;
         public int objectID;
         public string objectOriginalName;
         public string objectFullNameWithID
@@ -73,7 +78,7 @@ namespace FS_LevelEditor
 
         void SetNameAndType(string originalObjName)
         {
-            objectType = (ObjectType)Enum.Parse(typeof(ObjectType), originalObjName.ToUpper().Replace(' ', '_'));
+            objectType = ConvertNameToObjectType(originalObjName);
             objectOriginalName = originalObjName;
 
             int id = 0;
@@ -85,6 +90,25 @@ namespace FS_LevelEditor
             objectID = id;
 
             gameObject.name = objectFullNameWithID;
+        }
+        public static ObjectType? ConvertNameToObjectType(string objName)
+        {
+            try
+            {
+                string objTypeName = objName.ToUpper().Replace(' ', '_');
+                if (objectVariants.ContainsKey(objTypeName))
+                {
+                    return objectVariants[objTypeName];
+                }
+                else
+                {
+                    return (ObjectType)Enum.Parse(typeof(ObjectType), objTypeName);
+                }
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public virtual void SetProperty(string name, object value)
