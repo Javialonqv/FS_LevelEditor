@@ -369,8 +369,11 @@ namespace FS_LevelEditor
             Destroy(resumeBtnWhenInsideLE.GetComponent<ButtonController>());
             resumeBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.Resume)));
             // This two more lines are used just in case the original resume button is disabled, that may happen when you didn't start a new game yet.
-            resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled = true;
-            resumeBtnWhenInsideLE.GetComponent<UIButton>().ResetDefaultColor();
+            if (!resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled)
+            {
+                resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled = true;
+                resumeBtnWhenInsideLE.GetComponent<UIButton>().ResetDefaultColor();
+            }
 
             // Same with exit button.
             GameObject originalExitBtn = pauseMenu.GetChildAt("LargeButtons/7_Exit");
