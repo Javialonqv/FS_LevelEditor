@@ -543,7 +543,14 @@ namespace FS_LevelEditor
                 snapToGridCube.transform.localPosition = Vector3.zero;
                 snapToGridCube.transform.localRotation = Quaternion.identity;
 
-                EditorUIManager.Instance.SetSelectedObject(obj.name);
+                if (multipleObjectsSelected)
+                {
+                    EditorUIManager.Instance.SetMultipleObjectsSelected();
+                }
+                else
+                {
+                    EditorUIManager.Instance.SetSelectedObject(obj.name);
+                }
             }
             else
             {

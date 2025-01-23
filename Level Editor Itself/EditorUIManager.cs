@@ -274,6 +274,12 @@ namespace FS_LevelEditor
             selectedObjPanel.GetChildWithName("Body").SetActive(false);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
         }
+        public void SetMultipleObjectsSelected()
+        {
+            selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "Multiple Objects Selected";
+            selectedObjPanel.GetChildWithName("Body").SetActive(false);
+            selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
+        }
         public void SetSelectedObject(string objName)
         {
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = objName;
