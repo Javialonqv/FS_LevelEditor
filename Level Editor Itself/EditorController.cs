@@ -502,12 +502,44 @@ namespace FS_LevelEditor
 
                     // The "main" selected object now is the parent of the selected objects.
                     currentSelectedObj = multipleSelectedObjsParent;
+
+                    #region Set Current Selected Obj Component
+                    // Get obj component:
+                    bool selectionHasDifferentObjTypes = false;
+                    LE_Object.ObjectType? firstTypeFound = null;
+                    foreach (var objInList in currentSelectedObjects)
+                    {
+                        // If there's no type found yet, use the first one found.
+                        if (firstTypeFound == null)
+                        {
+                            firstTypeFound = objInList.GetComponent<LE_Object>().objectType;
+                            continue;
+                        }
+
+                        // If the obj type of this obj is different from the first found one, the obj types diffier.
+                        if (objInList.GetComponent<LE_Object>().objectType != firstTypeFound)
+                        {
+                            selectionHasDifferentObjTypes = true;
+                        }
+                    }
+
+                    // If the obj types diffier, set the component as null.
+                    if (selectionHasDifferentObjTypes)
+                    {
+                        currentSelectedObjComponent = null;
+                    }
+                    else // Otherwise, get the component from the first element in the list.
+                    {
+                        currentSelectedObjComponent = currentSelectedObjects[0].GetComponent<LE_Object>();
+                    }
+                    #endregion
                 }
                 else
                 {
                     multipleObjectsSelected = false;
 
                     currentSelectedObj = obj;
+                    currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
                 }
             }
             else
@@ -529,6 +561,10 @@ namespace FS_LevelEditor
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
                 {
                     currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
+                }
+                else if (currentSelectedObj == null)
+                {
+                    currentSelectedObjComponent = null;
                 }
             }
 
@@ -664,6 +700,19 @@ namespace FS_LevelEditor
             {
                 foreach (var hit in hits)
                 {
+                    bool theHittenObjectIsTheSelectedOne = false;
+                    if (multipleObjectsSelected)
+                    {
+                        foreach (var obj in currentSelectedObjects)
+                        {
+                            if (hit.collider.transform.parent.gameObject == obj) theHittenObjectIsTheSelectedOne = true;
+                        }
+                    }
+                    else
+                    {
+                        if (hit.collider.transform.parent.gameObject == currentSelectedObj) theHittenObjectIsTheSelectedOne = true;
+                    }
+
                     // If the hit is an static pos trigger (snap trigger)...
                     if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                     {
@@ -683,8 +732,19 @@ namespace FS_LevelEditor
 
                         if (!isFromTheSameObject)
                         {
-                            // AND ONLY (lol) if that trigger actually CAN be used with the selected object.
-                            if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectOriginalName, hit.collider.gameObject))
+                            // If the component isn't null, use it to idenfity which snap triggers use and which ones no.
+                            if (currentSelectedObjComponent != null)
+                            {
+                                // Detect if that trigger actually CAN be used with the selected object.
+                                if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectOriginalName, hit.collider.gameObject))
+                                {
+                                    currentSelectedObj.transform.position = hit.collider.transform.position;
+                                    currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
+
+                                    return;
+                                }
+                            }
+                            else // If it's null, use any snap trigger we find.
                             {
                                 currentSelectedObj.transform.position = hit.collider.transform.position;
                                 currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
@@ -694,7 +754,7 @@ namespace FS_LevelEditor
                         }
                     }
                     // If the hitten object is the current selected one, keep iterating...
-                    else if (hit.collider.transform.parent.gameObject == currentSelectedObj)
+                    else if (theHittenObjectIsTheSelectedOne)
                     {
                         continue;
                     }
