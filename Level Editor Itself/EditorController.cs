@@ -484,23 +484,31 @@ namespace FS_LevelEditor
                 // And add the most recent now, ofc lol (but only if it hasn't been selected yet).
                 if(!currentSelectedObjects.Contains(obj)) currentSelectedObjects.Add(obj);
 
-                // Set the bool.
-                if (currentSelectedObjects.Count > 1) multipleObjectsSelected = true;
-                else multipleObjectsSelected = false;
+                if (currentSelectedObjects.Count > 1)
+                {
+                    // Set the bool.
+                    multipleObjectsSelected = true;
 
-                // Get the center position of the whole objects.
-                Vector3 centeredPosition = Vector3.zero;
-                foreach (var objInList in currentSelectedObjects) { centeredPosition += objInList.transform.position; }
-                centeredPosition /= currentSelectedObjects.Count;
+                    // Get the center position of the whole objects.
+                    Vector3 centeredPosition = Vector3.zero;
+                    foreach (var objInList in currentSelectedObjects) { centeredPosition += objInList.transform.position; }
+                    centeredPosition /= currentSelectedObjects.Count;
 
-                // Remove the parent from the selected objects, set the new parent position and put the parent in the objects again.
-                currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
-                multipleSelectedObjsParent.transform.position = centeredPosition;
-                multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
-                currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform);
+                    // Remove the parent from the selected objects, set the new parent position and put the parent in the objects again.
+                    currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
+                    multipleSelectedObjsParent.transform.position = centeredPosition;
+                    multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
+                    currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform);
 
-                // The "main" selected object now is the parent of the selected objects.
-                currentSelectedObj = multipleSelectedObjsParent;
+                    // The "main" selected object now is the parent of the selected objects.
+                    currentSelectedObj = multipleSelectedObjsParent;
+                }
+                else
+                {
+                    multipleObjectsSelected = false;
+
+                    currentSelectedObj = obj;
+                }
             }
             else
             {
