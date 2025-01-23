@@ -244,7 +244,7 @@ namespace FS_LevelEditor
             bodySprite.width = 500;
             bodySprite.height = 300;
 
-            BoxCollider bodyCollider = selectedObjPanel.AddComponent<BoxCollider>();
+            BoxCollider bodyCollider = selectedObjPanelBody.AddComponent<BoxCollider>();
             bodyCollider.size = new Vector3(500f, 300f, 1f);
 
             SetSelectedObjPanelAsNone();
