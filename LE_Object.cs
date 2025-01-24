@@ -48,12 +48,17 @@ namespace FS_LevelEditor
         public static LE_Object AddComponentToObject(GameObject targetObj, string originalObjName)
         {
             string className = "LE_" + originalObjName.Replace(' ', '_');
-            Il2CppSystem.Type classType = Il2CppSystem.Type.GetType(className);
+            Type classType = Type.GetType("FS_LevelEditor." + className);
+
+            if (className == "LE_Directional_Light")
+            {
+                Logger.DebugLog(classType);
+            }
 
             if (classType != null)
             {
-                LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(classType);
-                instancedComponent.Init();
+                LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
+                instancedComponent.Init(originalObjName);
                 return instancedComponent;
             }
             else
