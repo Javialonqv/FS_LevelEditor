@@ -51,7 +51,8 @@ namespace FS_LevelEditor
         {
             Destroy(gameObject.GetChildAt("LargeButtons/1_ResumeWhenInEditor"));
             Destroy(gameObject.GetChildAt("LargeButtons/7_ExitWhenInEditor"));
-            Destroy(gameObject.GetChildAt("LargeButtons/2_SaveLevel"));
+            Destroy(gameObject.GetChildAt("LargeButtons/3_SaveLevel"));
+            Destroy(gameObject.GetChildAt("LargeButtons/2_PlayLevel"));
         }
     }
 }
