@@ -391,11 +391,19 @@ namespace FS_LevelEditor
             // Create a save level button.
             GameObject saveLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
             GameObject saveLevelButton = Instantiate(saveLevelButtonTemplate, saveLevelButtonTemplate.transform.parent);
-            saveLevelButton.name = "2_SaveLevel";
+            saveLevelButton.name = "3_SaveLevel";
             Destroy(saveLevelButton.GetComponent<ButtonController>());
             Destroy(saveLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
             saveLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
             saveLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.SaveLevelWithPauseMenuButton)));
+
+            // Create a PLAY level button.
+            GameObject playLevelButton = Instantiate(saveLevelButtonTemplate, saveLevelButtonTemplate.transform.parent);
+            playLevelButton.name = "2_PlayLevel";
+            Destroy(playLevelButton.GetComponent<ButtonController>());
+            Destroy(playLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            playLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Play Level";
+            playLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.PlayLevel)));
 
             // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.
             // EDIT: Also to patch and do some stuff in the pause menu while in LE.
@@ -463,6 +471,10 @@ namespace FS_LevelEditor
         {
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
             PlaySavingLevelLabel();
+        }
+        public void PlayLevel()
+        {
+            EditorController.Instance.EnterPlayMode();
         }
 
         public void DeleteUI()

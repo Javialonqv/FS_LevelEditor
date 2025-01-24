@@ -773,7 +773,7 @@ namespace FS_LevelEditor
             }
         }
 
-        void EnterPlayMode()
+        public void EnterPlayMode()
         {
             MelonCoroutines.Start(Coroutine());
 
