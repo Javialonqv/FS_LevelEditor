@@ -147,8 +147,8 @@ namespace FS_LevelEditor
                 }
             }
 
-            // If click and it's on selection and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element...
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement())
+            // If click and it's on selection and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element AAAND it's not using snap to grid while edition right now...
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !startSnapToGridWithCurrentSelectedObj)
             {
                 // If it's selecting an object, well, set it as the selected one, otherwise, deselect the last selected object if there's one.
                 if (CanSelectObjectWithRay(out GameObject obj))
@@ -473,7 +473,7 @@ namespace FS_LevelEditor
             }
 
             // If is pressing control, the object isn't null and it's not the selecteed objects parent and it's NOT duplicating objects at this moment:
-            if ((Input.GetKey(KeyCode.LeftControl) || startSnapToGridWithCurrentSelectedObj) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj)
+            if (Input.GetKey(KeyCode.LeftControl) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj)
             {
                 // If there was another object selected before, add it to the selected objects list too.
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
