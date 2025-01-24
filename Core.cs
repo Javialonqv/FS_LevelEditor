@@ -100,20 +100,7 @@ namespace FS_LevelEditor
 
         public GameObject CreateProvicionalLight(Vector3 position, Vector3 rotation)
         {
-            GameObject lightObj = new GameObject("Provisional Level Light");
-            lightObj.transform.parent = EditorController.Instance.levelObjectsParent.transform;
-
-            lightObj.AddComponent<Light>().type = LightType.Directional;
-            lightObj.AddComponent<LE_Object>().objectOriginalName = "ProvisionalLight";
-
-            lightObj.transform.localPosition = position;
-            lightObj.transform.localEulerAngles = rotation;
-
-            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.transform.parent = lightObj.transform;
-            cube.transform.localPosition = Vector3.zero;
-            cube.transform.localRotation = Quaternion.identity;
-
+            GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, false);
             return lightObj;
         }
     }

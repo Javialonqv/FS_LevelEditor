@@ -16,7 +16,8 @@ namespace FS_LevelEditor
         public enum ObjectType
         {
             GROUND,
-            WALL
+            WALL,
+            LIGHT
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
@@ -29,6 +30,8 @@ namespace FS_LevelEditor
 
             { "X_WALL", ObjectType.WALL },
             { "WINDOW", ObjectType.WALL },
+
+            { "DIRECTIONAL_LIGHT", ObjectType.LIGHT },
         };
 
         public ObjectType? objectType;

@@ -606,10 +606,10 @@ namespace FS_LevelEditor
 
         public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
         {
-            if (objName == "ProvisionalLight")
-            {
-                return Melon<Core>.Instance.CreateProvicionalLight(position, eulerAngles);
-            }
+            //if (objName == "ProvisionalLight")
+            //{
+            //    return Melon<Core>.Instance.CreateProvicionalLight(position, eulerAngles);
+            //}
 
             GameObject template = allCategoriesObjects[objName];
             GameObject obj = Instantiate(template, levelObjectsParent.transform);
