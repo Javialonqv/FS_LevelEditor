@@ -74,6 +74,30 @@ namespace FS_LevelEditor
         void Init(string originalObjName)
         {
             SetNameAndType(originalObjName);
+
+            // If it's on playmode.
+            if (PlayModeController.Instance != null)
+            {
+                // Destroy all of the triggers, since they are only needed when in LE.
+                foreach (var child in gameObject.GetChilds())
+                {
+                    // If the child's name contains a "|" or it's "Global" it's a trigger parent for sure.
+                    if (child.name.Contains("|") || child.name == "Global")
+                    {
+                        Destroy(child);
+                    }
+                    else
+                    {
+                        List<LE_Object.ObjectType?> availableObjectsForTrigger = child.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim())).ToList();
+
+                        foreach (var availableObject in availableObjectsForTrigger)
+                        {
+                            // If one of the extracted object types from the child's name isn't null, also it's a parent, destroy it.
+                            if (availableObject != null) Destroy(child);
+                        }
+                    }
+                }
+            }
         }
 
         void SetNameAndType(string originalObjName)
@@ -82,7 +106,17 @@ namespace FS_LevelEditor
             objectOriginalName = originalObjName;
 
             int id = 0;
-            LE_Object[] objects = EditorController.Instance.levelObjectsParent.GetComponentsInChildren<LE_Object>();
+            LE_Object[] objects = null;
+
+            if (EditorController.Instance != null && PlayModeController.Instance == null)
+            {
+                objects = EditorController.Instance.levelObjectsParent.GetComponentsInChildren<LE_Object>();
+            }
+            else if (EditorController.Instance == null && PlayModeController.Instance != null)
+            {
+                objects = PlayModeController.Instance.levelObjectsParent.GetComponentsInChildren<LE_Object>();
+            }
+
             while (objects.Any(x => x.objectID == id && x.objectOriginalName == objectOriginalName))
             {
                 id++;

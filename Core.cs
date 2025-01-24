@@ -12,6 +12,8 @@ namespace FS_LevelEditor
     public class Core : MelonMod
     {
         public static string currentSceneName;
+        public bool loadCustomLevelOnSceneLoad;
+        public string levelFileNameWithoutExtensionToLoad;
 
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
 
@@ -39,6 +41,11 @@ namespace FS_LevelEditor
                 if (ExternalSpriteLoader.Instance == null) new GameObject("LE_ExternalSpriteLoader").AddComponent<ExternalSpriteLoader>();
                 if (LE_MenuUIManager.Instance == null) new GameObject("LE_MEnuUIManager").AddComponent<LE_MenuUIManager>();
                 LE_MenuUIManager.Instance.OnSceneLoaded();
+            }
+
+            if (sceneName.Contains("Level4_PC") && loadCustomLevelOnSceneLoad)
+            {
+                LevelData.LoadLevelDataInPlaymode(levelFileNameWithoutExtensionToLoad);
             }
         }
 
@@ -101,7 +108,14 @@ namespace FS_LevelEditor
         public GameObject CreateProvicionalLight(Vector3 position, Vector3 rotation)
         {
             GameObject lightObj = new GameObject("Provisional Level Light");
-            lightObj.transform.parent = EditorController.Instance.levelObjectsParent.transform;
+            if (EditorController.Instance != null && PlayModeController.Instance == null)
+            {
+                lightObj.transform.parent = EditorController.Instance.levelObjectsParent.transform;
+            }
+            else if (EditorController.Instance == null && PlayModeController.Instance != null)
+            {
+                lightObj.transform.parent = PlayModeController.Instance.levelObjectsParent.transform;
+            }
 
             lightObj.AddComponent<Light>().type = LightType.Directional;
             lightObj.AddComponent<LE_Object>().objectOriginalName = "ProvisionalLight";

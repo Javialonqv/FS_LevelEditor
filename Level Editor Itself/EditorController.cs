@@ -222,7 +222,6 @@ namespace FS_LevelEditor
                 EditorUIManager.Instance.navigation.SetActive(true);
                 EditorUIManager.Instance.DeleteUI();
 
-                //SceneManager.LoadScene("Level4_PC");
                 MenuController.GetInstance().ButtonPressed(ButtonController.Type.CHAPTER_4);
             }
         }

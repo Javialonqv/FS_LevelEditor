@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using MelonLoader;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using Il2Cpp;
 
 namespace FS_LevelEditor
 {
@@ -105,6 +106,31 @@ namespace FS_LevelEditor
             }
 
             Logger.Log($"\"{data.levelName}\" level loaded!");
+        }
+
+        // And this for loading the saved level in playmode lol.
+        public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
+        {
+            PlayModeController playModeCtrl = new GameObject("PlayModeController").AddComponent<PlayModeController>();
+
+            GameObject objectsParent = playModeCtrl.levelObjectsParent;
+            objectsParent.DeleteAllChildren();
+
+            string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
+            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
+
+            playModeCtrl.levelName = data.levelName;
+
+            foreach (LE_ObjectData obj in data.objects)
+            {
+                GameObject objInstance = playModeCtrl.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, false);
+                LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
+
+                objClassInstance.objectID = obj.objectID;
+                objInstance.name = objClassInstance.objectFullNameWithID;
+            }
+
+            Logger.Log($"\"{data.levelName}\" level loaded in playmode!");
         }
 
         public static string GetAvailableLevelName()

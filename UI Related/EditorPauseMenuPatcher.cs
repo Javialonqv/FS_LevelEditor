@@ -47,7 +47,7 @@ namespace FS_LevelEditor
             exitButtonFromNavigation.onButtonClick = new Action<NavigationBarController.ActionType>(NavigationBarController.Instance.ManualButtonPressed);
         }
 
-        void OnDestroy()
+        public void BeforeDestroying()
         {
             Destroy(gameObject.GetChildAt("LargeButtons/1_ResumeWhenInEditor"));
             Destroy(gameObject.GetChildAt("LargeButtons/7_ExitWhenInEditor"));
