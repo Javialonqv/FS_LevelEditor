@@ -212,6 +212,19 @@ namespace FS_LevelEditor
             }
 
             ManageObjectRotationShortcuts();
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P))
+            {
+                Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
+                Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
+                EditorUIManager.Instance.pauseMenu.GetComponent<EditorPauseMenuPatcher>().BeforeDestroying();
+                EditorUIManager.Instance.pauseMenu.RemoveComponent<EditorPauseMenuPatcher>();
+                EditorUIManager.Instance.navigation.SetActive(true);
+                EditorUIManager.Instance.DeleteUI();
+
+                //SceneManager.LoadScene("Level4_PC");
+                MenuController.GetInstance().ButtonPressed(ButtonController.Type.CHAPTER_4);
+            }
         }
 
         // For now, this method only disables and enables the "building" UI, with the objects available to build.

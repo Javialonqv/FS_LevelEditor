@@ -32,7 +32,7 @@ namespace FS_LevelEditor
 
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
-        GameObject navigation;
+        public GameObject navigation;
 
         void Awake()
         {
@@ -448,6 +448,7 @@ namespace FS_LevelEditor
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
 
             // Remove this component, since this component is only needed when inside of LE.
+            pauseMenu.GetComponent<EditorPauseMenuPatcher>().BeforeDestroying();
             pauseMenu.RemoveComponent<EditorPauseMenuPatcher>();
 
             DeleteUI();
