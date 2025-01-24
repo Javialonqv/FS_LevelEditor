@@ -9,6 +9,7 @@ using MelonLoader;
 using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
 using Il2Cpp;
+using System.Collections;
 
 namespace FS_LevelEditor
 {
@@ -215,14 +216,7 @@ namespace FS_LevelEditor
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P))
             {
-                Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
-                Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
-                EditorUIManager.Instance.pauseMenu.GetComponent<EditorPauseMenuPatcher>().BeforeDestroying();
-                EditorUIManager.Instance.pauseMenu.RemoveComponent<EditorPauseMenuPatcher>();
-                EditorUIManager.Instance.navigation.SetActive(true);
-                EditorUIManager.Instance.DeleteUI();
-
-                MenuController.GetInstance().ButtonPressed(ButtonController.Type.CHAPTER_4);
+                EnterPlayMode();
             }
         }
 
@@ -776,6 +770,25 @@ namespace FS_LevelEditor
                         return;
                     }
                 }
+            }
+        }
+
+        void EnterPlayMode()
+        {
+            MelonCoroutines.Start(Coroutine());
+
+            IEnumerator Coroutine()
+            {
+                Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
+                Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
+                EditorUIManager.Instance.pauseMenu.GetComponent<EditorPauseMenuPatcher>().BeforeDestroying();
+                EditorUIManager.Instance.pauseMenu.RemoveComponent<EditorPauseMenuPatcher>();
+                EditorUIManager.Instance.DeleteUI();
+                MenuController.GetInstance().ButtonPressed(ButtonController.Type.CHAPTER_4);
+
+                yield return new WaitForSecondsRealtime(1f);
+                EditorUIManager.Instance.navigation.SetActive(true);
+
             }
         }
 
