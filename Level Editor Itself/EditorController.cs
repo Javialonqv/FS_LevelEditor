@@ -150,12 +150,14 @@ namespace FS_LevelEditor
             // If click and it's on selection and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element AAAND it's not using snap to grid while edition right now...
             if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !startSnapToGridWithCurrentSelectedObj)
             {
-                // If it's selecting an object, well, set it as the selected one, otherwise, deselect the last selected object if there's one.
+                // If it's selecting an object, well, set it as the selected one.
                 if (CanSelectObjectWithRay(out GameObject obj))
                 {
                     SetSelectedObj(obj);
                 }
-                else
+                // Otherwise, deselect the last selected object if there's one ONLY if it's not holding Ctrl, since it may be selecting multiple objects.
+                // We don't want the user to lost his whole selection by just one simple mistake, do we?
+                else if (!Input.GetKey(KeyCode.LeftControl))
                 {
                     SetSelectedObj(null);
                 }
