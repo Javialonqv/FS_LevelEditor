@@ -780,6 +780,7 @@ namespace FS_LevelEditor
 
             // Rename the level.
             LevelData.RenameLevel(levelFileNameWithoutExtension, input.text);
+            CreateLevelsList();
         }
 
 
