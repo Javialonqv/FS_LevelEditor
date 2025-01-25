@@ -661,7 +661,8 @@ namespace FS_LevelEditor
                 InGameUIManager.Instance.StartTotalFadeOut(3, true);
                 yield return new WaitForSecondsRealtime(1.5f);
 
-                SwitchBetweenMenuAndLEMenu();
+                mainMenu.SetActive(true);
+                leMenuPanel.SetActive(false);
                 Melon<Core>.Instance.SetupTheWholeEditor(true);
 
                 yield return new WaitForSecondsRealtime(1.5f);
