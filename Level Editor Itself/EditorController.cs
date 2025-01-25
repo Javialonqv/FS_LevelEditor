@@ -187,7 +187,12 @@ namespace FS_LevelEditor
             {
                 DeleteSelectedObj();
             }
-            
+
+            ManageSomeShortcuts();
+        }
+
+        void ManageSomeShortcuts()
+        {
             // Shortcuts for changing between editor modes.
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
@@ -202,12 +207,14 @@ namespace FS_LevelEditor
                 ChangeMode(Mode.Deletion);
             }
 
+            // Shortcut for saving level data.
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S))
             {
                 LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
                 EditorUIManager.Instance.PlaySavingLevelLabel();
             }
 
+            // Shortcut for duplicating current selected object.
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.D))
             {
                 DuplicateSelectedObject();
@@ -215,6 +222,7 @@ namespace FS_LevelEditor
 
             ManageObjectRotationShortcuts();
 
+            // Shortcut for hide/show category button in UI.
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H) && currentMode == Mode.Building)
             {
                 EditorUIManager.Instance.HideOrShowCategoryButtons();
