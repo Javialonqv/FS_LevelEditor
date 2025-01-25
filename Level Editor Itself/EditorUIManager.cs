@@ -34,6 +34,7 @@ namespace FS_LevelEditor
         GameObject onExitPopupBackButton;
         GameObject onExitPopupSaveAndExitButton;
         GameObject onExitPopupExitButton;
+        bool exitPopupEnabled = false;
 
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
@@ -473,6 +474,13 @@ namespace FS_LevelEditor
             // If you're resuming BUT if the pause menu is disabled itself, then is likely cause the user is in another submenu (like options), in that cases.. don't do anything.
             if (!pauseMenu.activeSelf) return;
 
+            // If the user is in the exit confirmation popup, just hide it and do nothing.
+            if (exitPopupEnabled)
+            {
+                OnExitPopupBackButton();
+                return;
+            }
+
             MelonCoroutines.Start(Coroutine());
 
             IEnumerator Coroutine()
@@ -535,10 +543,12 @@ namespace FS_LevelEditor
             onExitPopupExitButton.SetActive(true);
 
             popupController.Show();
+            exitPopupEnabled = true;
         }
         public void OnExitPopupBackButton()
         {
             popupController.Hide();
+            exitPopupEnabled = false;
 
             Destroy(onExitPopupBackButton);
             Destroy(onExitPopupSaveAndExitButton);

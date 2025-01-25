@@ -18,6 +18,7 @@ namespace FS_LevelEditor
         public static LE_MenuUIManager Instance;
 
         public bool inLEMenu;
+        bool deletePopupEnabled = false;
 
         // Variables outside of LE menu.
         GameObject mainMenu;
@@ -77,7 +78,15 @@ namespace FS_LevelEditor
             // To exit from the LE menu with the ESC key.
             if (Input.GetKeyDown(KeyCode.Escape) && inLEMenu)
             {
-                SwitchBetweenMenuAndLEMenu();
+                // BUT, if the delete level popup is enabled, then hide it and do ABSOLUTELY NOTHNG.
+                if (deletePopupEnabled)
+                {
+                    OnDeletePopupBackButton();
+                }
+                else // If not, then... exit from the menu :)
+                {
+                    SwitchBetweenMenuAndLEMenu();
+                }
             }
 
             // To exit from the LE menu with the navigation bar buttons.
@@ -703,10 +712,12 @@ namespace FS_LevelEditor
             onDeletePopupDeleteButton.SetActive(true);
 
             popupController.Show();
+            deletePopupEnabled = true;
         }
         void OnDeletePopupBackButton()
         {
             popupController.Hide();
+            deletePopupEnabled = false;
 
             Destroy(onDeletePopupBackButton);
             Destroy(onDeletePopupDeleteButton);
