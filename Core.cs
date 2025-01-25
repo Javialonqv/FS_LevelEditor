@@ -68,7 +68,7 @@ namespace FS_LevelEditor
             if (!willLoadALevel)
             {
                 SpawnBase();
-                CreateProvicionalLight(new Vector3(-13f, 130f, -56f), new Vector3(45f, 0f, 0f));
+                CreateDirectionalLight(new Vector3(-13f, 130f, -56f), new Vector3(45f, 180f, 0f));
             }
         }
 
@@ -101,7 +101,7 @@ namespace FS_LevelEditor
             }
         }
 
-        public GameObject CreateProvicionalLight(Vector3 position, Vector3 rotation)
+        public GameObject CreateDirectionalLight(Vector3 position, Vector3 rotation)
         {
             GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, false);
             return lightObj;
