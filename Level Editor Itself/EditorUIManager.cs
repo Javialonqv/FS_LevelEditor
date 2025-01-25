@@ -20,6 +20,8 @@ namespace FS_LevelEditor
         GameObject editorUIParent;
 
         public List<GameObject> categoryButtons = new List<GameObject>();
+        GameObject categoryButtonsParent;
+        bool categoryButtonsAreHidden = false;
 
         public GameObject currentCategoryBG;
         List<GameObject> currentCategoryButtons = new List<GameObject>();
@@ -92,13 +94,20 @@ namespace FS_LevelEditor
             editorUIParent.transform.parent = GameObject.Find("MainMenu/Camera/Holder").transform;
             editorUIParent.transform.localScale = Vector3.one;
 
+            categoryButtonsParent = new GameObject("CategoryButtons");
+            categoryButtonsParent.transform.parent = editorUIParent.transform;
+            categoryButtonsParent.transform.localPosition = Vector3.zero;
+            categoryButtonsParent.transform.localScale = Vector3.one;
+            categoryButtonsParent.layer = LayerMask.NameToLayer("2D GUI");
+            categoryButtonsParent.AddComponent<UIPanel>();
+
             GameObject buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/Tabs/1_Taser");
 
             for (int i = 0; i < EditorController.Instance.categories.Count; i++)
             {
                 string category = EditorController.Instance.categories[i];
 
-                GameObject categoryButton = Instantiate(buttonTemplate, editorUIParent.transform);
+                GameObject categoryButton = Instantiate(buttonTemplate, categoryButtonsParent.transform);
                 categoryButton.name = $"{category}_Button";
                 categoryButton.transform.localPosition = new Vector3(-800f + (250f * i), 450f, 0f);
                 Destroy(categoryButton.GetChildWithName("Label").GetComponent<UILocalize>());
@@ -120,6 +129,7 @@ namespace FS_LevelEditor
                 categoryButtons.Add(categoryButton);
             }
 
+
             categoryButtons[0].GetComponent<UIToggle>().Set(true);
         }
 
@@ -131,6 +141,8 @@ namespace FS_LevelEditor
             currentCategoryBG.transform.parent = editorUIParent.transform;
             currentCategoryBG.transform.localPosition = new Vector3(0f, 330f, 0f);
             currentCategoryBG.transform.localScale = Vector3.one;
+            currentCategoryBG.layer = LayerMask.NameToLayer("2D GUI");
+            currentCategoryBG.AddComponent<UIPanel>();
 
             UISprite bgSprite = currentCategoryBG.AddComponent<UISprite>();
             bgSprite.atlas = template.GetComponent<UISprite>().atlas;
@@ -371,6 +383,24 @@ namespace FS_LevelEditor
         public void SetCurrentModeLabelText(EditorController.Mode mode)
         {
             currentModeLabel.text = $"[c][ffff00]Current mode:[-][/c] {mode.ToString()}";
+        }
+
+        public void HideOrShowCategoryButtons()
+        {
+            categoryButtonsAreHidden = !categoryButtonsAreHidden;
+
+            if (categoryButtonsAreHidden)
+            {
+                TweenAlpha.Begin(categoryButtonsParent, 0.2f, 0f);
+                TweenPosition.Begin(currentCategoryBG, 0.2f, new Vector3(0f, 410f, 0f));
+                InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.hideHUDSound);
+            }
+            else
+            {
+                TweenAlpha.Begin(categoryButtonsParent, 0.2f, 1f);
+                TweenPosition.Begin(currentCategoryBG, 0.2f, new Vector3(0f, 330f, 0f));
+                InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.showHUDSound);
+            }
         }
 
 

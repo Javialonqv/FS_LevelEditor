@@ -214,6 +214,11 @@ namespace FS_LevelEditor
             }
 
             ManageObjectRotationShortcuts();
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H) && currentMode == Mode.Building)
+            {
+                EditorUIManager.Instance.HideOrShowCategoryButtons();
+            }
         }
 
         // For now, this method only disables and enables the "building" UI, with the objects available to build.
