@@ -31,10 +31,18 @@ namespace FS_LevelEditor
         GameObject savingLevelLabelInPauseMenu;
         Coroutine savingLevelLabelRoutine;
         UILabel currentModeLabel;
+        GameObject onExitPopupBackButton;
+        GameObject onExitPopupSaveAndExitButton;
+        GameObject onExitPopupExitButton;
 
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
         GameObject navigation;
+        GameObject popup;
+        PopupController popupController;
+        GameObject popupTitle;
+        GameObject popupContentLabel;
+        GameObject popupSmallButtonsParent;
 
         void Awake()
         {
@@ -85,6 +93,11 @@ namespace FS_LevelEditor
             occluderForWhenPaused = uiParentObj.GetChildWithName("Occluder");
             pauseMenu = uiParentObj.GetChildWithName("Main");
             navigation = uiParentObj.GetChildWithName("Navigation");
+            popup = uiParentObj.GetChildWithName("Popup");
+            popupController = popup.GetComponent<PopupController>();
+            popupTitle = popup.GetChildAt("PopupHolder/Title/Label");
+            popupContentLabel = popup.GetChildAt("PopupHolder/Content/Label");
+            popupSmallButtonsParent = popup.GetChildAt("PopupHolder/SmallButtons");
         }
 
 
@@ -424,7 +437,7 @@ namespace FS_LevelEditor
             GameObject exitBtnWhenInsideLE = Instantiate(originalExitBtn, originalExitBtn.transform.parent);
             exitBtnWhenInsideLE.name = "7_ExitWhenInEditor";
             Destroy(exitBtnWhenInsideLE.GetComponent<ButtonController>());
-            exitBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.ExitToMenu)));
+            exitBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(ShowExitPopup)));
 
             // Create a save level button.
             GameObject saveLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
@@ -433,7 +446,7 @@ namespace FS_LevelEditor
             Destroy(saveLevelButton.GetComponent<ButtonController>());
             Destroy(saveLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
             saveLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
-            saveLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.SaveLevelWithPauseMenuButton)));
+            saveLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(SaveLevelWithPauseMenuButton)));
 
             // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.
             // EDIT: Also to patch and do some stuff in the pause menu while in LE.
@@ -480,18 +493,71 @@ namespace FS_LevelEditor
                 EditorController.Instance.isEditorPaused = false;
             }
         }
-        public void ExitToMenu()
+
+        public void ShowExitPopup()
         {
-            // Save data automatically.
-            LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
+            popupTitle.GetComponent<UILabel>().text = "Warning";
+            popupContentLabel.GetComponent<UILabel>().text = "Warning, exiting will erase your last saved changes if you made any before saving, are you sure you want to continue?";
+            popupSmallButtonsParent.DisableAllChildren();
+            popupSmallButtonsParent.transform.localPosition = new Vector3(-10f, -315f, 0f);
+            popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(10f, 0f);
 
-            // Remove this component, since this component is only needed when inside of LE.
-            pauseMenu.RemoveComponent<EditorPauseMenuPatcher>();
+            // Make a copy of the yess button since for some reason the yes button is red as the no button should, that's doesn't make any sense lol.
+            onExitPopupBackButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
+            onExitPopupBackButton.name = "1_Back";
+            onExitPopupBackButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
+            Destroy(onExitPopupBackButton.GetComponent<ButtonController>());
+            Destroy(onExitPopupBackButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            onExitPopupBackButton.GetChildWithName("Label").GetComponent<UILabel>().text = "No";
+            onExitPopupBackButton.GetComponent<UIButton>().onClick.Clear();
+            onExitPopupBackButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnExitPopupBackButton)));
+            onExitPopupBackButton.SetActive(true);
 
-            DeleteUI();
+            onExitPopupSaveAndExitButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
+            onExitPopupSaveAndExitButton.name = "2_SaveAndExit";
+            onExitPopupSaveAndExitButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
+            Destroy(onExitPopupSaveAndExitButton.GetComponent<ButtonController>());
+            Destroy(onExitPopupSaveAndExitButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            onExitPopupSaveAndExitButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save and Exit";
+            onExitPopupSaveAndExitButton.GetComponent<UIButton>().onClick.Clear();
+            onExitPopupSaveAndExitButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnExitPopupSaveAndExitButton)));
+            onExitPopupSaveAndExitButton.SetActive(true);
 
-            MenuController.GetInstance().ReturnToMainMenu();
+            // Same with exit button.
+            onExitPopupExitButton = Instantiate(popupSmallButtonsParent.GetChildAt("1_No"), popupSmallButtonsParent.transform);
+            onExitPopupExitButton.name = "3_ExitWithoutSaving";
+            onExitPopupExitButton.transform.localPosition = new Vector3(200f, 0f, 0f);
+            Destroy(onExitPopupExitButton.GetComponent<ButtonController>());
+            Destroy(onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Exit without Saving";
+            onExitPopupExitButton.GetComponent<UIButton>().onClick.Clear();
+            onExitPopupExitButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnExitPopupExitWithoutSavingButton)));
+            onExitPopupExitButton.SetActive(true);
+
+            popupController.Show();
         }
+        public void OnExitPopupBackButton()
+        {
+            popupController.Hide();
+
+            Destroy(onExitPopupBackButton);
+            Destroy(onExitPopupSaveAndExitButton);
+            Destroy(onExitPopupExitButton);
+
+            popupSmallButtonsParent.transform.localPosition = new Vector3(-130f, -315f, 0f);
+            popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(130f, 0f);
+        }
+        public void OnExitPopupSaveAndExitButton()
+        {
+            OnExitPopupBackButton();
+            ExitToMenu(true);
+        }
+        public void OnExitPopupExitWithoutSavingButton()
+        {
+            OnExitPopupBackButton();
+            ExitToMenu(false);
+        }
+
         public void ExitToMenuFromNavigationBarButton(NavigationBarController.ActionType type)
         {
             ExitToMenu();
@@ -502,6 +568,21 @@ namespace FS_LevelEditor
             PlaySavingLevelLabel();
         }
 
+        public void ExitToMenu(bool saveDataBeforeExit = false)
+        {
+            if (saveDataBeforeExit)
+            {
+                // Save data.
+                LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
+            }
+
+            // Remove this component, since this component is only needed when inside of LE.
+            pauseMenu.RemoveComponent<EditorPauseMenuPatcher>();
+
+            DeleteUI();
+
+            MenuController.GetInstance().ReturnToMainMenu();
+        }
         public void DeleteUI()
         {
             // If the coroutine was already played, stop it if it's currently playing to "restart" it.
