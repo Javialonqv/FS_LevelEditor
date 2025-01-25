@@ -107,9 +107,9 @@ namespace FS_LevelEditor
             Logger.Log($"\"{data.levelName}\" level loaded!");
         }
 
-        public static string GetAvailableLevelName()
+        public static string GetAvailableLevelName(string levelNameOriginal = "New Level")
         {
-            string levelName = "New Level";
+            string levelName = levelNameOriginal;
             string toReturn = levelName;
             int counter = 1;
 
@@ -157,12 +157,33 @@ namespace FS_LevelEditor
 
         public static void RenameLevel(string levelFileNameWithoutExtension, string newLevelName)
         {
+            // Get the level to rename.
             var levels = GetLevelsList();
             LevelData toRename = levels[levelFileNameWithoutExtension];
+            string oldLevelName = toRename.levelName;
 
+            // Set the new level in the level data.
             toRename.levelName = newLevelName;
 
+            // Save the file with the new name.
             SaveLevelData(newLevelName, levelFileNameWithoutExtension, toRename);
+
+            // If the level file name is the same than the level name itself, also rename the file name.
+            if (levelFileNameWithoutExtension.Equals(oldLevelName))
+            {
+                Logger.Log("Level file name is the same than the old level name, renaming the file name as well.");
+                string oldPath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
+                string newPath = Path.Combine(levelsDirectory, newLevelName + ".lvl");
+
+                if (File.Exists(newPath))
+                {
+                    Logger.Warning("The level file name already exists. Selecting a new leve file name to avoid conflicts, level file name won't be renamed in the next edits.");
+                    newPath = Path.Combine(levelsDirectory, GetAvailableLevelName(newLevelName) + ".lvl");
+                }
+
+                Logger.Log("New level file path is: " + newPath);
+                File.Move(oldPath, newPath);
+            }
         }
     }
 
