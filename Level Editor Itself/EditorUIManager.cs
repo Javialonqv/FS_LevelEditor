@@ -42,6 +42,14 @@ namespace FS_LevelEditor
         void Start()
         {
             SetupEditorUI();
+
+            Invoke("ForceEnableFirstCategory", 0.1f);
+        }
+
+        void ForceEnableFirstCategory()
+        {
+            // For some fucking reason the code enables the content in the SECOND category, I need to force it... damn it.
+            EditorController.Instance.ChangeCategory(0);
         }
 
         void Update()
@@ -112,7 +120,7 @@ namespace FS_LevelEditor
                 categoryButtons.Add(categoryButton);
             }
 
-            categoryButtons[EditorController.Instance.currentCategoryID].GetComponent<UIToggle>().Set(true);
+            categoryButtons[0].GetComponent<UIToggle>().Set(true);
         }
 
         void CreateObjectsBackground()
