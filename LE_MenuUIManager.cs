@@ -25,6 +25,11 @@ namespace FS_LevelEditor
         AudioClip okSound;
         AudioClip hidePageSound;
         GameObject navigationBarButtonsParent;
+        GameObject popup;
+        PopupController popupController;
+        GameObject popupTitle;
+        GameObject popupContentLabel;
+        GameObject popupSmallButtonsParent;
 
         // Variables for objects/things related to LE menu.
         GameObject levelEditorUIButton;
@@ -35,6 +40,8 @@ namespace FS_LevelEditor
         GameObject lvlButtonsParent;
         List<GameObject> lvlButtonsGrids = new List<GameObject>();
         int currentLevelsGridID;
+        GameObject onDeletePopupBackButton;
+        GameObject onDeletePopupDeleteButton;
 
         void Awake()
         {
@@ -106,6 +113,12 @@ namespace FS_LevelEditor
             hidePageSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
             navigationBarButtonsParent = GameObject.Find("MainMenu/Camera/Holder/Navigation/Holder/Bar/ActionsHolder/");
+
+            popup = GameObject.Find("MainMenu/Camera/Holder/Popup");
+            popupController = popup.GetComponent<PopupController>();
+            popupTitle = popup.GetChildAt("PopupHolder/Title/Label");
+            popupContentLabel = popup.GetChildAt("PopupHolder/Content/Label");
+            popupSmallButtonsParent = popup.GetChildAt("PopupHolder/SmallButtons");
         }
 
         // LE stands for "Level Editor" lmao.
@@ -471,7 +484,7 @@ namespace FS_LevelEditor
 
                 // Adjust what should the button execute when clicked.
                 UIButton deleteButton = deleteBtn.GetComponent<UIButton>();
-                EventDelegate deleteOnClick = new EventDelegate(this, nameof(LE_MenuUIManager.DeleteLevel));
+                EventDelegate deleteOnClick = new EventDelegate(this, nameof(LE_MenuUIManager.ShowDeleteLevelPopup));
                 EventDelegate.Parameter deleteOnClickParameter = new EventDelegate.Parameter
                 {
                     field = "levelFileNameWithoutExtension",
@@ -649,8 +662,59 @@ namespace FS_LevelEditor
                 LevelData.LoadLevelData(levelFileNameWithoutExtension);
             }
         }
+        void ShowDeleteLevelPopup(string levelFileNameWithoutExtension)
+        {
+            popupTitle.GetComponent<UILabel>().text = "Warning";
+            popupContentLabel.GetComponent<UILabel>().text = "Are you sure you want to delete this level?";
+            popupSmallButtonsParent.DisableAllChildren();
+            popupSmallButtonsParent.transform.localPosition = new Vector3(-10f, -315f, 0f);
+            popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(10f, 0f);
+
+            // Make a copy of the yes button since for some reason the yes button is red as the no button should, that's doesn't make any sense lol.
+            onDeletePopupBackButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
+            onDeletePopupBackButton.name = "1_Back";
+            onDeletePopupBackButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
+            Destroy(onDeletePopupBackButton.GetComponent<ButtonController>());
+            Destroy(onDeletePopupBackButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            onDeletePopupBackButton.GetChildWithName("Label").GetComponent<UILabel>().text = "No";
+            onDeletePopupBackButton.GetComponent<UIButton>().onClick.Clear();
+            onDeletePopupBackButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnDeletePopupBackButton)));
+            onDeletePopupBackButton.SetActive(true);
+
+            // Same with delete button.
+            onDeletePopupDeleteButton = Instantiate(popupSmallButtonsParent.GetChildAt("1_No"), popupSmallButtonsParent.transform);
+            onDeletePopupDeleteButton.name = "2_Delete";
+            onDeletePopupDeleteButton.transform.localPosition = new Vector3(200f, 0f, 0f);
+            Destroy(onDeletePopupDeleteButton.GetComponent<ButtonController>());
+            Destroy(onDeletePopupDeleteButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            onDeletePopupDeleteButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Delete";
+            onDeletePopupDeleteButton.GetComponent<UIButton>().onClick.Clear();
+
+            UIButton deleteButton = onDeletePopupDeleteButton.GetComponent<UIButton>();
+            EventDelegate deleteOnClick = new EventDelegate(this, nameof(LE_MenuUIManager.DeleteLevel));
+            EventDelegate.Parameter deleteOnClickParameter = new EventDelegate.Parameter
+            {
+                field = "levelFileNameWithoutExtension",
+                value = levelFileNameWithoutExtension,
+                obj = this
+            };
+            deleteOnClick.mParameters = new EventDelegate.Parameter[] { deleteOnClickParameter };
+            onDeletePopupDeleteButton.GetComponent<UIButton>().onClick.Add(deleteOnClick);
+            onDeletePopupDeleteButton.SetActive(true);
+
+            popupController.Show();
+        }
+        void OnDeletePopupBackButton()
+        {
+            popupController.Hide();
+
+            Destroy(onDeletePopupBackButton);
+            Destroy(onDeletePopupDeleteButton);
+        }
         void DeleteLevel(string levelFileNameWithoutExtension)
         {
+            OnDeletePopupBackButton();
+
             LevelData.DeleteLevel(levelFileNameWithoutExtension);
             CreateLevelsList();
         }
