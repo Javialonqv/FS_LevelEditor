@@ -570,7 +570,7 @@ namespace FS_LevelEditor
 
         public void ExitToMenuFromNavigationBarButton(NavigationBarController.ActionType type)
         {
-            ExitToMenu();
+            ShowExitPopup();
         }
         public void SaveLevelWithPauseMenuButton()
         {
