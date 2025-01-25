@@ -1,4 +1,5 @@
-﻿using Il2CppInterop.Runtime;
+﻿using Il2Cpp;
+using Il2CppInterop.Runtime;
 using MelonLoader;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace FS_LevelEditor
         public ObjectType? objectType;
         public int objectID;
         public string objectOriginalName;
-        public string objectFullNameWithID
+        public virtual string objectFullNameWithID
         {
             get { return objectOriginalName + " " + objectID; }
         }
@@ -53,13 +54,13 @@ namespace FS_LevelEditor
             string className = "LE_" + originalObjName.Replace(' ', '_');
             Type classType = Type.GetType("FS_LevelEditor." + className);
 
-            if (className == "LE_Directional_Light")
-            {
-                Logger.DebugLog(classType);
-            }
-
             if (classType != null)
             {
+                if (HasReachedObjectLimit(classType))
+                {
+                    Utilities.ShowCustomNotification();
+                    return null;
+                }
                 LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
                 instancedComponent.Init(originalObjName);
                 return instancedComponent;
@@ -117,6 +118,16 @@ namespace FS_LevelEditor
             {
                 return null;
             }
+        }
+        static bool HasReachedObjectLimit(Type objectCompType)
+        {
+            FieldInfo currentInstancesField = objectCompType.GetField("currentInstances", BindingFlags.NonPublic | BindingFlags.Static);
+            FieldInfo maxInstancesField = objectCompType.GetField("maxInstances", BindingFlags.NonPublic | BindingFlags.Static);
+
+            int currentInstances = currentInstancesField != null ? (int)currentInstancesField.GetValue(null) : 0;
+            int maxInstances = maxInstancesField != null ? (int)maxInstancesField.GetValue(null) : 99999;
+
+            return currentInstances >= maxInstances;
         }
 
         public virtual void SetProperty(string name, object value)

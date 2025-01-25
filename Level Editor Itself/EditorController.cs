@@ -314,22 +314,7 @@ namespace FS_LevelEditor
 
         void InstanceObjectInThePreviewObjectPos()
         {
-            GameObject obj = Instantiate(previewObjectToBuildObj, levelObjectsParent.transform);
-            LE_Object.AddComponentToObject(obj, currentObjectToBuildName);
-
-            foreach (var collider in obj.TryGetComponents<Collider>())
-            {
-                collider.enabled = true;
-            }
-            foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
-            {
-                foreach (var material in renderer.materials)
-                {
-                    material.color = new Color(1f, 1f, 1f, 1f);
-                }
-            }
-
-            SetSelectedObj(obj);
+            PlaceObject(currentObjectToBuildName, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, true);
         }
 
         bool CanUseThatSnapToGridTrigger(string objToBuildName, GameObject triggerObj)
@@ -606,18 +591,19 @@ namespace FS_LevelEditor
 
         public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
         {
-            //if (objName == "ProvisionalLight")
-            //{
-            //    return Melon<Core>.Instance.CreateProvicionalLight(position, eulerAngles);
-            //}
-
             GameObject template = allCategoriesObjects[objName];
             GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
             obj.transform.localPosition = position;
             obj.transform.localEulerAngles = eulerAngles;
 
-            LE_Object.AddComponentToObject(obj, objName);
+            LE_Object addedComp = LE_Object.AddComponentToObject(obj, objName);
+
+            if (addedComp == null)
+            {
+                Destroy(obj);
+                return null;
+            }
 
             foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
             {
