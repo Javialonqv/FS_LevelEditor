@@ -87,25 +87,8 @@ namespace FS_LevelEditor
             // If it's on playmode.
             if (PlayModeController.Instance != null)
             {
-                // Destroy all of the triggers, since they are only needed when in LE.
-                foreach (var child in gameObject.GetChilds())
-                {
-                    // If the child's name contains a "|" or it's "Global" it's a trigger parent for sure.
-                    if (child.name.Contains("|") || child.name == "Global")
-                    {
-                        Destroy(child);
-                    }
-                    else
-                    {
-                        List<LE_Object.ObjectType?> availableObjectsForTrigger = child.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim())).ToList();
-
-                        foreach (var availableObject in availableObjectsForTrigger)
-                        {
-                            // If one of the extracted object types from the child's name isn't null, also it's a parent, destroy it.
-                            if (availableObject != null) Destroy(child);
-                        }
-                    }
-                }
+                // Destroy the snap triggers of this object.
+                Destroy(gameObject.GetChildWithName("SnapTriggers"));
             }
         }
 
