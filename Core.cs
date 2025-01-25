@@ -58,15 +58,18 @@ namespace FS_LevelEditor
 #endif
         }
 
-        public void SetupTheWholeEditor()
+        public void SetupTheWholeEditor(bool willLoadALevel = false)
         {
             SetupEditorBasics();
 
             new GameObject("EditorController").AddComponent<EditorController>();
             new GameObject("EditorUIManager").AddComponent<EditorUIManager>();
 
-            SpawnBase();
-            CreateProvicionalLight(new Vector3(-13f, 130f, -56f), new Vector3(45f, 0f, 0f));
+            if (!willLoadALevel)
+            {
+                SpawnBase();
+                CreateProvicionalLight(new Vector3(-13f, 130f, -56f), new Vector3(45f, 0f, 0f));
+            }
         }
 
         void SetupEditorBasics()
