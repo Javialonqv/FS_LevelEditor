@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "v0.1.0", "Javialon_qv", null)]
+[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.1.0", "Javialon_qv", null)]
 [assembly: MelonGame("Haze Games", "Fractal Space")]
 
 namespace FS_LevelEditor
@@ -65,15 +65,18 @@ namespace FS_LevelEditor
 #endif
         }
 
-        public void SetupTheWholeEditor()
+        public void SetupTheWholeEditor(bool willLoadALevel = false)
         {
             SetupEditorBasics();
 
             new GameObject("EditorController").AddComponent<EditorController>();
             new GameObject("EditorUIManager").AddComponent<EditorUIManager>();
 
-            SpawnBase();
-            CreateProvicionalLight(new Vector3(-13f, 130f, -56f), new Vector3(45f, 0f, 0f));
+            if (!willLoadALevel)
+            {
+                SpawnBase();
+                CreateDirectionalLight(new Vector3(-13f, 130f, -56f), new Vector3(45f, 180f, 0f));
+            }
         }
 
         void SetupEditorBasics()
@@ -105,29 +108,9 @@ namespace FS_LevelEditor
             }
         }
 
-        public GameObject CreateProvicionalLight(Vector3 position, Vector3 rotation)
+        public GameObject CreateDirectionalLight(Vector3 position, Vector3 rotation)
         {
-            GameObject lightObj = new GameObject("Provisional Level Light");
-            if (EditorController.Instance != null && PlayModeController.Instance == null)
-            {
-                lightObj.transform.parent = EditorController.Instance.levelObjectsParent.transform;
-            }
-            else if (EditorController.Instance == null && PlayModeController.Instance != null)
-            {
-                lightObj.transform.parent = PlayModeController.Instance.levelObjectsParent.transform;
-            }
-
-            lightObj.AddComponent<Light>().type = LightType.Directional;
-            lightObj.AddComponent<LE_Object>().objectOriginalName = "ProvisionalLight";
-
-            lightObj.transform.localPosition = position;
-            lightObj.transform.localEulerAngles = rotation;
-
-            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.transform.parent = lightObj.transform;
-            cube.transform.localPosition = Vector3.zero;
-            cube.transform.localRotation = Quaternion.identity;
-
+            GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, false);
             return lightObj;
         }
     }

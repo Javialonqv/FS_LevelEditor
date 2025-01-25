@@ -1,6 +1,10 @@
 ﻿using Il2Cpp;
+using Il2CppInControl.NativeDeviceProfiles;
+using MelonLoader;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -203,6 +207,39 @@ namespace FS_LevelEditor
 
             // Move the child to the last index.
             child.transform.SetSiblingIndex(lastIndex);
+        }
+
+        public static void ShowCustomNotificationRed(string msg, float delay)
+        {
+            MelonCoroutines.Start(Coroutine());
+            IEnumerator Coroutine()
+            {
+                // Get the variable.
+                GameObject notificationPanel = GameObject.Find("(singleton) InGameUIManager/Camera/Panel/Notifications");
+
+                // Set the red color in the sprites.
+                notificationPanel.GetChildAt("Holder/Background").GetComponent<UISprite>().color = new Color32(255, 120, 120, 160);
+                notificationPanel.GetChildAt("Holder/BOrderLines").GetComponent<UISprite>().color = new Color32(255, 120, 120, 255);
+
+                // Play the notification sound.
+                InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.m_notificationSound_bad);
+
+                // Enable the panel and start the fade in.
+                notificationPanel.SetActive(true);
+                TweenAlpha.Begin(notificationPanel, 0.2f, 1f);
+                // Set the text and start the typing effect while the fade is occurring.
+                notificationPanel.GetChildAt("Holder/Label").GetComponent<UILabel>().text = "";
+                notificationPanel.GetChildAt("Holder/Label").GetComponent<UILabel>().text = msg;
+                notificationPanel.GetChildAt("Holder/Label").GetComponent<TypewriterEffect>().ResetToBeginning();
+
+                // Wait the delay and then fade out the panel again.
+                yield return new WaitForSecondsRealtime(delay);
+                TweenAlpha.Begin(notificationPanel, 0.2f, 0f);
+
+                // After the fade out is done, disable the object again.
+                yield return new WaitForSecondsRealtime(0.2f);
+                notificationPanel.SetActive(false);
+            }
         }
     }
 }

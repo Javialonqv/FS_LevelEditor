@@ -148,15 +148,17 @@ namespace FS_LevelEditor
                 }
             }
 
-            // If click and it's on selection and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element...
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement())
+            // If click and it's on selection and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element AAAND it's not using snap to grid while edition right now...
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !startSnapToGridWithCurrentSelectedObj)
             {
-                // If it's selecting an object, well, set it as the selected one, otherwise, deselect the last selected object if there's one.
+                // If it's selecting an object, well, set it as the selected one.
                 if (CanSelectObjectWithRay(out GameObject obj))
                 {
                     SetSelectedObj(obj);
                 }
-                else
+                // Otherwise, deselect the last selected object if there's one ONLY if it's not holding Ctrl, since it may be selecting multiple objects.
+                // We don't want the user to lost his whole selection by just one simple mistake, do we?
+                else if (!Input.GetKey(KeyCode.LeftControl))
                 {
                     SetSelectedObj(null);
                 }
@@ -186,7 +188,12 @@ namespace FS_LevelEditor
             {
                 DeleteSelectedObj();
             }
-            
+
+            ManageSomeShortcuts();
+        }
+
+        void ManageSomeShortcuts()
+        {
             // Shortcuts for changing between editor modes.
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
@@ -201,12 +208,14 @@ namespace FS_LevelEditor
                 ChangeMode(Mode.Deletion);
             }
 
+            // Shortcut for saving level data.
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S))
             {
                 LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
                 EditorUIManager.Instance.PlaySavingLevelLabel();
             }
 
+            // Shortcut for duplicating current selected object.
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.D))
             {
                 DuplicateSelectedObject();
@@ -217,6 +226,12 @@ namespace FS_LevelEditor
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P))
             {
                 EnterPlayMode();
+            }
+
+            // Shortcut for hide/show category button in UI.
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H) && currentMode == Mode.Building)
+            {
+                EditorUIManager.Instance.HideOrShowCategoryButtons();
             }
         }
 
@@ -318,22 +333,7 @@ namespace FS_LevelEditor
 
         void InstanceObjectInThePreviewObjectPos()
         {
-            GameObject obj = Instantiate(previewObjectToBuildObj, levelObjectsParent.transform);
-            LE_Object.AddComponentToObject(obj, currentObjectToBuildName);
-
-            foreach (var collider in obj.TryGetComponents<Collider>())
-            {
-                collider.enabled = true;
-            }
-            foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
-            {
-                foreach (var material in renderer.materials)
-                {
-                    material.color = new Color(1f, 1f, 1f, 1f);
-                }
-            }
-
-            SetSelectedObj(obj);
+            PlaceObject(currentObjectToBuildName, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, true);
         }
 
         bool CanUseThatSnapToGridTrigger(string objToBuildName, GameObject triggerObj)
@@ -479,7 +479,7 @@ namespace FS_LevelEditor
             }
 
             // If is pressing control, the object isn't null and it's not the selecteed objects parent and it's NOT duplicating objects at this moment:
-            if ((Input.GetKey(KeyCode.LeftControl) || startSnapToGridWithCurrentSelectedObj) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj)
+            if (Input.GetKey(KeyCode.LeftControl) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj)
             {
                 // If there was another object selected before, add it to the selected objects list too.
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
@@ -610,18 +610,19 @@ namespace FS_LevelEditor
 
         public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
         {
-            if (objName == "ProvisionalLight")
-            {
-                return Melon<Core>.Instance.CreateProvicionalLight(position, eulerAngles);
-            }
-
             GameObject template = allCategoriesObjects[objName];
             GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
             obj.transform.localPosition = position;
             obj.transform.localEulerAngles = eulerAngles;
 
-            LE_Object.AddComponentToObject(obj, objName);
+            LE_Object addedComp = LE_Object.AddComponentToObject(obj, objName);
+
+            if (addedComp == null)
+            {
+                Destroy(obj);
+                return null;
+            }
 
             foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
             {

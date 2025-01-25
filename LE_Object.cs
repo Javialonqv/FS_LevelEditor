@@ -1,4 +1,5 @@
-﻿using Il2CppInterop.Runtime;
+﻿using Il2Cpp;
+using Il2CppInterop.Runtime;
 using MelonLoader;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,8 @@ namespace FS_LevelEditor
         public enum ObjectType
         {
             GROUND,
-            WALL
+            WALL,
+            LIGHT
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
@@ -29,12 +31,14 @@ namespace FS_LevelEditor
 
             { "X_WALL", ObjectType.WALL },
             { "WINDOW", ObjectType.WALL },
+
+            { "DIRECTIONAL_LIGHT", ObjectType.LIGHT },
         };
 
         public ObjectType? objectType;
         public int objectID;
         public string objectOriginalName;
-        public string objectFullNameWithID
+        public virtual string objectFullNameWithID
         {
             get { return objectOriginalName + " " + objectID; }
         }
@@ -48,12 +52,17 @@ namespace FS_LevelEditor
         public static LE_Object AddComponentToObject(GameObject targetObj, string originalObjName)
         {
             string className = "LE_" + originalObjName.Replace(' ', '_');
-            Il2CppSystem.Type classType = Il2CppSystem.Type.GetType(className);
+            Type classType = Type.GetType("FS_LevelEditor." + className);
 
             if (classType != null)
             {
-                LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(classType);
-                instancedComponent.Init();
+                if (HasReachedObjectLimit(classType))
+                {
+                    Utilities.ShowCustomNotificationRed("Object limit reached for this object.", 2f);
+                    return null;
+                }
+                LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
+                instancedComponent.Init(originalObjName);
                 return instancedComponent;
             }
             else
@@ -143,6 +152,16 @@ namespace FS_LevelEditor
             {
                 return null;
             }
+        }
+        static bool HasReachedObjectLimit(Type objectCompType)
+        {
+            FieldInfo currentInstancesField = objectCompType.GetField("currentInstances", BindingFlags.NonPublic | BindingFlags.Static);
+            FieldInfo maxInstancesField = objectCompType.GetField("maxInstances", BindingFlags.NonPublic | BindingFlags.Static);
+
+            int currentInstances = currentInstancesField != null ? (int)currentInstancesField.GetValue(null) : 0;
+            int maxInstances = maxInstancesField != null ? (int)maxInstancesField.GetValue(null) : 99999;
+
+            return currentInstances >= maxInstances;
         }
 
         public virtual void SetProperty(string name, object value)
