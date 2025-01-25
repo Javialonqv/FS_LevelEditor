@@ -34,7 +34,7 @@ namespace FS_LevelEditor
 
             LoadAssetBundle();
 
-            DisableTheCurrentScene();
+            Invoke("DisableTheCurrentScene", 0.2f);
 
             levelObjectsParent = new GameObject("LevelObjects");
             levelObjectsParent.transform.position = Vector3.zero;
@@ -57,6 +57,7 @@ namespace FS_LevelEditor
                 if (obj.name == "Character") continue;
                 if (obj.name == "FootStepController") continue;
                 if (obj.name == "Checkpoints") continue;
+                if (obj.name == "LevelObjects") continue;
 
                 obj.SetActive(false);
             }
