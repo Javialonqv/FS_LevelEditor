@@ -58,7 +58,7 @@ namespace FS_LevelEditor
             {
                 if (HasReachedObjectLimit(classType))
                 {
-                    Utilities.ShowCustomNotification();
+                    Utilities.ShowCustomNotificationRed("Object limit reached for this object.", 2f);
                     return null;
                 }
                 LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
