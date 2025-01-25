@@ -602,23 +602,11 @@ namespace FS_LevelEditor
 
             MenuController.GetInstance().ReturnToMainMenu();
         }
-<<<<<<< HEAD
-        public void ExitToMenuFromNavigationBarButton(NavigationBarController.ActionType type)
-        {
-            ExitToMenu();
-        }
-        public void SaveLevelWithPauseMenuButton()
-        {
-            LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
-            PlaySavingLevelLabel();
-        }
+
         public void PlayLevel()
         {
             EditorController.Instance.EnterPlayMode();
         }
-
-=======
->>>>>>> development
         public void DeleteUI()
         {
             // If the coroutine was already played, stop it if it's currently playing to "restart" it.
