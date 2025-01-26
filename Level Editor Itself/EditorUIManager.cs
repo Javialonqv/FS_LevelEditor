@@ -609,6 +609,9 @@ namespace FS_LevelEditor
 
         public void PlayLevel()
         {
+            // Save data automatically.
+            LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
+
             EditorController.Instance.EnterPlayMode();
         }
         public void DeleteUI()
