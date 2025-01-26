@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 
 namespace FS_LevelEditor
 {
@@ -114,6 +115,16 @@ namespace FS_LevelEditor
             {
                 // Disable this so fades can work correctly.
                 InGameUIManager.Instance.isInPauseMode = false;
+
+                Invoke("FixFSPostProccesingInMenuBug", 0.1f);
+            }
+        }
+
+        void FixFSPostProccesingInMenuBug()
+        {
+            if (Camera.main.GetComponent<PostProcessLayer>().forcedVolume == null)
+            {
+                Camera.main.GetComponent<PostProcessLayer>().forcedVolume = GameObject.Find("MenuPPVolume").GetComponent<PostProcessVolume>();
             }
         }
 
