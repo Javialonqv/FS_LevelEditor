@@ -216,6 +216,7 @@ namespace FS_LevelEditor
             {
                 // Get the variable.
                 GameObject notificationPanel = GameObject.Find("(singleton) InGameUIManager/Camera/Panel/Notifications");
+                // For some reason once going back to menu after playing a normal chapter, notificatons panel is disabled, we need to enable it manually again.
                 notificationPanel.GetComponent<UIPanel>().enabled = true;
 
                 // Set the red color in the sprites.
