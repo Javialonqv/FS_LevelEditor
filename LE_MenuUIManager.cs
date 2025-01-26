@@ -103,11 +103,17 @@ namespace FS_LevelEditor
             }
         }
 
-        public void OnSceneLoaded()
+        public void OnSceneLoaded(string sceneName)
         {
             if (leMenuPanel == null)
             {
                 Init();
+            }
+
+            if (sceneName.Contains("Menu"))
+            {
+                // Disable this so fades can work correctly.
+                InGameUIManager.Instance.isInPauseMode = false;
             }
         }
 
