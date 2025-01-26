@@ -15,11 +15,22 @@ namespace FS_LevelEditor
         void Awake()
         {
             lightBulbSprite = gameObject.GetChildWithName("Sprite");
+
+            if (PlayModeController.Instance != null)
+            {
+                Destroy(gameObject.GetChildWithName("Collider"));
+                Destroy(lightBulbSprite);
+                Destroy(gameObject.GetChildWithName("Arrow"));
+            }
         }
 
         void Update()
         {
-            lightBulbSprite.transform.rotation = Camera.main.transform.rotation;
+            // If the light sprite is null is probaly because we're already in playmode and the light sprite was destroyed.
+            if (lightBulbSprite != null)
+            {
+                lightBulbSprite.transform.rotation = Camera.main.transform.rotation;
+            }
         }
     }
 }
