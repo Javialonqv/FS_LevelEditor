@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -353,6 +353,7 @@
 		<Compile Include="ExternalSpriteLoader.cs" />
 		<Compile Include="Logger.cs" />
 		<Compile Include="Patches.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Point_Light.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Directional_Light.cs" />
 		<Compile Include="UI Related\EditorPauseMenuPatcher.cs" />
 		<Compile Include="Level Editor Itself\EditorUIManager.cs" />
