@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 
 namespace FS_LevelEditor
 {
@@ -103,11 +104,27 @@ namespace FS_LevelEditor
             }
         }
 
-        public void OnSceneLoaded()
+        public void OnSceneLoaded(string sceneName)
         {
             if (leMenuPanel == null)
             {
                 Init();
+            }
+
+            if (sceneName.Contains("Menu"))
+            {
+                // Disable this so fades can work correctly.
+                InGameUIManager.Instance.isInPauseMode = false;
+
+                Invoke("FixFSPostProccesingInMenuBug", 0.1f);
+            }
+        }
+
+        void FixFSPostProccesingInMenuBug()
+        {
+            if (Camera.main.GetComponent<PostProcessLayer>().forcedVolume == null)
+            {
+                Camera.main.GetComponent<PostProcessLayer>().forcedVolume = GameObject.Find("MenuPPVolume").GetComponent<PostProcessVolume>();
             }
         }
 
@@ -677,8 +694,8 @@ namespace FS_LevelEditor
             popupTitle.GetComponent<UILabel>().text = "Warning";
             popupContentLabel.GetComponent<UILabel>().text = "Are you sure you want to delete this level?";
             popupSmallButtonsParent.DisableAllChildren();
-            popupSmallButtonsParent.transform.localPosition = new Vector3(-10f, -315f, 0f);
-            popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(10f, 0f);
+            popupSmallButtonsParent.transform.localPosition = new Vector3(-130f, -315f, 0f);
+            popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(130f, 0f);
 
             // Make a copy of the yes button since for some reason the yes button is red as the no button should, that's doesn't make any sense lol.
             onDeletePopupBackButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);

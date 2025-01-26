@@ -525,6 +525,7 @@ namespace FS_LevelEditor
             Destroy(onExitPopupBackButton.GetComponent<ButtonController>());
             Destroy(onExitPopupBackButton.GetChildWithName("Label").GetComponent<UILocalize>());
             onExitPopupBackButton.GetChildWithName("Label").GetComponent<UILabel>().text = "No";
+            onExitPopupBackButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.1f;
             onExitPopupBackButton.GetComponent<UIButton>().onClick.Clear();
             onExitPopupBackButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnExitPopupBackButton)));
             onExitPopupBackButton.SetActive(true);
@@ -535,6 +536,7 @@ namespace FS_LevelEditor
             Destroy(onExitPopupSaveAndExitButton.GetComponent<ButtonController>());
             Destroy(onExitPopupSaveAndExitButton.GetChildWithName("Label").GetComponent<UILocalize>());
             onExitPopupSaveAndExitButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save and Exit";
+            onExitPopupSaveAndExitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.1f;
             onExitPopupSaveAndExitButton.GetComponent<UIButton>().onClick.Clear();
             onExitPopupSaveAndExitButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnExitPopupSaveAndExitButton)));
             onExitPopupSaveAndExitButton.SetActive(true);
@@ -546,6 +548,8 @@ namespace FS_LevelEditor
             Destroy(onExitPopupExitButton.GetComponent<ButtonController>());
             Destroy(onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILocalize>());
             onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Exit without Saving";
+            onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILabel>().fontSize = 35; // Since this label is a bit too much large (lol), reduce its font size so it fits.
+            onExitPopupExitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.1f;
             onExitPopupExitButton.GetComponent<UIButton>().onClick.Clear();
             onExitPopupExitButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnExitPopupExitWithoutSavingButton)));
             onExitPopupExitButton.SetActive(true);
