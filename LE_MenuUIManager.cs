@@ -677,8 +677,8 @@ namespace FS_LevelEditor
             popupTitle.GetComponent<UILabel>().text = "Warning";
             popupContentLabel.GetComponent<UILabel>().text = "Are you sure you want to delete this level?";
             popupSmallButtonsParent.DisableAllChildren();
-            popupSmallButtonsParent.transform.localPosition = new Vector3(-10f, -315f, 0f);
-            popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(10f, 0f);
+            popupSmallButtonsParent.transform.localPosition = new Vector3(-130f, -315f, 0f);
+            popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(130f, 0f);
 
             // Make a copy of the yes button since for some reason the yes button is red as the no button should, that's doesn't make any sense lol.
             onDeletePopupBackButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
