@@ -63,6 +63,7 @@ namespace FS_LevelEditor
         bool startSnapToGridWithCurrentSelectedObj = false;
 
         public bool isEditorPaused = false;
+        public bool levelHasBeenModified = false;
 
         void Awake()
         {
@@ -213,6 +214,7 @@ namespace FS_LevelEditor
             {
                 LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
                 EditorUIManager.Instance.PlaySavingLevelLabel();
+                levelHasBeenModified = false;
             }
 
             // Shortcut for duplicating current selected object.
@@ -333,6 +335,7 @@ namespace FS_LevelEditor
 
         void InstanceObjectInThePreviewObjectPos()
         {
+            levelHasBeenModified = true;
             PlaceObject(currentObjectToBuildName, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, true);
         }
 
@@ -395,11 +398,13 @@ namespace FS_LevelEditor
                     if (obj.name == "MoveObjectArrows" || obj.name == "SnapToGridCube") continue;
 
                     Destroy(obj);
+                    levelHasBeenModified = true;
                 }
             }
             else
             {
                 Destroy(currentSelectedObj);
+                levelHasBeenModified = true;
             }
             SetSelectedObj(null);
         }
@@ -663,6 +668,7 @@ namespace FS_LevelEditor
                 currentSelectedObjects = new List<GameObject>(newSelectedObjectsList); // Replace the list with the new one with the copied objects.
                 currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform); // Set the parents on it.
                 SetSelectedObj(multipleSelectedObjsParent); // Select the selected objects parent again.
+                levelHasBeenModified = true;
             }
             else
             {
@@ -670,6 +676,7 @@ namespace FS_LevelEditor
                 LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
                 PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles);
                 isDuplicatingObj = false;
+                levelHasBeenModified = true;
             }
         }
 
@@ -680,18 +687,22 @@ namespace FS_LevelEditor
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
             {
                 currentSelectedObj.transform.localRotation = Quaternion.identity;
+                levelHasBeenModified = true;
             }
             else if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.R))
             {
                 currentSelectedObj.transform.Rotate(15f, 0f, 0f);
+                levelHasBeenModified = true;
             }
             else if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.R))
             {
                 currentSelectedObj.transform.Rotate(0f, 0f, 15f);
+                levelHasBeenModified = true;
             }
             else if (Input.GetKeyDown(KeyCode.R))
             {
                 currentSelectedObj.transform.Rotate(0f, 15f, 0f);
+                levelHasBeenModified = true;
             }
         }
 

@@ -512,6 +512,12 @@ namespace FS_LevelEditor
 
         public void ShowExitPopup()
         {
+            if (!EditorController.Instance.levelHasBeenModified)
+            {
+                ExitToMenu(false);
+                return;
+            }
+
             popupTitle.GetComponent<UILabel>().text = "Warning";
             popupContentLabel.GetComponent<UILabel>().text = "Warning, exiting will erase your last saved changes if you made any before saving, are you sure you want to continue?";
             popupSmallButtonsParent.DisableAllChildren();
@@ -588,6 +594,7 @@ namespace FS_LevelEditor
         {
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
             PlaySavingLevelLabel();
+            EditorController.Instance.levelHasBeenModified = false;
         }
 
         public void ExitToMenu(bool saveDataBeforeExit = false)
