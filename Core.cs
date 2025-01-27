@@ -17,11 +17,6 @@ namespace FS_LevelEditor
 
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
 
-        public override void OnInitializeMelon()
-        {
-            
-        }
-
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             currentSceneName = sceneName;
