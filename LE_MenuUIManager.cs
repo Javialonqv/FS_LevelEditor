@@ -44,6 +44,7 @@ namespace FS_LevelEditor
         int currentLevelsGridID;
         GameObject onDeletePopupBackButton;
         GameObject onDeletePopupDeleteButton;
+        bool levelButtonsWasClicked = false;
 
         void Awake()
         {
@@ -117,6 +118,9 @@ namespace FS_LevelEditor
                 InGameUIManager.Instance.isInPauseMode = false;
 
                 Invoke("FixFSPostProccesingInMenuBug", 0.1f);
+
+                // Reset this variable, so the user can click level buttons again.
+                levelButtonsWasClicked = false;
             }
         }
 
@@ -670,7 +674,11 @@ namespace FS_LevelEditor
         }
         void LoadLevel(string levelFileNameWithoutExtension, string levelName)
         {
+            if (levelButtonsWasClicked) return;
+
             MelonCoroutines.Start(Init());
+
+            levelButtonsWasClicked = true;
 
             IEnumerator Init()
             {
