@@ -1,26 +1,27 @@
-﻿using MelonLoader;
+﻿using Il2Cpp;
+using MelonLoader;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "1.0.0", "Javier", null)]
+[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.1.0", "Javialon_qv", null)]
 [assembly: MelonGame("Haze Games", "Fractal Space")]
 
 namespace FS_LevelEditor
 {
     public class Core : MelonMod
     {
-        GameObject groundObj;
+        public static string currentSceneName;
+        public bool loadCustomLevelOnSceneLoad;
+        public string levelFileNameWithoutExtensionToLoad;
 
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
 
-        public override void OnInitializeMelon()
-        {
-            LoadAssetBundle();
-        }
-
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
+            currentSceneName = sceneName;
+
+            // Debug option to know the camera position when using Free Cam from Unity Explorer.
 #if DEBUG
             if (sceneName.Contains("Menu"))
             {
@@ -30,28 +31,60 @@ namespace FS_LevelEditor
                 cube.transform.rotation = Quaternion.identity;
             }
 #endif
+            if (sceneName.Contains("Menu"))
+            {
+                if (ExternalSpriteLoader.Instance == null) new GameObject("LE_ExternalSpriteLoader").AddComponent<ExternalSpriteLoader>();
+                if (LE_MenuUIManager.Instance == null) new GameObject("LE_MEnuUIManager").AddComponent<LE_MenuUIManager>();
+                LE_MenuUIManager.Instance.OnSceneLoaded(sceneName);
+            }
+
+            if (sceneName.Contains("Level4_PC") && loadCustomLevelOnSceneLoad)
+            {
+                LevelData.LoadLevelDataInPlaymode(levelFileNameWithoutExtensionToLoad);
+            }
         }
 
         public override void OnUpdate()
         {
-            if (Input.GetKeyDown(KeyCode.Keypad5))
+#if DEBUG
+            // Keybind to open the level editor.
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.L))
             {
-                SetupEditorUI();
+                SetupEditorBasics();
+
+                new GameObject("EditorController").AddComponent<EditorController>();
+                new GameObject("EditorUIManager").AddComponent<EditorUIManager>();
+
                 SpawnBase();
+            }
+#endif
+        }
+
+        public void SetupTheWholeEditor(bool willLoadALevel = false)
+        {
+            SetupEditorBasics();
+
+            new GameObject("EditorController").AddComponent<EditorController>();
+            new GameObject("EditorUIManager").AddComponent<EditorUIManager>();
+
+            if (!willLoadALevel)
+            {
+                SpawnBase();
+                CreateDirectionalLight(new Vector3(-13f, 130f, -56f), new Vector3(45f, 180f, 0f));
             }
         }
 
-        void SetupEditorUI()
+        void SetupEditorBasics()
         {
-            GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
-            GameObject.Find("MainMenu/Camera/Holder/Navigation").SetActive(false);
-
+            // Disable the Menu Level objects.
             GameObject.Find("Level").SetActive(false);
 
+            // Set camera's new position and rotation.
             GameObject.Destroy(GameObject.Find("Main Camera").GetComponent<Animation>());
             GameObject.Find("Main Camera").transform.position = new Vector3(-15f, 125f, -75f);
             GameObject.Find("Main Camera").transform.localEulerAngles = new Vector3(45f, 0f, 0f);
 
+            // Add the camera movement component to... well... the camera.
             GameObject.Find("Main Camera").AddComponent<EditorCameraMovement>();
         }
 
@@ -62,26 +95,18 @@ namespace FS_LevelEditor
                 for (int height = 0; height < 3; height++)
                 {
                     Vector3 position = groundBaseTopLeftPivot;
-                    position.x += width * 2f;
-                    position.z += height * 2f;
+                    position.x += width * 4f;
+                    position.z += height * 4f;
 
-                    GameObject.Instantiate(groundObj).transform.position = position;
+                    EditorController.Instance.PlaceObject("Ground", position, Vector3.zero, false);
                 }
             }
         }
 
-        void LoadAssetBundle()
+        public GameObject CreateDirectionalLight(Vector3 position, Vector3 rotation)
         {
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FS_LevelEditor.level_editor");
-            byte[] bytes = new byte[stream.Length];
-            stream.Read(bytes);
-
-            Il2CppAssetBundle bundle = Il2CppAssetBundleManager.LoadFromMemory(bytes);
-
-            groundObj = bundle.Load<GameObject>("Ground");
-            groundObj.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-            bundle.Unload(false);
+            GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, false);
+            return lightObj;
         }
     }
 }

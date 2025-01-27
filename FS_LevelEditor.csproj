@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -15,6 +15,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="level_editor" />
+	  <None Remove="level_editor_sprites" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -346,11 +347,28 @@
 
 	<ItemGroup>
 		<Compile Include="Core.cs" />
-		<Compile Include="EditorCameraMovement.cs" />
+		<Compile Include="Level Editor Itself\EditorCameraMovement.cs" />
+		<Compile Include="Level Editor Itself\EditorController.cs" />
+		<Compile Include="LE_MenuUIManager.cs" />
+		<Compile Include="ExternalSpriteLoader.cs" />
+		<Compile Include="Logger.cs" />
+		<Compile Include="Patches.cs" />
+		<Compile Include="PlayModeController.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Point_Light.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Directional_Light.cs" />
+		<Compile Include="UI Related\EditorPauseMenuPatcher.cs" />
+		<Compile Include="Level Editor Itself\EditorUIManager.cs" />
+		<Compile Include="LE_Object.cs" />
+		<Compile Include="UI Related\LE_UIButtonActionCtrl.cs" />
+		<Compile Include="LevelData.cs" />
+		<Compile Include="LE_ObjectData.cs" />
+		<Compile Include="UI Related\UIInputSubmitFix.cs" />
+		<Compile Include="Utilities.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <EmbeddedResource Include="level_editor" />
+	  <EmbeddedResource Include="level_editor_sprites" />
 	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
