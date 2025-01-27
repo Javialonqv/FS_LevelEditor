@@ -729,12 +729,12 @@ namespace FS_LevelEditor
                         {
                             foreach (var obj in currentSelectedObjects)
                             {
-                                if (hit.collider.transform.parent.parent.gameObject == obj) isFromTheSameObject = true;
+                                if (hit.collider.transform.parent.parent.parent.gameObject == obj) isFromTheSameObject = true;
                             }
                         }
                         else
                         {
-                            if (hit.collider.transform.parent.parent.gameObject == currentSelectedObj) isFromTheSameObject = true;
+                            if (hit.collider.transform.parent.parent.parent.gameObject == currentSelectedObj) isFromTheSameObject = true;
                         }
 
                         if (!isFromTheSameObject)
