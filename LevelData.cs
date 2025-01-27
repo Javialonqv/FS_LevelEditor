@@ -119,6 +119,7 @@ namespace FS_LevelEditor
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
 
+            playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
             playModeCtrl.levelName = data.levelName;
 
             foreach (LE_ObjectData obj in data.objects)

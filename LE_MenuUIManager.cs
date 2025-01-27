@@ -45,6 +45,9 @@ namespace FS_LevelEditor
         GameObject onDeletePopupBackButton;
         GameObject onDeletePopupDeleteButton;
         bool levelButtonsWasClicked = false;
+        bool isGoingBackToLE = false;
+        string levelFileNameWithoutExtensionWhileGoingBackToLE = "";
+        string levelNameWhileGoingBackToLE = "";
 
         void Awake()
         {
@@ -121,6 +124,11 @@ namespace FS_LevelEditor
 
                 // Reset this variable, so the user can click level buttons again.
                 levelButtonsWasClicked = false;
+
+                if (isGoingBackToLE)
+                {
+                    LoadLevel(levelFileNameWithoutExtensionWhileGoingBackToLE, levelNameWhileGoingBackToLE);
+                }
             }
         }
 
@@ -682,9 +690,23 @@ namespace FS_LevelEditor
 
             IEnumerator Init()
             {
-                // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
-                InGameUIManager.Instance.StartTotalFadeOut(3, true);
-                yield return new WaitForSecondsRealtime(1.5f);
+                if (!isGoingBackToLE)
+                {
+                    // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
+                    InGameUIManager.Instance.StartTotalFadeOut(3, true);
+                    yield return new WaitForSecondsRealtime(1.5f);
+                }
+                else // If it's going back to LE, start total fade out again so it looks like a smooth transition.
+                {
+                    yield return new WaitForSecondsRealtime(0.1f);
+                    InGameUIManager.Instance.StartTotalFadeOut(0.1f, true);
+                    yield return new WaitForSecondsRealtime(0.2f);
+
+                    // Reset this variables.
+                    isGoingBackToLE = false;
+                    levelFileNameWithoutExtensionWhileGoingBackToLE = "";
+                    levelNameWhileGoingBackToLE = "";
+                }
 
                 mainMenu.SetActive(true);
                 leMenuPanel.SetActive(false);
@@ -696,6 +718,13 @@ namespace FS_LevelEditor
                 EditorController.Instance.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
                 LevelData.LoadLevelData(levelFileNameWithoutExtension);
             }
+        }
+        public void GoBackToLEWhileInPlayMode(string levelFileNameWithoutExtension, string levelName)
+        {
+            MenuController.GetInstance().ReturnToMainMenu();
+            isGoingBackToLE = true;
+            levelFileNameWithoutExtensionWhileGoingBackToLE = levelFileNameWithoutExtension;
+            levelNameWhileGoingBackToLE = levelName;
         }
         void ShowDeleteLevelPopup(string levelFileNameWithoutExtension)
         {

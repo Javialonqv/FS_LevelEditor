@@ -19,14 +19,16 @@ namespace FS_LevelEditor
     {
         public static PlayModeController Instance;
 
+        public string levelFileNameWithoutExtension;
         public string levelName;
 
         GameObject editorObjectsRootFromBundle;
         List<string> categories = new List<string>();
         Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
         List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
-
         public GameObject levelObjectsParent;
+
+        GameObject backToLEButton;
 
         void Awake()
         {
@@ -38,6 +40,8 @@ namespace FS_LevelEditor
 
             levelObjectsParent = new GameObject("LevelObjects");
             levelObjectsParent.transform.position = Vector3.zero;
+
+            CreateBackToLEButton();
         }
 
         void Start()
@@ -82,6 +86,26 @@ namespace FS_LevelEditor
             obj.SetActive(true);
 
             return obj;
+        }
+
+        void CreateBackToLEButton()
+        {
+            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/2_Chapters");
+            backToLEButton = Instantiate(template, template.transform.parent);
+            backToLEButton.name = "4_BackToLE";
+            Destroy(backToLEButton.GetComponent<ButtonController>());
+            Destroy(backToLEButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            backToLEButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Back to Level Editor";
+
+            backToLEButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(GoBackToLEWhileInPlayMode)));
+
+            backToLEButton.SetActive(true);
+        }
+
+        void GoBackToLEWhileInPlayMode()
+        {
+            Destroy(backToLEButton);
+            LE_MenuUIManager.Instance.GoBackToLEWhileInPlayMode(levelFileNameWithoutExtension, levelName);
         }
 
         void LoadAssetBundle()
