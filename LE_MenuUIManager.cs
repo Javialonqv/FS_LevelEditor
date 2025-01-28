@@ -719,6 +719,9 @@ namespace FS_LevelEditor
                     levelNameWhileGoingBackToLE = "";
                 }
 
+                // Remove menu music while in LE.
+                GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().Stop();
+
                 mainMenu.SetActive(true);
                 leMenuPanel.SetActive(false);
                 Melon<Core>.Instance.SetupTheWholeEditor(true);
