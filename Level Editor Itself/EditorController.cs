@@ -210,7 +210,7 @@ namespace FS_LevelEditor
             }
 
             // Shortcut for saving level data.
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S))
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S) && levelHasBeenModified)
             {
                 LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
                 EditorUIManager.Instance.PlaySavingLevelLabel();
