@@ -12,7 +12,7 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class EditorPauseMenuPatcher : MonoBehaviour
     {
-        void OnEnable()
+        public void OnEnable()
         {
             GameObject pauseMenu = gameObject;
             GameObject navigation = transform.parent.GetChildWithName("Navigation").gameObject;
@@ -30,12 +30,39 @@ namespace FS_LevelEditor
             pauseMenu.GetChildAt("LargeButtons/7_Exit").SetActive(false);
             pauseMenu.GetChildAt("LargeButtons/7_ExitWhenInEditor").SetActive(true);
 
+            PatchSaveLevelButton();
+
             pauseMenu.GetChildAt("LargeButtons").GetComponent<UITable>().Reposition();
             #endregion
 
             // Change exit button behaviour in the navigation bar.
             NavigationAction exitButtonFromNavigation = navigation.GetChildAt("Holder/Bar/ActionsHolder").transform.GetChild(0).GetComponent<NavigationAction>();
             exitButtonFromNavigation.onButtonClick = new Action<NavigationBarController.ActionType>(EditorUIManager.Instance.ExitToMenuFromNavigationBarButton);
+        }
+
+        void PatchSaveLevelButton()
+        {
+            GameObject saveLevelBtn = gameObject.GetChildAt("LargeButtons/3_SaveLevel");
+
+            if (EditorController.Instance.levelHasBeenModified)
+            {
+                saveLevelBtn.GetComponent<UISprite>().height = 80;
+                saveLevelBtn.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
+                saveLevelBtn.GetComponent<UIButton>().isEnabled = true;
+                saveLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
+                saveLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
+                saveLevelBtn.GetChildWithName("LevelToResumeLabel").SetActive(false);
+            }
+            else
+            {
+                saveLevelBtn.GetComponent<UISprite>().height = 100;
+                saveLevelBtn.GetComponent<UISprite>().pivot = UIWidget.Pivot.Top;
+                saveLevelBtn.GetComponent<UIButton>().isEnabled = false;
+                saveLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
+                saveLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
+                saveLevelBtn.GetChildWithName("LevelToResumeLabel").GetComponent<UILabel>().text = "There are no changes to save.";
+                saveLevelBtn.GetChildWithName("LevelToResumeLabel").SetActive(true);
+            }
         }
 
         void OnDisable()

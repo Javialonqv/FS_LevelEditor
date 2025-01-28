@@ -441,8 +441,7 @@ namespace FS_LevelEditor
             exitBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(ShowExitPopup)));
 
             // Create a save level button.
-            GameObject saveLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
-            GameObject saveLevelButton = Instantiate(saveLevelButtonTemplate, saveLevelButtonTemplate.transform.parent);
+            GameObject saveLevelButton = Instantiate(originalResumeBtn, saveLevelButtonTemplate.transform.parent);
             saveLevelButton.name = "3_SaveLevel";
             Destroy(saveLevelButton.GetComponent<ButtonController>());
             Destroy(saveLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
@@ -502,8 +501,9 @@ namespace FS_LevelEditor
                 // Threshold to wait for the pause animation to end.
                 yield return new WaitForSecondsRealtime(0.3f);
 
-                // Enable the LE UI.
+                // Enable the LE UI and disable the pause menu.
                 editorUIParent.SetActive(true);
+                pauseMenu.SetActive(false);
 
                 // And set the paused variable in the controller as false.
                 EditorController.Instance.isEditorPaused = false;
@@ -595,6 +595,9 @@ namespace FS_LevelEditor
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
             PlaySavingLevelLabel();
             EditorController.Instance.levelHasBeenModified = false;
+
+            // Refresh the pause menu patch after saving...
+            pauseMenu.GetComponent<EditorPauseMenuPatcher>().OnEnable();
         }
 
         public void ExitToMenu(bool saveDataBeforeExit = false)
