@@ -477,6 +477,17 @@ namespace FS_LevelEditor
                     };
                     onClick.mParameters = new EventDelegate.Parameter[] { parameter, parameter2 };
                     button.onClick.Add(onClick);
+
+                    // Create tooltip for the button.
+                    FractalTooltip tooltip = lvlButton.AddComponent<FractalTooltip>();
+                    string levelCreationDate = DateTimeOffset.FromUnixTimeSeconds(data.createdTime).ToLocalTime().DateTime + "";
+                    string levelLastModificationDate = DateTimeOffset.FromUnixTimeSeconds(data.lastModificationTime).ToLocalTime().DateTime + "";
+                    // Protection in case the level is outdated and shows a different date...
+                    if (data.createdTime == 0) levelCreationDate = "[c][ff0000]OUTDATED LEVEL, SAVE TO UPDATE THE DATE.[-][/c]";
+                    if (data.lastModificationTime == 0) levelLastModificationDate = "[c][ff0000]OUTDATED LEVEL, SAVE TO UPDATE THE DATE.[-][/c]";
+
+                    tooltip.toolTipLocKey = $"[c][ffff00]Creation date:[-][/c] {levelCreationDate}" +
+                                          $"\n[c][ffff00]Last modification date:[-][/c] {levelLastModificationDate}";
                 }
                 else
                 {

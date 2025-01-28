@@ -19,6 +19,8 @@ namespace FS_LevelEditor
         public string levelName { get; set; }
         public Vector3Serializable cameraPosition { get; set; }
         public Vector3Serializable cameraRotation { get; set; }
+        public long createdTime { get; set; }
+        public long lastModificationTime { get; set; }
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
 
         static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
@@ -30,6 +32,7 @@ namespace FS_LevelEditor
             data.levelName = levelName;
             data.cameraPosition = Camera.main.transform.position;
             data.cameraRotation = Camera.main.transform.eulerAngles;
+            data.createdTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
             if (EditorController.Instance.multipleObjectsSelected)
             {
@@ -60,6 +63,14 @@ namespace FS_LevelEditor
                 data = CreateLevelData(levelName);
             }
 
+            LevelData oldLevelData = GetLevelData(levelFileNameWithoutExtension);
+            if (oldLevelData != null)
+            {
+                data.createdTime = oldLevelData.createdTime;
+            }
+
+            data.lastModificationTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+
             try
             {
                 // Serialize and save the level in JSON format.
@@ -82,6 +93,19 @@ namespace FS_LevelEditor
             {
                 throw e;
             }
+        }
+
+        public static LevelData GetLevelData(string levelFileNameWithoutExtension)
+        {
+            string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
+            LevelData data = null;
+            try
+            {
+                data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
+            }
+            catch { }
+
+            return data;
         }
 
         // This method is for loading the saved level in the LE.
