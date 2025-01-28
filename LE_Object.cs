@@ -18,7 +18,8 @@ namespace FS_LevelEditor
         {
             GROUND,
             WALL,
-            LIGHT
+            LIGHT,
+            VENT_WITH_SMOKE
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
@@ -33,6 +34,9 @@ namespace FS_LevelEditor
             { "WINDOW", ObjectType.WALL },
 
             { "DIRECTIONAL_LIGHT", ObjectType.LIGHT },
+            { "POINT_LIGHT", ObjectType.LIGHT },
+
+            { "VENT_WITH_SMOKE_GREEN", ObjectType.VENT_WITH_SMOKE },
         };
 
         public ObjectType? objectType;
