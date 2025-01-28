@@ -261,7 +261,30 @@ namespace FS_LevelEditor
                     switch (toUndo.actionType)
                     {
                         case LEAction.LEActionType.MoveObject:
-                            toUndo.targetObj.transform.localPosition = toUndo.oldPos;
+                            if (toUndo.forMultipleObjects)
+                            {
+                                // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
+                                SetSelectedObj(null);
+                                currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
+                                currentSelectedObjects.Clear(); // Clear the list, just in case.
+
+                                multipleSelectedObjsParent.transform.localPosition = toUndo.newPos; // Set to the newest position.
+
+                                currentSelectedObjects = new List<GameObject>(toUndo.targetObjs); // Replace the object list with the ones in the LEAction.
+                                currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform); // Set the parents on it.
+                                SetSelectedObj(multipleSelectedObjsParent); // Select the selected objects parent again.
+
+                                // Move the parent so the whole selection is moved too.
+                                multipleSelectedObjsParent.transform.localPosition = toUndo.oldPos;
+
+                                levelHasBeenModified = true;
+                            }
+                            else
+                            {
+                                toUndo.targetObj.transform.localPosition = toUndo.oldPos;
+
+                                levelHasBeenModified = true;
+                            }
                             break;
                     }
 
@@ -928,10 +951,29 @@ namespace FS_LevelEditor
                         // Save the position of the object from the first time we clicked.
                         objPositionWhenArrowClick = currentSelectedObj.transform.localPosition;
 
+                        #region Register LEAction
                         currentExecutingAction = new LEAction();
+                        currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+
                         currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
-                        currentExecutingAction.targetObj = currentSelectedObj;
+
+                        if (multipleObjectsSelected)
+                        {
+                            currentExecutingAction.targetObjs = new List<GameObject>();
+                            foreach (var obj in currentSelectedObj.GetChilds())
+                            {
+                                if (obj.name == "MoveObjectArrows") continue;
+                                if (obj.name == "SnapToGridCube") continue;
+
+                                currentExecutingAction.targetObjs.Add(obj);
+                            }
+                        }
+                        else
+                        {
+                            currentExecutingAction.targetObj = currentSelectedObj;
+                        }
                         currentExecutingAction.oldPos = objPositionWhenArrowClick;
+                        #endregion
 
                         // Create the panel with the rigt normals.
                         if (hit.collider.name == "X" || hit.collider.name == "Z")
@@ -1014,8 +1056,13 @@ public struct LEAction
         MoveObject
     }
 
+    public bool forMultipleObjects;
+
     public GameObject targetObj;
+    public List<GameObject> targetObjs;
+
     public LEActionType actionType;
+
     public Vector3 oldPos;
     public Vector3 newPos;
 }
