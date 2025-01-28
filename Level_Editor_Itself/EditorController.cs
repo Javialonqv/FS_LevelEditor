@@ -286,6 +286,26 @@ namespace FS_LevelEditor
                                 levelHasBeenModified = true;
                             }
                             break;
+
+                        case LEAction.LEActionType.RotateObject:
+                            if (toUndo.forMultipleObjects)
+                            {
+                                SetMultipleObjectsAsSelected(null);
+                                multipleSelectedObjsParent.transform.localRotation = toUndo.newRot; // Set to the newest rotation.
+                                SetMultipleObjectsAsSelected(toUndo.targetObjs);
+                                // Rotate the parent so the whole selection is rotated too.
+                                multipleSelectedObjsParent.transform.localRotation = toUndo.oldRot;
+
+                                levelHasBeenModified = true;
+                            }
+                            else
+                            {
+                                toUndo.targetObj.transform.localRotation = toUndo.oldRot;
+                                SetSelectedObj(toUndo.targetObj);
+
+                                levelHasBeenModified = true;
+                            }
+                            break;
                     }
 
                     actionsMade.Remove(toUndo);
@@ -754,6 +774,11 @@ namespace FS_LevelEditor
         {
             if (currentSelectedObj == null) return;
 
+            // Rotate to the other side when pressing Left Shift.
+            int multiplier = Input.GetKey(KeyCode.T) ? -1 : 1;
+
+            Quaternion rotation = currentSelectedObj.transform.localRotation;
+
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
             {
                 currentSelectedObj.transform.localRotation = Quaternion.identity;
@@ -761,18 +786,49 @@ namespace FS_LevelEditor
             }
             else if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.R))
             {
-                currentSelectedObj.transform.Rotate(15f, 0f, 0f);
+                currentSelectedObj.transform.Rotate(15f * multiplier, 0f, 0f);
                 levelHasBeenModified = true;
             }
             else if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.R))
             {
-                currentSelectedObj.transform.Rotate(0f, 0f, 15f);
+                currentSelectedObj.transform.Rotate(0f, 0f, 15f * multiplier);
                 levelHasBeenModified = true;
             }
             else if (Input.GetKeyDown(KeyCode.R))
             {
-                currentSelectedObj.transform.Rotate(0f, 15f, 0f);
+                currentSelectedObj.transform.Rotate(0f, 15f * multiplier, 0f);
                 levelHasBeenModified = true;
+            }
+
+            // If the rotation changed, save it to editor history.
+            if (rotation != currentSelectedObj.transform.localRotation)
+            {
+                #region Register LEAction
+                currentExecutingAction = new LEAction();
+                currentExecutingAction.actionType = LEAction.LEActionType.RotateObject;
+
+                currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+                if (multipleObjectsSelected)
+                {
+                    currentExecutingAction.targetObjs = new List<GameObject>();
+                    foreach (var obj in currentSelectedObj.GetChilds())
+                    {
+                        if (obj.name == "MoveObjectArrows") continue;
+                        if (obj.name == "SnapToGridCube") continue;
+
+                        currentExecutingAction.targetObjs.Add(obj);
+                    }
+                }
+                else
+                {
+                    currentExecutingAction.targetObj = currentSelectedObj;
+                }
+
+                currentExecutingAction.oldRot = rotation;
+                currentExecutingAction.newRot = currentSelectedObj.transform.localRotation;
+
+                actionsMade.Add(currentExecutingAction);
+                #endregion
             }
         }
 
@@ -1065,7 +1121,8 @@ public struct LEAction
 {
     public enum LEActionType
     {
-        MoveObject
+        MoveObject,
+        RotateObject
     }
 
     public bool forMultipleObjects;
@@ -1077,4 +1134,7 @@ public struct LEAction
 
     public Vector3 oldPos;
     public Vector3 newPos;
+
+    public Quaternion oldRot;
+    public Quaternion newRot;
 }
