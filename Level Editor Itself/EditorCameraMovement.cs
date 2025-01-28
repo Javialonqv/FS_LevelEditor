@@ -29,6 +29,7 @@ namespace FS_LevelEditor
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
                 RotateCamera();
+                ManageMoveSpeed();
                 MoveCamera();
             }
             else
@@ -37,6 +38,18 @@ namespace FS_LevelEditor
                 Cursor.visible = true;
             }
             ManageDownAndUp();
+        }
+
+        void ManageMoveSpeed()
+        {
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                moveSpeed = 20f;
+            }
+            else
+            {
+                moveSpeed = 10f;
+            }
         }
 
         void MoveCamera()
@@ -67,13 +80,13 @@ namespace FS_LevelEditor
         {
             if (!Input.GetMouseButton(1)) return;
 
-            if (Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.Q))
             {
                 Vector3 toMove = transform.up * -1f * downAndUpSpeed * Time.deltaTime;
 
                 transform.position += toMove;
             }
-            else if (Input.GetKey(KeyCode.Space))
+            else if (Input.GetKey(KeyCode.E))
             {
                 Vector3 toMove = transform.up * 1f * downAndUpSpeed * Time.deltaTime;
 
