@@ -359,6 +359,7 @@
 		<Compile Include="UI_Related\EditorPauseMenuPatcher.cs" />
 		<Compile Include="Level_Editor_Itself\EditorUIManager.cs" />
 		<Compile Include="LE_Object.cs" />
+		<Compile Include="UI_Related\LevelButtonController.cs" />
 		<Compile Include="UI_Related\LE_UIButtonActionCtrl.cs" />
 		<Compile Include="LevelData.cs" />
 		<Compile Include="LE_ObjectData.cs" />

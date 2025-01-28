@@ -48,6 +48,8 @@ namespace FS_LevelEditor
         bool isGoingBackToLE = false;
         string levelFileNameWithoutExtensionWhileGoingBackToLE = "";
         string levelNameWhileGoingBackToLE = "";
+        public GameObject levelNameLabel;
+        public GameObject levelObjectsLabel;
 
         void Awake()
         {
@@ -63,6 +65,7 @@ namespace FS_LevelEditor
             CreateLEMenuPanel();
             CreateBackButton();
             CreateAddButton();
+            CreateTopLevelInfo();
             CreateCurrentModVersionLabel();
             CreateCreditsLabel();
         }
@@ -462,21 +465,10 @@ namespace FS_LevelEditor
 
                     // Set button's action.
                     UIButton button = lvlButton.GetComponent<UIButton>();
-                    EventDelegate onClick = new EventDelegate(this, nameof(LE_MenuUIManager.LoadLevel));
-                    EventDelegate.Parameter parameter = new EventDelegate.Parameter
-                    {
-                        field = "levelFileNameWithoutExtension",
-                        value = levelFileNameWithoutExtension,
-                        obj = this
-                    };
-                    EventDelegate.Parameter parameter2 = new EventDelegate.Parameter
-                    {
-                        field = "levelName",
-                        value = data.levelName,
-                        obj = this
-                    };
-                    onClick.mParameters = new EventDelegate.Parameter[] { parameter, parameter2 };
-                    button.onClick.Add(onClick);
+                    LevelButtonController btnController = lvlButton.AddComponent<LevelButtonController>();
+                    btnController.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
+                    btnController.levelName = data.levelName;
+                    btnController.objectsCount = data.objects.Count;
 
                     // Create tooltip for the button.
                     FractalTooltip tooltip = lvlButton.AddComponent<FractalTooltip>();
@@ -612,6 +604,24 @@ namespace FS_LevelEditor
                 CreateNextListButton();
             }
         }
+        public void CreateTopLevelInfo()
+        {
+            GameObject labelTemplate = leMenuPanel.GetChildWithName("Title");
+            levelNameLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
+            levelNameLabel.name = "LevelName";
+            levelNameLabel.SetActive(false);
+
+            levelNameLabel.transform.localPosition = new Vector3(0f, 330f, 0f);
+            levelNameLabel.GetComponent<UILabel>().text = "Name Test";
+
+            levelObjectsLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
+            levelObjectsLabel.name = "LevelObjectsCount";
+            levelObjectsLabel.SetActive(false);
+
+            levelObjectsLabel.transform.localPosition = new Vector3(0f, 280f, 0f);
+            levelObjectsLabel.GetComponent<UILabel>().text = "Objects: 0";
+            levelObjectsLabel.GetComponent<UILabel>().fontSize = 30;
+        }
 
         public void CreatePreviousListButton()
         {
@@ -691,7 +701,7 @@ namespace FS_LevelEditor
                 InGameUIManager.Instance.StartTotalFadeIn(3, true);
             }
         }
-        void LoadLevel(string levelFileNameWithoutExtension, string levelName)
+        public void LoadLevel(string levelFileNameWithoutExtension, string levelName)
         {
             if (levelButtonsWasClicked) return;
 
