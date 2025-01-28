@@ -58,9 +58,13 @@ namespace FS_LevelEditor
         Vector3 objPositionWhenArrowClick;
         Vector3 offsetObjPositionAndMosueWhenClick;
         Plane movementPlane;
+        bool isCurrentlyMovingAnObject = false;
 
         GameObject snapToGridCube;
         bool startSnapToGridWithCurrentSelectedObj = false;
+
+        List<LEAction> actionsMade = new List<LEAction>();
+        LEAction currentExecutingAction;
 
         public bool isEditorPaused = false;
         public bool levelHasBeenModified = false;
@@ -183,6 +187,13 @@ namespace FS_LevelEditor
                 // Move the object.
                 MoveObject(collidingArrow);
             }
+            else if (isCurrentlyMovingAnObject)
+            {
+                isCurrentlyMovingAnObject = false;
+
+                currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
+                actionsMade.Add(currentExecutingAction);
+            }
 
             // If press the Delete key and there's a selected object, delete it.
             if (Input.GetKeyDown(KeyCode.Delete) && currentSelectedObj != null)
@@ -191,6 +202,8 @@ namespace FS_LevelEditor
             }
 
             ManageSomeShortcuts();
+
+            ManageUndo();
         }
 
         void ManageSomeShortcuts()
@@ -234,6 +247,26 @@ namespace FS_LevelEditor
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H) && currentMode == Mode.Building)
             {
                 EditorUIManager.Instance.HideOrShowCategoryButtons();
+            }
+        }
+
+        void ManageUndo()
+        {
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
+            {
+                if (actionsMade.Count > 0)
+                {
+                    LEAction toUndo = actionsMade.Last();
+
+                    switch (toUndo.actionType)
+                    {
+                        case LEAction.LEActionType.MoveObject:
+                            toUndo.targetObj.transform.localPosition = toUndo.oldPos;
+                            break;
+                    }
+
+                    actionsMade.Remove(toUndo);
+                }
             }
         }
 
@@ -376,6 +409,8 @@ namespace FS_LevelEditor
             // If the ray can collide with the "invisible" plane.
             if (movementPlane.Raycast(ray, out float distance))
             {
+                isCurrentlyMovingAnObject = true;
+
                 // IT WORKS, DON'T EVEN DARE TO TOUCH THIS EVER AGAIN!
 
                 Vector3 hitWorldPosition = ray.GetPoint(distance);
@@ -893,6 +928,11 @@ namespace FS_LevelEditor
                         // Save the position of the object from the first time we clicked.
                         objPositionWhenArrowClick = currentSelectedObj.transform.localPosition;
 
+                        currentExecutingAction = new LEAction();
+                        currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
+                        currentExecutingAction.targetObj = currentSelectedObj;
+                        currentExecutingAction.oldPos = objPositionWhenArrowClick;
+
                         // Create the panel with the rigt normals.
                         if (hit.collider.name == "X" || hit.collider.name == "Z")
                         {
@@ -965,4 +1005,17 @@ namespace FS_LevelEditor
         }
         #endregion
     }
+}
+
+public struct LEAction
+{
+    public enum LEActionType
+    {
+        MoveObject
+    }
+
+    public GameObject targetObj;
+    public LEActionType actionType;
+    public Vector3 oldPos;
+    public Vector3 newPos;
 }
