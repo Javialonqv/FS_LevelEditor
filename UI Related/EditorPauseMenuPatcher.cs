@@ -49,6 +49,7 @@ namespace FS_LevelEditor
                 saveLevelBtn.GetComponent<UISprite>().height = 80;
                 saveLevelBtn.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
                 saveLevelBtn.GetComponent<UIButton>().isEnabled = true;
+                saveLevelBtn.GetComponent<BoxCollider>().center = Vector3.zero;
                 saveLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
                 saveLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
                 saveLevelBtn.GetChildWithName("LevelToResumeLabel").SetActive(false);
