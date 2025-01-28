@@ -263,16 +263,11 @@ namespace FS_LevelEditor
                         case LEAction.LEActionType.MoveObject:
                             if (toUndo.forMultipleObjects)
                             {
-                                // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
-                                SetSelectedObj(null);
-                                currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
-                                currentSelectedObjects.Clear(); // Clear the list, just in case.
+                                SetMultipleObjectsAsSelected(null);
 
                                 multipleSelectedObjsParent.transform.localPosition = toUndo.newPos; // Set to the newest position.
 
-                                currentSelectedObjects = new List<GameObject>(toUndo.targetObjs); // Replace the object list with the ones in the LEAction.
-                                currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform); // Set the parents on it.
-                                SetSelectedObj(multipleSelectedObjsParent); // Select the selected objects parent again.
+                                SetMultipleObjectsAsSelected(toUndo.targetObjs);
 
                                 // Move the parent so the whole selection is moved too.
                                 multipleSelectedObjsParent.transform.localPosition = toUndo.oldPos;
@@ -671,6 +666,24 @@ namespace FS_LevelEditor
             }
         }
 
+        public void SetMultipleObjectsAsSelected(List<GameObject> objects)
+        {
+            // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
+            SetSelectedObj(null);
+            currentSelectedObjects.ForEach(obj => obj.transform.parent = levelObjectsParent.transform);
+            currentSelectedObjects.Clear();
+
+            if (objects != null)
+            {
+                if (objects.Count > 0)
+                {
+                    currentSelectedObjects = new List<GameObject>(objects); // Replace the list with the new one with the copied objects.
+                    currentSelectedObjects.ForEach(obj => obj.transform.parent = multipleSelectedObjsParent.transform);
+                    SetSelectedObj(multipleSelectedObjsParent); // Select the selected objects parent again.
+                }
+            }
+        }
+
         public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
         {
             GameObject template = allCategoriesObjects[objName];
@@ -719,13 +732,7 @@ namespace FS_LevelEditor
                     newSelectedObjectsList.Add(PlaceObject(objComponent.objectOriginalName, objComponent.transform.position, objComponent.transform.eulerAngles, false));
                 }
 
-                // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
-                SetSelectedObj(null);
-                currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
-                currentSelectedObjects.Clear(); // Clear the list, just in case.
-                currentSelectedObjects = new List<GameObject>(newSelectedObjectsList); // Replace the list with the new one with the copied objects.
-                currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform); // Set the parents on it.
-                SetSelectedObj(multipleSelectedObjsParent); // Select the selected objects parent again.
+                SetMultipleObjectsAsSelected(newSelectedObjectsList);
                 levelHasBeenModified = true;
             }
             else
