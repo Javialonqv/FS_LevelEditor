@@ -441,7 +441,7 @@ namespace FS_LevelEditor
             exitBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(ShowExitPopup)));
 
             // Create a save level button.
-            GameObject saveLevelButton = Instantiate(originalResumeBtn, saveLevelButtonTemplate.transform.parent);
+            GameObject saveLevelButton = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
             saveLevelButton.name = "3_SaveLevel";
             Destroy(saveLevelButton.GetComponent<ButtonController>());
             Destroy(saveLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
@@ -449,7 +449,8 @@ namespace FS_LevelEditor
             saveLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(SaveLevelWithPauseMenuButton)));
 
             // Create a PLAY level button.
-            GameObject playLevelButton = Instantiate(saveLevelButtonTemplate, saveLevelButtonTemplate.transform.parent);
+            GameObject playLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
+            GameObject playLevelButton = Instantiate(playLevelButtonTemplate, playLevelButtonTemplate.transform.parent);
             playLevelButton.name = "2_PlayLevel";
             Destroy(playLevelButton.GetComponent<ButtonController>());
             Destroy(playLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
