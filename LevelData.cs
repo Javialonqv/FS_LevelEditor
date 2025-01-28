@@ -66,7 +66,10 @@ namespace FS_LevelEditor
             LevelData oldLevelData = GetLevelData(levelFileNameWithoutExtension);
             if (oldLevelData != null)
             {
-                data.createdTime = oldLevelData.createdTime;
+                if (oldLevelData.createdTime != 0)
+                {
+                    data.createdTime = oldLevelData.createdTime;
+                }
             }
 
             data.lastModificationTime = DateTimeOffset.Now.ToUnixTimeSeconds();
