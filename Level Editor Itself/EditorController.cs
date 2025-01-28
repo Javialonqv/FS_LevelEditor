@@ -258,17 +258,21 @@ namespace FS_LevelEditor
                 {
                     LEAction toUndo = actionsMade.Last();
 
+                    // Remove the whole LEActions that make reference to an unexisting object and get the last one.
+                    while ((toUndo.targetObj == null && !toUndo.forMultipleObjects) || (toUndo.targetObjs == null && toUndo.forMultipleObjects))
+                    {
+                        actionsMade.Remove(toUndo);
+                        toUndo = actionsMade.Last();
+                    }
+
                     switch (toUndo.actionType)
                     {
                         case LEAction.LEActionType.MoveObject:
                             if (toUndo.forMultipleObjects)
                             {
                                 SetMultipleObjectsAsSelected(null);
-
                                 multipleSelectedObjsParent.transform.localPosition = toUndo.newPos; // Set to the newest position.
-
                                 SetMultipleObjectsAsSelected(toUndo.targetObjs);
-
                                 // Move the parent so the whole selection is moved too.
                                 multipleSelectedObjsParent.transform.localPosition = toUndo.oldPos;
 
@@ -277,6 +281,7 @@ namespace FS_LevelEditor
                             else
                             {
                                 toUndo.targetObj.transform.localPosition = toUndo.oldPos;
+                                SetSelectedObj(toUndo.targetObj);
 
                                 levelHasBeenModified = true;
                             }
