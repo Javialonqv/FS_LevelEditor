@@ -20,7 +20,7 @@ namespace FS_LevelEditor
             {
                 InitComponent();
             }
-            else
+            else // If it's not in playmode, just create a collider so the user can click the object in LE.
             {
                 GameObject collider = new GameObject("Collider");
                 collider.transform.parent = transform;
