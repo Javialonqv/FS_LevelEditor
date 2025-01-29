@@ -105,6 +105,8 @@ namespace FS_LevelEditor
 
         void GoBackToLEWhileInPlayMode()
         {
+            LEBundle.Unload(false);
+
             Destroy(backToLEButton);
             LE_MenuUIManager.Instance.GoBackToLEWhileInPlayMode(levelFileNameWithoutExtension, levelName);
         }
