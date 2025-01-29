@@ -36,10 +36,6 @@ namespace FS_LevelEditor
             gameObject.SetActive(false);
             gameObject.tag = "AmmoPack";
 
-            //DeactivateOnStart deactivateOnStart = gameObject.AddComponent<DeactivateOnStart>();
-
-            //deactivateOnStart.cachedGO = gameObject;
-
             DisolveOnEnable disolve = gameObject.GetChildAt("Mesh/PC_Only").AddComponent<DisolveOnEnable>();
 
             disolve.m_renderer = gameObject.GetChildWithName("Mesh").GetComponent<MeshRenderer>();
