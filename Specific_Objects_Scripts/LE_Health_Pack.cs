@@ -10,7 +10,7 @@ using UnityEngine;
 namespace FS_LevelEditor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
-    public class LE_HealthPack : LE_Object
+    public class LE_Health_Pack : LE_Object
     {
         Health health;
 
