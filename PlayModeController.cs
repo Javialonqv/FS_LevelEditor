@@ -18,6 +18,7 @@ namespace FS_LevelEditor
     public class PlayModeController : MonoBehaviour
     {
         public static PlayModeController Instance;
+        Il2CppAssetBundle LEBundle;
 
         public string levelFileNameWithoutExtension;
         public string levelName;
@@ -114,9 +115,9 @@ namespace FS_LevelEditor
             byte[] bytes = new byte[stream.Length];
             stream.Read(bytes);
 
-            Il2CppAssetBundle bundle = Il2CppAssetBundleManager.LoadFromMemory(bytes);
+            LEBundle = Il2CppAssetBundleManager.LoadFromMemory(bytes);
 
-            editorObjectsRootFromBundle = bundle.Load<GameObject>("LevelObjectsRoot");
+            editorObjectsRootFromBundle = LEBundle.Load<GameObject>("LevelObjectsRoot");
             editorObjectsRootFromBundle.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
             foreach (var child in editorObjectsRootFromBundle.GetChilds())
@@ -137,8 +138,11 @@ namespace FS_LevelEditor
 
                 allCategoriesObjectsSorted.Add(categoryObjects);
             }
+        }
 
-            bundle.Unload(false);
+        public T LoadFromLEBundle<T>(string name) where T : UnityEngine.Object
+        {
+            return LEBundle.Load<T>(name);
         }
     }
 }

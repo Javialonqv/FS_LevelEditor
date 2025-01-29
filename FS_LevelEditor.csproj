@@ -354,8 +354,10 @@
 		<Compile Include="Logger.cs" />
 		<Compile Include="Patches.cs" />
 		<Compile Include="PlayModeController.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_HealthPack.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Point_Light.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Directional_Light.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Vent_With_Smoke_Green.cs" />
 		<Compile Include="UI_Related\EditorPauseMenuPatcher.cs" />
 		<Compile Include="Level_Editor_Itself\EditorUIManager.cs" />
 		<Compile Include="LE_Object.cs" />
