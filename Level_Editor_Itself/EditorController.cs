@@ -919,14 +919,16 @@ namespace FS_LevelEditor
             {
                 Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
                 Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
-                EditorUIManager.Instance.pauseMenu.GetComponent<EditorPauseMenuPatcher>().BeforeDestroying();
-                EditorUIManager.Instance.pauseMenu.RemoveComponent<EditorPauseMenuPatcher>();
                 EditorUIManager.Instance.DeleteUI();
                 MenuController.GetInstance().ButtonPressed(ButtonController.Type.CHAPTER_4);
 
-                yield return new WaitForSecondsRealtime(1f);
-                EditorUIManager.Instance.navigation.SetActive(true);
+                // Wait a few so when the pause menu ui is not visible anymore, destroy the pause menu LE buttons, and it doesn't look weird when destroying them and the user can see it.
+                yield return new WaitForSecondsRealtime(0.2f);
+                EditorUIManager.Instance.pauseMenu.GetComponent<EditorPauseMenuPatcher>().BeforeDestroying();
+                EditorUIManager.Instance.pauseMenu.RemoveComponent<EditorPauseMenuPatcher>();
 
+                // Also, enable navigation.
+                EditorUIManager.Instance.navigation.SetActive(true);
             }
         }
 

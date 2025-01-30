@@ -12,6 +12,8 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class EditorPauseMenuPatcher : MonoBehaviour
     {
+        bool isAboutToDestroyThisObj;
+
         public void OnEnable()
         {
             GameObject pauseMenu = gameObject;
@@ -68,6 +70,8 @@ namespace FS_LevelEditor
 
         void OnDisable()
         {
+            if (isAboutToDestroyThisObj) return;
+
             GameObject navigation = transform.parent.GetChildWithName("Navigation").gameObject;
 
             // Reset the exit button behaviour when in another menu instead of the main one.
@@ -77,6 +81,8 @@ namespace FS_LevelEditor
 
         public void BeforeDestroying()
         {
+            isAboutToDestroyThisObj = true;
+
             Destroy(gameObject.GetChildAt("LargeButtons/1_ResumeWhenInEditor"));
             Destroy(gameObject.GetChildAt("LargeButtons/7_ExitWhenInEditor"));
             Destroy(gameObject.GetChildAt("LargeButtons/3_SaveLevel"));

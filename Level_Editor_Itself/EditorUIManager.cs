@@ -9,6 +9,7 @@ using MelonLoader;
 using UnityEngine;
 using System.Reflection;
 using System.Collections;
+using Il2CppInControl.NativeDeviceProfiles;
 
 namespace FS_LevelEditor
 {
@@ -603,19 +604,26 @@ namespace FS_LevelEditor
 
         public void ExitToMenu(bool saveDataBeforeExit = false)
         {
-            if (saveDataBeforeExit)
+            MelonCoroutines.Start(Coroutine());
+
+            IEnumerator Coroutine()
             {
-                // Save data.
-                LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
+                if (saveDataBeforeExit)
+                {
+                    // Save data.
+                    LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
+                }
+
+                DeleteUI();
+
+                MenuController.GetInstance().ReturnToMainMenu();
+
+                // Wait a few so when the pause menu ui is not visible anymore, destroy the pause menu LE buttons, and it doesn't look weird when destroying them and the user can see it.
+                yield return new WaitForSecondsRealtime(0.2f);
+                // Remove this component, since this component is only needed when inside of LE.
+                pauseMenu.GetComponent<EditorPauseMenuPatcher>().BeforeDestroying();
+                pauseMenu.RemoveComponent<EditorPauseMenuPatcher>();
             }
-
-            // Remove this component, since this component is only needed when inside of LE.
-            pauseMenu.GetComponent<EditorPauseMenuPatcher>().BeforeDestroying();
-            pauseMenu.RemoveComponent<EditorPauseMenuPatcher>();
-
-            DeleteUI();
-
-            MenuController.GetInstance().ReturnToMainMenu();
         }
 
         public void PlayLevel()
