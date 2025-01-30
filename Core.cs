@@ -42,7 +42,6 @@ namespace FS_LevelEditor
             {
                 LevelData.LoadLevelDataInPlaymode(levelFileNameWithoutExtensionToLoad);
                 loadCustomLevelOnSceneLoad = false;
-                levelFileNameWithoutExtensionToLoad = "";
             }
         }
 

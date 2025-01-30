@@ -52,9 +52,13 @@ namespace FS_LevelEditor
             Controls.Instance.gameCamera.transform.localPosition = new Vector3(0f, 0.907f, 0f);
         }
 
+        // When the script obj is destroyed, that means the scene has changed, unload the asset bundle and destroy the back to LE button, since it'll be created again when entering...
+        // again...
         void OnDestroy()
         {
-            LEBundle.Unload(false);
+            UnloadBundle();
+
+            Destroy(backToLEButton);
         }
 
         void DisableTheCurrentScene()
@@ -149,6 +153,11 @@ namespace FS_LevelEditor
         {
             return LEBundle.Load<T>(name);
         }
+
+        public void UnloadBundle()
+        {
+            LEBundle.Unload(false);
+        }
     }
 }
 
@@ -181,6 +190,22 @@ public static class ChapterTextNamePatch
         else
         {
             return true;
+        }
+    }
+}
+
+[HarmonyPatch(typeof(Controls), nameof(Controls.KillCharacter), [typeof(bool), typeof(bool)])]
+public static class OnPlayerDiePatch
+{
+    public static void Prefix()
+    {
+        if (PlayModeController.Instance != null)
+        {
+            // The asset bundle will be unloaded automatically in the PlayModeController class, since OnDestroy will be triggered.
+
+            // Set this variable true again so when the scene is reloaded, the custom level is as well.
+            // The level file name inside of the Core class still there for cases like this one, so we don't need to get it again.
+            Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
         }
     }
 }
