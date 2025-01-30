@@ -358,6 +358,7 @@
 		<Compile Include="Specific_Objects_Scripts\LE_Health_Pack.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Point_Light.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Directional_Light.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Saw.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Vent_With_Smoke_Green.cs" />
 		<Compile Include="UI_Related\EditorPauseMenuPatcher.cs" />
 		<Compile Include="Level_Editor_Itself\EditorUIManager.cs" />

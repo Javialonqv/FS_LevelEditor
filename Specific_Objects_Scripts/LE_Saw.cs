@@ -1,0 +1,59 @@
+﻿using Il2Cpp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+
+namespace FS_LevelEditor
+{
+    [MelonLoader.RegisterTypeInIl2Cpp]
+    public class LE_Saw : LE_Object
+    {
+        Health health;
+
+        void Awake()
+        {
+            if (PlayModeController.Instance != null)
+            {
+                InitComponent();
+            }
+            else // If it's not in playmode, just create a collider so the user can click the object in LE.
+            {
+                GameObject collider = new GameObject("Collider");
+                collider.transform.parent = transform;
+                collider.transform.localScale = Vector3.one;
+                collider.transform.localPosition = Vector3.zero;
+                collider.AddComponent<BoxCollider>().size = new Vector3(0.1f, 1.3f, 1.3f);
+            }
+        }
+
+        void InitComponent()
+        {
+            gameObject.SetActive(false);
+            gameObject.tag = "Scie";
+
+            RotationScie rotationScie = gameObject.GetChildWithName("Scie_OFF").AddComponent<RotationScie>();
+
+            rotationScie.vitesseRotation = 500;
+
+            ScieScript script = gameObject.AddComponent<ScieScript>();
+            script.doesDamage = true;
+            script.rotationScript = rotationScie;
+            script.m_damageCollider = GetComponent<BoxCollider>();
+            script.m_audioSource = GetComponent<AudioSource>();
+            script.movingSaw = false;
+            script.movingSpeed = 10;
+            script.scieSound = FindObjectOfType<ScieScript>().scieSound;
+            script.offMesh = gameObject.GetChildWithName("Scie_OFF").GetComponent<MeshRenderer>();
+            script.onMesh = gameObject.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>();
+            script.m_collision = gameObject.GetChildWithName("Collision").GetComponent<BoxCollider>();
+            script.physicsCollider = gameObject.GetChildWithName("Saw_PhysicsCollider").GetComponent<MeshCollider>();
+
+            script.Activate();
+
+            gameObject.SetActive(true);
+        }
+    }
+}
