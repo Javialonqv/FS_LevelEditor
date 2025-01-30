@@ -41,6 +41,8 @@ namespace FS_LevelEditor
             if (sceneName.Contains("Level4_PC") && loadCustomLevelOnSceneLoad)
             {
                 LevelData.LoadLevelDataInPlaymode(levelFileNameWithoutExtensionToLoad);
+                loadCustomLevelOnSceneLoad = false;
+                levelFileNameWithoutExtensionToLoad = "";
             }
         }
 

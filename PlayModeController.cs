@@ -52,6 +52,11 @@ namespace FS_LevelEditor
             Controls.Instance.gameCamera.transform.localPosition = new Vector3(0f, 0.907f, 0f);
         }
 
+        void OnDestroy()
+        {
+            LEBundle.Unload(false);
+        }
+
         void DisableTheCurrentScene()
         {
             GameObject[] sceneObjects = SceneManager.GetActiveScene().GetRootGameObjects();
@@ -105,8 +110,6 @@ namespace FS_LevelEditor
 
         void GoBackToLEWhileInPlayMode()
         {
-            LEBundle.Unload(false);
-
             Destroy(backToLEButton);
             LE_MenuUIManager.Instance.GoBackToLEWhileInPlayMode(levelFileNameWithoutExtension, levelName);
         }
