@@ -433,6 +433,7 @@ namespace FS_LevelEditor
                 resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled = true;
                 resumeBtnWhenInsideLE.GetComponent<UIButton>().ResetDefaultColor();
             }
+            resumeBtnWhenInsideLE.SetActive(true);
 
             // Same with exit button.
             GameObject originalExitBtn = pauseMenu.GetChildAt("LargeButtons/7_Exit");
@@ -440,6 +441,7 @@ namespace FS_LevelEditor
             exitBtnWhenInsideLE.name = "7_ExitWhenInEditor";
             Destroy(exitBtnWhenInsideLE.GetComponent<ButtonController>());
             exitBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(ShowExitPopup)));
+            exitBtnWhenInsideLE?.SetActive(true);
 
             // Create a save level button.
             GameObject saveLevelButton = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
@@ -448,6 +450,7 @@ namespace FS_LevelEditor
             Destroy(saveLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
             saveLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
             saveLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(SaveLevelWithPauseMenuButton)));
+            saveLevelButton.SetActive(true);
 
             // Create a PLAY level button.
             GameObject playLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
@@ -457,6 +460,7 @@ namespace FS_LevelEditor
             Destroy(playLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
             playLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Play Level";
             playLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.PlayLevel)));
+            playLevelButton.SetActive(true);
 
             // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.
             // EDIT: Also to patch and do some stuff in the pause menu while in LE.
