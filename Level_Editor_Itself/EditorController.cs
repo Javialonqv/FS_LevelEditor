@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
 using Il2Cpp;
 using System.Collections;
+using Il2CppLunarCatsStudio.SuperCombiner;
 
 namespace FS_LevelEditor
 {
@@ -256,6 +257,7 @@ namespace FS_LevelEditor
             {
                 if (actionsMade.Count > 0)
                 {
+                    bool undoActionExecuted = true;
                     LEAction toUndo = actionsMade.Last();
 
                     // Remove the whole LEActions that make reference to an unexisting object and get the last one.
@@ -275,15 +277,11 @@ namespace FS_LevelEditor
                                 SetMultipleObjectsAsSelected(toUndo.targetObjs);
                                 // Move the parent so the whole selection is moved too.
                                 multipleSelectedObjsParent.transform.localPosition = toUndo.oldPos;
-
-                                levelHasBeenModified = true;
                             }
                             else
                             {
                                 toUndo.targetObj.transform.localPosition = toUndo.oldPos;
                                 SetSelectedObj(toUndo.targetObj);
-
-                                levelHasBeenModified = true;
                             }
                             break;
 
@@ -295,17 +293,23 @@ namespace FS_LevelEditor
                                 SetMultipleObjectsAsSelected(toUndo.targetObjs);
                                 // Rotate the parent so the whole selection is rotated too.
                                 multipleSelectedObjsParent.transform.localRotation = toUndo.oldRot;
-
-                                levelHasBeenModified = true;
                             }
                             else
                             {
                                 toUndo.targetObj.transform.localRotation = toUndo.oldRot;
                                 SetSelectedObj(toUndo.targetObj);
-
-                                levelHasBeenModified = true;
                             }
                             break;
+
+                        default:
+                            undoActionExecuted = false;
+                            break;
+                    }
+
+                    // Only set the level as modified if a undo action was executed.
+                    if (undoActionExecuted)
+                    {
+                        levelHasBeenModified = true;
                     }
 
                     actionsMade.Remove(toUndo);
@@ -782,27 +786,24 @@ namespace FS_LevelEditor
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
             {
                 currentSelectedObj.transform.localRotation = Quaternion.identity;
-                levelHasBeenModified = true;
             }
             else if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.R))
             {
                 currentSelectedObj.transform.Rotate(15f * multiplier, 0f, 0f);
-                levelHasBeenModified = true;
             }
             else if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.R))
             {
                 currentSelectedObj.transform.Rotate(0f, 0f, 15f * multiplier);
-                levelHasBeenModified = true;
             }
             else if (Input.GetKeyDown(KeyCode.R))
             {
                 currentSelectedObj.transform.Rotate(0f, 15f * multiplier, 0f);
-                levelHasBeenModified = true;
             }
 
-            // If the rotation changed, save it to editor history.
+            // If the rotation changed...
             if (rotation != currentSelectedObj.transform.localRotation)
             {
+                // Save it to editor history.
                 #region Register LEAction
                 currentExecutingAction = new LEAction();
                 currentExecutingAction.actionType = LEAction.LEActionType.RotateObject;
@@ -829,6 +830,9 @@ namespace FS_LevelEditor
 
                 actionsMade.Add(currentExecutingAction);
                 #endregion
+
+                // Also set the level as modified:
+                levelHasBeenModified = true;
             }
         }
 
