@@ -188,12 +188,14 @@ namespace FS_LevelEditor
                 // Move the object.
                 MoveObject(collidingArrow);
             }
-            else if (isCurrentlyMovingAnObject)
+            else if (isCurrentlyMovingAnObject) // This SHOULD be executed only when the user stopped moving an object.
             {
                 isCurrentlyMovingAnObject = false;
 
                 currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
                 actionsMade.Add(currentExecutingAction);
+
+                levelHasBeenModified = true;
             }
 
             // If press the Delete key and there's a selected object, delete it.
@@ -889,6 +891,8 @@ namespace FS_LevelEditor
                                     currentSelectedObj.transform.position = hit.collider.transform.position;
                                     currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
 
+                                    levelHasBeenModified = true;
+
                                     return;
                                 }
                             }
@@ -896,6 +900,8 @@ namespace FS_LevelEditor
                             {
                                 currentSelectedObj.transform.position = hit.collider.transform.position;
                                 currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
+
+                                levelHasBeenModified = true;
 
                                 return;
                             }
