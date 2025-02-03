@@ -303,6 +303,20 @@ namespace FS_LevelEditor
                             }
                             break;
 
+                        case LEAction.LEActionType.DeleteObject:
+                            if (toUndo.forMultipleObjects)
+                            {
+                                SetMultipleObjectsAsSelected(null);
+                                toUndo.targetObjs.ForEach(obj => obj.SetActive(true)); // Enable the objects again and then select them again.
+                                SetMultipleObjectsAsSelected(toUndo.targetObjs);
+                            }
+                            else
+                            {
+                                toUndo.targetObj.SetActive(true);
+                                SetSelectedObj(toUndo.targetObj);
+                            }
+                            break;
+
                         default:
                             undoActionExecuted = false;
                             break;
@@ -481,15 +495,41 @@ namespace FS_LevelEditor
                 {
                     if (obj.name == "MoveObjectArrows" || obj.name == "SnapToGridCube") continue;
 
-                    Destroy(obj);
+                    obj.SetActive(false);
                     levelHasBeenModified = true;
                 }
             }
             else
             {
-                Destroy(currentSelectedObj);
+                currentSelectedObj.SetActive(false);
                 levelHasBeenModified = true;
             }
+            // Register the LEAction before deselecting the object, so I can set the target obj with the reference to the current selected object.
+            #region Register LEAction
+            currentExecutingAction = new LEAction();
+            currentExecutingAction.actionType = LEAction.LEActionType.DeleteObject;
+
+            currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+            if (multipleObjectsSelected)
+            {
+                currentExecutingAction.targetObjs = new List<GameObject>();
+                foreach (var obj in currentSelectedObj.GetChilds())
+                {
+                    if (obj.name == "MoveObjectArrows") continue;
+                    if (obj.name == "SnapToGridCube") continue;
+
+                    currentExecutingAction.targetObjs.Add(obj);
+                }
+            }
+            else
+            {
+                currentExecutingAction.targetObj = currentSelectedObj;
+            }
+
+            actionsMade.Add(currentExecutingAction);
+            Logger.DebugLog(currentExecutingAction);
+            #endregion
+
             SetSelectedObj(null);
         }
 
@@ -1134,7 +1174,8 @@ public struct LEAction
     public enum LEActionType
     {
         MoveObject,
-        RotateObject
+        RotateObject,
+        DeleteObject
     }
 
     public bool forMultipleObjects;

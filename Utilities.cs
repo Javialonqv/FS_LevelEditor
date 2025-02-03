@@ -14,16 +14,20 @@ namespace FS_LevelEditor
 {
     public static class Utilities
     {
-        public static GameObject[] GetChilds(this GameObject obj)
+        public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
         {
-            GameObject[] array = new GameObject[obj.transform.childCount];
+            List<GameObject> children = new List<GameObject>();
 
             for (int i = 0; i < obj.transform.childCount; i++)
             {
-                array[i] = obj.transform.GetChild(i).gameObject;
+                GameObject child = obj.transform.GetChild(i).gameObject;
+                if (child.activeSelf || includeInactive)
+                {
+                    children.Add(child);
+                }
             }
 
-            return array;
+            return children.ToArray();
         }
 
         public static Transform GetChildWithName(this Transform tr, string name)

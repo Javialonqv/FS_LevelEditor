@@ -41,7 +41,8 @@ namespace FS_LevelEditor
 
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
 
-            foreach (GameObject obj in objectsParent.GetChilds())
+            // Don't get the disabled objects, since there are supposed to be DELETED objects.
+            foreach (GameObject obj in objectsParent.GetChilds(false))
             {
                 LE_ObjectData objData = new LE_ObjectData(obj.GetComponent<LE_Object>());
                 data.objects.Add(objData);
