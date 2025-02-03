@@ -10,6 +10,7 @@ using UnityEngine;
 using System.Reflection;
 using System.Collections;
 using Il2CppInControl.NativeDeviceProfiles;
+using static Il2Cpp.UIAtlas;
 
 namespace FS_LevelEditor
 {
@@ -36,6 +37,7 @@ namespace FS_LevelEditor
         GameObject onExitPopupSaveAndExitButton;
         GameObject onExitPopupExitButton;
         bool exitPopupEnabled = false;
+        GameObject helpPanel;
 
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
@@ -86,6 +88,7 @@ namespace FS_LevelEditor
             CreateSelectedObjPanel();
             CreateSavingLevelLabel();
             CreateCurrentModeLabel();
+            //CreateHelpPanel();
         }
 
         void GetReferences()
@@ -231,6 +234,7 @@ namespace FS_LevelEditor
             selectedButton.GetChildWithName("ActiveSwatch").SetActive(true);
         }
 
+        #region Selected Object Panel Related
         public void CreateSelectedObjPanel()
         {
             GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
@@ -321,6 +325,7 @@ namespace FS_LevelEditor
             selectedObjPanel.GetChildWithName("Body").SetActive(true);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -220, 0f);
         }
+        #endregion
 
         void CreateSavingLevelLabel()
         {
@@ -416,6 +421,35 @@ namespace FS_LevelEditor
                 TweenPosition.Begin(currentCategoryBG, 0.2f, new Vector3(0f, 330f, 0f));
                 InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.showHUDSound);
             }
+        }
+
+        public void CreateHelpPanel()
+        {
+            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            helpPanel = new GameObject("HelpPanel");
+            helpPanel.transform.parent = editorUIParent.transform;
+            helpPanel.transform.localScale = Vector3.one;
+
+            UISprite helpPanelBG = helpPanel.AddComponent<UISprite>();
+            helpPanelBG.atlas = template.GetComponent<UISprite>().atlas;
+            helpPanelBG.spriteName = "Square_Border_Beveled_HighOpacity";
+            helpPanelBG.type = UIBasicSprite.Type.Sliced;
+            helpPanelBG.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            helpPanelBG.width = 1850;
+            helpPanelBG.height = 1010;
+
+            GameObject title = new GameObject("Title");
+            title.transform.parent = helpPanel.transform;
+            title.transform.localScale = Vector3.one;
+            title.transform.localPosition = new Vector3(0f, 480f, 0f);
+
+            UILabel titleLabel = title.AddComponent<UILabel>();
+            titleLabel.depth = 1;
+            titleLabel.font = labelTemplate.GetComponent<UILabel>().font;
+            titleLabel.text = "KEYBINDS";
+            titleLabel.fontSize = 50;
         }
 
 
