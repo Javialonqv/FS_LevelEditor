@@ -144,6 +144,8 @@ namespace FS_LevelEditor
                 onChange.mParameters = new EventDelegate.Parameter[] { parameter };
                 categoryButton.GetComponent<UIToggle>().onChange.Add(onChange);
 
+                categoryButton.SetActive(true);
+
                 categoryButtons.Add(categoryButton);
             }
 
