@@ -2,3 +2,4 @@
 /Keyboard_Left Control\ + /Keyboard_S\ to save the level.
 /Keyboard_Left Control\ + /Keyboard_P\ to play the level.
 /Keyboard_Left Control\ + /Keyboard_H\ to hide/show object categories buttons.
+/Keyboard_Left Control\ + /Keyboard_Z\ to undo the last executed action (move/rotate/delete).
