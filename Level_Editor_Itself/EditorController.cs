@@ -123,7 +123,7 @@ namespace FS_LevelEditor
                 previewObjectToBuildObj.SetActive(false);
             }
 
-            if (Input.GetKey(KeyCode.V) && currentSelectedObj != null)
+            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null)
             {
                 snapToGridCube.SetActive(true);
                 gizmosArrows.SetActive(false);
@@ -190,6 +190,7 @@ namespace FS_LevelEditor
             }
             else if (isCurrentlyMovingAnObject) // This SHOULD be executed only when the user stopped moving an object.
             {
+                collidingArrow = GizmosArrow.None;
                 isCurrentlyMovingAnObject = false;
 
                 currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
@@ -250,6 +251,11 @@ namespace FS_LevelEditor
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H) && currentMode == Mode.Building)
             {
                 EditorUIManager.Instance.HideOrShowCategoryButtons();
+            }
+
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                EditorUIManager.Instance.ShowOrHideHelpPanel();
             }
         }
 
@@ -787,6 +793,13 @@ namespace FS_LevelEditor
             }
 
             return obj;
+        }
+
+        void CreateSaw()
+        {
+            GameObject saw = new GameObject("Saw");
+            ScieScript script = saw.AddComponent<ScieScript>();
+            script.Activate();
         }
 
         void DuplicateSelectedObject()

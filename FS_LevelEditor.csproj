@@ -14,6 +14,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="KeybindsList.txt" />
 	  <None Remove="level_editor" />
 	  <None Remove="level_editor_sprites" />
 	</ItemGroup>
@@ -372,6 +373,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <EmbeddedResource Include="KeybindsList2.txt" />
+	  <EmbeddedResource Include="KeybindsList.txt" />
 	  <EmbeddedResource Include="level_editor" />
 	  <EmbeddedResource Include="level_editor_sprites" />
 	</ItemGroup>

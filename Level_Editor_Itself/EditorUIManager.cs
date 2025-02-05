@@ -37,7 +37,7 @@ namespace FS_LevelEditor
         GameObject onExitPopupSaveAndExitButton;
         GameObject onExitPopupExitButton;
         bool exitPopupEnabled = false;
-        GameObject helpPanel;
+        public GameObject helpPanel;
 
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
@@ -88,7 +88,7 @@ namespace FS_LevelEditor
             CreateSelectedObjPanel();
             CreateSavingLevelLabel();
             CreateCurrentModeLabel();
-            //CreateHelpPanel();
+            CreateHelpPanel();
         }
 
         void GetReferences()
@@ -428,6 +428,7 @@ namespace FS_LevelEditor
             GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
+            #region Create Help Panel With The BG
             helpPanel = new GameObject("HelpPanel");
             helpPanel.transform.parent = editorUIParent.transform;
             helpPanel.transform.localScale = Vector3.one;
@@ -439,17 +440,81 @@ namespace FS_LevelEditor
             helpPanelBG.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             helpPanelBG.width = 1850;
             helpPanelBG.height = 1010;
+            #endregion
 
+            #region Create Title
             GameObject title = new GameObject("Title");
             title.transform.parent = helpPanel.transform;
             title.transform.localScale = Vector3.one;
-            title.transform.localPosition = new Vector3(0f, 480f, 0f);
+            title.transform.localPosition = new Vector3(0f, 460f, 0f);
 
             UILabel titleLabel = title.AddComponent<UILabel>();
             titleLabel.depth = 1;
             titleLabel.font = labelTemplate.GetComponent<UILabel>().font;
             titleLabel.text = "KEYBINDS";
             titleLabel.fontSize = 50;
+            titleLabel.width = 200;
+            titleLabel.height = 50;
+            #endregion
+
+            #region Create Keybinds Text
+            GameObject keybindsObj = new GameObject("Keybinds");
+            keybindsObj.transform.parent = helpPanel.transform;
+            keybindsObj.transform.localScale = Vector3.one;
+            keybindsObj.transform.localPosition = new Vector3(-900f, 425f, 0f);
+
+            Stream keybindsTextStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FS_LevelEditor.KeybindsList.txt");
+            byte[] keybindsTextBytes = new byte[keybindsTextStream.Length];
+            keybindsTextStream.Read(keybindsTextBytes);
+
+            UILabel keybindsLabel = keybindsObj.AddComponent<UILabel>();
+            keybindsLabel.depth = 1;
+            keybindsLabel.material = GameObject.Find("MainMenu/Camera/Holder/Main/Window").GetComponent<UISprite>().material;
+            keybindsLabel.font = GameObject.Find("MainMenu/Camera/Holder/Tooltip/Label").GetComponent<UILabel>().font;
+            keybindsLabel.text = Encoding.UTF8.GetString(keybindsTextBytes);
+            keybindsLabel.alignment = NGUIText.Alignment.Left;
+            keybindsLabel.pivot = UIWidget.Pivot.TopLeft;
+            keybindsLabel.fontSize = 35;
+            keybindsLabel.width = 900;
+            keybindsLabel.height = 900;
+
+            // Set the position again since when I change the pivot, it also changes the position.
+            keybindsObj.transform.localPosition = new Vector3(-900f, 425f, 0f);
+
+            GameObject keybindsObj2 = new GameObject("Keybinds2");
+            keybindsObj2.transform.parent = helpPanel.transform;
+            keybindsObj2.transform.localScale = Vector3.one;
+            keybindsObj2.transform.localPosition = new Vector3(0f, 425f, 0f);
+
+            Stream keybindsTextStream2 = Assembly.GetExecutingAssembly().GetManifestResourceStream("FS_LevelEditor.KeybindsList2.txt");
+            byte[] keybindsTextBytes2 = new byte[keybindsTextStream2.Length];
+            keybindsTextStream2.Read(keybindsTextBytes2);
+
+            UILabel keybindsLabel2 = keybindsObj2.AddComponent<UILabel>();
+            keybindsLabel2.depth = 1;
+            keybindsLabel2.material = GameObject.Find("MainMenu/Camera/Holder/Main/Window").GetComponent<UISprite>().material;
+            keybindsLabel2.font = GameObject.Find("MainMenu/Camera/Holder/Tooltip/Label").GetComponent<UILabel>().font;
+            keybindsLabel2.text = Encoding.UTF8.GetString(keybindsTextBytes2);
+            keybindsLabel2.alignment = NGUIText.Alignment.Left;
+            keybindsLabel2.pivot = UIWidget.Pivot.TopLeft;
+            keybindsLabel2.fontSize = 35;
+            keybindsLabel2.width = 900;
+            keybindsLabel2.height = 900;
+
+            keybindsObj2.transform.localPosition = new Vector3(0f, 425f, 0f);
+            #endregion
+
+            helpPanel.SetActive(false);
+        }
+        public void ShowOrHideHelpPanel()
+        {
+            bool isEnablingIt = !helpPanel.activeSelf;
+
+            helpPanel.SetActive(isEnablingIt);
+            categoryButtonsParent.SetActive(!isEnablingIt);
+            currentCategoryBG.SetActive(!isEnablingIt);
+            selectedObjPanel.SetActive(!isEnablingIt);
+            currentModeLabel.gameObject.SetActive(!isEnablingIt);
         }
 
 

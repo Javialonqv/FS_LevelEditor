@@ -1,0 +1,25 @@
+/Keyboard_F1\ Open this menu.
+
+/Keyboard_Right Click\ (Hold) to rotate the editor camera.
+
+/Keyboard_W\ /Keyboard_A\ /Keyboard_S\ /Keyboard_D\ while pressing /Keyboard_Right Click\ to MOVE around the level scene.
+/Keyboard_Left Shift\ (Hold) while moving editor camera to move faster.
+/Keyboard_Q\ to move the editor camera up.
+/Keyboard_E\ to move the editor camera down.
+
+/Keyboard_Num 1\ to switch to building mode.
+/Keyboard_Num 2\ to switch to selection mode.
+/Keyboard_Num 3\ to switch to deletion mode.
+
+/Keyboard_Left Click\ to place/select/delete an object.
+/Keyboard_Left Control\ to snap to grid the object to build, before placing it.
+
+/Keyboard_Left Control\ + /Keyboard_Left Click\ to select multiple objects to edit.
+
+/Keyboard_R\ to rotate the selected object in the Y axis.
+/Keyboard_Left Shift\ + /Keyboard_R\ to rotate the selected object in the X axis.
+/Keyboard_Left Alt\ + /Keyboard_R\ to rotate the selected object in the Z axis.
+/Keyboard_Left Control\ + /Keyboard_R\ to reset the rotation of the selected object.
+/Keyboard_T\ + /Keyboard_R\ to rotate the selected object counter clockwise.
+
+/Keyboard_F\ (Hold) and select the white gizmos to snap to grid an already created object.
