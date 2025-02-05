@@ -112,6 +112,7 @@ namespace FS_LevelEditor
             editorUIParent.transform.parent = GameObject.Find("MainMenu/Camera/Holder").transform;
             editorUIParent.transform.localScale = Vector3.one;
 
+            // Setup the category buttons parent and add a panel to it so I can modify the alpha of the whole buttons inside of it with just one panel.
             categoryButtonsParent = new GameObject("CategoryButtons");
             categoryButtonsParent.transform.parent = editorUIParent.transform;
             categoryButtonsParent.transform.localPosition = Vector3.zero;
@@ -180,13 +181,16 @@ namespace FS_LevelEditor
         {
             GameObject template = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/ColorSelection/ColorSwatch");
 
+            // Delete the old buttons.
             currentCategoryButtons.Clear();
             currentCategoryBG.DeleteAllChildren();
 
             for (int i = 0; i < EditorController.Instance.allCategoriesObjectsSorted[EditorController.Instance.currentCategoryID].Count; i++)
             {
+                // Get the object.
                 var currentCategoryObj = EditorController.Instance.allCategoriesObjectsSorted[EditorController.Instance.currentCategoryID].ToList()[i];
 
+                // Setup the position, scale and disable the selected ui object just in case.
                 GameObject currentCategoryButton = Instantiate(template, currentCategoryBG.transform);
                 currentCategoryButton.name = currentCategoryObj.Key;
                 currentCategoryButton.transform.localPosition = new Vector3(-800 + (150f * i), -25f, 0f);
@@ -195,9 +199,11 @@ namespace FS_LevelEditor
                 currentCategoryButton.GetChildWithName("ColorSample").SetActive(false);
                 currentCategoryButton.SetActive(true);
 
+                // Change the title and reset its on click actions.
                 currentCategoryButton.GetChildWithName("ColorName").GetComponent<UILabel>().text = currentCategoryObj.Key;
                 currentCategoryButton.GetComponent<UIButton>().onClick.Clear();
 
+                // This action to select the object to build in the EditorController class.
                 EventDelegate onChange = new EventDelegate(EditorController.Instance, nameof(EditorController.SelectObjectToBuild));
                 EventDelegate.Parameter onChangeParameter = new EventDelegate.Parameter
                 {
@@ -208,6 +214,7 @@ namespace FS_LevelEditor
                 onChange.mParameters = new EventDelegate.Parameter[] { onChangeParameter };
                 currentCategoryButton.GetComponent<UIButton>().onClick.Add(onChange);
 
+                // This to make the changes visible inside of the LE UI (setting this button as the selected one).
                 EventDelegate onChangeUI = new EventDelegate(this, nameof(SetCurrentObjButtonAsSelected));
                 EventDelegate.Parameter onChangeUIParameter = new EventDelegate.Parameter
                 {
@@ -223,6 +230,7 @@ namespace FS_LevelEditor
                 currentCategoryButtons.Add(currentCategoryButton);
             }
 
+            // Select the very first element on the objects list.
             currentCategoryButtons[0].GetComponent<UIButton>().OnClick();
         }
 
