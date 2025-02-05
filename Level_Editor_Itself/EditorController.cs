@@ -60,6 +60,7 @@ namespace FS_LevelEditor
         Vector3 offsetObjPositionAndMosueWhenClick;
         Plane movementPlane;
         bool isCurrentlyMovingAnObject = false;
+        bool globalGizmosArrowsEnabled = false;
 
         GameObject snapToGridCube;
         bool startSnapToGridWithCurrentSelectedObj = false;
@@ -205,6 +206,12 @@ namespace FS_LevelEditor
                 DeleteSelectedObj();
             }
 
+            // If the global gizmos arrows are enabled, force them to be with 0 rotation.
+            if (globalGizmosArrowsEnabled && gizmosArrows.activeSelf)
+            {
+                gizmosArrows.transform.rotation = Quaternion.identity;
+            }
+
             ManageSomeShortcuts();
 
             ManageUndo();
@@ -251,6 +258,17 @@ namespace FS_LevelEditor
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H) && currentMode == Mode.Building)
             {
                 EditorUIManager.Instance.HideOrShowCategoryButtons();
+            }
+
+            if (Input.GetKeyDown(KeyCode.G))
+            {
+                globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
+
+                // If it's using gizmos arrows right now, change its rotation rn.
+                if (!globalGizmosArrowsEnabled && gizmosArrows.activeSelf)
+                {
+                    gizmosArrows.transform.localRotation = Quaternion.identity;
+                }
             }
 
             if (Input.GetKeyDown(KeyCode.F1))
@@ -489,7 +507,15 @@ namespace FS_LevelEditor
 
                 Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
 
-                currentSelectedObj.transform.localPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
+                // If it's using global arrows, just use the normal offset, otherwise, use the damn complex math path.
+                if (globalGizmosArrowsEnabled)
+                {
+                    currentSelectedObj.transform.localPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
+                }
+                else
+                {
+                    currentSelectedObj.transform.localPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
+                }
             }
         }
 
@@ -1111,7 +1137,14 @@ namespace FS_LevelEditor
                         // Create the panel with the rigt normals.
                         if (hit.collider.name == "X" || hit.collider.name == "Z")
                         {
-                            movementPlane = new Plane(currentSelectedObj.transform.up, objPositionWhenArrowClick);
+                            if (globalGizmosArrowsEnabled)
+                            {
+                                movementPlane = new Plane(Vector3.up, objPositionWhenArrowClick);
+                            }
+                            else
+                            {
+                                movementPlane = new Plane(currentSelectedObj.transform.up, objPositionWhenArrowClick);
+                            }
                         }
                         else if (hit.collider.name == "Y")
                         {
@@ -1127,7 +1160,11 @@ namespace FS_LevelEditor
                         if (movementPlane.Raycast(ray, out float enter))
                         {
                             Vector3 collisionOnPlane = ray.GetPoint(enter);
-                            collisionOnPlane = RotatePositionAroundPivot(collisionOnPlane, objPositionWhenArrowClick, Quaternion.Inverse(currentSelectedObj.transform.rotation));
+                            // Not do any of this complex math that I don't even understand anymore LMAO.
+                            if (!globalGizmosArrowsEnabled)
+                            {
+                                collisionOnPlane = RotatePositionAroundPivot(collisionOnPlane, objPositionWhenArrowClick, Quaternion.Inverse(currentSelectedObj.transform.rotation));
+                            }
 
                             if (hit.collider.name == "X") offsetObjPositionAndMosueWhenClick.x = objPositionWhenArrowClick.x - collisionOnPlane.x;
                             if (hit.collider.name == "Y") offsetObjPositionAndMosueWhenClick.y = objPositionWhenArrowClick.y - collisionOnPlane.y;
@@ -1161,9 +1198,18 @@ namespace FS_LevelEditor
 
         Vector3 GetAxisDirection(GizmosArrow arrow, GameObject obj)
         {
-            if (arrow == GizmosArrow.X) return obj.transform.right;
-            if (arrow == GizmosArrow.Y) return obj.transform.up;
-            if (arrow == GizmosArrow.Z) return obj.transform.forward;
+            if (globalGizmosArrowsEnabled)
+            {
+                if (arrow == GizmosArrow.X) return Vector3.right;
+                if (arrow == GizmosArrow.Y) return Vector3.up;
+                if (arrow == GizmosArrow.Z) return Vector3.forward;
+            }
+            else
+            {
+                if (arrow == GizmosArrow.X) return obj.transform.right;
+                if (arrow == GizmosArrow.Y) return obj.transform.up;
+                if (arrow == GizmosArrow.Z) return obj.transform.forward;
+            }
 
             return Vector3.zero;
         }
