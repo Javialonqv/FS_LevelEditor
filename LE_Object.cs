@@ -37,6 +37,7 @@ namespace FS_LevelEditor
             { "POINT_LIGHT", ObjectType.LIGHT },
 
             { "VENT_WITH_SMOKE_GREEN", ObjectType.VENT_WITH_SMOKE },
+            { "VENT_WITH_SMOKE_CYAN", ObjectType.VENT_WITH_SMOKE },
         };
 
         public ObjectType? objectType;
