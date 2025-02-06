@@ -44,8 +44,17 @@ namespace FS_LevelEditor
             // Don't get the disabled objects, since there are supposed to be DELETED objects.
             foreach (GameObject obj in objectsParent.GetChilds(false))
             {
-                LE_ObjectData objData = new LE_ObjectData(obj.GetComponent<LE_Object>());
-                data.objects.Add(objData);
+                // Only if the object has the LE_Object component.
+                if (obj.TryGetComponent<LE_Object>(out LE_Object component))
+                {
+                    LE_ObjectData objData = new LE_ObjectData(component);
+                    data.objects.Add(objData);
+                }
+                else
+                {
+                    Logger.Error($"The object with name \"{obj.name}\" doesn't have a LE_Object component, can't save it, please report it as a bug.");
+                    continue;
+                }
             }
 
             if (EditorController.Instance.multipleObjectsSelected)
@@ -93,9 +102,21 @@ namespace FS_LevelEditor
 
                 Logger.Log("Level saved! Path: " + filePath);
             }
-            catch (Exception e)
+            catch (ArgumentException)
             {
-                throw e;
+                Logger.Error($"Error saving the file! The save path invalid. The level file name is: {levelFileNameWithoutExtension + ".lvl"}");
+            }
+            catch (DirectoryNotFoundException)
+            {
+                Logger.Error($"Error saving the file! Can't find the directory.");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.Error($"Error saving the file! You don't have access to this file.");
+            }
+            catch (IOException e)
+            {
+                Logger.Error($"Error saving the file! Please, report the folowwing error as a bug: {e.Message}");
             }
         }
 

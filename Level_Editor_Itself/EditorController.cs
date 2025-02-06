@@ -789,6 +789,12 @@ namespace FS_LevelEditor
 
         public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
         {
+            if (!allCategoriesObjects.ContainsKey(objName))
+            {
+                Logger.Error($"Can't find object with name \"{objName}\". Skipping it...");
+                return null;
+            }
+
             GameObject template = allCategoriesObjects[objName];
             GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
