@@ -80,6 +80,9 @@ namespace FS_LevelEditor
             pauseMenu.SetActive(false);
             navigation.SetActive(false);
 
+            // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
+            GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
+
             SetupPauseWhenInEditor();
 
             SetupObjectsCategories();
@@ -750,6 +753,9 @@ namespace FS_LevelEditor
         {
             // If the coroutine was already played, stop it if it's currently playing to "restart" it.
             if (savingLevelLabelRoutine != null) MelonCoroutines.Stop(savingLevelLabelRoutine);
+
+            // To avoid bugs, reset the MainMenu UI Camera depth to its default value.
+            GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 10;
 
             NavigationAction exitButtonFromNavigation = navigation.GetChildAt("Holder/Bar/ActionsHolder").transform.GetChild(0).GetComponent<NavigationAction>();
             exitButtonFromNavigation.onButtonClick = new Action<NavigationBarController.ActionType>(NavigationBarController.Instance.ManualButtonPressed);
