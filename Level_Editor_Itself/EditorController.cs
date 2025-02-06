@@ -37,6 +37,7 @@ namespace FS_LevelEditor
         public string currentObjectToBuildName = "";
         GameObject currentObjectToBuild;
         GameObject previewObjectToBuildObj = null;
+        Vector3? lastHittenNormalByPreviewRay = null;
 
         // Related to current selected object for level building.
         public GameObject levelObjectsParent;
@@ -434,7 +435,12 @@ namespace FS_LevelEditor
                         // Set the preview object posiiton to the hit point.
                         previewObjectToBuildObj.SetActive(true);
                         previewObjectToBuildObj.transform.position = hit.point;
-                        previewObjectToBuildObj.transform.up = hit.normal;
+                        // Only update the preview object rotation when the ray hit ANOTHER surface, so the user can rotate the preview object before placing it.
+                        if (lastHittenNormalByPreviewRay != hit.normal)
+                        {
+                            lastHittenNormalByPreviewRay = hit.normal;
+                            previewObjectToBuildObj.transform.up = hit.normal;
+                        }
                     }
 
                     // If press left click while previewing, place the object :)
@@ -863,32 +869,34 @@ namespace FS_LevelEditor
 
         void ManageObjectRotationShortcuts()
         {
-            if (currentSelectedObj == null) return;
+            GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
+
+            if (targetObj == null) return;
 
             // Rotate to the other side when pressing Left Shift.
             int multiplier = Input.GetKey(KeyCode.T) ? -1 : 1;
 
-            Quaternion rotation = currentSelectedObj.transform.localRotation;
+            Quaternion rotation = targetObj.transform.localRotation;
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
             {
-                currentSelectedObj.transform.localRotation = Quaternion.identity;
+                targetObj.transform.localRotation = Quaternion.identity;
             }
             else if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.R))
             {
-                currentSelectedObj.transform.Rotate(15f * multiplier, 0f, 0f);
+                targetObj.transform.Rotate(15f * multiplier, 0f, 0f);
             }
             else if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.R))
             {
-                currentSelectedObj.transform.Rotate(0f, 0f, 15f * multiplier);
+                targetObj.transform.Rotate(0f, 0f, 15f * multiplier);
             }
             else if (Input.GetKeyDown(KeyCode.R))
             {
-                currentSelectedObj.transform.Rotate(0f, 15f * multiplier, 0f);
+                targetObj.transform.Rotate(0f, 15f * multiplier, 0f);
             }
 
-            // If the rotation changed...
-            if (rotation != currentSelectedObj.transform.localRotation)
+            // If the rotation changed and the object isn't the preview object...
+            if (rotation != targetObj.transform.localRotation && currentMode != Mode.Building)
             {
                 // Save it to editor history.
                 #region Register LEAction
