@@ -80,9 +80,6 @@ namespace FS_LevelEditor
             pauseMenu.SetActive(false);
             navigation.SetActive(false);
 
-            // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
-            GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
-
             SetupPauseWhenInEditor();
 
             SetupObjectsCategories();
@@ -92,6 +89,9 @@ namespace FS_LevelEditor
             CreateSavingLevelLabel();
             CreateCurrentModeLabel();
             CreateHelpPanel();
+
+            // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
+            GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
         }
 
         void GetReferences()
