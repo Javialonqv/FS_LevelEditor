@@ -261,6 +261,7 @@ namespace FS_LevelEditor
                 EditorUIManager.Instance.HideOrShowCategoryButtons();
             }
 
+            // Shortcuts to switch between local and global gizmos arrows.
             if (Input.GetKeyDown(KeyCode.G))
             {
                 globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
@@ -272,6 +273,7 @@ namespace FS_LevelEditor
                 }
             }
 
+            // Shortcut to show keybinds help panel.
             if (Input.GetKeyDown(KeyCode.F1))
             {
                 EditorUIManager.Instance.ShowOrHideHelpPanel();
@@ -366,13 +368,17 @@ namespace FS_LevelEditor
             switch (currentMode)
             {
                 case Mode.Building:
-                    EditorUIManager.Instance.categoryButtons.ForEach(button => button.SetActive(true));
-                    EditorUIManager.Instance.currentCategoryBG.SetActive(true);
+                    // Only enable the panel if the keybinds help panel is DISABLED.
+                    if (!EditorUIManager.Instance.helpPanel.activeSelf)
+                    {
+                        EditorUIManager.Instance.categoryButtonsParent.SetActive(true);
+                        EditorUIManager.Instance.currentCategoryBG.SetActive(true);
+                    }
                     break;
 
                 case Mode.Selection:
                 case Mode.Deletion:
-                    EditorUIManager.Instance.categoryButtons.ForEach(button => button.SetActive(false));
+                    EditorUIManager.Instance.categoryButtonsParent.SetActive(false);
                     EditorUIManager.Instance.currentCategoryBG.SetActive(false);
                     break;
             }
@@ -655,7 +661,7 @@ namespace FS_LevelEditor
                     if (!currentSelectedObjects.Contains(currentSelectedObj)) currentSelectedObjects.Add(currentSelectedObj);
                 }
                 // And add the most recent now, ofc lol (but only if it hasn't been selected yet).
-                if(!currentSelectedObjects.Contains(obj)) currentSelectedObjects.Add(obj);
+                if (!currentSelectedObjects.Contains(obj)) currentSelectedObjects.Add(obj);
 
                 if (currentSelectedObjects.Count > 1)
                 {

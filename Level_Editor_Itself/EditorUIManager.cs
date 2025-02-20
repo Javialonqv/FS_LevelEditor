@@ -22,7 +22,7 @@ namespace FS_LevelEditor
         GameObject editorUIParent;
 
         public List<GameObject> categoryButtons = new List<GameObject>();
-        GameObject categoryButtonsParent;
+        public GameObject categoryButtonsParent;
         bool categoryButtonsAreHidden = false;
 
         public GameObject currentCategoryBG;
@@ -524,8 +524,18 @@ namespace FS_LevelEditor
             bool isEnablingIt = !helpPanel.activeSelf;
 
             helpPanel.SetActive(isEnablingIt);
-            categoryButtonsParent.SetActive(!isEnablingIt);
-            currentCategoryBG.SetActive(!isEnablingIt);
+            // Only enable these panels if the current editor mode is building.
+            if (EditorController.Instance.currentMode == EditorController.Mode.Building && !isEnablingIt)
+            {
+                categoryButtonsParent.SetActive(true);
+                currentCategoryBG.SetActive(true);
+            }
+            else
+            {
+                categoryButtonsParent.SetActive(false);
+                currentCategoryBG.SetActive(false);
+            }
+
             selectedObjPanel.SetActive(!isEnablingIt);
             currentModeLabel.gameObject.SetActive(!isEnablingIt);
         }
