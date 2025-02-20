@@ -29,7 +29,8 @@ namespace FS_LevelEditor
             pauseMenu.GetChildAt("LargeButtons/4_NewGame").SetActive(false);
             pauseMenu.GetChildAt("LargeButtons/6_Javi's LevelEditor").SetActive(false);
 
-            pauseMenu.GetChildAt("LargeButtons/7_Exit").SetActive(false);
+            pauseMenu.GetChildAt("LargeButtons/7_ReturnToMenu").SetActive(false);
+            pauseMenu.GetChildAt("LargeButtons/8_ExitGame").SetActive(false);
             pauseMenu.GetChildAt("LargeButtons/7_ExitWhenInEditor").SetActive(true);
 
             PatchSaveLevelButton();

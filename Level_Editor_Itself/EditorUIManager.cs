@@ -548,7 +548,7 @@ namespace FS_LevelEditor
             resumeBtnWhenInsideLE.SetActive(true);
 
             // Same with exit button.
-            GameObject originalExitBtn = pauseMenu.GetChildAt("LargeButtons/7_Exit");
+            GameObject originalExitBtn = pauseMenu.GetChildAt("LargeButtons/8_ExitGame");
             GameObject exitBtnWhenInsideLE = Instantiate(originalExitBtn, originalExitBtn.transform.parent);
             exitBtnWhenInsideLE.name = "7_ExitWhenInEditor";
             Destroy(exitBtnWhenInsideLE.GetComponent<ButtonController>());
@@ -732,7 +732,7 @@ namespace FS_LevelEditor
 
                 DeleteUI();
 
-                MenuController.GetInstance().ReturnToMainMenu();
+                MenuController.GetInstance().ReturnToMainMenuConfirmed();
 
                 // Wait a few so when the pause menu ui is not visible anymore, destroy the pause menu LE buttons, and it doesn't look weird when destroying them and the user can see it.
                 yield return new WaitForSecondsRealtime(0.2f);

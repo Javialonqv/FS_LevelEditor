@@ -225,7 +225,7 @@ namespace FS_LevelEditor
 
                 // Set the red color in the sprites.
                 notificationPanel.GetChildAt("Holder/Background").GetComponent<UISprite>().color = new Color32(255, 120, 120, 160);
-                notificationPanel.GetChildAt("Holder/BOrderLines").GetComponent<UISprite>().color = new Color32(255, 120, 120, 255);
+                notificationPanel.GetChildAt("Holder/BorderLines").GetComponent<UISprite>().color = new Color32(255, 120, 120, 255);
 
                 // Play the notification sound.
                 InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.m_notificationSound_bad);

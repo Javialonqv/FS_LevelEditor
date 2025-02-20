@@ -132,6 +132,12 @@ namespace FS_LevelEditor
                 {
                     LoadLevel(levelFileNameWithoutExtensionWhileGoingBackToLE, levelNameWhileGoingBackToLE);
                 }
+
+                // For 0.606, it seems the menu music isn't played when returning to menu after being in LE, play it just in case.
+                if (!GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().isPlaying)
+                {
+                    GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().Play();
+                }
             }
         }
 
