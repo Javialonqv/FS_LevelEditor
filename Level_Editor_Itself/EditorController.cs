@@ -72,6 +72,8 @@ namespace FS_LevelEditor
         public bool isEditorPaused = false;
         public bool levelHasBeenModified = false;
 
+        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
+
         void Awake()
         {
             Instance = this;
@@ -571,7 +573,6 @@ namespace FS_LevelEditor
             }
 
             actionsMade.Add(currentExecutingAction);
-            Logger.DebugLog(currentExecutingAction);
             #endregion
 
             SetSelectedObj(null);

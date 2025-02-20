@@ -87,6 +87,15 @@ namespace FS_LevelEditor
 
         void Init(string originalObjName)
         {
+            if (EditorController.Instance != null && PlayModeController.Instance == null)
+            {
+                EditorController.Instance.currentInstantiatedObjects.Add(this);
+            }
+            else if (EditorController.Instance == null && PlayModeController.Instance != null)
+            {
+                PlayModeController.Instance.currentInstantiatedObjects.Add(this);
+            }
+
             SetNameAndType(originalObjName);
 
             // If it's on playmode.
@@ -107,11 +116,11 @@ namespace FS_LevelEditor
 
             if (EditorController.Instance != null && PlayModeController.Instance == null)
             {
-                objects = EditorController.Instance.levelObjectsParent.GetComponentsInChildren<LE_Object>();
+                objects = EditorController.Instance.currentInstantiatedObjects.ToArray();
             }
             else if (EditorController.Instance == null && PlayModeController.Instance != null)
             {
-                objects = PlayModeController.Instance.levelObjectsParent.GetComponentsInChildren<LE_Object>();
+                objects = PlayModeController.Instance.currentInstantiatedObjects.ToArray();
             }
 
             while (objects.Any(x => x.objectID == id && x.objectOriginalName == objectOriginalName))

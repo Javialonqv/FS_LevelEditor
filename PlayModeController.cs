@@ -28,6 +28,7 @@ namespace FS_LevelEditor
         Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
         List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
         public GameObject levelObjectsParent;
+        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
         GameObject backToLEButton;
 
