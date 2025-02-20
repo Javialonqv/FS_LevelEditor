@@ -19,6 +19,7 @@ namespace FS_LevelEditor
         public static LE_MenuUIManager Instance;
 
         public bool inLEMenu;
+        public bool isInMidTransition { get; private set; }
         bool deletePopupEnabled = false;
 
         // Variables outside of LE menu.
@@ -899,6 +900,8 @@ namespace FS_LevelEditor
             {
                 if (inLEMenu)
                 {
+                    isInMidTransition = true;
+
                     uiSoundSource.clip = okSound;
                     uiSoundSource.Play();
 
@@ -907,10 +910,14 @@ namespace FS_LevelEditor
                     leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
                     leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
                     yield return new WaitForSecondsRealtime(0.2f);
+                    
                     mainMenu.SetActive(false);
+                    isInMidTransition = false;
                 }
                 else
                 {
+                    isInMidTransition = true;
+
                     uiSoundSource.clip = hidePageSound;
                     uiSoundSource.Play();
 
@@ -920,6 +927,8 @@ namespace FS_LevelEditor
                     leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
                     yield return new WaitForSecondsRealtime(0.2f);
                     leMenuPanel.SetActive(false);
+
+                    isInMidTransition = false;
                 }
             }
         }

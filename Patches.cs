@@ -21,12 +21,13 @@ namespace FS_LevelEditor
     }
 
     // To prevent the exit popup from appearing in the main menu if the user is exiting from the LE pause.
+    // Also to prevent it when it's inside of the LE menu (level selection).
     [HarmonyPatch(typeof(MenuController), nameof(MenuController.ShowExitConfirmationPopup))]
     public static class ExitPatch
     {
         public static bool Prefix()
         {
-            if (EditorController.Instance != null)
+            if (EditorController.Instance != null || LE_MenuUIManager.Instance.inLEMenu || LE_MenuUIManager.Instance.isInMidTransition)
             {
                 return false;
             }
