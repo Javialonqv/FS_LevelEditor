@@ -11,8 +11,6 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Saw : LE_Object
     {
-        Health health;
-
         void Awake()
         {
             if (PlayModeController.Instance != null)
@@ -34,8 +32,9 @@ namespace FS_LevelEditor
             gameObject.SetActive(false);
             gameObject.tag = "Scie";
 
-            RotationScie rotationScie = gameObject.GetChildWithName("Scie_OFF").AddComponent<RotationScie>();
+            gameObject.GetComponent<AudioSource>().outputAudioMixerGroup = FindObjectOfType<ScieScript>().GetComponent<AudioSource>().outputAudioMixerGroup;
 
+            RotationScie rotationScie = gameObject.GetChildWithName("Scie_OFF").AddComponent<RotationScie>();
             rotationScie.vitesseRotation = 500;
 
             ScieScript script = gameObject.AddComponent<ScieScript>();
