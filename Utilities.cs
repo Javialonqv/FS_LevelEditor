@@ -14,6 +14,8 @@ namespace FS_LevelEditor
 {
     public static class Utilities
     {
+        static Coroutine customNotificationCoroutine;
+
         public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
         {
             List<GameObject> children = new List<GameObject>();
@@ -215,7 +217,12 @@ namespace FS_LevelEditor
 
         public static void ShowCustomNotificationRed(string msg, float delay)
         {
-            MelonCoroutines.Start(Coroutine());
+            if (customNotificationCoroutine != null)
+            {
+                MelonCoroutines.Stop(customNotificationCoroutine);
+            }
+
+            customNotificationCoroutine = (UnityEngine.Coroutine)MelonCoroutines.Start(Coroutine());
             IEnumerator Coroutine()
             {
                 // Get the variable.
