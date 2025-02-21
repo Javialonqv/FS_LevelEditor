@@ -73,6 +73,7 @@ namespace FS_LevelEditor
                 if (obj.name == "FootStepController") continue;
                 if (obj.name == "Checkpoints") continue;
                 if (obj.name == "LevelObjects") continue;
+                if (obj.name == "Player") continue;
 
                 obj.SetActive(false);
             }
