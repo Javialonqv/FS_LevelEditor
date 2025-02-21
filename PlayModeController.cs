@@ -194,6 +194,13 @@ public static class ChapterTextNamePatch
             return true;
         }
     }
+
+    public static void Postfix()
+    {
+        // For some STUPID reason, the chapter display doesn't show "CUSTOM LEVEL" as title, it seems the GetChapterTitle function isn't patched at all after FS 0.604.
+        // Anyways, if it doesn't work, then modify the text directly when this function of get chapter name is called ;)
+        GameObject.Find("(singleton) InGameUIManager/Camera/Panel/ChapterDisplay/Holder/ChapterTitleLabel").GetComponent<UILabel>().text = "CUSTOM LEVEL";
+    }
 }
 
 [HarmonyPatch(typeof(Controls), nameof(Controls.KillCharacter), [typeof(bool), typeof(bool)])]
