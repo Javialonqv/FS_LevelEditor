@@ -247,5 +247,21 @@ namespace FS_LevelEditor
                 notificationPanel.SetActive(false);
             }
         }
+
+        public static bool ListHasMultipleObjectsWithSameID(List<LE_Object> levelObjects)
+        {
+            HashSet<string> seenIds = new HashSet<string>();
+
+            foreach (var obj in levelObjects)
+            {
+                if (!seenIds.Add(obj.objectFullNameWithID))
+                {
+                    Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }
