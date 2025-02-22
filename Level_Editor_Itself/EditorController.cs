@@ -274,7 +274,7 @@ namespace FS_LevelEditor
             }
 
             // Shortcuts to switch between local and global gizmos arrows.
-            if (Input.GetKeyDown(KeyCode.G))
+            if (Input.GetKeyDown(KeyCode.G) && collidingArrow == GizmosArrow.None)
             {
                 globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
 
@@ -545,8 +545,20 @@ namespace FS_LevelEditor
 
         void DeleteSelectedObj()
         {
+            // Get the current existing objects in the level objects parent.
+            int existingObjects = levelObjectsParent.GetChilds(false).Where(x => x.name != "MoveObjectArrows" && x.name != "SnapToGridCube").ToArray().Length;
+
             if (multipleObjectsSelected)
             {
+                // Since the selected objects are in another parent, also count the objects in that parent.
+                existingObjects += multipleSelectedObjsParent.GetChilds(false).Where(x => x.name != "MoveObjectArrows" && x.name != "SnapToGridCube").ToArray().Length;
+
+                if (existingObjects - currentSelectedObjects.Count <= 0)
+                {
+                    Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+                    return;
+                }
+
                 foreach (var obj in currentSelectedObj.GetChilds())
                 {
                     if (obj.name == "MoveObjectArrows" || obj.name == "SnapToGridCube") continue;
@@ -557,6 +569,11 @@ namespace FS_LevelEditor
             }
             else
             {
+                if (existingObjects <= 1)
+                {
+                    Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+                    return;
+                }
                 currentSelectedObj.SetActive(false);
                 levelHasBeenModified = true;
             }
@@ -848,13 +865,6 @@ namespace FS_LevelEditor
             }
 
             return obj;
-        }
-
-        void CreateSaw()
-        {
-            GameObject saw = new GameObject("Saw");
-            ScieScript script = saw.AddComponent<ScieScript>();
-            script.Activate();
         }
 
         void DuplicateSelectedObject()
