@@ -94,6 +94,8 @@ namespace FS_LevelEditor
 
         void Update()
         {
+            //Logger.DebugLog($"Is over UI element: {Utilities.IsMouseOverUIElement()}. Is input field selected: {Utilities.theresAnInputFieldSelected}");
+
             // Shortcut for pausing LE.
             if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -127,7 +129,8 @@ namespace FS_LevelEditor
                 previewObjectToBuildObj.SetActive(false);
             }
 
-            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null)
+            // If pressing F key and it's not typing in an input field.
+            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
             {
                 snapToGridCube.SetActive(true);
                 gizmosArrows.SetActive(false);
@@ -204,7 +207,8 @@ namespace FS_LevelEditor
             }
 
             // If press the Delete key and there's a selected object, delete it.
-            if (Input.GetKeyDown(KeyCode.Delete) && currentSelectedObj != null)
+            // Also, only delete when the user is NOT typing in an input field.
+            if (Input.GetKeyDown(KeyCode.Delete) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
             {
                 DeleteSelectedObj();
             }
