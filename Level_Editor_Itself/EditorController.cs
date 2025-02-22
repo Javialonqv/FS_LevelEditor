@@ -42,7 +42,7 @@ namespace FS_LevelEditor
         // Related to current selected object for level building.
         public GameObject levelObjectsParent;
         public GameObject currentSelectedObj;
-        LE_Object currentSelectedObjComponent;
+        public LE_Object currentSelectedObjComponent;
         // When there's just one object selected, that object in in the currentSelectedObj variable.
         // But when there are multiple objects selected, this list contains em and "currentSelectedObj" is "multipleSelectedObjsParent".
         public List<GameObject> currentSelectedObjects = new List<GameObject>();
@@ -222,6 +222,12 @@ namespace FS_LevelEditor
 
         void ManageSomeShortcuts()
         {
+            // Ignore shortcuts when the user is typing.
+            if (Utilities.theresAnInputFieldSelected)
+            {
+                return;
+            }
+
             // Shortcuts for changing between editor modes.
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
@@ -773,7 +779,7 @@ namespace FS_LevelEditor
                 }
                 else
                 {
-                    EditorUIManager.Instance.SetSelectedObject(obj.name);
+                    EditorUIManager.Instance.SetSelectedObject(currentSelectedObjComponent);
                 }
             }
             else

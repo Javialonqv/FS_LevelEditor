@@ -16,6 +16,19 @@ namespace FS_LevelEditor
     {
         static Coroutine customNotificationCoroutine;
 
+        public static bool theresAnInputFieldSelected
+        {
+            get
+            {
+                if (UICamera.selectedObject != null)
+                {
+                    return UICamera.selectedObject.TryGetComponent<UIInput>(out var input);
+                }
+
+                return false;
+            }
+        }
+
         public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
         {
             List<GameObject> children = new List<GameObject>();
@@ -164,6 +177,11 @@ namespace FS_LevelEditor
 
         public static bool IsMouseOverUIElement()
         {
+            if (theresAnInputFieldSelected)
+            {
+                return true;
+            }
+
             if (UICamera.hoveredObject != null)
             {
                 return UICamera.hoveredObject.name != "MainMenu";

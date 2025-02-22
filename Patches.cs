@@ -47,4 +47,23 @@ namespace FS_LevelEditor
             return EditorController.Instance == null;
         }
     }
+
+    //[HarmonyPatch(typeof(UIInput), nameof(UIInput.isSelected), MethodType.Setter)]
+    //public static class UIInputSelectedPatch
+    //{
+    //    public static void Prefix(UIInput __instance, bool value)
+    //    {
+    //        Logger.DebugLog("YES");
+
+    //        if (value)
+    //        {
+    //            Logger.DebugLog("YES X2");
+    //            UIInput.current = __instance;
+    //        }
+    //        else
+    //        {
+    //            UIInput.current = null;
+    //        }
+    //    }
+    //}
 }

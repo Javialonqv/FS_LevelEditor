@@ -48,6 +48,9 @@ namespace FS_LevelEditor
             get { return objectOriginalName + " " + objectID; }
         }
 
+        public LE_Object(IntPtr ptr) : base(ptr) { }
+        public LE_Object() { }
+
         /// <summary>
         /// The correct way to add a LE_Object component to a GameObject.
         /// </summary>

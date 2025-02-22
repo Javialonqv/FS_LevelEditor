@@ -16,6 +16,7 @@ namespace FS_LevelEditor
             get { return objectOriginalName; }
         }
 
+        Light light;
         GameObject lightSprite;
 
         static int currentInstances = 0;
@@ -25,6 +26,7 @@ namespace FS_LevelEditor
         {
             currentInstances++;
 
+            light = gameObject.GetChildWithName("Light").GetComponent<Light>();
             lightSprite = gameObject.GetChildWithName("Sprite");
 
             if (PlayModeController.Instance != null)
@@ -47,6 +49,24 @@ namespace FS_LevelEditor
         void OnDestroy()
         {
             currentInstances--;
+        }
+
+        public override void SetProperty(string name, object value)
+        {
+            if (name == "Color")
+            {
+                if (ColorUtility.TryParseHtmlString("#" + value, out Color color))
+                {
+                    light.color = color;
+                }
+            }
+            else if (name == "Intensity")
+            {
+                if (float.TryParse((string)value, out float result))
+                {
+                    light.intensity = result;
+                }
+            }
         }
     }
 }

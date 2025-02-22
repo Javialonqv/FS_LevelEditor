@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Collections;
 using Il2CppInControl.NativeDeviceProfiles;
 using static Il2Cpp.UIAtlas;
+using FS_LevelEditor.UI_Related;
 
 namespace FS_LevelEditor
 {
@@ -29,6 +30,8 @@ namespace FS_LevelEditor
         List<GameObject> currentCategoryButtons = new List<GameObject>();
 
         GameObject selectedObjPanel;
+        Dictionary<string, GameObject> attrbutesPanels = new Dictionary<string, GameObject>();
+
         GameObject savingLevelLabel;
         GameObject savingLevelLabelInPauseMenu;
         Coroutine savingLevelLabelRoutine;
@@ -47,6 +50,8 @@ namespace FS_LevelEditor
         GameObject popupTitle;
         GameObject popupContentLabel;
         GameObject popupSmallButtonsParent;
+
+        public EditorUIManager(IntPtr ptr) : base(ptr) { }
 
         void Awake()
         {
@@ -300,7 +305,9 @@ namespace FS_LevelEditor
             bodyCollider.size = new Vector3(500f, 300f, 1f);
 
             SetSelectedObjPanelAsNone();
+
             CreateNoAttributesPanel();
+            CreateLightAttributesPanel();
         }
 
         void CreateNoAttributesPanel()
@@ -318,6 +325,57 @@ namespace FS_LevelEditor
             label.width = 500;
             label.height = 200;
             label.text = "No Attributes for this object.";
+
+            noAttributes.SetActive(false);
+            attrbutesPanels.Add("None", noAttributes);
+        }
+        void CreateLightAttributesPanel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject lightAttributes = new GameObject("LightAttributes");
+            lightAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            lightAttributes.transform.localPosition = Vector3.zero;
+            lightAttributes.transform.localScale = Vector3.one;
+
+            #region Color Input Field
+            GameObject colorTitle = Instantiate(labelTemplate, lightAttributes.transform);
+            colorTitle.name = "ColorTitle";
+            colorTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            colorTitle.RemoveComponent<UILocalize>();
+            colorTitle.GetComponent<UILabel>().text = "Color (Hex)";
+            colorTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject hashtagLOL = Instantiate(labelTemplate, lightAttributes.transform);
+            hashtagLOL.name = "ColorHashtag";
+            hashtagLOL.transform.localPosition = new Vector3(5f, 90f, 0f);
+            hashtagLOL.RemoveComponent<UILocalize>();
+            hashtagLOL.GetComponent<UILabel>().text = "#";
+            hashtagLOL.GetComponent<UILabel>().color = Color.white;
+            hashtagLOL.GetComponent<UILabel>().alignment = NGUIText.Alignment.Center;
+            hashtagLOL.GetComponent<UILabel>().width = 38;
+
+            GameObject colorInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27);
+            colorInputField.name = "ColorField";
+            colorInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
+            colorInputField.GetComponent<UIInput>().characterLimit = 6;
+            #endregion
+
+            #region Intensity Input Field
+            GameObject intensityTitle = Instantiate(labelTemplate, lightAttributes.transform);
+            intensityTitle.name = "IntensityTitle";
+            intensityTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
+            intensityTitle.RemoveComponent<UILocalize>();
+            intensityTitle.GetComponent<UILabel>().text = "Intensity";
+            intensityTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject intensityInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27);
+            intensityInputField.name = "IntensityField";
+            intensityInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
+            #endregion
+
+            lightAttributes.SetActive(false);
+            attrbutesPanels.Add("Light", lightAttributes);
         }
 
         public void SetSelectedObjPanelAsNone()
@@ -332,11 +390,44 @@ namespace FS_LevelEditor
             selectedObjPanel.GetChildWithName("Body").SetActive(false);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
         }
-        public void SetSelectedObject(string objName)
+        public void SetSelectedObject(LE_Object objComponent)
         {
-            selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = objName;
+            selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = objComponent.objectFullNameWithID;
             selectedObjPanel.GetChildWithName("Body").SetActive(true);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -220, 0f);
+
+            attrbutesPanels.ToList().ForEach(x => x.Value.SetActive(false));
+
+            if (objComponent.objectOriginalName.Contains("Light"))
+            {
+                attrbutesPanels["Light"].SetActive(true);
+
+                // Set color input...
+                var colorInput = attrbutesPanels["Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
+                colorInput.onChange.Clear();
+                var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetProperty),
+                    NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
+                    NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInput));
+                colorInput.onChange.Add(colorDelegate);
+
+                // Set intensity input...
+                var intensityInput = attrbutesPanels["Light"].GetChildWithName("IntensityField").GetComponent<UIInput>();
+                intensityInput.onChange.Clear();
+                var intensityDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetProperty),
+                    NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Intensity"),
+                    NGUI_Utils.CreateEventDelegateParamter(this, "inputField", intensityInput));
+                intensityInput.onChange.Add(intensityDelegate);
+            }
+            else
+            {
+                attrbutesPanels["None"].SetActive(true);
+            }
+        }
+
+        // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
+        public void SetProperty(string propertyName, UIInput inputField)
+        {
+            EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.text);
         }
         #endregion
 
