@@ -17,8 +17,8 @@ namespace FS_LevelEditor
         public float mouseSensivility = 10f;
         public float downAndUpSpeed = 10f;
 
-        float xRotation = 0f;
-        float yRotation = 0f;
+        public float xRotation = 0f;
+        public float yRotation = 0f;
 
         void Update()
         {
@@ -74,6 +74,13 @@ namespace FS_LevelEditor
 
             Vector3 toRotate = new Vector3(xRotation, yRotation, 0f);
             transform.localRotation = Quaternion.Euler(toRotate * mouseSensivility);
+        }
+
+        public void SetRotation(Vector3 eulerAngles)
+        {
+            xRotation = eulerAngles.x;
+            yRotation = eulerAngles.y;
+            RotateCamera();
         }
 
         void ManageDownAndUp()

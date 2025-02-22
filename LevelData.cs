@@ -31,7 +31,8 @@ namespace FS_LevelEditor
             LevelData data = new LevelData();
             data.levelName = levelName;
             data.cameraPosition = Camera.main.transform.position;
-            data.cameraRotation = Camera.main.transform.eulerAngles;
+            EditorCameraMovement editorCamera = Camera.main.GetComponent<EditorCameraMovement>();
+            data.cameraRotation = new Vector3Serializable(editorCamera.xRotation, editorCamera.yRotation, 0f);
             data.createdTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
             if (EditorController.Instance.multipleObjectsSelected)
@@ -149,7 +150,7 @@ namespace FS_LevelEditor
             LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
 
             Camera.main.transform.position = data.cameraPosition;
-            Camera.main.transform.eulerAngles = data.cameraRotation;
+            Camera.main.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
 
             foreach (LE_ObjectData obj in data.objects)
             {
