@@ -10,10 +10,12 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Point_Light : LE_Object
     {
+        Light light;
         GameObject lightBulbSprite;
 
         void Awake()
         {
+            light = gameObject.GetChildWithName("Light").GetComponent<Light>();
             lightBulbSprite = gameObject.GetChildWithName("Sprite");
 
             if (PlayModeController.Instance != null)
@@ -30,6 +32,24 @@ namespace FS_LevelEditor
             if (lightBulbSprite != null)
             {
                 lightBulbSprite.transform.rotation = Camera.main.transform.rotation;
+            }
+        }
+
+        public override void SetProperty(string name, object value)
+        {
+            if (name == "Color")
+            {
+                if (ColorUtility.TryParseHtmlString("#" + value, out Color color))
+                {
+                    light.color = color;
+                }
+            }
+            else if (name == "Intensity")
+            {
+                if (float.TryParse((string)value, out float result))
+                {
+                    light.intensity = result;
+                }
             }
         }
     }
