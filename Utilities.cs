@@ -14,16 +14,22 @@ namespace FS_LevelEditor
 {
     public static class Utilities
     {
-        public static GameObject[] GetChilds(this GameObject obj)
+        static Coroutine customNotificationCoroutine;
+
+        public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
         {
-            GameObject[] array = new GameObject[obj.transform.childCount];
+            List<GameObject> children = new List<GameObject>();
 
             for (int i = 0; i < obj.transform.childCount; i++)
             {
-                array[i] = obj.transform.GetChild(i).gameObject;
+                GameObject child = obj.transform.GetChild(i).gameObject;
+                if (child.activeSelf || includeInactive)
+                {
+                    children.Add(child);
+                }
             }
 
-            return array;
+            return children.ToArray();
         }
 
         public static Transform GetChildWithName(this Transform tr, string name)
@@ -211,7 +217,12 @@ namespace FS_LevelEditor
 
         public static void ShowCustomNotificationRed(string msg, float delay)
         {
-            MelonCoroutines.Start(Coroutine());
+            if (customNotificationCoroutine != null)
+            {
+                MelonCoroutines.Stop(customNotificationCoroutine);
+            }
+
+            customNotificationCoroutine = (UnityEngine.Coroutine)MelonCoroutines.Start(Coroutine());
             IEnumerator Coroutine()
             {
                 // Get the variable.
@@ -221,7 +232,7 @@ namespace FS_LevelEditor
 
                 // Set the red color in the sprites.
                 notificationPanel.GetChildAt("Holder/Background").GetComponent<UISprite>().color = new Color32(255, 120, 120, 160);
-                notificationPanel.GetChildAt("Holder/BOrderLines").GetComponent<UISprite>().color = new Color32(255, 120, 120, 255);
+                notificationPanel.GetChildAt("Holder/BorderLines").GetComponent<UISprite>().color = new Color32(255, 120, 120, 255);
 
                 // Play the notification sound.
                 InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.m_notificationSound_bad);
@@ -242,6 +253,22 @@ namespace FS_LevelEditor
                 yield return new WaitForSecondsRealtime(0.2f);
                 notificationPanel.SetActive(false);
             }
+        }
+
+        public static bool ListHasMultipleObjectsWithSameID(List<LE_Object> levelObjects)
+        {
+            HashSet<string> seenIds = new HashSet<string>();
+
+            foreach (var obj in levelObjects)
+            {
+                if (!seenIds.Add(obj.objectFullNameWithID))
+                {
+                    Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

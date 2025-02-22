@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.1.0", "Javialon_qv", null)]
+[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.1.2", "Javialon_qv", null)]
 [assembly: MelonGame("Haze Games", "Fractal Space")]
 
 namespace FS_LevelEditor
@@ -41,6 +41,7 @@ namespace FS_LevelEditor
             if (sceneName.Contains("Level4_PC") && loadCustomLevelOnSceneLoad)
             {
                 LevelData.LoadLevelDataInPlaymode(levelFileNameWithoutExtensionToLoad);
+                loadCustomLevelOnSceneLoad = false;
             }
         }
 

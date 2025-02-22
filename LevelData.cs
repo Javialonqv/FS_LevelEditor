@@ -19,6 +19,8 @@ namespace FS_LevelEditor
         public string levelName { get; set; }
         public Vector3Serializable cameraPosition { get; set; }
         public Vector3Serializable cameraRotation { get; set; }
+        public long createdTime { get; set; }
+        public long lastModificationTime { get; set; }
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
 
         static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
@@ -30,6 +32,7 @@ namespace FS_LevelEditor
             data.levelName = levelName;
             data.cameraPosition = Camera.main.transform.position;
             data.cameraRotation = Camera.main.transform.eulerAngles;
+            data.createdTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
             if (EditorController.Instance.multipleObjectsSelected)
             {
@@ -38,10 +41,20 @@ namespace FS_LevelEditor
 
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
 
-            foreach (GameObject obj in objectsParent.GetChilds())
+            // Don't get the disabled objects, since there are supposed to be DELETED objects.
+            foreach (GameObject obj in objectsParent.GetChilds(false))
             {
-                LE_ObjectData objData = new LE_ObjectData(obj.GetComponent<LE_Object>());
-                data.objects.Add(objData);
+                // Only if the object has the LE_Object component.
+                if (obj.TryGetComponent<LE_Object>(out LE_Object component))
+                {
+                    LE_ObjectData objData = new LE_ObjectData(component);
+                    data.objects.Add(objData);
+                }
+                else
+                {
+                    Logger.Error($"The object with name \"{obj.name}\" doesn't have a LE_Object component, can't save it, please report it as a bug.");
+                    continue;
+                }
             }
 
             if (EditorController.Instance.multipleObjectsSelected)
@@ -59,6 +72,17 @@ namespace FS_LevelEditor
             {
                 data = CreateLevelData(levelName);
             }
+
+            LevelData oldLevelData = GetLevelData(levelFileNameWithoutExtension);
+            if (oldLevelData != null)
+            {
+                if (oldLevelData.createdTime != 0)
+                {
+                    data.createdTime = oldLevelData.createdTime;
+                }
+            }
+
+            data.lastModificationTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
             try
             {
@@ -78,10 +102,35 @@ namespace FS_LevelEditor
 
                 Logger.Log("Level saved! Path: " + filePath);
             }
-            catch (Exception e)
+            catch (ArgumentException)
             {
-                throw e;
+                Logger.Error($"Error saving the file! The save path invalid. The level file name is: {levelFileNameWithoutExtension + ".lvl"}");
             }
+            catch (DirectoryNotFoundException)
+            {
+                Logger.Error($"Error saving the file! Can't find the directory.");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.Error($"Error saving the file! You don't have access to this file.");
+            }
+            catch (IOException e)
+            {
+                Logger.Error($"Error saving the file! Please, report the folowwing error as a bug: {e.Message}");
+            }
+        }
+
+        public static LevelData GetLevelData(string levelFileNameWithoutExtension)
+        {
+            string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
+            LevelData data = null;
+            try
+            {
+                data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
+            }
+            catch { }
+
+            return data;
         }
 
         // This method is for loading the saved level in the LE.
@@ -119,6 +168,7 @@ namespace FS_LevelEditor
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
 
+            playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
             playModeCtrl.levelName = data.levelName;
 
             foreach (LE_ObjectData obj in data.objects)

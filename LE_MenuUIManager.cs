@@ -19,6 +19,7 @@ namespace FS_LevelEditor
         public static LE_MenuUIManager Instance;
 
         public bool inLEMenu;
+        public bool isInMidTransition { get; private set; }
         bool deletePopupEnabled = false;
 
         // Variables outside of LE menu.
@@ -44,6 +45,12 @@ namespace FS_LevelEditor
         int currentLevelsGridID;
         GameObject onDeletePopupBackButton;
         GameObject onDeletePopupDeleteButton;
+        bool levelButtonsWasClicked = false;
+        bool isGoingBackToLE = false;
+        string levelFileNameWithoutExtensionWhileGoingBackToLE = "";
+        string levelNameWhileGoingBackToLE = "";
+        public GameObject levelNameLabel;
+        public GameObject levelObjectsLabel;
 
         void Awake()
         {
@@ -59,25 +66,20 @@ namespace FS_LevelEditor
             CreateLEMenuPanel();
             CreateBackButton();
             CreateAddButton();
+            CreateTopLevelInfo();
             CreateCurrentModVersionLabel();
             CreateCreditsLabel();
         }
 
         void Update()
         {
-#if DEBUG
-            if (Input.GetKeyDown(KeyCode.F3))
-            {
-                SwitchBetweenMenuAndLEMenu();
-            }
-#endif
             if (EditorUIManager.Instance == null && levelEditorUIButton != null)
             {
                 levelEditorUIButton.SetActive(Core.currentSceneName.Contains("Menu"));
             }
 
             // To exit from the LE menu with the ESC key.
-            if (Input.GetKeyDown(KeyCode.Escape) && inLEMenu)
+            if (Input.GetKeyDown(KeyCode.Escape) && inLEMenu && !isInMidTransition)
             {
                 // BUT, if the delete level popup is enabled, then hide it and do ABSOLUTELY NOTHNG.
                 if (deletePopupEnabled)
@@ -117,6 +119,20 @@ namespace FS_LevelEditor
                 InGameUIManager.Instance.isInPauseMode = false;
 
                 Invoke("FixFSPostProccesingInMenuBug", 0.1f);
+
+                // Reset this variable, so the user can click level buttons again.
+                levelButtonsWasClicked = false;
+
+                if (isGoingBackToLE)
+                {
+                    LoadLevel(levelFileNameWithoutExtensionWhileGoingBackToLE, levelNameWhileGoingBackToLE);
+                }
+
+                // For 0.606, it seems the menu music isn't played when returning to menu after being in LE, play it just in case.
+                if (!GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().isPlaying)
+                {
+                    GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().Play();
+                }
             }
         }
 
@@ -450,21 +466,21 @@ namespace FS_LevelEditor
 
                     // Set button's action.
                     UIButton button = lvlButton.GetComponent<UIButton>();
-                    EventDelegate onClick = new EventDelegate(this, nameof(LE_MenuUIManager.LoadLevel));
-                    EventDelegate.Parameter parameter = new EventDelegate.Parameter
-                    {
-                        field = "levelFileNameWithoutExtension",
-                        value = levelFileNameWithoutExtension,
-                        obj = this
-                    };
-                    EventDelegate.Parameter parameter2 = new EventDelegate.Parameter
-                    {
-                        field = "levelName",
-                        value = data.levelName,
-                        obj = this
-                    };
-                    onClick.mParameters = new EventDelegate.Parameter[] { parameter, parameter2 };
-                    button.onClick.Add(onClick);
+                    LevelButtonController btnController = lvlButton.AddComponent<LevelButtonController>();
+                    btnController.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
+                    btnController.levelName = data.levelName;
+                    btnController.objectsCount = data.objects.Count;
+
+                    // Create tooltip for the button.
+                    FractalTooltip tooltip = lvlButton.AddComponent<FractalTooltip>();
+                    string levelCreationDate = DateTimeOffset.FromUnixTimeSeconds(data.createdTime).ToLocalTime().DateTime + "";
+                    string levelLastModificationDate = DateTimeOffset.FromUnixTimeSeconds(data.lastModificationTime).ToLocalTime().DateTime + "";
+                    // Protection in case the level is outdated and shows a different date...
+                    if (data.createdTime == 0) levelCreationDate = "[c][ff0000]OUTDATED LEVEL, SAVE TO UPDATE THE DATE.[-][/c]";
+                    if (data.lastModificationTime == 0) levelLastModificationDate = "[c][ff0000]OUTDATED LEVEL, SAVE TO UPDATE THE DATE.[-][/c]";
+
+                    tooltip.toolTipLocKey = $"[c][ffff00]Creation date:[-][/c] {levelCreationDate}" +
+                                          $"\n[c][ffff00]Last modification date:[-][/c] {levelLastModificationDate}";
                 }
                 else
                 {
@@ -589,6 +605,24 @@ namespace FS_LevelEditor
                 CreateNextListButton();
             }
         }
+        public void CreateTopLevelInfo()
+        {
+            GameObject labelTemplate = leMenuPanel.GetChildWithName("Title");
+            levelNameLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
+            levelNameLabel.name = "LevelName";
+            levelNameLabel.SetActive(false);
+
+            levelNameLabel.transform.localPosition = new Vector3(0f, 330f, 0f);
+            levelNameLabel.GetComponent<UILabel>().text = "Name Test";
+
+            levelObjectsLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
+            levelObjectsLabel.name = "LevelObjectsCount";
+            levelObjectsLabel.SetActive(false);
+
+            levelObjectsLabel.transform.localPosition = new Vector3(0f, 280f, 0f);
+            levelObjectsLabel.GetComponent<UILabel>().text = "Objects: 0";
+            levelObjectsLabel.GetComponent<UILabel>().fontSize = 30;
+        }
 
         public void CreatePreviousListButton()
         {
@@ -668,15 +702,36 @@ namespace FS_LevelEditor
                 InGameUIManager.Instance.StartTotalFadeIn(3, true);
             }
         }
-        void LoadLevel(string levelFileNameWithoutExtension, string levelName)
+        public void LoadLevel(string levelFileNameWithoutExtension, string levelName)
         {
+            if (levelButtonsWasClicked) return;
+
             MelonCoroutines.Start(Init());
+
+            levelButtonsWasClicked = true;
 
             IEnumerator Init()
             {
-                // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
-                InGameUIManager.Instance.StartTotalFadeOut(3, true);
-                yield return new WaitForSecondsRealtime(1.5f);
+                if (!isGoingBackToLE)
+                {
+                    // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
+                    InGameUIManager.Instance.StartTotalFadeOut(3, true);
+                    yield return new WaitForSecondsRealtime(1.5f);
+                }
+                else // If it's going back to LE, start total fade out again so it looks like a smooth transition.
+                {
+                    yield return new WaitForSecondsRealtime(0.1f);
+                    InGameUIManager.Instance.StartTotalFadeOut(0.1f, true);
+                    yield return new WaitForSecondsRealtime(0.2f);
+
+                    // Reset this variables.
+                    isGoingBackToLE = false;
+                    levelFileNameWithoutExtensionWhileGoingBackToLE = "";
+                    levelNameWhileGoingBackToLE = "";
+                }
+
+                // Remove menu music while in LE.
+                GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().Stop();
 
                 mainMenu.SetActive(true);
                 leMenuPanel.SetActive(false);
@@ -688,6 +743,13 @@ namespace FS_LevelEditor
                 EditorController.Instance.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
                 LevelData.LoadLevelData(levelFileNameWithoutExtension);
             }
+        }
+        public void GoBackToLEWhileInPlayMode(string levelFileNameWithoutExtension, string levelName)
+        {
+            MenuController.GetInstance().ReturnToMainMenu();
+            isGoingBackToLE = true;
+            levelFileNameWithoutExtensionWhileGoingBackToLE = levelFileNameWithoutExtension;
+            levelNameWhileGoingBackToLE = levelName;
         }
         void ShowDeleteLevelPopup(string levelFileNameWithoutExtension)
         {
@@ -832,6 +894,8 @@ namespace FS_LevelEditor
             {
                 if (inLEMenu)
                 {
+                    isInMidTransition = true;
+
                     uiSoundSource.clip = okSound;
                     uiSoundSource.Play();
 
@@ -840,10 +904,14 @@ namespace FS_LevelEditor
                     leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
                     leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
                     yield return new WaitForSecondsRealtime(0.2f);
+                    
                     mainMenu.SetActive(false);
+                    isInMidTransition = false;
                 }
                 else
                 {
+                    isInMidTransition = true;
+
                     uiSoundSource.clip = hidePageSound;
                     uiSoundSource.Play();
 
@@ -853,6 +921,8 @@ namespace FS_LevelEditor
                     leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
                     yield return new WaitForSecondsRealtime(0.2f);
                     leMenuPanel.SetActive(false);
+
+                    isInMidTransition = false;
                 }
             }
         }

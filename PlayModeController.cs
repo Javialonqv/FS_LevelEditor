@@ -18,15 +18,19 @@ namespace FS_LevelEditor
     public class PlayModeController : MonoBehaviour
     {
         public static PlayModeController Instance;
+        Il2CppAssetBundle LEBundle;
 
+        public string levelFileNameWithoutExtension;
         public string levelName;
 
         GameObject editorObjectsRootFromBundle;
         List<string> categories = new List<string>();
         Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
         List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
-
         public GameObject levelObjectsParent;
+        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
+
+        GameObject backToLEButton;
 
         void Awake()
         {
@@ -38,6 +42,8 @@ namespace FS_LevelEditor
 
             levelObjectsParent = new GameObject("LevelObjects");
             levelObjectsParent.transform.position = Vector3.zero;
+
+            CreateBackToLEButton();
         }
 
         void Start()
@@ -45,6 +51,15 @@ namespace FS_LevelEditor
             // Teleport the player.
             Controls.Instance.transform.position = new Vector3(-13f, 123f, -68f);
             Controls.Instance.gameCamera.transform.localPosition = new Vector3(0f, 0.907f, 0f);
+        }
+
+        // When the script obj is destroyed, that means the scene has changed, unload the asset bundle and destroy the back to LE button, since it'll be created again when entering...
+        // again...
+        void OnDestroy()
+        {
+            UnloadBundle();
+
+            Destroy(backToLEButton);
         }
 
         void DisableTheCurrentScene()
@@ -58,6 +73,7 @@ namespace FS_LevelEditor
                 if (obj.name == "FootStepController") continue;
                 if (obj.name == "Checkpoints") continue;
                 if (obj.name == "LevelObjects") continue;
+                if (obj.name == "Player") continue;
 
                 obj.SetActive(false);
             }
@@ -84,15 +100,35 @@ namespace FS_LevelEditor
             return obj;
         }
 
+        void CreateBackToLEButton()
+        {
+            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/2_Chapters");
+            backToLEButton = Instantiate(template, template.transform.parent);
+            backToLEButton.name = "4_BackToLE";
+            Destroy(backToLEButton.GetComponent<ButtonController>());
+            Destroy(backToLEButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            backToLEButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Back to Level Editor";
+
+            backToLEButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(GoBackToLEWhileInPlayMode)));
+
+            backToLEButton.SetActive(true);
+        }
+
+        void GoBackToLEWhileInPlayMode()
+        {
+            Destroy(backToLEButton);
+            LE_MenuUIManager.Instance.GoBackToLEWhileInPlayMode(levelFileNameWithoutExtension, levelName);
+        }
+
         void LoadAssetBundle()
         {
             Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FS_LevelEditor.level_editor");
             byte[] bytes = new byte[stream.Length];
             stream.Read(bytes);
 
-            Il2CppAssetBundle bundle = Il2CppAssetBundleManager.LoadFromMemory(bytes);
+            LEBundle = Il2CppAssetBundleManager.LoadFromMemory(bytes);
 
-            editorObjectsRootFromBundle = bundle.Load<GameObject>("LevelObjectsRoot");
+            editorObjectsRootFromBundle = LEBundle.Load<GameObject>("LevelObjectsRoot");
             editorObjectsRootFromBundle.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
             foreach (var child in editorObjectsRootFromBundle.GetChilds())
@@ -113,8 +149,16 @@ namespace FS_LevelEditor
 
                 allCategoriesObjectsSorted.Add(categoryObjects);
             }
+        }
 
-            bundle.Unload(false);
+        public T LoadFromLEBundle<T>(string name) where T : UnityEngine.Object
+        {
+            return LEBundle.Load<T>(name);
+        }
+
+        public void UnloadBundle()
+        {
+            LEBundle.Unload(false);
         }
     }
 }
@@ -148,6 +192,48 @@ public static class ChapterTextNamePatch
         else
         {
             return true;
+        }
+    }
+
+    public static void Postfix()
+    {
+        if (PlayModeController.Instance != null)
+        {
+            // For some STUPID reason, the chapter display doesn't show "CUSTOM LEVEL" as title, it seems the GetChapterTitle function isn't patched at all after FS 0.604.
+            // Anyways, if it doesn't work, then modify the text directly when this function of get chapter name is called ;)
+            GameObject.Find("(singleton) InGameUIManager/Camera/Panel/ChapterDisplay/Holder/ChapterTitleLabel").GetComponent<UILabel>().text = "CUSTOM LEVEL";
+        }
+    }
+}
+
+[HarmonyPatch(typeof(Controls), nameof(Controls.KillCharacter), [typeof(bool), typeof(bool)])]
+public static class OnPlayerDiePatch
+{
+    public static void Prefix()
+    {
+        if (PlayModeController.Instance != null)
+        {
+            // The asset bundle will be unloaded automatically in the PlayModeController class, since OnDestroy will be triggered.
+
+            // Set this variable true again so when the scene is reloaded, the custom level is as well.
+            // The level file name inside of the Core class still there for cases like this one, so we don't need to get it again.
+            Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
+        }
+    }
+}
+
+[HarmonyPatch(typeof(MenuController), nameof(MenuController.RestartCurrentLevelConfirmed))]
+public static class OnChapterReset
+{
+    public static void Prefix()
+    {
+        if (PlayModeController.Instance != null)
+        {
+            // The asset bundle will be unloaded automatically in the PlayModeController class, since OnDestroy will be triggered.
+
+            // Set this variable true again so when the scene is restarted, the custom level is as well.
+            // The level file name inside of the Core class still there for cases like this one, so we don't need to get it again.
+            Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
         }
     }
 }
