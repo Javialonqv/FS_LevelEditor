@@ -13,6 +13,14 @@ namespace FS_LevelEditor
     {
         void Awake()
         {
+            properties = new Dictionary<string, object>()
+            {
+                { "ActivateOnStart", true }
+            };
+        }
+
+        void Start()
+        {
             if (PlayModeController.Instance != null)
             {
                 InitComponent();
@@ -50,9 +58,52 @@ namespace FS_LevelEditor
             script.m_collision = gameObject.GetChildWithName("Collision").GetComponent<BoxCollider>();
             script.physicsCollider = gameObject.GetChildWithName("Saw_PhysicsCollider").GetComponent<MeshCollider>();
 
+
+            // There's a good reasong for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
+            // do the same thing, so first enable it, and then disable if needed, cause if we don't do anything, there's a bug with the saw animation.
             script.Activate();
+            bool activateOnStart = (bool)GetProperty("ActivateOnStart");
+            if (!activateOnStart)
+            {
+                script.Deactivate();
+            }
 
             gameObject.SetActive(true);
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            Logger.DebugLog("called");
+            if (name == "ActivateOnStart")
+            {
+                Logger.DebugLog("right name");
+                if (value is bool)
+                {
+                    Logger.DebugLog("right value");
+                    properties["ActivateOnStart"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        public override object GetProperty(string name)
+        {
+            if (properties.ContainsKey(name))
+            {
+                return properties[name];
+            }
+            else
+            {
+                Logger.Error($"Couldn't find property of name \"{name}\" for object with name: \"{objectFullNameWithID}\"");
+                return null;
+            }
         }
     }
 }

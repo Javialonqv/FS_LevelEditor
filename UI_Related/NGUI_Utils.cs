@@ -41,6 +41,38 @@ namespace FS_LevelEditor.UI_Related
             return inputField;
         }
 
+        public static GameObject CreateToggle(Transform parent, Vector3 position, Vector3Int size, string text = "")
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+
+            GameObject toggle = GameObject.Instantiate(toggleTemplate, parent);
+            toggle.name = "Toggle";
+            toggle.transform.localPosition = position;
+            toggle.transform.localScale = Vector3.one;
+
+            UIToggle toggleScript = toggle.GetComponent<UIToggle>();
+            toggleScript.onChange.Clear();
+
+            UISprite toggleBg = toggle.GetChildWithName("Background").GetComponent<UISprite>();
+            toggleBg.width = size.x;
+            toggleBg.height = size.y;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                GameObject.Destroy(toggle.GetChildWithName("Label"));
+                toggleBg.transform.localPosition = Vector3.zero;
+                toggle.GetComponent<BoxCollider>().center = Vector3.zero;
+                toggle.GetComponent<BoxCollider>().size = size;
+            }
+            else
+            {
+                GameObject.Destroy(toggle.GetChildWithName("Label").GetComponent<UILocalize>());
+                toggle.GetChildWithName("Label").GetComponent<UILabel>().text = text;
+            }
+
+            return toggle;
+        }
+
         public static EventDelegate.Parameter CreateEventDelegateParamter(UnityEngine.Object target, string parameterName, Il2CppSystem.Object value)
         {
             return new EventDelegate.Parameter

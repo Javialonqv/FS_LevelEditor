@@ -308,6 +308,7 @@ namespace FS_LevelEditor
 
             CreateNoAttributesPanel();
             CreateLightAttributesPanel();
+            CreateSawAttributesPanel();
         }
 
         void CreateNoAttributesPanel()
@@ -383,6 +384,31 @@ namespace FS_LevelEditor
             lightAttributes.SetActive(false);
             attrbutesPanels.Add("Light", lightAttributes);
         }
+        void CreateSawAttributesPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject sawAttributes = new GameObject("SawAttributes");
+            sawAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            sawAttributes.transform.localPosition = Vector3.zero;
+            sawAttributes.transform.localScale = Vector3.one;
+
+            #region Activate On Start Toggle
+            GameObject activateOnStartTitle = Instantiate(labelTemplate, sawAttributes.transform);
+            activateOnStartTitle.name = "ActivateOnStartTitle";
+            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            activateOnStartTitle.RemoveComponent<UILocalize>();
+            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
+            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(sawAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
+            activateOnStartToggle.name = "ActivateOnStartToggle";
+            #endregion
+
+            sawAttributes.SetActive(false);
+            attrbutesPanels.Add("Saw", sawAttributes);
+        }
 
         public void SetSelectedObjPanelAsNone()
         {
@@ -411,7 +437,7 @@ namespace FS_LevelEditor
                 // Set color input...
                 var colorInput = attrbutesPanels["Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
                 colorInput.onChange.Clear();
-                var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetProperty),
+                var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                     NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
                     NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInput));
                 colorInput.onChange.Add(colorDelegate);
@@ -420,11 +446,24 @@ namespace FS_LevelEditor
                 // Set intensity input...
                 var intensityInput = attrbutesPanels["Light"].GetChildWithName("IntensityField").GetComponent<UIInput>();
                 intensityInput.onChange.Clear();
-                var intensityDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetProperty),
+                var intensityDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                     NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Intensity"),
                     NGUI_Utils.CreateEventDelegateParamter(this, "inputField", intensityInput));
                 intensityInput.onChange.Add(intensityDelegate);
                 intensityInput.text = (float)objComponent.GetProperty("Intensity") + "";
+            }
+            else if (objComponent.objectOriginalName == "Saw")
+            {
+                attrbutesPanels["Saw"].SetActive(true);
+
+                // Set activate on start toggle...
+                var activateOnStartToggle = attrbutesPanels["Saw"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
+                activateOnStartToggle.onChange.Clear();
+                var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                    NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
+                    NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle));
+                activateOnStartToggle.onChange.Add(activateOnStartDelegate);
+                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
             }
             else
             {
@@ -433,7 +472,7 @@ namespace FS_LevelEditor
         }
 
         // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
-        public void SetProperty(string propertyName, UIInput inputField)
+        public void SetPropertyWithInput(string propertyName, UIInput inputField)
         {
             Color validValueColor = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
             Color invalidValueColor = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
@@ -446,6 +485,14 @@ namespace FS_LevelEditor
             else
             {
                 inputField.GetComponent<UISprite>().color = invalidValueColor;
+            }
+        }
+        public void SetPropertyWithToggle(string propertyName, UIToggle toggle)
+        {
+            Logger.DebugLog("at least?");
+            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
+            {
+                EditorController.Instance.levelHasBeenModified = true;
             }
         }
         #endregion
