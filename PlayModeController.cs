@@ -197,9 +197,12 @@ public static class ChapterTextNamePatch
 
     public static void Postfix()
     {
-        // For some STUPID reason, the chapter display doesn't show "CUSTOM LEVEL" as title, it seems the GetChapterTitle function isn't patched at all after FS 0.604.
-        // Anyways, if it doesn't work, then modify the text directly when this function of get chapter name is called ;)
-        GameObject.Find("(singleton) InGameUIManager/Camera/Panel/ChapterDisplay/Holder/ChapterTitleLabel").GetComponent<UILabel>().text = "CUSTOM LEVEL";
+        if (PlayModeController.Instance != null)
+        {
+            // For some STUPID reason, the chapter display doesn't show "CUSTOM LEVEL" as title, it seems the GetChapterTitle function isn't patched at all after FS 0.604.
+            // Anyways, if it doesn't work, then modify the text directly when this function of get chapter name is called ;)
+            GameObject.Find("(singleton) InGameUIManager/Camera/Panel/ChapterDisplay/Holder/ChapterTitleLabel").GetComponent<UILabel>().text = "CUSTOM LEVEL";
+        }
     }
 }
 
@@ -213,6 +216,22 @@ public static class OnPlayerDiePatch
             // The asset bundle will be unloaded automatically in the PlayModeController class, since OnDestroy will be triggered.
 
             // Set this variable true again so when the scene is reloaded, the custom level is as well.
+            // The level file name inside of the Core class still there for cases like this one, so we don't need to get it again.
+            Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
+        }
+    }
+}
+
+[HarmonyPatch(typeof(MenuController), nameof(MenuController.RestartCurrentLevelConfirmed))]
+public static class OnChapterReset
+{
+    public static void Prefix()
+    {
+        if (PlayModeController.Instance != null)
+        {
+            // The asset bundle will be unloaded automatically in the PlayModeController class, since OnDestroy will be triggered.
+
+            // Set this variable true again so when the scene is restarted, the custom level is as well.
             // The level file name inside of the Core class still there for cases like this one, so we don't need to get it again.
             Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
         }
