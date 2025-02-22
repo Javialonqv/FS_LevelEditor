@@ -440,6 +440,7 @@ namespace FS_LevelEditor
 
             if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.text))
             {
+                EditorController.Instance.levelHasBeenModified = true;
                 inputField.GetComponent<UISprite>().color = validValueColor;
             }
             else
