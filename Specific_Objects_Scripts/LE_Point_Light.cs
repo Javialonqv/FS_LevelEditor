@@ -18,6 +18,12 @@ namespace FS_LevelEditor
             light = gameObject.GetChildWithName("Light").GetComponent<Light>();
             lightBulbSprite = gameObject.GetChildWithName("Sprite");
 
+            properties = new Dictionary<string, object>()
+            {
+                { "Color", Color.white },
+                { "Intensity", 1f }
+            };
+
             if (PlayModeController.Instance != null)
             {
                 Destroy(gameObject.GetChildWithName("Collider"));
@@ -35,21 +41,69 @@ namespace FS_LevelEditor
             }
         }
 
-        public override void SetProperty(string name, object value)
+        public override bool SetProperty(string name, object value)
         {
             if (name == "Color")
             {
-                if (ColorUtility.TryParseHtmlString("#" + value, out Color color))
+                if (value is Color)
                 {
-                    light.color = color;
+                    light.color = (Color)value;
+                    properties["Color"] = (Color)value;
+                    return true;
+                }
+                else if (value is string)
+                {
+                    Color? color = Utilities.HexToColor((string)value, false, null);
+                    if (color != null)
+                    {
+                        light.color = (Color)color;
+                        properties["Color"] = (Color)color;
+                        return true;
+                    }
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"Color\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
                 }
             }
             else if (name == "Intensity")
             {
-                if (float.TryParse((string)value, out float result))
+                if (value is float)
                 {
-                    light.intensity = result;
+                    light.intensity = (float)value;
+                    properties["Intensity"] = (float)value;
+                    return true;
                 }
+                else if (value is string)
+                {
+                    if (float.TryParse((string)value, out float result))
+                    {
+                        light.intensity = result;
+                        properties["Intensity"] = result;
+                        return true;
+                    }
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"Intensity\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        public override object GetProperty(string name)
+        {
+            if (properties.ContainsKey(name))
+            {
+                return properties[name];
+            }
+            else
+            {
+                Logger.Error($"Couldn't find property of name \"{name}\" for object with name: \"{objectFullNameWithID}\"");
+                return null;
             }
         }
     }

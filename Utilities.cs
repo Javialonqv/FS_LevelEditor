@@ -4,11 +4,11 @@ using MelonLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor
 {
@@ -287,6 +287,49 @@ namespace FS_LevelEditor
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Converts a hex string value into a Unity Color.
+        /// </summary>
+        /// <param name="hexValue">The hex value WITHOUT the '#' sufix.</param>
+        /// <returns>The converted hex value into Color.</returns>
+        public static Color? HexToColor(string hexValue, bool throwExceptionIfInvalid = true, Color? defaultValue = null)
+        {
+            if (ColorUtility.TryParseHtmlString("#" + hexValue, out Color color))
+            {
+                return color;
+            }
+            else
+            {
+                if (throwExceptionIfInvalid)
+                {
+                    Logger.Error($"Couldn't convert the hex value \"{hexValue}\" to Color. Returning white.");
+                }
+                return defaultValue;
+            }
+        }
+        public static string ColorToHex(Color color)
+        {
+            int r = Mathf.RoundToInt(color.r * 255);
+            int g = Mathf.RoundToInt(color.g * 255);
+            int b = Mathf.RoundToInt(color.b * 255);
+
+            return $"{r:X2}{g:X2}{b:X2}";
+        }
+
+        public static object ConvertFromSerializableValue(object value)
+        {
+            if (value is Vector3Serializable)
+            {
+                return (Vector3)(Vector3Serializable)value;
+            }
+            else if (value is ColorSerializable)
+            {
+                return (Color)(ColorSerializable)value;
+            }
+
+            return value;
         }
     }
 }

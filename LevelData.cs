@@ -90,6 +90,7 @@ namespace FS_LevelEditor
                 var options = new JsonSerializerOptions
                 {
                     WriteIndented = true,
+                    Converters = { new LEPropertiesConverter() }
                 };
 
                 if (!Directory.Exists(levelsDirectory))
@@ -139,8 +140,13 @@ namespace FS_LevelEditor
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
             objectsParent.DeleteAllChildren();
 
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Converters = { new LEPropertiesConverter() }
+            };
+
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
+            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
 
             Camera.main.transform.position = data.cameraPosition;
             Camera.main.transform.eulerAngles = data.cameraRotation;
@@ -152,6 +158,14 @@ namespace FS_LevelEditor
 
                 objClassInstance.objectID = obj.objectID;
                 objInstance.name = objClassInstance.objectFullNameWithID;
+
+                if (obj.properties != null)
+                {
+                    foreach (var property in obj.properties)
+                    {
+                        objClassInstance.SetProperty(property.Key, Utilities.ConvertFromSerializableValue(property.Value));
+                    }
+                }
             }
 
             Logger.Log($"\"{data.levelName}\" level loaded!");
@@ -165,8 +179,13 @@ namespace FS_LevelEditor
             GameObject objectsParent = playModeCtrl.levelObjectsParent;
             objectsParent.DeleteAllChildren();
 
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Converters = { new LEPropertiesConverter() }
+            };
+
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
+            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
 
             playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
             playModeCtrl.levelName = data.levelName;
@@ -178,6 +197,15 @@ namespace FS_LevelEditor
 
                 objClassInstance.objectID = obj.objectID;
                 objInstance.name = objClassInstance.objectFullNameWithID;
+
+                if (obj.properties != null)
+                {
+                    foreach (var property in obj.properties)
+                    {
+                        objClassInstance.SetProperty(property.Key, Utilities.ConvertFromSerializableValue(property.Value));
+                    }
+                }
+
             }
 
             Logger.Log($"\"{data.levelName}\" level loaded in playmode!");
@@ -276,6 +304,12 @@ namespace FS_LevelEditor
             this.y = y;
             this.z = z;
         }
+        public Vector3Serializable(Vector3 v)
+        {
+            this.x = v.x;
+            this.y = v.y;
+            this.z = v.z;
+        }
 
         public static implicit operator Vector3Serializable(Vector3 v)
         {
@@ -284,6 +318,148 @@ namespace FS_LevelEditor
         public static implicit operator Vector3(Vector3Serializable v)
         {
             return new Vector3(v.x, v.y, v.z);
+        }
+    }
+    [Serializable]
+    public struct ColorSerializable
+    {
+        public float r { get; set; }
+        public float g { get; set; }
+        public float b { get; set; }
+
+        public ColorSerializable(float r, float g, float b)
+        {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+        }
+        public ColorSerializable(Color color)
+        {
+            this.r = color.r;
+            this.g = color.g;
+            this.b = color.b;
+        }
+
+        public static explicit operator ColorSerializable(Color color)
+        {
+            return new ColorSerializable(color.r, color.g, color.b);
+        }
+        public static explicit operator Color(ColorSerializable color)
+        {
+            return new Color(color.r, color.g, color.b);
+        }
+
+        public Color ToColor()
+        {
+            return new Color(r, g, b);
+        }
+    }
+
+
+    public class LEPropertiesConverter : JsonConverter<Dictionary<string, object>>
+    {
+        public override void Write(Utf8JsonWriter writer, Dictionary<string, object> dictionary, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject(); // Beginning of the dictionary
+
+            foreach (var kvp in dictionary)
+            {
+                writer.WritePropertyName(kvp.Key); // Write the key
+                writer.WriteStartObject(); // Beginning of the object for Type and Value.
+
+                // Write the value type (AssemblyQualifiedName makes sure it includes the assembly).
+                writer.WriteString("Type", kvp.Value.GetType().AssemblyQualifiedName);
+
+                // Write the value, serializing according to its real type.
+                writer.WritePropertyName("Value");
+                JsonSerializer.Serialize(writer, kvp.Value, kvp.Value.GetType(), options);
+
+                writer.WriteEndObject(); // End of Type/Value object.
+            }
+
+            writer.WriteEndObject(); // End of dictionary.
+        }
+
+        public override Dictionary<string, object> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException("JSON object was expected.");
+            }
+
+            var dictionary = new Dictionary<string, object>();
+
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonTokenType.EndObject)
+                {
+                    return dictionary; // End of dictionary.
+                }
+
+                if (reader.TokenType != JsonTokenType.PropertyName)
+                {
+                    throw new JsonException("A property name was expected.");
+                }
+
+                string key = reader.GetString(); // Read the key.
+                reader.Read(); // Next key content.
+
+                if (reader.TokenType != JsonTokenType.StartObject)
+                {
+                    throw new JsonException("An object with Type and Value was expected.");
+                }
+
+                string typeName = null;
+                JsonElement valueJson = default;
+
+                // Read the Type and Value properties.
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonTokenType.EndObject)
+                    {
+                        break; // End of the Type/Value object.
+                    }
+
+                    if (reader.TokenType != JsonTokenType.PropertyName)
+                    {
+                        throw new JsonException("A property name (Type or Value) was expected.");
+                    }
+
+                    string propertyName = reader.GetString();
+                    reader.Read();
+
+                    if (propertyName == "Type")
+                    {
+                        typeName = reader.GetString();
+                    }
+                    else if (propertyName == "Value")
+                    {
+                        valueJson = JsonSerializer.Deserialize<JsonElement>(ref reader, options);
+                    }
+                    else
+                    {
+                        throw new JsonException($"Unexpected property: {propertyName}");
+                    }
+                }
+
+                if (typeName == null)
+                {
+                    throw new JsonException("Property Type is missing.");
+                }
+
+                // Get the type from the type name.
+                var type = Type.GetType(typeName);
+                if (type == null)
+                {
+                    throw new JsonException($"Can't find '{typeName}' type.");
+                }
+
+                // Deserialize the value using the obtained type.
+                var value = JsonSerializer.Deserialize(valueJson, type, options);
+                dictionary[key] = value;
+            }
+
+            throw new JsonException("JSON unexpected end.");
         }
     }
 }

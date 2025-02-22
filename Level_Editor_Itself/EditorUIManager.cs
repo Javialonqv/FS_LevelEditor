@@ -415,6 +415,7 @@ namespace FS_LevelEditor
                     NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
                     NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInput));
                 colorInput.onChange.Add(colorDelegate);
+                colorInput.text = Utilities.ColorToHex((Color)objComponent.GetProperty("Color"));
 
                 // Set intensity input...
                 var intensityInput = attrbutesPanels["Light"].GetChildWithName("IntensityField").GetComponent<UIInput>();
@@ -423,6 +424,7 @@ namespace FS_LevelEditor
                     NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Intensity"),
                     NGUI_Utils.CreateEventDelegateParamter(this, "inputField", intensityInput));
                 intensityInput.onChange.Add(intensityDelegate);
+                intensityInput.text = (float)objComponent.GetProperty("Intensity") + "";
             }
             else
             {
@@ -433,7 +435,17 @@ namespace FS_LevelEditor
         // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
         public void SetProperty(string propertyName, UIInput inputField)
         {
-            EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.text);
+            Color validValueColor = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
+            Color invalidValueColor = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
+
+            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.text))
+            {
+                inputField.GetComponent<UISprite>().color = validValueColor;
+            }
+            else
+            {
+                inputField.GetComponent<UISprite>().color = invalidValueColor;
+            }
         }
         #endregion
 

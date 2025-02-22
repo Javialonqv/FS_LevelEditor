@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace FS_LevelEditor
 {
@@ -17,6 +18,8 @@ namespace FS_LevelEditor
             get { return objectOriginalName + " " + objectID; }
         }
 
+        public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
+
         public Vector3Serializable objPosition { get; set; }
         public Vector3Serializable objRotation { get; set; }
         
@@ -29,6 +32,22 @@ namespace FS_LevelEditor
             objectType = originalObj.objectType;
             objectID = originalObj.objectID;
             objectOriginalName = originalObj.objectOriginalName;
+
+            foreach (var property in originalObj.properties)
+            {
+                if (property.Value is Vector3)
+                {
+                    properties.Add(property.Key, new Vector3Serializable((Vector3)property.Value));
+                }
+                else if (property.Value is Color)
+                {
+                    properties.Add(property.Key, new ColorSerializable((Color)property.Value));
+                }
+                else
+                {
+                    properties.Add(property.Key, property.Value);
+                }
+            }
 
             objPosition = originalObj.transform.localPosition;
             objRotation = originalObj.transform.localEulerAngles;

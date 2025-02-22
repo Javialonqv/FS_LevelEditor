@@ -47,6 +47,7 @@ namespace FS_LevelEditor
         {
             get { return objectOriginalName + " " + objectID; }
         }
+        public Dictionary<string, object> properties = new Dictionary<string, object>();
 
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
@@ -175,17 +176,45 @@ namespace FS_LevelEditor
             return currentInstances >= maxInstances;
         }
 
-        public virtual void SetProperty(string name, object value)
+        /// <summary>
+        /// Sets a property inside of the object properties list if it exists.
+        /// </summary>
+        /// <param name="name">The name of the property to set.</param>
+        /// <param name="value">The value of the property, it need to be the same as the expected depending of the property name. It also can manage some conversions.</param>
+        /// <returns>True ff the property was setted correctly or false if there's some invalid value.</returns>
+        public virtual bool SetProperty(string name, object value)
         {
-            
+            return false;
         }
 
+        /// <summary>
+        /// Gets a property from the object properties list.
+        /// </summary>
+        /// <param name="name">The name of property to get if it exists.</param>
+        /// <returns>The value of the property in the list, without conversions.</returns>
         public virtual object GetProperty(string name)
         {
-            return null;
+            if (properties.ContainsKey(name))
+            {
+                return properties[name];
+            }
+            else
+            {
+                Logger.Error($"Couldn't find property of name \"{name}\" for object with name: \"{objectFullNameWithID}\"");
+                return null;
+            }
         }
         public virtual T GetProperty<T>(string name)
         {
+            if (properties.ContainsKey(name))
+            {
+                if (properties[name] is T)
+                {
+                    return (T)properties[name];
+                }
+            }
+
+            Logger.Error($"Couldn't find property of name \"{name}\" OF TYPE \"{typeof(T).Name}\" for object with name: \"{objectFullNameWithID}\"");
             return default(T);
         }
     }

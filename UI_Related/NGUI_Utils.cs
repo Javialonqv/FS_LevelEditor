@@ -20,7 +20,7 @@ namespace FS_LevelEditor.UI_Related
             UISprite bgSprite = inputField.AddComponent<UISprite>();
             bgSprite.atlas = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/1_Resume").GetComponent<UISprite>().atlas;
             bgSprite.spriteName = "Square";
-            bgSprite.color = new Color(0f, 0.2215f, 0.2264f, 0.9412f);
+            bgSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
             bgSprite.width = size.x;
             bgSprite.height = size.y;
 
