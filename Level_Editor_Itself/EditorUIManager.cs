@@ -358,7 +358,10 @@ namespace FS_LevelEditor
             GameObject colorInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27);
             colorInputField.name = "ColorField";
             colorInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
+            colorInputField.GetComponent<UILabel>().color = Color.gray;
             colorInputField.GetComponent<UIInput>().characterLimit = 6;
+            colorInputField.GetComponent<UIInput>().defaultText = "ffffff";
+            colorInputField.GetComponent<UIInput>().activeTextColor = Color.white;
             #endregion
 
             #region Intensity Input Field
@@ -372,6 +375,9 @@ namespace FS_LevelEditor
             GameObject intensityInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27);
             intensityInputField.name = "IntensityField";
             intensityInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
+            intensityInputField.GetComponent<UILabel>().color = Color.gray;
+            intensityInputField.GetComponent<UIInput>().defaultText = "1";
+            intensityInputField.GetComponent<UIInput>().activeTextColor = Color.white;
             #endregion
 
             lightAttributes.SetActive(false);
