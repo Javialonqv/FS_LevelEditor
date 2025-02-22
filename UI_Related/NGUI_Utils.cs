@@ -29,6 +29,7 @@ namespace FS_LevelEditor.UI_Related
             label.fontSize = fontSize;
             label.width = size.x;
             label.height = size.y;
+            label.depth = 1;
 
             BoxCollider collider = inputField.AddComponent<BoxCollider>();
             collider.center = Vector3.zero;
