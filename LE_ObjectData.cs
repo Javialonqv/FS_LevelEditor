@@ -13,10 +13,6 @@ namespace FS_LevelEditor
         public LE_Object.ObjectType? objectType { get; set; }
         public int objectID { get; set; }
         public string objectOriginalName { get; set; }
-        public string objectFullNameWithID
-        {
-            get { return objectOriginalName + " " + objectID; }
-        }
 
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
 
