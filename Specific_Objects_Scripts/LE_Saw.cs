@@ -73,13 +73,10 @@ namespace FS_LevelEditor
 
         public override bool SetProperty(string name, object value)
         {
-            Logger.DebugLog("called");
             if (name == "ActivateOnStart")
             {
-                Logger.DebugLog("right name");
                 if (value is bool)
                 {
-                    Logger.DebugLog("right value");
                     properties["ActivateOnStart"] = (bool)value;
                     return true;
                 }

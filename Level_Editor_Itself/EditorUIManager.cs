@@ -363,6 +363,11 @@ namespace FS_LevelEditor
             colorInputField.GetComponent<UIInput>().characterLimit = 6;
             colorInputField.GetComponent<UIInput>().defaultText = "ffffff";
             colorInputField.GetComponent<UIInput>().activeTextColor = Color.white;
+            colorInputField.GetComponent<UIInput>().onChange.Clear();
+            var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInputField.GetComponent<UIInput>()));
+            colorInputField.GetComponent<UIInput>().onChange.Add(colorDelegate);
             #endregion
 
             #region Intensity Input Field
@@ -379,6 +384,11 @@ namespace FS_LevelEditor
             intensityInputField.GetComponent<UILabel>().color = Color.gray;
             intensityInputField.GetComponent<UIInput>().defaultText = "1";
             intensityInputField.GetComponent<UIInput>().activeTextColor = Color.white;
+            intensityInputField.GetComponent<UIInput>().onChange.Clear();
+            var intensityDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Intensity"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", intensityInputField.GetComponent<UIInput>()));
+            intensityInputField.GetComponent<UIInput>().onChange.Add(intensityDelegate);
             #endregion
 
             lightAttributes.SetActive(false);
@@ -404,6 +414,11 @@ namespace FS_LevelEditor
 
             GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(sawAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
             activateOnStartToggle.name = "ActivateOnStartToggle";
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
+            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
             #endregion
 
             sawAttributes.SetActive(false);
@@ -436,20 +451,10 @@ namespace FS_LevelEditor
 
                 // Set color input...
                 var colorInput = attrbutesPanels["Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
-                colorInput.onChange.Clear();
-                var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
-                    NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
-                    NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInput));
-                colorInput.onChange.Add(colorDelegate);
                 colorInput.text = Utilities.ColorToHex((Color)objComponent.GetProperty("Color"));
 
                 // Set intensity input...
                 var intensityInput = attrbutesPanels["Light"].GetChildWithName("IntensityField").GetComponent<UIInput>();
-                intensityInput.onChange.Clear();
-                var intensityDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
-                    NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Intensity"),
-                    NGUI_Utils.CreateEventDelegateParamter(this, "inputField", intensityInput));
-                intensityInput.onChange.Add(intensityDelegate);
                 intensityInput.text = (float)objComponent.GetProperty("Intensity") + "";
             }
             else if (objComponent.objectOriginalName == "Saw")
@@ -458,11 +463,7 @@ namespace FS_LevelEditor
 
                 // Set activate on start toggle...
                 var activateOnStartToggle = attrbutesPanels["Saw"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
-                activateOnStartToggle.onChange.Clear();
-                var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-                    NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
-                    NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle));
-                activateOnStartToggle.onChange.Add(activateOnStartDelegate);
+
                 activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
             }
             else
@@ -472,6 +473,7 @@ namespace FS_LevelEditor
         }
 
         // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
+        // AAALSO now its seems crapGUI can't recognize between two different overloads of a method, so I need to put different names foreach method, DAMN IT.
         public void SetPropertyWithInput(string propertyName, UIInput inputField)
         {
             Color validValueColor = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
@@ -489,7 +491,6 @@ namespace FS_LevelEditor
         }
         public void SetPropertyWithToggle(string propertyName, UIToggle toggle)
         {
-            Logger.DebugLog("at least?");
             if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
             {
                 EditorController.Instance.levelHasBeenModified = true;
