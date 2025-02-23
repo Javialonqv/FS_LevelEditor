@@ -73,6 +73,25 @@ namespace FS_LevelEditor.UI_Related
             return toggle;
         }
 
+        public static GameObject CreateButton(Transform parent, Vector3 position, Vector3Int size, string text = "")
+        {
+            GameObject buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Controls_Options/Buttons/RemapControls");
+
+            GameObject button = GameObject.Instantiate(buttonTemplate, parent);
+            button.transform.localPosition = position;
+            button.transform.localScale = Vector3.one;
+
+            button.GetComponent<UISprite>().width = size.x;
+            button.GetComponent<UISprite>().height = size.y;
+            button.GetComponent<BoxCollider>().size = size;
+            GameObject.Destroy(button.GetComponent<ButtonController>());
+
+            GameObject.Destroy(button.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            button.GetChildAt("Background/Label").GetComponent<UILabel>().text = text;
+
+            return button;
+        }
+
         public static EventDelegate.Parameter CreateEventDelegateParamter(UnityEngine.Object target, string parameterName, Il2CppSystem.Object value)
         {
             return new EventDelegate.Parameter

@@ -94,6 +94,17 @@ namespace FS_LevelEditor
             return false;
         }
 
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "AddWaypoint")
+            {
+                Logger.DebugLog("triggered!");
+                return true;
+            }
+
+            return false;
+        }
+
         void SetMeshOnEditor(bool isSawOn)
         {
             gameObject.GetChildAt("Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;

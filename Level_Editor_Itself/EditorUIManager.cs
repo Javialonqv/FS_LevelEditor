@@ -421,6 +421,17 @@ namespace FS_LevelEditor
             activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
             #endregion
 
+            #region Add Waypoint
+            GameObject addWaypoint = NGUI_Utils.CreateButton(sawAttributes.transform, new Vector3(0f, 15f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
+            addWaypoint.name = "AddWaypointButton";
+            addWaypoint.GetComponent<UIButton>().onClick.Clear();
+            var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
+                NGUI_Utils.CreateEventDelegateParamter(this, "actionName", "AddWaypoint"));
+            addWaypoint.GetComponent<UIButton>().onClick.Add(addWaypointDelegate);
+            addWaypoint.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            addWaypoint.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+            #endregion
+
             sawAttributes.SetActive(false);
             attrbutesPanels.Add("Saw", sawAttributes);
         }
@@ -492,6 +503,13 @@ namespace FS_LevelEditor
         public void SetPropertyWithToggle(string propertyName, UIToggle toggle)
         {
             if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
+            {
+                EditorController.Instance.levelHasBeenModified = true;
+            }
+        }
+        public void TriggerAction(string actionName)
+        {
+            if (EditorController.Instance.currentSelectedObjComponent.TriggerAction(actionName))
             {
                 EditorController.Instance.levelHasBeenModified = true;
             }

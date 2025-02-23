@@ -187,6 +187,11 @@ namespace FS_LevelEditor
             return false;
         }
 
+        public virtual bool TriggerAction(string actionName)
+        {
+            return false;
+        }
+
         /// <summary>
         /// Gets a property from the object properties list.
         /// </summary>
