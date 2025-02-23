@@ -535,11 +535,11 @@ namespace FS_LevelEditor
                 // If it's using global arrows, just use the normal offset, otherwise, use the damn complex math path.
                 if (globalGizmosArrowsEnabled)
                 {
-                    currentSelectedObj.transform.localPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
+                    currentSelectedObj.transform.position = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
                 }
                 else
                 {
-                    currentSelectedObj.transform.localPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
+                    currentSelectedObj.transform.position = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
                 }
             }
         }
@@ -1162,7 +1162,7 @@ namespace FS_LevelEditor
                     if (hit.collider.transform.parent.name == "MoveObjectArrows")
                     {
                         // Save the position of the object from the first time we clicked.
-                        objPositionWhenArrowClick = currentSelectedObj.transform.localPosition;
+                        objPositionWhenArrowClick = currentSelectedObj.transform.position;
 
                         #region Register LEAction
                         currentExecutingAction = new LEAction();
