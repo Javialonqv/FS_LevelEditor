@@ -32,6 +32,9 @@ namespace FS_LevelEditor
                 collider.transform.localScale = Vector3.one;
                 collider.transform.localPosition = Vector3.zero;
                 collider.AddComponent<BoxCollider>().size = new Vector3(0.1f, 1.3f, 1.3f);
+
+                // Also set the saw on or off.
+                SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
             }
         }
 
@@ -77,6 +80,7 @@ namespace FS_LevelEditor
             {
                 if (value is bool)
                 {
+                    if (EditorController.Instance != null) SetMeshOnEditor((bool)value);
                     properties["ActivateOnStart"] = (bool)value;
                     return true;
                 }
@@ -88,6 +92,12 @@ namespace FS_LevelEditor
             }
 
             return false;
+        }
+
+        void SetMeshOnEditor(bool isSawOn)
+        {
+            gameObject.GetChildAt("Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;
+            gameObject.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
         }
     }
 }
