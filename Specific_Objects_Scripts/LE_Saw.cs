@@ -40,15 +40,17 @@ namespace FS_LevelEditor
 
         void InitComponent()
         {
-            gameObject.SetActive(false);
-            gameObject.tag = "Scie";
+            GameObject content = gameObject.GetChildWithName("SawContent");
 
-            gameObject.GetComponent<AudioSource>().outputAudioMixerGroup = FindObjectOfType<ScieScript>().GetComponent<AudioSource>().outputAudioMixerGroup;
+            content.SetActive(false);
+            content.tag = "Scie";
 
-            RotationScie rotationScie = gameObject.GetChildWithName("Scie_OFF").AddComponent<RotationScie>();
+            content.GetComponent<AudioSource>().outputAudioMixerGroup = FindObjectOfType<ScieScript>().GetComponent<AudioSource>().outputAudioMixerGroup;
+
+            RotationScie rotationScie = content.GetChildWithName("Scie_OFF").AddComponent<RotationScie>();
             rotationScie.vitesseRotation = 500;
 
-            ScieScript script = gameObject.AddComponent<ScieScript>();
+            ScieScript script = content.AddComponent<ScieScript>();
             script.doesDamage = true;
             script.rotationScript = rotationScie;
             script.m_damageCollider = GetComponent<BoxCollider>();
@@ -56,10 +58,10 @@ namespace FS_LevelEditor
             script.movingSaw = false;
             script.movingSpeed = 10;
             script.scieSound = FindObjectOfType<ScieScript>().scieSound;
-            script.offMesh = gameObject.GetChildWithName("Scie_OFF").GetComponent<MeshRenderer>();
-            script.onMesh = gameObject.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>();
-            script.m_collision = gameObject.GetChildWithName("Collision").GetComponent<BoxCollider>();
-            script.physicsCollider = gameObject.GetChildWithName("Saw_PhysicsCollider").GetComponent<MeshCollider>();
+            script.offMesh = content.GetChildWithName("Scie_OFF").GetComponent<MeshRenderer>();
+            script.onMesh = content.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>();
+            script.m_collision = content.GetChildWithName("Collision").GetComponent<BoxCollider>();
+            script.physicsCollider = content.GetChildWithName("Saw_PhysicsCollider").GetComponent<MeshCollider>();
 
 
             // There's a good reasong for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
@@ -71,7 +73,7 @@ namespace FS_LevelEditor
                 script.Deactivate();
             }
 
-            gameObject.SetActive(true);
+            content.SetActive(true);
         }
 
         public override bool SetProperty(string name, object value)
@@ -98,7 +100,7 @@ namespace FS_LevelEditor
         {
             if (actionName == "AddWaypoint")
             {
-                Logger.DebugLog("triggered!");
+                AddWaypoint();
                 return true;
             }
 
@@ -107,8 +109,21 @@ namespace FS_LevelEditor
 
         void SetMeshOnEditor(bool isSawOn)
         {
-            gameObject.GetChildAt("Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;
-            gameObject.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
+            gameObject.GetChildAt("SawContent/Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;
+            gameObject.GetChildAt("SawContent/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
+        }
+
+        void AddWaypoint()
+        {
+            GameObject waypoint = Instantiate(EditorController.Instance.LoadOtherObjectInBundle("TransparentSaw"), gameObject.GetChildWithName("Waypoints").transform);
+
+            waypoint.transform.localPosition = Vector3.zero;
+            waypoint.transform.localEulerAngles = new Vector3(90f, 90f, 0f);
+            waypoint.transform.localScale = Vector3.one;
+
+            LE_Object objComponent = LE_Object.AddComponentToObject(waypoint, "SawWaypoint");
+
+            EditorController.Instance.SetSelectedObj(waypoint);
         }
     }
 }

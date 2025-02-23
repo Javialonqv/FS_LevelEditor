@@ -659,6 +659,11 @@ namespace FS_LevelEditor
             bundle.Unload(false);
         }
 
+        public GameObject LoadOtherObjectInBundle(string objectName)
+        {
+            return otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
+        }
+
         public void SetSelectedObj(GameObject obj)
         {
             if (currentSelectedObj == obj) return;
