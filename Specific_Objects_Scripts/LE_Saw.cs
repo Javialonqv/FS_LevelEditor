@@ -1,4 +1,5 @@
 ﻿using Il2Cpp;
+using Il2CppSimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +12,18 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Saw : LE_Object
     {
+        public LE_SawWaypoint nextWaypoint;
+        LineRenderer editorWaypointLine;
+        public GameObject waypointsParent;
+
         void Awake()
         {
             properties = new Dictionary<string, object>()
             {
                 { "ActivateOnStart", true }
             };
+
+            waypointsParent = gameObject.GetChildWithName("Waypoints");
         }
 
         void Start()
@@ -35,6 +42,18 @@ namespace FS_LevelEditor
 
                 // Also set the saw on or off.
                 SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
+
+                CreateWaypointEditorLine();
+            }
+        }
+
+        void Update()
+        {
+            // Update the link with the position of this saw and the next waypoint.
+            if (editorWaypointLine && nextWaypoint && EditorController.Instance != null)
+            {
+                editorWaypointLine.SetPosition(0, transform.position);
+                editorWaypointLine.SetPosition(1, nextWaypoint.transform.position);
             }
         }
 
@@ -76,6 +95,26 @@ namespace FS_LevelEditor
             content.SetActive(true);
         }
 
+        void CreateWaypointEditorLine()
+        {
+            if (editorWaypointLine != null)
+            {
+                Destroy(editorWaypointLine.gameObject);
+            }
+
+            editorWaypointLine = new GameObject("EditorWaypointLine").AddComponent<LineRenderer>();
+            editorWaypointLine.transform.parent = transform;
+            editorWaypointLine.transform.localPosition = Vector3.zero;
+
+            editorWaypointLine.startWidth = 0.1f;
+            editorWaypointLine.endWidth = 0.1f;
+            editorWaypointLine.positionCount = 2;
+
+            editorWaypointLine.material = new Material(Shader.Find("Sprites/Default"));
+            editorWaypointLine.startColor = Color.white;
+            editorWaypointLine.endColor = Color.white;
+        }
+
         public override bool SetProperty(string name, object value)
         {
             if (name == "ActivateOnStart")
@@ -107,6 +146,30 @@ namespace FS_LevelEditor
             return false;
         }
 
+        public override void OnSelect()
+        {
+            HideOrShowAllWaypointsInEditor(true);
+        }
+
+        public override void OnDeselect(GameObject nextSelectedObj)
+        {
+            #region Disable Waypoints when selecting another object
+            // And also if it's not a waypoint from this saw.
+            if (nextSelectedObj != null)
+            {
+                if (nextSelectedObj.TryGetComponent<LE_SawWaypoint>(out var component))
+                {
+                    if (component.mainSaw == this)
+                    {
+                        return;
+                    }
+                }
+            }
+
+            HideOrShowAllWaypointsInEditor(false);
+            #endregion
+        }
+
         void SetMeshOnEditor(bool isSawOn)
         {
             gameObject.GetChildAt("SawContent/Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;
@@ -118,12 +181,53 @@ namespace FS_LevelEditor
             GameObject waypoint = Instantiate(EditorController.Instance.LoadOtherObjectInBundle("TransparentSaw"), gameObject.GetChildWithName("Waypoints").transform);
 
             waypoint.transform.localPosition = Vector3.zero;
-            waypoint.transform.localEulerAngles = new Vector3(90f, 90f, 0f);
+            waypoint.transform.localEulerAngles = Vector3.zero;
+            waypoint.GetChildWithName("Mesh").transform.localEulerAngles = new Vector3(90f, 90f, 0f);
             waypoint.transform.localScale = Vector3.one;
 
             LE_Object objComponent = LE_Object.AddComponentToObject(waypoint, "SawWaypoint");
 
+            if (nextWaypoint == null)
+            {
+                ((LE_SawWaypoint)objComponent).lastWaypoint = this;
+                nextWaypoint = (LE_SawWaypoint)objComponent;
+                ((LE_SawWaypoint)objComponent).mainSaw = this;
+            }
+            else
+            {
+                ((LE_SawWaypoint)objComponent).lastWaypoint = GetLastWaypoint();
+                GetLastWaypoint().nextWaypoint = (LE_SawWaypoint)objComponent;
+                ((LE_SawWaypoint)objComponent).mainSaw = this;
+            }
+
             EditorController.Instance.SetSelectedObj(waypoint);
+        }
+
+        LE_SawWaypoint GetLastWaypoint()
+        {
+            if (nextWaypoint != null)
+            {
+                return nextWaypoint.GetLastWaypoint();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void HideOrShowAllWaypointsInEditor(bool show)
+        {
+            foreach (var waypoint in waypointsParent.GetChilds())
+            {
+                if (waypoint.GetComponent<LE_SawWaypoint>().wasDeleted) continue;
+
+                waypoint.SetActive(show);
+                waypoint.GetComponent<LE_SawWaypoint>().editorWaypointLine.gameObject.SetActive(show);
+                // Override the green color with the transparent white color for the waypoints.
+                waypoint.GetChildWithName("Mesh").GetComponent<MeshRenderer>().material.color = new Color(1f, 1f, 1f, 0.3921f);
+            }
+
+            editorWaypointLine.gameObject.SetActive(show);
         }
     }
 }

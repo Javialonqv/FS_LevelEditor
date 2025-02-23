@@ -742,7 +742,7 @@ namespace FS_LevelEditor
                     // If the obj types diffier, set the component as null.
                     if (selectionHasDifferentObjTypes)
                     {
-                        if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect();
+                        if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect(null);
                         currentSelectedObjComponent = null;
                     }
                     else // Otherwise, get the component from the first element in the list.
@@ -766,6 +766,7 @@ namespace FS_LevelEditor
                 if (obj != multipleSelectedObjsParent)
                 {
                     currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
+                    currentSelectedObjects.ForEach(x => x.GetComponent<LE_Object>().OnDeselect(obj));
                     currentSelectedObjects.Clear();
                     multipleObjectsSelected = false; // Set the bool again.
                 }
@@ -778,12 +779,13 @@ namespace FS_LevelEditor
                 currentSelectedObj = obj;
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
                 {
+                    if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect(currentSelectedObj);
                     currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
-                    currentSelectedObjComponent.OnSelect();
+                    // The OnSelect method will be called more below AFTER the funciton changes the color of the mesh to green.
                 }
                 else if (currentSelectedObj == null)
                 {
-                    if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect();
+                    if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect(null);
                     currentSelectedObjComponent = null;
                 }
             }
@@ -815,6 +817,8 @@ namespace FS_LevelEditor
                 {
                     EditorUIManager.Instance.SetSelectedObject(currentSelectedObjComponent);
                 }
+
+                currentSelectedObjComponent.OnSelect();
             }
             else
             {

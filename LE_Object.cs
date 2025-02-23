@@ -227,7 +227,7 @@ namespace FS_LevelEditor
         {
 
         }
-        public virtual void OnDeselect()
+        public virtual void OnDeselect(GameObject nextSelectedObj)
         {
 
         }
