@@ -217,5 +217,18 @@ namespace FS_LevelEditor
             Logger.Error($"Couldn't find property of name \"{name}\" OF TYPE \"{typeof(T).Name}\" for object with name: \"{objectFullNameWithID}\"");
             return default(T);
         }
+
+        public virtual void OnSelect()
+        {
+
+        }
+        public virtual void OnDeselect()
+        {
+
+        }
+        public virtual void OnDelete()
+        {
+
+        }
     }
 }

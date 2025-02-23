@@ -34,6 +34,7 @@ namespace FS_LevelEditor
         // Avaiable objects from all of the categories.
         public List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
         public Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
+        GameObject[] otherObjectsFromBundle;
         public string currentObjectToBuildName = "";
         GameObject currentObjectToBuild;
         GameObject previewObjectToBuildObj = null;
@@ -575,6 +576,7 @@ namespace FS_LevelEditor
                     return;
                 }
                 currentSelectedObj.SetActive(false);
+                currentSelectedObjComponent.OnDelete();
                 levelHasBeenModified = true;
             }
             // Register the LEAction before deselecting the object, so I can set the target obj with the reference to the current selected object.
@@ -651,6 +653,8 @@ namespace FS_LevelEditor
             snapToGridCube.name = "SnapToGridCube";
             snapToGridCube.transform.localPosition = Vector3.zero;
             snapToGridCube.SetActive(false);
+
+            otherObjectsFromBundle = bundle.Load<GameObject>("OtherObjects").GetChilds();
 
             bundle.Unload(false);
         }
@@ -733,6 +737,7 @@ namespace FS_LevelEditor
                     // If the obj types diffier, set the component as null.
                     if (selectionHasDifferentObjTypes)
                     {
+                        if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect();
                         currentSelectedObjComponent = null;
                     }
                     else // Otherwise, get the component from the first element in the list.
@@ -747,6 +752,7 @@ namespace FS_LevelEditor
 
                     currentSelectedObj = obj;
                     currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
+                    currentSelectedObjComponent.OnSelect();
                 }
             }
             else
@@ -768,9 +774,11 @@ namespace FS_LevelEditor
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
                 {
                     currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
+                    currentSelectedObjComponent.OnSelect();
                 }
                 else if (currentSelectedObj == null)
                 {
+                    if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect();
                     currentSelectedObjComponent = null;
                 }
             }

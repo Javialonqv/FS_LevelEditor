@@ -109,18 +109,5 @@ namespace FS_LevelEditor
 
             return false;
         }
-
-        public override object GetProperty(string name)
-        {
-            if (properties.ContainsKey(name))
-            {
-                return properties[name];
-            }
-            else
-            {
-                Logger.Error($"Couldn't find property of name \"{name}\" for object with name: \"{objectFullNameWithID}\"");
-                return null;
-            }
-        }
     }
 }
