@@ -1,4 +1,6 @@
-﻿using System;
+﻿using FS_LevelEditor;
+using JetBrains.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +21,10 @@ namespace FS_LevelEditor
 
         void Awake()
         {
-            
+            if (PlayModeController.Instance == null)
+            {
+                CreateWaypointEditorLine();
+            }
         }
 
         void Start()
@@ -35,8 +40,6 @@ namespace FS_LevelEditor
                 collider.transform.localScale = Vector3.one;
                 collider.transform.localPosition = Vector3.zero;
                 collider.AddComponent<BoxCollider>().size = new Vector3(0.1f, 1.3f, 1.3f);
-
-                CreateWaypointEditorLine();
             }
         }
 
@@ -46,6 +49,15 @@ namespace FS_LevelEditor
             {
                 editorWaypointLine.SetPosition(0, transform.position);
                 editorWaypointLine.SetPosition(1, nextWaypoint.transform.position);
+            }
+
+            if (EditorController.Instance != null)
+            {
+                LE_SawWaypointSerializable toModify = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).Find(x => x.objectID == objectID);
+                int index = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).IndexOf(toModify);
+                toModify.waypointPosition = transform.localPosition;
+                toModify.waypointRotation = transform.localEulerAngles;
+                ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"])[index] = toModify;
             }
         }
 
@@ -110,6 +122,9 @@ namespace FS_LevelEditor
             {
                 ((LE_SawWaypoint)lastWaypoint).nextWaypoint = nextWaypoint;
             }
+
+            LE_SawWaypointSerializable toRemove = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).Find(x => x.objectID == objectID);
+            ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).Remove(toRemove);
         }
 
         public LE_SawWaypoint GetLastWaypoint()
@@ -123,5 +138,21 @@ namespace FS_LevelEditor
                 return this;
             }
         }
+    }
+}
+
+[Serializable]
+public class LE_SawWaypointSerializable
+{
+    public int objectID { get; set; }
+    public Vector3Serializable waypointPosition { get; set; }
+    public Vector3Serializable waypointRotation { get; set; }
+
+    public LE_SawWaypointSerializable() { }
+    public LE_SawWaypointSerializable(LE_SawWaypoint waypoint)
+    {
+        objectID = waypoint.objectID;
+        waypointPosition = waypoint.transform.localPosition;
+        waypointRotation = waypoint.transform.localEulerAngles;
     }
 }

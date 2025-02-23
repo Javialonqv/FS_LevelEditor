@@ -20,7 +20,8 @@ namespace FS_LevelEditor
         {
             properties = new Dictionary<string, object>()
             {
-                { "ActivateOnStart", true }
+                { "ActivateOnStart", true },
+                { "waypoints", new List<LE_SawWaypointSerializable>() }
             };
 
             waypointsParent = gameObject.GetChildWithName("Waypoints");
@@ -113,6 +114,8 @@ namespace FS_LevelEditor
             editorWaypointLine.material = new Material(Shader.Find("Sprites/Default"));
             editorWaypointLine.startColor = Color.white;
             editorWaypointLine.endColor = Color.white;
+
+            editorWaypointLine.gameObject.SetActive(false);
         }
 
         public override bool SetProperty(string name, object value)
@@ -129,6 +132,21 @@ namespace FS_LevelEditor
                 {
                     Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
                     return false;
+                }
+            }
+            else if (name == "waypoints") // For now, this is only called when loading the level...
+            {
+                if (value is List<LE_SawWaypointSerializable>)
+                {
+                    foreach (var waypoint in (List<LE_SawWaypointSerializable>)value)
+                    {
+                        LE_SawWaypoint instance = AddWaypoint(false);
+                        instance.objectID = waypoint.objectID;
+                        instance.transform.localPosition = waypoint.waypointPosition;
+                        instance.transform.localEulerAngles = waypoint.waypointRotation;
+                    }
+
+                    HideOrShowAllWaypointsInEditor(false);
                 }
             }
 
@@ -176,7 +194,7 @@ namespace FS_LevelEditor
             gameObject.GetChildAt("SawContent/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
         }
 
-        void AddWaypoint()
+        LE_SawWaypoint AddWaypoint(bool selectWhenInstantiated = true)
         {
             GameObject waypoint = Instantiate(EditorController.Instance.LoadOtherObjectInBundle("TransparentSaw"), gameObject.GetChildWithName("Waypoints").transform);
 
@@ -200,7 +218,14 @@ namespace FS_LevelEditor
                 ((LE_SawWaypoint)objComponent).mainSaw = this;
             }
 
-            EditorController.Instance.SetSelectedObj(waypoint);
+            ((List<LE_SawWaypointSerializable>)properties["waypoints"]).Add(new LE_SawWaypointSerializable((LE_SawWaypoint)objComponent));
+
+            if (selectWhenInstantiated)
+            {
+                EditorController.Instance.SetSelectedObj(waypoint);
+            }
+
+            return (LE_SawWaypoint)objComponent;
         }
 
         LE_SawWaypoint GetLastWaypoint()
@@ -227,7 +252,10 @@ namespace FS_LevelEditor
                 waypoint.GetChildWithName("Mesh").GetComponent<MeshRenderer>().material.color = new Color(1f, 1f, 1f, 0.3921f);
             }
 
-            editorWaypointLine.gameObject.SetActive(show);
+            if (editorWaypointLine)
+            {
+                editorWaypointLine.gameObject.SetActive(show);
+            }
         }
     }
 }
