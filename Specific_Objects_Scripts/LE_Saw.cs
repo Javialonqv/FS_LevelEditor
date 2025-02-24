@@ -173,6 +173,10 @@ namespace FS_LevelEditor
                             waypointsGOs[i - 1].GetComponent<LE_SawWaypoint>().nextWaypoint = instance;
                             instance.previousWaypoint = waypointsGOs[i - 1].GetComponent<LE_SawWaypoint>();
                         }
+                        else // If the previous condition is false, that means we're in the FIRST waypoint.
+                        {
+                            instance.isTheFirstWaypoint = true;
+                        }
                     }
 
                     // If it's in the editor, hide all, the links and the waypoints.
