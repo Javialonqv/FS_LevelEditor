@@ -196,7 +196,7 @@ namespace FS_LevelEditor
         /// Gets a property from the object properties list.
         /// </summary>
         /// <param name="name">The name of property to get if it exists.</param>
-        /// <returns>The value of the property in the list, without conversions.</returns>
+        /// <returns>The value of the property in the list, without any conversions.</returns>
         public virtual object GetProperty(string name)
         {
             if (properties.ContainsKey(name))
