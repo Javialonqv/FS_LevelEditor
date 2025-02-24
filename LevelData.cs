@@ -23,6 +23,8 @@ namespace FS_LevelEditor
         public long lastModificationTime { get; set; }
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
 
+        public static int currentLevelObjsCount = 0;
+
         static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
 
         // Create a LeveData instance with all of the current objects in the level.
@@ -155,9 +157,18 @@ namespace FS_LevelEditor
             List<LE_ObjectData> toCheck = data.objects;
             if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
             {
-                Logger.Log("Multiple objects with same ID detected, trying to fix...");
+                Logger.Warning("Multiple objects with same ID detected, trying to fix...");
                 toCheck = FixMultipleObjectsWithSameID(toCheck);
             }
+
+            currentLevelObjsCount = toCheck.Count;
+
+#if DEBUG
+            if (currentLevelObjsCount > 100)
+            {
+                Logger.DebugWarning("More than 100 objects in the level, not printing logs while instantiating objects!");
+            }
+#endif
 
             foreach (LE_ObjectData obj in data.objects)
             {
@@ -198,7 +209,16 @@ namespace FS_LevelEditor
             playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
             playModeCtrl.levelName = data.levelName;
 
-            foreach (LE_ObjectData obj in data.objects)
+            List<LE_ObjectData> toCheck = data.objects;
+            if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
+            {
+                Logger.Warning("Multiple objects with same ID detected, trying to fix...");
+                toCheck = FixMultipleObjectsWithSameID(toCheck);
+            }
+
+            currentLevelObjsCount = toCheck.Count;
+
+            foreach (LE_ObjectData obj in toCheck)
             {
                 GameObject objInstance = playModeCtrl.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
