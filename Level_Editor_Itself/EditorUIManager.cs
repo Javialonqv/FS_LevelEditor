@@ -421,8 +421,29 @@ namespace FS_LevelEditor
             activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
             #endregion
 
+            #region Damage Input Field
+            GameObject damageTitle = Instantiate(labelTemplate, sawAttributes.transform);
+            damageTitle.name = "DamageTitle";
+            damageTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
+            damageTitle.RemoveComponent<UILocalize>();
+            damageTitle.GetComponent<UILabel>().text = "Damage";
+            damageTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject damageInputField = NGUI_Utils.CreateInputField(sawAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27);
+            damageInputField.name = "DamageInputField";
+            damageInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
+            damageInputField.GetComponent<UILabel>().color = Color.gray;
+            damageInputField.GetComponent<UIInput>().defaultText = "50";
+            damageInputField.GetComponent<UIInput>().activeTextColor = Color.white;
+            damageInputField.GetComponent<UIInput>().onChange.Clear();
+            var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Damage"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", damageInputField.GetComponent<UIInput>()));
+            damageInputField.GetComponent<UIInput>().onChange.Add(damageDelegate);
+            #endregion
+
             #region Add Waypoint
-            GameObject addWaypoint = NGUI_Utils.CreateButton(sawAttributes.transform, new Vector3(0f, 15f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
+            GameObject addWaypoint = NGUI_Utils.CreateButton(sawAttributes.transform, new Vector3(0f, -15f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
             addWaypoint.name = "AddWaypointButton";
             addWaypoint.GetComponent<UIButton>().onClick.Clear();
             var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
@@ -474,8 +495,11 @@ namespace FS_LevelEditor
 
                 // Set activate on start toggle...
                 var activateOnStartToggle = attrbutesPanels["Saw"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
-
                 activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
+
+                // Set the damage input field...
+                var damageInput = attrbutesPanels["Saw"].GetChildWithName("DamageInputField").GetComponent<UIInput>();
+                damageInput.text = (int)objComponent.GetProperty("Damage") + "";
             }
             else
             {

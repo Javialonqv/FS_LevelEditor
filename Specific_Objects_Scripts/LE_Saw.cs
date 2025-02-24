@@ -1,7 +1,9 @@
 ﻿using Il2Cpp;
+using Il2CppDiscord;
 using Il2CppSimpleJSON;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
@@ -18,12 +20,15 @@ namespace FS_LevelEditor
         public GameObject waypointsParent;
         public List<GameObject> waypointsGOs = new List<GameObject>();
 
+        ScieScript sawScript;
+
         void Awake()
         {
             properties = new Dictionary<string, object>()
             {
                 { "ActivateOnStart", true },
-                { "waypoints", new List<LE_SawWaypointSerializable>() }
+                { "waypoints", new List<LE_SawWaypointSerializable>() },
+                { "Damage", 50 }
             };
 
             waypointsParent = gameObject.GetChildWithName("Waypoints");
@@ -74,6 +79,7 @@ namespace FS_LevelEditor
 
             ScieScript script = content.AddComponent<ScieScript>();
             script.doesDamage = true;
+            script.damage = (int)GetProperty("Damage");
             script.rotationScript = rotationScie;
             script.m_damageCollider = content.GetComponent<BoxCollider>();
             script.m_audioSource = content.GetComponent<AudioSource>();
@@ -174,6 +180,22 @@ namespace FS_LevelEditor
 
                     // Since the data in the list is not altered when adding new waypoints while loading data, set the list manually rn.
                     properties["waypoints"] = value;
+                }
+            }
+            else if (name == "Damage")
+            {
+                if (value is string)
+                {
+                    if (int.TryParse((string)value, out int result))
+                    {
+                        properties["Damage"] = result;
+                        return true;
+                    }
+                }
+                else if (value is int)
+                {
+                    properties["Damage"] = (int)value;
+                    return true;
                 }
             }
 
