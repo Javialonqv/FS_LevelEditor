@@ -80,7 +80,7 @@ namespace FS_LevelEditor
             Waypoint waypoint = gameObject.AddComponent<Waypoint>();
 
             waypoint.speedMultiplier = 1f;
-            waypoint.waitHere = 0.3f;
+            waypoint.waitHere = (float)GetProperty("WaitTime");
             if (nextWaypoint)
             {
                 waypoint.nextWaypoint = nextWaypoint.gameObject;
