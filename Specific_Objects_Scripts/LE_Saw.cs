@@ -99,7 +99,7 @@ namespace FS_LevelEditor
             script.physicsCollider = content.GetChildWithName("Saw_PhysicsCollider").GetComponent<MeshCollider>();
 
 
-            // There's a good reasong for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
+            // There's a good reason for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
             // do the same thing, so first enable it, and then disable if needed, cause if we don't do anything, there's a bug with the saw animation.
             script.Activate();
             bool activateOnStart = (bool)GetProperty("ActivateOnStart");

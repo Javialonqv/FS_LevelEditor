@@ -214,15 +214,20 @@ namespace FS_LevelEditor
                 DeleteSelectedObj();
             }
 
+            // The code to force reset the gizmos arrows to 0 when global gizmos are enabled, is in LateUpdate().
+
+            ManageSomeShortcuts();
+
+            ManageUndo();
+        }
+
+        void LateUpdate()
+        {
             // If the global gizmos arrows are enabled, force them to be with 0 rotation.
             if (globalGizmosArrowsEnabled && gizmosArrows.activeSelf)
             {
                 gizmosArrows.transform.rotation = Quaternion.identity;
             }
-
-            ManageSomeShortcuts();
-
-            ManageUndo();
         }
 
         void ManageSomeShortcuts()
