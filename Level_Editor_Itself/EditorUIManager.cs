@@ -309,6 +309,7 @@ namespace FS_LevelEditor
             CreateNoAttributesPanel();
             CreateLightAttributesPanel();
             CreateSawAttributesPanel();
+            CreateSawWaypointAttributesPanel();
         }
 
         void CreateNoAttributesPanel()
@@ -458,6 +459,52 @@ namespace FS_LevelEditor
             sawAttributes.SetActive(false);
             attrbutesPanels.Add("Saw", sawAttributes);
         }
+        void CreateSawWaypointAttributesPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject sawWaypointAttributes = new GameObject("SawWaypointAttributes");
+            sawWaypointAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            sawWaypointAttributes.transform.localPosition = Vector3.zero;
+            sawWaypointAttributes.transform.localScale = Vector3.one;
+
+            #region Wait Time Input Field
+            GameObject waitTimeTitle = Instantiate(labelTemplate, sawWaypointAttributes.transform);
+            waitTimeTitle.name = "WaitTimeTitle";
+            waitTimeTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            waitTimeTitle.RemoveComponent<UILocalize>();
+            waitTimeTitle.GetComponent<UILabel>().text = "Wait Time";
+            waitTimeTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject waitTimeInputField = NGUI_Utils.CreateInputField(sawWaypointAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27);
+            waitTimeInputField.name = "WaitTimeInputField";
+            waitTimeInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
+            waitTimeInputField.GetComponent<UILabel>().color = Color.gray;
+            waitTimeInputField.GetComponent<UIInput>().defaultText = "0.3";
+            waitTimeInputField.GetComponent<UIInput>().activeTextColor = Color.white;
+            waitTimeInputField.GetComponent<UIInput>().validation = UIInput.Validation.Float;
+            waitTimeInputField.GetComponent<UIInput>().onChange.Clear();
+            var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "WaitTime"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", waitTimeInputField.GetComponent<UIInput>()));
+            waitTimeInputField.GetComponent<UIInput>().onChange.Add(damageDelegate);
+            #endregion
+
+            #region Add Waypoint
+            GameObject addWaypoint = NGUI_Utils.CreateButton(sawWaypointAttributes.transform, new Vector3(0f, 40f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
+            addWaypoint.name = "AddWaypointButton";
+            addWaypoint.GetComponent<UIButton>().onClick.Clear();
+            var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
+                NGUI_Utils.CreateEventDelegateParamter(this, "actionName", "AddWaypoint"));
+            addWaypoint.GetComponent<UIButton>().onClick.Add(addWaypointDelegate);
+            addWaypoint.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            addWaypoint.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+            #endregion
+
+            sawWaypointAttributes.SetActive(false);
+            attrbutesPanels.Add("SawWaypoint", sawWaypointAttributes);
+        }
 
         public void SetSelectedObjPanelAsNone()
         {
@@ -502,6 +549,14 @@ namespace FS_LevelEditor
                 // Set the damage input field...
                 var damageInput = attrbutesPanels["Saw"].GetChildWithName("DamageInputField").GetComponent<UIInput>();
                 damageInput.text = (int)objComponent.GetProperty("Damage") + "";
+            }
+            else if (objComponent.objectOriginalName == "SawWaypoint")
+            {
+                attrbutesPanels["SawWaypoint"].SetActive(true);
+
+                // Set wait time input field...
+                var waitTimeInputField = attrbutesPanels["SawWaypoint"].GetChildWithName("WaitTimeInputField").GetComponent<UIInput>();
+                waitTimeInputField.text = (float)objComponent.GetProperty("WaitTime") + "";
             }
             else
             {

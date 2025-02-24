@@ -164,6 +164,9 @@ namespace FS_LevelEditor
                         instance.transform.localPosition = waypoint.waypointPosition;
                         instance.transform.localEulerAngles = waypoint.waypointRotation;
 
+                        // Set the waypoint properties:
+                        instance.SetProperty("WaitTime", waypoint.waitTime);
+
                         // Set the previous and next waypoints.
                         if (i >= 1)
                         {

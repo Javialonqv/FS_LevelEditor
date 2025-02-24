@@ -24,6 +24,11 @@ namespace FS_LevelEditor
 
         void Awake()
         {
+            properties = new Dictionary<string, object>()
+            {
+                { "WaitTime", 0.3f }
+            };
+
             if (PlayModeController.Instance == null)
             {
                 CreateWaypointEditorLine();
@@ -63,6 +68,7 @@ namespace FS_LevelEditor
             {
                 LE_SawWaypointSerializable toModify = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).Find(x => x.objectID == objectID);
                 int index = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).IndexOf(toModify);
+                toModify.waitTime = (float)GetProperty("WaitTime");
                 toModify.waypointPosition = transform.localPosition;
                 toModify.waypointRotation = transform.localEulerAngles;
                 ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"])[index] = toModify;
@@ -132,6 +138,28 @@ namespace FS_LevelEditor
             mainSaw.RecalculateWaypoints();
         }
 
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "WaitTime")
+            {
+                if (value is string)
+                {
+                    if (float.TryParse((string)value, out float result))
+                    {
+                        properties["WaitTime"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["WaitTime"] = (float)value;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public LE_SawWaypoint GetLastWaypoint()
         {
             if (nextWaypoint != null)
@@ -171,6 +199,8 @@ namespace FS_LevelEditor
 [Serializable]
 public class LE_SawWaypointSerializable
 {
+    public float waitTime { get; set; }
+
     public int objectID { get; set; }
     public Vector3Serializable waypointPosition { get; set; }
     public Vector3Serializable waypointRotation { get; set; }
@@ -178,6 +208,8 @@ public class LE_SawWaypointSerializable
     public LE_SawWaypointSerializable() { }
     public LE_SawWaypointSerializable(LE_SawWaypoint waypoint)
     {
+        waitTime = (float)waypoint.GetProperty("WaitTime");
+
         objectID = waypoint.objectID;
         waypointPosition = waypoint.transform.localPosition;
         waypointRotation = waypoint.transform.localEulerAngles;
