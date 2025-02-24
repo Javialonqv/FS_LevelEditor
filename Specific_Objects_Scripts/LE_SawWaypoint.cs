@@ -160,6 +160,17 @@ namespace FS_LevelEditor
             return false;
         }
 
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "AddWaypoint")
+            {
+                mainSaw.AddWaypoint();
+                return true;
+            }
+
+            return false;
+        }
+
         public LE_SawWaypoint GetLastWaypoint()
         {
             if (nextWaypoint != null)

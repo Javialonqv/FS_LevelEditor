@@ -232,7 +232,7 @@ namespace FS_LevelEditor
             gameObject.GetChildAt("SawContent/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
         }
 
-        LE_SawWaypoint AddWaypoint(bool isFromSavedData = false, bool ignoreIfCurrentNextWaypointIsNull = false)
+        public LE_SawWaypoint AddWaypoint(bool isFromSavedData = false, bool ignoreIfCurrentNextWaypointIsNull = false)
         {
             // This is for creating an extra waypoint in the same position as the saw, but it'll NOT visible in the LE.
             // Also, this will not be executed when the waypoint is created from save since the save file already includes that extra waypoint, let it be LOL.
