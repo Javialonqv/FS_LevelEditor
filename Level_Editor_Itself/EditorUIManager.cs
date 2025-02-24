@@ -384,6 +384,7 @@ namespace FS_LevelEditor
             intensityInputField.GetComponent<UILabel>().color = Color.gray;
             intensityInputField.GetComponent<UIInput>().defaultText = "1";
             intensityInputField.GetComponent<UIInput>().activeTextColor = Color.white;
+            intensityInputField.GetComponent<UIInput>().validation = UIInput.Validation.Float;
             intensityInputField.GetComponent<UIInput>().onChange.Clear();
             var intensityDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Intensity"),
@@ -435,6 +436,7 @@ namespace FS_LevelEditor
             damageInputField.GetComponent<UILabel>().color = Color.gray;
             damageInputField.GetComponent<UIInput>().defaultText = "50";
             damageInputField.GetComponent<UIInput>().activeTextColor = Color.white;
+            damageInputField.GetComponent<UIInput>().validation = UIInput.Validation.Integer;
             damageInputField.GetComponent<UIInput>().onChange.Clear();
             var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Damage"),
