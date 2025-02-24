@@ -83,6 +83,8 @@ namespace FS_LevelEditor
             {
                 script.currentWaypoint = waypointsGOs[0];
                 script.movingSaw = true;
+                script.forcedHeading = true;
+                script.allowSideRotation = true;
             }
             script.scieSound = FindObjectOfType<ScieScript>().scieSound;
             script.offMesh = content.GetChildWithName("Scie_OFF").GetComponent<MeshRenderer>();
