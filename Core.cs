@@ -109,5 +109,19 @@ namespace FS_LevelEditor
             GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, false);
             return lightObj;
         }
+
+        public static GameObject LoadOtherObjectInBundle(string objectName)
+        {
+            if (EditorController.Instance != null && PlayModeController.Instance == null)
+            {
+                return EditorController.Instance.LoadOtherObjectInBundle(objectName);
+            }
+            else if (EditorController.Instance == null && PlayModeController.Instance != null)
+            {
+                return PlayModeController.Instance.LoadOtherObjectInBundle(objectName);
+            }
+
+            return null;
+        }
     }
 }

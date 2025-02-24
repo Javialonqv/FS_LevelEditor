@@ -11,6 +11,7 @@ using Il2Cpp;
 using System.Collections;
 using FS_LevelEditor;
 using HarmonyLib;
+using System.Reflection.Metadata;
 
 namespace FS_LevelEditor
 {
@@ -27,6 +28,7 @@ namespace FS_LevelEditor
         List<string> categories = new List<string>();
         Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
         List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
+        GameObject[] otherObjectsFromBundle;
         public GameObject levelObjectsParent;
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
@@ -149,6 +151,13 @@ namespace FS_LevelEditor
 
                 allCategoriesObjectsSorted.Add(categoryObjects);
             }
+
+            otherObjectsFromBundle = LEBundle.Load<GameObject>("OtherObjects").GetChilds();
+        }
+
+        public GameObject LoadOtherObjectInBundle(string objectName)
+        {
+            return otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
         }
 
         public T LoadFromLEBundle<T>(string name) where T : UnityEngine.Object

@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor;
+using Il2Cpp;
 using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,9 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_SawWaypoint : LE_Object
     {
-        public LE_Object lastWaypoint;
+        public bool isTheFirstWaypoint = false;
+
+        public LE_Object previousWaypoint;
         public LE_SawWaypoint nextWaypoint;
         public LE_Saw mainSaw;
         public LineRenderer editorWaypointLine;
@@ -31,9 +34,12 @@ namespace FS_LevelEditor
         {
             if (PlayModeController.Instance != null)
             {
+                InitComponent();
 
+                // Disable the transparent saw mesh ingame.
+                gameObject.GetChildWithName("Mesh").SetActive(false);
             }
-            else // If it's not in playmode, just create a collider so the user can click the object in LE.
+            else if (!isTheFirstWaypoint) // If it's not in playmode, just create a collider so the user can click the object in LE.
             {
                 GameObject collider = new GameObject("Collider");
                 collider.transform.parent = transform;
@@ -45,12 +51,14 @@ namespace FS_LevelEditor
 
         void Update()
         {
+            // Update the waypoint link every frame.
             if (editorWaypointLine && nextWaypoint && EditorController.Instance != null)
             {
                 editorWaypointLine.SetPosition(0, transform.position);
                 editorWaypointLine.SetPosition(1, nextWaypoint.transform.position);
             }
 
+            // Update the position and rotation every frame :)
             if (EditorController.Instance != null)
             {
                 LE_SawWaypointSerializable toModify = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).Find(x => x.objectID == objectID);
@@ -59,6 +67,27 @@ namespace FS_LevelEditor
                 toModify.waypointRotation = transform.localEulerAngles;
                 ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"])[index] = toModify;
             }
+        }
+
+        void InitComponent()
+        {
+            Waypoint waypoint = gameObject.AddComponent<Waypoint>();
+
+            waypoint.speedMultiplier = 1f;
+            waypoint.waitHere = 0.3f;
+            if (nextWaypoint)
+            {
+                waypoint.nextWaypoint = nextWaypoint.gameObject;
+            }
+            else
+            {
+                // If this waypoint is the last one, then set the next waypoint as the first waypoint that is right after the saw itself (the invisible one).
+                if (mainSaw.waypointsGOs.Last() == gameObject && nextWaypoint == null)
+                {
+                    waypoint.nextWaypoint = mainSaw.nextWaypoint.gameObject;
+                }
+            }
+            waypoint.checkpoints = mainSaw.waypointsGOs.ToArray();
         }
 
         void CreateWaypointEditorLine()
@@ -81,50 +110,26 @@ namespace FS_LevelEditor
             editorWaypointLine.endColor = Color.white;
         }
 
+        public override void OnSelect()
+        {
+            mainSaw.HideOrShowAllWaypointsInEditor(true);
+        }
+
         public override void OnDeselect(GameObject nextSelectedObj)
         {
             // Make sure the parent is the main saw, just in case the user tried moving multiple objects at once.
             transform.parent = mainSaw.waypointsParent.transform;
 
-            #region Disable Waypoints when selecting another object
-            // And also if it's not a waypoint from this saw.
-            if (nextSelectedObj != null)
-            {
-                if (nextSelectedObj.TryGetComponent<LE_SawWaypoint>(out var component))
-                {
-                    if (component.mainSaw == mainSaw)
-                    {
-                        return;
-                    }
-                }
-                else if (nextSelectedObj.TryGetComponent<LE_Saw>(out var component2))
-                {
-                    if (component2 == mainSaw)
-                    {
-                        return;
-                    }
-                }
-            }
-
             mainSaw.HideOrShowAllWaypointsInEditor(false);
-            #endregion
         }
 
         public override void OnDelete()
         {
             wasDeleted = true;
 
-            if (lastWaypoint is LE_Saw)
-            {
-                ((LE_Saw)lastWaypoint).nextWaypoint = nextWaypoint;
-            }
-            else if (lastWaypoint is LE_SawWaypoint)
-            {
-                ((LE_SawWaypoint)lastWaypoint).nextWaypoint = nextWaypoint;
-            }
+            mainSaw.waypointsGOs.Remove(gameObject);
 
-            LE_SawWaypointSerializable toRemove = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).Find(x => x.objectID == objectID);
-            ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).Remove(toRemove);
+            mainSaw.RecalculateWaypoints();
         }
 
         public LE_SawWaypoint GetLastWaypoint()
@@ -136,6 +141,28 @@ namespace FS_LevelEditor
             else
             {
                 return this;
+            }
+        }
+
+        public void HideOrShowSawInEditor(bool show)
+        {
+            // This method only works if the object ISN'T deleted, otherwise, the deleted object can be enabled, and we don't want that..
+            if (!wasDeleted)
+            {
+                gameObject.SetActive(show);
+                editorWaypointLine.gameObject.SetActive(show);
+            }
+
+            // Override the green color with the transparent white color for the waypoints.
+            if (show)
+            {
+                gameObject.GetChildWithName("Mesh").GetComponent<MeshRenderer>().material.color = new Color(1f, 1f, 1f, 0.3921f);
+            }
+
+            // Follow the loop.
+            if (nextWaypoint != null)
+            {
+                nextWaypoint.HideOrShowSawInEditor(show);
             }
         }
     }
