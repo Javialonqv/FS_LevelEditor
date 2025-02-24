@@ -1,5 +1,6 @@
 ﻿using Il2Cpp;
 using Il2CppInControl.NativeDeviceProfiles;
+using Il2CppSystem;
 using MelonLoader;
 using System;
 using System.Collections;
@@ -273,7 +274,7 @@ namespace FS_LevelEditor
             }
         }
 
-        public static bool ListHasMultipleObjectsWithSameID(List<LE_Object> levelObjects)
+        public static bool ListHasMultipleObjectsWithSameID(List<LE_Object> levelObjects, bool printError = true)
         {
             HashSet<string> seenIds = new HashSet<string>();
 
@@ -281,7 +282,29 @@ namespace FS_LevelEditor
             {
                 if (!seenIds.Add(obj.objectFullNameWithID))
                 {
-                    Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                    if (printError)
+                    {
+                        Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                    }
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        public static bool ListHasMultipleObjectsWithSameID(List<LE_ObjectData> levelObjects, bool printError = true)
+        {
+            HashSet<string> seenIds = new HashSet<string>();
+
+            foreach (var obj in levelObjects)
+            {
+                string toAdd = obj.objectOriginalName + " " + obj.objectID;
+                if (!seenIds.Add(toAdd))
+                {
+                    if (printError)
+                    {
+                        Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                    }
                     return true;
                 }
             }
