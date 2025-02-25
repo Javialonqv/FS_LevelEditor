@@ -307,9 +307,24 @@ namespace FS_LevelEditor
             ((List<LE_SawWaypointSerializable>)properties["waypoints"]).Clear();
             nextWaypoint = null;
 
+            LE_SawWaypoint lastWaypoint = null;
+
             foreach (var waypoint in waypointsGOs)
             {
                 LE_SawWaypoint waypointComponent = waypoint.GetComponent<LE_SawWaypoint>();
+                waypointComponent.previousWaypoint = null;
+                waypointComponent.nextWaypoint = null;
+
+                if (lastWaypoint != null)
+                {
+                    lastWaypoint.nextWaypoint = waypointComponent;
+                    waypointComponent.previousWaypoint = lastWaypoint;
+                }
+                else
+                {
+                    waypointComponent.previousWaypoint = this;
+                }
+
                 AddNewWaypointToList(new LE_SawWaypointSerializable(waypointComponent));
 
                 // If the next waypoint from this saw is null, that means this is the first waypoint in this new list, assign it to this saw.

@@ -189,7 +189,11 @@ namespace FS_LevelEditor
             if (!wasDeleted)
             {
                 gameObject.SetActive(show);
-                editorWaypointLine.gameObject.SetActive(show);
+                
+                if (nextWaypoint != null)
+                {
+                    editorWaypointLine.gameObject.SetActive(show);
+                }
             }
 
             // Override the green color with the transparent white color for the waypoints.
