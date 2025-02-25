@@ -29,6 +29,8 @@ namespace FS_LevelEditor
                 { "WaitTime", 0.3f }
             };
 
+            canUndoDeletion = false;
+
             if (PlayModeController.Instance == null)
             {
                 CreateWaypointEditorLine();

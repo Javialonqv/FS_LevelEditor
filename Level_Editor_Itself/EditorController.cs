@@ -311,6 +311,7 @@ namespace FS_LevelEditor
                     while ((toUndo.targetObj == null && !toUndo.forMultipleObjects) || (toUndo.targetObjs == null && toUndo.forMultipleObjects))
                     {
                         actionsMade.Remove(toUndo);
+                        if (actionsMade.Count <= 0) return;
                         toUndo = actionsMade.Last();
                     }
 
@@ -569,7 +570,14 @@ namespace FS_LevelEditor
                 {
                     if (obj.name == "MoveObjectArrows" || obj.name == "SnapToGridCube") continue;
 
-                    obj.SetActive(false);
+                    if (obj.GetComponent<LE_Object>().canUndoDeletion)
+                    {
+                        obj.SetActive(false);
+                    }
+                    else
+                    {
+                        Destroy(obj);
+                    }
                     levelHasBeenModified = true;
                 }
             }
@@ -580,34 +588,47 @@ namespace FS_LevelEditor
                     Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
                     return;
                 }
-                currentSelectedObj.SetActive(false);
                 currentSelectedObjComponent.OnDelete();
+                if (currentSelectedObjComponent.canUndoDeletion)
+                {
+                    currentSelectedObj.SetActive(false);
+                }
+                else
+                {
+                    Destroy(currentSelectedObj);
+                }
                 levelHasBeenModified = true;
             }
-            // Register the LEAction before deselecting the object, so I can set the target obj with the reference to the current selected object.
-            #region Register LEAction
-            currentExecutingAction = new LEAction();
-            currentExecutingAction.actionType = LEAction.LEActionType.DeleteObject;
 
-            currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
-            if (multipleObjectsSelected)
+            if ((!multipleObjectsSelected && currentSelectedObjComponent.canUndoDeletion) || multipleObjectsSelected)
             {
-                currentExecutingAction.targetObjs = new List<GameObject>();
-                foreach (var obj in currentSelectedObj.GetChilds())
+                // Register the LEAction before deselecting the object, so I can set the target obj with the reference to the current selected object.
+                #region Register LEAction
+                currentExecutingAction = new LEAction();
+                currentExecutingAction.actionType = LEAction.LEActionType.DeleteObject;
+
+                currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+                if (multipleObjectsSelected)
                 {
-                    if (obj.name == "MoveObjectArrows") continue;
-                    if (obj.name == "SnapToGridCube") continue;
+                    currentExecutingAction.targetObjs = new List<GameObject>();
+                    foreach (var obj in currentSelectedObj.GetChilds())
+                    {
+                        if (obj.name == "MoveObjectArrows") continue;
+                        if (obj.name == "SnapToGridCube") continue;
+                     
+                        if (!obj.GetComponent<LE_Object>().canUndoDeletion) continue;
 
-                    currentExecutingAction.targetObjs.Add(obj);
+                        currentExecutingAction.targetObjs.Add(obj);
+                    }
                 }
-            }
-            else
-            {
-                currentExecutingAction.targetObj = currentSelectedObj;
-            }
+                else
+                {
+                    currentExecutingAction.targetObj = currentSelectedObj;
+                }
 
-            actionsMade.Add(currentExecutingAction);
-            #endregion
+                actionsMade.Add(currentExecutingAction);
+                #endregion
+            }
 
             SetSelectedObj(null);
         }

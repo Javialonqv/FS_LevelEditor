@@ -49,6 +49,8 @@ namespace FS_LevelEditor
         }
         public Dictionary<string, object> properties = new Dictionary<string, object>();
 
+        public bool canUndoDeletion { get; protected set; }  = true;
+
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
 
