@@ -91,6 +91,7 @@ namespace FS_LevelEditor
                 script.movingSaw = true;
                 script.forcedHeading = true;
                 script.allowSideRotation = true;
+                script.sideSpeedMultiplier = 5;
             }
             script.scieSound = FindObjectOfType<ScieScript>().scieSound;
             script.offMesh = content.GetChildWithName("Scie_OFF").GetComponent<MeshRenderer>();
