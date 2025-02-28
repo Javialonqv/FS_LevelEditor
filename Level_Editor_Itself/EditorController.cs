@@ -6,11 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using MelonLoader;
-using System.Text.RegularExpressions;
-using UnityEngine.SceneManagement;
 using Il2Cpp;
 using System.Collections;
-using Il2CppLunarCatsStudio.SuperCombiner;
 
 namespace FS_LevelEditor
 {
@@ -844,7 +841,7 @@ namespace FS_LevelEditor
                     EditorUIManager.Instance.SetSelectedObject(currentSelectedObjComponent);
                 }
 
-                currentSelectedObjComponent.OnSelect();
+                if (!multipleObjectsSelected) currentSelectedObjComponent.OnSelect();
             }
             else
             {
