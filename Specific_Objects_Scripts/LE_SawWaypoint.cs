@@ -54,6 +54,11 @@ namespace FS_LevelEditor
                 collider.transform.localPosition = Vector3.zero;
                 collider.AddComponent<BoxCollider>().size = new Vector3(0.1f, 1.3f, 1.3f);
             }
+
+            if (isTheFirstWaypoint)
+            {
+                gameObject.GetChildWithName("Mesh").SetActive(false);
+            }
         }
 
         void Update()
