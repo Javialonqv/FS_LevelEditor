@@ -492,7 +492,7 @@ namespace FS_LevelEditor
             #endregion
 
             #region Add Waypoint
-            GameObject addWaypoint = NGUI_Utils.CreateButton(sawWaypointAttributes.transform, new Vector3(0f, 40f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
+            GameObject addWaypoint = NGUI_Utils.CreateButton(sawWaypointAttributes.transform, new Vector3(0f, 35f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
             addWaypoint.name = "AddWaypointButton";
             addWaypoint.GetComponent<UIButton>().onClick.Clear();
             var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
