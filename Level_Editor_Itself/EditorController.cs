@@ -1215,7 +1215,7 @@ namespace FS_LevelEditor
                         {
                             currentExecutingAction.targetObj = currentSelectedObj;
                         }
-                        currentExecutingAction.oldPos = objPositionWhenArrowClick;
+                        currentExecutingAction.oldPos = currentSelectedObj.transform.localPosition;
                         #endregion
 
                         // Create the panel with the rigt normals.
