@@ -55,7 +55,7 @@ namespace FS_LevelEditor
                 collider.transform.parent = transform;
                 collider.transform.localScale = Vector3.one;
                 collider.transform.localPosition = Vector3.zero;
-                collider.AddComponent<BoxCollider>().size = new Vector3(0.1f, 1.3f, 1.3f);
+                collider.AddComponent<BoxCollider>().size = new Vector3(0.1f, 2f, 2f);
             }
 
             if (isTheFirstWaypoint)
