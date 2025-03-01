@@ -134,16 +134,7 @@ namespace FS_LevelEditor
             }
 
             int id = 0;
-            LE_Object[] objects = null;
-
-            if (EditorController.Instance != null && PlayModeController.Instance == null)
-            {
-                objects = EditorController.Instance.currentInstantiatedObjects.ToArray();
-            }
-            else if (EditorController.Instance == null && PlayModeController.Instance != null)
-            {
-                objects = PlayModeController.Instance.currentInstantiatedObjects.ToArray();
-            }
+            LE_Object[] objects = GetReferenceObjectsToGetObjID();
 
             while (objects.Any(x => x.objectID == id && x.objectOriginalName == objectOriginalName))
             {
@@ -247,6 +238,20 @@ namespace FS_LevelEditor
         public virtual void OnDelete()
         {
 
+        }
+
+        virtual protected LE_Object[] GetReferenceObjectsToGetObjID()
+        {
+            if (EditorController.Instance != null && PlayModeController.Instance == null)
+            {
+                return EditorController.Instance.currentInstantiatedObjects.ToArray();
+            }
+            else if (EditorController.Instance == null && PlayModeController.Instance != null)
+            {
+                return PlayModeController.Instance.currentInstantiatedObjects.ToArray();
+            }
+
+            return null;
         }
     }
 }

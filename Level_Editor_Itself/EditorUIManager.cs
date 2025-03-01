@@ -550,7 +550,7 @@ namespace FS_LevelEditor
                 var damageInput = attrbutesPanels["Saw"].GetChildWithName("DamageInputField").GetComponent<UIInput>();
                 damageInput.text = (int)objComponent.GetProperty("Damage") + "";
             }
-            else if (objComponent.objectOriginalName == "SawWaypoint")
+            else if (objComponent.objectOriginalName == "Saw Waypoint")
             {
                 attrbutesPanels["SawWaypoint"].SetActive(true);
 
