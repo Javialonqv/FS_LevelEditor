@@ -57,6 +57,16 @@ namespace FS_LevelEditor
         }
         public Dictionary<string, object> properties = new Dictionary<string, object>();
 
+        public virtual Transform objectParent
+        {
+            get
+            {
+                if (EditorController.Instance != null) return EditorController.Instance.levelObjectsParent.transform;
+                else if (PlayModeController.Instance != null) return PlayModeController.Instance.levelObjectsParent.transform;
+
+                return null;
+            }
+        }
         public bool canUndoDeletion { get; protected set; }  = true;
 
         public LE_Object(IntPtr ptr) : base(ptr) { }

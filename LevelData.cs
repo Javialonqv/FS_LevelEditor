@@ -39,7 +39,7 @@ namespace FS_LevelEditor
 
             if (EditorController.Instance.multipleObjectsSelected)
             {
-                EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = EditorController.Instance.levelObjectsParent.transform);
+                EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
             }
 
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;

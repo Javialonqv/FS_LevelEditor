@@ -22,6 +22,9 @@ namespace FS_LevelEditor
 
         public bool wasDeleted = false;
 
+        // Since the mainSaw can be null at the start just for a frame or smth, use parents as a reference.
+        public override Transform objectParent => transform.parent.parent;
+
         void Awake()
         {
             properties = new Dictionary<string, object>()

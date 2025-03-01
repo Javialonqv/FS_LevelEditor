@@ -737,7 +737,7 @@ namespace FS_LevelEditor
                     centeredPosition /= currentSelectedObjects.Count;
 
                     // Remove the parent from the selected objects, set the new parent position and put the parent in the objects again.
-                    currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
+                    currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
                     multipleSelectedObjsParent.transform.position = centeredPosition;
                     multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
                     currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform);
@@ -788,10 +788,10 @@ namespace FS_LevelEditor
             }
             else
             {
-                // If don't press Ctrl AND the obj trying to select isn't the selected objects parent, just remvoe the parent for all of the objects and clear the list.
+                // Since the obj parameter can also be the multipleSelectedObjectsParent, check if it is before setting the multipleObjectsSelected bool to false.
                 if (obj != multipleSelectedObjsParent)
                 {
-                    currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
+                    currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
                     currentSelectedObjects.ForEach(x => x.GetComponent<LE_Object>().OnDeselect(obj));
                     currentSelectedObjects.Clear();
                     multipleObjectsSelected = false; // Set the bool again.
@@ -803,6 +803,7 @@ namespace FS_LevelEditor
 
                 // Work as always (the normal selection system lol).
                 currentSelectedObj = obj;
+                // multipleSelectedObjectsParent doesn't have a LE_Object component, so skip this part if that's the case.
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
                 {
                     if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect(currentSelectedObj);
@@ -856,7 +857,7 @@ namespace FS_LevelEditor
         {
             // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
             SetSelectedObj(null);
-            currentSelectedObjects.ForEach(obj => obj.transform.parent = levelObjectsParent.transform);
+            currentSelectedObjects.ForEach(obj => obj.transform.parent = obj.GetComponent<LE_Object>().objectParent);
             currentSelectedObjects.Clear();
 
             if (objects != null)
