@@ -702,6 +702,7 @@ namespace FS_LevelEditor
 
             if (currentSelectedObj != null)
             {
+                // Reset the last selected object color to white if there's one.
                 foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
                 {
                     foreach (var material in renderer.materials)
@@ -711,10 +712,11 @@ namespace FS_LevelEditor
                 }
             }
 
-            // If is pressing control, the object isn't null and it's not the selecteed objects parent and it's NOT duplicating objects at this moment:
+            // Get when the user is pressing Left Control, normally, that's for when the user wanna select multiple objects.
+            // Also only execute this when the use is NOT duplicating objects, due to some interferences when then user is pressing Ctrl BUT to duplicate.
             if (Input.GetKey(KeyCode.LeftControl) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj)
             {
-                // If there was another object selected before, add it to the selected objects list too.
+                // If it's the first time pressing ctrl to select multiple objects, also add the previous selected object to the new selected objs list.
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
                 {
                     // But only if it hasn't been selected yet.
@@ -723,6 +725,7 @@ namespace FS_LevelEditor
                 // And add the most recent now, ofc lol (but only if it hasn't been selected yet).
                 if (!currentSelectedObjects.Contains(obj)) currentSelectedObjects.Add(obj);
 
+                // LE will only detect multiple objects as selected when the selected count is more than 1.
                 if (currentSelectedObjects.Count > 1)
                 {
                     // Set the bool.
@@ -835,13 +838,13 @@ namespace FS_LevelEditor
                 if (multipleObjectsSelected)
                 {
                     EditorUIManager.Instance.SetMultipleObjectsSelected();
+                    currentSelectedObjects.ForEach(x => x.GetComponent<LE_Object>().OnSelect());
                 }
                 else
                 {
                     EditorUIManager.Instance.SetSelectedObject(currentSelectedObjComponent);
+                    currentSelectedObjComponent.OnSelect();
                 }
-
-                if (!multipleObjectsSelected) currentSelectedObjComponent.OnSelect();
             }
             else
             {

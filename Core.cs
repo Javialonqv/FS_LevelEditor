@@ -1,4 +1,5 @@
 ﻿using Il2Cpp;
+using Il2CppInControl;
 using MelonLoader;
 using System.Reflection;
 using UnityEngine;
