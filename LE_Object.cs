@@ -22,7 +22,8 @@ namespace FS_LevelEditor
             LIGHT,
             VENT_WITH_SMOKE,
             PACK,
-            SAW
+            SAW,
+            SWITCH
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
