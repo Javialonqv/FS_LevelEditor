@@ -78,9 +78,9 @@ namespace FS_LevelEditor
             controller.objectsToDestroy = new GameObject[0];
             controller.objectsToEnableOnly = new GameObject[0];
             controller.objectToActivate = gameObject;
-            controller.m_onActivate = new UnityEngine.Events.UnityEvent();
-            controller.m_onActivate_HandOnly = new UnityEngine.Events.UnityEvent();
-            controller.m_onActivate_TaserOnly = new UnityEngine.Events.UnityEvent();
+            //controller.m_onActivate = new UnityEngine.Events.UnityEvent();
+            //controller.m_onActivate_HandOnly = new UnityEngine.Events.UnityEvent();
+            //controller.m_onActivate_TaserOnly = new UnityEngine.Events.UnityEvent();
             controller.messagesOnActivate = new Messenger[0];
             controller.dialogToActivate = new string[0];
         }
