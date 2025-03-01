@@ -15,7 +15,7 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Saw : LE_Object
     {
-        public LE_SawWaypoint nextWaypoint;
+        public LE_Saw_Waypoint nextWaypoint;
         LineRenderer editorWaypointLine;
         public GameObject waypointsParent;
         public List<GameObject> waypointsGOs = new List<GameObject>();
@@ -160,7 +160,7 @@ namespace FS_LevelEditor
                         var waypoint = ((List<LE_SawWaypointSerializable>)value)[i];
 
                         // Set the waypoint values, we don't need to worry about the waypoints list since when loading data, the data is not altered.
-                        LE_SawWaypoint instance = AddWaypoint(true);
+                        LE_Saw_Waypoint instance = AddWaypoint(true);
                         instance.objectID = waypoint.objectID;
                         instance.transform.localPosition = waypoint.waypointPosition;
                         instance.transform.localEulerAngles = waypoint.waypointRotation;
@@ -171,8 +171,8 @@ namespace FS_LevelEditor
                         // Set the previous and next waypoints.
                         if (i >= 1)
                         {
-                            waypointsGOs[i - 1].GetComponent<LE_SawWaypoint>().nextWaypoint = instance;
-                            instance.previousWaypoint = waypointsGOs[i - 1].GetComponent<LE_SawWaypoint>();
+                            waypointsGOs[i - 1].GetComponent<LE_Saw_Waypoint>().nextWaypoint = instance;
+                            instance.previousWaypoint = waypointsGOs[i - 1].GetComponent<LE_Saw_Waypoint>();
                         }
                         else // If the previous condition is false, that means we're in the FIRST waypoint.
                         {
@@ -237,13 +237,13 @@ namespace FS_LevelEditor
             gameObject.GetChildAt("SawContent/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
         }
 
-        public LE_SawWaypoint AddWaypoint(bool isFromSavedData = false, bool ignoreIfCurrentNextWaypointIsNull = false)
+        public LE_Saw_Waypoint AddWaypoint(bool isFromSavedData = false, bool ignoreIfCurrentNextWaypointIsNull = false)
         {
             // This is for creating an extra waypoint in the same position as the saw, but it'll NOT visible in the LE.
             // Also, this will not be executed when the waypoint is created from save since the save file already includes that extra waypoint, let it be LOL.
             if (nextWaypoint == null && !ignoreIfCurrentNextWaypointIsNull && !isFromSavedData)
             {
-                LE_SawWaypoint firstWaypoint = AddWaypoint(isFromSavedData, true);
+                LE_Saw_Waypoint firstWaypoint = AddWaypoint(isFromSavedData, true);
                 firstWaypoint.isTheFirstWaypoint = true;
 
                 nextWaypoint = firstWaypoint;
@@ -256,7 +256,7 @@ namespace FS_LevelEditor
             waypoint.GetChildWithName("Mesh").transform.localEulerAngles = new Vector3(90f, 90f, 0f);
             waypoint.transform.localScale = Vector3.one;
 
-            LE_SawWaypoint objComponent = (LE_SawWaypoint)LE_Object.AddComponentToObject(waypoint, "SawWaypoint");
+            LE_Saw_Waypoint objComponent = (LE_Saw_Waypoint)LE_Object.AddComponentToObject(waypoint, "Saw Waypoint");
 
             if (nextWaypoint == null)
             {
@@ -288,7 +288,7 @@ namespace FS_LevelEditor
             return objComponent;
         }
 
-        LE_SawWaypoint GetLastWaypoint()
+        LE_Saw_Waypoint GetLastWaypoint()
         {
             if (nextWaypoint != null)
             {
@@ -308,11 +308,11 @@ namespace FS_LevelEditor
             ((List<LE_SawWaypointSerializable>)properties["waypoints"]).Clear();
             nextWaypoint = null;
 
-            LE_SawWaypoint lastWaypoint = null;
+            LE_Saw_Waypoint lastWaypoint = null;
 
             foreach (var waypoint in waypointsGOs)
             {
-                LE_SawWaypoint waypointComponent = waypoint.GetComponent<LE_SawWaypoint>();
+                LE_Saw_Waypoint waypointComponent = waypoint.GetComponent<LE_Saw_Waypoint>();
                 waypointComponent.previousWaypoint = null;
                 waypointComponent.nextWaypoint = null;
 

@@ -360,12 +360,13 @@
 		<Compile Include="Specific_Objects_Scripts\LE_Point_Light.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Directional_Light.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Saw.cs" />
-		<Compile Include="Specific_Objects_Scripts\LE_SawWaypoint.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Saw_Waypoint.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Vent_With_Smoke_Green.cs" />
 		<Compile Include="UI_Related\EditorPauseMenuPatcher.cs" />
 		<Compile Include="Level_Editor_Itself\EditorUIManager.cs" />
 		<Compile Include="LE_Object.cs" />
 		<Compile Include="UI_Related\LevelButtonController.cs" />
+		<Compile Include="UI_Related\LE_CustomErrorPopups.cs" />
 		<Compile Include="UI_Related\LE_UIButtonActionCtrl.cs" />
 		<Compile Include="LevelData.cs" />
 		<Compile Include="LE_ObjectData.cs" />

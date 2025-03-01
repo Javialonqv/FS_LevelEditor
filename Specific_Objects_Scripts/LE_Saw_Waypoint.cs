@@ -11,12 +11,12 @@ using UnityEngine;
 namespace FS_LevelEditor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
-    public class LE_SawWaypoint : LE_Object
+    public class LE_Saw_Waypoint : LE_Object
     {
         public bool isTheFirstWaypoint = false;
 
         public LE_Object previousWaypoint;
-        public LE_SawWaypoint nextWaypoint;
+        public LE_Saw_Waypoint nextWaypoint;
         public LE_Saw mainSaw;
         public LineRenderer editorWaypointLine;
 
@@ -178,7 +178,7 @@ namespace FS_LevelEditor
             return false;
         }
 
-        public LE_SawWaypoint GetLastWaypoint()
+        public LE_Saw_Waypoint GetLastWaypoint()
         {
             if (nextWaypoint != null)
             {
@@ -228,7 +228,7 @@ public class LE_SawWaypointSerializable
     public Vector3Serializable waypointRotation { get; set; }
 
     public LE_SawWaypointSerializable() { }
-    public LE_SawWaypointSerializable(LE_SawWaypoint waypoint)
+    public LE_SawWaypointSerializable(LE_Saw_Waypoint waypoint)
     {
         waitTime = (float)waypoint.GetProperty("WaitTime");
 
