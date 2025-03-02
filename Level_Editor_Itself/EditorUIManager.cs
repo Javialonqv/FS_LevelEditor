@@ -832,8 +832,8 @@ namespace FS_LevelEditor
             saveLevelButton.SetActive(true);
 
             // Create a PLAY level button.
-            GameObject playLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
-            GameObject playLevelButton = Instantiate(playLevelButtonTemplate, playLevelButtonTemplate.transform.parent);
+            //GameObject playLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
+            GameObject playLevelButton = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
             playLevelButton.name = "2_PlayLevel";
             Destroy(playLevelButton.GetComponent<ButtonController>());
             Destroy(playLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());

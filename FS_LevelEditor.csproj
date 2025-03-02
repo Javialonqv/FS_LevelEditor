@@ -356,6 +356,7 @@
 		<Compile Include="Patches.cs" />
 		<Compile Include="PlayModeController.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Ammo_Pack.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Player_Spawn.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Health_Pack.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Point_Light.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Directional_Light.cs" />

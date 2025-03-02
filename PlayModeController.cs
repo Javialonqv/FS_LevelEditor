@@ -50,9 +50,7 @@ namespace FS_LevelEditor
 
         void Start()
         {
-            // Teleport the player.
-            Controls.Instance.transform.position = new Vector3(-13f, 123f, -68f);
-            Controls.Instance.gameCamera.transform.localPosition = new Vector3(0f, 0.907f, 0f);
+            TeleportPlayer();
         }
 
         // When the script obj is destroyed, that means the scene has changed, unload the asset bundle and destroy the back to LE button, since it'll be created again when entering...
@@ -62,6 +60,16 @@ namespace FS_LevelEditor
             UnloadBundle();
 
             Destroy(backToLEButton);
+        }
+
+        void TeleportPlayer()
+        {
+            LE_Player_Spawn spawn = FindObjectOfType<LE_Player_Spawn>();
+
+            Controls.Instance.transform.position = spawn.transform.position + Vector3.up;
+            Controls.Instance.gameCamera.transform.localPosition = new Vector3(0f, 0.907f, 0f);
+            Controls.Instance.gameCamera.transform.eulerAngles = spawn.transform.eulerAngles;
+            Controls.Instance.Angle = new Vector2(spawn.transform.eulerAngles.y, spawn.transform.eulerAngles.x);
         }
 
         void DisableTheCurrentScene()
