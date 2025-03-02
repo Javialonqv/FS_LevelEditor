@@ -528,10 +528,27 @@ namespace FS_LevelEditor
             GameObject usableOnceToggle = NGUI_Utils.CreateToggle(switchAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
             usableOnceToggle.name = "UsableOnceToggle";
             usableOnceToggle.GetComponent<UIToggle>().onChange.Clear();
-            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+            var usableOnceDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "UsableOnce"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "toggle", usableOnceToggle.GetComponent<UIToggle>()));
-            usableOnceToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            usableOnceToggle.GetComponent<UIToggle>().onChange.Add(usableOnceDelegate);
+            #endregion
+
+            #region Can Use Taser Toggle
+            GameObject canUseTaserTitle = Instantiate(labelTemplate, switchAttributes.transform);
+            canUseTaserTitle.transform.localPosition = new Vector3(-230f, 35f, 0f);
+            canUseTaserTitle.name = "CanUseTaserTitle";
+            canUseTaserTitle.RemoveComponent<UILocalize>();
+            canUseTaserTitle.GetComponent<UILabel>().text = "Can be shot by Taser";
+            canUseTaserTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject canUseTaserToggle = NGUI_Utils.CreateToggle(switchAttributes.transform, new Vector3(200f, 35f, 0f), new Vector3Int(48, 48, 0));
+            canUseTaserToggle.name = "CanUseTaserToggle";
+            canUseTaserToggle.GetComponent<UIToggle>().onChange.Clear();
+            var canUseTaserDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "CanUseTaser"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", canUseTaserToggle.GetComponent<UIToggle>()));
+            canUseTaserToggle.GetComponent<UIToggle>().onChange.Add(canUseTaserDelegate);
             #endregion
 
             switchAttributes.SetActive(false);
@@ -594,9 +611,13 @@ namespace FS_LevelEditor
             {
                 attrbutesPanels["Switch"].SetActive(true);
 
-                // Set wait time input field...
-                var usableOnceTiggle = attrbutesPanels["Switch"].GetChildWithName("UsableOnceToggle").GetComponent<UIToggle>();
-                usableOnceTiggle.Set((bool)objComponent.GetProperty("UsableOnce"));
+                // Set usable once toggle...
+                var usableOnceToggle = attrbutesPanels["Switch"].GetChildWithName("UsableOnceToggle").GetComponent<UIToggle>();
+                usableOnceToggle.Set((bool)objComponent.GetProperty("UsableOnce"));
+
+                // Set can use taser toggle...
+                var canUseTaserToggle = attrbutesPanels["Switch"].GetChildWithName("CanUseTaserToggle").GetComponent<UIToggle>();
+                canUseTaserToggle.Set((bool)objComponent.GetProperty("CanUseTaser"));
             }
             else
             {

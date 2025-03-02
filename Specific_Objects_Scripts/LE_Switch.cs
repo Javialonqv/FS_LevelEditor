@@ -15,7 +15,8 @@ namespace FS_LevelEditor
         {
             properties = new Dictionary<string, object>
             {
-                { "UsableOnce", false }
+                { "UsableOnce", false },
+                { "CanUseTaser", true }
             };
         }
 
@@ -93,6 +94,7 @@ namespace FS_LevelEditor
             controller.dialogToActivate = new string[0];
 
             controller.usableOnce = (bool)GetProperty("UsableOnce");
+            controller.ignoreLaser = !(bool)GetProperty("CanUseTaser");
         }
 
         public override bool SetProperty(string name, object value)
@@ -107,6 +109,19 @@ namespace FS_LevelEditor
                 else
                 {
                     Logger.Error($"Tried to set \"UsableOnce\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+            else if (name == "CanUseTaser")
+            {
+                if (value is bool)
+                {
+                    properties["CanUseTaser"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"CanUseTaser\" property with value of type \"{value.GetType().Name}\".");
                     return false;
                 }
             }
