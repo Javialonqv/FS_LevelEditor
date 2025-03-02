@@ -12,6 +12,7 @@ using System.Collections;
 using Il2CppInControl.NativeDeviceProfiles;
 using static Il2Cpp.UIAtlas;
 using FS_LevelEditor.UI_Related;
+using System.Xml.Serialization;
 
 namespace FS_LevelEditor
 {
@@ -310,6 +311,7 @@ namespace FS_LevelEditor
             CreateLightAttributesPanel();
             CreateSawAttributesPanel();
             CreateSawWaypointAttributesPanel();
+            CreateSwitchAttributesPanel();
         }
 
         void CreateNoAttributesPanel()
@@ -505,6 +507,36 @@ namespace FS_LevelEditor
             sawWaypointAttributes.SetActive(false);
             attrbutesPanels.Add("SawWaypoint", sawWaypointAttributes);
         }
+        void CreateSwitchAttributesPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject switchAttributes = new GameObject("SwitchAttributes");
+            switchAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            switchAttributes.transform.localPosition = Vector3.zero;
+            switchAttributes.transform.localScale = Vector3.one;
+
+            #region Usable Once Toggle
+            GameObject usableOnceTitle = Instantiate(labelTemplate, switchAttributes.transform);
+            usableOnceTitle.name = "UsableOnceTitle";
+            usableOnceTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            usableOnceTitle.RemoveComponent<UILocalize>();
+            usableOnceTitle.GetComponent<UILabel>().text = "Usable Once";
+            usableOnceTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject usableOnceToggle = NGUI_Utils.CreateToggle(switchAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
+            usableOnceToggle.name = "UsableOnceToggle";
+            usableOnceToggle.GetComponent<UIToggle>().onChange.Clear();
+            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "UsableOnce"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", usableOnceToggle.GetComponent<UIToggle>()));
+            usableOnceToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            #endregion
+
+            switchAttributes.SetActive(false);
+            attrbutesPanels.Add("Switch", switchAttributes);
+        }
 
         public void SetSelectedObjPanelAsNone()
         {
@@ -557,6 +589,14 @@ namespace FS_LevelEditor
                 // Set wait time input field...
                 var waitTimeInputField = attrbutesPanels["SawWaypoint"].GetChildWithName("WaitTimeInputField").GetComponent<UIInput>();
                 waitTimeInputField.text = (float)objComponent.GetProperty("WaitTime") + "";
+            }
+            else if (objComponent.objectOriginalName == "Switch")
+            {
+                attrbutesPanels["Switch"].SetActive(true);
+
+                // Set wait time input field...
+                var usableOnceTiggle = attrbutesPanels["Switch"].GetChildWithName("UsableOnceToggle").GetComponent<UIToggle>();
+                usableOnceTiggle.Set((bool)objComponent.GetProperty("UsableOnce"));
             }
             else
             {

@@ -11,6 +11,14 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Switch : LE_Object
     {
+        void Awake()
+        {
+            properties = new Dictionary<string, object>
+            {
+                { "UsableOnce", false }
+            };
+        }
+
         void Start()
         {
             if (PlayModeController.Instance != null)
@@ -83,6 +91,27 @@ namespace FS_LevelEditor
             //controller.m_onActivate_TaserOnly = new UnityEngine.Events.UnityEvent();
             controller.messagesOnActivate = new Messenger[0];
             controller.dialogToActivate = new string[0];
+
+            controller.usableOnce = (bool)GetProperty("UsableOnce");
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "UsableOnce")
+            {
+                if (value is bool)
+                {
+                    properties["UsableOnce"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"UsableOnce\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+
+            return false;
         }
     }
 }
