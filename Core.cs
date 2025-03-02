@@ -73,6 +73,7 @@ namespace FS_LevelEditor
             {
                 SpawnBase();
                 CreateDirectionalLight(new Vector3(-13f, 130f, -56f), new Vector3(45f, 180f, 0f));
+                CreatePlayerSpawn(new Vector3(-13f, 121.5f, -68f), Vector3.zero);
             }
         }
 
@@ -109,6 +110,12 @@ namespace FS_LevelEditor
         {
             GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, false);
             return lightObj;
+        }
+
+        public GameObject CreatePlayerSpawn(Vector3 position, Vector3 rotation)
+        {
+            GameObject playerSpanw = EditorController.Instance.PlaceObject("Player Spawn", position, rotation, false);
+            return playerSpanw;
         }
 
         public static GameObject LoadOtherObjectInBundle(string objectName)
