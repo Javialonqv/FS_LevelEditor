@@ -104,21 +104,21 @@ namespace FS_LevelEditor
         }
         void CreateTopButtons()
         {
-            onEnableButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 250f, 0f), new Vector3Int(480, 55, 0), "On Enable");
+            onEnableButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 300f, 0f), new Vector3Int(480, 55, 0), "On Enable");
             onEnableButton.name = "OnEnableButton";
             onEnableButton.GetComponent<UISprite>().depth = 1;
             onEnableButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnEnableBtnClick)));
             onEnableButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             onEnableButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
-            onDisableButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 250f, 0f), new Vector3Int(480, 55, 0), "On Disable");
+            onDisableButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 300f, 0f), new Vector3Int(480, 55, 0), "On Disable");
             onDisableButton.name = "OnDisableButton";
             onDisableButton.GetComponent<UISprite>().depth = 1;
             onDisableButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnDisableBtnClick)));
             onDisableButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             onDisableButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
-            onChangeButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(500f, 250f, 0f), new Vector3Int(480, 55, 0), "On Change");
+            onChangeButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(500f, 300f, 0f), new Vector3Int(480, 55, 0), "On Change");
             onChangeButton.name = "OnChangeButton";
             onChangeButton.GetComponent<UISprite>().depth = 1;
             onChangeButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnChangeBtnClick)));
@@ -145,7 +145,7 @@ namespace FS_LevelEditor
         {
             GameObject horizontalLine = Instantiate(eventsPanel.GetChildAt("Game_Options/HorizontalLine"), eventsPanel.transform);
             horizontalLine.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
-            horizontalLine.transform.localPosition = new Vector3(0f, 200f, 0f);
+            horizontalLine.transform.localPosition = new Vector3(0f, 250f, 0f);
             horizontalLine.GetComponent<UISprite>().width = 1600;
             horizontalLine.SetActive(true);
         }
