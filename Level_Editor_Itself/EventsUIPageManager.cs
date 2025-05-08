@@ -162,7 +162,7 @@ namespace FS_LevelEditor
             addEventButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(AddNewEvent)));
         }
 
-        void CreateEventsList()
+        void CreateEventsList(int eventsPage)
         {
             GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
@@ -200,7 +200,7 @@ namespace FS_LevelEditor
                     grid.cellWidth = 780f;
                     grid.cellHeight = 80f;
 
-                    if (i != 0) currentGrid.SetActive(false);
+                    currentGrid.SetActive(false);
 
                     eventsGridList.Add(currentGrid);
                 }
@@ -219,6 +219,7 @@ namespace FS_LevelEditor
                 // Remove innecesary components.
                 Destroy(eventButton.GetComponent<ButtonController>());
                 Destroy(eventButton.GetComponent<OptionsButton>());
+                Destroy(eventButton.GetComponents<UIButtonColor>()[1]);
 
                 // Set the sprite's size, as well in the BoxCollider.
                 UISprite sprite = eventButton.GetComponent<UISprite>();
@@ -302,6 +303,18 @@ namespace FS_LevelEditor
                 BoxCollider nameInputCollider = nameObj.AddComponent<BoxCollider>();
                 nameInputCollider.size = new Vector3(450f, 50f, 0f);
                 #endregion
+            }
+
+            // Enable the right grid.
+            if (eventsPage == int.MaxValue)
+            {
+                eventsGridList.Last().SetActive(true);
+                currentEventsGrid = eventsGridList.Count - 1;
+            }
+            else
+            {
+                eventsGridList[eventsPage].SetActive(true);
+                currentEventsGrid = eventsPage;
             }
 
             // Only enable the page buttons once they're are more than 1 grid (1 event page).
@@ -399,7 +412,7 @@ namespace FS_LevelEditor
 
             currentEventType = CurrentEventType.OnEnable;
 
-            CreateEventsList();
+            CreateEventsList(0);
         }
         void OnDisableBtnClick()
         {
@@ -409,7 +422,7 @@ namespace FS_LevelEditor
 
             currentEventType = CurrentEventType.OnDisable;
 
-            CreateEventsList();
+            CreateEventsList(0);
         }
         void OnChangeBtnClick()
         {
@@ -419,7 +432,7 @@ namespace FS_LevelEditor
 
             currentEventType = CurrentEventType.OnChange;
 
-            CreateEventsList();
+            CreateEventsList(0);
         }
         void AddNewEvent()
         {
@@ -438,7 +451,8 @@ namespace FS_LevelEditor
                     break;
             }
 
-            CreateEventsList();
+            // The int max value will stand for "the last damn grid you find!"
+            CreateEventsList(int.MaxValue);
         }
         void PreviousEventsPage()
         {
