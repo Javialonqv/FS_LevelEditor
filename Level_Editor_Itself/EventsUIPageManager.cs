@@ -22,6 +22,7 @@ namespace FS_LevelEditor
         GameObject eventsButtonsParent;
         GameObject occluder;
         GameObject previousEventPageButton, nextEventPageButton;
+        GameObject currentEventPageLabel;
 
         GameObject onEnableButton;
         GameObject onDisableButton;
@@ -172,12 +173,13 @@ namespace FS_LevelEditor
             {
                 CreatePreviousEventsPageButton();
                 CreateNextEventsPageButton();
+                CreateCurrentEventsPageLabel();
             }
 
             List<LE_Event> events = GetEventsList();
 
-            // Destroy the whole grids, but skip the first two objects which are the previous & next event page buttons.
-            for (int i = 2; i < eventsListBg.transform.childCount; i++)
+            // Destroy the whole grids, but skip the first three objects which are the previous & next event page buttons AND the current page label.
+            for (int i = 3; i < eventsListBg.transform.childCount; i++)
             {
                 Destroy(eventsListBg.transform.GetChild(i).gameObject);
             }
@@ -319,13 +321,15 @@ namespace FS_LevelEditor
                 currentEventsGrid = eventsPage;
             }
 
-            // Only enable the page buttons once they're are more than 1 grid (1 event page).
+            // Only enable the page buttons and the page label once they're are more than 1 grid (1 event page).
             previousEventPageButton.SetActive(eventsGridList.Count > 1);
             nextEventPageButton.SetActive(eventsGridList.Count > 1);
+            currentEventPageLabel.SetActive(eventsGridList.Count > 1);
 
-            // Update the state of the page buttons in case now they're enabled.
+            // Update the state of the page buttons and the page label in case now they're enabled.
             previousEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid > 0;
             nextEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid < eventsGridList.Count - 1;
+            currentEventPageLabel.GetComponent<UILabel>().text = GetCurrentEventPageText();
         }
         void CreatePreviousEventsPageButton()
         {
@@ -397,6 +401,27 @@ namespace FS_LevelEditor
             button.onClick.Clear();
             button.onClick.Add(new EventDelegate(this, nameof(NextEventsPage)));
         }
+        void CreateCurrentEventsPageLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            currentEventPageLabel = Instantiate(labelTemplate, eventsListBg.transform);
+            currentEventPageLabel.name = "CurrentEventPageLabel";
+            currentEventPageLabel.transform.localScale = Vector3.one;
+
+            Destroy(currentEventPageLabel.GetComponent<UILocalize>());
+
+            UILabel label = currentEventPageLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 30;
+            label.width = 800;
+            label.fontSize = 30;
+            label.text = "0/0";
+
+            // Change the label position AFTER changing the pivot.
+            currentEventPageLabel.transform.localPosition = new Vector3(0f, 300f, 0f);
+        }
 
         void RenameEvent(int eventID, UIInput inputRef)
         {
@@ -465,9 +490,10 @@ namespace FS_LevelEditor
             eventsGridList.ForEach(x => x.SetActive(false));
             eventsGridList[currentEventsGrid].SetActive(true);
 
-            // Update the state of the page buttons.
+            // Update the state of the page buttons AND the current events page label.
             previousEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid > 0;
             nextEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid < eventsGridList.Count - 1;
+            currentEventPageLabel.GetComponent<UILabel>().text = GetCurrentEventPageText();
         }
         void NextEventsPage()
         {
@@ -478,9 +504,14 @@ namespace FS_LevelEditor
             eventsGridList.ForEach(x => x.SetActive(false));
             eventsGridList[currentEventsGrid].SetActive(true);
 
-            // Update the state of the page buttons.
+            // Update the state of the page buttons AND the current events page label.
             previousEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid > 0;
             nextEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid < eventsGridList.Count - 1;
+            currentEventPageLabel.GetComponent<UILabel>().text = GetCurrentEventPageText();
+        }
+        string GetCurrentEventPageText()
+        {
+            return (currentEventsGrid + 1) + "/" + (eventsGridList.Count);
         }
 
         public void ShowEventsPage(LE_Object targetObj)
