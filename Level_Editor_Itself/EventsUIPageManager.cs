@@ -518,6 +518,9 @@ namespace FS_LevelEditor
         {
             this.targetObj = targetObj;
 
+            // Change the title of the panel.
+            eventsPanel.transform.GetChild(2).GetComponent<UILabel>().text = "Events for " + targetObj.objectFullNameWithID;
+
             eventsPanel.SetActive(true);
             eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
             Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
