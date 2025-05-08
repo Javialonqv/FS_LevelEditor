@@ -108,16 +108,22 @@ namespace FS_LevelEditor
             onEnableButton.name = "OnEnableButton";
             onEnableButton.GetComponent<UISprite>().depth = 1;
             onEnableButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnEnableBtnClick)));
+            onEnableButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            onEnableButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
             onDisableButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 250f, 0f), new Vector3Int(480, 55, 0), "On Disable");
             onDisableButton.name = "OnDisableButton";
             onDisableButton.GetComponent<UISprite>().depth = 1;
             onDisableButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnDisableBtnClick)));
+            onDisableButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            onDisableButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
             onChangeButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(500f, 250f, 0f), new Vector3Int(480, 55, 0), "On Change");
             onChangeButton.name = "OnChangeButton";
             onChangeButton.GetComponent<UISprite>().depth = 1;
             onChangeButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnChangeBtnClick)));
+            onChangeButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            onChangeButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
         }
         void CreateEventsListBackground()
         {
@@ -148,8 +154,8 @@ namespace FS_LevelEditor
             GameObject addEventButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-400f, -388f, 0f), new Vector3Int(800, 50, 0), "+ Add New Event");
             addEventButton.name = "AddEventButton";
             addEventButton.GetComponent<UISprite>().depth = 1;
-            addEventButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            addEventButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+            addEventButton.GetComponent<UIButtonScale>().hover = Vector3.one;
+            addEventButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
             addEventButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(AddNewEvent)));
         }
         void CreateEventsList()
