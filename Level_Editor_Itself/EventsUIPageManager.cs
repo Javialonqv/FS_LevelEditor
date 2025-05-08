@@ -21,6 +21,7 @@ namespace FS_LevelEditor
         GameObject eventsPanel;
         GameObject eventsButtonsParent;
         GameObject occluder;
+        GameObject previousEventPageButton, nextEventPageButton;
 
         GameObject onEnableButton;
         GameObject onDisableButton;
@@ -47,6 +48,8 @@ namespace FS_LevelEditor
                 Instance.CreateEventsListBackground();
                 Instance.CreateDetails();
                 Instance.CreateAddEventButton();
+
+                // The event page buttons are created inside of the CreateEventsList() function, but only once.
             }
         }
 
@@ -158,14 +161,26 @@ namespace FS_LevelEditor
             addEventButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
             addEventButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(AddNewEvent)));
         }
+
         void CreateEventsList()
         {
             GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
+            // Create page buttons in case they don't exist yet.
+            if (previousEventPageButton == null && nextEventPageButton == null)
+            {
+                CreatePreviousEventsPageButton();
+                CreateNextEventsPageButton();
+            }
+
             List<LE_Event> events = GetEventsList();
 
-            eventsListBg.DeleteAllChildren();
+            // Destroy the whole grids, but skip the first two objects which are the previous & next event page buttons.
+            for (int i = 2; i < eventsListBg.transform.childCount; i++)
+            {
+                Destroy(eventsListBg.transform.GetChild(i).gameObject);
+            }
             eventsGridList.Clear();
 
             GameObject currentGrid = null;
@@ -289,42 +304,83 @@ namespace FS_LevelEditor
                 #endregion
             }
 
-            CreatePreviousAndNextEventsPageButtons();
+            // Only enable the page buttons once they're are more than 1 grid (1 event page).
+            previousEventPageButton.SetActive(eventsGridList.Count > 1);
+            nextEventPageButton.SetActive(eventsGridList.Count > 1);
+
+            // Update the state of the page buttons in case now they're enabled.
+            previousEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid > 0;
+            nextEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid < eventsGridList.Count - 1;
         }
-        void CreatePreviousAndNextEventsPageButtons()
+        void CreatePreviousEventsPageButton()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+            // Create the button.
+            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            previousEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
+            previousEventPageButton.name = "PreviousEventsPageButton";
+            previousEventPageButton.transform.localPosition = new Vector3(-430f, 0f, 0f);
 
-            GameObject previousButton = new GameObject("PreviousEventsPageButton");
-            previousButton.transform.parent = eventsListBg.transform;
-            previousButton.transform.localScale = Vector3.one;
-            previousButton.transform.localPosition = new Vector3(-435f, 0f, 0f);
-            previousButton.layer = LayerMask.NameToLayer("2D GUI");
+            // Remove unnecesary components.
+            GameObject.Destroy(previousEventPageButton.GetComponent<ButtonController>());
+            GameObject.Destroy(previousEventPageButton.GetComponent<OptionsButton>());
+            GameObject.Destroy(previousEventPageButton.GetComponent<FractalTooltip>());
 
-            UILabel previousButtonLabel = previousButton.AddComponent<UILabel>();
-            previousButtonLabel.font = labelTemplate?.GetComponent<UILabel>().font;
-            previousButtonLabel.fontSize = 80;
-            previousButtonLabel.width = 100;
-            previousButtonLabel.height = 100;
-            previousButtonLabel.depth = 3;
-            previousButtonLabel.text = "<";
+            // Adjust the sprite and the collider as well.
+            UISprite sprite = previousEventPageButton.GetComponent<UISprite>();
+            sprite.width = 50;
+            sprite.height = 50;
+            sprite.depth = 1;
+            BoxCollider collider = previousEventPageButton.GetComponent<BoxCollider>();
+            collider.size = new Vector3(50f, 50f);
 
-            UIButton previousButtonScript = previousButton.AddComponent<UIButton>();
-            previousButtonScript.onClick.Add(new EventDelegate(this, nameof(PreviousEventsPage)));
+            // Adjust the label, removing the FUCKING UILocalize.
+            GameObject.Destroy(previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            UILabel label = previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
+            label.depth = 2;
+            label.width = 60;
+            label.height = 60;
+            label.fontSize = 40;
+            label.text = "<";
 
-            BoxCollider previousButtonCollider = previousButton.AddComponent<BoxCollider>();
-            previousButtonCollider.size = new Vector3(50f, 50f, 0f);
+            // Set the button on click action.
+            UIButton button = previousEventPageButton.GetComponent<UIButton>();
+            button.onClick.Clear();
+            button.onClick.Add(new EventDelegate(this, nameof(PreviousEventsPage)));
+        }
+        void CreateNextEventsPageButton()
+        {
+            // Create the button.
+            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            nextEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
+            nextEventPageButton.name = "PreviousEventsPageButton";
+            nextEventPageButton.transform.localPosition = new Vector3(430f, 0f, 0f);
 
-            GameObject nextButton = Instantiate(previousButton, eventsListBg.transform);
-            nextButton.transform.localPosition = new Vector3(435f, 0f, 0f);
-            nextButton.layer = LayerMask.NameToLayer("2D GUI");
+            // Remove unnecesary components.
+            GameObject.Destroy(nextEventPageButton.GetComponent<ButtonController>());
+            GameObject.Destroy(nextEventPageButton.GetComponent<OptionsButton>());
+            GameObject.Destroy(nextEventPageButton.GetComponent<FractalTooltip>());
 
-            UILabel nextButtonLabel = nextButton.GetComponent<UILabel>();
-            nextButtonLabel.text = ">";
+            // Adjust the sprite and the collider as well.
+            UISprite sprite = nextEventPageButton.GetComponent<UISprite>();
+            sprite.width = 50;
+            sprite.height = 50;
+            sprite.depth = 1;
+            BoxCollider collider = nextEventPageButton.GetComponent<BoxCollider>();
+            collider.size = new Vector3(50f, 50f);
 
-            UIButton nextButtonScript = nextButton.GetComponent<UIButton>();
-            nextButtonScript.onClick.Clear();
-            nextButtonScript.onClick.Add(new EventDelegate(this, nameof(NextEventsPage)));
+            // Adjust the label, removing the FUCKING UILocalize.
+            GameObject.Destroy(nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            UILabel label = nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
+            label.depth = 2;
+            label.width = 60;
+            label.height = 60;
+            label.fontSize = 40;
+            label.text = ">";
+
+            // Set the button on click action.
+            UIButton button = nextEventPageButton.GetComponent<UIButton>();
+            button.onClick.Clear();
+            button.onClick.Add(new EventDelegate(this, nameof(NextEventsPage)));
         }
 
         void RenameEvent(int eventID, UIInput inputRef)
@@ -392,6 +448,10 @@ namespace FS_LevelEditor
 
             eventsGridList.ForEach(x => x.SetActive(false));
             eventsGridList[currentEventsGrid].SetActive(true);
+
+            // Update the state of the page buttons.
+            previousEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid > 0;
+            nextEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid < eventsGridList.Count - 1;
         }
         void NextEventsPage()
         {
@@ -401,6 +461,10 @@ namespace FS_LevelEditor
 
             eventsGridList.ForEach(x => x.SetActive(false));
             eventsGridList[currentEventsGrid].SetActive(true);
+
+            // Update the state of the page buttons.
+            previousEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid > 0;
+            nextEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid < eventsGridList.Count - 1;
         }
 
         public void ShowEventsPage(LE_Object targetObj)
