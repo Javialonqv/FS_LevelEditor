@@ -219,6 +219,8 @@ namespace FS_LevelEditor
                 // Remove innecesary components.
                 Destroy(eventButton.GetComponent<ButtonController>());
                 Destroy(eventButton.GetComponent<OptionsButton>());
+                // Remove the SECOND UIButtonColor component, and then I ask, why did Charles add TWO UIButtonColor to the buttons
+                // if they target to the same object?
                 Destroy(eventButton.GetComponents<UIButtonColor>()[1]);
 
                 // Set the sprite's size, as well in the BoxCollider.
