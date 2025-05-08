@@ -354,5 +354,20 @@ namespace FS_LevelEditor
 
             return value;
         }
+
+        public enum FS_UISound
+        {
+            POPUP_UI_SHOW,
+            POPUP_UI_HIDE
+        }
+        public static void PlayFSUISound(FS_UISound sound)
+        {
+            if (sound == FS_UISound.POPUP_UI_SHOW || sound == FS_UISound.POPUP_UI_HIDE)
+            {
+                PopupController popup = GameObject.Find("MainMenu/Camera/Holder/Popup").GetComponent<PopupController>();
+                AudioClip toPlay = sound == FS_UISound.POPUP_UI_SHOW ? popup.showPopupSound : popup.hidePopupSound;
+                popup.audioSourceToUse.PlayOneShot(toPlay);
+            }
+        }
     }
 }
