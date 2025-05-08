@@ -21,7 +21,7 @@ namespace FS_LevelEditor
     {
         public static EditorUIManager Instance;
 
-        GameObject editorUIParent;
+        public GameObject editorUIParent;
 
         public List<GameObject> categoryButtons = new List<GameObject>();
         public GameObject categoryButtonsParent;
@@ -30,13 +30,13 @@ namespace FS_LevelEditor
         public GameObject currentCategoryBG;
         List<GameObject> currentCategoryButtons = new List<GameObject>();
 
-        GameObject selectedObjPanel;
+        public GameObject selectedObjPanel;
         Dictionary<string, GameObject> attrbutesPanels = new Dictionary<string, GameObject>();
 
         GameObject savingLevelLabel;
         GameObject savingLevelLabelInPauseMenu;
         Coroutine savingLevelLabelRoutine;
-        UILabel currentModeLabel;
+        public UILabel currentModeLabel;
         GameObject onExitPopupBackButton;
         GameObject onExitPopupSaveAndExitButton;
         GameObject onExitPopupExitButton;
@@ -95,6 +95,8 @@ namespace FS_LevelEditor
             CreateSavingLevelLabel();
             CreateCurrentModeLabel();
             CreateHelpPanel();
+
+            EventsUIPageManager.Create();
 
             // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
@@ -549,6 +551,17 @@ namespace FS_LevelEditor
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "CanUseTaser"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "toggle", canUseTaserToggle.GetComponent<UIToggle>()));
             canUseTaserToggle.GetComponent<UIToggle>().onChange.Add(canUseTaserDelegate);
+            #endregion
+
+            #region Manage Events
+            GameObject manageEvents = NGUI_Utils.CreateButton(switchAttributes.transform, new Vector3(0f, -20f, 0f), new Vector3Int(480, 55, 0), "Manage Events");
+            manageEvents.name = "ManageEventsButton";
+            manageEvents.GetComponent<UIButton>().onClick.Clear();
+            var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
+                NGUI_Utils.CreateEventDelegateParamter(this, "actionName", "ManageEvents"));
+            manageEvents.GetComponent<UIButton>().onClick.Add(addWaypointDelegate);
+            manageEvents.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            manageEvents.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
             #endregion
 
             switchAttributes.SetActive(false);

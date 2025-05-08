@@ -350,6 +350,7 @@
 		<Compile Include="Core.cs" />
 		<Compile Include="Level_Editor_Itself\EditorCameraMovement.cs" />
 		<Compile Include="Level_Editor_Itself\EditorController.cs" />
+		<Compile Include="Level_Editor_Itself\EventsUIPageManager.cs" />
 		<Compile Include="LE_MenuUIManager.cs" />
 		<Compile Include="ExternalSpriteLoader.cs" />
 		<Compile Include="Logger.cs" />

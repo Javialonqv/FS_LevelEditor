@@ -97,6 +97,12 @@ namespace FS_LevelEditor
             // Shortcut for pausing LE.
             if (Input.GetKeyDown(KeyCode.Escape))
             {
+                if (EventsUIPageManager.Instance.isShowingPage)
+                {
+                    EventsUIPageManager.Instance.HideEventsPage();
+                    return;
+                }
+
                 if (!isEditorPaused)
                 {
                     EditorUIManager.Instance.ShowPause();
@@ -107,7 +113,7 @@ namespace FS_LevelEditor
                 }
             }
 
-            if (isEditorPaused) return;
+            if (isEditorPaused || EventsUIPageManager.Instance.isShowingPage) return;
 
             // When click, check if it's clicking a gizmos arrow.
             if (Input.GetMouseButtonDown(0))

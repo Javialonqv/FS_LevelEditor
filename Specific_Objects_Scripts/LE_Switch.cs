@@ -16,7 +16,10 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>
             {
                 { "UsableOnce", false },
-                { "CanUseTaser", true }
+                { "CanUseTaser", true },
+                { "OnEnableEvents", new List<LE_Event>() },
+                { "OnDisableEvents", new List<LE_Event>() },
+                { "OnChangeEvents", new List<LE_Event>() }
             };
         }
 
@@ -124,6 +127,38 @@ namespace FS_LevelEditor
                     Logger.Error($"Tried to set \"CanUseTaser\" property with value of type \"{value.GetType().Name}\".");
                     return false;
                 }
+            }
+            else if (name == "OnEnableEvents")
+            {
+                if (value is List<LE_Event>)
+                {
+                    properties["OnEnableEvents"] = (List<LE_Event>)value;
+                }
+            }
+            else if (name == "OnDisableEvents")
+            {
+                if (value is List<LE_Event>)
+                {
+                    properties["OnDisableEvents"] = (List<LE_Event>)value;
+                }
+            }
+            else if (name == "OnChangeEvents")
+            {
+                if (value is List<LE_Event>)
+                {
+                    properties["OnChangeEvents"] = (List<LE_Event>)value;
+                }
+            }
+
+            return false;
+        }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "ManageEvents")
+            {
+                EventsUIPageManager.Instance.ShowEventsPage(this);
+                return true;
             }
 
             return false;
