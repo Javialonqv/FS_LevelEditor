@@ -477,7 +477,8 @@ namespace FS_LevelEditor
 
             isShowingPage = true;
 
-            CreateEventsList();
+            OnEnableBtnClick();
+            // CreateEventsList();
         }
 
         public void HideEventsPage()
