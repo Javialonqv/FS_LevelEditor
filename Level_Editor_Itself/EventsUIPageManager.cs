@@ -32,8 +32,12 @@ namespace FS_LevelEditor
         List<GameObject> eventsGridList = new List<GameObject>();
         int currentEventsGrid = 0;
 
+        GameObject eventSettingsPanel;
+        UIInput targetObjInputField;
+
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
         CurrentEventType currentEventType;
+        LE_Event currentSelectedEvent;
 
         public bool isShowingPage;
 
@@ -51,6 +55,10 @@ namespace FS_LevelEditor
                 Instance.CreateAddEventButton();
 
                 // The event page buttons are created inside of the CreateEventsList() function, but only once.
+
+                Instance.CreateEventSettingsPanel();
+                Instance.CreateTargetObjectINSTRUCTIONLabel();
+                Instance.CreateTargetObjectInputField();
             }
         }
 
@@ -152,6 +160,12 @@ namespace FS_LevelEditor
             horizontalLine.transform.localPosition = new Vector3(0f, 250f, 0f);
             horizontalLine.GetComponent<UISprite>().width = 1600;
             horizontalLine.SetActive(true);
+
+            GameObject verticalLine = Instantiate(eventsPanel.GetChildAt("Game_Options/VerticalLine"), eventsPanel.transform);
+            verticalLine.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
+            verticalLine.transform.localPosition = new Vector3(70f, -100f, 0f);
+            verticalLine.GetComponent<UISprite>().height = 580;
+            verticalLine.SetActive(true);
         }
         void CreateAddEventButton()
         {
@@ -241,6 +255,12 @@ namespace FS_LevelEditor
 
                 // Destroy the "original" label, since it's going to be replaced with the other name label.
                 Destroy(eventButton.GetChildAt("Background/Label"));
+
+                UIButton button = eventButton.GetComponent<UIButton>();
+                button.onClick.Clear();
+                EventDelegate.Parameter buttonParm = NGUI_Utils.CreateEventDelegateParamter(this, "selectedID", i);
+                EventDelegate buttonDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(OnEventSelect), buttonParm);
+                button.onClick.Add(buttonDelegate);
 
                 //#region Delete Button
                 //GameObject deleteObj = new GameObject("DeleteButton");
@@ -439,6 +459,7 @@ namespace FS_LevelEditor
 
             currentEventType = CurrentEventType.OnEnable;
 
+            HideEventSettings();
             CreateEventsList(0);
         }
         void OnDisableBtnClick()
@@ -449,6 +470,7 @@ namespace FS_LevelEditor
 
             currentEventType = CurrentEventType.OnDisable;
 
+            HideEventSettings();
             CreateEventsList(0);
         }
         void OnChangeBtnClick()
@@ -459,6 +481,7 @@ namespace FS_LevelEditor
 
             currentEventType = CurrentEventType.OnChange;
 
+            HideEventSettings();
             CreateEventsList(0);
         }
         void AddNewEvent()
@@ -513,6 +536,120 @@ namespace FS_LevelEditor
         {
             return (currentEventsGrid + 1) + "/" + (eventsGridList.Count);
         }
+        void OnEventSelect(int selectedID)
+        {
+            // GetEventsList should return the same events list that when creating the events list, it should be fine :)
+            // *Comment copied from RenameEvent() LOL.
+            currentSelectedEvent = GetEventsList()[selectedID];
+            ShowEventSettings();
+        }
+
+        void CreateEventSettingsPanel()
+        {
+            eventSettingsPanel = new GameObject("EventSettings");
+            eventSettingsPanel.transform.parent = eventsPanel.transform;
+            eventSettingsPanel.transform.localScale = Vector3.one;
+            eventSettingsPanel.transform.localPosition = new Vector3(465f, -80f, 0f);
+            eventSettingsPanel.layer = LayerMask.NameToLayer("2D GUI");
+
+            UIPanel panel = eventSettingsPanel.AddComponent<UIPanel>();
+            panel.depth = 2;
+
+            eventSettingsPanel.SetActive(false);
+        }
+        void CreateTargetObjectINSTRUCTIONLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject targetObjectLabel = Instantiate(labelTemplate, eventSettingsPanel.transform);
+            targetObjectLabel.name = "TargetObjectLabel";
+            targetObjectLabel.transform.localScale = Vector3.one;
+
+            Destroy(targetObjectLabel.GetComponent<UILocalize>());
+
+            UILabel label = targetObjectLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 30;
+            label.width = 800;
+            label.fontSize = 30;
+            label.text = "Enter the target object name:";
+
+            // Change the label position AFTER changing the pivot.
+            targetObjectLabel.transform.localPosition = new Vector3(0f, 290f, 0f);
+        }
+        void CreateTargetObjectInputField()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject targetObjField = new GameObject("TargetObjectInputField");
+            targetObjField.transform.parent = eventSettingsPanel.transform;
+            targetObjField.transform.localScale = Vector3.one;
+            targetObjField.transform.localPosition = new Vector3(0f, 230f, 0f);
+            targetObjField.layer = LayerMask.NameToLayer("2D GUI");
+
+            UISprite bgSprite = targetObjField.AddComponent<UISprite>();
+            bgSprite.atlas = occluder.GetComponent<UISprite>().atlas;
+            bgSprite.spriteName = "Square";
+            bgSprite.width = 510;
+            bgSprite.height = 70;
+            bgSprite.depth = 2;
+            bgSprite.color = Color.black;
+
+            UISprite mainSprite = targetObjField.AddComponent<UISprite>();
+            mainSprite.atlas = occluder.GetComponent<UISprite>().atlas;
+            mainSprite.spriteName = "Square";
+            mainSprite.width = 500;
+            mainSprite.height = 60;
+            mainSprite.depth = 3;
+            mainSprite.color = new Color(0.0509f, 0.3333f, 0.3764f);
+
+            UILabel label = targetObjField.AddComponent<UILabel>();
+            label.font = labelTemplate.GetComponent<UILabel>().font;
+            label.width = 490;
+            label.height = 60;
+            label.depth = 4;
+            label.color = Color.white;
+            label.fontSize = 34;
+
+            targetObjInputField = targetObjField.AddComponent<UIInput>();
+            targetObjInputField.label = label;
+            EventDelegate.Parameter inputScriptParm1 = NGUI_Utils.CreateEventDelegateParamter(this, "input", targetObjInputField);
+            EventDelegate.Parameter inputScriptParm2 = NGUI_Utils.CreateEventDelegateParamter(this, "fieldSprite", mainSprite);
+            EventDelegate inputScriptDelegate =
+                NGUI_Utils.CreateEvenDelegate(this, nameof(OnTargetObjectFieldChanged), inputScriptParm1, inputScriptParm2);
+            targetObjInputField.onChange.Add(inputScriptDelegate);
+
+            BoxCollider collider = targetObjField.AddComponent<BoxCollider>();
+            collider.size = new Vector3(500, 60);
+        }
+
+        void ShowEventSettings()
+        {
+            targetObjInputField.text = currentSelectedEvent.targetObjName;
+
+            eventSettingsPanel.SetActive(true);
+        }
+        void HideEventSettings()
+        {
+            currentSelectedEvent = null;
+            eventSettingsPanel.SetActive(false);
+        }
+        void OnTargetObjectFieldChanged(UIInput input, UISprite fieldSprite)
+        {
+            string inputText = input.text;
+
+            if (EditorController.Instance.currentInstantiatedObjects.Find(obj => obj.name == inputText))
+            {
+                fieldSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
+            }
+            else
+            {
+                fieldSprite.color = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
+            }
+
+            currentSelectedEvent.targetObjName = inputText;
+        }
 
         public void ShowEventsPage(LE_Object targetObj)
         {
@@ -539,6 +676,8 @@ namespace FS_LevelEditor
             eventsPanel.SetActive(true);
             GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
             isShowingPage = false;
+
+            HideEventSettings();
         }
 
         List<LE_Event> GetEventsList()
@@ -564,6 +703,5 @@ public class LE_Event
 {
     // Yeah, why should I put a name to a freaking event? Dunno, may be useful :)
     public string eventName { get; set; } = "New Event";
-
     public string targetObjName { get; set; } = "";
 }
