@@ -24,8 +24,8 @@ namespace FS_LevelEditor
         GameObject previousEventPageButton, nextEventPageButton;
         GameObject currentEventPageLabel;
 
-        GameObject onEnableButton;
-        GameObject onDisableButton;
+        GameObject onActivatedButton;
+        GameObject onDeactivatedButton;
         GameObject onChangeButton;
 
         GameObject eventsListBg;
@@ -120,19 +120,19 @@ namespace FS_LevelEditor
         }
         void CreateTopButtons()
         {
-            onEnableButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 300f, 0f), new Vector3Int(480, 55, 0), "On Enable");
-            onEnableButton.name = "OnEnableButton";
-            onEnableButton.GetComponent<UISprite>().depth = 1;
-            onEnableButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnEnableBtnClick)));
-            onEnableButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            onEnableButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            onActivatedButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 300f, 0f), new Vector3Int(480, 55, 0), "On Activated");
+            onActivatedButton.name = "OnActivatedButton";
+            onActivatedButton.GetComponent<UISprite>().depth = 1;
+            onActivatedButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnEnableBtnClick)));
+            onActivatedButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            onActivatedButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
-            onDisableButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 300f, 0f), new Vector3Int(480, 55, 0), "On Disable");
-            onDisableButton.name = "OnDisableButton";
-            onDisableButton.GetComponent<UISprite>().depth = 1;
-            onDisableButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnDisableBtnClick)));
-            onDisableButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            onDisableButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            onDeactivatedButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 300f, 0f), new Vector3Int(480, 55, 0), "On Deactivated");
+            onDeactivatedButton.name = "OnDeactivatedButton";
+            onDeactivatedButton.GetComponent<UISprite>().depth = 1;
+            onDeactivatedButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnDisableBtnClick)));
+            onDeactivatedButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            onDeactivatedButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
             onChangeButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(500f, 300f, 0f), new Vector3Int(480, 55, 0), "On Change");
             onChangeButton.name = "OnChangeButton";
@@ -499,8 +499,8 @@ namespace FS_LevelEditor
         }
         void OnEnableBtnClick()
         {
-            onEnableButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-            onDisableButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 
             currentEventType = CurrentEventType.OnEnable;
@@ -510,8 +510,8 @@ namespace FS_LevelEditor
         }
         void OnDisableBtnClick()
         {
-            onEnableButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            onDisableButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
             onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 
             currentEventType = CurrentEventType.OnDisable;
@@ -521,8 +521,8 @@ namespace FS_LevelEditor
         }
         void OnChangeBtnClick()
         {
-            onEnableButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            onDisableButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
 
             currentEventType = CurrentEventType.OnChange;
@@ -535,11 +535,11 @@ namespace FS_LevelEditor
             switch (currentEventType)
             {
                 case CurrentEventType.OnEnable:
-                    ((List<LE_Event>)targetObj.properties["OnEnableEvents"]).Add(new LE_Event());
+                    ((List<LE_Event>)targetObj.properties["OnActivatedEvents"]).Add(new LE_Event());
                     break;
 
                 case CurrentEventType.OnDisable:
-                    ((List<LE_Event>)targetObj.properties["OnDisableEvents"]).Add(new LE_Event());
+                    ((List<LE_Event>)targetObj.properties["OnDeactivatedEvents"]).Add(new LE_Event());
                     break;
 
                 case CurrentEventType.OnChange:
@@ -772,10 +772,10 @@ namespace FS_LevelEditor
             switch (currentEventType)
             {
                 case CurrentEventType.OnEnable:
-                    return (List<LE_Event>)targetObj.GetProperty("OnEnableEvents");
+                    return (List<LE_Event>)targetObj.GetProperty("OnActivatedEvents");
 
                 case CurrentEventType.OnDisable:
-                    return (List<LE_Event>)targetObj.GetProperty("OnDisableEvents");
+                    return (List<LE_Event>)targetObj.GetProperty("OnDeactivatedEvents");
 
                 case CurrentEventType.OnChange:
                     return (List<LE_Event>)targetObj.GetProperty("OnChangeEvents");

@@ -19,9 +19,9 @@ namespace FS_LevelEditor
             {
                 { "UsableOnce", false },
                 { "CanUseTaser", true },
-                { "OnEnableEvents", new List<LE_Event>() },
-                { "OnDisableEvents", new List<LE_Event>() },
-                { "OnChangeEvents", new List<LE_Event>() }
+                { "OnActivatedEvents", new List<LE_Event>() },
+                { "OnDeactivatedEvents", new List<LE_Event>() },
+                { "OnToEvents", new List<LE_Event>() }
             };
         }
 
@@ -132,18 +132,18 @@ namespace FS_LevelEditor
                     return false;
                 }
             }
-            else if (name == "OnEnableEvents")
+            else if (name == "OnActivatedEvents")
             {
                 if (value is List<LE_Event>)
                 {
-                    properties["OnEnableEvents"] = (List<LE_Event>)value;
+                    properties["OnActivatedEvents"] = (List<LE_Event>)value;
                 }
             }
-            else if (name == "OnDisableEvents")
+            else if (name == "OnDeactivatedEvents")
             {
                 if (value is List<LE_Event>)
                 {
-                    properties["OnDisableEvents"] = (List<LE_Event>)value;
+                    properties["OnDeactivatedEvents"] = (List<LE_Event>)value;
                 }
             }
             else if (name == "OnChangeEvents")
@@ -171,17 +171,17 @@ namespace FS_LevelEditor
         void ConfigureEvents(InterrupteurController controller)
         {
             controller.m_onActivate = new UnityEngine.Events.UnityEvent();
-            controller.m_onActivate.AddListener((UnityAction)ExecuteOnEnableEvents);
+            controller.m_onActivate.AddListener((UnityAction)ExecuteOnActivatedEvents);
             controller.m_onActivate.AddListener((UnityAction)ExecuteOnChangeEvents);
 
             controller.m_onDeactivate = new UnityEngine.Events.UnityEvent();
-            controller.m_onDeactivate.AddListener((UnityAction)ExecuteOnDisableEvents);
+            controller.m_onDeactivate.AddListener((UnityAction)ExecuteOnDeactivatedEvents);
             controller.m_onDeactivate.AddListener((UnityAction)ExecuteOnChangeEvents);
         }
 
-        void ExecuteOnEnableEvents()
+        void ExecuteOnActivatedEvents()
         {
-            foreach (LE_Event @event in ((List<LE_Event>)properties["OnEnableEvents"]))
+            foreach (LE_Event @event in ((List<LE_Event>)properties["OnActivatedEvents"]))
             {
                 LE_Object targetObj =
                     PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.name == @event.targetObjName);
@@ -202,9 +202,9 @@ namespace FS_LevelEditor
                 }
             }
         }
-        void ExecuteOnDisableEvents()
+        void ExecuteOnDeactivatedEvents()
         {
-            foreach (LE_Event @event in ((List<LE_Event>)properties["OnDisableEvents"]))
+            foreach (LE_Event @event in ((List<LE_Event>)properties["OnDeactivatedEvents"]))
             {
                 LE_Object targetObj =
                     PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.name == @event.targetObjName);
