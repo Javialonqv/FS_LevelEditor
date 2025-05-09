@@ -42,7 +42,7 @@ namespace FS_LevelEditor
 
         public void SetTitle(string title)
         {
-            popupScript.gameObject.GetChildWithName("LanguageTite").GetComponent<UILabel>().text = "Set Active";
+            popupScript.gameObject.GetChildWithName("LanguageTite").GetComponent<UILabel>().text = title;
         }
 
         public void ClearOptions()
