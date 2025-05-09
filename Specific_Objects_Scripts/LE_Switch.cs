@@ -21,7 +21,7 @@ namespace FS_LevelEditor
                 { "CanUseTaser", true },
                 { "OnActivatedEvents", new List<LE_Event>() },
                 { "OnDeactivatedEvents", new List<LE_Event>() },
-                { "OnToEvents", new List<LE_Event>() }
+                { "OnChangeEvents", new List<LE_Event>() }
             };
         }
 
@@ -185,11 +185,11 @@ namespace FS_LevelEditor
         }
         void ExecuteOnDeactivatedEvents()
         {
-            ExecuteEvents((List<LE_Event>)properties["OnDisabledEvents"]);
+            ExecuteEvents((List<LE_Event>)properties["OnDeactivatedEvents"]);
         }
         void ExecuteOnChangeEvents()
         {
-            ExecuteEvents((List<LE_Event>)properties["OnActivatedEvents"]);
+            ExecuteEvents((List<LE_Event>)properties["OnChangeEvents"]);
         }
 
         void ExecuteEvents(List<LE_Event> events)
@@ -197,7 +197,7 @@ namespace FS_LevelEditor
             foreach (LE_Event @event in events)
             {
                 LE_Object targetObj =
-                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.name == @event.targetObjName);
+                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.objectFullNameWithID == @event.targetObjName);
 
                 switch (@event.setActive)
                 {
@@ -212,6 +212,24 @@ namespace FS_LevelEditor
                     case LE_Event.SetActiveState.Toggle:
                         targetObj.gameObject.SetActive(!targetObj.gameObject.activeSelf);
                         break;
+                }
+
+                if (targetObj is LE_Saw)
+                {
+                    switch (@event.sawState)
+                    {
+                        case LE_Event.SawState.Activate:
+                            ((LE_Saw)targetObj).TriggerAction("Activate");
+                            break;
+
+                        case LE_Event.SawState.Deactivate:
+                            ((LE_Saw)targetObj).TriggerAction("Deactivate");
+                            break;
+
+                        case LE_Event.SawState.Toggle_State:
+                            ((LE_Saw)targetObj).TriggerAction("ToggleActivated");
+                            break;
+                    }
                 }
             }
         }

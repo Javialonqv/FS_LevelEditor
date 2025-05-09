@@ -15,6 +15,8 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Saw : LE_Object
     {
+        ScieScript script;
+
         public LE_Saw_Waypoint nextWaypoint;
         LineRenderer editorWaypointLine;
         public GameObject waypointsParent;
@@ -77,7 +79,7 @@ namespace FS_LevelEditor
             RotationScie rotationScie = content.GetChildWithName("Scie_OFF").AddComponent<RotationScie>();
             rotationScie.vitesseRotation = 500;
 
-            ScieScript script = content.AddComponent<ScieScript>();
+            script = content.AddComponent<ScieScript>();
             script.doesDamage = true;
             script.damage = (int)GetProperty("Damage");
             script.rotationScript = rotationScie;
@@ -215,6 +217,28 @@ namespace FS_LevelEditor
             if (actionName == "AddWaypoint")
             {
                 AddWaypoint();
+                return true;
+            }
+            else if (actionName == "Activate")
+            {
+                script.Activate();
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                script.Deactivate();
+                return true;
+            }
+            else if (actionName == "ToggleActivated")
+            {
+                if (script.activated)
+                {
+                    script.Deactivate();
+                }
+                else
+                {
+                    script.Activate();
+                }
                 return true;
             }
 

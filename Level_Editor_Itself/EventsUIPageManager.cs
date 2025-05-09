@@ -43,6 +43,9 @@ namespace FS_LevelEditor
         GameObject eventOptionsParent;
         GameObject defaultObjectsSettings;
         UIDropdownPatcher setActiveDropdown;
+        //-----------------------------------
+        GameObject sawObjectsSettings;
+        UIDropdownPatcher sawStateDropdown;
 
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
         CurrentEventType currentEventType;
@@ -69,6 +72,7 @@ namespace FS_LevelEditor
                 Instance.CreateTargetObjectInputField();
 
                 Instance.CreateDefaultObjectSettings();
+                Instance.CreateSawObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -696,8 +700,10 @@ namespace FS_LevelEditor
             targetObjInputField.text = currentSelectedEvent.targetObjName;
 
             setActiveDropdown.SelectOption((int)currentSelectedEvent.setActive);
+            sawStateDropdown.SelectOption((int)currentSelectedEvent.sawState);
 
             eventSettingsPanel.SetActive(true);
+            OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
         void HideEventSettings()
         {
@@ -707,10 +713,11 @@ namespace FS_LevelEditor
         void OnTargetObjectFieldChanged(UIInput input, UISprite fieldSprite)
         {
             string inputText = input.text;
+            LE_Object targetObj = null;
             bool objIsValid = false;
 
             #region Check if the object is valid
-            LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => obj.name == inputText);
+            targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => obj.objectFullNameWithID == inputText);
             if (targetObj)
             {
                 if (targetObj.canBeUsedInEventsTab)
@@ -726,7 +733,11 @@ namespace FS_LevelEditor
                 fieldSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
                 eventOptionsParent.SetActive(true);
 
-                eventOptionsParent.GetChildWithName("Default").SetActive(true);
+                defaultObjectsSettings.SetActive(true);
+                if (targetObj is LE_Saw)
+                {
+                    sawObjectsSettings.SetActive(true);
+                }
             }
             else
             {
@@ -744,6 +755,7 @@ namespace FS_LevelEditor
             defaultObjectsSettings.transform.parent = eventOptionsParent.transform;
             defaultObjectsSettings.transform.localPosition = Vector3.zero;
             defaultObjectsSettings.transform.localScale = Vector3.one;
+            defaultObjectsSettings.SetActive(false);
 
             CreateSetActiveDropdown();
         }
@@ -769,10 +781,50 @@ namespace FS_LevelEditor
             setActiveDropdown = patcher;
             setActiveDropdownPanel.SetActive(true);
         }
+        // -----------------------------------------
+        void CreateSawObjectSettings()
+        {
+            sawObjectsSettings = new GameObject("Saw");
+            sawObjectsSettings.transform.parent = eventOptionsParent.transform;
+            sawObjectsSettings.transform.localPosition = Vector3.zero;
+            sawObjectsSettings.transform.localScale = Vector3.one;
+            sawObjectsSettings.SetActive(false);
+
+            CreateSawStateDropdown();
+        }
+        void CreateSawStateDropdown()
+        {
+            GameObject sawStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), sawObjectsSettings.transform);
+            sawStateDropdownPanel.name = "SawStateDropdownPanel";
+            sawStateDropdownPanel.transform.localPosition = new Vector3(0f, 0f, 0f);
+            sawStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+
+            UIDropdownPatcher patcher = sawStateDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Saw State");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("Activate", false);
+            patcher.AddOption("Deactivate", false);
+            patcher.AddOption("Toggle State", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSawStateDropdownChanged)));
+
+            sawStateDropdown = patcher;
+            sawStateDropdownPanel.SetActive(true);
+        }
+
+
 
         void OnSetActiveDropdownChanged()
         {
             currentSelectedEvent.setActive = (LE_Event.SetActiveState)setActiveDropdown.currentlySelectedID;
+        }
+        // -----------------------------------------
+        void OnSawStateDropdownChanged()
+        {
+            currentSelectedEvent.sawState = (LE_Event.SawState)sawStateDropdown.currentlySelectedID;
         }
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -831,4 +883,9 @@ public class LE_Event
 
     public enum SetActiveState { Do_Nothing, Enable, Disable, Toggle }
     public SetActiveState setActive { get; set; } = SetActiveState.Do_Nothing;
+
+    #region Saw Options
+    public enum SawState { Do_Nothing, Activate, Deactivate, Toggle_State }
+    public SawState sawState { get; set; } = SawState.Do_Nothing;
+    #endregion
 }
