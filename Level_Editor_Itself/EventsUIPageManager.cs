@@ -266,7 +266,7 @@ namespace FS_LevelEditor
                 // Create the button and set its name and positon.
                 GameObject deleteBtn = Instantiate(btnTemplate, eventButtonParent.transform);
                 deleteBtn.name = "DeleteBtn";
-                deleteBtn.transform.localPosition = new Vector3(360f, 0f, 0f);
+                deleteBtn.transform.localPosition = new Vector3(350f, 0f, 0f);
 
                 // Destroy some unnecesary components and the label, since we're going to add a SPRITE.
                 Destroy(deleteBtn.GetComponent<ButtonController>());
@@ -357,12 +357,12 @@ namespace FS_LevelEditor
             }
 
             // Enable the right grid.
-            if (eventsPage == int.MaxValue)
+            if (eventsPage == int.MaxValue && eventsGridList.Count > 0)
             {
                 eventsGridList.Last().SetActive(true);
                 currentEventsGrid = eventsGridList.Count - 1;
             }
-            else
+            else if (eventsGridList.Count > 0)
             {
                 eventsGridList[eventsPage].SetActive(true);
                 currentEventsGrid = eventsPage;
