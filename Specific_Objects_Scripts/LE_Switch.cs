@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 namespace FS_LevelEditor
 {
@@ -98,6 +100,8 @@ namespace FS_LevelEditor
 
             controller.usableOnce = (bool)GetProperty("UsableOnce");
             controller.ignoreLaser = !(bool)GetProperty("CanUseTaser");
+
+            ConfigureEvents(controller);
         }
 
         public override bool SetProperty(string name, object value)
@@ -162,6 +166,87 @@ namespace FS_LevelEditor
             }
 
             return false;
+        }
+
+        void ConfigureEvents(InterrupteurController controller)
+        {
+            controller.m_onActivate = new UnityEngine.Events.UnityEvent();
+            controller.m_onActivate.AddListener((UnityAction)ExecuteOnEnableEvents);
+            controller.m_onActivate.AddListener((UnityAction)ExecuteOnChangeEvents);
+
+            controller.m_onDeactivate = new UnityEngine.Events.UnityEvent();
+            controller.m_onDeactivate.AddListener((UnityAction)ExecuteOnDisableEvents);
+            controller.m_onDeactivate.AddListener((UnityAction)ExecuteOnChangeEvents);
+        }
+
+        void ExecuteOnEnableEvents()
+        {
+            foreach (LE_Event @event in ((List<LE_Event>)properties["OnEnableEvents"]))
+            {
+                LE_Object targetObj =
+                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.name == @event.targetObjName);
+
+                switch (@event.setActive)
+                {
+                    case LE_Event.SetActiveState.Enable:
+                        targetObj.gameObject.SetActive(true);
+                        break;
+
+                    case LE_Event.SetActiveState.Disable:
+                        targetObj.gameObject.SetActive(false);
+                        break;
+
+                    case LE_Event.SetActiveState.Toggle:
+                        targetObj.gameObject.SetActive(!targetObj.gameObject.activeSelf);
+                        break;
+                }
+            }
+        }
+        void ExecuteOnDisableEvents()
+        {
+            foreach (LE_Event @event in ((List<LE_Event>)properties["OnDisableEvents"]))
+            {
+                LE_Object targetObj =
+                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.name == @event.targetObjName);
+
+                switch (@event.setActive)
+                {
+                    case LE_Event.SetActiveState.Enable:
+                        targetObj.gameObject.SetActive(true);
+                        break;
+
+                    case LE_Event.SetActiveState.Disable:
+                        targetObj.gameObject.SetActive(false);
+                        break;
+
+                    case LE_Event.SetActiveState.Toggle:
+                        targetObj.gameObject.SetActive(!targetObj.gameObject.activeSelf);
+                        break;
+                }
+            }
+        }
+        void ExecuteOnChangeEvents()
+        {
+            foreach (LE_Event @event in ((List<LE_Event>)properties["OnChangeEvents"]))
+            {
+                LE_Object targetObj =
+                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.name == @event.targetObjName);
+
+                switch (@event.setActive)
+                {
+                    case LE_Event.SetActiveState.Enable:
+                        targetObj.gameObject.SetActive(true);
+                        break;
+
+                    case LE_Event.SetActiveState.Disable:
+                        targetObj.gameObject.SetActive(false);
+                        break;
+
+                    case LE_Event.SetActiveState.Toggle:
+                        targetObj.gameObject.SetActive(!targetObj.gameObject.activeSelf);
+                        break;
+                }
+            }
         }
     }
 }
