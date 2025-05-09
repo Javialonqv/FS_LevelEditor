@@ -262,6 +262,15 @@ namespace FS_LevelEditor
                 EventDelegate buttonDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(OnEventSelect), buttonParm);
                 button.onClick.Add(buttonDelegate);
 
+                if (currentSelectedEvent == events[i])
+                {
+                    button.defaultColor = new Color(0f, 0.6f, 0f, 1f);
+                }
+                else
+                {
+                    button.defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+                }
+
                 #region Delete Button
                 // Create the button and set its name and positon.
                 GameObject deleteBtn = Instantiate(btnTemplate, eventButtonParent.transform);
@@ -574,6 +583,8 @@ namespace FS_LevelEditor
             // *Comment copied from RenameEvent() LOL.
             currentSelectedEvent = GetEventsList()[selectedID];
             ShowEventSettings();
+
+            CreateEventsList(currentEventsGrid);
         }
 
         void CreateEventSettingsPanel()
