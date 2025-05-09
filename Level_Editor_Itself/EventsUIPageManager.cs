@@ -32,8 +32,15 @@ namespace FS_LevelEditor
         List<GameObject> eventsGridList = new List<GameObject>();
         int currentEventsGrid = 0;
 
+        /// <summary>
+        /// Contains all of the options of an event, including the target object name field.
+        /// </summary>
         GameObject eventSettingsPanel;
         UIInput targetObjInputField;
+        /// <summary>
+        /// Contains all of the options of an event, EXCEPT the target object name field.
+        /// </summary>
+        GameObject eventOptionsParent;
         GameObject defaultObjectsSettings;
         UIDropdownPatcher setActiveDropdown;
 
@@ -57,7 +64,7 @@ namespace FS_LevelEditor
 
                 // The event page buttons are created inside of the CreateEventsList() function, but only once.
 
-                Instance.CreateEventSettingsPanel();
+                Instance.CreateEventSettingsPanelAndOptionsParent();
                 Instance.CreateTargetObjectINSTRUCTIONLabel();
                 Instance.CreateTargetObjectInputField();
 
@@ -598,7 +605,7 @@ namespace FS_LevelEditor
             CreateEventsList(currentEventsGrid);
         }
 
-        void CreateEventSettingsPanel()
+        void CreateEventSettingsPanelAndOptionsParent()
         {
             eventSettingsPanel = new GameObject("EventSettings");
             eventSettingsPanel.transform.parent = eventsPanel.transform;
@@ -610,6 +617,12 @@ namespace FS_LevelEditor
             panel.depth = 2;
 
             eventSettingsPanel.SetActive(false);
+
+            eventOptionsParent = new GameObject("EventOptions");
+            eventOptionsParent.transform.parent = eventSettingsPanel.transform;
+            eventOptionsParent.transform.localScale = Vector3.one;
+            eventOptionsParent.transform.localPosition = Vector3.zero;
+            eventOptionsParent.SetActive(false);
         }
         void CreateTargetObjectINSTRUCTIONLabel()
         {
@@ -695,13 +708,19 @@ namespace FS_LevelEditor
         {
             string inputText = input.text;
 
+            // If the object name that the user put there is valid and exists...
             if (EditorController.Instance.currentInstantiatedObjects.Find(obj => obj.name == inputText))
             {
                 fieldSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
+                eventOptionsParent.SetActive(true);
+
+                eventOptionsParent.GetChildWithName("Default").SetActive(true);
             }
             else
             {
                 fieldSprite.color = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
+                eventOptionsParent.SetActive(false);
+                eventOptionsParent.DisableAllChildren();
             }
 
             currentSelectedEvent.targetObjName = inputText;
@@ -709,8 +728,8 @@ namespace FS_LevelEditor
 
         void CreateDefaultObjectSettings()
         {
-            defaultObjectsSettings = new GameObject("DefaultSettings");
-            defaultObjectsSettings.transform.parent = eventSettingsPanel.transform;
+            defaultObjectsSettings = new GameObject("Default");
+            defaultObjectsSettings.transform.parent = eventOptionsParent.transform;
             defaultObjectsSettings.transform.localPosition = Vector3.zero;
             defaultObjectsSettings.transform.localScale = Vector3.one;
 
