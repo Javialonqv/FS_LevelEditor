@@ -33,6 +33,7 @@ namespace FS_LevelEditor
             };
 
             canUndoDeletion = false;
+            canBeUsedInEventsTab = false;
 
             if (PlayModeController.Instance == null)
             {

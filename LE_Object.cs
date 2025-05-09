@@ -70,6 +70,7 @@ namespace FS_LevelEditor
             }
         }
         public bool canUndoDeletion { get; protected set; }  = true;
+        public bool canBeUsedInEventsTab { get; protected set; } = true;
 
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }

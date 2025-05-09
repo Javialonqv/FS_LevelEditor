@@ -707,9 +707,21 @@ namespace FS_LevelEditor
         void OnTargetObjectFieldChanged(UIInput input, UISprite fieldSprite)
         {
             string inputText = input.text;
+            bool objIsValid = false;
+
+            #region Check if the object is valid
+            LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => obj.name == inputText);
+            if (targetObj)
+            {
+                if (targetObj.canBeUsedInEventsTab)
+                {
+                    objIsValid = true;
+                }
+            }
+            #endregion
 
             // If the object name that the user put there is valid and exists...
-            if (EditorController.Instance.currentInstantiatedObjects.Find(obj => obj.name == inputText))
+            if (objIsValid)
             {
                 fieldSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
                 eventOptionsParent.SetActive(true);
