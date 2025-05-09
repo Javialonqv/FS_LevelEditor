@@ -374,6 +374,7 @@
 		<Compile Include="LevelData.cs" />
 		<Compile Include="LE_ObjectData.cs" />
 		<Compile Include="UI_Related\NGUI_Utils.cs" />
+		<Compile Include="UI_Related\UIDropdownPatcher.cs" />
 		<Compile Include="UI_Related\UIInputSubmitFix.cs" />
 		<Compile Include="Utilities.cs" />
 	</ItemGroup>

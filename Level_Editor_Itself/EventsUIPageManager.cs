@@ -34,6 +34,7 @@ namespace FS_LevelEditor
 
         GameObject eventSettingsPanel;
         UIInput targetObjInputField;
+        UIDropdownPatcher setActiveDropdown;
 
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
         CurrentEventType currentEventType;
@@ -51,7 +52,6 @@ namespace FS_LevelEditor
                 Instance.CreateEventsPanel();
                 Instance.CreateTopButtons();
                 Instance.CreateEventsListBackground();
-                Instance.CreateDetails();
                 Instance.CreateAddEventButton();
 
                 // The event page buttons are created inside of the CreateEventsList() function, but only once.
@@ -59,6 +59,10 @@ namespace FS_LevelEditor
                 Instance.CreateEventSettingsPanel();
                 Instance.CreateTargetObjectINSTRUCTIONLabel();
                 Instance.CreateTargetObjectInputField();
+
+                Instance.CreateDefaultObjectSettings();
+
+                Instance.CreateDetails();
             }
         }
 
@@ -166,6 +170,12 @@ namespace FS_LevelEditor
             verticalLine.transform.localPosition = new Vector3(70f, -100f, 0f);
             verticalLine.GetComponent<UISprite>().height = 580;
             verticalLine.SetActive(true);
+
+            GameObject horizontalLine2 = Instantiate(eventsPanel.GetChildAt("Game_Options/HorizontalLine"), eventSettingsPanel.transform);
+            horizontalLine2.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
+            horizontalLine2.transform.localPosition = new Vector3(0f, 170f, 0f);
+            horizontalLine2.GetComponent<UISprite>().width = 700;
+            horizontalLine2.SetActive(true);
         }
         void CreateAddEventButton()
         {
@@ -671,6 +681,8 @@ namespace FS_LevelEditor
         {
             targetObjInputField.text = currentSelectedEvent.targetObjName;
 
+            setActiveDropdown.SelectOption((int)currentSelectedEvent.setActive);
+
             eventSettingsPanel.SetActive(true);
         }
         void HideEventSettings()
@@ -692,6 +704,38 @@ namespace FS_LevelEditor
             }
 
             currentSelectedEvent.targetObjName = inputText;
+        }
+
+        void CreateDefaultObjectSettings()
+        {
+            GameObject defaultObjectsSettings = new GameObject("DefaultSettings");
+            defaultObjectsSettings.transform.parent = eventSettingsPanel.transform;
+            defaultObjectsSettings.transform.localPosition = Vector3.zero;
+            defaultObjectsSettings.transform.localScale = Vector3.one * 0.8f;
+
+            GameObject setActiveDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), defaultObjectsSettings.transform);
+            setActiveDropdownPanel.name = "SetActiveDropdownPanel";
+            setActiveDropdownPanel.transform.localPosition = new Vector3(-180f, 100f, 0f);
+
+            UIDropdownPatcher patcher = setActiveDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Set Active");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("Enable", false);
+            patcher.AddOption("Disable", false);
+            patcher.AddOption("Toggle", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSetActiveDropdownChanged)));
+
+            setActiveDropdown = patcher;
+            setActiveDropdownPanel.SetActive(true);
+        }
+
+        void OnSetActiveDropdownChanged()
+        {
+            currentSelectedEvent.setActive = (LE_Event.SetActiveState)setActiveDropdown.currentlySelectedID;
         }
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -747,4 +791,7 @@ public class LE_Event
     // Yeah, why should I put a name to a freaking event? Dunno, may be useful :)
     public string eventName { get; set; } = "New Event";
     public string targetObjName { get; set; } = "";
+
+    public enum SetActiveState { Do_Nothing, Enable, Disable, Toggle }
+    public SetActiveState setActive { get; set; } = SetActiveState.Do_Nothing;
 }
