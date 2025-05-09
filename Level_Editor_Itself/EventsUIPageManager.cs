@@ -34,6 +34,7 @@ namespace FS_LevelEditor
 
         GameObject eventSettingsPanel;
         UIInput targetObjInputField;
+        GameObject defaultObjectsSettings;
         UIDropdownPatcher setActiveDropdown;
 
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
@@ -708,11 +709,15 @@ namespace FS_LevelEditor
 
         void CreateDefaultObjectSettings()
         {
-            GameObject defaultObjectsSettings = new GameObject("DefaultSettings");
+            defaultObjectsSettings = new GameObject("DefaultSettings");
             defaultObjectsSettings.transform.parent = eventSettingsPanel.transform;
             defaultObjectsSettings.transform.localPosition = Vector3.zero;
             defaultObjectsSettings.transform.localScale = Vector3.one * 0.8f;
 
+            CreateSetActiveDropdown();
+        }
+        void CreateSetActiveDropdown()
+        {
             GameObject setActiveDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), defaultObjectsSettings.transform);
             setActiveDropdownPanel.name = "SetActiveDropdownPanel";
             setActiveDropdownPanel.transform.localPosition = new Vector3(-180f, 100f, 0f);

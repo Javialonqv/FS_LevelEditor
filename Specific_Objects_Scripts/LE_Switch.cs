@@ -181,53 +181,20 @@ namespace FS_LevelEditor
 
         void ExecuteOnActivatedEvents()
         {
-            foreach (LE_Event @event in ((List<LE_Event>)properties["OnActivatedEvents"]))
-            {
-                LE_Object targetObj =
-                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.name == @event.targetObjName);
-
-                switch (@event.setActive)
-                {
-                    case LE_Event.SetActiveState.Enable:
-                        targetObj.gameObject.SetActive(true);
-                        break;
-
-                    case LE_Event.SetActiveState.Disable:
-                        targetObj.gameObject.SetActive(false);
-                        break;
-
-                    case LE_Event.SetActiveState.Toggle:
-                        targetObj.gameObject.SetActive(!targetObj.gameObject.activeSelf);
-                        break;
-                }
-            }
+            ExecuteEvents((List<LE_Event>)properties["OnActivatedEvents"]);
         }
         void ExecuteOnDeactivatedEvents()
         {
-            foreach (LE_Event @event in ((List<LE_Event>)properties["OnDeactivatedEvents"]))
-            {
-                LE_Object targetObj =
-                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.name == @event.targetObjName);
-
-                switch (@event.setActive)
-                {
-                    case LE_Event.SetActiveState.Enable:
-                        targetObj.gameObject.SetActive(true);
-                        break;
-
-                    case LE_Event.SetActiveState.Disable:
-                        targetObj.gameObject.SetActive(false);
-                        break;
-
-                    case LE_Event.SetActiveState.Toggle:
-                        targetObj.gameObject.SetActive(!targetObj.gameObject.activeSelf);
-                        break;
-                }
-            }
+            ExecuteEvents((List<LE_Event>)properties["OnDisabledEvents"]);
         }
         void ExecuteOnChangeEvents()
         {
-            foreach (LE_Event @event in ((List<LE_Event>)properties["OnChangeEvents"]))
+            ExecuteEvents((List<LE_Event>)properties["OnActivatedEvents"]);
+        }
+
+        void ExecuteEvents(List<LE_Event> events)
+        {
+            foreach (LE_Event @event in events)
             {
                 LE_Object targetObj =
                     PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.name == @event.targetObjName);
