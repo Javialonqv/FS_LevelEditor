@@ -262,20 +262,47 @@ namespace FS_LevelEditor
                 EventDelegate buttonDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(OnEventSelect), buttonParm);
                 button.onClick.Add(buttonDelegate);
 
-                //#region Delete Button
-                //GameObject deleteObj = new GameObject("DeleteButton");
-                //deleteObj.transform.parent = eventButton.transform;
-                //deleteObj.transform.localScale = Vector3.one;
-                //deleteObj.transform.localPosition = new Vector3(350f, 0f, 0f);
+                #region Delete Button
+                // Create the button and set its name and positon.
+                GameObject deleteBtn = Instantiate(btnTemplate, eventButtonParent.transform);
+                deleteBtn.name = "DeleteBtn";
+                deleteBtn.transform.localPosition = new Vector3(360f, 0f, 0f);
 
-                //UISprite deleteSprite = deleteObj.AddComponent<UISprite>();
-                //deleteSprite.atlas = occluder.GetComponent<UISprite>().atlas;
-                //deleteSprite.spriteName = "Square";
-                //deleteSprite.width = 50;
-                //deleteSprite.height = 50;
-                //deleteSprite.color = Color.red;
-                //deleteSprite.depth = 3;
-                //#endregion
+                // Destroy some unnecesary components and the label, since we're going to add a SPRITE.
+                Destroy(deleteBtn.GetComponent<ButtonController>());
+                Destroy(deleteBtn.GetComponent<OptionsButton>());
+                Destroy(deleteBtn.GetChildAt("Background/Label"));
+
+                // Adjust the button sprite and create the BoxCollider as well.
+                UISprite deleteSprite = deleteBtn.GetComponent<UISprite>();
+                deleteSprite.width = 60;
+                deleteSprite.height = 60;
+                deleteSprite.depth = 3;
+                BoxCollider deleteCollider = deleteBtn.GetComponent<BoxCollider>();
+                deleteCollider.size = new Vector3(60f, 60f, 0f);
+
+                // Adjust the button color with red color variants.
+                UIButtonColor deleteButtonColor = deleteBtn.GetComponent<UIButtonColor>();
+                deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
+                deleteButtonColor.hover = new Color(1f, 0f, 0f, 1f);
+                deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
+
+                // Create another sprite "inside" of the button one.
+                UISprite trashSprite = deleteBtn.GetChildWithName("Background").GetComponent<UISprite>();
+                trashSprite.name = "Trash";
+                trashSprite.SetExternalSprite("Trash");
+                trashSprite.width = 30;
+                trashSprite.height = 40;
+                trashSprite.depth = 4;
+                trashSprite.color = Color.white;
+                trashSprite.transform.localPosition = Vector3.zero;
+                trashSprite.enabled = true;
+
+                UIButton deleteBtnScript = deleteBtn.GetComponent<UIButton>();
+                EventDelegate.Parameter deleteBtnParm1 = NGUI_Utils.CreateEventDelegateParamter(this, "eventID", i);
+                EventDelegate deleteBtnDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(DeleteEvent), deleteBtnParm1);
+                deleteBtnScript.onClick.Add(deleteBtnDelegate);
+                #endregion
 
                 #region Name Input Field
                 GameObject nameObj = new GameObject("NameInputField");
@@ -535,6 +562,11 @@ namespace FS_LevelEditor
         string GetCurrentEventPageText()
         {
             return (currentEventsGrid + 1) + "/" + (eventsGridList.Count);
+        }
+        void DeleteEvent(int eventID)
+        {
+            GetEventsList().RemoveAt(eventID);
+            CreateEventsList(int.MaxValue);
         }
         void OnEventSelect(int selectedID)
         {
