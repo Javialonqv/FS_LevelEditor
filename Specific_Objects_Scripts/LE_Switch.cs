@@ -13,6 +13,9 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Switch : LE_Object
     {
+        GameObject editorLinksParent;
+        bool dontDisableLinksParentWhenCreating;
+
         void Awake()
         {
             properties = new Dictionary<string, object>
@@ -30,6 +33,22 @@ namespace FS_LevelEditor
             if (PlayModeController.Instance != null)
             {
                 InitComponent();
+            }
+
+            if (EditorController.Instance != null)
+            {
+                CreateInEditorLinksToTargetObjects();
+            }
+        }
+
+        void Update()
+        {
+            if (editorLinksParent)
+            {
+                if (editorLinksParent.activeSelf && !EventsUIPageManager.Instance.isShowingPage)
+                {
+                    UpdateEditorLinksPositions();
+                }
             }
         }
 
@@ -164,8 +183,91 @@ namespace FS_LevelEditor
                 EventsUIPageManager.Instance.ShowEventsPage(this);
                 return true;
             }
+            else if (actionName == "OnEventsTabClose")
+            {
+                CreateInEditorLinksToTargetObjects();
+                return true;
+            }
 
             return base.TriggerAction(actionName);
+        }
+
+        public override void OnSelect()
+        {
+            editorLinksParent.SetActive(true);
+            dontDisableLinksParentWhenCreating = true;
+        }
+        public override void OnDeselect(GameObject nextSelectedObj)
+        {
+            editorLinksParent.SetActive(false);
+            dontDisableLinksParentWhenCreating = false;
+        }
+        void CreateInEditorLinksToTargetObjects()
+        {
+            if (EditorController.Instance == null) return;
+
+            if (editorLinksParent == null)
+            {
+                editorLinksParent = new GameObject("EditorLinks");
+                editorLinksParent.transform.parent = transform;
+                editorLinksParent.transform.localPosition = Vector3.zero;
+            }
+            else
+            {
+                editorLinksParent.DeleteAllChildren();
+            }
+
+            List<string> alreadyLinkedObjectsNames = new List<string>();
+
+            string[] eventKeys = { "OnActivatedEvents", "OnDeactivatedEvents", "OnChangeEvents" };
+            foreach (string eventKey in eventKeys)
+            {
+                foreach (var @event in (List<LE_Event>)properties[eventKey])
+                {
+                    // Not make a link if the target obj name in the event isn't valid, or it'll throw an error.
+                    // For optimization purposes, also don't create a link to an already linked object in another event,
+                    // doesn't matter the event type (On Activated, On Deactivated...).
+                    if (!@event.isValid || alreadyLinkedObjectsNames.Contains(@event.targetObjName)) continue;
+
+                    GameObject linkObj = new GameObject("Link");
+                    linkObj.transform.parent = editorLinksParent.transform;
+                    linkObj.transform.localPosition = Vector3.zero;
+
+                    LineRenderer linkRender = linkObj.AddComponent<LineRenderer>();
+                    linkRender.startWidth = 0.1f;
+                    linkRender.endWidth = 0.1f;
+                    linkRender.positionCount = 2;
+
+                    linkRender.material = new Material(Shader.Find("Sprites/Default"));
+                    linkRender.startColor = Color.white;
+                    linkRender.endColor = Color.white;
+
+                    alreadyLinkedObjectsNames.Add(@event.targetObjName);
+                }
+            }
+
+            if (!dontDisableLinksParentWhenCreating) editorLinksParent.SetActive(false);
+        }
+        void UpdateEditorLinksPositions()
+        {
+            int realCount = 0;
+
+            string[] eventKeys = { "OnActivatedEvents", "OnDeactivatedEvents", "OnChangeEvents" };
+            foreach (string eventKey in eventKeys)
+            {
+                foreach (var @event in (List<LE_Event>)properties[eventKey])
+                {
+                    if (!@event.isValid) continue;
+
+                    LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(x => x.objectFullNameWithID == @event.targetObjName);
+                    if (targetObj == null) continue;
+
+                    editorLinksParent.transform.GetChild(realCount).GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                    editorLinksParent.transform.GetChild(realCount).GetComponent<LineRenderer>().SetPosition(1, targetObj.transform.position);
+
+                    realCount++;
+                }
+            }
         }
 
         void ConfigureEvents(InterrupteurController controller)

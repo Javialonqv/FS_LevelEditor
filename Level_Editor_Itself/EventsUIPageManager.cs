@@ -746,6 +746,7 @@ namespace FS_LevelEditor
                 eventOptionsParent.DisableAllChildren();
             }
 
+            currentSelectedEvent.isValid = objIsValid;
             currentSelectedEvent.targetObjName = inputText;
         }
 
@@ -846,6 +847,8 @@ namespace FS_LevelEditor
 
         public void HideEventsPage()
         {
+            targetObj.TriggerAction("OnEventsTabClose");
+
             eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
             Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_HIDE);
 
@@ -877,6 +880,8 @@ namespace FS_LevelEditor
 
 public class LE_Event
 {
+    public bool isValid { get; set; } = false;
+
     // Yeah, why should I put a name to a freaking event? Dunno, may be useful :)
     public string eventName { get; set; } = "New Event";
     public string targetObjName { get; set; } = "";
