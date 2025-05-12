@@ -242,7 +242,7 @@ namespace FS_LevelEditor
                 return true;
             }
 
-            return false;
+            return base.TriggerAction(actionName);
         }
 
         public override void OnSelect()

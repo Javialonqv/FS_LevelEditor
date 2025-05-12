@@ -165,7 +165,7 @@ namespace FS_LevelEditor
                 return true;
             }
 
-            return false;
+            return base.TriggerAction(actionName);
         }
 
         void ConfigureEvents(InterrupteurController controller)
@@ -202,15 +202,22 @@ namespace FS_LevelEditor
                 switch (@event.setActive)
                 {
                     case LE_Event.SetActiveState.Enable:
-                        targetObj.gameObject.SetActive(true);
+                        targetObj.TriggerAction("SetActive_True");
                         break;
 
                     case LE_Event.SetActiveState.Disable:
-                        targetObj.gameObject.SetActive(false);
+                        targetObj.TriggerAction("SetActive_False");
                         break;
 
                     case LE_Event.SetActiveState.Toggle:
-                        targetObj.gameObject.SetActive(!targetObj.gameObject.activeSelf);
+                        if (targetObj.gameObject.activeSelf)
+                        {
+                            targetObj.TriggerAction("SetActive_False");
+                        }
+                        else
+                        {
+                            targetObj.TriggerAction("SetActive_True");
+                        }
                         break;
                 }
 

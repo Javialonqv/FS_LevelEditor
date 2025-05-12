@@ -206,6 +206,15 @@ namespace FS_LevelEditor
 
         public virtual bool TriggerAction(string actionName)
         {
+            if (actionName == "SetActive_True")
+            {
+                gameObject.SetActive(true);
+            }
+            else if (actionName == "SetActive_False")
+            {
+                gameObject.SetActive(false);
+            }
+
             return false;
         }
 
