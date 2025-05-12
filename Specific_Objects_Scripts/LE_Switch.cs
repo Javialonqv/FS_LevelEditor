@@ -13,7 +13,28 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Switch : LE_Object
     {
+        struct EditorLink
+        {
+            LE_Switch originalSwitch;
+            LE_Object targetObj;
+            LineRenderer editorLinkRenderer;
+
+            public EditorLink(LE_Switch originalSwitch, LE_Event @event, LineRenderer editorLinkRenderer)
+            {
+                this.originalSwitch = originalSwitch;
+                targetObj = EditorController.Instance.currentInstantiatedObjects.Find(x => x.objectFullNameWithID == @event.targetObjName);
+                this.editorLinkRenderer = editorLinkRenderer;
+            }
+
+            public void UpdateLinkPositions()
+            {
+                editorLinkRenderer.SetPosition(0, originalSwitch.transform.position);
+                editorLinkRenderer.SetPosition(1, targetObj.transform.position);
+            }
+        }
+
         GameObject editorLinksParent;
+        List<EditorLink> editorLinks = new();
         bool dontDisableLinksParentWhenCreating;
 
         void Awake()
@@ -215,6 +236,7 @@ namespace FS_LevelEditor
             else
             {
                 editorLinksParent.DeleteAllChildren();
+                editorLinks.Clear();
             }
 
             List<string> alreadyLinkedObjectsNames = new List<string>();
@@ -243,6 +265,7 @@ namespace FS_LevelEditor
                     linkRender.endColor = Color.white;
 
                     alreadyLinkedObjectsNames.Add(@event.targetObjName);
+                    editorLinks.Add(new EditorLink(this, @event, linkRender));
                 }
             }
 
@@ -250,23 +273,9 @@ namespace FS_LevelEditor
         }
         void UpdateEditorLinksPositions()
         {
-            int realCount = 0;
-
-            string[] eventKeys = { "OnActivatedEvents", "OnDeactivatedEvents", "OnChangeEvents" };
-            foreach (string eventKey in eventKeys)
+            foreach (var editorLink in editorLinks)
             {
-                foreach (var @event in (List<LE_Event>)properties[eventKey])
-                {
-                    if (!@event.isValid) continue;
-
-                    LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(x => x.objectFullNameWithID == @event.targetObjName);
-                    if (targetObj == null) continue;
-
-                    editorLinksParent.transform.GetChild(realCount).GetComponent<LineRenderer>().SetPosition(0, transform.position);
-                    editorLinksParent.transform.GetChild(realCount).GetComponent<LineRenderer>().SetPosition(1, targetObj.transform.position);
-
-                    realCount++;
-                }
+                editorLink.UpdateLinkPositions();
             }
         }
 
