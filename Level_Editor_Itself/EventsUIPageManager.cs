@@ -791,13 +791,35 @@ namespace FS_LevelEditor
             sawObjectsSettings.transform.localScale = Vector3.one;
             sawObjectsSettings.SetActive(false);
 
+            CreateSawObjectsTitleLabel();
             CreateSawStateDropdown();
+        }
+        void CreateSawObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, sawObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 800;
+            label.fontSize = 35;
+            label.text = "SAW OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
         }
         void CreateSawStateDropdown()
         {
             GameObject sawStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), sawObjectsSettings.transform);
             sawStateDropdownPanel.name = "SawStateDropdownPanel";
-            sawStateDropdownPanel.transform.localPosition = new Vector3(0f, 0f, 0f);
+            sawStateDropdownPanel.transform.localPosition = new Vector3(0f, -50f, 0f);
             sawStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
 
             UIDropdownPatcher patcher = sawStateDropdownPanel.AddComponent<UIDropdownPatcher>();
@@ -815,7 +837,6 @@ namespace FS_LevelEditor
             sawStateDropdown = patcher;
             sawStateDropdownPanel.SetActive(true);
         }
-
 
 
         void OnSetActiveDropdownChanged()
