@@ -259,7 +259,14 @@ namespace FS_LevelEditor
         }
         public virtual void OnDelete()
         {
-
+            if (EditorController.Instance != null && PlayModeController.Instance == null)
+            {
+                EditorController.Instance.currentInstantiatedObjects.Remove(this);
+            }
+            else if (EditorController.Instance == null && PlayModeController.Instance != null)
+            {
+                PlayModeController.Instance.currentInstantiatedObjects.Remove(this);
+            }
         }
 
         virtual protected LE_Object[] GetReferenceObjectsToGetObjID()

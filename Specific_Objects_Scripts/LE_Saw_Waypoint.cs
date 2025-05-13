@@ -142,6 +142,9 @@ namespace FS_LevelEditor
 
         public override void OnDelete()
         {
+            // Base method removes the object from the instantiated objects list.
+            base.OnDelete();
+
             wasDeleted = true;
 
             mainSaw.waypointsGOs.Remove(gameObject);
