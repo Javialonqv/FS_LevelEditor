@@ -354,6 +354,8 @@ namespace FS_LevelEditor
 
                 // If the next waypoint from this saw is null, that means this is the first waypoint in this new list, assign it to this saw.
                 if (nextWaypoint == null) nextWaypoint = waypointComponent;
+
+                lastWaypoint = waypointComponent;
             }
 
             HideOrShowAllWaypointsInEditor(true);
