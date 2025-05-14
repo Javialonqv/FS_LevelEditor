@@ -290,6 +290,14 @@ namespace FS_LevelEditor
             headerLabel.width = 520;
             headerLabel.height = 60;
 
+            GameObject setActiveAtStartToggle = NGUI_Utils.CreateToggle(selectedObjPanel.transform, new Vector3(-220f, 0f, 0f), new Vector3Int(48, 48, 0));
+            setActiveAtStartToggle.name = "SetActiveAtStartToggle";
+            setActiveAtStartToggle.GetComponent<UIToggle>().onChange.Clear();
+            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetSetActiveAtStart),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", setActiveAtStartToggle.GetComponent<UIToggle>()));
+            setActiveAtStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            setActiveAtStartToggle.SetActive(false);
+
             GameObject selectedObjPanelBody = new GameObject("Body");
             selectedObjPanelBody.transform.parent = selectedObjPanel.transform;
             selectedObjPanelBody.transform.localPosition = new Vector3(0f, -160f, 0f);
@@ -571,12 +579,14 @@ namespace FS_LevelEditor
         public void SetSelectedObjPanelAsNone()
         {
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "No Object Selected";
+            selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
             selectedObjPanel.GetChildWithName("Body").SetActive(false);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
         }
         public void SetMultipleObjectsSelected()
         {
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "Multiple Objects Selected";
+            selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
             selectedObjPanel.GetChildWithName("Body").SetActive(false);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
         }
@@ -636,10 +646,18 @@ namespace FS_LevelEditor
             {
                 attrbutesPanels["None"].SetActive(true);
             }
+
+            selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(true);
+            selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").GetComponent<UIToggle>().Set(objComponent.setActiveAtStart);
         }
 
         // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
         // AAALSO now its seems crapGUI can't recognize between two different overloads of a method, so I need to put different names foreach method, DAMN IT.
+        public void SetSetActiveAtStart(UIToggle toggle)
+        {
+            EditorController.Instance.currentSelectedObjComponent.setActiveAtStart = toggle.isChecked;
+            EditorController.Instance.levelHasBeenModified = true;
+        }
         public void SetPropertyWithInput(string propertyName, UIInput inputField)
         {
             Color validValueColor = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);

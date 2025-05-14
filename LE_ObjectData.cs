@@ -13,6 +13,7 @@ namespace FS_LevelEditor
         public LE_Object.ObjectType? objectType { get; set; }
         public int objectID { get; set; }
         public string objectOriginalName { get; set; }
+        public bool setActiveAtStart { get; set; }
 
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
 
@@ -28,6 +29,7 @@ namespace FS_LevelEditor
             objectType = originalObj.objectType;
             objectID = originalObj.objectID;
             objectOriginalName = originalObj.objectOriginalName;
+            setActiveAtStart = originalObj.setActiveAtStart;
 
             foreach (var property in originalObj.properties)
             {

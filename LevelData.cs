@@ -177,6 +177,7 @@ namespace FS_LevelEditor
 
                 objClassInstance.objectID = obj.objectID;
                 objInstance.name = objClassInstance.objectFullNameWithID;
+                objClassInstance.setActiveAtStart = obj.setActiveAtStart;
 
                 if (obj.properties != null)
                 {
@@ -225,6 +226,7 @@ namespace FS_LevelEditor
 
                 objClassInstance.objectID = obj.objectID;
                 objInstance.name = objClassInstance.objectFullNameWithID;
+                objClassInstance.setActiveAtStart = obj.setActiveAtStart;
 
                 if (obj.properties != null)
                 {
@@ -234,6 +236,7 @@ namespace FS_LevelEditor
                     }
                 }
 
+                objInstance.SetActive(objClassInstance.setActiveAtStart);
             }
 
             Logger.Log($"\"{data.levelName}\" level loaded in playmode!");

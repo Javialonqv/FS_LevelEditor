@@ -57,6 +57,7 @@ namespace FS_LevelEditor
         {
             get { return objectOriginalName + " " + objectID; }
         }
+        public bool setActiveAtStart = true;
         public Dictionary<string, object> properties = new Dictionary<string, object>();
 
         public virtual Transform objectParent
