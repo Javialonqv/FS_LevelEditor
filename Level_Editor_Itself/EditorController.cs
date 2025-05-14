@@ -1100,6 +1100,9 @@ namespace FS_LevelEditor
                 Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
                 Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
                 EditorUIManager.Instance.DeleteUI();
+
+                MenuController.SoftInputAuthorized = true;
+                MenuController.InputAuthorized = true;
                 MenuController.GetInstance().ButtonPressed(ButtonController.Type.CHAPTER_4);
 
                 // Wait a few so when the pause menu ui is not visible anymore, destroy the pause menu LE buttons, and it doesn't look weird when destroying them and the user can see it.
