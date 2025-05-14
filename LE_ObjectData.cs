@@ -13,7 +13,7 @@ namespace FS_LevelEditor
         public LE_Object.ObjectType? objectType { get; set; }
         public int objectID { get; set; }
         public string objectOriginalName { get; set; }
-        public bool setActiveAtStart { get; set; }
+        public bool setActiveAtStart { get; set; } = true;
 
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
 
