@@ -113,7 +113,9 @@ namespace FS_LevelEditor
             eventsPanel.transform.localScale = Vector3.one;
 
             // Add a UIPanel so the TweenScale can work.
+            // UPDATE: It already has an UIPanel LOL.
             UIPanel panel = eventsPanel.GetComponent<UIPanel>();
+            panel.alpha = 1f;
             panel.depth = 1;
             eventsPanel.GetComponent<TweenAlpha>().mRect = panel;
 
