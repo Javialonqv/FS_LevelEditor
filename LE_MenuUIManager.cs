@@ -45,7 +45,7 @@ namespace FS_LevelEditor
         int currentLevelsGridID;
         GameObject onDeletePopupBackButton;
         GameObject onDeletePopupDeleteButton;
-        bool levelButtonsWasClicked = false;
+        public bool levelButtonsWasClicked = false;
         bool isGoingBackToLE = false;
         string levelFileNameWithoutExtensionWhileGoingBackToLE = "";
         string levelNameWhileGoingBackToLE = "";
@@ -79,7 +79,7 @@ namespace FS_LevelEditor
             }
 
             // To exit from the LE menu with the ESC key.
-            if (Input.GetKeyDown(KeyCode.Escape) && inLEMenu && !isInMidTransition)
+            if (Input.GetKeyDown(KeyCode.Escape) && inLEMenu && !isInMidTransition && !EditorController.Instance)
             {
                 // BUT, if the delete level popup is enabled, then hide it and do ABSOLUTELY NOTHNG.
                 if (deletePopupEnabled)
@@ -870,7 +870,7 @@ namespace FS_LevelEditor
                 SwitchBetweenMenuAndLEMenu();
             }
         }
-        public void SwitchBetweenMenuAndLEMenu()
+        public void SwitchBetweenMenuAndLEMenu(bool showMainMenu = true)
         {
             // Switch!
             inLEMenu = !inLEMenu;
@@ -918,8 +918,11 @@ namespace FS_LevelEditor
                     uiSoundSource.clip = hidePageSound;
                     uiSoundSource.Play();
 
-                    mainMenu.SetActive(true);
-                    mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
+                    if (showMainMenu)
+                    {
+                        mainMenu.SetActive(true);
+                        mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
+                    }
                     leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(true);
                     leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
                     yield return new WaitForSecondsRealtime(0.2f);
