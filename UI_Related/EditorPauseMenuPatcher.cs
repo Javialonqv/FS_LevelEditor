@@ -16,6 +16,7 @@ namespace FS_LevelEditor
 
         public void OnEnable()
         {
+            Logger.DebugLog("LE pause menu enabled, patching!");
             GameObject pauseMenu = gameObject;
             GameObject navigation = transform.parent.GetChildWithName("Navigation").gameObject;
 
@@ -100,6 +101,8 @@ namespace FS_LevelEditor
         {
             if (isAboutToDestroyThisObj) return;
 
+            Logger.DebugLog("LE pause menu disabled, patching!");
+
             GameObject navigation = transform.parent.GetChildWithName("Navigation").gameObject;
 
             // Reset the exit button behaviour when in another menu instead of the main one.
@@ -109,6 +112,7 @@ namespace FS_LevelEditor
 
         public void BeforeDestroying()
         {
+            Logger.DebugLog("About to destroy LE pause menu patcher!");
             isAboutToDestroyThisObj = true;
 
             Destroy(gameObject.GetChildAt("LargeButtons/1_ResumeWhenInEditor"));

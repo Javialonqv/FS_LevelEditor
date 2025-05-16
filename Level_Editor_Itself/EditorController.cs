@@ -406,6 +406,7 @@ namespace FS_LevelEditor
                     break;
             }
 
+            Logger.Log("Changed LE mode to: " + currentMode);
             EditorUIManager.Instance.SetCurrentModeLabelText(currentMode);
         }
 
@@ -591,21 +592,27 @@ namespace FS_LevelEditor
                     }
                     levelHasBeenModified = true;
                 }
+
+                Logger.Log("Deleted multiple selected objects.");
             }
             else
             {
                 if (existingObjects <= 1)
                 {
+                    Logger.Warning("Attemped to delete one single object but IS THE LAST OBJECT IN THE SCENE!");
+
                     Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
                     return;
                 }
                 currentSelectedObjComponent.OnDelete();
                 if (currentSelectedObjComponent.canUndoDeletion)
                 {
+                    Logger.Log("Single object deleted, but it can be undone.");
                     currentSelectedObj.SetActive(false);
                 }
                 else
                 {
+                    Logger.Log("Single object deleted permanently!");
                     Destroy(currentSelectedObj);
                 }
                 levelHasBeenModified = true;
@@ -705,6 +712,9 @@ namespace FS_LevelEditor
         {
             if (currentSelectedObj == obj) return;
 
+            if (obj) Logger.DebugLog($"SetSelectedObj called for object with name: \"{obj.name}\".");
+            else Logger.DebugLog($"SetSelectedObj called with NO NEW TARGET OBJECT (To deselect).");
+
             gizmosArrows.SetActive(false);
             gizmosArrows.transform.parent = null;
             gizmosArrows.transform.localPosition = Vector3.zero;
@@ -759,6 +769,8 @@ namespace FS_LevelEditor
                     // The "main" selected object now is the parent of the selected objects.
                     currentSelectedObj = multipleSelectedObjsParent;
 
+                    Logger.DebugLog($"Adding \"{obj.name}\" to the multiple selected objects.");
+
                     #region Set Current Selected Obj Component
                     // Get obj component:
                     bool selectionHasDifferentObjTypes = false;
@@ -798,6 +810,8 @@ namespace FS_LevelEditor
                     currentSelectedObj = obj;
                     currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
                     currentSelectedObjComponent.OnSelect();
+
+                    Logger.Log($"\"{obj.name}\" selected while pressing CTRL, BUT NO OTHER OBJECTS ARE SELECTED.");
                 }
             }
             else
@@ -805,9 +819,13 @@ namespace FS_LevelEditor
                 // Since the obj parameter can also be the multipleSelectedObjectsParent, check if it is before setting the multipleObjectsSelected bool to false.
                 if (obj != multipleSelectedObjsParent)
                 {
-                    currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
-                    currentSelectedObjects.ForEach(x => x.GetComponent<LE_Object>().OnDeselect(obj));
-                    currentSelectedObjects.Clear();
+                    if (currentSelectedObjects.Count > 0)
+                    {
+                        Logger.Log($"Deselecting the current selected objects, the count was: {currentSelectedObjects.Count}.");
+                        currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
+                        currentSelectedObjects.ForEach(x => x.GetComponent<LE_Object>().OnDeselect(obj));
+                        currentSelectedObjects.Clear();
+                    }
                     multipleObjectsSelected = false; // Set the bool again.
                 }
                 else // Otherwise, if it IS... set this bool again to true.
@@ -887,6 +905,12 @@ namespace FS_LevelEditor
 
         public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
         {
+            if (setAsSelected)
+            {
+                // if setAsSelect is false, that would probably mean it's placing objects from save.
+                Logger.Log($"Placing object of name \"{objName}\". This log only appears when setAsSelected is true.");
+            }
+
             if (!allCategoriesObjects.ContainsKey(objName))
             {
                 Logger.Error($"Can't find object with name \"{objName}\". Skipping it...");
@@ -1103,6 +1127,8 @@ namespace FS_LevelEditor
         {
             if (!EditorController.Instance.currentInstantiatedObjects.Any(x => x is LE_Player_Spawn && x.gameObject.activeSelf))
             {
+                Logger.Warning("Attemped to enter playmode but THERE'S NO PLAYER SPAWN OBJECT!");
+
                 Utilities.ShowCustomNotificationRed("There's no a Player Spawn object in the level.", 2f);
                 return;
             }
@@ -1126,6 +1152,8 @@ namespace FS_LevelEditor
 
                 // Also, enable navigation.
                 EditorUIManager.Instance.navigation.SetActive(true);
+
+                Logger.Log("Entering playmode...");
             }
         }
 

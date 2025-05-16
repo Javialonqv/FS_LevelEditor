@@ -875,12 +875,15 @@ namespace FS_LevelEditor
             // Switch!
             inLEMenu = !inLEMenu;
 
+
             if (inLEMenu)
             {
+                Logger.Log("Switching from main menu to LE Menu!");
                 CreateLevelsList();
             }
             else
             {
+                Logger.Log("Switching from LE Menu to main menu!");
                 // Put the navigation bar exit button to its original state one we exit from the LE menu.
                 NavigationAction action = navigationBarButtonsParent.transform.GetChild(0).GetComponent<NavigationAction>();
                 action.transform.parent.gameObject.EnableAllChildren();

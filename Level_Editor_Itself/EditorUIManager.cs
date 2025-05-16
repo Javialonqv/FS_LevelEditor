@@ -995,6 +995,8 @@ namespace FS_LevelEditor
 
             // Set the paused variable in the LE controller.
             EditorController.Instance.isEditorPaused = true;
+
+            Logger.Log("LE paused!");
         }
         public void Resume()
         {
@@ -1028,6 +1030,8 @@ namespace FS_LevelEditor
                 // And set the paused variable in the controller as false.
                 EditorController.Instance.isEditorPaused = false;
             }
+
+            Logger.Log("LE resumed!");
         }
 
         public void ShowExitPopup()
@@ -1082,6 +1086,7 @@ namespace FS_LevelEditor
 
             popupController.Show();
             exitPopupEnabled = true;
+            Logger.Log("Showed LE exit popup!");
         }
         public void OnExitPopupBackButton()
         {
@@ -1112,6 +1117,7 @@ namespace FS_LevelEditor
         }
         public void SaveLevelWithPauseMenuButton()
         {
+            Logger.Log("Saving Level Data from pause menu...");
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
             PlaySavingLevelLabel();
             EditorController.Instance.levelHasBeenModified = false;
@@ -1126,6 +1132,8 @@ namespace FS_LevelEditor
 
             IEnumerator Coroutine()
             {
+                Logger.Log("About to exit from LE to main menu...");
+
                 if (saveDataBeforeExit)
                 {
                     // Save data.
@@ -1146,6 +1154,8 @@ namespace FS_LevelEditor
 
         public void PlayLevel()
         {
+            Logger.Log("About to enter playmode from LE pause menu...");
+
             // Save data automatically.
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
 
@@ -1164,6 +1174,8 @@ namespace FS_LevelEditor
 
             Destroy(editorUIParent);
             Destroy(pauseMenu.GetChildWithName("SavingLevelInPauseMenu"));
+
+            Logger.Log("LE UI deleted!");
         }
     }
 }

@@ -509,7 +509,7 @@ namespace FS_LevelEditor
             LE_Event eventToRename = GetEventsList()[eventID];
             eventToRename.eventName = inputRef.text;
 
-            Logger.DebugLog("RENAMED " + eventID + " TO: " + inputRef.text);
+            Logger.Log("RENAMED " + eventID + " TO: " + inputRef.text);
         }
         void OnEnableBtnClick()
         {

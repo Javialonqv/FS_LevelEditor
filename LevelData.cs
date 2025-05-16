@@ -188,7 +188,7 @@ namespace FS_LevelEditor
                 }
             }
 
-            Logger.Log($"\"{data.levelName}\" level loaded!");
+            Logger.Log($"\"{data.levelName}\" level loaded in the editor!");
         }
 
         // And this for loading the saved level in playmode lol.
