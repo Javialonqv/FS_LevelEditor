@@ -16,6 +16,14 @@ namespace FS_LevelEditor
 
         void Awake()
         {
+            properties = new Dictionary<string, object>()
+            {
+                { "RespawnTime", 60f }
+            };
+        }
+
+        void Start()
+        {
             if (PlayModeController.Instance != null)
             {
                 InitComponent();
@@ -50,7 +58,7 @@ namespace FS_LevelEditor
             health = gameObject.GetChildWithName("Content").AddComponent<Health>();
 
             health.preciseCollider = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<MeshCollider>();
-            health.respawnTime = 60;
+            Invoke("SetRespawnTime", 0.1f);
             health.timerBeforeRespawn = -1;
             health.generalGrowSpeed = 3;
             health.m_animComp = gameObject.GetChildWithName("Content").GetComponent<Animation>();
@@ -65,6 +73,34 @@ namespace FS_LevelEditor
             health.m_dissolve = disolve;
 
             gameObject.GetChildWithName("Content").SetActive(true);
+        }
+
+        // Since respawn time is fixed and is changed to default (20) at Start() of Ammo class, change it after 0.1s
+        void SetRespawnTime()
+        {
+            health.respawnTime = (float)GetProperty("RespawnTime");
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "RespawnTime")
+            {
+                if (value is string)
+                {
+                    if (float.TryParse((string)value, out float result))
+                    {
+                        properties["RespawnTime"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["RespawnTime"] = (float)value;
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -322,7 +322,7 @@ namespace FS_LevelEditor
             CreateSawAttributesPanel();
             CreateSawWaypointAttributesPanel();
             CreateSwitchAttributesPanel();
-            CreateAmmoPackAttributesPanel();
+            CreateAmmoAndHealthPackAttributesPanel();
         }
 
         void CreateNoAttributesPanel()
@@ -576,25 +576,25 @@ namespace FS_LevelEditor
             switchAttributes.SetActive(false);
             attrbutesPanels.Add("Switch", switchAttributes);
         }
-        void CreateAmmoPackAttributesPanel()
+        void CreateAmmoAndHealthPackAttributesPanel()
         {
             GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
-            GameObject ammoAttributes = new GameObject("AmmoPackAttributes");
-            ammoAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
-            ammoAttributes.transform.localPosition = Vector3.zero;
-            ammoAttributes.transform.localScale = Vector3.one;
+            GameObject ammoHealthAttributes = new GameObject("AmmoAndHealthPackAttributes");
+            ammoHealthAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            ammoHealthAttributes.transform.localPosition = Vector3.zero;
+            ammoHealthAttributes.transform.localScale = Vector3.one;
 
             #region Respawn Time Input Field
-            GameObject respawnTitle = Instantiate(labelTemplate, ammoAttributes.transform);
+            GameObject respawnTitle = Instantiate(labelTemplate, ammoHealthAttributes.transform);
             respawnTitle.name = "RespawnTitle";
             respawnTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
             respawnTitle.RemoveComponent<UILocalize>();
             respawnTitle.GetComponent<UILabel>().text = "Respawn Time";
             respawnTitle.GetComponent<UILabel>().color = Color.white;
 
-            GameObject respawnInputField = NGUI_Utils.CreateInputField(ammoAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27);
+            GameObject respawnInputField = NGUI_Utils.CreateInputField(ammoHealthAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27);
             respawnInputField.name = "RespawnInputField";
             respawnInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
             respawnInputField.GetComponent<UILabel>().color = Color.gray;
@@ -608,8 +608,8 @@ namespace FS_LevelEditor
             respawnInputField.GetComponent<UIInput>().onChange.Add(respawnDelegate);
             #endregion
 
-            ammoAttributes.SetActive(false);
-            attrbutesPanels.Add("Ammo", ammoAttributes);
+            ammoHealthAttributes.SetActive(false);
+            attrbutesPanels.Add("AmmoAndHealth", ammoHealthAttributes);
         }
 
         public void SetSelectedObjPanelAsNone()
@@ -678,11 +678,11 @@ namespace FS_LevelEditor
                 var canUseTaserToggle = attrbutesPanels["Switch"].GetChildWithName("CanUseTaserToggle").GetComponent<UIToggle>();
                 canUseTaserToggle.Set((bool)objComponent.GetProperty("CanUseTaser"));
             }
-            else if (objComponent.objectOriginalName == "Ammo Pack")
+            else if (objComponent.objectOriginalName == "Ammo Pack" || objComponent.objectOriginalName == "Health Pack")
             {
-                attrbutesPanels["Ammo"].SetActive(true);
+                attrbutesPanels["AmmoAndHealth"].SetActive(true);
 
-                var respawnTimeInputField = attrbutesPanels["Ammo"].GetChildWithName("RespawnInputField").GetComponent<UIInput>();
+                var respawnTimeInputField = attrbutesPanels["AmmoAndHealth"].GetChildWithName("RespawnInputField").GetComponent<UIInput>();
                 respawnTimeInputField.text = (float)objComponent.GetProperty("RespawnTime") + "";
             }
             else
