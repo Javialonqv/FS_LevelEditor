@@ -123,5 +123,14 @@ namespace FS_LevelEditor.UI_Related
 
             return '\0';
         }
+        public static char ValidateNonNegativeInt(string text, int charIndex, char addedChar)
+        {
+            if (char.IsDigit(addedChar))
+            {
+                return addedChar;
+            }
+
+            return '\0';
+        }
     }
 }
