@@ -600,8 +600,8 @@ namespace FS_LevelEditor
             respawnInputField.GetComponent<UILabel>().color = Color.gray;
             respawnInputField.GetComponent<UIInput>().defaultText = "50";
             respawnInputField.GetComponent<UIInput>().activeTextColor = Color.white;
-            respawnInputField.GetComponent<UIInput>().validation = UIInput.Validation.Float;
             respawnInputField.GetComponent<UIInput>().onChange.Clear();
+            respawnInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
             var respawnDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "RespawnTime"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "inputField", respawnInputField.GetComponent<UIInput>()));

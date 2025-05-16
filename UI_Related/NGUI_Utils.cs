@@ -109,5 +109,19 @@ namespace FS_LevelEditor.UI_Related
 
             return eventDelegate;
         }
+
+        public static char ValidateNonNegativeFloat(string text, int charIndex, char addedChar)
+        {
+            if (char.IsDigit(addedChar) || addedChar == '.')
+            {
+                if (addedChar == '.' && text.Contains('.'))
+                {
+                    return '\0';
+                }
+                return addedChar;
+            }
+
+            return '\0';
+        }
     }
 }
