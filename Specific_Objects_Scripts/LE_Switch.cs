@@ -47,6 +47,11 @@ namespace FS_LevelEditor
                 { "OnDeactivatedEvents", new List<LE_Event>() },
                 { "OnChangeEvents", new List<LE_Event>() }
             };
+
+            if (EditorController.Instance != null)
+            {
+                CreateInEditorLinksToTargetObjects();
+            }
         }
 
         void Start()
@@ -54,11 +59,6 @@ namespace FS_LevelEditor
             if (PlayModeController.Instance != null)
             {
                 InitComponent();
-            }
-
-            if (EditorController.Instance != null)
-            {
-                CreateInEditorLinksToTargetObjects();
             }
         }
 
