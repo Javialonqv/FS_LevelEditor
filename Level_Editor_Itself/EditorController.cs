@@ -1101,6 +1101,12 @@ namespace FS_LevelEditor
 
         public void EnterPlayMode()
         {
+            if (!EditorController.Instance.currentInstantiatedObjects.Any(x => x is LE_Player_Spawn && x.gameObject.activeSelf))
+            {
+                Utilities.ShowCustomNotificationRed("There's no a Player Spawn object in the level.", 2f);
+                return;
+            }
+
             MelonCoroutines.Start(Coroutine());
 
             IEnumerator Coroutine()
