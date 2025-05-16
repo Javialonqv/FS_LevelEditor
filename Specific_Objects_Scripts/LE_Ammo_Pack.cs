@@ -13,9 +13,17 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Ammo_Pack : LE_Object
     {
-        Health health;
+        Ammo ammo;
 
         void Awake()
+        {
+            properties = new Dictionary<string, object>()
+            {
+                { "RespawnTime", 20f }
+            };
+        }
+
+        void Start()
         {
             if (PlayModeController.Instance != null)
             {
@@ -46,7 +54,7 @@ namespace FS_LevelEditor
             disolve.endOffset = 0.8f;
             disolve.ignoreTimeScale = true;
 
-            Ammo ammo = gameObject.GetChildWithName("Content").AddComponent<Ammo>();
+            ammo = gameObject.GetChildWithName("Content").AddComponent<Ammo>();
 
             ammo.preciseCollider = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<MeshCollider>();
             ammo.preciseCollider2 = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<CapsuleCollider>();
@@ -54,6 +62,7 @@ namespace FS_LevelEditor
             ammo.m_boxCollider = gameObject.GetChildWithName("Content").GetComponent<BoxCollider>();
             ammo.mesh = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
             ammo.timerBeforeRespawn = -1;
+            Invoke("SetRespawnTime", 0.1f);
             ammo.generalGrowSpeed = 3;
             ammo.xScaleSpeed = 2;
             ammo.yScaleSpeed = 1;
@@ -63,6 +72,34 @@ namespace FS_LevelEditor
             ammo.m_dissolve = disolve;
 
             gameObject.GetChildWithName("Content").SetActive(true);
+        }
+
+        // Since respawn time is fixed and is changed to default (20) at Start() of Ammo class, change it after 0.1s
+        void SetRespawnTime()
+        {
+            ammo.respawnTime = (float)GetProperty("RespawnTime");
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "RespawnTime")
+            {
+                if (value is string)
+                {
+                    if (float.TryParse((string)value, out float result))
+                    {
+                        properties["RespawnTime"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["RespawnTime"] = (float)value;
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

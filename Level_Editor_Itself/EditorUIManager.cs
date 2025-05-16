@@ -322,6 +322,7 @@ namespace FS_LevelEditor
             CreateSawAttributesPanel();
             CreateSawWaypointAttributesPanel();
             CreateSwitchAttributesPanel();
+            CreateAmmoPackAttributesPanel();
         }
 
         void CreateNoAttributesPanel()
@@ -575,6 +576,41 @@ namespace FS_LevelEditor
             switchAttributes.SetActive(false);
             attrbutesPanels.Add("Switch", switchAttributes);
         }
+        void CreateAmmoPackAttributesPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject ammoAttributes = new GameObject("AmmoPackAttributes");
+            ammoAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            ammoAttributes.transform.localPosition = Vector3.zero;
+            ammoAttributes.transform.localScale = Vector3.one;
+
+            #region Respawn Time Input Field
+            GameObject respawnTitle = Instantiate(labelTemplate, ammoAttributes.transform);
+            respawnTitle.name = "RespawnTitle";
+            respawnTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            respawnTitle.RemoveComponent<UILocalize>();
+            respawnTitle.GetComponent<UILabel>().text = "Respawn Time";
+            respawnTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject respawnInputField = NGUI_Utils.CreateInputField(ammoAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27);
+            respawnInputField.name = "RespawnInputField";
+            respawnInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
+            respawnInputField.GetComponent<UILabel>().color = Color.gray;
+            respawnInputField.GetComponent<UIInput>().defaultText = "50";
+            respawnInputField.GetComponent<UIInput>().activeTextColor = Color.white;
+            respawnInputField.GetComponent<UIInput>().validation = UIInput.Validation.Float;
+            respawnInputField.GetComponent<UIInput>().onChange.Clear();
+            var respawnDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "RespawnTime"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", respawnInputField.GetComponent<UIInput>()));
+            respawnInputField.GetComponent<UIInput>().onChange.Add(respawnDelegate);
+            #endregion
+
+            ammoAttributes.SetActive(false);
+            attrbutesPanels.Add("Ammo", ammoAttributes);
+        }
 
         public void SetSelectedObjPanelAsNone()
         {
@@ -641,6 +677,13 @@ namespace FS_LevelEditor
                 // Set can use taser toggle...
                 var canUseTaserToggle = attrbutesPanels["Switch"].GetChildWithName("CanUseTaserToggle").GetComponent<UIToggle>();
                 canUseTaserToggle.Set((bool)objComponent.GetProperty("CanUseTaser"));
+            }
+            else if (objComponent.objectOriginalName == "Ammo Pack")
+            {
+                attrbutesPanels["Ammo"].SetActive(true);
+
+                var respawnTimeInputField = attrbutesPanels["Ammo"].GetChildWithName("RespawnInputField").GetComponent<UIInput>();
+                respawnTimeInputField.text = (float)objComponent.GetProperty("RespawnTime") + "";
             }
             else
             {
