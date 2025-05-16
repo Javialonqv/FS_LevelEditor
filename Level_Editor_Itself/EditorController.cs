@@ -36,6 +36,7 @@ namespace FS_LevelEditor
         GameObject currentObjectToBuild;
         GameObject previewObjectToBuildObj = null;
         Vector3? lastHittenNormalByPreviewRay = null;
+        GameObject currentHittenSnapTrigger = null;
 
         // Related to current selected object for level building.
         public GameObject levelObjectsParent;
@@ -437,12 +438,16 @@ namespace FS_LevelEditor
                             {
                                 previewObjectToBuildObj.SetActive(true);
                                 previewObjectToBuildObj.transform.position = hit.collider.transform.position;
-                                previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
+                                // Only update the preview object rotation when the current snap trigger is different, so the user can rotate the preview object before placing it.
+                                if (currentHittenSnapTrigger != hit.collider.gameObject)
+                                {
+                                    currentHittenSnapTrigger = hit.collider.gameObject;
+                                    previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
+                                }
 
                                 // We don't need anything else, if the user wants to use snap to grid and this is the correct trigger to use, use this and break the loop.
                                 snapNow = true;
                                 breakAtTheEnd = true;
-
                             }
                             // If the user actually wants to use snap, but this isn't the right trigger BUT the first one was a trigger, start looping again till find the correct one.
                             else if (firstRayIsATrigger)
@@ -460,6 +465,9 @@ namespace FS_LevelEditor
                     // If no correct trigger was found, use the default behaviour.
                     if (!snapNow)
                     {
+                        // Set the current hitten snap trigger variable to null.
+                        currentHittenSnapTrigger = null;
+
                         // Set the preview object posiiton to the hit point.
                         previewObjectToBuildObj.SetActive(true);
                         previewObjectToBuildObj.transform.position = hit.point;
