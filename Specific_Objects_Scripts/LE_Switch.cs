@@ -48,14 +48,16 @@ namespace FS_LevelEditor
                 { "OnChangeEvents", new List<LE_Event>() }
             };
 
-            if (EditorController.Instance != null)
-            {
-                CreateInEditorLinksToTargetObjects();
-            }
+            CreateEditorLinksParent();
         }
 
         void Start()
         {
+            if (EditorController.Instance != null)
+            {
+                CreateInEditorLinksToTargetObjects();
+            }
+
             if (PlayModeController.Instance != null)
             {
                 InitComponent();
@@ -225,15 +227,19 @@ namespace FS_LevelEditor
             editorLinksParent.SetActive(false);
             dontDisableLinksParentWhenCreating = false;
         }
+        void CreateEditorLinksParent()
+        {
+            editorLinksParent = new GameObject("EditorLinks");
+            editorLinksParent.transform.parent = transform;
+            editorLinksParent.transform.localPosition = Vector3.zero;
+        }
         void CreateInEditorLinksToTargetObjects()
         {
             if (EditorController.Instance == null) return;
 
             if (editorLinksParent == null)
             {
-                editorLinksParent = new GameObject("EditorLinks");
-                editorLinksParent.transform.parent = transform;
-                editorLinksParent.transform.localPosition = Vector3.zero;
+                CreateEditorLinksParent();
             }
             else
             {
