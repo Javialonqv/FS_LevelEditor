@@ -700,6 +700,8 @@ namespace FS_LevelEditor
 
             otherObjectsFromBundle = bundle.Load<GameObject>("OtherObjects").GetChilds();
 
+            Utilities.LoadMaterials(bundle);
+
             bundle.Unload(false);
         }
 

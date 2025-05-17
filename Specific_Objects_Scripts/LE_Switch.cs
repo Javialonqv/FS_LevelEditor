@@ -215,11 +215,13 @@ namespace FS_LevelEditor
 
         public override void OnSelect()
         {
+            base.OnSelect();
             editorLinksParent.SetActive(true);
             dontDisableLinksParentWhenCreating = true;
         }
         public override void OnDeselect(GameObject nextSelectedObj)
         {
+            base.OnDeselect(nextSelectedObj);
             editorLinksParent.SetActive(false);
             dontDisableLinksParentWhenCreating = false;
         }

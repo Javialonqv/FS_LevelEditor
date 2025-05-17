@@ -17,6 +17,9 @@ namespace FS_LevelEditor
     {
         static Coroutine customNotificationCoroutine;
 
+        static Material propsMat, propsNoSpecMat;
+        static Material propsTransMat, propsTransNoSpecMat;
+
         public static bool theresAnInputFieldSelected
         {
             get
@@ -28,6 +31,15 @@ namespace FS_LevelEditor
 
                 return false;
             }
+        }
+
+        public static void LoadMaterials(Il2CppAssetBundle bundle)
+        {
+            propsMat = bundle.Load<Material>("Props_Mat");
+            propsNoSpecMat = bundle.Load<Material>("Props_NoSpec");
+
+            propsTransMat = bundle.Load<Material>("PropsTransparent_Mat");
+            propsTransNoSpecMat = bundle.Load<Material>("PropsTransparent_NoSpec");
         }
 
         public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
@@ -353,6 +365,55 @@ namespace FS_LevelEditor
             }
 
             return value;
+        }
+
+        public static void SetTransparentMaterials(this GameObject gameObject)
+        {
+            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
+            {
+                Material[] materials = renderer.materials;
+                for (int i = 0; i < renderer.materials.Count; i++)
+                {
+                    if (renderer.materials[i].name.Contains("Props_Mat"))
+                    {
+                        materials[i] = new Material(propsTransMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                                        renderer.materials[i].color.b, 0.392f);
+                    }
+                    else if (renderer.materials[i].name.Contains("Props_NoSpec"))
+                    {
+                        materials[i] = new Material(propsTransNoSpecMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                renderer.materials[i].color.b, 0.392f);
+                    }
+                }
+
+                renderer.materials = materials;
+            }
+        }
+        public static void SetOpaqueMaterials(this GameObject gameObject)
+        {
+            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
+            {
+                Material[] materials = renderer.materials;
+                for (int i = 0; i < renderer.materials.Count; i++)
+                {
+                    if (renderer.materials[i].name.Contains("PropsTransparent_Mat"))
+                    {
+                        materials[i] = new Material(propsMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                renderer.materials[i].color.b, 1f);
+                    }
+                    else if (renderer.materials[i].name.Contains("PropsTransparent_NoSpec"))
+                    {
+                        materials[i] = new Material(propsNoSpecMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                renderer.materials[i].color.b, 1f);
+                    }
+                }
+
+                renderer.materials = materials;
+            }
         }
 
         public enum FS_UISound

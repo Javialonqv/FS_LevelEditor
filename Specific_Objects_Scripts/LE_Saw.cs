@@ -247,11 +247,13 @@ namespace FS_LevelEditor
 
         public override void OnSelect()
         {
+            base.OnSelect();
             HideOrShowAllWaypointsInEditor(true);
         }
 
         public override void OnDeselect(GameObject nextSelectedObj)
         {
+            base.OnDeselect(nextSelectedObj);
             HideOrShowAllWaypointsInEditor(false);
         }
 

@@ -252,11 +252,18 @@ namespace FS_LevelEditor
 
         public virtual void OnSelect()
         {
-
+            gameObject.SetOpaqueMaterials();
         }
         public virtual void OnDeselect(GameObject nextSelectedObj)
         {
-
+            if (!setActiveAtStart)
+            {
+                gameObject.SetTransparentMaterials();
+            }
+            else
+            {
+                gameObject.SetOpaqueMaterials();
+            }
         }
         public virtual void OnDelete()
         {

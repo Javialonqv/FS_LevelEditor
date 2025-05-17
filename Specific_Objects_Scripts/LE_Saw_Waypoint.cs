@@ -129,11 +129,14 @@ namespace FS_LevelEditor
 
         public override void OnSelect()
         {
+            base.OnSelect();
             mainSaw.HideOrShowAllWaypointsInEditor(true);
         }
 
         public override void OnDeselect(GameObject nextSelectedObj)
         {
+            base.OnDeselect(nextSelectedObj);
+
             // Make sure the parent is the main saw, just in case the user tried moving multiple objects at once.
             transform.parent = mainSaw.waypointsParent.transform;
 
