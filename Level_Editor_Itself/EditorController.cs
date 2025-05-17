@@ -1194,6 +1194,11 @@ namespace FS_LevelEditor
             {
                 collider.enabled = false;
             }
+            // STUPID CUBE PHYSICS!!
+            foreach (var rigidBody in previewObjectToBuildObj.TryGetComponents<Rigidbody>())
+            {
+                rigidBody.isKinematic = true;
+            }
             // Also change it's color to blue.
             foreach (var renderer in previewObjectToBuildObj.TryGetComponents<MeshRenderer>())
             {

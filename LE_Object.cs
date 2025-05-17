@@ -24,7 +24,8 @@ namespace FS_LevelEditor
             PACK,
             SAW,
             SWITCH,
-            PLAYER_SPAWN
+            PLAYER_SPAWN,
+            CUBE
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
