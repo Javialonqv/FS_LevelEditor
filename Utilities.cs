@@ -130,14 +130,15 @@ namespace FS_LevelEditor
 
         public static T[] TryGetComponents<T>(this GameObject obj) where T : Component
         {
+            List<T> components = new List<T>();
+
             if (obj.TryGetComponent<T>(out T component))
             {
-                return obj.GetComponents<T>();
+                components.AddRange(obj.GetComponents<T>());
             }
-            else
-            {
-                return obj.GetComponentsInChildren<T>();
-            }
+            components.AddRange(obj.GetComponentsInChildren<T>());
+
+            return components.ToArray();
         }
 
         public static Vector3 GetMousePositionInWorld()
