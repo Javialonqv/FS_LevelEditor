@@ -319,6 +319,16 @@ namespace FS_LevelEditor
         {
             foreach (LE_Event @event in events)
             {
+                if (@event.targetObjName == "Player")
+                {
+                    if (@event.enableOrDisableZeroG)
+                    {
+                        if (Controls.Instance.IsInZeroGravity()) Controls.Instance.DisableZeroGravityFromButton();
+                        else Controls.Instance.EnableZeroGravityFromButton();
+                    }
+                    continue;
+                }
+
                 LE_Object targetObj =
                     PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.objectFullNameWithID == @event.targetObjName);
 
