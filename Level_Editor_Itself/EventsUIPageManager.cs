@@ -49,6 +49,7 @@ namespace FS_LevelEditor
         //-----------------------------------
         GameObject playerSettings;
         UIToggle zeroGToggle;
+        UIToggle invertGravityToggle;
 
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
         CurrentEventType currentEventType;
@@ -708,6 +709,7 @@ namespace FS_LevelEditor
             setActiveDropdown.SelectOption((int)currentSelectedEvent.setActive);
             sawStateDropdown.SelectOption((int)currentSelectedEvent.sawState);
             zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
+            invertGravityToggle.Set(currentSelectedEvent.invertGravity);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -867,6 +869,7 @@ namespace FS_LevelEditor
 
             CreatePlayerSettingsTitleLabel();
             CreateZeroGToggle();
+            CreateInvertGravityToggle();
         }
         void CreatePlayerSettingsTitleLabel()
         {
@@ -895,9 +898,21 @@ namespace FS_LevelEditor
 
             GameObject toggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(-380f, 50f, 0f),
                 Vector3Int.one * 48, "Enable/Disable Zero G");
+            toggle.name = "EnableOrDisableZeroGToggle";
             zeroGToggle = toggle.GetComponent<UIToggle>();
             zeroGToggle.onChange.Clear();
             zeroGToggle.onChange.Add(new EventDelegate(this, nameof(OnZeroGToggleChanged)));
+        }
+        void CreateInvertGravityToggle()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+
+            GameObject toggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(50f, 50f, 0f),
+                Vector3Int.one * 48, "Invert Gravity");
+            toggle.name = "InvertGravityToggle";
+            invertGravityToggle = toggle.GetComponent<UIToggle>();
+            invertGravityToggle.onChange.Clear();
+            invertGravityToggle.onChange.Add(new EventDelegate(this, nameof(OnInvertGravityToggleChanged)));
         }
 
 
@@ -914,6 +929,10 @@ namespace FS_LevelEditor
         void OnZeroGToggleChanged()
         {
             currentSelectedEvent.enableOrDisableZeroG = zeroGToggle.isChecked;
+        }
+        void OnInvertGravityToggleChanged()
+        {
+            currentSelectedEvent.invertGravity = invertGravityToggle.isChecked;
         }
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -984,6 +1003,6 @@ public class LE_Event
 
     #region Player Options
     public bool enableOrDisableZeroG { get; set; } = false;
-    public bool invertGravity = false;
+    public bool invertGravity { get; set; } = false;
     #endregion
 }

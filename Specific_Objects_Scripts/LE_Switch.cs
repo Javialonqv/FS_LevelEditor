@@ -326,7 +326,11 @@ namespace FS_LevelEditor
                         if (Controls.Instance.IsInZeroGravity()) Controls.Instance.DisableZeroGravityFromButton();
                         else Controls.Instance.EnableZeroGravityFromButton();
                     }
-                    continue;
+                    else if (@event.invertGravity)
+                    {
+                        Controls.Instance.InverseGravity();
+                    }
+                        continue;
                 }
 
                 LE_Object targetObj =
