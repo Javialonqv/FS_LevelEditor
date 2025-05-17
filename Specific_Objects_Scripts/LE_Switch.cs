@@ -330,7 +330,7 @@ namespace FS_LevelEditor
                     {
                         Controls.Instance.InverseGravity();
                     }
-                        continue;
+                    continue;
                 }
 
                 LE_Object targetObj =
