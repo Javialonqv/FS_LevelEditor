@@ -12,7 +12,6 @@ using System.Collections;
 using Il2CppInControl.NativeDeviceProfiles;
 using static Il2Cpp.UIAtlas;
 using FS_LevelEditor.UI_Related;
-using System.Xml.Serialization;
 
 namespace FS_LevelEditor
 {
@@ -690,8 +689,16 @@ namespace FS_LevelEditor
                 attrbutesPanels["None"].SetActive(true);
             }
 
-            selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(true);
-            selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").GetComponent<UIToggle>().Set(objComponent.setActiveAtStart);
+            if (objComponent.canBeDisabledAtStart)
+            {
+                selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(true);
+                selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").GetComponent<UIToggle>().Set(objComponent.setActiveAtStart);
+            }
+            else
+            {
+                selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
+                objComponent.setActiveAtStart = true; // Just in case ;)
+            }
         }
 
         // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...

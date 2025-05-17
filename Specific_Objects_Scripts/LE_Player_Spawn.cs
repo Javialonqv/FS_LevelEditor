@@ -25,6 +25,8 @@ namespace FS_LevelEditor
         {
             currentInstances++;
 
+            canBeDisabledAtStart = false;
+
             spawnSprite = gameObject.GetChildWithName("Sprite");
 
             if (PlayModeController.Instance != null)
