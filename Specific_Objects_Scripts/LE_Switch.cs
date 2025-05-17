@@ -259,7 +259,9 @@ namespace FS_LevelEditor
                     // Not make a link if the target obj name in the event isn't valid, or it'll throw an error.
                     // For optimization purposes, also don't create a link to an already linked object in another event,
                     // doesn't matter the event type (On Activated, On Deactivated...).
-                    if (!@event.isValid || alreadyLinkedObjectsNames.Contains(@event.targetObjName)) continue;
+                    // ALSO, don't create editor links for the player related events.
+                    if (!@event.isValid || alreadyLinkedObjectsNames.Contains(@event.targetObjName) ||
+                        @event.targetObjName == "Player") continue;
 
                     GameObject linkObj = new GameObject("Link");
                     linkObj.transform.parent = editorLinksParent.transform;

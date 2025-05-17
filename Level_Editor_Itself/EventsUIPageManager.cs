@@ -46,6 +46,9 @@ namespace FS_LevelEditor
         //-----------------------------------
         GameObject sawObjectsSettings;
         UIDropdownPatcher sawStateDropdown;
+        //-----------------------------------
+        GameObject playerSettings;
+        UIToggle zeroGToggle;
 
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
         CurrentEventType currentEventType;
@@ -73,6 +76,7 @@ namespace FS_LevelEditor
 
                 Instance.CreateDefaultObjectSettings();
                 Instance.CreateSawObjectSettings();
+                Instance.CreatePlayerSettings();
 
                 Instance.CreateDetails();
             }
@@ -703,8 +707,10 @@ namespace FS_LevelEditor
 
             setActiveDropdown.SelectOption((int)currentSelectedEvent.setActive);
             sawStateDropdown.SelectOption((int)currentSelectedEvent.sawState);
+            zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
 
             eventSettingsPanel.SetActive(true);
+            eventOptionsParent.DisableAllChildren();
             OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
         void HideEventSettings()
@@ -719,12 +725,19 @@ namespace FS_LevelEditor
             bool objIsValid = false;
 
             #region Check if the object is valid
-            targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => obj.objectFullNameWithID == inputText);
-            if (targetObj)
+            if (inputText == "Player")
             {
-                if (targetObj.canBeUsedInEventsTab)
+                objIsValid = true;
+            }
+            else
+            {
+                targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => obj.objectFullNameWithID == inputText);
+                if (targetObj)
                 {
-                    objIsValid = true;
+                    if (targetObj.canBeUsedInEventsTab)
+                    {
+                        objIsValid = true;
+                    }
                 }
             }
             #endregion
@@ -735,8 +748,12 @@ namespace FS_LevelEditor
                 fieldSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
                 eventOptionsParent.SetActive(true);
 
-                defaultObjectsSettings.SetActive(true);
-                if (targetObj is LE_Saw)
+                if (inputText != "Player") defaultObjectsSettings.SetActive(true);
+                if (inputText == "Player")
+                {
+                    playerSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Saw)
                 {
                     sawObjectsSettings.SetActive(true);
                 }
@@ -839,6 +856,49 @@ namespace FS_LevelEditor
             sawStateDropdown = patcher;
             sawStateDropdownPanel.SetActive(true);
         }
+        // -----------------------------------------
+        void CreatePlayerSettings()
+        {
+            playerSettings = new GameObject("Player");
+            playerSettings.transform.parent = eventOptionsParent.transform;
+            playerSettings.transform.localPosition = Vector3.zero;
+            playerSettings.transform.localScale = Vector3.one;
+            playerSettings.SetActive(false);
+
+            CreatePlayerSettingsTitleLabel();
+            CreateZeroGToggle();
+        }
+        void CreatePlayerSettingsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, playerSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 800;
+            label.fontSize = 35;
+            label.text = "PLAYER OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 120f, 0f);
+        }
+        void CreateZeroGToggle()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+
+            GameObject toggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(-380f, 50f, 0f),
+                Vector3Int.one * 48, "Enable/Disable Zero G");
+            zeroGToggle = toggle.GetComponent<UIToggle>();
+            zeroGToggle.onChange.Clear();
+            zeroGToggle.onChange.Add(new EventDelegate(this, nameof(OnZeroGToggleChanged)));
+        }
 
 
         void OnSetActiveDropdownChanged()
@@ -849,6 +909,11 @@ namespace FS_LevelEditor
         void OnSawStateDropdownChanged()
         {
             currentSelectedEvent.sawState = (LE_Event.SawState)sawStateDropdown.currentlySelectedID;
+        }
+        // -----------------------------------------
+        void OnZeroGToggleChanged()
+        {
+            currentSelectedEvent.enableOrDisableZeroG = zeroGToggle.isChecked;
         }
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -915,5 +980,10 @@ public class LE_Event
     #region Saw Options
     public enum SawState { Do_Nothing, Activate, Deactivate, Toggle_State }
     public SawState sawState { get; set; } = SawState.Do_Nothing;
+    #endregion
+
+    #region Player Options
+    public bool enableOrDisableZeroG { get; set; } = false;
+    public bool invertGravity = false;
     #endregion
 }
