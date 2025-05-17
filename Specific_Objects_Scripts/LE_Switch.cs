@@ -53,6 +53,8 @@ namespace FS_LevelEditor
 
         void Start()
         {
+            // A few days ago I put this on the Awake() function, but if I did that, then the links weren't created
+            // correctly at the start of the editor, already fixed...
             if (EditorController.Instance != null)
             {
                 CreateInEditorLinksToTargetObjects();
