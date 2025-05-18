@@ -68,6 +68,7 @@ namespace FS_LevelEditor.UI_Related
             {
                 GameObject.Destroy(toggle.GetChildWithName("Label").GetComponent<UILocalize>());
                 toggle.GetChildWithName("Label").GetComponent<UILabel>().text = text;
+                // Bro, I'm not calculating a shit just to make the collider of the toggle with text work!! FORGET IT
             }
 
             return toggle;
