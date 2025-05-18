@@ -153,8 +153,14 @@ namespace FS_LevelEditor
             bool activateOnStart = (bool)GetProperty("ActivateOnStart");
             if (activateOnStart)
             {
-                laser.Activate();
+                Invoke("ActivateLaserDelayed", 0.1f);
             }
+        }
+
+        // This method is meant to be invoked with Invoke().
+        void ActivateLaserDelayed()
+        {
+            laser.Activate();
         }
 
         public override bool SetProperty(string name, object value)

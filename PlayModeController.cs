@@ -84,6 +84,7 @@ namespace FS_LevelEditor
                 if (obj.name == "Checkpoints") continue;
                 if (obj.name == "LevelObjects") continue;
                 if (obj.name == "Player") continue;
+                if (obj.name == "GUI") continue;
 
                 obj.SetActive(false);
             }
