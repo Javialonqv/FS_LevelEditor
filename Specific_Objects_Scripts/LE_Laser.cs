@@ -153,7 +153,7 @@ namespace FS_LevelEditor
             bool activateOnStart = (bool)GetProperty("ActivateOnStart");
             if (activateOnStart)
             {
-                Invoke("ActivateLaserDelayed", 0.1f);
+                Invoke("ActivateLaserDelayed", 0.2f);
             }
         }
 
