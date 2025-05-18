@@ -35,6 +35,11 @@ namespace FS_LevelEditor
 
         void Start()
         {
+            if (EditorController.Instance)
+            {
+                SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
+            }
+
             if (PlayModeController.Instance)
             {
                 InitComponent();
@@ -158,6 +163,7 @@ namespace FS_LevelEditor
             {
                 if (value is bool)
                 {
+                    if (EditorController.Instance != null) SetMeshOnEditor((bool)value);
                     properties["ActivateOnStart"] = (bool)value;
                     return true;
                 }
@@ -197,6 +203,12 @@ namespace FS_LevelEditor
             }
 
             return base.TriggerAction(actionName);
+        }
+
+        void SetMeshOnEditor(bool isLaserOn)
+        {
+            gameObject.GetChildAt("Content/MeshOff").GetComponent<MeshRenderer>().enabled = !isLaserOn;
+            gameObject.GetChildAt("Content/MeshOn").GetComponent<MeshRenderer>().enabled = isLaserOn;
         }
     }
 }
