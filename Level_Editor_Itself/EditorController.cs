@@ -733,7 +733,7 @@ namespace FS_LevelEditor
                 {
                     foreach (var material in renderer.materials)
                     {
-                        material.color = new Color(1f, 1f, 1f, 1f);
+                        material.color = new Color(1f, 1f, 1f, material.color.a);
                     }
                 }
             }
@@ -857,7 +857,7 @@ namespace FS_LevelEditor
                 {
                     foreach (var material in renderer.materials)
                     {
-                        material.color = new Color(0f, 1f, 0f, 1f);
+                        material.color = new Color(0f, 1f, 0f, material.color.a);
                     }
                 }
 
