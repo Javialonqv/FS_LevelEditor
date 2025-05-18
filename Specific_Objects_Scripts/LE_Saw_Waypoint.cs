@@ -34,6 +34,7 @@ namespace FS_LevelEditor
 
             canUndoDeletion = false;
             canBeUsedInEventsTab = false;
+            canBeDisabledAtStart = false;
 
             if (PlayModeController.Instance == null)
             {
