@@ -23,6 +23,7 @@ namespace FS_LevelEditor
         GameObject occluder;
         GameObject previousEventPageButton, nextEventPageButton;
         GameObject currentEventPageLabel;
+        GameObject noEventsLabel;
 
         GameObject onActivatedButton;
         GameObject onDeactivatedButton;
@@ -225,12 +226,14 @@ namespace FS_LevelEditor
                 CreatePreviousEventsPageButton();
                 CreateNextEventsPageButton();
                 CreateCurrentEventsPageLabel();
+                CreateNoEventsLabel();
             }
 
             List<LE_Event> events = GetEventsList();
 
-            // Destroy the whole grids, but skip the first three objects which are the previous & next event page buttons AND the current page label.
-            for (int i = 3; i < eventsListBg.transform.childCount; i++)
+            // Destroy the whole grids, but skip the first four objects which are the previous & next event page button
+            // AND the current page label AND the no events label.
+            for (int i = 4; i < eventsListBg.transform.childCount; i++)
             {
                 Destroy(eventsListBg.transform.GetChild(i).gameObject);
             }
@@ -419,6 +422,9 @@ namespace FS_LevelEditor
             nextEventPageButton.SetActive(eventsGridList.Count > 1);
             currentEventPageLabel.SetActive(eventsGridList.Count > 1);
 
+            // Enable the No Events Label in case there aren't any events...
+            noEventsLabel.SetActive(eventsGridList.Count == 0);
+
             // Update the state of the page buttons and the page label in case now they're enabled.
             previousEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid > 0;
             nextEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid < eventsGridList.Count - 1;
@@ -514,6 +520,28 @@ namespace FS_LevelEditor
 
             // Change the label position AFTER changing the pivot.
             currentEventPageLabel.transform.localPosition = new Vector3(0f, 300f, 0f);
+        }
+        void CreateNoEventsLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            noEventsLabel = Instantiate(labelTemplate, eventsListBg.transform);
+            noEventsLabel.name = "NoEventsLabel";
+            noEventsLabel.transform.localScale = Vector3.one;
+
+            Destroy(noEventsLabel.GetComponent<UILocalize>());
+
+            UILabel label = noEventsLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 30;
+            label.width = 800;
+            label.fontSize = 30;
+            label.color = new Color(1f, 1f, 0f, 1f);
+            label.text = "No Events Yet";
+
+            // Change the label position AFTER changing the pivot.
+            noEventsLabel.transform.localPosition = new Vector3(0f, 220f, 0f);
         }
 
         void RenameEvent(int eventID, UIInput inputRef)
