@@ -21,12 +21,13 @@ namespace FS_LevelEditor
                 { "ActivateOnStart", true }
             };
 
+            // Disable the laser "original" colliders because they break the LE selection system.
             if (EditorController.Instance)
             {
                 gameObject.GetChildAt("Content/MeshOff").GetComponent<BoxCollider>().enabled = false;
                 gameObject.GetChildAt("Content/MeshOn").GetComponent<BoxCollider>().enabled = false;
             }
-            else
+            else // The laser object contains a collider to use during LE only, disable it on playmode.
             {
                 gameObject.GetChildAt("EditorCollider").SetActive(false);
             }
