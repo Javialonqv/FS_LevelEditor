@@ -1,4 +1,5 @@
 ﻿using Il2Cpp;
+using Il2CppI2.Loc;
 using Il2CppInControl.NativeDeviceProfiles;
 using Il2CppSystem;
 using MelonLoader;
@@ -420,7 +421,9 @@ namespace FS_LevelEditor
         public enum FS_UISound
         {
             POPUP_UI_SHOW,
-            POPUP_UI_HIDE
+            POPUP_UI_HIDE,
+            INTERACTION_AVAILABLE,
+            INTERACTION_UNAVAILABLE
         }
         public static void PlayFSUISound(FS_UISound sound)
         {
@@ -429,6 +432,12 @@ namespace FS_LevelEditor
                 PopupController popup = GameObject.Find("MainMenu/Camera/Holder/Popup").GetComponent<PopupController>();
                 AudioClip toPlay = sound == FS_UISound.POPUP_UI_SHOW ? popup.showPopupSound : popup.hidePopupSound;
                 popup.audioSourceToUse.PlayOneShot(toPlay);
+            }
+            else if (sound == FS_UISound.INTERACTION_AVAILABLE || sound == FS_UISound.INTERACTION_UNAVAILABLE)
+            {
+                AudioClip toPlay = sound == FS_UISound.INTERACTION_AVAILABLE ? InGameUIManager.Instance.interactionAvailableSound :
+                    InGameUIManager.Instance.interactionNoLongerAvailableSound;
+                MenuController.GetInstance().m_uiAudioSource.PlayOneShot(toPlay);
             }
         }
     }

@@ -554,6 +554,8 @@ namespace FS_LevelEditor
         }
         void OnEnableBtnClick()
         {
+            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+
             onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
             onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
@@ -565,6 +567,8 @@ namespace FS_LevelEditor
         }
         void OnDisableBtnClick()
         {
+            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+
             onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
             onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
@@ -576,6 +580,8 @@ namespace FS_LevelEditor
         }
         void OnChangeBtnClick()
         {
+            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+
             onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
@@ -587,6 +593,8 @@ namespace FS_LevelEditor
         }
         void AddNewEvent()
         {
+            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_UNAVAILABLE);
+
             switch (currentEventType)
             {
                 case CurrentEventType.OnEnable:
@@ -645,6 +653,8 @@ namespace FS_LevelEditor
         }
         void OnEventSelect(int selectedID)
         {
+            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_UNAVAILABLE);
+
             // GetEventsList should return the same events list that when creating the events list, it should be fine :)
             // *Comment copied from RenameEvent() LOL.
             currentSelectedEvent = GetEventsList()[selectedID];
