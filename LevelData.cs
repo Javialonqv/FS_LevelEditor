@@ -186,6 +186,12 @@ namespace FS_LevelEditor
                         objClassInstance.SetProperty(property.Key, Utilities.ConvertFromSerializableValue(property.Value));
                     }
                 }
+
+                // In case the object is defined to be disabled at start, change its materials to transparent.
+                if (!objClassInstance.setActiveAtStart)
+                {
+                    objInstance.SetTransparentMaterials();
+                }
             }
 
             Logger.Log($"\"{data.levelName}\" level loaded in the editor!");
