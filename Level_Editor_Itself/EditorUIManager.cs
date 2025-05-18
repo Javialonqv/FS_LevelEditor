@@ -322,6 +322,7 @@ namespace FS_LevelEditor
             CreateSawWaypointAttributesPanel();
             CreateSwitchAttributesPanel();
             CreateAmmoAndHealthPackAttributesPanel();
+            CreateLaserAttributesPanel();
         }
 
         void CreateNoAttributesPanel()
@@ -610,6 +611,36 @@ namespace FS_LevelEditor
             ammoHealthAttributes.SetActive(false);
             attrbutesPanels.Add("AmmoAndHealth", ammoHealthAttributes);
         }
+        void CreateLaserAttributesPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject laserAttributes = new GameObject("LaserAttributes");
+            laserAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            laserAttributes.transform.localPosition = Vector3.zero;
+            laserAttributes.transform.localScale = Vector3.one;
+
+            #region Activate On Start Toggle
+            GameObject activateOnStartTitle = Instantiate(labelTemplate, laserAttributes.transform);
+            activateOnStartTitle.name = "ActivateOnStartTitle";
+            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            activateOnStartTitle.RemoveComponent<UILocalize>();
+            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
+            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(laserAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
+            activateOnStartToggle.name = "ActivateOnStartToggle";
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
+            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            #endregion
+
+            laserAttributes.SetActive(false);
+            attrbutesPanels.Add("Laser", laserAttributes);
+        }
 
         public void SetSelectedObjPanelAsNone()
         {
@@ -683,6 +714,14 @@ namespace FS_LevelEditor
 
                 var respawnTimeInputField = attrbutesPanels["AmmoAndHealth"].GetChildWithName("RespawnInputField").GetComponent<UIInput>();
                 respawnTimeInputField.text = (float)objComponent.GetProperty("RespawnTime") + "";
+            }
+            else if (objComponent.objectOriginalName == "Laser")
+            {
+                attrbutesPanels["Laser"].SetActive(true);
+
+                // Set activate on start toggle...
+                var activateOnStartToggle = attrbutesPanels["Laser"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
+                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
             }
             else
             {

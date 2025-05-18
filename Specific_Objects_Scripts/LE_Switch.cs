@@ -383,6 +383,23 @@ namespace FS_LevelEditor
                         ((LE_Cube)targetObj).TriggerAction("RespawnCube");
                     }
                 }
+                else if (targetObj is LE_Laser)
+                {
+                    switch (@event.laserState)
+                    {
+                        case LE_Event.LaserState.Activate:
+                            ((LE_Laser)targetObj).TriggerAction("Activate");
+                            break;
+
+                        case LE_Event.LaserState.Deactivate:
+                            ((LE_Laser)targetObj).TriggerAction("Deactivate");
+                            break;
+
+                        case LE_Event.LaserState.Toggle_State:
+                            ((LE_Laser)targetObj).TriggerAction("ToggleActivated");
+                            break;
+                    }
+                }
             }
         }
     }

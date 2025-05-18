@@ -53,6 +53,9 @@ namespace FS_LevelEditor
         //-----------------------------------
         GameObject cubeObjectsSettings;
         UIToggle respawnCubeToggle;
+        //-----------------------------------
+        GameObject laserObjectsSettings;
+        UIDropdownPatcher laserStateDropdown;
 
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
         CurrentEventType currentEventType;
@@ -82,6 +85,7 @@ namespace FS_LevelEditor
                 Instance.CreateSawObjectSettings();
                 Instance.CreatePlayerSettings();
                 Instance.CreateCubeObjectSettings();
+                Instance.CreateLaserObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -715,6 +719,7 @@ namespace FS_LevelEditor
             zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
             respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
+            laserStateDropdown.SelectOption((int)currentSelectedEvent.laserState);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -767,6 +772,10 @@ namespace FS_LevelEditor
                 else if (targetObj is LE_Cube)
                 {
                     cubeObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Laser)
+                {
+                    laserObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -973,6 +982,61 @@ namespace FS_LevelEditor
             respawnCubeToggle.onChange.Clear();
             respawnCubeToggle.onChange.Add(new EventDelegate(this, nameof(OnRespawnCubeChanged)));
         }
+        // -----------------------------------------
+        void CreateLaserObjectSettings()
+        {
+            laserObjectsSettings = new GameObject("Laser");
+            laserObjectsSettings.transform.parent = eventOptionsParent.transform;
+            laserObjectsSettings.transform.localPosition = Vector3.zero;
+            laserObjectsSettings.transform.localScale = Vector3.one;
+            laserObjectsSettings.SetActive(false);
+
+            CreateLaserObjectsTitleLabel();
+            CreateLaserStateDropdown();
+        }
+        void CreateLaserObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, laserObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 800;
+            label.fontSize = 35;
+            label.text = "LASER OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateLaserStateDropdown()
+        {
+            GameObject laserStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), laserObjectsSettings.transform);
+            laserStateDropdownPanel.name = "LaserStateDropdownPanel";
+            laserStateDropdownPanel.transform.localPosition = new Vector3(0f, -50f, 0f);
+            laserStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+
+            UIDropdownPatcher patcher = laserStateDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Laser State");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("Activate", false);
+            patcher.AddOption("Deactivate", false);
+            patcher.AddOption("Toggle State", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnLaserStateDropdownChanged)));
+
+            laserStateDropdown = patcher;
+            laserStateDropdownPanel.SetActive(true);
+        }
 
 
         void OnSetActiveDropdownChanged()
@@ -1009,6 +1073,11 @@ namespace FS_LevelEditor
         void OnRespawnCubeChanged()
         {
             currentSelectedEvent.respawnCube = respawnCubeToggle.isChecked;
+        }
+        // -----------------------------------------
+        void OnLaserStateDropdownChanged()
+        {
+            currentSelectedEvent.laserState = (LE_Event.LaserState)laserStateDropdown.currentlySelectedID;
         }
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -1084,5 +1153,10 @@ public class LE_Event
 
     #region Cube Options
     public bool respawnCube { get; set; } = false;
+    #endregion
+
+    #region Laser Options
+    public enum LaserState { Do_Nothing, Activate, Deactivate, Toggle_State }
+    public LaserState laserState { get; set; } = LaserState.Do_Nothing;
     #endregion
 }

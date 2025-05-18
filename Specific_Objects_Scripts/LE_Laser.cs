@@ -5,14 +5,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Il2Cpp.Interop;
 
 namespace FS_LevelEditor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Laser : LE_Object
     {
+        Laser_H_Controller laser;
+
         void Awake()
         {
+            properties = new Dictionary<string, object>()
+            {
+                { "ActivateOnStart", true }
+            };
+
             if (EditorController.Instance)
             {
                 gameObject.GetChildAt("Content/MeshOff").GetComponent<BoxCollider>().enabled = false;
@@ -36,7 +44,7 @@ namespace FS_LevelEditor
         {
             Laser_H_Controller template = FindObjectOfType<Laser_H_Controller>();
 
-            Laser_H_Controller laser = gameObject.GetChildWithName("Content").AddComponent<Laser_H_Controller>();
+            laser = gameObject.GetChildWithName("Content").AddComponent<Laser_H_Controller>();
             laser.laserOriginPoint = gameObject.GetChildAt("Content/LaserOriginPoint").transform;
             laser.laserHitDamage = 34;
             laser.onTurnOn = new UnityEngine.Events.UnityEvent();
@@ -136,7 +144,58 @@ namespace FS_LevelEditor
 
             laser.m_currentLaserImpactScript = point;
 
-            laser.Activate();
+            bool activateOnStart = (bool)GetProperty("ActivateOnStart");
+            if (activateOnStart)
+            {
+                laser.Activate();
+            }
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "ActivateOnStart")
+            {
+                if (value is bool)
+                {
+                    properties["ActivateOnStart"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "Activate")
+            {
+                laser.Activate();
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                laser.Deactivate();
+                return true;
+            }
+            else if (actionName == "ToggleActivated")
+            {
+                if (laser.activated)
+                {
+                    laser.Deactivate();
+                }
+                else
+                {
+                    laser.Activate();
+                }
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
         }
     }
 }
