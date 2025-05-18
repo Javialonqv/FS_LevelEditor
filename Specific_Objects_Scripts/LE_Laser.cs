@@ -18,7 +18,8 @@ namespace FS_LevelEditor
         {
             properties = new Dictionary<string, object>()
             {
-                { "ActivateOnStart", true }
+                { "ActivateOnStart", true },
+                { "Damage", 34 }
             };
 
             // Disable the laser "original" colliders because they break the LE selection system.
@@ -52,7 +53,7 @@ namespace FS_LevelEditor
 
             laser = gameObject.GetChildWithName("Content").AddComponent<Laser_H_Controller>();
             laser.laserOriginPoint = gameObject.GetChildAt("Content/LaserOriginPoint").transform;
-            laser.laserHitDamage = 34;
+            laser.laserHitDamage = (int)GetProperty("Damage");
             laser.onTurnOn = new UnityEngine.Events.UnityEvent();
             laser.onTurnOff = new UnityEngine.Events.UnityEvent();
             laser.onExplode = new UnityEngine.Events.UnityEvent();
@@ -177,6 +178,22 @@ namespace FS_LevelEditor
                 {
                     Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
                     return false;
+                }
+            }
+            else if (name == "Damage")
+            {
+                if (value is string)
+                {
+                    if (int.TryParse((string)value, out int result))
+                    {
+                        properties["Damage"] = result;
+                        return true;
+                    }
+                }
+                else if (value is int)
+                {
+                    properties["Damage"] = (int)value;
+                    return true;
                 }
             }
 
