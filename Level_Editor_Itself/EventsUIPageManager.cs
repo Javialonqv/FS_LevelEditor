@@ -929,10 +929,22 @@ namespace FS_LevelEditor
         void OnZeroGToggleChanged()
         {
             currentSelectedEvent.enableOrDisableZeroG = zeroGToggle.isChecked;
+            // Both toggles can't be enabled!
+            if (zeroGToggle.isChecked && invertGravityToggle.isChecked)
+            {
+                invertGravityToggle.Set(false);
+                OnInvertGravityToggleChanged();
+            }
         }
         void OnInvertGravityToggleChanged()
         {
             currentSelectedEvent.invertGravity = invertGravityToggle.isChecked;
+            // Both toggles can't be enabled!
+            if (invertGravityToggle.isChecked && zeroGToggle.isChecked)
+            {
+                zeroGToggle.Set(false);
+                OnZeroGToggleChanged();
+            }
         }
 
         public void ShowEventsPage(LE_Object targetObj)
