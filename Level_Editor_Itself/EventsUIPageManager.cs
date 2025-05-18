@@ -611,6 +611,7 @@ namespace FS_LevelEditor
         }
         void DeleteEvent(int eventID)
         {
+            HideEventSettings();
             GetEventsList().RemoveAt(eventID);
             CreateEventsList(int.MaxValue);
         }
