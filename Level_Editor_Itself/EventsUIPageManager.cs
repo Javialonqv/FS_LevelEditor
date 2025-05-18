@@ -50,6 +50,9 @@ namespace FS_LevelEditor
         GameObject playerSettings;
         UIToggle zeroGToggle;
         UIToggle invertGravityToggle;
+        //-----------------------------------
+        GameObject cubeObjectsSettings;
+        UIToggle respawnCubeToggle;
 
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
         CurrentEventType currentEventType;
@@ -78,6 +81,7 @@ namespace FS_LevelEditor
                 Instance.CreateDefaultObjectSettings();
                 Instance.CreateSawObjectSettings();
                 Instance.CreatePlayerSettings();
+                Instance.CreateCubeObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -710,6 +714,7 @@ namespace FS_LevelEditor
             sawStateDropdown.SelectOption((int)currentSelectedEvent.sawState);
             zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
+            respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -758,6 +763,10 @@ namespace FS_LevelEditor
                 else if (targetObj is LE_Saw)
                 {
                     sawObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Cube)
+                {
+                    cubeObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -918,6 +927,52 @@ namespace FS_LevelEditor
             invertGravityToggle.onChange.Clear();
             invertGravityToggle.onChange.Add(new EventDelegate(this, nameof(OnInvertGravityToggleChanged)));
         }
+        // -----------------------------------------
+        void CreateCubeObjectSettings()
+        {
+            cubeObjectsSettings = new GameObject("Cube");
+            cubeObjectsSettings.transform.parent = eventOptionsParent.transform;
+            cubeObjectsSettings.transform.localPosition = Vector3.zero;
+            cubeObjectsSettings.transform.localScale = Vector3.one;
+            cubeObjectsSettings.SetActive(false);
+
+            CreateCubeObjectsTitleLabel();
+            CreateRespawnCubeToggle();
+        }
+        void CreateCubeObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, cubeObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 800;
+            label.fontSize = 35;
+            label.text = "CUBE OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateRespawnCubeToggle()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+
+            GameObject toggle = NGUI_Utils.CreateToggle(cubeObjectsSettings.transform, new Vector3(-140f, -30f, 0f),
+                Vector3Int.one * 48, "Respawn Cube");
+            toggle.name = "RespawnCubeToggle";
+            toggle.GetComponent<BoxCollider>().center = new Vector3(145, 0, 0);
+            toggle.GetComponent<BoxCollider>().size = new Vector3(265, 48);
+            respawnCubeToggle = toggle.GetComponent<UIToggle>();
+            respawnCubeToggle.onChange.Clear();
+            respawnCubeToggle.onChange.Add(new EventDelegate(this, nameof(OnRespawnCubeChanged)));
+        }
 
 
         void OnSetActiveDropdownChanged()
@@ -949,6 +1004,11 @@ namespace FS_LevelEditor
                 zeroGToggle.Set(false);
                 OnZeroGToggleChanged();
             }
+        }
+        // -----------------------------------------
+        void OnRespawnCubeChanged()
+        {
+            currentSelectedEvent.respawnCube = respawnCubeToggle.isChecked;
         }
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -1020,5 +1080,9 @@ public class LE_Event
     #region Player Options
     public bool enableOrDisableZeroG { get; set; } = false;
     public bool invertGravity { get; set; } = false;
+    #endregion
+
+    #region Cube Options
+    public bool respawnCube { get; set; } = false;
     #endregion
 }

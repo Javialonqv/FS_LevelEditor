@@ -13,6 +13,8 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Cube : LE_Object
     {
+        BlocScript blocScript;
+
         void Awake()
         {
             if (EditorController.Instance)
@@ -39,7 +41,7 @@ namespace FS_LevelEditor
                 .FirstOrDefault(x => x.name == "CameraRunRoom").GetChildAt("BeforeCamera/Activable/Bloc")
                 .GetComponent<BlocScript>();
 
-            BlocScript blocScript = gameObject.GetChildWithName("Content").AddComponent<BlocScript>();
+            blocScript = gameObject.GetChildWithName("Content").AddComponent<BlocScript>();
             blocScript.allCompoundColliders = new Il2CppSystem.Collections.Generic.List<Collider>();
             blocScript.transparentMeshFilter = gameObject.GetChildAt("Content/Bloc_TransparentMesh").GetComponent<MeshFilter>();
             blocScript.normalMesh = template.normalMesh;
@@ -129,6 +131,17 @@ namespace FS_LevelEditor
             blocScript.m_collisionAudioSource2.outputAudioMixerGroup = template.m_collisionAudioSource2.outputAudioMixerGroup;
 
             gameObject.GetChildWithName("Content").SetActive(true);
+        }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "RespawnCube")
+            {
+                blocScript.RespawnCubeNow();
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
         }
     }
 }

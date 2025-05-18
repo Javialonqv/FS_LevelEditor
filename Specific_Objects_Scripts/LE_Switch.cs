@@ -376,6 +376,13 @@ namespace FS_LevelEditor
                             break;
                     }
                 }
+                else if (targetObj is LE_Cube)
+                {
+                    if (@event.respawnCube)
+                    {
+                        ((LE_Cube)targetObj).TriggerAction("RespawnCube");
+                    }
+                }
             }
         }
     }
