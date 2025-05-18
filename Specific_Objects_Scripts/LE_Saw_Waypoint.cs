@@ -214,9 +214,10 @@ namespace FS_LevelEditor
                 }
             }
 
-            // Override the green color with the transparent white color for the waypoints.
+            // Force the damn waypoint to be transparent, for the love of god...
             if (show)
             {
+                gameObject.GetChildWithName("Mesh").SetTransparentMaterials();
                 gameObject.GetChildWithName("Mesh").GetComponent<MeshRenderer>().material.color = new Color(1f, 1f, 1f, 0.3921f);
             }
 
