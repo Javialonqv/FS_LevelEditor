@@ -102,6 +102,8 @@ namespace FS_LevelEditor
             light.soundOn = template.soundOn;
             light.useLightConePlanes = true;
             light.useTurnOn = true;
+            // LOVE YOU CHARLES FOR GIVING ME THIS VARIABLE!!!
+            light.stateAtStart = (bool)GetProperty("ActivateOnStart");
 
             gameObject.GetChildAt("ActivateTrigger").tag = "ActivateTrigger";
             gameObject.GetChildAt("ActivateTrigger").layer = LayerMask.NameToLayer("Ignore Raycast");
@@ -117,15 +119,6 @@ namespace FS_LevelEditor
 
             gameObject.SetActive(true);
 
-            if ((bool)GetProperty("ActivateOnStart"))
-            {
-                Invoke("EnableLightDelayed", 0.2f);
-            }
-        }
-
-        void EnableLightDelayed()
-        {
-            light.Activate();
         }
 
         public override bool SetProperty(string name, object value)
