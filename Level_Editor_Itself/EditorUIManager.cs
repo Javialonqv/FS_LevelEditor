@@ -692,6 +692,37 @@ namespace FS_LevelEditor
             activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
             #endregion
 
+            #region Color Input Field
+            GameObject colorTitle = Instantiate(labelTemplate, ceilingLightAttributes.transform);
+            colorTitle.name = "ColorTitle";
+            colorTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
+            colorTitle.RemoveComponent<UILocalize>();
+            colorTitle.GetComponent<UILabel>().text = "Color (Hex)";
+            colorTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject hashtagLOL = Instantiate(labelTemplate, ceilingLightAttributes.transform);
+            hashtagLOL.name = "ColorHashtag";
+            hashtagLOL.transform.localPosition = new Vector3(5f, 40f, 0f);
+            hashtagLOL.RemoveComponent<UILocalize>();
+            hashtagLOL.GetComponent<UILabel>().text = "#";
+            hashtagLOL.GetComponent<UILabel>().color = Color.white;
+            hashtagLOL.GetComponent<UILabel>().alignment = NGUIText.Alignment.Center;
+            hashtagLOL.GetComponent<UILabel>().width = 38;
+
+            GameObject colorInputField = NGUI_Utils.CreateInputField(ceilingLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27);
+            colorInputField.name = "ColorField";
+            colorInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
+            colorInputField.GetComponent<UILabel>().color = Color.gray;
+            colorInputField.GetComponent<UIInput>().characterLimit = 6;
+            colorInputField.GetComponent<UIInput>().defaultText = "ffffff";
+            colorInputField.GetComponent<UIInput>().activeTextColor = Color.white;
+            colorInputField.GetComponent<UIInput>().onChange.Clear();
+            var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInputField.GetComponent<UIInput>()));
+            colorInputField.GetComponent<UIInput>().onChange.Add(colorDelegate);
+            #endregion
+
             ceilingLightAttributes.SetActive(false);
             attrbutesPanels.Add("Ceiling Light", ceilingLightAttributes);
         }
@@ -788,6 +819,10 @@ namespace FS_LevelEditor
                 // Set activate on start toggle...
                 var activateOnStartToggle = attrbutesPanels["Ceiling Light"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
                 activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
+
+                // Set color input...
+                var colorInput = attrbutesPanels["Ceiling Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
+                colorInput.text = Utilities.ColorToHex((Color)objComponent.GetProperty("Color"));
             }
             else
             {
