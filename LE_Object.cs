@@ -42,6 +42,7 @@ namespace FS_LevelEditor
 
             { "DIRECTIONAL_LIGHT", ObjectType.LIGHT },
             { "POINT_LIGHT", ObjectType.LIGHT },
+            { "CEILING_LIGHT", ObjectType.LIGHT },
 
             { "VENT_WITH_SMOKE_GREEN", ObjectType.VENT_WITH_SMOKE },
             { "VENT_WITH_SMOKE_CYAN", ObjectType.VENT_WITH_SMOKE },

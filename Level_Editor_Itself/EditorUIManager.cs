@@ -324,6 +324,7 @@ namespace FS_LevelEditor
             CreateSwitchAttributesPanel();
             CreateAmmoAndHealthPackAttributesPanel();
             CreateLaserAttributesPanel();
+            CreateCeilingLightPanel();
         }
 
         void CreateNoAttributesPanel()
@@ -664,6 +665,36 @@ namespace FS_LevelEditor
             laserAttributes.SetActive(false);
             attrbutesPanels.Add("Laser", laserAttributes);
         }
+        void CreateCeilingLightPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject ceilingLightAttributes = new GameObject("CeilingLightAttributes");
+            ceilingLightAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            ceilingLightAttributes.transform.localPosition = Vector3.zero;
+            ceilingLightAttributes.transform.localScale = Vector3.one;
+
+            #region Activate On Start Toggle
+            GameObject activateOnStartTitle = Instantiate(labelTemplate, ceilingLightAttributes.transform);
+            activateOnStartTitle.name = "ActivateOnStartTitle";
+            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            activateOnStartTitle.RemoveComponent<UILocalize>();
+            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
+            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(ceilingLightAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
+            activateOnStartToggle.name = "ActivateOnStartToggle";
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
+            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            #endregion
+
+            ceilingLightAttributes.SetActive(false);
+            attrbutesPanels.Add("Ceiling Light", ceilingLightAttributes);
+        }
 
         public void SetSelectedObjPanelAsNone()
         {
@@ -687,7 +718,7 @@ namespace FS_LevelEditor
 
             attrbutesPanels.ToList().ForEach(x => x.Value.SetActive(false));
 
-            if (objComponent.objectOriginalName.Contains("Light"))
+            if (objComponent.objectOriginalName == "Directional Light" || objComponent.objectOriginalName == "Point Light")
             {
                 attrbutesPanels["Light"].SetActive(true);
 
@@ -749,6 +780,14 @@ namespace FS_LevelEditor
                 // Set the damage input field...
                 var damageInput = attrbutesPanels["Laser"].GetChildWithName("DamageInputField").GetComponent<UIInput>();
                 damageInput.text = (int)objComponent.GetProperty("Damage") + "";
+            }
+            else if (objComponent.objectOriginalName == "Ceiling Light")
+            {
+                attrbutesPanels["Ceiling Light"].SetActive(true);
+
+                // Set activate on start toggle...
+                var activateOnStartToggle = attrbutesPanels["Ceiling Light"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
+                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
             }
             else
             {
