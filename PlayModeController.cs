@@ -23,6 +23,7 @@ namespace FS_LevelEditor
 
         public string levelFileNameWithoutExtension;
         public string levelName;
+        public Dictionary<string, object> globalProperties = new Dictionary<string, object>();
 
         GameObject editorObjectsRootFromBundle;
         List<string> categories = new List<string>();
@@ -51,6 +52,7 @@ namespace FS_LevelEditor
         void Start()
         {
             TeleportPlayer();
+            ConfigureGlobalProperties();
         }
 
         // When the script obj is destroyed, that means the scene has changed, unload the asset bundle and destroy the back to LE button, since it'll be created again when entering...
@@ -88,6 +90,23 @@ namespace FS_LevelEditor
 
                 obj.SetActive(false);
             }
+        }
+
+        void ConfigureGlobalProperties()
+        {
+            if (!(bool)GetGlobalProperty("HasTaser"))
+            {
+                Controls.Instance.DeactivateWeapon();
+            }
+        }
+        object GetGlobalProperty(string name)
+        {
+            if (globalProperties.ContainsKey(name))
+            {
+                return globalProperties[name];
+            }
+
+            return null;
         }
 
         public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)

@@ -22,6 +22,7 @@ namespace FS_LevelEditor
         public long createdTime { get; set; }
         public long lastModificationTime { get; set; }
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
+        public Dictionary<string, object> globalProperties { get; set; } = new Dictionary<string, object>();
 
         public static int currentLevelObjsCount = 0;
 
@@ -64,6 +65,8 @@ namespace FS_LevelEditor
             {
                 EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = EditorController.Instance.multipleSelectedObjsParent.transform);
             }
+
+            data.globalProperties = new Dictionary<string, object>(EditorController.Instance.globalProperties);
 
             return data;
         }
@@ -194,6 +197,8 @@ namespace FS_LevelEditor
                 }
             }
 
+            EditorController.Instance.globalProperties = new Dictionary<string, object>(data.globalProperties);
+
             Logger.Log($"\"{data.levelName}\" level loaded in the editor!");
         }
 
@@ -244,6 +249,8 @@ namespace FS_LevelEditor
 
                 objInstance.SetActive(objClassInstance.setActiveAtStart);
             }
+
+            playModeCtrl.globalProperties = new Dictionary<string, object>(data.globalProperties);
 
             Logger.Log($"\"{data.levelName}\" level loaded in playmode!");
         }

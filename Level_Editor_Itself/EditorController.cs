@@ -73,6 +73,12 @@ namespace FS_LevelEditor
 
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
+        // ----------------------------
+        public Dictionary<string, object> globalProperties = new Dictionary<string, object>()
+        {
+            { "HasTaser", true }
+        };
+
         void Awake()
         {
             Instance = this;
@@ -300,6 +306,11 @@ namespace FS_LevelEditor
             {
                 EditorUIManager.Instance.ShowOrHideHelpPanel();
             }
+
+            if (Input.GetKeyDown(KeyCode.O))
+            {
+                EditorUIManager.Instance.ShowOrHideGlobalPropertiesPanel();
+            }
         }
 
         void ManageUndo()
@@ -392,7 +403,8 @@ namespace FS_LevelEditor
             {
                 case Mode.Building:
                     // Only enable the panel if the keybinds help panel is DISABLED.
-                    if (!EditorUIManager.Instance.helpPanel.activeSelf)
+                    if (!EditorUIManager.Instance.helpPanel.activeSelf &&
+                        !EditorUIManager.Instance.isShowingGlobalProperties)
                     {
                         EditorUIManager.Instance.categoryButtonsParent.SetActive(true);
                         EditorUIManager.Instance.currentCategoryBG.SetActive(true);

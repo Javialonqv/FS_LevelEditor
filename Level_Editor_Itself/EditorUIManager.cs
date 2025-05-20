@@ -13,6 +13,7 @@ using Il2CppInControl.NativeDeviceProfiles;
 using static Il2Cpp.UIAtlas;
 using FS_LevelEditor.UI_Related;
 using System.Xml.Serialization;
+using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor
 {
@@ -42,6 +43,8 @@ namespace FS_LevelEditor
         GameObject onExitPopupExitButton;
         bool exitPopupEnabled = false;
         public GameObject helpPanel;
+        GameObject globalPropertiesPanel;
+        public bool isShowingGlobalProperties;
 
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
@@ -95,6 +98,7 @@ namespace FS_LevelEditor
             CreateSavingLevelLabel();
             CreateCurrentModeLabel();
             CreateHelpPanel();
+            CreateGlobalPropertiesPanel();
 
             EventsUIPageManager.Create();
 
@@ -1078,6 +1082,121 @@ namespace FS_LevelEditor
             selectedObjPanel.SetActive(!isEnablingIt);
             currentModeLabel.gameObject.SetActive(!isEnablingIt);
         }
+
+        #region Global Properties Related
+        public void CreateGlobalPropertiesPanel()
+        {
+            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            #region Create Object With Background
+            globalPropertiesPanel = new GameObject("GlobalPropertiesPanel");
+            globalPropertiesPanel.transform.parent = editorUIParent.transform;
+            globalPropertiesPanel.transform.localScale = Vector3.one;
+            globalPropertiesPanel.transform.localPosition = new Vector3(1320f, 0f, 0f);
+
+            UISprite background = globalPropertiesPanel.AddComponent<UISprite>();
+            background.atlas = template.GetComponent<UISprite>().atlas;
+            background.spriteName = "Square_Border_Beveled_HighOpacity";
+            background.type = UIBasicSprite.Type.Sliced;
+            background.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            background.width = 650;
+            background.height = 1010;
+
+            BoxCollider collider = globalPropertiesPanel.AddComponent<BoxCollider>();
+            collider.size = new Vector2(650f, 1010f);
+
+            TweenPosition tween = globalPropertiesPanel.AddComponent<TweenPosition>();
+            tween.from = new Vector3(600f, 0f);
+            tween.to = new Vector3(1320f, 0f);
+            tween.duration = 0.2f;
+            tween.Invoke("ResetToBeginning", 0.1f);
+            #endregion
+
+            #region Create Title
+            GameObject title = new GameObject("Title");
+            title.transform.parent = globalPropertiesPanel.transform;
+            title.transform.localScale = Vector3.one;
+            title.transform.localPosition = new Vector3(0f, 460f, 0f);
+
+            UILabel titleLabel = title.AddComponent<UILabel>();
+            titleLabel.depth = 1;
+            titleLabel.font = labelTemplate.GetComponent<UILabel>().font;
+            titleLabel.text = "Global Properties";
+            titleLabel.fontSize = 30;
+            titleLabel.width = 600;
+            titleLabel.height = 30;
+            #endregion
+
+            #region Create Has Taser Toggle
+            GameObject hasTaserToggle = NGUI_Utils.CreateToggle(globalPropertiesPanel.transform,
+                new Vector3(-300f, 350f), Vector3Int.one * 42, "Has Taser");
+            hasTaserToggle.name = "HasTaserToggle";
+            hasTaserToggle.GetComponent<BoxCollider>().center = new Vector3(120, 0, 0);
+            hasTaserToggle.GetComponent<BoxCollider>().size = new Vector3(210, 48);
+            EventDelegate hasTaserDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "name", "HasTaser"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", hasTaserToggle.GetComponent<UIToggle>()));
+            hasTaserToggle.GetComponent<UIToggle>().onChange.Clear();
+            hasTaserToggle.GetComponent<UIToggle>().onChange.Add(hasTaserDelegate);
+            #endregion
+        }
+        public void ShowOrHideGlobalPropertiesPanel()
+        {
+            isShowingGlobalProperties = !isShowingGlobalProperties;
+
+            if (isShowingGlobalProperties) RefreshGlobalPropertiesPanelValues();
+
+            if (isShowingGlobalProperties) globalPropertiesPanel.GetComponent<TweenPosition>().PlayReverse();
+            else globalPropertiesPanel.GetComponent<TweenPosition>().PlayForward();
+
+            // Only enable these panels if the current editor mode is building.
+            if (EditorController.Instance.currentMode == EditorController.Mode.Building && !isShowingGlobalProperties)
+            {
+                categoryButtonsParent.SetActive(true);
+                currentCategoryBG.SetActive(true);
+            }
+            else
+            {
+                categoryButtonsParent.SetActive(false);
+                currentCategoryBG.SetActive(false);
+            }
+
+            selectedObjPanel.SetActive(!isShowingGlobalProperties);
+            currentModeLabel.gameObject.SetActive(!isShowingGlobalProperties);
+        }
+        void RefreshGlobalPropertiesPanelValues()
+        {
+            GameObject panel = globalPropertiesPanel;
+
+            panel.GetChildWithName("HasTaserToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasTaser"));
+        }
+
+        public void SetGlobalPropertyWithToggle(string name, UIToggle toggle)
+        {
+            SetGlobalProperty(name, toggle.isChecked);
+        }
+        public void SetGlobalProperty(string name, object value)
+        {
+            if (EditorController.Instance.globalProperties.ContainsKey(name))
+            {
+                if (EditorController.Instance.globalProperties[name].GetType().Name == value.GetType().Name)
+                {
+                    EditorController.Instance.globalProperties[name] = value;
+                    EditorController.Instance.levelHasBeenModified = true;
+                }
+            }
+        }
+        public object GetGlobalProperty(string name)
+        {
+            if (EditorController.Instance.globalProperties.ContainsKey(name))
+            {
+                return EditorController.Instance.globalProperties[name];
+            }
+
+            return null;
+        }
+        #endregion
 
 
         public void SetupPauseWhenInEditor()
