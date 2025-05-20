@@ -197,7 +197,20 @@ namespace FS_LevelEditor
                 }
             }
 
-            EditorController.Instance.globalProperties = new Dictionary<string, object>(data.globalProperties);
+            // Load Global Properties.
+            // Load it in this way since we don't want to REMOVE elements from the editor list, only modify or
+            // add.
+            foreach (var keyPair in data.globalProperties)
+            {
+                if (EditorController.Instance.globalProperties.ContainsKey(keyPair.Key))
+                {
+                    EditorController.Instance.globalProperties[keyPair.Key] = keyPair.Value;
+                }
+                else
+                {
+                    EditorController.Instance.globalProperties.Add(keyPair.Key, keyPair.Value);
+                }
+            }
 
             Logger.Log($"\"{data.levelName}\" level loaded in the editor!");
         }
@@ -250,6 +263,9 @@ namespace FS_LevelEditor
                 objInstance.SetActive(objClassInstance.setActiveAtStart);
             }
 
+            // Load Global Properties.
+            // In PlayModeController the global properties list is empty, since it's meant to be replaced with
+            // ALL of the values inside of the saved global properties list.
             playModeCtrl.globalProperties = new Dictionary<string, object>(data.globalProperties);
 
             Logger.Log($"\"{data.levelName}\" level loaded in playmode!");

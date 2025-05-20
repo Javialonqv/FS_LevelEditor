@@ -1140,6 +1140,19 @@ namespace FS_LevelEditor
             hasTaserToggle.GetComponent<UIToggle>().onChange.Clear();
             hasTaserToggle.GetComponent<UIToggle>().onChange.Add(hasTaserDelegate);
             #endregion
+
+            #region Create Has Taser Toggle
+            GameObject hasJetpackToggle = NGUI_Utils.CreateToggle(globalPropertiesPanel.transform,
+                new Vector3(40f, 350f), Vector3Int.one * 42, "Has Jetpack");
+            hasJetpackToggle.name = "HasJetpackToggle";
+            hasJetpackToggle.GetComponent<BoxCollider>().center = new Vector3(120, 0, 0);
+            hasJetpackToggle.GetComponent<BoxCollider>().size = new Vector3(210, 48);
+            EventDelegate hasJetpackDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "name", "HasJetpack"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", hasJetpackToggle.GetComponent<UIToggle>()));
+            hasJetpackToggle.GetComponent<UIToggle>().onChange.Clear();
+            hasJetpackToggle.GetComponent<UIToggle>().onChange.Add(hasJetpackDelegate);
+            #endregion
         }
         public void ShowOrHideGlobalPropertiesPanel()
         {
@@ -1170,6 +1183,7 @@ namespace FS_LevelEditor
             GameObject panel = globalPropertiesPanel;
 
             panel.GetChildWithName("HasTaserToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasTaser"));
+            panel.GetChildWithName("HasJetpackToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasJetpack"));
         }
 
         public void SetGlobalPropertyWithToggle(string name, UIToggle toggle)

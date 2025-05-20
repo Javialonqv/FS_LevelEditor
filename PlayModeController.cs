@@ -98,6 +98,7 @@ namespace FS_LevelEditor
             {
                 Controls.Instance.DeactivateWeapon();
             }
+            Controls.Instance.hasJetPack = (bool)GetGlobalProperty("HasJetpack");
         }
         object GetGlobalProperty(string name)
         {

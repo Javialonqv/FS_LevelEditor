@@ -76,7 +76,8 @@ namespace FS_LevelEditor
         // ----------------------------
         public Dictionary<string, object> globalProperties = new Dictionary<string, object>()
         {
-            { "HasTaser", true }
+            { "HasTaser", true },
+            { "HasJetpack", true }
         };
 
         void Awake()
