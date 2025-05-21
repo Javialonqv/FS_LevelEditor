@@ -151,7 +151,9 @@ namespace FS_LevelEditor
             onActivatedButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 300f, 0f), new Vector3Int(480, 55, 0), "On Activated");
             onActivatedButton.name = "OnActivatedButton";
             onActivatedButton.GetComponent<UISprite>().depth = 1;
-            onActivatedButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnEnableBtnClick)));
+            EventDelegate onActivatedDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(OnEnableBtnClick),
+                NGUI_Utils.CreateEventDelegateParamter(this, "playSound", true));
+            onActivatedButton.GetComponent<UIButton>().onClick.Add(onActivatedDelegate);
             onActivatedButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             onActivatedButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
@@ -552,9 +554,11 @@ namespace FS_LevelEditor
 
             Logger.Log("RENAMED " + eventID + " TO: " + inputRef.text);
         }
-        void OnEnableBtnClick()
+        void OnEnableBtnClick(bool playSound = true)
         {
-            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+            // This method is the only one with the playSound parm because it's the only one I wanna call when
+            // opening the events windows with NO sound at all.
+            if (playSound) Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
 
             onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
             onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
@@ -1132,10 +1136,9 @@ namespace FS_LevelEditor
 
             isShowingPage = true;
 
-            OnEnableBtnClick();
+            OnEnableBtnClick(false);
             // CreateEventsList();
         }
-
         public void HideEventsPage()
         {
             targetObj.TriggerAction("OnEventsTabClose");
