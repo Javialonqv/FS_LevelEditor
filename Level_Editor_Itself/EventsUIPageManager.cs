@@ -960,8 +960,6 @@ namespace FS_LevelEditor
             GameObject toggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(-380f, 50f, 0f),
                 new Vector3Int(250, 48, 1), "Enable/Disable Zero G");
             toggle.name = "EnableOrDisableZeroGToggle";
-            //toggle.GetComponent<BoxCollider>().center = new Vector3(195, 0, 0);
-            //toggle.GetComponent<BoxCollider>().size = new Vector3(370, 48);
             zeroGToggle = toggle.GetComponent<UIToggle>();
             zeroGToggle.onChange.Clear();
             zeroGToggle.onChange.Add(new EventDelegate(this, nameof(OnZeroGToggleChanged)));
@@ -973,8 +971,6 @@ namespace FS_LevelEditor
             GameObject toggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(50f, 50f, 0f),
                 new Vector3Int(250, 48, 1), "Invert Gravity");
             toggle.name = "InvertGravityToggle";
-            //toggle.GetComponent<BoxCollider>().center = new Vector3(136, 0, 0);
-            //toggle.GetComponent<BoxCollider>().size = new Vector3(245, 48);
             invertGravityToggle = toggle.GetComponent<UIToggle>();
             invertGravityToggle.onChange.Clear();
             invertGravityToggle.onChange.Add(new EventDelegate(this, nameof(OnInvertGravityToggleChanged)));
@@ -1019,8 +1015,6 @@ namespace FS_LevelEditor
             GameObject toggle = NGUI_Utils.CreateToggle(cubeObjectsSettings.transform, new Vector3(-140f, -30f, 0f),
                 new Vector3Int(250, 48, 1), "Respawn Cube");
             toggle.name = "RespawnCubeToggle";
-            //toggle.GetComponent<BoxCollider>().center = new Vector3(145, 0, 0);
-            //toggle.GetComponent<BoxCollider>().size = new Vector3(265, 48);
             respawnCubeToggle = toggle.GetComponent<UIToggle>();
             respawnCubeToggle.onChange.Clear();
             respawnCubeToggle.onChange.Add(new EventDelegate(this, nameof(OnRespawnCubeChanged)));
