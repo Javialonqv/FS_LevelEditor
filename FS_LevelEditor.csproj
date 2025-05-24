@@ -12,6 +12,7 @@
 		<AssemblyName>FS_LevelEditor</AssemblyName>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<Configurations>Debug;Release;Visible T bonds</Configurations>
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="KeybindsList.txt" />
@@ -344,6 +345,10 @@
 	<PropertyGroup>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Visible T bonds|AnyCPU'">
+	  <DefineConstants>$(DefineConstants);SHOW_TOGGLE_COLLISION_BONDS</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>

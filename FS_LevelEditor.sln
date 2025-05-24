@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35514.174 d17.12
+VisualStudioVersion = 17.12.35514.174
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FS_LevelEditor", "FS_LevelEditor.csproj", "{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}"
 EndProject
@@ -9,12 +9,15 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Visible T bonds|Any CPU = Visible T bonds|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Visible T bonds|Any CPU.ActiveCfg = Visible T bonds|Any CPU
+		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Visible T bonds|Any CPU.Build.0 = Visible T bonds|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

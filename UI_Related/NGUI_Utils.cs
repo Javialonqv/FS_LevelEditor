@@ -76,7 +76,7 @@ namespace FS_LevelEditor.UI_Related
                 Vector2 colliderSize = new Vector2(size.x + 56, size.y);
                 toggle.GetComponent<BoxCollider>().size = colliderSize;
 
-#if DEBUG
+#if SHOW_TOGGLE_COLLISION_BONDS
                 GameObject square = new GameObject("Square");
                 square.transform.parent = toggle.transform;
                 square.transform.localScale = Vector3.one;
