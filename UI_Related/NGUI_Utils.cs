@@ -10,6 +10,16 @@ namespace FS_LevelEditor.UI_Related
 {
     public static class NGUI_Utils
     {
+        // Returns "Fractal_Space" atlas.
+        public static UIAtlas fractalSpaceAtlas
+        {
+            get
+            {
+                // It's one of the objects I found it uses the Fractal_Space atlas...
+                return GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/1_Resume").GetComponent<UISprite>().atlas;
+            }
+        }
+
         public static GameObject CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize)
         {
             GameObject inputField = new GameObject("InputField");
