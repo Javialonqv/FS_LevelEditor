@@ -1139,7 +1139,7 @@ namespace FS_LevelEditor
             hasTaserToggle.GetComponent<UIToggle>().onChange.Add(hasTaserDelegate);
             #endregion
 
-            #region Create Has Taser Toggle
+            #region Create Has Jetpack Toggle
             GameObject hasJetpackToggle = NGUI_Utils.CreateToggle(globalPropertiesPanel.transform,
                 new Vector3(40f, 350f), new Vector3Int(200, 42, 1), "Has Jetpack");
             hasJetpackToggle.name = "HasJetpackToggle";
