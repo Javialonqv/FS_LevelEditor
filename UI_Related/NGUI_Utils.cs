@@ -41,6 +41,7 @@ namespace FS_LevelEditor.UI_Related
             return inputField;
         }
 
+        // Never ever ever dare to change ANYTHING inside of this method, it's literally the worst code in the whole mod.
         public static GameObject CreateToggle(Transform parent, Vector3 position, Vector3Int size, string text = "")
         {
             GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
@@ -54,7 +55,7 @@ namespace FS_LevelEditor.UI_Related
             toggleScript.onChange.Clear();
 
             UISprite toggleBg = toggle.GetChildWithName("Background").GetComponent<UISprite>();
-            toggleBg.width = size.x;
+            toggleBg.width = string.IsNullOrEmpty(text) ? size.x : size.y;
             toggleBg.height = size.y;
 
             if (string.IsNullOrEmpty(text))
@@ -68,7 +69,23 @@ namespace FS_LevelEditor.UI_Related
             {
                 GameObject.Destroy(toggle.GetChildWithName("Label").GetComponent<UILocalize>());
                 toggle.GetChildWithName("Label").GetComponent<UILabel>().text = text;
-                // Bro, I'm not calculating a shit just to make the collider of the toggle with text work!! FORGET IT
+                toggle.GetChildWithName("Label").GetComponent<UILabel>().width = size.x;
+                Vector3 colliderCenter = toggle.GetChildWithName("Label").transform.localPosition;
+                colliderCenter.x += toggle.GetChildWithName("Label").GetComponent<UILabel>().width / 2 - (size.y / 2) - 6;
+                toggle.GetComponent<BoxCollider>().center = colliderCenter;
+                Vector2 colliderSize = new Vector2(size.x + 56, size.y);
+                toggle.GetComponent<BoxCollider>().size = colliderSize;
+
+#if DEBUG
+                GameObject square = new GameObject("Square");
+                square.transform.parent = toggle.transform;
+                square.transform.localScale = Vector3.one;
+                square.transform.localPosition = colliderCenter;
+                square.AddComponent<UISprite>().atlas = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/1_Resume").GetComponent<UISprite>().atlas;
+                square.GetComponent<UISprite>().spriteName = "Square";
+                square.GetComponent<UISprite>().width = (int)colliderSize.x;
+                square.GetComponent<UISprite>().height = (int)colliderSize.y;
+#endif
             }
 
             return toggle;
