@@ -49,6 +49,12 @@ namespace FS_LevelEditor
             };
 
             CreateEditorLinksParent();
+
+            foreach (var collider in gameObject.TryGetComponents<Collider>())
+            {
+                if (collider.name == "Button") continue;
+                collider.enabled = false;
+            }
         }
 
         void Start()
