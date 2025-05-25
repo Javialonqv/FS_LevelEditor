@@ -344,7 +344,7 @@ namespace FS_LevelEditor
             label.font = labelTemplate.GetComponent<UILabel>().font;
             label.fontSize = 27;
             label.width = 500;
-            label.height = 200;
+            label.height = 300;
             label.text = "No Attributes for this object.";
 
             noAttributes.SetActive(false);
@@ -364,17 +364,18 @@ namespace FS_LevelEditor
             colorTitle.name = "ColorTitle";
             colorTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
             colorTitle.RemoveComponent<UILocalize>();
+            colorTitle.GetComponent<UILabel>().width = 235;
             colorTitle.GetComponent<UILabel>().text = "Color (Hex)";
             colorTitle.GetComponent<UILabel>().color = Color.white;
 
             GameObject hashtagLOL = Instantiate(labelTemplate, lightAttributes.transform);
             hashtagLOL.name = "ColorHashtag";
-            hashtagLOL.transform.localPosition = new Vector3(5f, 90f, 0f);
+            hashtagLOL.transform.localPosition = new Vector3(15f, 90f, 0f);
             hashtagLOL.RemoveComponent<UILocalize>();
             hashtagLOL.GetComponent<UILabel>().text = "#";
             hashtagLOL.GetComponent<UILabel>().color = Color.white;
             hashtagLOL.GetComponent<UILabel>().alignment = NGUIText.Alignment.Center;
-            hashtagLOL.GetComponent<UILabel>().width = 38;
+            hashtagLOL.GetComponent<UILabel>().width = 20;
 
             GameObject colorInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27);
             colorInputField.name = "ColorField";
@@ -395,6 +396,7 @@ namespace FS_LevelEditor
             intensityTitle.name = "IntensityTitle";
             intensityTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
             intensityTitle.RemoveComponent<UILocalize>();
+            intensityTitle.GetComponent<UILabel>().width = 260;
             intensityTitle.GetComponent<UILabel>().text = "Intensity";
             intensityTitle.GetComponent<UILabel>().color = Color.white;
 
@@ -430,6 +432,7 @@ namespace FS_LevelEditor
             activateOnStartTitle.name = "ActivateOnStartTitle";
             activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
             activateOnStartTitle.RemoveComponent<UILocalize>();
+            activateOnStartTitle.GetComponent<UILabel>().width = 395;
             activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
             activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
 
@@ -447,6 +450,7 @@ namespace FS_LevelEditor
             damageTitle.name = "DamageTitle";
             damageTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
             damageTitle.RemoveComponent<UILocalize>();
+            damageTitle.GetComponent<UILabel>().width = 260;
             damageTitle.GetComponent<UILabel>().text = "Damage";
             damageTitle.GetComponent<UILabel>().color = Color.white;
 
@@ -493,6 +497,7 @@ namespace FS_LevelEditor
             waitTimeTitle.name = "WaitTimeTitle";
             waitTimeTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
             waitTimeTitle.RemoveComponent<UILocalize>();
+            waitTimeTitle.GetComponent<UILabel>().width = 260;
             waitTimeTitle.GetComponent<UILabel>().text = "Wait Time";
             waitTimeTitle.GetComponent<UILabel>().color = Color.white;
 
@@ -539,6 +544,7 @@ namespace FS_LevelEditor
             usableOnceTitle.name = "UsableOnceTitle";
             usableOnceTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
             usableOnceTitle.RemoveComponent<UILocalize>();
+            usableOnceTitle.GetComponent<UILabel>().width = 395;
             usableOnceTitle.GetComponent<UILabel>().text = "Usable Once";
             usableOnceTitle.GetComponent<UILabel>().color = Color.white;
 
@@ -556,6 +562,7 @@ namespace FS_LevelEditor
             canUseTaserTitle.transform.localPosition = new Vector3(-230f, 35f, 0f);
             canUseTaserTitle.name = "CanUseTaserTitle";
             canUseTaserTitle.RemoveComponent<UILocalize>();
+            canUseTaserTitle.GetComponent<UILabel>().width = 395;
             canUseTaserTitle.GetComponent<UILabel>().text = "Can be shot by Taser";
             canUseTaserTitle.GetComponent<UILabel>().color = Color.white;
 
@@ -597,6 +604,7 @@ namespace FS_LevelEditor
             respawnTitle.name = "RespawnTitle";
             respawnTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
             respawnTitle.RemoveComponent<UILocalize>();
+            respawnTitle.GetComponent<UILabel>().width = 260;
             respawnTitle.GetComponent<UILabel>().text = "Respawn Time";
             respawnTitle.GetComponent<UILabel>().color = Color.white;
 
@@ -632,6 +640,7 @@ namespace FS_LevelEditor
             activateOnStartTitle.name = "ActivateOnStartTitle";
             activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
             activateOnStartTitle.RemoveComponent<UILocalize>();
+            activateOnStartTitle.GetComponent<UILabel>().width = 395;
             activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
             activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
 
@@ -649,6 +658,7 @@ namespace FS_LevelEditor
             damageTitle.name = "DamageTitle";
             damageTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
             damageTitle.RemoveComponent<UILocalize>();
+            damageTitle.GetComponent<UILabel>().width = 260;
             damageTitle.GetComponent<UILabel>().text = "Damage";
             damageTitle.GetComponent<UILabel>().color = Color.white;
 
@@ -684,6 +694,7 @@ namespace FS_LevelEditor
             activateOnStartTitle.name = "ActivateOnStartTitle";
             activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
             activateOnStartTitle.RemoveComponent<UILocalize>();
+            activateOnStartTitle.GetComponent<UILabel>().width = 395;
             activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
             activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
 
@@ -701,17 +712,18 @@ namespace FS_LevelEditor
             colorTitle.name = "ColorTitle";
             colorTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
             colorTitle.RemoveComponent<UILocalize>();
+            colorTitle.GetComponent<UILabel>().width = 235;
             colorTitle.GetComponent<UILabel>().text = "Color (Hex)";
             colorTitle.GetComponent<UILabel>().color = Color.white;
 
             GameObject hashtagLOL = Instantiate(labelTemplate, ceilingLightAttributes.transform);
             hashtagLOL.name = "ColorHashtag";
-            hashtagLOL.transform.localPosition = new Vector3(5f, 40f, 0f);
+            hashtagLOL.transform.localPosition = new Vector3(15f, 40f, 0f);
             hashtagLOL.RemoveComponent<UILocalize>();
             hashtagLOL.GetComponent<UILabel>().text = "#";
             hashtagLOL.GetComponent<UILabel>().color = Color.white;
             hashtagLOL.GetComponent<UILabel>().alignment = NGUIText.Alignment.Center;
-            hashtagLOL.GetComponent<UILabel>().width = 38;
+            hashtagLOL.GetComponent<UILabel>().width = 20;
 
             GameObject colorInputField = NGUI_Utils.CreateInputField(ceilingLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27);
             colorInputField.name = "ColorField";

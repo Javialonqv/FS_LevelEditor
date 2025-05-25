@@ -71,6 +71,7 @@ namespace FS_LevelEditor.UI_Related
             if (string.IsNullOrEmpty(text))
             {
                 GameObject.Destroy(toggle.GetChildWithName("Label"));
+                GameObject.Destroy(toggle.GetComponent<UIWidget>());
                 toggleBg.transform.localPosition = Vector3.zero;
                 toggle.GetComponent<BoxCollider>().center = Vector3.zero;
                 toggle.GetComponent<BoxCollider>().size = size;
@@ -114,8 +115,11 @@ namespace FS_LevelEditor.UI_Related
             button.GetComponent<BoxCollider>().size = size;
             GameObject.Destroy(button.GetComponent<ButtonController>());
 
-            GameObject.Destroy(button.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            button.GetChildAt("Background/Label").GetComponent<UILabel>().text = text;
+            GameObject.Destroy(button.GetChildWithName("Background"));
+            GameObject.Destroy(button.GetChildWithName("Label").GetComponent<UILocalize>());
+            button.GetChildWithName("Label").SetActive(true);
+            button.GetChildWithName("Label").GetComponent<UILabel>().enabled = true;
+            button.GetChildWithName("Label").GetComponent<UILabel>().text = text;
 
             return button;
         }
