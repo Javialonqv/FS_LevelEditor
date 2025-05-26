@@ -68,10 +68,11 @@ namespace FS_LevelEditor.UI_Related
             toggleBg.width = string.IsNullOrEmpty(text) ? size.x : size.y;
             toggleBg.height = size.y;
 
+            GameObject.Destroy(toggle.GetComponent<UIWidget>());
+
             if (string.IsNullOrEmpty(text))
             {
                 GameObject.Destroy(toggle.GetChildWithName("Label"));
-                GameObject.Destroy(toggle.GetComponent<UIWidget>());
                 toggleBg.transform.localPosition = Vector3.zero;
                 toggle.GetComponent<BoxCollider>().center = Vector3.zero;
                 toggle.GetComponent<BoxCollider>().size = size;

@@ -1137,7 +1137,7 @@ namespace FS_LevelEditor
             titleLabel.text = "Global Properties";
             titleLabel.fontSize = 30;
             titleLabel.width = 600;
-            titleLabel.height = 30;
+            titleLabel.height = 50;
             #endregion
 
             #region Create Has Taser Toggle
