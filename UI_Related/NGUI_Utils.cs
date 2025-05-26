@@ -135,13 +135,11 @@ namespace FS_LevelEditor.UI_Related
             button.GetComponent<BoxCollider>().size = size;
             GameObject.Destroy(button.GetComponent<ButtonController>());
 
-            // For some reason the buttons have two labels? One is disabled and the other one is the one being used, but for any button created with this method,
-            // we will use the disabled label, since its size is the same as the button.
-            GameObject.Destroy(button.GetChildWithName("Background"));
-            GameObject.Destroy(button.GetChildWithName("Label").GetComponent<UILocalize>());
-            button.GetChildWithName("Label").SetActive(true);
-            button.GetChildWithName("Label").GetComponent<UILabel>().enabled = true;
-            button.GetChildWithName("Label").GetComponent<UILabel>().text = text;
+            // For some reason the buttons have two labels? One is disabled and the other one is the one being used.
+            // UPDATE: We'll still be using that one, for SOME FUCKING REASON if you change the label the button colors start to behave weird... idk...
+            GameObject.Destroy(button.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            button.GetChildAt("Background/Label").GetComponent<UILabel>().text = text;
+            button.GetChildAt("Background/Label").GetComponent<UILabel>().SetAnchor(button, 0, 0, 0, 0);
 
             return button;
         }
