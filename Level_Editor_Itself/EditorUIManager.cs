@@ -377,14 +377,10 @@ namespace FS_LevelEditor
             hashtagLOL.GetComponent<UILabel>().alignment = NGUIText.Alignment.Center;
             hashtagLOL.GetComponent<UILabel>().width = 20;
 
-            GameObject colorInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27);
+            GameObject colorInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
+                "FFFFFF", false, NGUIText.Alignment.Left);
             colorInputField.name = "ColorField";
-            colorInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
-            colorInputField.GetComponent<UILabel>().color = Color.gray;
             colorInputField.GetComponent<UIInput>().characterLimit = 6;
-            colorInputField.GetComponent<UIInput>().defaultText = "ffffff";
-            colorInputField.GetComponent<UIInput>().activeTextColor = Color.white;
-            colorInputField.GetComponent<UIInput>().onChange.Clear();
             var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInputField.GetComponent<UIInput>()));
@@ -400,14 +396,10 @@ namespace FS_LevelEditor
             intensityTitle.GetComponent<UILabel>().text = "Intensity";
             intensityTitle.GetComponent<UILabel>().color = Color.white;
 
-            GameObject intensityInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27);
+            GameObject intensityInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+                "1", false, NGUIText.Alignment.Left);
             intensityInputField.name = "IntensityField";
-            intensityInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
-            intensityInputField.GetComponent<UILabel>().color = Color.gray;
-            intensityInputField.GetComponent<UIInput>().defaultText = "1";
-            intensityInputField.GetComponent<UIInput>().activeTextColor = Color.white;
             intensityInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
-            intensityInputField.GetComponent<UIInput>().onChange.Clear();
             var intensityDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Intensity"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "inputField", intensityInputField.GetComponent<UIInput>()));
@@ -454,14 +446,10 @@ namespace FS_LevelEditor
             damageTitle.GetComponent<UILabel>().text = "Damage";
             damageTitle.GetComponent<UILabel>().color = Color.white;
 
-            GameObject damageInputField = NGUI_Utils.CreateInputField(sawAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27);
+            GameObject damageInputField = NGUI_Utils.CreateInputField(sawAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+                "50", false, NGUIText.Alignment.Left);
             damageInputField.name = "DamageInputField";
-            damageInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
-            damageInputField.GetComponent<UILabel>().color = Color.gray;
-            damageInputField.GetComponent<UIInput>().defaultText = "50";
-            damageInputField.GetComponent<UIInput>().activeTextColor = Color.white;
             damageInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeInt;
-            damageInputField.GetComponent<UIInput>().onChange.Clear();
             var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Damage"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "inputField", damageInputField.GetComponent<UIInput>()));
@@ -501,14 +489,10 @@ namespace FS_LevelEditor
             waitTimeTitle.GetComponent<UILabel>().text = "Wait Time";
             waitTimeTitle.GetComponent<UILabel>().color = Color.white;
 
-            GameObject waitTimeInputField = NGUI_Utils.CreateInputField(sawWaypointAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27);
+            GameObject waitTimeInputField = NGUI_Utils.CreateInputField(sawWaypointAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
+                "0.3", false, NGUIText.Alignment.Left);
             waitTimeInputField.name = "WaitTimeInputField";
-            waitTimeInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
-            waitTimeInputField.GetComponent<UILabel>().color = Color.gray;
-            waitTimeInputField.GetComponent<UIInput>().defaultText = "0.3";
-            waitTimeInputField.GetComponent<UIInput>().activeTextColor = Color.white;
             waitTimeInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
-            waitTimeInputField.GetComponent<UIInput>().onChange.Clear();
             var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "WaitTime"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "inputField", waitTimeInputField.GetComponent<UIInput>()));
@@ -608,13 +592,9 @@ namespace FS_LevelEditor
             respawnTitle.GetComponent<UILabel>().text = "Respawn Time";
             respawnTitle.GetComponent<UILabel>().color = Color.white;
 
-            GameObject respawnInputField = NGUI_Utils.CreateInputField(ammoHealthAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27);
+            GameObject respawnInputField = NGUI_Utils.CreateInputField(ammoHealthAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
+                "50", false, NGUIText.Alignment.Left);
             respawnInputField.name = "RespawnInputField";
-            respawnInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
-            respawnInputField.GetComponent<UILabel>().color = Color.gray;
-            respawnInputField.GetComponent<UIInput>().defaultText = "50";
-            respawnInputField.GetComponent<UIInput>().activeTextColor = Color.white;
-            respawnInputField.GetComponent<UIInput>().onChange.Clear();
             respawnInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
             var respawnDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "RespawnTime"),
@@ -662,14 +642,10 @@ namespace FS_LevelEditor
             damageTitle.GetComponent<UILabel>().text = "Damage";
             damageTitle.GetComponent<UILabel>().color = Color.white;
 
-            GameObject damageInputField = NGUI_Utils.CreateInputField(laserAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27);
+            GameObject damageInputField = NGUI_Utils.CreateInputField(laserAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+                "34", false, NGUIText.Alignment.Left);
             damageInputField.name = "DamageInputField";
-            damageInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
-            damageInputField.GetComponent<UILabel>().color = Color.gray;
-            damageInputField.GetComponent<UIInput>().defaultText = "34";
-            damageInputField.GetComponent<UIInput>().activeTextColor = Color.white;
             damageInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
-            damageInputField.GetComponent<UIInput>().onChange.Clear();
             var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Damage"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "inputField", damageInputField.GetComponent<UIInput>()));
@@ -725,14 +701,9 @@ namespace FS_LevelEditor
             hashtagLOL.GetComponent<UILabel>().alignment = NGUIText.Alignment.Center;
             hashtagLOL.GetComponent<UILabel>().width = 20;
 
-            GameObject colorInputField = NGUI_Utils.CreateInputField(ceilingLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27);
+            GameObject colorInputField = NGUI_Utils.CreateInputField(ceilingLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+                "FFFFFF", false, NGUIText.Alignment.Left);
             colorInputField.name = "ColorField";
-            colorInputField.GetComponent<UILabel>().alignment = NGUIText.Alignment.Left;
-            colorInputField.GetComponent<UILabel>().color = Color.gray;
-            colorInputField.GetComponent<UIInput>().characterLimit = 6;
-            colorInputField.GetComponent<UIInput>().defaultText = "ffffff";
-            colorInputField.GetComponent<UIInput>().activeTextColor = Color.white;
-            colorInputField.GetComponent<UIInput>().onChange.Clear();
             var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInputField.GetComponent<UIInput>()));

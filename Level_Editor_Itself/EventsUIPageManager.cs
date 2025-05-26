@@ -714,46 +714,15 @@ namespace FS_LevelEditor
         {
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
-            GameObject targetObjField = new GameObject("TargetObjectInputField");
-            targetObjField.transform.parent = eventSettingsPanel.transform;
-            targetObjField.transform.localScale = Vector3.one;
-            targetObjField.transform.localPosition = new Vector3(0f, 230f, 0f);
-            targetObjField.layer = LayerMask.NameToLayer("2D GUI");
+            GameObject targetObjField = NGUI_Utils.CreateInputField(eventSettingsPanel.transform, new Vector3(0f, 230f, 0f), new Vector3Int(500, 60, 0), 34,
+                "", true, NGUIText.Alignment.Center);
 
-            UISprite bgSprite = targetObjField.AddComponent<UISprite>();
-            bgSprite.atlas = occluder.GetComponent<UISprite>().atlas;
-            bgSprite.spriteName = "Square";
-            bgSprite.width = 510;
-            bgSprite.height = 70;
-            bgSprite.depth = 2;
-            bgSprite.color = Color.black;
-
-            UISprite mainSprite = targetObjField.AddComponent<UISprite>();
-            mainSprite.atlas = occluder.GetComponent<UISprite>().atlas;
-            mainSprite.spriteName = "Square";
-            mainSprite.width = 500;
-            mainSprite.height = 60;
-            mainSprite.depth = 3;
-            mainSprite.color = new Color(0.0509f, 0.3333f, 0.3764f);
-
-            UILabel label = targetObjField.AddComponent<UILabel>();
-            label.font = labelTemplate.GetComponent<UILabel>().font;
-            label.width = 490;
-            label.height = 60;
-            label.depth = 4;
-            label.color = Color.white;
-            label.fontSize = 34;
-
-            targetObjInputField = targetObjField.AddComponent<UIInput>();
-            targetObjInputField.label = label;
+            targetObjInputField = targetObjField.GetComponent<UIInput>();
             EventDelegate.Parameter inputScriptParm1 = NGUI_Utils.CreateEventDelegateParamter(this, "input", targetObjInputField);
-            EventDelegate.Parameter inputScriptParm2 = NGUI_Utils.CreateEventDelegateParamter(this, "fieldSprite", mainSprite);
+            EventDelegate.Parameter inputScriptParm2 = NGUI_Utils.CreateEventDelegateParamter(this, "fieldSprite", targetObjField.GetComponent<UISprite>());
             EventDelegate inputScriptDelegate =
                 NGUI_Utils.CreateEvenDelegate(this, nameof(OnTargetObjectFieldChanged), inputScriptParm1, inputScriptParm2);
             targetObjInputField.onChange.Add(inputScriptDelegate);
-
-            BoxCollider collider = targetObjField.AddComponent<BoxCollider>();
-            collider.size = new Vector3(500, 60);
         }
 
         void ShowEventSettings()
