@@ -20,26 +20,42 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
-        public static GameObject CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize)
+        public static GameObject CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize = 27, string defaultText = "",
+            bool hasOutline = false, NGUIText.Alignment alignment = NGUIText.Alignment.Left)
         {
             GameObject inputField = new GameObject("InputField");
             inputField.transform.parent = parent;
             inputField.transform.localPosition = position;
             inputField.transform.localScale = Vector3.one;
-            
+
             UISprite bgSprite = inputField.AddComponent<UISprite>();
             bgSprite.atlas = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/1_Resume").GetComponent<UISprite>().atlas;
             bgSprite.spriteName = "Square";
             bgSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
             bgSprite.width = size.x;
             bgSprite.height = size.y;
+            bgSprite.depth = 1;
+
+            // Create the outline AFTER the main sprite, so the main sprite is the default result when using GetComponent.
+            if (hasOutline)
+            {
+                UISprite outlineSprite = inputField.AddComponent<UISprite>();
+                outlineSprite.atlas = fractalSpaceAtlas;
+                outlineSprite.spriteName = "Square";
+                outlineSprite.color = Color.black;
+                outlineSprite.width = size.x + 10;
+                outlineSprite.height = size.y + 10;
+                outlineSprite.depth = 0;
+            }
 
             UILabel label = inputField.AddComponent<UILabel>();
             label.font = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label").GetComponent<UILabel>().font;
             label.fontSize = fontSize;
-            label.width = size.x;
+            label.width = size.x - 5;
             label.height = size.y;
-            label.depth = 1;
+            label.depth = 2;
+            label.alignment = alignment;
+            label.color = Color.gray;
 
             BoxCollider collider = inputField.AddComponent<BoxCollider>();
             collider.center = Vector3.zero;
@@ -47,6 +63,9 @@ namespace FS_LevelEditor.UI_Related
 
             UIInput input = inputField.AddComponent<UIInput>();
             input.label = label;
+            input.defaultText = defaultText;
+            input.activeTextColor = Color.white;
+            input.onChange.Clear();
 
             return inputField;
         }
