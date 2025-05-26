@@ -110,7 +110,10 @@ namespace FS_LevelEditor
             eventsPanel.RemoveComponent<TweenAlpha>();
             eventsPanel.transform.GetChild(2).gameObject.RemoveComponent<UILocalize>();
 
-            // Change the title of the panel.
+            // Change the title properties of the panel.
+            eventsPanel.transform.GetChild(2).transform.localPosition = new Vector3(0, 387, 0);
+            eventsPanel.transform.GetChild(2).GetComponent<UILabel>().width = 1650;
+            eventsPanel.transform.GetChild(2).GetComponent<UILabel>().height = 50;
             eventsPanel.transform.GetChild(2).GetComponent<UILabel>().text = "Events";
 
             // Destroy the tabs and disable everything inside of the Game_Options object.
@@ -536,8 +539,8 @@ namespace FS_LevelEditor
             UILabel label = noEventsLabel.GetComponent<UILabel>();
             label.pivot = UIWidget.Pivot.Center;
             label.alignment = NGUIText.Alignment.Center;
-            label.height = 30;
-            label.width = 800;
+            label.height = 50;
+            label.width = 700;
             label.fontSize = 30;
             label.color = new Color(1f, 1f, 0f, 1f);
             label.text = "No Events Yet";
@@ -700,7 +703,7 @@ namespace FS_LevelEditor
             label.pivot = UIWidget.Pivot.Center;
             label.alignment = NGUIText.Alignment.Center;
             label.height = 30;
-            label.width = 800;
+            label.width = 700;
             label.fontSize = 30;
             label.text = "Enter the target object name:";
 
@@ -890,7 +893,7 @@ namespace FS_LevelEditor
             label.pivot = UIWidget.Pivot.Center;
             label.alignment = NGUIText.Alignment.Center;
             label.height = 40;
-            label.width = 800;
+            label.width = 700;
             label.fontSize = 35;
             label.text = "SAW OPTIONS";
 
@@ -946,7 +949,7 @@ namespace FS_LevelEditor
             label.pivot = UIWidget.Pivot.Center;
             label.alignment = NGUIText.Alignment.Center;
             label.height = 40;
-            label.width = 800;
+            label.width = 700;
             label.fontSize = 35;
             label.text = "PLAYER OPTIONS";
 
@@ -1001,7 +1004,7 @@ namespace FS_LevelEditor
             label.pivot = UIWidget.Pivot.Center;
             label.alignment = NGUIText.Alignment.Center;
             label.height = 40;
-            label.width = 800;
+            label.width = 700;
             label.fontSize = 35;
             label.text = "CUBE OPTIONS";
 
@@ -1045,7 +1048,7 @@ namespace FS_LevelEditor
             label.pivot = UIWidget.Pivot.Center;
             label.alignment = NGUIText.Alignment.Center;
             label.height = 40;
-            label.width = 800;
+            label.width = 700;
             label.fontSize = 35;
             label.text = "LASER OPTIONS";
 
