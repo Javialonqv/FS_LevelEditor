@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.UI_Related;
+using Il2Cpp;
 using Il2CppInControl;
 using MelonLoader;
 using System;
@@ -274,7 +275,9 @@ namespace FS_LevelEditor
 
             // Set OnClick action, which is go back lol.
             UIButton button = backButton.GetComponent<UIButton>();
-            button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.SwitchBetweenMenuAndLEMenu)));
+            EventDelegate.Parameter eventParm = NGUI_Utils.CreateEventDelegateParamter(this, "showMainMenu", true);
+            EventDelegate buttonEvent = NGUI_Utils.CreateEvenDelegate(this, nameof(SwitchBetweenMenuAndLEMenu), eventParm);
+            button.onClick.Add(buttonEvent);
         }
 
         // The same shit as the CreateBackButton function.
