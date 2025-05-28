@@ -202,6 +202,16 @@ namespace FS_LevelEditor
         {
             LEBundle.Unload(false);
         }
+
+        public void PatchPauseCurrentLevelNameInResumeButton()
+        {
+            MelonCoroutines.Start(Coroutine());
+            IEnumerator Coroutine()
+            {
+                yield return new WaitForSecondsRealtime(0.025f);
+                MenuController.GetInstance().levelToResumeLabel.text = "Custom Level : " + levelName;
+            }
+        }
     }
 }
 
@@ -306,4 +316,14 @@ public static class CurrentLevelKeyPatch2
         return true;
     }
 }
+[HarmonyPatch(typeof(MenuController), nameof(MenuController.ConfigureMenuForPause))]
+public static class GamePauseCurrentLevelPath
+{
+    public static void Prefix()
+    {
+        if (PlayModeController.Instance)
+        {
+            PlayModeController.Instance.PatchPauseCurrentLevelNameInResumeButton();
+        }
+    }
 }
