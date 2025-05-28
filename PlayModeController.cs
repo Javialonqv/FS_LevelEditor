@@ -279,3 +279,31 @@ public static class OnChapterReset
         }
     }
 }
+
+[HarmonyPatch(typeof(FractalSave), nameof(FractalSave.SaveKey), [typeof(string), typeof(int), typeof(bool), typeof(bool)])]
+public static class CurrentLevelKeyPatch
+{
+    public static bool Prefix(string _key)
+    {
+        if (_key == "Current_Level")
+        {
+            return false;
+        }
+
+        return true;
+    }
+}
+[HarmonyPatch(typeof(FractalSave), nameof(FractalSave.SaveLevelKey), [typeof(string), typeof(int), typeof(bool), typeof(bool)])]
+public static class CurrentLevelKeyPatch2
+{
+    public static bool Prefix(string _key)
+    {
+        if (_key == "Current_Level")
+        {
+            return false;
+        }
+
+        return true;
+    }
+}
+}
