@@ -347,9 +347,7 @@
 		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Visible T bonds|AnyCPU'">
-	  <DefineConstants>$(DefineConstants);SHOW_TOGGLE_COLLISION_BONDS</DefineConstants>
-	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Visible T bonds|AnyCPU'" />
 
 	<ItemGroup>
 		<Compile Include="Core.cs" />

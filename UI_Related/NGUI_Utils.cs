@@ -106,17 +106,6 @@ namespace FS_LevelEditor.UI_Related
                 toggle.GetComponent<BoxCollider>().center = colliderCenter;
                 Vector2 colliderSize = new Vector2(size.x + 56, size.y);
                 toggle.GetComponent<BoxCollider>().size = colliderSize;
-
-#if SHOW_TOGGLE_COLLISION_BONDS
-                GameObject square = new GameObject("Square");
-                square.transform.parent = toggle.transform;
-                square.transform.localScale = Vector3.one;
-                square.transform.localPosition = colliderCenter;
-                square.AddComponent<UISprite>().atlas = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/1_Resume").GetComponent<UISprite>().atlas;
-                square.GetComponent<UISprite>().spriteName = "Square";
-                square.GetComponent<UISprite>().width = (int)colliderSize.x;
-                square.GetComponent<UISprite>().height = (int)colliderSize.y;
-#endif
             }
 
             return toggle;

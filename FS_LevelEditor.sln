@@ -9,15 +9,12 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-		Visible T bonds|Any CPU = Visible T bonds|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Visible T bonds|Any CPU.ActiveCfg = Visible T bonds|Any CPU
-		{6C01E57C-E906-4F6C-836A-EAAFF1265EC6}.Visible T bonds|Any CPU.Build.0 = Visible T bonds|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
