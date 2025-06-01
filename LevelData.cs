@@ -95,7 +95,9 @@ namespace FS_LevelEditor
                 // Serialize and save the level in JSON format.
                 var options = new JsonSerializerOptions
                 {
+#if DEBUG
                     WriteIndented = true,
+#endif
                     Converters = { new LEPropertiesConverter() }
                 };
 
