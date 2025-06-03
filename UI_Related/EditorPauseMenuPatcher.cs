@@ -16,6 +16,7 @@ namespace FS_LevelEditor
 
         public void OnEnable()
         {
+            Logger.DebugLog("LE pause menu enabled, patching!");
             GameObject pauseMenu = gameObject;
             GameObject navigation = transform.parent.GetChildWithName("Navigation").gameObject;
 
@@ -33,6 +34,7 @@ namespace FS_LevelEditor
             pauseMenu.GetChildAt("LargeButtons/8_ExitGame").SetActive(false);
             pauseMenu.GetChildAt("LargeButtons/7_ExitWhenInEditor").SetActive(true);
 
+            PatchPlayLevelButton();
             PatchSaveLevelButton();
 
             pauseMenu.GetChildAt("LargeButtons").GetComponent<UITable>().Reposition();
@@ -41,6 +43,32 @@ namespace FS_LevelEditor
             // Change exit button behaviour in the navigation bar.
             NavigationAction exitButtonFromNavigation = navigation.GetChildAt("Holder/Bar/ActionsHolder").transform.GetChild(0).GetComponent<NavigationAction>();
             exitButtonFromNavigation.onButtonClick = new Action<NavigationBarController.ActionType>(EditorUIManager.Instance.ExitToMenuFromNavigationBarButton);
+        }
+
+        void PatchPlayLevelButton()
+        {
+            GameObject playLevelBtn = gameObject.GetChildAt("LargeButtons/2_PlayLevel");
+
+            if (EditorController.Instance.currentInstantiatedObjects.Any(x => x is LE_Player_Spawn && x.gameObject.activeSelf))
+            {
+                playLevelBtn.GetComponent<UISprite>().height = 80;
+                playLevelBtn.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
+                playLevelBtn.GetComponent<UIButton>().isEnabled = true;
+                playLevelBtn.GetComponent<BoxCollider>().center = Vector3.zero;
+                playLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
+                playLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
+                playLevelBtn.GetChildWithName("LevelToResumeLabel").SetActive(false);
+            }
+            else
+            {
+                playLevelBtn.GetComponent<UISprite>().height = 100;
+                playLevelBtn.GetComponent<UISprite>().pivot = UIWidget.Pivot.Top;
+                playLevelBtn.GetComponent<UIButton>().isEnabled = false;
+                playLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
+                playLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
+                playLevelBtn.GetChildWithName("LevelToResumeLabel").GetComponent<UILabel>().text = "There isn't any player spawn obj in the scene.";
+                playLevelBtn.GetChildWithName("LevelToResumeLabel").SetActive(true);
+            }
         }
 
         void PatchSaveLevelButton()
@@ -73,6 +101,8 @@ namespace FS_LevelEditor
         {
             if (isAboutToDestroyThisObj) return;
 
+            Logger.DebugLog("LE pause menu disabled, patching!");
+
             GameObject navigation = transform.parent.GetChildWithName("Navigation").gameObject;
 
             // Reset the exit button behaviour when in another menu instead of the main one.
@@ -82,6 +112,7 @@ namespace FS_LevelEditor
 
         public void BeforeDestroying()
         {
+            Logger.DebugLog("About to destroy LE pause menu patcher!");
             isAboutToDestroyThisObj = true;
 
             Destroy(gameObject.GetChildAt("LargeButtons/1_ResumeWhenInEditor"));

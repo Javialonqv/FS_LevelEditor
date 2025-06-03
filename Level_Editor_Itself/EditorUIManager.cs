@@ -11,6 +11,9 @@ using System.Reflection;
 using System.Collections;
 using Il2CppInControl.NativeDeviceProfiles;
 using static Il2Cpp.UIAtlas;
+using FS_LevelEditor.UI_Related;
+using System.Xml.Serialization;
+using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor
 {
@@ -19,7 +22,7 @@ namespace FS_LevelEditor
     {
         public static EditorUIManager Instance;
 
-        GameObject editorUIParent;
+        public GameObject editorUIParent;
 
         public List<GameObject> categoryButtons = new List<GameObject>();
         public GameObject categoryButtonsParent;
@@ -28,16 +31,20 @@ namespace FS_LevelEditor
         public GameObject currentCategoryBG;
         List<GameObject> currentCategoryButtons = new List<GameObject>();
 
-        GameObject selectedObjPanel;
+        public GameObject selectedObjPanel;
+        Dictionary<string, GameObject> attrbutesPanels = new Dictionary<string, GameObject>();
+
         GameObject savingLevelLabel;
         GameObject savingLevelLabelInPauseMenu;
         Coroutine savingLevelLabelRoutine;
-        UILabel currentModeLabel;
+        public UILabel currentModeLabel;
         GameObject onExitPopupBackButton;
         GameObject onExitPopupSaveAndExitButton;
         GameObject onExitPopupExitButton;
         bool exitPopupEnabled = false;
         public GameObject helpPanel;
+        GameObject globalPropertiesPanel;
+        public bool isShowingGlobalProperties;
 
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
@@ -47,6 +54,8 @@ namespace FS_LevelEditor
         GameObject popupTitle;
         GameObject popupContentLabel;
         GameObject popupSmallButtonsParent;
+
+        public EditorUIManager(IntPtr ptr) : base(ptr) { }
 
         void Awake()
         {
@@ -89,6 +98,9 @@ namespace FS_LevelEditor
             CreateSavingLevelLabel();
             CreateCurrentModeLabel();
             CreateHelpPanel();
+            CreateGlobalPropertiesPanel();
+
+            EventsUIPageManager.Create();
 
             // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
@@ -282,6 +294,14 @@ namespace FS_LevelEditor
             headerLabel.width = 520;
             headerLabel.height = 60;
 
+            GameObject setActiveAtStartToggle = NGUI_Utils.CreateToggle(selectedObjPanel.transform, new Vector3(-220f, 0f, 0f), new Vector3Int(48, 48, 0));
+            setActiveAtStartToggle.name = "SetActiveAtStartToggle";
+            setActiveAtStartToggle.GetComponent<UIToggle>().onChange.Clear();
+            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetSetActiveAtStart),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", setActiveAtStartToggle.GetComponent<UIToggle>()));
+            setActiveAtStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            setActiveAtStartToggle.SetActive(false);
+
             GameObject selectedObjPanelBody = new GameObject("Body");
             selectedObjPanelBody.transform.parent = selectedObjPanel.transform;
             selectedObjPanelBody.transform.localPosition = new Vector3(0f, -160f, 0f);
@@ -300,7 +320,15 @@ namespace FS_LevelEditor
             bodyCollider.size = new Vector3(500f, 300f, 1f);
 
             SetSelectedObjPanelAsNone();
+
             CreateNoAttributesPanel();
+            CreateLightAttributesPanel();
+            CreateSawAttributesPanel();
+            CreateSawWaypointAttributesPanel();
+            CreateSwitchAttributesPanel();
+            CreateAmmoAndHealthPackAttributesPanel();
+            CreateLaserAttributesPanel();
+            CreateCeilingLightPanel();
         }
 
         void CreateNoAttributesPanel()
@@ -316,27 +344,525 @@ namespace FS_LevelEditor
             label.font = labelTemplate.GetComponent<UILabel>().font;
             label.fontSize = 27;
             label.width = 500;
-            label.height = 200;
+            label.height = 300;
             label.text = "No Attributes for this object.";
+
+            noAttributes.SetActive(false);
+            attrbutesPanels.Add("None", noAttributes);
+        }
+        void CreateLightAttributesPanel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject lightAttributes = new GameObject("LightAttributes");
+            lightAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            lightAttributes.transform.localPosition = Vector3.zero;
+            lightAttributes.transform.localScale = Vector3.one;
+
+            #region Color Input Field
+            GameObject colorTitle = Instantiate(labelTemplate, lightAttributes.transform);
+            colorTitle.name = "ColorTitle";
+            colorTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            colorTitle.RemoveComponent<UILocalize>();
+            colorTitle.GetComponent<UILabel>().width = 235;
+            colorTitle.GetComponent<UILabel>().text = "Color (Hex)";
+            colorTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject hashtagLOL = Instantiate(labelTemplate, lightAttributes.transform);
+            hashtagLOL.name = "ColorHashtag";
+            hashtagLOL.transform.localPosition = new Vector3(15f, 90f, 0f);
+            hashtagLOL.RemoveComponent<UILocalize>();
+            hashtagLOL.GetComponent<UILabel>().text = "#";
+            hashtagLOL.GetComponent<UILabel>().color = Color.white;
+            hashtagLOL.GetComponent<UILabel>().alignment = NGUIText.Alignment.Center;
+            hashtagLOL.GetComponent<UILabel>().width = 20;
+
+            GameObject colorInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
+                "FFFFFF", false, NGUIText.Alignment.Left);
+            colorInputField.name = "ColorField";
+            colorInputField.GetComponent<UIInput>().characterLimit = 6;
+            var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInputField.GetComponent<UIInput>()));
+            colorInputField.GetComponent<UIInput>().onChange.Add(colorDelegate);
+            #endregion
+
+            #region Intensity Input Field
+            GameObject intensityTitle = Instantiate(labelTemplate, lightAttributes.transform);
+            intensityTitle.name = "IntensityTitle";
+            intensityTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
+            intensityTitle.RemoveComponent<UILocalize>();
+            intensityTitle.GetComponent<UILabel>().width = 260;
+            intensityTitle.GetComponent<UILabel>().text = "Intensity";
+            intensityTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject intensityInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+                "1", false, NGUIText.Alignment.Left);
+            intensityInputField.name = "IntensityField";
+            intensityInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
+            var intensityDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Intensity"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", intensityInputField.GetComponent<UIInput>()));
+            intensityInputField.GetComponent<UIInput>().onChange.Add(intensityDelegate);
+            #endregion
+
+            lightAttributes.SetActive(false);
+            attrbutesPanels.Add("Light", lightAttributes);
+        }
+        void CreateSawAttributesPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject sawAttributes = new GameObject("SawAttributes");
+            sawAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            sawAttributes.transform.localPosition = Vector3.zero;
+            sawAttributes.transform.localScale = Vector3.one;
+
+            #region Activate On Start Toggle
+            GameObject activateOnStartTitle = Instantiate(labelTemplate, sawAttributes.transform);
+            activateOnStartTitle.name = "ActivateOnStartTitle";
+            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            activateOnStartTitle.RemoveComponent<UILocalize>();
+            activateOnStartTitle.GetComponent<UILabel>().width = 395;
+            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
+            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(sawAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
+            activateOnStartToggle.name = "ActivateOnStartToggle";
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
+            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            #endregion
+
+            #region Damage Input Field
+            GameObject damageTitle = Instantiate(labelTemplate, sawAttributes.transform);
+            damageTitle.name = "DamageTitle";
+            damageTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
+            damageTitle.RemoveComponent<UILocalize>();
+            damageTitle.GetComponent<UILabel>().width = 260;
+            damageTitle.GetComponent<UILabel>().text = "Damage";
+            damageTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject damageInputField = NGUI_Utils.CreateInputField(sawAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+                "50", false, NGUIText.Alignment.Left);
+            damageInputField.name = "DamageInputField";
+            damageInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeInt;
+            var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Damage"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", damageInputField.GetComponent<UIInput>()));
+            damageInputField.GetComponent<UIInput>().onChange.Add(damageDelegate);
+            #endregion
+
+            #region Add Waypoint
+            GameObject addWaypoint = NGUI_Utils.CreateButton(sawAttributes.transform, new Vector3(0f, -15f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
+            addWaypoint.name = "AddWaypointButton";
+            addWaypoint.GetComponent<UIButton>().onClick.Clear();
+            var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
+                NGUI_Utils.CreateEventDelegateParamter(this, "actionName", "AddWaypoint"));
+            addWaypoint.GetComponent<UIButton>().onClick.Add(addWaypointDelegate);
+            addWaypoint.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            addWaypoint.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+            #endregion
+
+            sawAttributes.SetActive(false);
+            attrbutesPanels.Add("Saw", sawAttributes);
+        }
+        void CreateSawWaypointAttributesPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject sawWaypointAttributes = new GameObject("SawWaypointAttributes");
+            sawWaypointAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            sawWaypointAttributes.transform.localPosition = Vector3.zero;
+            sawWaypointAttributes.transform.localScale = Vector3.one;
+
+            #region Wait Time Input Field
+            GameObject waitTimeTitle = Instantiate(labelTemplate, sawWaypointAttributes.transform);
+            waitTimeTitle.name = "WaitTimeTitle";
+            waitTimeTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            waitTimeTitle.RemoveComponent<UILocalize>();
+            waitTimeTitle.GetComponent<UILabel>().width = 260;
+            waitTimeTitle.GetComponent<UILabel>().text = "Wait Time";
+            waitTimeTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject waitTimeInputField = NGUI_Utils.CreateInputField(sawWaypointAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
+                "0.3", false, NGUIText.Alignment.Left);
+            waitTimeInputField.name = "WaitTimeInputField";
+            waitTimeInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
+            var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "WaitTime"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", waitTimeInputField.GetComponent<UIInput>()));
+            waitTimeInputField.GetComponent<UIInput>().onChange.Add(damageDelegate);
+            #endregion
+
+            #region Add Waypoint
+            GameObject addWaypoint = NGUI_Utils.CreateButton(sawWaypointAttributes.transform, new Vector3(0f, 35f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
+            addWaypoint.name = "AddWaypointButton";
+            addWaypoint.GetComponent<UIButton>().onClick.Clear();
+            var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
+                NGUI_Utils.CreateEventDelegateParamter(this, "actionName", "AddWaypoint"));
+            addWaypoint.GetComponent<UIButton>().onClick.Add(addWaypointDelegate);
+            addWaypoint.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            addWaypoint.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+            #endregion
+
+            sawWaypointAttributes.SetActive(false);
+            attrbutesPanels.Add("SawWaypoint", sawWaypointAttributes);
+        }
+        void CreateSwitchAttributesPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject switchAttributes = new GameObject("SwitchAttributes");
+            switchAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            switchAttributes.transform.localPosition = Vector3.zero;
+            switchAttributes.transform.localScale = Vector3.one;
+
+            #region Usable Once Toggle
+            GameObject usableOnceTitle = Instantiate(labelTemplate, switchAttributes.transform);
+            usableOnceTitle.name = "UsableOnceTitle";
+            usableOnceTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            usableOnceTitle.RemoveComponent<UILocalize>();
+            usableOnceTitle.GetComponent<UILabel>().width = 395;
+            usableOnceTitle.GetComponent<UILabel>().text = "Usable Once";
+            usableOnceTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject usableOnceToggle = NGUI_Utils.CreateToggle(switchAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
+            usableOnceToggle.name = "UsableOnceToggle";
+            usableOnceToggle.GetComponent<UIToggle>().onChange.Clear();
+            var usableOnceDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "UsableOnce"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", usableOnceToggle.GetComponent<UIToggle>()));
+            usableOnceToggle.GetComponent<UIToggle>().onChange.Add(usableOnceDelegate);
+            #endregion
+
+            #region Can Use Taser Toggle
+            GameObject canUseTaserTitle = Instantiate(labelTemplate, switchAttributes.transform);
+            canUseTaserTitle.transform.localPosition = new Vector3(-230f, 35f, 0f);
+            canUseTaserTitle.name = "CanUseTaserTitle";
+            canUseTaserTitle.RemoveComponent<UILocalize>();
+            canUseTaserTitle.GetComponent<UILabel>().width = 395;
+            canUseTaserTitle.GetComponent<UILabel>().text = "Can be shot by Taser";
+            canUseTaserTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject canUseTaserToggle = NGUI_Utils.CreateToggle(switchAttributes.transform, new Vector3(200f, 35f, 0f), new Vector3Int(48, 48, 0));
+            canUseTaserToggle.name = "CanUseTaserToggle";
+            canUseTaserToggle.GetComponent<UIToggle>().onChange.Clear();
+            var canUseTaserDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "CanUseTaser"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", canUseTaserToggle.GetComponent<UIToggle>()));
+            canUseTaserToggle.GetComponent<UIToggle>().onChange.Add(canUseTaserDelegate);
+            #endregion
+
+            #region Manage Events
+            GameObject manageEvents = NGUI_Utils.CreateButton(switchAttributes.transform, new Vector3(0f, -20f, 0f), new Vector3Int(480, 55, 0), "Manage Events");
+            manageEvents.name = "ManageEventsButton";
+            manageEvents.GetComponent<UIButton>().onClick.Clear();
+            var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
+                NGUI_Utils.CreateEventDelegateParamter(this, "actionName", "ManageEvents"));
+            manageEvents.GetComponent<UIButton>().onClick.Add(addWaypointDelegate);
+            manageEvents.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            manageEvents.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+            #endregion
+
+            switchAttributes.SetActive(false);
+            attrbutesPanels.Add("Switch", switchAttributes);
+        }
+        void CreateAmmoAndHealthPackAttributesPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject ammoHealthAttributes = new GameObject("AmmoAndHealthPackAttributes");
+            ammoHealthAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            ammoHealthAttributes.transform.localPosition = Vector3.zero;
+            ammoHealthAttributes.transform.localScale = Vector3.one;
+
+            #region Respawn Time Input Field
+            GameObject respawnTitle = Instantiate(labelTemplate, ammoHealthAttributes.transform);
+            respawnTitle.name = "RespawnTitle";
+            respawnTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            respawnTitle.RemoveComponent<UILocalize>();
+            respawnTitle.GetComponent<UILabel>().width = 260;
+            respawnTitle.GetComponent<UILabel>().text = "Respawn Time";
+            respawnTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject respawnInputField = NGUI_Utils.CreateInputField(ammoHealthAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
+                "50", false, NGUIText.Alignment.Left);
+            respawnInputField.name = "RespawnInputField";
+            respawnInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
+            var respawnDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "RespawnTime"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", respawnInputField.GetComponent<UIInput>()));
+            respawnInputField.GetComponent<UIInput>().onChange.Add(respawnDelegate);
+            #endregion
+
+            ammoHealthAttributes.SetActive(false);
+            attrbutesPanels.Add("AmmoAndHealth", ammoHealthAttributes);
+        }
+        void CreateLaserAttributesPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject laserAttributes = new GameObject("LaserAttributes");
+            laserAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            laserAttributes.transform.localPosition = Vector3.zero;
+            laserAttributes.transform.localScale = Vector3.one;
+
+            #region Activate On Start Toggle
+            GameObject activateOnStartTitle = Instantiate(labelTemplate, laserAttributes.transform);
+            activateOnStartTitle.name = "ActivateOnStartTitle";
+            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            activateOnStartTitle.RemoveComponent<UILocalize>();
+            activateOnStartTitle.GetComponent<UILabel>().width = 395;
+            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
+            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(laserAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
+            activateOnStartToggle.name = "ActivateOnStartToggle";
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
+            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            #endregion
+
+            #region Damage Input Field
+            GameObject damageTitle = Instantiate(labelTemplate, laserAttributes.transform);
+            damageTitle.name = "DamageTitle";
+            damageTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
+            damageTitle.RemoveComponent<UILocalize>();
+            damageTitle.GetComponent<UILabel>().width = 260;
+            damageTitle.GetComponent<UILabel>().text = "Damage";
+            damageTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject damageInputField = NGUI_Utils.CreateInputField(laserAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+                "34", false, NGUIText.Alignment.Left);
+            damageInputField.name = "DamageInputField";
+            damageInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
+            var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Damage"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", damageInputField.GetComponent<UIInput>()));
+            damageInputField.GetComponent<UIInput>().onChange.Add(damageDelegate);
+            #endregion
+
+            laserAttributes.SetActive(false);
+            attrbutesPanels.Add("Laser", laserAttributes);
+        }
+        void CreateCeilingLightPanel()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject ceilingLightAttributes = new GameObject("CeilingLightAttributes");
+            ceilingLightAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            ceilingLightAttributes.transform.localPosition = Vector3.zero;
+            ceilingLightAttributes.transform.localScale = Vector3.one;
+
+            #region Activate On Start Toggle
+            GameObject activateOnStartTitle = Instantiate(labelTemplate, ceilingLightAttributes.transform);
+            activateOnStartTitle.name = "ActivateOnStartTitle";
+            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            activateOnStartTitle.RemoveComponent<UILocalize>();
+            activateOnStartTitle.GetComponent<UILabel>().width = 395;
+            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
+            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(ceilingLightAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
+            activateOnStartToggle.name = "ActivateOnStartToggle";
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
+            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            #endregion
+
+            #region Color Input Field
+            GameObject colorTitle = Instantiate(labelTemplate, ceilingLightAttributes.transform);
+            colorTitle.name = "ColorTitle";
+            colorTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
+            colorTitle.RemoveComponent<UILocalize>();
+            colorTitle.GetComponent<UILabel>().width = 235;
+            colorTitle.GetComponent<UILabel>().text = "Color (Hex)";
+            colorTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject hashtagLOL = Instantiate(labelTemplate, ceilingLightAttributes.transform);
+            hashtagLOL.name = "ColorHashtag";
+            hashtagLOL.transform.localPosition = new Vector3(15f, 40f, 0f);
+            hashtagLOL.RemoveComponent<UILocalize>();
+            hashtagLOL.GetComponent<UILabel>().text = "#";
+            hashtagLOL.GetComponent<UILabel>().color = Color.white;
+            hashtagLOL.GetComponent<UILabel>().alignment = NGUIText.Alignment.Center;
+            hashtagLOL.GetComponent<UILabel>().width = 20;
+
+            GameObject colorInputField = NGUI_Utils.CreateInputField(ceilingLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+                "FFFFFF", false, NGUIText.Alignment.Left);
+            colorInputField.name = "ColorField";
+            var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInputField.GetComponent<UIInput>()));
+            colorInputField.GetComponent<UIInput>().onChange.Add(colorDelegate);
+            #endregion
+
+            ceilingLightAttributes.SetActive(false);
+            attrbutesPanels.Add("Ceiling Light", ceilingLightAttributes);
         }
 
         public void SetSelectedObjPanelAsNone()
         {
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "No Object Selected";
+            selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
             selectedObjPanel.GetChildWithName("Body").SetActive(false);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
         }
         public void SetMultipleObjectsSelected()
         {
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "Multiple Objects Selected";
+            selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
             selectedObjPanel.GetChildWithName("Body").SetActive(false);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
         }
-        public void SetSelectedObject(string objName)
+        public void SetSelectedObject(LE_Object objComponent)
         {
-            selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = objName;
+            selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = objComponent.objectFullNameWithID;
             selectedObjPanel.GetChildWithName("Body").SetActive(true);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -220, 0f);
+
+            attrbutesPanels.ToList().ForEach(x => x.Value.SetActive(false));
+
+            if (objComponent.objectOriginalName == "Directional Light" || objComponent.objectOriginalName == "Point Light")
+            {
+                attrbutesPanels["Light"].SetActive(true);
+
+                // Set color input...
+                var colorInput = attrbutesPanels["Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
+                colorInput.text = Utilities.ColorToHex((Color)objComponent.GetProperty("Color"));
+
+                // Set intensity input...
+                var intensityInput = attrbutesPanels["Light"].GetChildWithName("IntensityField").GetComponent<UIInput>();
+                intensityInput.text = (float)objComponent.GetProperty("Intensity") + "";
+            }
+            else if (objComponent.objectOriginalName == "Saw")
+            {
+                attrbutesPanels["Saw"].SetActive(true);
+
+                // Set activate on start toggle...
+                var activateOnStartToggle = attrbutesPanels["Saw"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
+                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
+
+                // Set the damage input field...
+                var damageInput = attrbutesPanels["Saw"].GetChildWithName("DamageInputField").GetComponent<UIInput>();
+                damageInput.text = (int)objComponent.GetProperty("Damage") + "";
+            }
+            else if (objComponent.objectOriginalName == "Saw Waypoint")
+            {
+                attrbutesPanels["SawWaypoint"].SetActive(true);
+
+                // Set wait time input field...
+                var waitTimeInputField = attrbutesPanels["SawWaypoint"].GetChildWithName("WaitTimeInputField").GetComponent<UIInput>();
+                waitTimeInputField.text = (float)objComponent.GetProperty("WaitTime") + "";
+            }
+            else if (objComponent.objectOriginalName == "Switch")
+            {
+                attrbutesPanels["Switch"].SetActive(true);
+
+                // Set usable once toggle...
+                var usableOnceToggle = attrbutesPanels["Switch"].GetChildWithName("UsableOnceToggle").GetComponent<UIToggle>();
+                usableOnceToggle.Set((bool)objComponent.GetProperty("UsableOnce"));
+
+                // Set can use taser toggle...
+                var canUseTaserToggle = attrbutesPanels["Switch"].GetChildWithName("CanUseTaserToggle").GetComponent<UIToggle>();
+                canUseTaserToggle.Set((bool)objComponent.GetProperty("CanUseTaser"));
+            }
+            else if (objComponent.objectOriginalName == "Ammo Pack" || objComponent.objectOriginalName == "Health Pack")
+            {
+                attrbutesPanels["AmmoAndHealth"].SetActive(true);
+
+                var respawnTimeInputField = attrbutesPanels["AmmoAndHealth"].GetChildWithName("RespawnInputField").GetComponent<UIInput>();
+                respawnTimeInputField.text = (float)objComponent.GetProperty("RespawnTime") + "";
+            }
+            else if (objComponent.objectOriginalName == "Laser")
+            {
+                attrbutesPanels["Laser"].SetActive(true);
+
+                // Set activate on start toggle...
+                var activateOnStartToggle = attrbutesPanels["Laser"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
+                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
+
+                // Set the damage input field...
+                var damageInput = attrbutesPanels["Laser"].GetChildWithName("DamageInputField").GetComponent<UIInput>();
+                damageInput.text = (int)objComponent.GetProperty("Damage") + "";
+            }
+            else if (objComponent.objectOriginalName == "Ceiling Light")
+            {
+                attrbutesPanels["Ceiling Light"].SetActive(true);
+
+                // Set activate on start toggle...
+                var activateOnStartToggle = attrbutesPanels["Ceiling Light"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
+                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
+
+                // Set color input...
+                var colorInput = attrbutesPanels["Ceiling Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
+                colorInput.text = Utilities.ColorToHex((Color)objComponent.GetProperty("Color"));
+            }
+            else
+            {
+                attrbutesPanels["None"].SetActive(true);
+            }
+
+            if (objComponent.canBeDisabledAtStart)
+            {
+                selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(true);
+                selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").GetComponent<UIToggle>().Set(objComponent.setActiveAtStart);
+            }
+            else
+            {
+                selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
+                objComponent.setActiveAtStart = true; // Just in case ;)
+            }
+        }
+
+        // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
+        // AAALSO now its seems crapGUI can't recognize between two different overloads of a method, so I need to put different names foreach method, DAMN IT.
+        public void SetSetActiveAtStart(UIToggle toggle)
+        {
+            EditorController.Instance.currentSelectedObjComponent.setActiveAtStart = toggle.isChecked;
+            EditorController.Instance.levelHasBeenModified = true;
+        }
+        public void SetPropertyWithInput(string propertyName, UIInput inputField)
+        {
+            Color validValueColor = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
+            Color invalidValueColor = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
+
+            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.text))
+            {
+                EditorController.Instance.levelHasBeenModified = true;
+                inputField.GetComponent<UISprite>().color = validValueColor;
+            }
+            else
+            {
+                inputField.GetComponent<UISprite>().color = invalidValueColor;
+            }
+        }
+        public void SetPropertyWithToggle(string propertyName, UIToggle toggle)
+        {
+            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
+            {
+                EditorController.Instance.levelHasBeenModified = true;
+            }
+        }
+        public void TriggerAction(string actionName)
+        {
+            if (EditorController.Instance.currentSelectedObjComponent.TriggerAction(actionName))
+            {
+                EditorController.Instance.levelHasBeenModified = true;
+            }
         }
         #endregion
 
@@ -540,6 +1066,131 @@ namespace FS_LevelEditor
             currentModeLabel.gameObject.SetActive(!isEnablingIt);
         }
 
+        #region Global Properties Related
+        public void CreateGlobalPropertiesPanel()
+        {
+            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            #region Create Object With Background
+            globalPropertiesPanel = new GameObject("GlobalPropertiesPanel");
+            globalPropertiesPanel.transform.parent = editorUIParent.transform;
+            globalPropertiesPanel.transform.localScale = Vector3.one;
+            globalPropertiesPanel.transform.localPosition = new Vector3(1320f, 0f, 0f);
+
+            UISprite background = globalPropertiesPanel.AddComponent<UISprite>();
+            background.atlas = template.GetComponent<UISprite>().atlas;
+            background.spriteName = "Square_Border_Beveled_HighOpacity";
+            background.type = UIBasicSprite.Type.Sliced;
+            background.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            background.width = 650;
+            background.height = 1010;
+
+            BoxCollider collider = globalPropertiesPanel.AddComponent<BoxCollider>();
+            collider.size = new Vector2(650f, 1010f);
+
+            TweenPosition tween = globalPropertiesPanel.AddComponent<TweenPosition>();
+            tween.from = new Vector3(600f, 0f);
+            tween.to = new Vector3(1320f, 0f);
+            tween.duration = 0.2f;
+            tween.Invoke("ResetToBeginning", 0.1f);
+            #endregion
+
+            #region Create Title
+            GameObject title = new GameObject("Title");
+            title.transform.parent = globalPropertiesPanel.transform;
+            title.transform.localScale = Vector3.one;
+            title.transform.localPosition = new Vector3(0f, 460f, 0f);
+
+            UILabel titleLabel = title.AddComponent<UILabel>();
+            titleLabel.depth = 1;
+            titleLabel.font = labelTemplate.GetComponent<UILabel>().font;
+            titleLabel.text = "Global Properties";
+            titleLabel.fontSize = 30;
+            titleLabel.width = 600;
+            titleLabel.height = 50;
+            #endregion
+
+            #region Create Has Taser Toggle
+            GameObject hasTaserToggle = NGUI_Utils.CreateToggle(globalPropertiesPanel.transform,
+                new Vector3(-300f, 350f), new Vector3Int(200, 42, 1), "Has Taser");
+            hasTaserToggle.name = "HasTaserToggle";
+            EventDelegate hasTaserDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "name", "HasTaser"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", hasTaserToggle.GetComponent<UIToggle>()));
+            hasTaserToggle.GetComponent<UIToggle>().onChange.Clear();
+            hasTaserToggle.GetComponent<UIToggle>().onChange.Add(hasTaserDelegate);
+            #endregion
+
+            #region Create Has Jetpack Toggle
+            GameObject hasJetpackToggle = NGUI_Utils.CreateToggle(globalPropertiesPanel.transform,
+                new Vector3(40f, 350f), new Vector3Int(200, 42, 1), "Has Jetpack");
+            hasJetpackToggle.name = "HasJetpackToggle";
+            EventDelegate hasJetpackDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "name", "HasJetpack"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", hasJetpackToggle.GetComponent<UIToggle>()));
+            hasJetpackToggle.GetComponent<UIToggle>().onChange.Clear();
+            hasJetpackToggle.GetComponent<UIToggle>().onChange.Add(hasJetpackDelegate);
+            #endregion
+        }
+        public void ShowOrHideGlobalPropertiesPanel()
+        {
+            isShowingGlobalProperties = !isShowingGlobalProperties;
+
+            if (isShowingGlobalProperties) RefreshGlobalPropertiesPanelValues();
+
+            if (isShowingGlobalProperties) globalPropertiesPanel.GetComponent<TweenPosition>().PlayReverse();
+            else globalPropertiesPanel.GetComponent<TweenPosition>().PlayForward();
+
+            // Only enable these panels if the current editor mode is building.
+            if (EditorController.Instance.currentMode == EditorController.Mode.Building && !isShowingGlobalProperties)
+            {
+                categoryButtonsParent.SetActive(true);
+                currentCategoryBG.SetActive(true);
+            }
+            else
+            {
+                categoryButtonsParent.SetActive(false);
+                currentCategoryBG.SetActive(false);
+            }
+
+            selectedObjPanel.SetActive(!isShowingGlobalProperties);
+            currentModeLabel.gameObject.SetActive(!isShowingGlobalProperties);
+        }
+        void RefreshGlobalPropertiesPanelValues()
+        {
+            GameObject panel = globalPropertiesPanel;
+
+            panel.GetChildWithName("HasTaserToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasTaser"));
+            panel.GetChildWithName("HasJetpackToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasJetpack"));
+        }
+
+        public void SetGlobalPropertyWithToggle(string name, UIToggle toggle)
+        {
+            SetGlobalProperty(name, toggle.isChecked);
+        }
+        public void SetGlobalProperty(string name, object value)
+        {
+            if (EditorController.Instance.globalProperties.ContainsKey(name))
+            {
+                if (EditorController.Instance.globalProperties[name].GetType().Name == value.GetType().Name)
+                {
+                    EditorController.Instance.globalProperties[name] = value;
+                    EditorController.Instance.levelHasBeenModified = true;
+                }
+            }
+        }
+        public object GetGlobalProperty(string name)
+        {
+            if (EditorController.Instance.globalProperties.ContainsKey(name))
+            {
+                return EditorController.Instance.globalProperties[name];
+            }
+
+            return null;
+        }
+        #endregion
+
 
         public void SetupPauseWhenInEditor()
         {
@@ -575,8 +1226,8 @@ namespace FS_LevelEditor
             saveLevelButton.SetActive(true);
 
             // Create a PLAY level button.
-            GameObject playLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
-            GameObject playLevelButton = Instantiate(playLevelButtonTemplate, playLevelButtonTemplate.transform.parent);
+            //GameObject playLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
+            GameObject playLevelButton = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
             playLevelButton.name = "2_PlayLevel";
             Destroy(playLevelButton.GetComponent<ButtonController>());
             Destroy(playLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
@@ -603,6 +1254,8 @@ namespace FS_LevelEditor
 
             // Set the paused variable in the LE controller.
             EditorController.Instance.isEditorPaused = true;
+
+            Logger.Log("LE paused!");
         }
         public void Resume()
         {
@@ -636,6 +1289,8 @@ namespace FS_LevelEditor
                 // And set the paused variable in the controller as false.
                 EditorController.Instance.isEditorPaused = false;
             }
+
+            Logger.Log("LE resumed!");
         }
 
         public void ShowExitPopup()
@@ -690,6 +1345,7 @@ namespace FS_LevelEditor
 
             popupController.Show();
             exitPopupEnabled = true;
+            Logger.Log("Showed LE exit popup!");
         }
         public void OnExitPopupBackButton()
         {
@@ -720,6 +1376,7 @@ namespace FS_LevelEditor
         }
         public void SaveLevelWithPauseMenuButton()
         {
+            Logger.Log("Saving Level Data from pause menu...");
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
             PlaySavingLevelLabel();
             EditorController.Instance.levelHasBeenModified = false;
@@ -734,6 +1391,8 @@ namespace FS_LevelEditor
 
             IEnumerator Coroutine()
             {
+                Logger.Log("About to exit from LE to main menu...");
+
                 if (saveDataBeforeExit)
                 {
                     // Save data.
@@ -754,6 +1413,8 @@ namespace FS_LevelEditor
 
         public void PlayLevel()
         {
+            Logger.Log("About to enter playmode from LE pause menu...");
+
             // Save data automatically.
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
 
@@ -772,6 +1433,8 @@ namespace FS_LevelEditor
 
             Destroy(editorUIParent);
             Destroy(pauseMenu.GetChildWithName("SavingLevelInPauseMenu"));
+
+            Logger.Log("LE UI deleted!");
         }
     }
 }

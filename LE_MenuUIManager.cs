@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.UI_Related;
+using Il2Cpp;
 using Il2CppInControl;
 using MelonLoader;
 using System;
@@ -45,7 +46,7 @@ namespace FS_LevelEditor
         int currentLevelsGridID;
         GameObject onDeletePopupBackButton;
         GameObject onDeletePopupDeleteButton;
-        bool levelButtonsWasClicked = false;
+        public bool levelButtonsWasClicked = false;
         bool isGoingBackToLE = false;
         string levelFileNameWithoutExtensionWhileGoingBackToLE = "";
         string levelNameWhileGoingBackToLE = "";
@@ -79,7 +80,7 @@ namespace FS_LevelEditor
             }
 
             // To exit from the LE menu with the ESC key.
-            if (Input.GetKeyDown(KeyCode.Escape) && inLEMenu && !isInMidTransition)
+            if (Input.GetKeyDown(KeyCode.Escape) && inLEMenu && !isInMidTransition && !EditorController.Instance)
             {
                 // BUT, if the delete level popup is enabled, then hide it and do ABSOLUTELY NOTHNG.
                 if (deletePopupEnabled)
@@ -203,7 +204,10 @@ namespace FS_LevelEditor
             GameObject.Destroy(leMenuPanel.GetComponent<OptionsController>());
             GameObject.Destroy(leMenuPanel.transform.GetChild(2).GetComponent<UILocalize>());
 
-            // Change the title of the panel.
+            // Change the title properties of the panel.
+            leMenuPanel.transform.GetChild(2).transform.localPosition = new Vector3(0, 417, 0);
+            leMenuPanel.transform.GetChild(2).GetComponent<UILabel>().width = 800;
+            leMenuPanel.transform.GetChild(2).GetComponent<UILabel>().height = 50;
             leMenuPanel.transform.GetChild(2).GetComponent<UILabel>().text = "Level Editor";
 
             // Destroy the tabs and disable everything inside of the Game_Options object.
@@ -250,9 +254,11 @@ namespace FS_LevelEditor
             UILabel label = backButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.SetAnchor((Transform)null);
             label.CheckAnchors();
-            label.transform.localPosition = new Vector3(25f, 0f, 0f);
-            label.width = 360;
-            label.height = 67;
+            label.pivot = UIWidget.Pivot.Left;
+            label.alignment = NGUIText.Alignment.Left;
+            label.transform.localPosition = new Vector3(-25f, 0f, 0f);
+            label.width = 150;
+            label.height = 50;
             label.text = "Back";
             label.fontSize = 35;
 
@@ -269,7 +275,9 @@ namespace FS_LevelEditor
 
             // Set OnClick action, which is go back lol.
             UIButton button = backButton.GetComponent<UIButton>();
-            button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.SwitchBetweenMenuAndLEMenu)));
+            EventDelegate.Parameter eventParm = NGUI_Utils.CreateEventDelegateParamter(this, "showMainMenu", true);
+            EventDelegate buttonEvent = NGUI_Utils.CreateEvenDelegate(this, nameof(SwitchBetweenMenuAndLEMenu), eventParm);
+            button.onClick.Add(buttonEvent);
         }
 
         // The same shit as the CreateBackButton function.
@@ -297,9 +305,11 @@ namespace FS_LevelEditor
             UILabel label = addButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.SetAnchor((Transform)null);
             label.CheckAnchors();
-            label.transform.localPosition = new Vector3(25f, 0f, 0f);
-            label.width = 360;
-            label.height = 67;
+            label.pivot = UIWidget.Pivot.Left;
+            label.alignment = NGUIText.Alignment.Left;
+            label.transform.localPosition = new Vector3(-25f, 0f, 0f);
+            label.width = 150;
+            label.height = 50;
             label.text = "New";
             label.fontSize = 35;
 
@@ -312,7 +322,7 @@ namespace FS_LevelEditor
             sprite.width = 30;
             sprite.height = 30;
             sprite.depth = 1;
-            sprite.transform.localPosition = new Vector3(-45f, 5f, 0f);
+            sprite.transform.localPosition = new Vector3(-45f, 3f, 0f);
 
             // Set OnClick action, which is creating a new level with a new name.
             UIButton button = addButton.GetComponent<UIButton>();
@@ -341,13 +351,14 @@ namespace FS_LevelEditor
             versionLabel.text = currentModVersion;
             versionLabel.fontSize = 30;
             versionLabel.alignment = NGUIText.Alignment.Right;
-            versionLabel.width = 800;
+            versionLabel.pivot = UIWidget.Pivot.Right;
+            versionLabel.width = 250;
 
             // Reset scale to one.
             version.transform.localScale = Vector3.one;
 
             // Change its position to the top-right.
-            version.transform.localPosition = new Vector3(430f, 416.4f, 0f);
+            version.transform.localPosition = new Vector3(830f, 417f, 0f);
         }
         void CreateCreditsLabel()
         {
@@ -361,11 +372,13 @@ namespace FS_LevelEditor
             creditsLabel.text = "Created by Javialon_qv";
             creditsLabel.fontSize = 25;
             creditsLabel.alignment = NGUIText.Alignment.Left;
-            creditsLabel.width = 800;
+            creditsLabel.pivot = UIWidget.Pivot.Left;
+            creditsLabel.width = 1650;
+            creditsLabel.height = 35;
 
             creditsLabel.transform.localScale = Vector3.one;
 
-            creditsLabel.transform.localPosition = new Vector3(-430f, -368f, 0f);
+            creditsLabel.transform.localPosition = new Vector3(-830f, -368f, 0f);
         }
 
         public void CreateLevelsList()
@@ -447,13 +460,14 @@ namespace FS_LevelEditor
                 UILabel label = lvlButton.GetChildAt("Background/Label").GetComponent<UILabel>();
                 label.SetAnchor((Transform)null);
                 label.CheckAnchors();
-                label.width = 1200;
+                label.width = 1370;
                 label.height = 67;
                 label.alignment = NGUIText.Alignment.Left;
+                label.pivot = UIWidget.Pivot.Left;
                 // If the data is null put a warning in the beginning of the text, followed by the name of the file without extension, otherwise, put the real level name as usually.
                 label.text = data != null ? data.levelName : $"[c][ffff00][INVALID LEVEL FILE][-][/c] {levelFileNameWithoutExtension}";
                 label.fontSize = 40;
-                label.transform.localPosition = new Vector3(-80f, 0f, 0f);
+                label.transform.localPosition = new Vector3(-680f, 0f, 0f);
 
                 // Only setup UIButtonScale and UIButton when is a valid level file, otherwise destroy the UIButton, UIButtonScale and UIButtonColor.
                 if (data != null)
@@ -870,17 +884,20 @@ namespace FS_LevelEditor
                 SwitchBetweenMenuAndLEMenu();
             }
         }
-        public void SwitchBetweenMenuAndLEMenu()
+        public void SwitchBetweenMenuAndLEMenu(bool showMainMenu = true)
         {
             // Switch!
             inLEMenu = !inLEMenu;
 
+
             if (inLEMenu)
             {
+                Logger.Log("Switching from main menu to LE Menu!");
                 CreateLevelsList();
             }
             else
             {
+                Logger.Log("Switching from LE Menu to main menu!");
                 // Put the navigation bar exit button to its original state one we exit from the LE menu.
                 NavigationAction action = navigationBarButtonsParent.transform.GetChild(0).GetComponent<NavigationAction>();
                 action.transform.parent.gameObject.EnableAllChildren();
@@ -915,8 +932,11 @@ namespace FS_LevelEditor
                     uiSoundSource.clip = hidePageSound;
                     uiSoundSource.Play();
 
-                    mainMenu.SetActive(true);
-                    mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
+                    if (showMainMenu)
+                    {
+                        mainMenu.SetActive(true);
+                        mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
+                    }
                     leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(true);
                     leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
                     yield return new WaitForSecondsRealtime(0.2f);

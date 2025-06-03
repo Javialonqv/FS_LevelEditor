@@ -1,20 +1,47 @@
 ﻿using Il2Cpp;
+using Il2CppI2.Loc;
 using Il2CppInControl.NativeDeviceProfiles;
+using Il2CppSystem;
 using MelonLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor
 {
     public static class Utilities
     {
         static Coroutine customNotificationCoroutine;
+
+        static Material propsMat, propsNoSpecMat;
+        static Material propsTransMat, propsTransNoSpecMat;
+
+        public static bool theresAnInputFieldSelected
+        {
+            get
+            {
+                if (UICamera.selectedObject != null)
+                {
+                    return UICamera.selectedObject.TryGetComponent<UIInput>(out var input);
+                }
+
+                return false;
+            }
+        }
+
+        public static void LoadMaterials(Il2CppAssetBundle bundle)
+        {
+            propsMat = bundle.Load<Material>("Props_Mat");
+            propsNoSpecMat = bundle.Load<Material>("Props_NoSpec");
+
+            propsTransMat = bundle.Load<Material>("PropsTransparent_Mat");
+            propsTransNoSpecMat = bundle.Load<Material>("PropsTransparent_NoSpec");
+        }
 
         public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
         {
@@ -104,14 +131,15 @@ namespace FS_LevelEditor
 
         public static T[] TryGetComponents<T>(this GameObject obj) where T : Component
         {
+            List<T> components = new List<T>();
+
             if (obj.TryGetComponent<T>(out T component))
             {
-                return obj.GetComponents<T>();
+                components.AddRange(obj.GetComponents<T>());
             }
-            else
-            {
-                return obj.GetComponentsInChildren<T>();
-            }
+            components.AddRange(obj.GetComponentsInChildren<T>());
+
+            return components.ToArray();
         }
 
         public static Vector3 GetMousePositionInWorld()
@@ -164,6 +192,11 @@ namespace FS_LevelEditor
 
         public static bool IsMouseOverUIElement()
         {
+            if (theresAnInputFieldSelected)
+            {
+                return true;
+            }
+
             if (UICamera.hoveredObject != null)
             {
                 return UICamera.hoveredObject.name != "MainMenu";
@@ -255,7 +288,7 @@ namespace FS_LevelEditor
             }
         }
 
-        public static bool ListHasMultipleObjectsWithSameID(List<LE_Object> levelObjects)
+        public static bool ListHasMultipleObjectsWithSameID(List<LE_Object> levelObjects, bool printError = true)
         {
             HashSet<string> seenIds = new HashSet<string>();
 
@@ -263,12 +296,149 @@ namespace FS_LevelEditor
             {
                 if (!seenIds.Add(obj.objectFullNameWithID))
                 {
-                    Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                    if (printError)
+                    {
+                        Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                    }
                     return true;
                 }
             }
 
             return false;
+        }
+        public static bool ListHasMultipleObjectsWithSameID(List<LE_ObjectData> levelObjects, bool printError = true)
+        {
+            HashSet<string> seenIds = new HashSet<string>();
+
+            foreach (var obj in levelObjects)
+            {
+                string toAdd = obj.objectOriginalName + " " + obj.objectID;
+                if (!seenIds.Add(toAdd))
+                {
+                    if (printError)
+                    {
+                        Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                    }
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Converts a hex string value into a Unity Color.
+        /// </summary>
+        /// <param name="hexValue">The hex value WITHOUT the '#' sufix.</param>
+        /// <returns>The converted hex value into Color.</returns>
+        public static Color? HexToColor(string hexValue, bool throwExceptionIfInvalid = true, Color? defaultValue = null)
+        {
+            if (ColorUtility.TryParseHtmlString("#" + hexValue, out Color color))
+            {
+                return color;
+            }
+            else
+            {
+                if (throwExceptionIfInvalid)
+                {
+                    Logger.Error($"Couldn't convert the hex value \"{hexValue}\" to Color. Returning white.");
+                }
+                return defaultValue;
+            }
+        }
+        public static string ColorToHex(Color color)
+        {
+            int r = Mathf.RoundToInt(color.r * 255);
+            int g = Mathf.RoundToInt(color.g * 255);
+            int b = Mathf.RoundToInt(color.b * 255);
+
+            return $"{r:X2}{g:X2}{b:X2}";
+        }
+
+        public static object ConvertFromSerializableValue(object value)
+        {
+            if (value is Vector3Serializable)
+            {
+                return (Vector3)(Vector3Serializable)value;
+            }
+            else if (value is ColorSerializable)
+            {
+                return (Color)(ColorSerializable)value;
+            }
+
+            return value;
+        }
+
+        public static void SetTransparentMaterials(this GameObject gameObject)
+        {
+            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
+            {
+                Material[] materials = renderer.materials;
+                for (int i = 0; i < renderer.materials.Count; i++)
+                {
+                    if (renderer.materials[i].name.Contains("Props_Mat"))
+                    {
+                        materials[i] = new Material(propsTransMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                                        renderer.materials[i].color.b, 0.392f);
+                    }
+                    else if (renderer.materials[i].name.Contains("Props_NoSpec"))
+                    {
+                        materials[i] = new Material(propsTransNoSpecMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                renderer.materials[i].color.b, 0.392f);
+                    }
+                }
+
+                renderer.materials = materials;
+            }
+        }
+        public static void SetOpaqueMaterials(this GameObject gameObject)
+        {
+            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
+            {
+                Material[] materials = renderer.materials;
+                for (int i = 0; i < renderer.materials.Count; i++)
+                {
+                    if (renderer.materials[i].name.Contains("PropsTransparent_Mat"))
+                    {
+                        materials[i] = new Material(propsMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                renderer.materials[i].color.b, 1f);
+                    }
+                    else if (renderer.materials[i].name.Contains("PropsTransparent_NoSpec"))
+                    {
+                        materials[i] = new Material(propsNoSpecMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                renderer.materials[i].color.b, 1f);
+                    }
+                }
+
+                renderer.materials = materials;
+            }
+        }
+
+        public enum FS_UISound
+        {
+            POPUP_UI_SHOW,
+            POPUP_UI_HIDE,
+            INTERACTION_AVAILABLE,
+            INTERACTION_UNAVAILABLE
+        }
+        public static void PlayFSUISound(FS_UISound sound)
+        {
+            if (sound == FS_UISound.POPUP_UI_SHOW || sound == FS_UISound.POPUP_UI_HIDE)
+            {
+                PopupController popup = GameObject.Find("MainMenu/Camera/Holder/Popup").GetComponent<PopupController>();
+                AudioClip toPlay = sound == FS_UISound.POPUP_UI_SHOW ? popup.showPopupSound : popup.hidePopupSound;
+                popup.audioSourceToUse.PlayOneShot(toPlay);
+            }
+            else if (sound == FS_UISound.INTERACTION_AVAILABLE || sound == FS_UISound.INTERACTION_UNAVAILABLE)
+            {
+                AudioClip toPlay = sound == FS_UISound.INTERACTION_AVAILABLE ? InGameUIManager.Instance.interactionAvailableSound :
+                    InGameUIManager.Instance.interactionNoLongerAvailableSound;
+                MenuController.GetInstance().m_uiAudioSource.PlayOneShot(toPlay);
+            }
         }
     }
 }
