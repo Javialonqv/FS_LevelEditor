@@ -48,7 +48,11 @@ namespace FS_LevelEditor.UI_Related
                 outlineSprite.depth = 0;
             }
 
-            UILabel label = inputField.AddComponent<UILabel>();
+            GameObject labelObj = new GameObject("Text");
+            labelObj.transform.parent = inputField.transform;
+            labelObj.transform.localPosition = Vector3.zero;
+            labelObj.transform.localScale = Vector3.one;
+            UILabel label = labelObj.AddComponent<UILabel>();
             label.font = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label").GetComponent<UILabel>().font;
             label.fontSize = fontSize;
             label.width = size.x - 5;
