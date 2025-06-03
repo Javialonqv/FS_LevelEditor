@@ -351,6 +351,7 @@
 
 	<ItemGroup>
 		<Compile Include="Core.cs" />
+		<Compile Include="Level_Editor_Itself\DeathYPlaneCtrl.cs" />
 		<Compile Include="Level_Editor_Itself\EditorCameraMovement.cs" />
 		<Compile Include="Level_Editor_Itself\EditorController.cs" />
 		<Compile Include="Level_Editor_Itself\EventsUIPageManager.cs" />

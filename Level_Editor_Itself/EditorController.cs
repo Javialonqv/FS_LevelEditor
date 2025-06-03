@@ -8,6 +8,7 @@ using UnityEngine;
 using MelonLoader;
 using Il2Cpp;
 using System.Collections;
+using FS_LevelEditor.Level_Editor_Itself;
 
 namespace FS_LevelEditor
 {
@@ -72,12 +73,14 @@ namespace FS_LevelEditor
         public bool levelHasBeenModified = false;
 
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
+        DeathYPlaneCtrl deathYPlane;
 
         // ----------------------------
         public Dictionary<string, object> globalProperties = new Dictionary<string, object>()
         {
             { "HasTaser", true },
-            { "HasJetpack", true }
+            { "HasJetpack", true },
+            { "DeathYLimit", -275f }
         };
 
         void Awake()
@@ -90,6 +93,8 @@ namespace FS_LevelEditor
 
             multipleSelectedObjsParent = new GameObject("MultipleSelectedObjsParent");
             multipleSelectedObjsParent.transform.position = Vector3.zero;
+
+            deathYPlane = Instantiate(LoadOtherObjectInBundle("DeathYPlane")).AddComponent<DeathYPlaneCtrl>();
         }
 
         void Start()
@@ -238,6 +243,16 @@ namespace FS_LevelEditor
             if (globalGizmosArrowsEnabled && gizmosArrows.activeSelf)
             {
                 gizmosArrows.transform.rotation = Quaternion.identity;
+            }
+
+            if (UICamera.selectedObject && UICamera.selectedObject.name == "DeathYLimit")
+            {
+                deathYPlane.gameObject.SetActive(true);
+                deathYPlane.SetYPos((float)globalProperties["DeathYLimit"]);
+            }
+            else
+            {
+                deathYPlane.gameObject.SetActive(false);
             }
         }
 

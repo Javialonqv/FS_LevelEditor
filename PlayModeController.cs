@@ -327,3 +327,18 @@ public static class GamePauseCurrentLevelPath
         }
     }
 }
+
+[HarmonyPatch(typeof(Controls), nameof(Controls.GetLevelDeathYLimit))]
+public static class DeathYLimitPatch
+{
+    public static bool Prefix(ref float __result)
+    {
+        if (PlayModeController.Instance)
+        {
+            __result = (float)PlayModeController.Instance.globalProperties["DeathYLimit"];
+            return false;
+        }
+
+        return true;
+    }
+}

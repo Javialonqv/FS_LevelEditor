@@ -1132,6 +1132,32 @@ namespace FS_LevelEditor
             hasJetpackToggle.GetComponent<UIToggle>().onChange.Clear();
             hasJetpackToggle.GetComponent<UIToggle>().onChange.Add(hasJetpackDelegate);
             #endregion
+
+            #region Create Death Y Limit Field
+            GameObject deathYLimitTitle = new GameObject("DeathYLimitLabel");
+            deathYLimitTitle.transform.parent = globalPropertiesPanel.transform;
+            deathYLimitTitle.transform.localScale = Vector3.one;
+
+            UILabel deathYLimitLabel = deathYLimitTitle.AddComponent<UILabel>();
+            deathYLimitLabel.pivot = UIWidget.Pivot.Left;
+            deathYLimitLabel.alignment = NGUIText.Alignment.Left;
+            deathYLimitLabel.depth = 1;
+            deathYLimitLabel.font = labelTemplate.GetComponent<UILabel>().font;
+            deathYLimitLabel.text = "Death Y Limit";
+            deathYLimitLabel.fontSize = 30;
+            deathYLimitLabel.width = 250;
+            deathYLimitLabel.height = 50;
+            deathYLimitTitle.transform.localPosition = new Vector3(-300f, 270f, 0f);
+
+            GameObject deathYLimitField = NGUI_Utils.CreateInputField(globalPropertiesPanel.transform, new Vector3(160f, 270f, 0f),
+                new Vector3Int(300, 50, 0), 30, "-275");
+            deathYLimitField.name = "DeathYLimit";
+            deathYLimitField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
+            var deathYLimitDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithInput),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "DeathYLimit"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", deathYLimitField.GetComponent<UIInput>()));
+            deathYLimitField.GetComponent<UIInput>().onChange.Add(deathYLimitDelegate);
+            #endregion
         }
         public void ShowOrHideGlobalPropertiesPanel()
         {
@@ -1163,11 +1189,41 @@ namespace FS_LevelEditor
 
             panel.GetChildWithName("HasTaserToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasTaser"));
             panel.GetChildWithName("HasJetpackToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasJetpack"));
+            panel.GetChildWithName("DeathYLimit").GetComponent<UIInput>().text = (float)GetGlobalProperty("DeathYLimit") + "";
         }
 
         public void SetGlobalPropertyWithToggle(string name, UIToggle toggle)
         {
             SetGlobalProperty(name, toggle.isChecked);
+        }
+        public void SetGlobalPropertyWithInput(string propertyName, UIInput inputField)
+        {
+            Color validValueColor = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
+            Color invalidValueColor = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
+
+            if (ParseInputFieldData(inputField.name, inputField.text, out object parsedData))
+            {
+                EditorController.Instance.levelHasBeenModified = true;
+                inputField.GetComponent<UISprite>().color = validValueColor;
+                SetGlobalProperty(propertyName, parsedData);
+            }
+            else
+            {
+                inputField.GetComponent<UISprite>().color = invalidValueColor;
+            }
+        }
+        bool ParseInputFieldData(string inputFieldName, string fieldText, out object parsedData)
+        {
+            switch (inputFieldName)
+            {
+                case "DeathYLimit":
+                    bool toReturn = float.TryParse(fieldText, out float result);
+                    parsedData = result;
+                    return toReturn;
+            }
+
+            parsedData = null;
+            return false;
         }
         public void SetGlobalProperty(string name, object value)
         {
