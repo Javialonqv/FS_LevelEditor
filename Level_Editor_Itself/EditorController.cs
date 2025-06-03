@@ -6,11 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using MelonLoader;
-using System.Text.RegularExpressions;
-using UnityEngine.SceneManagement;
 using Il2Cpp;
 using System.Collections;
-using Il2CppLunarCatsStudio.SuperCombiner;
 
 namespace FS_LevelEditor
 {
@@ -34,15 +31,17 @@ namespace FS_LevelEditor
         // Avaiable objects from all of the categories.
         public List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
         public Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
+        GameObject[] otherObjectsFromBundle;
         public string currentObjectToBuildName = "";
         GameObject currentObjectToBuild;
         GameObject previewObjectToBuildObj = null;
         Vector3? lastHittenNormalByPreviewRay = null;
+        GameObject currentHittenSnapTrigger = null;
 
         // Related to current selected object for level building.
         public GameObject levelObjectsParent;
         public GameObject currentSelectedObj;
-        LE_Object currentSelectedObjComponent;
+        public LE_Object currentSelectedObjComponent;
         // When there's just one object selected, that object in in the currentSelectedObj variable.
         // But when there are multiple objects selected, this list contains em and "currentSelectedObj" is "multipleSelectedObjsParent".
         public List<GameObject> currentSelectedObjects = new List<GameObject>();
@@ -74,6 +73,13 @@ namespace FS_LevelEditor
 
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
+        // ----------------------------
+        public Dictionary<string, object> globalProperties = new Dictionary<string, object>()
+        {
+            { "HasTaser", true },
+            { "HasJetpack", true }
+        };
+
         void Awake()
         {
             Instance = this;
@@ -94,9 +100,17 @@ namespace FS_LevelEditor
 
         void Update()
         {
+            //Logger.DebugLog($"Is over UI element: {Utilities.IsMouseOverUIElement()}. Is input field selected: {Utilities.theresAnInputFieldSelected}");
+
             // Shortcut for pausing LE.
             if (Input.GetKeyDown(KeyCode.Escape))
             {
+                if (EventsUIPageManager.Instance.isShowingPage)
+                {
+                    EventsUIPageManager.Instance.HideEventsPage();
+                    return;
+                }
+
                 if (!isEditorPaused)
                 {
                     EditorUIManager.Instance.ShowPause();
@@ -107,7 +121,7 @@ namespace FS_LevelEditor
                 }
             }
 
-            if (isEditorPaused) return;
+            if (isEditorPaused || EventsUIPageManager.Instance.isShowingPage) return;
 
             // When click, check if it's clicking a gizmos arrow.
             if (Input.GetMouseButtonDown(0))
@@ -127,7 +141,8 @@ namespace FS_LevelEditor
                 previewObjectToBuildObj.SetActive(false);
             }
 
-            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null)
+            // If pressing F key and it's not typing in an input field.
+            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
             {
                 snapToGridCube.SetActive(true);
                 gizmosArrows.SetActive(false);
@@ -204,24 +219,36 @@ namespace FS_LevelEditor
             }
 
             // If press the Delete key and there's a selected object, delete it.
-            if (Input.GetKeyDown(KeyCode.Delete) && currentSelectedObj != null)
+            // Also, only delete when the user is NOT typing in an input field.
+            if (Input.GetKeyDown(KeyCode.Delete) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
             {
                 DeleteSelectedObj();
             }
 
-            // If the global gizmos arrows are enabled, force them to be with 0 rotation.
-            if (globalGizmosArrowsEnabled && gizmosArrows.activeSelf)
-            {
-                gizmosArrows.transform.rotation = Quaternion.identity;
-            }
+            // The code to force reset the gizmos arrows to 0 when global gizmos are enabled, is in LateUpdate().
 
             ManageSomeShortcuts();
 
             ManageUndo();
         }
 
+        void LateUpdate()
+        {
+            // If the global gizmos arrows are enabled, force them to be with 0 rotation.
+            if (globalGizmosArrowsEnabled && gizmosArrows.activeSelf)
+            {
+                gizmosArrows.transform.rotation = Quaternion.identity;
+            }
+        }
+
         void ManageSomeShortcuts()
         {
+            // Ignore shortcuts when the user is typing.
+            if (Utilities.theresAnInputFieldSelected)
+            {
+                return;
+            }
+
             // Shortcuts for changing between editor modes.
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
@@ -264,7 +291,7 @@ namespace FS_LevelEditor
             }
 
             // Shortcuts to switch between local and global gizmos arrows.
-            if (Input.GetKeyDown(KeyCode.G))
+            if (Input.GetKeyDown(KeyCode.G) && collidingArrow == GizmosArrow.None)
             {
                 globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
 
@@ -279,6 +306,11 @@ namespace FS_LevelEditor
             if (Input.GetKeyDown(KeyCode.F1))
             {
                 EditorUIManager.Instance.ShowOrHideHelpPanel();
+            }
+
+            if (Input.GetKeyDown(KeyCode.O))
+            {
+                EditorUIManager.Instance.ShowOrHideGlobalPropertiesPanel();
             }
         }
 
@@ -295,6 +327,7 @@ namespace FS_LevelEditor
                     while ((toUndo.targetObj == null && !toUndo.forMultipleObjects) || (toUndo.targetObjs == null && toUndo.forMultipleObjects))
                     {
                         actionsMade.Remove(toUndo);
+                        if (actionsMade.Count <= 0) return;
                         toUndo = actionsMade.Last();
                     }
 
@@ -371,7 +404,8 @@ namespace FS_LevelEditor
             {
                 case Mode.Building:
                     // Only enable the panel if the keybinds help panel is DISABLED.
-                    if (!EditorUIManager.Instance.helpPanel.activeSelf)
+                    if (!EditorUIManager.Instance.helpPanel.activeSelf &&
+                        !EditorUIManager.Instance.isShowingGlobalProperties)
                     {
                         EditorUIManager.Instance.categoryButtonsParent.SetActive(true);
                         EditorUIManager.Instance.currentCategoryBG.SetActive(true);
@@ -385,6 +419,7 @@ namespace FS_LevelEditor
                     break;
             }
 
+            Logger.Log("Changed LE mode to: " + currentMode);
             EditorUIManager.Instance.SetCurrentModeLabelText(currentMode);
         }
 
@@ -417,12 +452,16 @@ namespace FS_LevelEditor
                             {
                                 previewObjectToBuildObj.SetActive(true);
                                 previewObjectToBuildObj.transform.position = hit.collider.transform.position;
-                                previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
+                                // Only update the preview object rotation when the current snap trigger is different, so the user can rotate the preview object before placing it.
+                                if (currentHittenSnapTrigger != hit.collider.gameObject)
+                                {
+                                    currentHittenSnapTrigger = hit.collider.gameObject;
+                                    previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
+                                }
 
                                 // We don't need anything else, if the user wants to use snap to grid and this is the correct trigger to use, use this and break the loop.
                                 snapNow = true;
                                 breakAtTheEnd = true;
-
                             }
                             // If the user actually wants to use snap, but this isn't the right trigger BUT the first one was a trigger, start looping again till find the correct one.
                             else if (firstRayIsATrigger)
@@ -440,6 +479,9 @@ namespace FS_LevelEditor
                     // If no correct trigger was found, use the default behaviour.
                     if (!snapNow)
                     {
+                        // Set the current hitten snap trigger variable to null.
+                        currentHittenSnapTrigger = null;
+
                         // Set the preview object posiiton to the hit point.
                         previewObjectToBuildObj.SetActive(true);
                         previewObjectToBuildObj.transform.position = hit.point;
@@ -524,56 +566,100 @@ namespace FS_LevelEditor
                 // If it's using global arrows, just use the normal offset, otherwise, use the damn complex math path.
                 if (globalGizmosArrowsEnabled)
                 {
-                    currentSelectedObj.transform.localPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
+                    currentSelectedObj.transform.position = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
                 }
                 else
                 {
-                    currentSelectedObj.transform.localPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
+                    currentSelectedObj.transform.position = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
                 }
             }
         }
 
         void DeleteSelectedObj()
         {
+            // Get the current existing objects in the level objects parent.
+            int existingObjects = levelObjectsParent.GetChilds(false).Where(x => x.name != "MoveObjectArrows" && x.name != "SnapToGridCube").ToArray().Length;
+
             if (multipleObjectsSelected)
             {
+                // Since the selected objects are in another parent, also count the objects in that parent.
+                existingObjects += multipleSelectedObjsParent.GetChilds(false).Where(x => x.name != "MoveObjectArrows" && x.name != "SnapToGridCube").ToArray().Length;
+
+                if (existingObjects - currentSelectedObjects.Count <= 0)
+                {
+                    Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+                    return;
+                }
+
                 foreach (var obj in currentSelectedObj.GetChilds())
                 {
                     if (obj.name == "MoveObjectArrows" || obj.name == "SnapToGridCube") continue;
 
-                    obj.SetActive(false);
+                    if (obj.GetComponent<LE_Object>().canUndoDeletion)
+                    {
+                        obj.SetActive(false);
+                    }
+                    else
+                    {
+                        Destroy(obj);
+                    }
                     levelHasBeenModified = true;
                 }
+
+                Logger.Log("Deleted multiple selected objects.");
             }
             else
             {
-                currentSelectedObj.SetActive(false);
+                if (existingObjects <= 1)
+                {
+                    Logger.Warning("Attemped to delete one single object but IS THE LAST OBJECT IN THE SCENE!");
+
+                    Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+                    return;
+                }
+                currentSelectedObjComponent.OnDelete();
+                if (currentSelectedObjComponent.canUndoDeletion)
+                {
+                    Logger.Log("Single object deleted, but it can be undone.");
+                    currentSelectedObj.SetActive(false);
+                }
+                else
+                {
+                    Logger.Log("Single object deleted permanently!");
+                    Destroy(currentSelectedObj);
+                }
                 levelHasBeenModified = true;
             }
-            // Register the LEAction before deselecting the object, so I can set the target obj with the reference to the current selected object.
-            #region Register LEAction
-            currentExecutingAction = new LEAction();
-            currentExecutingAction.actionType = LEAction.LEActionType.DeleteObject;
 
-            currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
-            if (multipleObjectsSelected)
+            if ((!multipleObjectsSelected && currentSelectedObjComponent.canUndoDeletion) || multipleObjectsSelected)
             {
-                currentExecutingAction.targetObjs = new List<GameObject>();
-                foreach (var obj in currentSelectedObj.GetChilds())
+                // Register the LEAction before deselecting the object, so I can set the target obj with the reference to the current selected object.
+                #region Register LEAction
+                currentExecutingAction = new LEAction();
+                currentExecutingAction.actionType = LEAction.LEActionType.DeleteObject;
+
+                currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+                if (multipleObjectsSelected)
                 {
-                    if (obj.name == "MoveObjectArrows") continue;
-                    if (obj.name == "SnapToGridCube") continue;
+                    currentExecutingAction.targetObjs = new List<GameObject>();
+                    foreach (var obj in currentSelectedObj.GetChilds())
+                    {
+                        if (obj.name == "MoveObjectArrows") continue;
+                        if (obj.name == "SnapToGridCube") continue;
+                     
+                        if (!obj.GetComponent<LE_Object>().canUndoDeletion) continue;
 
-                    currentExecutingAction.targetObjs.Add(obj);
+                        currentExecutingAction.targetObjs.Add(obj);
+                    }
                 }
-            }
-            else
-            {
-                currentExecutingAction.targetObj = currentSelectedObj;
-            }
+                else
+                {
+                    currentExecutingAction.targetObj = currentSelectedObj;
+                }
 
-            actionsMade.Add(currentExecutingAction);
-            #endregion
+                actionsMade.Add(currentExecutingAction);
+                #endregion
+            }
 
             SetSelectedObj(null);
         }
@@ -625,12 +711,24 @@ namespace FS_LevelEditor
             snapToGridCube.transform.localPosition = Vector3.zero;
             snapToGridCube.SetActive(false);
 
+            otherObjectsFromBundle = bundle.Load<GameObject>("OtherObjects").GetChilds();
+
+            Utilities.LoadMaterials(bundle);
+
             bundle.Unload(false);
+        }
+
+        public GameObject LoadOtherObjectInBundle(string objectName)
+        {
+            return otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
         }
 
         public void SetSelectedObj(GameObject obj)
         {
             if (currentSelectedObj == obj) return;
+
+            if (obj) Logger.DebugLog($"SetSelectedObj called for object with name: \"{obj.name}\".");
+            else Logger.DebugLog($"SetSelectedObj called with NO NEW TARGET OBJECT (To deselect).");
 
             gizmosArrows.SetActive(false);
             gizmosArrows.transform.parent = null;
@@ -643,19 +741,21 @@ namespace FS_LevelEditor
 
             if (currentSelectedObj != null)
             {
+                // Reset the last selected object color to white if there's one.
                 foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
                 {
                     foreach (var material in renderer.materials)
                     {
-                        material.color = new Color(1f, 1f, 1f, 1f);
+                        material.color = new Color(1f, 1f, 1f, material.color.a);
                     }
                 }
             }
 
-            // If is pressing control, the object isn't null and it's not the selecteed objects parent and it's NOT duplicating objects at this moment:
+            // Get when the user is pressing Left Control, normally, that's for when the user wanna select multiple objects.
+            // Also only execute this when the use is NOT duplicating objects, due to some interferences when then user is pressing Ctrl BUT to duplicate.
             if (Input.GetKey(KeyCode.LeftControl) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj)
             {
-                // If there was another object selected before, add it to the selected objects list too.
+                // If it's the first time pressing ctrl to select multiple objects, also add the previous selected object to the new selected objs list.
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
                 {
                     // But only if it hasn't been selected yet.
@@ -664,6 +764,7 @@ namespace FS_LevelEditor
                 // And add the most recent now, ofc lol (but only if it hasn't been selected yet).
                 if (!currentSelectedObjects.Contains(obj)) currentSelectedObjects.Add(obj);
 
+                // LE will only detect multiple objects as selected when the selected count is more than 1.
                 if (currentSelectedObjects.Count > 1)
                 {
                     // Set the bool.
@@ -675,13 +776,15 @@ namespace FS_LevelEditor
                     centeredPosition /= currentSelectedObjects.Count;
 
                     // Remove the parent from the selected objects, set the new parent position and put the parent in the objects again.
-                    currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
+                    currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
                     multipleSelectedObjsParent.transform.position = centeredPosition;
                     multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
                     currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform);
 
                     // The "main" selected object now is the parent of the selected objects.
                     currentSelectedObj = multipleSelectedObjsParent;
+
+                    Logger.DebugLog($"Adding \"{obj.name}\" to the multiple selected objects.");
 
                     #region Set Current Selected Obj Component
                     // Get obj component:
@@ -706,6 +809,7 @@ namespace FS_LevelEditor
                     // If the obj types diffier, set the component as null.
                     if (selectionHasDifferentObjTypes)
                     {
+                        if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect(null);
                         currentSelectedObjComponent = null;
                     }
                     else // Otherwise, get the component from the first element in the list.
@@ -720,15 +824,23 @@ namespace FS_LevelEditor
 
                     currentSelectedObj = obj;
                     currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
+                    currentSelectedObjComponent.OnSelect();
+
+                    Logger.Log($"\"{obj.name}\" selected while pressing CTRL, BUT NO OTHER OBJECTS ARE SELECTED.");
                 }
             }
             else
             {
-                // If don't press Ctrl AND the obj trying to select isn't the selected objects parent, just remvoe the parent for all of the objects and clear the list.
+                // Since the obj parameter can also be the multipleSelectedObjectsParent, check if it is before setting the multipleObjectsSelected bool to false.
                 if (obj != multipleSelectedObjsParent)
                 {
-                    currentSelectedObjects.ForEach(x => x.transform.parent = levelObjectsParent.transform);
-                    currentSelectedObjects.Clear();
+                    if (currentSelectedObjects.Count > 0)
+                    {
+                        Logger.Log($"Deselecting the current selected objects, the count was: {currentSelectedObjects.Count}.");
+                        currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
+                        currentSelectedObjects.ForEach(x => x.GetComponent<LE_Object>().OnDeselect(obj));
+                        currentSelectedObjects.Clear();
+                    }
                     multipleObjectsSelected = false; // Set the bool again.
                 }
                 else // Otherwise, if it IS... set this bool again to true.
@@ -738,12 +850,16 @@ namespace FS_LevelEditor
 
                 // Work as always (the normal selection system lol).
                 currentSelectedObj = obj;
+                // multipleSelectedObjectsParent doesn't have a LE_Object component, so skip this part if that's the case.
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
                 {
+                    if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect(currentSelectedObj);
                     currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
+                    // The OnSelect method will be called more below AFTER the funciton changes the color of the mesh to green.
                 }
                 else if (currentSelectedObj == null)
                 {
+                    if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect(null);
                     currentSelectedObjComponent = null;
                 }
             }
@@ -754,7 +870,7 @@ namespace FS_LevelEditor
                 {
                     foreach (var material in renderer.materials)
                     {
-                        material.color = new Color(0f, 1f, 0f, 1f);
+                        material.color = new Color(0f, 1f, 0f, material.color.a);
                     }
                 }
 
@@ -770,10 +886,12 @@ namespace FS_LevelEditor
                 if (multipleObjectsSelected)
                 {
                     EditorUIManager.Instance.SetMultipleObjectsSelected();
+                    currentSelectedObjects.ForEach(x => x.GetComponent<LE_Object>().OnSelect());
                 }
                 else
                 {
-                    EditorUIManager.Instance.SetSelectedObject(obj.name);
+                    EditorUIManager.Instance.SetSelectedObject(currentSelectedObjComponent);
+                    currentSelectedObjComponent.OnSelect();
                 }
             }
             else
@@ -786,7 +904,7 @@ namespace FS_LevelEditor
         {
             // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
             SetSelectedObj(null);
-            currentSelectedObjects.ForEach(obj => obj.transform.parent = levelObjectsParent.transform);
+            currentSelectedObjects.ForEach(obj => obj.transform.parent = obj.GetComponent<LE_Object>().objectParent);
             currentSelectedObjects.Clear();
 
             if (objects != null)
@@ -802,6 +920,12 @@ namespace FS_LevelEditor
 
         public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
         {
+            if (setAsSelected)
+            {
+                // if setAsSelect is false, that would probably mean it's placing objects from save.
+                Logger.Log($"Placing object of name \"{objName}\". This log only appears when setAsSelected is true.");
+            }
+
             if (!allCategoriesObjects.ContainsKey(objName))
             {
                 Logger.Error($"Can't find object with name \"{objName}\". Skipping it...");
@@ -838,13 +962,6 @@ namespace FS_LevelEditor
             }
 
             return obj;
-        }
-
-        void CreateSaw()
-        {
-            GameObject saw = new GameObject("Saw");
-            ScieScript script = saw.AddComponent<ScieScript>();
-            script.Activate();
         }
 
         void DuplicateSelectedObject()
@@ -1023,6 +1140,14 @@ namespace FS_LevelEditor
 
         public void EnterPlayMode()
         {
+            if (!EditorController.Instance.currentInstantiatedObjects.Any(x => x is LE_Player_Spawn && x.gameObject.activeSelf))
+            {
+                Logger.Warning("Attemped to enter playmode but THERE'S NO PLAYER SPAWN OBJECT!");
+
+                Utilities.ShowCustomNotificationRed("There's no a Player Spawn object in the level.", 2f);
+                return;
+            }
+
             MelonCoroutines.Start(Coroutine());
 
             IEnumerator Coroutine()
@@ -1030,6 +1155,9 @@ namespace FS_LevelEditor
                 Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
                 Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
                 EditorUIManager.Instance.DeleteUI();
+
+                MenuController.SoftInputAuthorized = true;
+                MenuController.InputAuthorized = true;
                 MenuController.GetInstance().ButtonPressed(ButtonController.Type.CHAPTER_4);
 
                 // Wait a few so when the pause menu ui is not visible anymore, destroy the pause menu LE buttons, and it doesn't look weird when destroying them and the user can see it.
@@ -1039,6 +1167,8 @@ namespace FS_LevelEditor
 
                 // Also, enable navigation.
                 EditorUIManager.Instance.navigation.SetActive(true);
+
+                Logger.Log("Entering playmode...");
             }
         }
 
@@ -1076,6 +1206,11 @@ namespace FS_LevelEditor
             foreach (var collider in previewObjectToBuildObj.TryGetComponents<Collider>())
             {
                 collider.enabled = false;
+            }
+            // STUPID CUBE PHYSICS!!
+            foreach (var rigidBody in previewObjectToBuildObj.TryGetComponents<Rigidbody>())
+            {
+                rigidBody.isKinematic = true;
             }
             // Also change it's color to blue.
             foreach (var renderer in previewObjectToBuildObj.TryGetComponents<MeshRenderer>())
@@ -1129,7 +1264,7 @@ namespace FS_LevelEditor
                     if (hit.collider.transform.parent.name == "MoveObjectArrows")
                     {
                         // Save the position of the object from the first time we clicked.
-                        objPositionWhenArrowClick = currentSelectedObj.transform.localPosition;
+                        objPositionWhenArrowClick = currentSelectedObj.transform.position;
 
                         #region Register LEAction
                         currentExecutingAction = new LEAction();
@@ -1152,7 +1287,7 @@ namespace FS_LevelEditor
                         {
                             currentExecutingAction.targetObj = currentSelectedObj;
                         }
-                        currentExecutingAction.oldPos = objPositionWhenArrowClick;
+                        currentExecutingAction.oldPos = currentSelectedObj.transform.localPosition;
                         #endregion
 
                         // Create the panel with the rigt normals.

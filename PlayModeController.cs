@@ -11,6 +11,7 @@ using Il2Cpp;
 using System.Collections;
 using FS_LevelEditor;
 using HarmonyLib;
+using System.Reflection.Metadata;
 
 namespace FS_LevelEditor
 {
@@ -22,11 +23,13 @@ namespace FS_LevelEditor
 
         public string levelFileNameWithoutExtension;
         public string levelName;
+        public Dictionary<string, object> globalProperties = new Dictionary<string, object>();
 
         GameObject editorObjectsRootFromBundle;
         List<string> categories = new List<string>();
         Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
         List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
+        GameObject[] otherObjectsFromBundle;
         public GameObject levelObjectsParent;
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
@@ -48,9 +51,8 @@ namespace FS_LevelEditor
 
         void Start()
         {
-            // Teleport the player.
-            Controls.Instance.transform.position = new Vector3(-13f, 123f, -68f);
-            Controls.Instance.gameCamera.transform.localPosition = new Vector3(0f, 0.907f, 0f);
+            TeleportPlayer();
+            ConfigureGlobalProperties();
         }
 
         // When the script obj is destroyed, that means the scene has changed, unload the asset bundle and destroy the back to LE button, since it'll be created again when entering...
@@ -60,6 +62,16 @@ namespace FS_LevelEditor
             UnloadBundle();
 
             Destroy(backToLEButton);
+        }
+
+        void TeleportPlayer()
+        {
+            LE_Player_Spawn spawn = FindObjectOfType<LE_Player_Spawn>();
+
+            Controls.Instance.transform.position = spawn.transform.position + Vector3.up;
+            Controls.Instance.gameCamera.transform.localPosition = new Vector3(0f, 0.907f, 0f);
+            Controls.Instance.gameCamera.transform.eulerAngles = spawn.transform.eulerAngles;
+            Controls.Instance.Angle = new Vector2(spawn.transform.eulerAngles.y, spawn.transform.eulerAngles.x);
         }
 
         void DisableTheCurrentScene()
@@ -74,9 +86,28 @@ namespace FS_LevelEditor
                 if (obj.name == "Checkpoints") continue;
                 if (obj.name == "LevelObjects") continue;
                 if (obj.name == "Player") continue;
+                if (obj.name == "GUI") continue;
 
                 obj.SetActive(false);
             }
+        }
+
+        void ConfigureGlobalProperties()
+        {
+            if (!(bool)GetGlobalProperty("HasTaser"))
+            {
+                Controls.Instance.DeactivateWeapon();
+            }
+            Controls.Instance.hasJetPack = (bool)GetGlobalProperty("HasJetpack");
+        }
+        object GetGlobalProperty(string name)
+        {
+            if (globalProperties.ContainsKey(name))
+            {
+                return globalProperties[name];
+            }
+
+            return null;
         }
 
         public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
@@ -116,8 +147,12 @@ namespace FS_LevelEditor
 
         void GoBackToLEWhileInPlayMode()
         {
-            Destroy(backToLEButton);
+            Invoke("DestroyBackToLEButton", 0.2f);
             LE_MenuUIManager.Instance.GoBackToLEWhileInPlayMode(levelFileNameWithoutExtension, levelName);
+        }
+        void DestroyBackToLEButton()
+        {
+            Destroy(backToLEButton);
         }
 
         void LoadAssetBundle()
@@ -149,6 +184,13 @@ namespace FS_LevelEditor
 
                 allCategoriesObjectsSorted.Add(categoryObjects);
             }
+
+            otherObjectsFromBundle = LEBundle.Load<GameObject>("OtherObjects").GetChilds();
+        }
+
+        public GameObject LoadOtherObjectInBundle(string objectName)
+        {
+            return otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
         }
 
         public T LoadFromLEBundle<T>(string name) where T : UnityEngine.Object
@@ -159,6 +201,16 @@ namespace FS_LevelEditor
         public void UnloadBundle()
         {
             LEBundle.Unload(false);
+        }
+
+        public void PatchPauseCurrentLevelNameInResumeButton()
+        {
+            MelonCoroutines.Start(Coroutine());
+            IEnumerator Coroutine()
+            {
+                yield return new WaitForSecondsRealtime(0.025f);
+                MenuController.GetInstance().levelToResumeLabel.text = "Custom Level : " + levelName;
+            }
         }
     }
 }
@@ -234,6 +286,44 @@ public static class OnChapterReset
             // Set this variable true again so when the scene is restarted, the custom level is as well.
             // The level file name inside of the Core class still there for cases like this one, so we don't need to get it again.
             Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
+        }
+    }
+}
+
+[HarmonyPatch(typeof(FractalSave), nameof(FractalSave.SaveKey), [typeof(string), typeof(int), typeof(bool), typeof(bool)])]
+public static class CurrentLevelKeyPatch
+{
+    public static bool Prefix(string _key)
+    {
+        if (_key == "Current_Level")
+        {
+            return false;
+        }
+
+        return true;
+    }
+}
+[HarmonyPatch(typeof(FractalSave), nameof(FractalSave.SaveLevelKey), [typeof(string), typeof(int), typeof(bool), typeof(bool)])]
+public static class CurrentLevelKeyPatch2
+{
+    public static bool Prefix(string _key)
+    {
+        if (_key == "Current_Level")
+        {
+            return false;
+        }
+
+        return true;
+    }
+}
+[HarmonyPatch(typeof(MenuController), nameof(MenuController.ConfigureMenuForPause))]
+public static class GamePauseCurrentLevelPath
+{
+    public static void Prefix()
+    {
+        if (PlayModeController.Instance)
+        {
+            PlayModeController.Instance.PatchPauseCurrentLevelNameInResumeButton();
         }
     }
 }

@@ -22,6 +22,9 @@ namespace FS_LevelEditor
         public long createdTime { get; set; }
         public long lastModificationTime { get; set; }
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
+        public Dictionary<string, object> globalProperties { get; set; } = new Dictionary<string, object>();
+
+        public static int currentLevelObjsCount = 0;
 
         static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
 
@@ -31,12 +34,13 @@ namespace FS_LevelEditor
             LevelData data = new LevelData();
             data.levelName = levelName;
             data.cameraPosition = Camera.main.transform.position;
-            data.cameraRotation = Camera.main.transform.eulerAngles;
+            EditorCameraMovement editorCamera = Camera.main.GetComponent<EditorCameraMovement>();
+            data.cameraRotation = new Vector3Serializable(editorCamera.xRotation, editorCamera.yRotation, 0f);
             data.createdTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
             if (EditorController.Instance.multipleObjectsSelected)
             {
-                EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = EditorController.Instance.levelObjectsParent.transform);
+                EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
             }
 
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
@@ -61,6 +65,8 @@ namespace FS_LevelEditor
             {
                 EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = EditorController.Instance.multipleSelectedObjsParent.transform);
             }
+
+            data.globalProperties = new Dictionary<string, object>(EditorController.Instance.globalProperties);
 
             return data;
         }
@@ -89,7 +95,10 @@ namespace FS_LevelEditor
                 // Serialize and save the level in JSON format.
                 var options = new JsonSerializerOptions
                 {
+#if DEBUG
                     WriteIndented = true,
+#endif
+                    Converters = { new LEPropertiesConverter() }
                 };
 
                 if (!Directory.Exists(levelsDirectory))
@@ -139,11 +148,32 @@ namespace FS_LevelEditor
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
             objectsParent.DeleteAllChildren();
 
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Converters = { new LEPropertiesConverter() }
+            };
+
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
+            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
 
             Camera.main.transform.position = data.cameraPosition;
-            Camera.main.transform.eulerAngles = data.cameraRotation;
+            Camera.main.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
+
+            List<LE_ObjectData> toCheck = data.objects;
+            if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
+            {
+                Logger.Warning("Multiple objects with same ID detected, trying to fix...");
+                toCheck = FixMultipleObjectsWithSameID(toCheck);
+            }
+
+            currentLevelObjsCount = toCheck.Count;
+
+#if DEBUG
+            if (currentLevelObjsCount > 100)
+            {
+                Logger.DebugWarning("More than 100 objects in the level, not printing logs while instantiating objects!");
+            }
+#endif
 
             foreach (LE_ObjectData obj in data.objects)
             {
@@ -152,9 +182,39 @@ namespace FS_LevelEditor
 
                 objClassInstance.objectID = obj.objectID;
                 objInstance.name = objClassInstance.objectFullNameWithID;
+                objClassInstance.setActiveAtStart = obj.setActiveAtStart;
+
+                if (obj.properties != null)
+                {
+                    foreach (var property in obj.properties)
+                    {
+                        objClassInstance.SetProperty(property.Key, Utilities.ConvertFromSerializableValue(property.Value));
+                    }
+                }
+
+                // In case the object is defined to be disabled at start, change its materials to transparent.
+                if (!objClassInstance.setActiveAtStart)
+                {
+                    objInstance.SetTransparentMaterials();
+                }
             }
 
-            Logger.Log($"\"{data.levelName}\" level loaded!");
+            // Load Global Properties.
+            // Load it in this way since we don't want to REMOVE elements from the editor list, only modify or
+            // add.
+            foreach (var keyPair in data.globalProperties)
+            {
+                if (EditorController.Instance.globalProperties.ContainsKey(keyPair.Key))
+                {
+                    EditorController.Instance.globalProperties[keyPair.Key] = keyPair.Value;
+                }
+                else
+                {
+                    EditorController.Instance.globalProperties.Add(keyPair.Key, keyPair.Value);
+                }
+            }
+
+            Logger.Log($"\"{data.levelName}\" level loaded in the editor!");
         }
 
         // And this for loading the saved level in playmode lol.
@@ -165,20 +225,50 @@ namespace FS_LevelEditor
             GameObject objectsParent = playModeCtrl.levelObjectsParent;
             objectsParent.DeleteAllChildren();
 
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Converters = { new LEPropertiesConverter() }
+            };
+
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
+            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
 
             playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
             playModeCtrl.levelName = data.levelName;
 
-            foreach (LE_ObjectData obj in data.objects)
+            List<LE_ObjectData> toCheck = data.objects;
+            if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
+            {
+                Logger.Warning("Multiple objects with same ID detected, trying to fix...");
+                toCheck = FixMultipleObjectsWithSameID(toCheck);
+            }
+
+            currentLevelObjsCount = toCheck.Count;
+
+            foreach (LE_ObjectData obj in toCheck)
             {
                 GameObject objInstance = playModeCtrl.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
 
                 objClassInstance.objectID = obj.objectID;
                 objInstance.name = objClassInstance.objectFullNameWithID;
+                objClassInstance.setActiveAtStart = obj.setActiveAtStart;
+
+                if (obj.properties != null)
+                {
+                    foreach (var property in obj.properties)
+                    {
+                        objClassInstance.SetProperty(property.Key, Utilities.ConvertFromSerializableValue(property.Value));
+                    }
+                }
+
+                objInstance.SetActive(objClassInstance.setActiveAtStart);
             }
+
+            // Load Global Properties.
+            // In PlayModeController the global properties list is empty, since it's meant to be replaced with
+            // ALL of the values inside of the saved global properties list.
+            playModeCtrl.globalProperties = new Dictionary<string, object>(data.globalProperties);
 
             Logger.Log($"\"{data.levelName}\" level loaded in playmode!");
         }
@@ -261,6 +351,45 @@ namespace FS_LevelEditor
                 File.Move(oldPath, newPath);
             }
         }
+
+        // This method was generated by Grok AI LOL, I kinda understand it, but not at all LOL.
+        static List<LE_ObjectData> FixMultipleObjectsWithSameID(List<LE_ObjectData> levelObjects)
+        {
+            // To know the used ids.
+            var idUsage = new Dictionary<string, HashSet<int>>();
+            var result = new List<LE_ObjectData>();
+
+            // Find the max actual ID to generate new unique IDs.
+            int maxId = levelObjects.Any() ? levelObjects.Max(item => item.objectID) : 0;
+
+            foreach (var item in levelObjects)
+            {
+                string name = item.objectOriginalName;
+                int id = item.objectID;
+
+                // If the name isn't in the dictionary, init a HashSet
+                if (!idUsage.ContainsKey(name))
+                {
+                    // I didn't even knew it was possible to create new dictionary elements without using the "Add" function LOOOOL.
+                    idUsage[name] = new HashSet<int>();
+                }
+
+                // If the ID is already used for this name, assign a new unique ID.
+                if (idUsage[name].Contains(id))
+                {
+                    maxId++;
+                    item.objectID = maxId;
+                }
+                else
+                {
+                    idUsage[name].Add(id);
+                }
+
+                result.Add(item);
+            }
+
+            return result;
+        }
     }
 
     [Serializable]
@@ -276,6 +405,12 @@ namespace FS_LevelEditor
             this.y = y;
             this.z = z;
         }
+        public Vector3Serializable(Vector3 v)
+        {
+            this.x = v.x;
+            this.y = v.y;
+            this.z = v.z;
+        }
 
         public static implicit operator Vector3Serializable(Vector3 v)
         {
@@ -284,6 +419,148 @@ namespace FS_LevelEditor
         public static implicit operator Vector3(Vector3Serializable v)
         {
             return new Vector3(v.x, v.y, v.z);
+        }
+    }
+    [Serializable]
+    public struct ColorSerializable
+    {
+        public float r { get; set; }
+        public float g { get; set; }
+        public float b { get; set; }
+
+        public ColorSerializable(float r, float g, float b)
+        {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+        }
+        public ColorSerializable(Color color)
+        {
+            this.r = color.r;
+            this.g = color.g;
+            this.b = color.b;
+        }
+
+        public static explicit operator ColorSerializable(Color color)
+        {
+            return new ColorSerializable(color.r, color.g, color.b);
+        }
+        public static explicit operator Color(ColorSerializable color)
+        {
+            return new Color(color.r, color.g, color.b);
+        }
+
+        public Color ToColor()
+        {
+            return new Color(r, g, b);
+        }
+    }
+
+
+    public class LEPropertiesConverter : JsonConverter<Dictionary<string, object>>
+    {
+        public override void Write(Utf8JsonWriter writer, Dictionary<string, object> dictionary, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject(); // Beginning of the dictionary
+
+            foreach (var kvp in dictionary)
+            {
+                writer.WritePropertyName(kvp.Key); // Write the key
+                writer.WriteStartObject(); // Beginning of the object for Type and Value.
+
+                // Write the value type (AssemblyQualifiedName makes sure it includes the assembly).
+                writer.WriteString("Type", kvp.Value.GetType().AssemblyQualifiedName);
+
+                // Write the value, serializing according to its real type.
+                writer.WritePropertyName("Value");
+                JsonSerializer.Serialize(writer, kvp.Value, kvp.Value.GetType(), options);
+
+                writer.WriteEndObject(); // End of Type/Value object.
+            }
+
+            writer.WriteEndObject(); // End of dictionary.
+        }
+
+        public override Dictionary<string, object> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException("JSON object was expected.");
+            }
+
+            var dictionary = new Dictionary<string, object>();
+
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonTokenType.EndObject)
+                {
+                    return dictionary; // End of dictionary.
+                }
+
+                if (reader.TokenType != JsonTokenType.PropertyName)
+                {
+                    throw new JsonException("A property name was expected.");
+                }
+
+                string key = reader.GetString(); // Read the key.
+                reader.Read(); // Next key content.
+
+                if (reader.TokenType != JsonTokenType.StartObject)
+                {
+                    throw new JsonException("An object with Type and Value was expected.");
+                }
+
+                string typeName = null;
+                JsonElement valueJson = default;
+
+                // Read the Type and Value properties.
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonTokenType.EndObject)
+                    {
+                        break; // End of the Type/Value object.
+                    }
+
+                    if (reader.TokenType != JsonTokenType.PropertyName)
+                    {
+                        throw new JsonException("A property name (Type or Value) was expected.");
+                    }
+
+                    string propertyName = reader.GetString();
+                    reader.Read();
+
+                    if (propertyName == "Type")
+                    {
+                        typeName = reader.GetString();
+                    }
+                    else if (propertyName == "Value")
+                    {
+                        valueJson = JsonSerializer.Deserialize<JsonElement>(ref reader, options);
+                    }
+                    else
+                    {
+                        throw new JsonException($"Unexpected property: {propertyName}");
+                    }
+                }
+
+                if (typeName == null)
+                {
+                    throw new JsonException("Property Type is missing.");
+                }
+
+                // Get the type from the type name.
+                var type = Type.GetType(typeName);
+                if (type == null)
+                {
+                    throw new JsonException($"Can't find '{typeName}' type.");
+                }
+
+                // Deserialize the value using the obtained type.
+                var value = JsonSerializer.Deserialize(valueJson, type, options);
+                dictionary[key] = value;
+            }
+
+            throw new JsonException("JSON unexpected end.");
         }
     }
 }

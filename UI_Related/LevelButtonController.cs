@@ -17,6 +17,7 @@ namespace FS_LevelEditor
 
         public void OnClick()
         {
+            LE_MenuUIManager.Instance.SwitchBetweenMenuAndLEMenu(false);
             LE_MenuUIManager.Instance.LoadLevel(levelFileNameWithoutExtension, levelName);
         }
 

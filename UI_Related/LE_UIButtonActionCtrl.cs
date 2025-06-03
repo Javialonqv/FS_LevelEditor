@@ -15,7 +15,10 @@ namespace FS_LevelEditor
     {
         public void OnClick()
         {
-            LE_MenuUIManager.Instance.SwitchBetweenMenuAndLEMenu();
+            if (!LE_MenuUIManager.Instance.levelButtonsWasClicked)
+            {
+                LE_MenuUIManager.Instance.SwitchBetweenMenuAndLEMenu();
+            }
         }
     }
 }
