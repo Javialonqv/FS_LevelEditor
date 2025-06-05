@@ -20,6 +20,19 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
+        public static Color fsButtonsDefaultColor
+        {
+            get { return new Color(0.218f, 0.6464f, 0.6509f, 1f); }
+        }
+        public static Color fsButtonsHoveredColor
+        {
+            get { return new Color(0f, 0.8314f, 0.8667f, 1f); }
+        }
+        public static Color fsButtonsPressedColor
+        {
+            get { return new Color(0.2868f, 0.971f, 1f, 1f); }
+        }
+
         public static GameObject CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize = 27, string defaultText = "",
             bool hasOutline = false, NGUIText.Alignment alignment = NGUIText.Alignment.Left)
         {
