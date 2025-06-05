@@ -20,12 +20,12 @@ namespace FS_LevelEditor
         public string levelName = "test_level";
         public string levelFileNameWithoutExtension = "test_level";
 
-        GameObject gizmosArrows;
+        public bool isEditorPaused = false;
 
         GameObject editorObjectsRootFromBundle;
 
         // Available categories related variables.
-        public List<string> categories = new List<string>();
+        public List<string> categoriesNames = new List<string>();
         public string currentCategory = "";
         public int currentCategoryID = 0;
 
@@ -33,9 +33,12 @@ namespace FS_LevelEditor
         public List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
         public Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
         GameObject[] otherObjectsFromBundle;
+
         public string currentObjectToBuildName = "";
         GameObject currentObjectToBuild;
         GameObject previewObjectToBuildObj = null;
+
+        // Related to object placement? Dunno how to call this.
         Vector3? lastHittenNormalByPreviewRay = null;
         GameObject currentHittenSnapTrigger = null;
 
@@ -49,12 +52,14 @@ namespace FS_LevelEditor
         public bool multipleObjectsSelected = false;
         public GameObject multipleSelectedObjsParent;
         bool isDuplicatingObj = false;
+        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
         // Selected mode.
         public enum Mode { Building, Selection, Deletion }
         public Mode currentMode = Mode.Building;
 
         // Gizmos arrows to move objects.
+        GameObject gizmosArrows;
         enum GizmosArrow { None, X, Y, Z }
         GizmosArrow collidingArrow;
         Vector3 objPositionWhenArrowClick;
@@ -63,16 +68,15 @@ namespace FS_LevelEditor
         bool isCurrentlyMovingAnObject = false;
         bool globalGizmosArrowsEnabled = false;
 
+        // SNAP
         GameObject snapToGridCube;
         bool startSnapToGridWithCurrentSelectedObj = false;
 
         List<LEAction> actionsMade = new List<LEAction>();
         LEAction currentExecutingAction;
-
-        public bool isEditorPaused = false;
         public bool levelHasBeenModified = false;
 
-        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
+        // Misc?
         public DeathYPlaneCtrl deathYPlane;
 
         // ----------------------------
@@ -688,10 +692,10 @@ namespace FS_LevelEditor
 
             foreach (var child in editorObjectsRootFromBundle.GetChilds())
             {
-                categories.Add(child.name);
+                categoriesNames.Add(child.name);
             }
 
-            currentCategory = categories[0];
+            currentCategory = categoriesNames[0];
             currentCategoryID = 0;
 
             foreach (var categoryObj in editorObjectsRootFromBundle.GetChilds())
@@ -1189,7 +1193,7 @@ namespace FS_LevelEditor
             if (currentCategoryID == categoryID) return;
 
             currentCategoryID = categoryID;
-            currentCategory = categories[currentCategoryID];
+            currentCategory = categoriesNames[currentCategoryID];
             EditorUIManager.Instance.SetupCurrentCategoryButtons();
         }
 

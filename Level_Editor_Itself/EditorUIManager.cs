@@ -143,9 +143,9 @@ namespace FS_LevelEditor
 
             GameObject buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/Tabs/1_Taser");
 
-            for (int i = 0; i < EditorController.Instance.categories.Count; i++)
+            for (int i = 0; i < EditorController.Instance.categoriesNames.Count; i++)
             {
-                string category = EditorController.Instance.categories[i];
+                string category = EditorController.Instance.categoriesNames[i];
 
                 GameObject categoryButton = Instantiate(buttonTemplate, categoryButtonsParent.transform);
                 categoryButton.name = $"{category}_Button";
