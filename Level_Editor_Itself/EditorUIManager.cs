@@ -1209,6 +1209,7 @@ namespace FS_LevelEditor
             Color validValueColor = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
             Color invalidValueColor = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
 
+            // ParseInputFieldData returns true if the introduced data CAN be parsed.
             if (ParseInputFieldData(inputField.name, inputField.text, out object parsedData))
             {
                 EditorController.Instance.levelHasBeenModified = true;
@@ -1254,6 +1255,7 @@ namespace FS_LevelEditor
             return null;
         }
 
+        // Methods for "special" UI elements, such as buttons.
         void OnVisualizeDeathYLimitToggleClick(bool newState)
         {
             EditorController.Instance.deathYPlane.gameObject.SetActive(newState);
