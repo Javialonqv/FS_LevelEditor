@@ -1157,6 +1157,14 @@ namespace FS_LevelEditor
                 NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "DeathYLimit"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "inputField", deathYLimitField.GetComponent<UIInput>()));
             deathYLimitField.GetComponent<UIInput>().onChange.Add(deathYLimitDelegate);
+
+            GameObject visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggle(globalPropertiesPanel.transform,
+                new Vector3(0f, 200f, 0f), new Vector3Int(600, 48, 1), "Visualize Death Y Limit");
+            visualizeDeathYLimitButton.name = "VisualizeDeathYLimitBtnToggle";
+            visualizeDeathYLimitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            visualizeDeathYLimitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+            visualizeDeathYLimitButton.GetComponent<UISprite>().depth = 1;
+            visualizeDeathYLimitButton.GetComponent<UIButtonAsToggle>().onClick += OnVisualizeDeathYLimitToggleClick;
             #endregion
         }
         public void ShowOrHideGlobalPropertiesPanel()
@@ -1244,6 +1252,11 @@ namespace FS_LevelEditor
             }
 
             return null;
+        }
+
+        void OnVisualizeDeathYLimitToggleClick(bool newState)
+        {
+            EditorController.Instance.deathYPlane.gameObject.SetActive(newState);
         }
         #endregion
 

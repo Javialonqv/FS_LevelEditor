@@ -73,7 +73,7 @@ namespace FS_LevelEditor
         public bool levelHasBeenModified = false;
 
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
-        DeathYPlaneCtrl deathYPlane;
+        public DeathYPlaneCtrl deathYPlane;
 
         // ----------------------------
         public Dictionary<string, object> globalProperties = new Dictionary<string, object>()
@@ -245,14 +245,10 @@ namespace FS_LevelEditor
                 gizmosArrows.transform.rotation = Quaternion.identity;
             }
 
-            if (UICamera.selectedObject && UICamera.selectedObject.name == "DeathYLimit")
+            if (deathYPlane && deathYPlane.gameObject.activeSelf)
             {
                 deathYPlane.gameObject.SetActive(true);
                 deathYPlane.SetYPos((float)globalProperties["DeathYLimit"]);
-            }
-            else
-            {
-                deathYPlane.gameObject.SetActive(false);
             }
         }
 
