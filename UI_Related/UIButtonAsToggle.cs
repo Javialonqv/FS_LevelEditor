@@ -13,7 +13,7 @@ namespace FS_LevelEditor.UI_Related
     {
         UIButton button;
         bool isChecked;
-        public Action<bool> onClick { get; private set; }
+        public Action<bool> onClick;
 
         void Awake()
         {
