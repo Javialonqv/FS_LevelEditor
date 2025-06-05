@@ -1155,7 +1155,7 @@ namespace FS_LevelEditor
             deathYLimitLabel.height = 50;
             deathYLimitTitle.transform.localPosition = new Vector3(-300f, 270f, 0f);
 
-            GameObject deathYLimitField = NGUI_Utils.CreateInputField(globalPropertiesPanel.transform, new Vector3(160f, 270f, 0f),
+            GameObject deathYLimitField = NGUI_Utils.CreateInputField(globalPropertiesPanel.transform, new Vector3(100f, 270f, 0f),
                 new Vector3Int(300, 50, 0), 30, "-275");
             deathYLimitField.name = "DeathYLimit";
             deathYLimitField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
@@ -1164,12 +1164,19 @@ namespace FS_LevelEditor
                 NGUI_Utils.CreateEventDelegateParamter(this, "inputField", deathYLimitField.GetComponent<UIInput>()));
             deathYLimitField.GetComponent<UIInput>().onChange.Add(deathYLimitDelegate);
 
-            GameObject visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggle(globalPropertiesPanel.transform,
-                new Vector3(0f, 200f, 0f), new Vector3Int(600, 48, 1), "Visualize Death Y Limit");
+            //GameObject visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggle(globalPropertiesPanel.transform,
+            //    new Vector3(0f, 200f, 0f), new Vector3Int(600, 48, 1), "Visualize Death Y Limit");
+            //visualizeDeathYLimitButton.name = "VisualizeDeathYLimitBtnToggle";
+            //visualizeDeathYLimitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            //visualizeDeathYLimitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+            //visualizeDeathYLimitButton.GetComponent<UISprite>().depth = 1;
+            //visualizeDeathYLimitButton.GetComponent<UIButtonAsToggle>().onClick += OnVisualizeDeathYLimitToggleClick;
+
+            GameObject visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(globalPropertiesPanel.transform,
+                new Vector3(285f, 270f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);
             visualizeDeathYLimitButton.name = "VisualizeDeathYLimitBtnToggle";
             visualizeDeathYLimitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             visualizeDeathYLimitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-            visualizeDeathYLimitButton.GetComponent<UISprite>().depth = 1;
             visualizeDeathYLimitButton.GetComponent<UIButtonAsToggle>().onClick += OnVisualizeDeathYLimitToggleClick;
             #endregion
         }
