@@ -24,6 +24,7 @@ namespace FS_LevelEditor
 
         public GameObject editorUIParent;
 
+        // This is for the top buttons, like "Structures", "Decorations", "System", etc.
         public List<GameObject> categoryButtons = new List<GameObject>();
         public GameObject categoryButtonsParent;
         bool categoryButtonsAreHidden = false;
@@ -37,15 +38,20 @@ namespace FS_LevelEditor
         GameObject savingLevelLabel;
         GameObject savingLevelLabelInPauseMenu;
         Coroutine savingLevelLabelRoutine;
+
         public UILabel currentModeLabel;
+
         GameObject onExitPopupBackButton;
         GameObject onExitPopupSaveAndExitButton;
         GameObject onExitPopupExitButton;
         bool exitPopupEnabled = false;
+
         public GameObject helpPanel;
+
         GameObject globalPropertiesPanel;
         public bool isShowingGlobalProperties;
 
+        // Misc
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
         public GameObject navigation;
