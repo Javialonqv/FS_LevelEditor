@@ -23,7 +23,6 @@ namespace FS_LevelEditor
 
         public string levelFileNameWithoutExtension;
         public string levelName;
-        public Dictionary<string, object> globalProperties = new Dictionary<string, object>();
 
         GameObject editorObjectsRootFromBundle;
         List<string> categories = new List<string>();
@@ -31,15 +30,20 @@ namespace FS_LevelEditor
         List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
         GameObject[] otherObjectsFromBundle;
         public GameObject levelObjectsParent;
-        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
         GameObject backToLEButton;
+
+        public Dictionary<string, object> globalProperties = new Dictionary<string, object>();
+        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
+        public int deathsInCurrentLevel = 0;
 
         void Awake()
         {
             Instance = this;
 
             LoadAssetBundle();
+
+            deathsInCurrentLevel = Melon<Core>.Instance.totalDeathsInCurrentPlaymodeSession;
 
             Invoke("DisableTheCurrentScene", 0.2f);
 
@@ -265,6 +269,8 @@ public static class OnPlayerDiePatch
     {
         if (PlayModeController.Instance != null)
         {
+            Melon<Core>.Instance.totalDeathsInCurrentPlaymodeSession++;
+
             // The asset bundle will be unloaded automatically in the PlayModeController class, since OnDestroy will be triggered.
 
             // Set this variable true again so when the scene is reloaded, the custom level is as well.
@@ -337,6 +343,24 @@ public static class DeathYLimitPatch
         {
             __result = (float)PlayModeController.Instance.globalProperties["DeathYLimit"];
             return false;
+        }
+
+        return true;
+    }
+}
+
+[HarmonyPatch(typeof(FractalSave), nameof(FractalSave.GetInt))]
+public static class FractalSaveGetIntPatches
+{
+    public static bool Prefix(ref int __result, string _key)
+    {
+        if (PlayModeController.Instance)
+        {
+            if (_key == "Total_Deaths")
+            {
+                __result = PlayModeController.Instance.deathsInCurrentLevel;
+                return false;
+            }
         }
 
         return true;

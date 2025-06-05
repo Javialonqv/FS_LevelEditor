@@ -15,6 +15,7 @@ namespace FS_LevelEditor
         public static string currentSceneName;
         public bool loadCustomLevelOnSceneLoad;
         public string levelFileNameWithoutExtensionToLoad;
+        public int totalDeathsInCurrentPlaymodeSession = 0;
 
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
 
@@ -43,6 +44,11 @@ namespace FS_LevelEditor
             {
                 LevelData.LoadLevelDataInPlaymode(levelFileNameWithoutExtensionToLoad);
                 loadCustomLevelOnSceneLoad = false;
+            }
+            else
+            {
+                // Reset this variable.
+                totalDeathsInCurrentPlaymodeSession = 0;
             }
         }
 
