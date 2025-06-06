@@ -320,7 +320,7 @@ namespace FS_LevelEditor
                 LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(x => x.objectFullNameWithID == editorLink.originalEvent.targetObjName);
                 bool isReallyValid = targetObj != null;
 
-                // If the event wasn't 
+                // If the event wasn't valid before, that means the target obj didn't exist, which menas it was null, assign it.
                 if (!editorLink.originalEvent.isValid)
                 {
                     editorLink.targetObj = targetObj;
