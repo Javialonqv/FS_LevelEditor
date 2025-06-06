@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Services.Analytics;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -13,14 +14,18 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Switch : LE_Object
     {
-        struct EditorLink
+        // FUCK CHARP COMPILER FOR NOT LETTING ME MODIFY A STRUCT WHILE ITERATING A LIST!!!
+        // Now I need to put this as a class!!!
+        class EditorLink
         {
-            LE_Switch originalSwitch;
-            LE_Object targetObj;
-            LineRenderer editorLinkRenderer;
+            public LE_Event originalEvent;
+            public LE_Switch originalSwitch;
+            public LE_Object targetObj;
+            public LineRenderer editorLinkRenderer;
 
-            public EditorLink(LE_Switch originalSwitch, LE_Event @event, LineRenderer editorLinkRenderer)
+            public EditorLink(LE_Event originalEvent,LE_Switch originalSwitch, LE_Event @event, LineRenderer editorLinkRenderer)
             {
+                this.originalEvent = originalEvent;
                 this.originalSwitch = originalSwitch;
                 targetObj = EditorController.Instance.currentInstantiatedObjects.Find(x => x.objectFullNameWithID == @event.targetObjName);
                 this.editorLinkRenderer = editorLinkRenderer;
@@ -226,6 +231,7 @@ namespace FS_LevelEditor
         public override void OnSelect()
         {
             base.OnSelect();
+            ReValidateEditorLinks();
             editorLinksParent.SetActive(true);
             dontDisableLinksParentWhenCreating = true;
         }
@@ -262,11 +268,12 @@ namespace FS_LevelEditor
             {
                 foreach (var @event in (List<LE_Event>)properties[eventKey])
                 {
-                    // Not make a link if the target obj name in the event isn't valid, or it'll throw an error.
+                    // [IGNORE] Not make a link if the target obj name in the event isn't valid, or it'll throw an error.
                     // For optimization purposes, also don't create a link to an already linked object in another event,
                     // doesn't matter the event type (On Activated, On Deactivated...).
                     // ALSO, don't create editor links for the player related events.
-                    if (!@event.isValid || alreadyLinkedObjectsNames.Contains(@event.targetObjName) ||
+                    // UPDATE: CREATE links even for INVALID objects, what if the user adds an object and the event becomes valid?
+                    if (alreadyLinkedObjectsNames.Contains(@event.targetObjName) ||
                         @event.targetObjName == "Player") continue;
 
                     GameObject linkObj = new GameObject("Link");
@@ -283,7 +290,7 @@ namespace FS_LevelEditor
                     linkRender.endColor = Color.white;
 
                     alreadyLinkedObjectsNames.Add(@event.targetObjName);
-                    editorLinks.Add(new EditorLink(this, @event, linkRender));
+                    editorLinks.Add(new EditorLink(@event, this, @event, linkRender));
                 }
             }
 
@@ -293,7 +300,32 @@ namespace FS_LevelEditor
         {
             foreach (var editorLink in editorLinks)
             {
-                editorLink.UpdateLinkPositions();
+                if (editorLink.originalEvent.isValid)
+                {
+                    editorLink.editorLinkRenderer.gameObject.SetActive(true);
+                    editorLink.UpdateLinkPositions();
+                }
+                else
+                {
+                    editorLink.editorLinkRenderer.gameObject.SetActive(false);
+                }
+            }
+        }
+        void ReValidateEditorLinks()
+        {
+            foreach (var editorLink in editorLinks)
+            {
+                // Check if the event is REALLY valid, the event may NOT be valid, but if the player already added an object that mades
+                // it valid, then, check that when the switch is selected, to show the links.
+                LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(x => x.objectFullNameWithID == editorLink.originalEvent.targetObjName);
+                bool isReallyValid = targetObj != null;
+
+                // If the event wasn't 
+                if (!editorLink.originalEvent.isValid)
+                {
+                    editorLink.targetObj = targetObj;
+                }
+                editorLink.originalEvent.isValid = isReallyValid;
             }
         }
 
@@ -325,7 +357,11 @@ namespace FS_LevelEditor
         {
             foreach (LE_Event @event in events)
             {
-                if (!@event.isValid) continue;
+                if (!@event.isValid)
+                {
+                    Logger.Warning($"Event of name \"{@event.eventName}\" is NOT valid! Target obj \"{@event.targetObjName}\" doesn't exists!");
+                    continue;
+                }
 
                 if (@event.targetObjName == "Player")
                 {
