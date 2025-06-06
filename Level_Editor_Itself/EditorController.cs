@@ -296,6 +296,9 @@ namespace FS_LevelEditor
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P))
             {
+                // Save data automatically.
+                LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
+
                 EnterPlayMode();
             }
 
