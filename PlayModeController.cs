@@ -72,6 +72,13 @@ namespace FS_LevelEditor
         {
             LE_Player_Spawn spawn = FindObjectOfType<LE_Player_Spawn>();
 
+            if (!spawn)
+            {
+                Logger.Error("Couldn't find player spawn object in the level!");
+                LE_CustomErrorPopups.NoPlayerSpawnObjectDetected();
+                return;
+            }
+
             Controls.Instance.transform.position = spawn.transform.position + Vector3.up;
             Controls.Instance.gameCamera.transform.localPosition = new Vector3(0f, 0.907f, 0f);
             Controls.Instance.gameCamera.transform.eulerAngles = spawn.transform.eulerAngles;
