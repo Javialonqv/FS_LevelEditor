@@ -301,9 +301,12 @@ public static class CurrentLevelKeyPatch
 {
     public static bool Prefix(string _key)
     {
-        if (_key == "Current_Level")
+        if (PlayModeController.Instance)
         {
-            return false;
+            if (_key == "Current_Level")
+            {
+                return false;
+            }
         }
 
         return true;
@@ -314,9 +317,12 @@ public static class CurrentLevelKeyPatch2
 {
     public static bool Prefix(string _key)
     {
-        if (_key == "Current_Level")
+        if (PlayModeController.Instance)
         {
-            return false;
+            if (_key == "Current_Level")
+            {
+                return false;
+            }
         }
 
         return true;
