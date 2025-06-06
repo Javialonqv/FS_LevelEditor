@@ -387,11 +387,13 @@ namespace FS_LevelEditor
                             if (toUndo.forMultipleObjects)
                             {
                                 SetMultipleObjectsAsSelected(null);
+                                toUndo.targetObjs.ForEach(obj => currentInstantiatedObjects.Add(obj.GetComponent<LE_Object>())); // Add the objects to the instantiated list again.
                                 toUndo.targetObjs.ForEach(obj => obj.SetActive(true)); // Enable the objects again and then select them again.
                                 SetMultipleObjectsAsSelected(toUndo.targetObjs);
                             }
                             else
                             {
+                                currentInstantiatedObjects.Add(toUndo.targetObj.GetComponent<LE_Object>());
                                 toUndo.targetObj.SetActive(true);
                                 SetSelectedObj(toUndo.targetObj);
                             }
