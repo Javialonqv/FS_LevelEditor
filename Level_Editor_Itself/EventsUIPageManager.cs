@@ -57,6 +57,11 @@ namespace FS_LevelEditor
         //-----------------------------------
         GameObject laserObjectsSettings;
         UIDropdownPatcher laserStateDropdown;
+        //-----------------------------------
+        GameObject lightObjectsSettings;
+        UIToggle changeLightColorToggle;
+        UILabel newLightColorTitleLabel;
+        UIInput newLightColorInputField;
 
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
         CurrentEventType currentEventType;
@@ -87,6 +92,7 @@ namespace FS_LevelEditor
                 Instance.CreatePlayerSettings();
                 Instance.CreateCubeObjectSettings();
                 Instance.CreateLaserObjectSettings();
+                Instance.CreateLightObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -735,6 +741,10 @@ namespace FS_LevelEditor
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
             respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
             laserStateDropdown.SelectOption((int)currentSelectedEvent.laserState);
+            changeLightColorToggle.Set(currentSelectedEvent.changeLightColor);
+            newLightColorTitleLabel.gameObject.SetActive(currentSelectedEvent.changeLightColor);
+            newLightColorInputField.gameObject.SetActive(currentSelectedEvent.changeLightColor);
+            newLightColorInputField.text = currentSelectedEvent.newLightColor;
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -791,6 +801,10 @@ namespace FS_LevelEditor
                 else if (targetObj is LE_Laser)
                 {
                     laserObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
+                {
+                    lightObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -1046,6 +1060,83 @@ namespace FS_LevelEditor
             laserStateDropdown = patcher;
             laserStateDropdownPanel.SetActive(true);
         }
+        // -----------------------------------------
+        void CreateLightObjectSettings()
+        {
+            lightObjectsSettings = new GameObject("Light");
+            lightObjectsSettings.transform.parent = eventOptionsParent.transform;
+            lightObjectsSettings.transform.localPosition = Vector3.zero;
+            lightObjectsSettings.transform.localScale = Vector3.one;
+            lightObjectsSettings.SetActive(false);
+
+            CreateLightObjectsTitleLabel();
+            CreateChangeLightColorToggle();
+            CreateNewLightColorTitleLabel();
+            CreateNewLightColorInputField();
+        }
+        void CreateLightObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, lightObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "LIGHT OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateChangeLightColorToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(lightObjectsSettings.transform, new Vector3(-380f, -30f, 0f),
+                new Vector3Int(250, 48, 1), "Change Color");
+            toggle.name = "ChangeLightColorToggle";
+            changeLightColorToggle = toggle.GetComponent<UIToggle>();
+            changeLightColorToggle.onChange.Clear();
+            changeLightColorToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeLightColorToggleChanged)));
+        }
+        void CreateNewLightColorTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, lightObjectsSettings.transform);
+            titleLabel.name = "NewLightColorTitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 150;
+            label.fontSize = 27;
+            label.text = "New Color";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(50f, -30f, 0f);
+
+            newLightColorTitleLabel = label;
+        }
+        void CreateNewLightColorInputField()
+        {
+            GameObject inputField = NGUI_Utils.CreateInputField(lightObjectsSettings.transform, new Vector3(270f, -30f, 0f),
+                new Vector3Int(250, 40, 1), 27, "FFFFFF");
+            inputField.name = "NewLightColorInputField";
+            inputField.GetComponent<UIInput>().characterLimit = 6;
+            inputField.GetComponent<UIInput>().onChange.Add(new EventDelegate(this, nameof(OnNewLightColorInputFieldChanged)));
+
+            newLightColorInputField = inputField.GetComponent<UIInput>();
+        }
 
 
         void OnSetActiveDropdownChanged()
@@ -1087,6 +1178,28 @@ namespace FS_LevelEditor
         void OnLaserStateDropdownChanged()
         {
             currentSelectedEvent.laserState = (LE_Event.LaserState)laserStateDropdown.currentlySelectedID;
+        }
+        // -----------------------------------------
+        void OnChangeLightColorToggleChanged()
+        {
+            currentSelectedEvent.changeLightColor = changeLightColorToggle.isChecked;
+            newLightColorTitleLabel.gameObject.SetActive(changeLightColorToggle.isChecked);
+            newLightColorInputField.gameObject.SetActive(changeLightColorToggle.isChecked);
+        }
+        void OnNewLightColorInputFieldChanged()
+        {
+            // Set the input field color:
+            Color? outputColor = Utilities.HexToColor(newLightColorInputField.text, false, null);
+            if (outputColor != null)
+            {
+                newLightColorInputField.GetComponent<UISprite>().color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
+            }
+            else
+            {
+                newLightColorInputField.GetComponent<UISprite>().color = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
+            }
+
+            currentSelectedEvent.newLightColor = newLightColorInputField.text;
         }
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -1166,5 +1279,10 @@ public class LE_Event
     #region Laser Options
     public enum LaserState { Do_Nothing, Activate, Deactivate, Toggle_State }
     public LaserState laserState { get; set; } = LaserState.Do_Nothing;
+    #endregion
+
+    #region Light Options
+    public bool changeLightColor { get; set; } = false;
+    public string newLightColor { get; set; } = "FFFFFF";
     #endregion
 }

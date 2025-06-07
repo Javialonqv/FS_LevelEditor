@@ -442,6 +442,13 @@ namespace FS_LevelEditor
                             break;
                     }
                 }
+                else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
+                {
+                    if (@event.changeLightColor)
+                    {
+                        targetObj.SetProperty("Color", Utilities.HexToColor(@event.newLightColor, false, null));
+                    }
+                }
             }
         }
     }
