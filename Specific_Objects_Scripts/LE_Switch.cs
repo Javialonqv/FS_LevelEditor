@@ -449,6 +449,28 @@ namespace FS_LevelEditor
                         targetObj.SetProperty("Color", Utilities.HexToColor(@event.newLightColor, false, null));
                     }
                 }
+                else if (targetObj is LE_Ceiling_Light)
+                {
+                    switch (@event.ceilingLightState)
+                    {
+                        case LE_Event.CeilingLightState.On:
+                            ((LE_Ceiling_Light)targetObj).TriggerAction("Activate");
+                            break;
+
+                        case LE_Event.CeilingLightState.Off:
+                            ((LE_Ceiling_Light)targetObj).TriggerAction("Deactivate");
+                            break;
+
+                        case LE_Event.CeilingLightState.ToggleOnOff:
+                            ((LE_Ceiling_Light)targetObj).TriggerAction("ToggleActivated");
+                            break;
+                    }
+
+                    if (@event.changeCeilingLightColor)
+                    {
+                        targetObj.SetProperty("Color", Utilities.HexToColor(@event.newCeilingLightColor, false, null));
+                    }
+                }
             }
         }
     }

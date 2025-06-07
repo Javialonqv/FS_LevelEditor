@@ -148,6 +148,7 @@ namespace FS_LevelEditor
                 if (value is Color)
                 {
                     properties["Color"] = (Color)value;
+                    light.color = (Color)value;
                     if (EditorController.Instance) SetMeshOnEditor();
                     return true;
                 }
@@ -157,6 +158,7 @@ namespace FS_LevelEditor
                     if (color != null)
                     {
                         properties["Color"] = color;
+                        light.color = (Color)color;
                         if (EditorController.Instance) SetMeshOnEditor();
                         return true;
                     }
@@ -171,6 +173,34 @@ namespace FS_LevelEditor
             return false;
         }
 
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "Activate")
+            {
+                lightComp.SwitchOn();
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                lightComp.SwitchOff();
+                return true;
+            }
+            else if (actionName == "ToggleActivated")
+            {
+                if (lightComp.active)
+                {
+                    lightComp.SwitchOff();
+                }
+                else
+                {
+                    lightComp.SwitchOn();
+                }
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
+        }
+
         void SetMeshOnEditor()
         {
             bool lightEnabled = (bool)GetProperty("ActivateOnStart");
@@ -180,7 +210,6 @@ namespace FS_LevelEditor
             neonOn.SetActive(lightEnabled);
             neonOff.SetActive(!lightEnabled);
 
-            light.color = lightColor;
             Material neonOnMat = neonOn.GetComponent<MeshRenderer>().material;
             neonOnMat.color = lightColor;
             neonOn.GetComponent<MeshRenderer>().SetMaterial(neonOnMat);

@@ -62,6 +62,11 @@ namespace FS_LevelEditor
         UIToggle changeLightColorToggle;
         UILabel newLightColorTitleLabel;
         UIInput newLightColorInputField;
+        //-----------------------------------
+        GameObject ceilingLightObjectsSettings;
+        UIDropdownPatcher ceilingLightStateDropdown;
+        UIToggle changeCeilingLightColorToggle;
+        UIInput newCeilingLightColorInputField;
 
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
         CurrentEventType currentEventType;
@@ -93,6 +98,7 @@ namespace FS_LevelEditor
                 Instance.CreateCubeObjectSettings();
                 Instance.CreateLaserObjectSettings();
                 Instance.CreateLightObjectSettings();
+                Instance.CreateCeilingLightObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -745,6 +751,9 @@ namespace FS_LevelEditor
             newLightColorTitleLabel.gameObject.SetActive(currentSelectedEvent.changeLightColor);
             newLightColorInputField.gameObject.SetActive(currentSelectedEvent.changeLightColor);
             newLightColorInputField.text = currentSelectedEvent.newLightColor;
+            ceilingLightStateDropdown.SelectOption((int)currentSelectedEvent.ceilingLightState);
+            changeCeilingLightColorToggle.Set(currentSelectedEvent.changeCeilingLightColor);
+            newCeilingLightColorInputField.text = currentSelectedEvent.newCeilingLightColor;
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -805,6 +814,10 @@ namespace FS_LevelEditor
                 else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
                 {
                     lightObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Ceiling_Light)
+                {
+                    ceilingLightObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -1137,6 +1150,83 @@ namespace FS_LevelEditor
 
             newLightColorInputField = inputField.GetComponent<UIInput>();
         }
+        // -----------------------------------------
+        void CreateCeilingLightObjectSettings()
+        {
+            ceilingLightObjectsSettings = new GameObject("CeilingLight");
+            ceilingLightObjectsSettings.transform.parent = eventOptionsParent.transform;
+            ceilingLightObjectsSettings.transform.localPosition = Vector3.zero;
+            ceilingLightObjectsSettings.transform.localScale = Vector3.one;
+            ceilingLightObjectsSettings.SetActive(false);
+
+            CreateCeilingLightObjectsTitleLabel();
+            CreateCeilingLightStateDropdown();
+            CreateChangeCeilingLightColorToggle();
+            CreateNewCeilingLightColorInputField();
+        }
+        void CreateCeilingLightObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, ceilingLightObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "CEILING LIGHT OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateCeilingLightStateDropdown()
+        {
+            GameObject ceilingLightStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), ceilingLightObjectsSettings.transform);
+            ceilingLightStateDropdownPanel.name = "CeilingLightStateDropdownPanel";
+            ceilingLightStateDropdownPanel.transform.localPosition = new Vector3(-200f, -50f, 0f);
+            ceilingLightStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+
+            UIDropdownPatcher patcher = ceilingLightStateDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Turn");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("On", false);
+            patcher.AddOption("Off", false);
+            patcher.AddOption("Toggle On/Off", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnCeilingLightStateDropdownChanged)));
+
+            ceilingLightStateDropdown = patcher;
+            ceilingLightStateDropdownPanel.SetActive(true);
+        }
+        void CreateChangeCeilingLightColorToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(ceilingLightObjectsSettings.transform, new Vector3(20f, -17f, 0f),
+                new Vector3Int(250, 48, 1), "Change Color");
+            toggle.name = "ChangeCeilingLightColorToggle";
+
+            changeCeilingLightColorToggle = toggle.GetComponent<UIToggle>();
+            changeCeilingLightColorToggle.onChange.Clear();
+            changeCeilingLightColorToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeCeilingLightColorToggleChanged)));
+        }
+        void CreateNewCeilingLightColorInputField()
+        {
+            GameObject inputField = NGUI_Utils.CreateInputField(ceilingLightObjectsSettings.transform, new Vector3(160f, -70f, 0f),
+                new Vector3Int(250, 40, 1), 27, "FFFFFF");
+            inputField.name = "NewCeilingLightColorInputField";
+            inputField.GetComponent<UIInput>().characterLimit = 6;
+            inputField.GetComponent<UIInput>().onChange.Add(new EventDelegate(this, nameof(OnNewCeilingLightColorInputFieldChanged)));
+
+            newCeilingLightColorInputField = inputField.GetComponent<UIInput>();
+        }
 
 
         void OnSetActiveDropdownChanged()
@@ -1200,6 +1290,31 @@ namespace FS_LevelEditor
             }
 
             currentSelectedEvent.newLightColor = newLightColorInputField.text;
+        }
+        // -----------------------------------------
+        void OnCeilingLightStateDropdownChanged()
+        {
+            currentSelectedEvent.ceilingLightState = (LE_Event.CeilingLightState)ceilingLightStateDropdown.currentlySelectedID;
+        }
+        void OnChangeCeilingLightColorToggleChanged()
+        {
+            currentSelectedEvent.changeCeilingLightColor = changeCeilingLightColorToggle.isChecked;
+            newCeilingLightColorInputField.gameObject.SetActive(changeCeilingLightColorToggle.isChecked);
+        }
+        void OnNewCeilingLightColorInputFieldChanged()
+        {
+            // Set the input field color:
+            Color? outputColor = Utilities.HexToColor(newCeilingLightColorInputField.text, false, null);
+            if (outputColor != null)
+            {
+                newCeilingLightColorInputField.GetComponent<UISprite>().color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
+            }
+            else
+            {
+                newCeilingLightColorInputField.GetComponent<UISprite>().color = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
+            }
+
+            currentSelectedEvent.newCeilingLightColor = newCeilingLightColorInputField.text;
         }
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -1284,5 +1399,12 @@ public class LE_Event
     #region Light Options
     public bool changeLightColor { get; set; } = false;
     public string newLightColor { get; set; } = "FFFFFF";
+    #endregion
+
+    #region Ceiling Light Options
+    public enum CeilingLightState { Do_Nothing, On, Off, ToggleOnOff }
+    public CeilingLightState ceilingLightState { get; set; } = CeilingLightState.Do_Nothing;
+    public bool changeCeilingLightColor { get; set; } = false;
+    public string newCeilingLightColor { get; set; } = "FFFFFF";
     #endregion
 }
