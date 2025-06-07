@@ -386,11 +386,10 @@ namespace FS_LevelEditor
             GameObject colorInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
                 "FFFFFF", false, NGUIText.Alignment.Left);
             colorInputField.name = "ColorField";
-            colorInputField.GetComponent<UIInput>().characterLimit = 6;
-            var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInputField.GetComponent<UIInput>()));
-            colorInputField.GetComponent<UIInput>().onChange.Add(colorDelegate);
+            var colorFieldCustomScript = colorInputField.AddComponent<UICustomInputField>();
+            colorFieldCustomScript.Setup(UICustomInputField.UIInputType.HEX_COLOR);
+            colorFieldCustomScript.setFieldColorAutomatically = false;
+            colorFieldCustomScript.onChange += (() => SetPropertyWithInput("Color", colorFieldCustomScript));
             #endregion
 
             #region Intensity Input Field
@@ -405,11 +404,10 @@ namespace FS_LevelEditor
             GameObject intensityInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
                 "1", false, NGUIText.Alignment.Left);
             intensityInputField.name = "IntensityField";
-            intensityInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
-            var intensityDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Intensity"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", intensityInputField.GetComponent<UIInput>()));
-            intensityInputField.GetComponent<UIInput>().onChange.Add(intensityDelegate);
+            var intensityFieldCustomScript = intensityInputField.AddComponent<UICustomInputField>();
+            intensityFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            intensityFieldCustomScript.setFieldColorAutomatically = false;
+            intensityFieldCustomScript.onChange += (() => SetPropertyWithInput("Intensity", intensityFieldCustomScript));
             #endregion
 
             lightAttributes.SetActive(false);
@@ -455,11 +453,9 @@ namespace FS_LevelEditor
             GameObject damageInputField = NGUI_Utils.CreateInputField(sawAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
                 "50", false, NGUIText.Alignment.Left);
             damageInputField.name = "DamageInputField";
-            damageInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeInt;
-            var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Damage"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", damageInputField.GetComponent<UIInput>()));
-            damageInputField.GetComponent<UIInput>().onChange.Add(damageDelegate);
+            var damangeFieldCustomScript = damageInputField.AddComponent<UICustomInputField>();
+            damangeFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_INT);
+            damangeFieldCustomScript.onChange += (() => SetPropertyWithInput("Damage", damangeFieldCustomScript));
             #endregion
 
             #region Add Waypoint
@@ -498,11 +494,9 @@ namespace FS_LevelEditor
             GameObject waitTimeInputField = NGUI_Utils.CreateInputField(sawWaypointAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
                 "0.3", false, NGUIText.Alignment.Left);
             waitTimeInputField.name = "WaitTimeInputField";
-            waitTimeInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
-            var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "WaitTime"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", waitTimeInputField.GetComponent<UIInput>()));
-            waitTimeInputField.GetComponent<UIInput>().onChange.Add(damageDelegate);
+            var waitTimeFieldCustomScript = waitTimeInputField.AddComponent<UICustomInputField>();
+            waitTimeFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            waitTimeFieldCustomScript.onChange += (() => SetPropertyWithInput("WaitTime", waitTimeFieldCustomScript));
             #endregion
 
             #region Add Waypoint
@@ -601,11 +595,9 @@ namespace FS_LevelEditor
             GameObject respawnInputField = NGUI_Utils.CreateInputField(ammoHealthAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
                 "50", false, NGUIText.Alignment.Left);
             respawnInputField.name = "RespawnInputField";
-            respawnInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
-            var respawnDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "RespawnTime"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", respawnInputField.GetComponent<UIInput>()));
-            respawnInputField.GetComponent<UIInput>().onChange.Add(respawnDelegate);
+            var respawnFieldCustomScript = respawnInputField.AddComponent<UICustomInputField>();
+            respawnFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            respawnFieldCustomScript.onChange += (() => SetPropertyWithInput("RespawnTime", respawnFieldCustomScript));
             #endregion
 
             ammoHealthAttributes.SetActive(false);
@@ -651,11 +643,9 @@ namespace FS_LevelEditor
             GameObject damageInputField = NGUI_Utils.CreateInputField(laserAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
                 "34", false, NGUIText.Alignment.Left);
             damageInputField.name = "DamageInputField";
-            damageInputField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
-            var damageDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Damage"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", damageInputField.GetComponent<UIInput>()));
-            damageInputField.GetComponent<UIInput>().onChange.Add(damageDelegate);
+            var damageFieldCustomScript = damageInputField.AddComponent<UICustomInputField>();
+            damageFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            damageFieldCustomScript.onChange += (() => SetPropertyWithInput("Damage", damageFieldCustomScript));
             #endregion
 
             laserAttributes.SetActive(false);
@@ -710,10 +700,9 @@ namespace FS_LevelEditor
             GameObject colorInputField = NGUI_Utils.CreateInputField(ceilingLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
                 "FFFFFF", false, NGUIText.Alignment.Left);
             colorInputField.name = "ColorField";
-            var colorDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithInput),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Color"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", colorInputField.GetComponent<UIInput>()));
-            colorInputField.GetComponent<UIInput>().onChange.Add(colorDelegate);
+            var colorFieldCustomScript = colorInputField.AddComponent<UICustomInputField>();
+            colorFieldCustomScript.Setup(UICustomInputField.UIInputType.HEX_COLOR);
+            colorFieldCustomScript.onChange += (() => SetPropertyWithInput("Color", colorFieldCustomScript));
             #endregion
 
             ceilingLightAttributes.SetActive(false);
@@ -841,19 +830,16 @@ namespace FS_LevelEditor
             EditorController.Instance.currentSelectedObjComponent.setActiveAtStart = toggle.isChecked;
             EditorController.Instance.levelHasBeenModified = true;
         }
-        public void SetPropertyWithInput(string propertyName, UIInput inputField)
+        public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
         {
-            Color validValueColor = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
-            Color invalidValueColor = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
-
-            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.text))
+            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.GetText()))
             {
                 EditorController.Instance.levelHasBeenModified = true;
-                inputField.GetComponent<UISprite>().color = validValueColor;
+                inputField.Set(true);
             }
             else
             {
-                inputField.GetComponent<UISprite>().color = invalidValueColor;
+                inputField.Set(false);
             }
         }
         public void SetPropertyWithToggle(string propertyName, UIToggle toggle)
@@ -1159,18 +1145,9 @@ namespace FS_LevelEditor
                 new Vector3Int(300, 50, 0), 30, "100");
             deathYLimitField.name = "DeathYLimit";
             deathYLimitField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
-            var deathYLimitDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithInput),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "DeathYLimit"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "inputField", deathYLimitField.GetComponent<UIInput>()));
-            deathYLimitField.GetComponent<UIInput>().onChange.Add(deathYLimitDelegate);
-
-            //GameObject visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggle(globalPropertiesPanel.transform,
-            //    new Vector3(0f, 200f, 0f), new Vector3Int(600, 48, 1), "Visualize Death Y Limit");
-            //visualizeDeathYLimitButton.name = "VisualizeDeathYLimitBtnToggle";
-            //visualizeDeathYLimitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            //visualizeDeathYLimitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-            //visualizeDeathYLimitButton.GetComponent<UISprite>().depth = 1;
-            //visualizeDeathYLimitButton.GetComponent<UIButtonAsToggle>().onClick += OnVisualizeDeathYLimitToggleClick;
+            var deathFieldCustomScript = deathYLimitField.AddComponent<UICustomInputField>();
+            deathFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            deathFieldCustomScript.onChange += (() => SetGlobalPropertyWithInput("DeathYLimit", deathFieldCustomScript));
 
             GameObject visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(globalPropertiesPanel.transform,
                 new Vector3(285f, 270f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);
@@ -1217,21 +1194,18 @@ namespace FS_LevelEditor
         {
             SetGlobalProperty(name, toggle.isChecked);
         }
-        public void SetGlobalPropertyWithInput(string propertyName, UIInput inputField)
+        public void SetGlobalPropertyWithInput(string propertyName, UICustomInputField inputField)
         {
-            Color validValueColor = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
-            Color invalidValueColor = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
-
             // ParseInputFieldData returns true if the introduced data CAN be parsed.
-            if (ParseInputFieldData(inputField.name, inputField.text, out object parsedData))
+            if (ParseInputFieldData(inputField.name, inputField.GetText(), out object parsedData))
             {
                 EditorController.Instance.levelHasBeenModified = true;
-                inputField.GetComponent<UISprite>().color = validValueColor;
                 SetGlobalProperty(propertyName, parsedData);
+                inputField.Set(true);
             }
             else
             {
-                inputField.GetComponent<UISprite>().color = invalidValueColor;
+                inputField.Set(false);
             }
         }
         bool ParseInputFieldData(string inputFieldName, string fieldText, out object parsedData)
