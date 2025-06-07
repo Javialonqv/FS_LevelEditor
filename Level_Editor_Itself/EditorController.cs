@@ -180,6 +180,11 @@ namespace FS_LevelEditor
                 {
                     gizmosArrows.SetActive(true);
                 }
+
+                if (Input.GetMouseButtonUp(0))
+                {
+                    startSnapToGridWithCurrentSelectedObj = false;
+                }
             }
 
             // If click and it's on selection and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element AAAND it's not using snap to grid while edition right now...
