@@ -84,7 +84,7 @@ namespace FS_LevelEditor
         {
             { "HasTaser", true },
             { "HasJetpack", true },
-            { "DeathYLimit", -275f }
+            { "DeathYLimit", 100f }
         };
 
         void Awake()

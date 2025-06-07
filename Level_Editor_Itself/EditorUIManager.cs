@@ -1156,7 +1156,7 @@ namespace FS_LevelEditor
             deathYLimitTitle.transform.localPosition = new Vector3(-300f, 270f, 0f);
 
             GameObject deathYLimitField = NGUI_Utils.CreateInputField(globalPropertiesPanel.transform, new Vector3(100f, 270f, 0f),
-                new Vector3Int(300, 50, 0), 30, "-275");
+                new Vector3Int(300, 50, 0), 30, "100");
             deathYLimitField.name = "DeathYLimit";
             deathYLimitField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
             var deathYLimitDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithInput),
