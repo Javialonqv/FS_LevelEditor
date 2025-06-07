@@ -126,6 +126,8 @@ namespace FS_LevelEditor.UI_Related
                 toggle.GetComponent<BoxCollider>().size = colliderSize;
             }
 
+            toggle.AddComponent<UIToggleCheckedFix>();
+
             return toggle;
         }
 
