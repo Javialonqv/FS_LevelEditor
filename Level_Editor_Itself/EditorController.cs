@@ -1235,7 +1235,7 @@ namespace FS_LevelEditor
             // STUPID CUBE PHYSICS!!
             foreach (var rigidBody in previewObjectToBuildObj.TryGetComponents<Rigidbody>())
             {
-                rigidBody.isKinematic = true;
+                Destroy(rigidBody); // Destroy the RigidBody, fuck it.
             }
             // Also change it's color to blue.
             foreach (var renderer in previewObjectToBuildObj.TryGetComponents<MeshRenderer>())
