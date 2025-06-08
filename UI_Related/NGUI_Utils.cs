@@ -154,7 +154,7 @@ namespace FS_LevelEditor.UI_Related
             return button;
         }
 
-        public static GameObject CreateButtonAsToggle(Transform parent, Vector3 position, Vector3Int size, string text = "")
+        public static GameObject CreateButtonAsToggle(Transform parent, Vector3 position, Vector3Int size, string text = "", int toggleDepth = 0)
         {
             GameObject buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Controls_Options/Buttons/RemapControls");
 
@@ -164,6 +164,7 @@ namespace FS_LevelEditor.UI_Related
 
             button.GetComponent<UISprite>().width = size.x;
             button.GetComponent<UISprite>().height = size.y;
+            button.GetComponent<UISprite>().depth = toggleDepth;
             button.GetComponent<BoxCollider>().size = size;
             GameObject.Destroy(button.GetComponent<ButtonController>());
             button.AddComponent<UIButtonAsToggle>();
