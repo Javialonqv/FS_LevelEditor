@@ -34,6 +34,8 @@ namespace FS_LevelEditor
 
         public GameObject selectedObjPanel;
         Transform objectSpecificPanelsParent;
+        Transform globalObjectPanelsParent;
+        GameObject globalObjAttributesToggle;
         Dictionary<string, GameObject> attrbutesPanels = new Dictionary<string, GameObject>();
 
         GameObject savingLevelLabel;
@@ -309,6 +311,11 @@ namespace FS_LevelEditor
             setActiveAtStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
             setActiveAtStartToggle.SetActive(false);
 
+            globalObjAttributesToggle = NGUI_Utils.CreateButtonAsToggle(selectedObjPanel.transform, new Vector3(220f, 0f, 0f), new Vector3Int(45, 45, 0), toggleDepth:2);
+            globalObjAttributesToggle.name = "GlobalObjectAttributesBtnToggle";
+            globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().onClick += ShowGlobalObjectAttributes;
+            globalObjAttributesToggle.SetActive(false);
+
             GameObject selectedObjPanelBody = new GameObject("Body");
             selectedObjPanelBody.transform.parent = selectedObjPanel.transform;
             selectedObjPanelBody.transform.localPosition = new Vector3(0f, -160f, 0f);
@@ -332,8 +339,15 @@ namespace FS_LevelEditor
             objectSpecificOptionsParent.transform.localScale = Vector3.one;
             objectSpecificPanelsParent = objectSpecificOptionsParent.transform;
 
+            GameObject globalObjectOptionsParent = new GameObject("GlobalObjectOptions");
+            globalObjectOptionsParent.transform.parent = selectedObjPanelBody.transform;
+            globalObjectOptionsParent.transform.localPosition = Vector3.zero;
+            globalObjectOptionsParent.transform.localScale = Vector3.one;
+            globalObjectPanelsParent = globalObjectOptionsParent.transform;
+
             SetSelectedObjPanelAsNone();
 
+            CreateGlobalObjectAttributesPanel();
             CreateNoAttributesPanel();
             CreateLightAttributesPanel();
             CreateSawAttributesPanel();
@@ -342,6 +356,21 @@ namespace FS_LevelEditor
             CreateAmmoAndHealthPackAttributesPanel();
             CreateLaserAttributesPanel();
             CreateCeilingLightPanel();
+        }
+
+        void CreateGlobalObjectAttributesPanel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            #region Position Input Field
+            GameObject positionTitle = Instantiate(labelTemplate, globalObjectPanelsParent);
+            positionTitle.name = "PositionTitle";
+            positionTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            positionTitle.RemoveComponent<UILocalize>();
+            positionTitle.GetComponent<UILabel>().width = 235;
+            positionTitle.GetComponent<UILabel>().text = "Position";
+            positionTitle.GetComponent<UILabel>().color = Color.white;
+            #endregion
         }
 
         void CreateNoAttributesPanel()
@@ -720,6 +749,7 @@ namespace FS_LevelEditor
         {
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "No Object Selected";
             selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
+            globalObjAttributesToggle.SetActive(false);
             selectedObjPanel.GetChildWithName("Body").SetActive(false);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
         }
@@ -727,6 +757,7 @@ namespace FS_LevelEditor
         {
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "Multiple Objects Selected";
             selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
+            globalObjAttributesToggle.SetActive(false);
             selectedObjPanel.GetChildWithName("Body").SetActive(false);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
         }
@@ -737,6 +768,10 @@ namespace FS_LevelEditor
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -220, 0f);
 
             attrbutesPanels.ToList().ForEach(x => x.Value.SetActive(false));
+
+            // Enable the toggle and show object-specific attributes, then it will be disabled or changed to GLOBAL attributes if the object doesn't have unique ones.
+            globalObjAttributesToggle.SetActive(true);
+            globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().SetToggleState(false, true);
 
             if (objComponent.objectOriginalName == "Directional Light" || objComponent.objectOriginalName == "Point Light")
             {
@@ -815,7 +850,10 @@ namespace FS_LevelEditor
             }
             else
             {
-                attrbutesPanels["None"].SetActive(true);
+                globalObjAttributesToggle.SetActive(false);
+                globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().SetToggleState(true, true);
+                //globalObjectPanelsParent.gameObject.SetActive(true);
+                //attrbutesPanels["None"].SetActive(true);
             }
 
             if (objComponent.canBeDisabledAtStart)
@@ -830,6 +868,11 @@ namespace FS_LevelEditor
             }
         }
 
+        public void ShowGlobalObjectAttributes(bool show)
+        {
+            objectSpecificPanelsParent.gameObject.SetActive(!show);
+            globalObjectPanelsParent.gameObject.SetActive(show);
+        }
         // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
         // AAALSO now its seems crapGUI can't recognize between two different overloads of a method, so I need to put different names foreach method, DAMN IT.
         public void SetSetActiveAtStart(UIToggle toggle)
