@@ -29,11 +29,16 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
-        public void SetToggleState(bool newState)
+        public void SetToggleState(bool newState, bool executeOnClick = false)
         {
             isChecked = newState;
 
             button.defaultColor = newState ? NGUI_Utils.fsButtonsPressedColor : NGUI_Utils.fsButtonsDefaultColor;
+
+            if (executeOnClick)
+            {
+                onClick.Invoke(isChecked);
+            }
         }
     }
 }
