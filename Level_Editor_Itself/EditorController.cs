@@ -620,6 +620,8 @@ namespace FS_LevelEditor
                 {
                     if (obj.name == "MoveObjectArrows" || obj.name == "SnapToGridCube") continue;
 
+                    obj.GetComponent<LE_Object>().OnDelete();
+
                     if (obj.GetComponent<LE_Object>().canUndoDeletion)
                     {
                         obj.SetActive(false);
