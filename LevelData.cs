@@ -220,6 +220,8 @@ namespace FS_LevelEditor
         // And this for loading the saved level in playmode lol.
         public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
         {
+            LE_Object.GetTemplatesReferences();
+
             PlayModeController playModeCtrl = new GameObject("PlayModeController").AddComponent<PlayModeController>();
 
             GameObject objectsParent = playModeCtrl.levelObjectsParent;
@@ -262,7 +264,7 @@ namespace FS_LevelEditor
                     }
                 }
 
-                objInstance.SetActive(objClassInstance.setActiveAtStart);
+                objInstance.SetActive(obj.setActiveAtStart);
             }
 
             // Load Global Properties.

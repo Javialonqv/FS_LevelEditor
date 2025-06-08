@@ -13,6 +13,7 @@ namespace FS_LevelEditor
     public class LE_Health_Pack : LE_Object
     {
         Health health;
+        bool initialized = false;
 
         void Awake()
         {
@@ -24,9 +25,10 @@ namespace FS_LevelEditor
 
         void Start()
         {
+            Logger.DebugLog("Health Pack Start() test");
             if (PlayModeController.Instance != null)
             {
-                InitComponent();
+                if (!initialized) InitComponent();
             }
             else // If it's not in playmode, just create a collider so the user can click the object in LE.
             {
@@ -48,7 +50,7 @@ namespace FS_LevelEditor
             disolve.onEnable = true;
             disolve.m_renderer = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
             // Extract the dissolve materials from another healthpack in the scene.
-            disolve.dissolveMaterials = FindObjectOfType<Health>().GetComponent<DisolveOnEnable>().dissolveMaterials;
+            disolve.dissolveMaterials = t_healthPack.GetComponent<DisolveOnEnable>().dissolveMaterials;
             disolve.finalMaterials = new Material[] { disolve.m_renderer.sharedMaterial };
             disolve.appearSpeed = 8;
             disolve.startOffset = -3.4f;
@@ -73,6 +75,8 @@ namespace FS_LevelEditor
             health.m_dissolve = disolve;
 
             gameObject.GetChildWithName("Content").SetActive(true);
+
+            initialized = true;
         }
 
         // Since respawn time is fixed and is changed to default (20) at Start() of Ammo class, change it after 0.1s

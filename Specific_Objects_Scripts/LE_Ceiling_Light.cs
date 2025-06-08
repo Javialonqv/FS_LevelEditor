@@ -57,7 +57,7 @@ namespace FS_LevelEditor
 
         void InitComponent()
         {
-            RealtimeCeilingLight template = FindObjectOfType<RealtimeCeilingLight>();
+            RealtimeCeilingLight template = t_ceilingLight;
 
             gameObject.SetActive(false);
 

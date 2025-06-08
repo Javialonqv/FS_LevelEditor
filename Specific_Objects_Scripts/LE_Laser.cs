@@ -49,7 +49,7 @@ namespace FS_LevelEditor
 
         void InitComponent()
         {
-            Laser_H_Controller template = FindObjectOfType<Laser_H_Controller>();
+            Laser_H_Controller template = t_laser;
 
             laser = gameObject.GetChildWithName("Content").AddComponent<Laser_H_Controller>();
             laser.laserOriginPoint = gameObject.GetChildAt("Content/LaserOriginPoint").transform;

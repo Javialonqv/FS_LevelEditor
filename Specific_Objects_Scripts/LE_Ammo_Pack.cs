@@ -47,7 +47,7 @@ namespace FS_LevelEditor
             DisolveOnEnable disolve = gameObject.GetChildAt("Content/Mesh/PC_Only").AddComponent<DisolveOnEnable>();
 
             disolve.m_renderer = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
-            disolve.dissolveMaterials = FindObjectOfType<Ammo>().gameObject.GetChildAt("Mesh/PC_Only").GetComponent<DisolveOnEnable>().dissolveMaterials;
+            disolve.dissolveMaterials = t_ammoPack.gameObject.GetChildAt("Mesh/PC_Only").GetComponent<DisolveOnEnable>().dissolveMaterials;
             disolve.finalMaterials = new Material[] { disolve.m_renderer.sharedMaterial };
             disolve.appearSpeed = 3;
             disolve.startOffset = -0.6f;

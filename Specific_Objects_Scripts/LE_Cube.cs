@@ -38,9 +38,7 @@ namespace FS_LevelEditor
             gameObject.GetChildWithName("Content").tag = "Bloc";
 
             //BlocScript template = FindObjectsOfType<BlocScript>().Where(x => x.IsCube()).ToArray()[0];
-            BlocScript template = SceneManager.GetActiveScene().GetRootGameObjects()
-                .FirstOrDefault(x => x.name == "CameraRunRoom").GetChildAt("BeforeCamera/Activable/Bloc")
-                .GetComponent<BlocScript>();
+            BlocScript template = t_cube;
 
             blocScript = gameObject.GetChildWithName("Content").AddComponent<BlocScript>();
             blocScript.allCompoundColliders = new Il2CppSystem.Collections.Generic.List<Collider>();

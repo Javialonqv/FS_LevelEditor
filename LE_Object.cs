@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor
 {
@@ -79,6 +80,29 @@ namespace FS_LevelEditor
 
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
+
+        #region Object Templates References
+        public static Ammo t_ammoPack;
+        public static Health t_healthPack;
+        public static ScieScript t_saw;
+        public static InterrupteurController t_switch;
+        public static BlocScript t_cube;
+        public static Laser_H_Controller t_laser;
+        public static RealtimeCeilingLight t_ceilingLight;
+        #endregion
+
+        public static void GetTemplatesReferences()
+        {
+            t_ammoPack = FindObjectOfType<Ammo>();
+            t_healthPack = FindObjectOfType<Health>();
+            t_saw = FindObjectOfType<ScieScript>();
+            t_switch = FindObjectOfType<InterrupteurController>();
+            t_cube = SceneManager.GetActiveScene().GetRootGameObjects()
+                .FirstOrDefault(x => x.name == "CameraRunRoom").GetChildAt("BeforeCamera/Activable/Bloc")
+                .GetComponent<BlocScript>();
+            t_laser = FindObjectOfType<Laser_H_Controller>();
+            t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
+        }
 
         /// <summary>
         /// The correct way to add a LE_Object component to a GameObject.

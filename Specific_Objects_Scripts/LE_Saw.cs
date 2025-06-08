@@ -74,7 +74,7 @@ namespace FS_LevelEditor
             content.SetActive(false);
             content.tag = "Scie";
 
-            content.GetComponent<AudioSource>().outputAudioMixerGroup = FindObjectOfType<ScieScript>().GetComponent<AudioSource>().outputAudioMixerGroup;
+            content.GetComponent<AudioSource>().outputAudioMixerGroup = t_saw.GetComponent<AudioSource>().outputAudioMixerGroup;
 
             RotationScie rotationScie = content.GetChildWithName("Scie_OFF").AddComponent<RotationScie>();
             rotationScie.vitesseRotation = 500;
@@ -95,7 +95,7 @@ namespace FS_LevelEditor
                 script.allowSideRotation = true;
                 script.sideSpeedMultiplier = 5;
             }
-            script.scieSound = FindObjectOfType<ScieScript>().scieSound;
+            script.scieSound = t_saw.scieSound;
             script.offMesh = content.GetChildWithName("Scie_OFF").GetComponent<MeshRenderer>();
             script.onMesh = content.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>();
             script.m_collision = content.GetChildWithName("Collision").GetComponent<BoxCollider>();

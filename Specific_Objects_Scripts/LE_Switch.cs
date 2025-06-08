@@ -113,7 +113,7 @@ namespace FS_LevelEditor
 
             InterrupteurController controller = button.AddComponent<InterrupteurController>();
 
-            controller.ActivateButtonSound = FindObjectOfType<InterrupteurController>().ActivateButtonSound;
+            controller.ActivateButtonSound = t_switch.ActivateButtonSound;
             controller.additionalInteractionGO = button.GetChildWithName("AdditionalInteractionCollider_Sides");
             controller.allowManualInteractAnim = true;
             controller.allowWhenSwitchingUIContext = true;
@@ -124,25 +124,25 @@ namespace FS_LevelEditor
             controller.greenLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Green").GetComponent<MeshRenderer>();
             controller.greenPlane = button.GetChildAt("ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
             controller.handleAnimator = button.GetChildAt("ButtonMesh/HandleHolder").GetComponent<Animator>();
-            controller.iconActivationSound = FindObjectOfType<InterrupteurController>().iconActivationSound;
-            controller.iconDeactivationSound = FindObjectOfType<InterrupteurController>().iconDeactivationSound;
+            controller.iconActivationSound = t_switch.iconActivationSound;
+            controller.iconDeactivationSound = t_switch.iconDeactivationSound;
             controller.IGCType = Controls.InGamePlayerKineType.MANUAL_BUTTON_INTERACTION;
             controller.interactableWhileDodge = true;
-            controller.leverSound = FindObjectOfType<InterrupteurController>().leverSound;
+            controller.leverSound = t_switch.leverSound;
             controller.localizedInteractionString = "Activate";
             controller.lockboxAnimTrigger = "IGC_Open";
             controller.m_audioSource = button.GetComponent<AudioSource>();
             controller.m_meshRenderer = button.GetChildWithName("ButtonMesh").GetComponent<MeshRenderer>();
             controller.m_meshTransform = button.GetChildWithName("ButtonMesh").transform;
             controller.offColor = InterrupteurController.ColorType.RED;
-            controller.offMaterials = FindObjectOfType<InterrupteurController>().offMaterials;
+            controller.offMaterials = t_switch.offMaterials;
             controller.onColor = InterrupteurController.ColorType.GREEN;
-            controller.onMaterials = FindObjectOfType<InterrupteurController>().onMaterials;
+            controller.onMaterials = t_switch.onMaterials;
             controller.redLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Bottom/Lightbands_Bottom_Red").GetComponent<MeshRenderer>();
             controller.redPlane = button.GetChildAt("ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
             controller.unusableColor = InterrupteurController.ColorType.BLACK;
             controller.unusableCoverAnimator = button.GetChildAt("ButtonMesh/UnusableCoverHolder").GetComponent<Animator>();
-            controller.unusableMaterials = FindObjectOfType<InterrupteurController>().unusableMaterials;
+            controller.unusableMaterials = t_switch.unusableMaterials;
             controller.objectsToActivate = new GameObject[0];
             controller.objectsToDestroy = new GameObject[0];
             controller.objectsToEnableOnly = new GameObject[0];
