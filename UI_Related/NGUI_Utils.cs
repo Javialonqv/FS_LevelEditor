@@ -33,6 +33,14 @@ namespace FS_LevelEditor.UI_Related
             get { return new Color(0.2868f, 0.971f, 1f, 1f); }
         }
 
+        public static GameObject labelTemplate
+        {
+            get
+            {
+                return GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+            }
+        }
+
         public static GameObject CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize = 27, string defaultText = "",
             bool hasOutline = false, NGUIText.Alignment alignment = NGUIText.Alignment.Left)
         {
@@ -207,6 +215,26 @@ namespace FS_LevelEditor.UI_Related
             return button;
         }
 
+        public static UILabel CreateLabel(Transform parent, Vector3 position, Vector3Int size, string text = "", NGUIText.Alignment alignment = NGUIText.Alignment.Left,
+            UIWidget.Pivot pivot = UIWidget.Pivot.Left)
+        {
+            GameObject labelObj = GameObject.Instantiate(labelTemplate, parent);
+            labelObj.name = "Label";
+            labelObj.RemoveComponent<UILocalize>();
+
+            UILabel label = labelObj.GetComponent<UILabel>();
+            label.width = size.x;
+            label.height = size.y;
+            label.text = text;
+            label.color = Color.white;
+            label.alignment = alignment;
+            label.pivot = pivot;
+
+            labelObj.transform.localPosition = position;
+
+            return label;
+        }
+
 
         public static EventDelegate.Parameter CreateEventDelegateParamter(UnityEngine.Object target, string parameterName, Il2CppSystem.Object value)
         {
@@ -247,6 +275,33 @@ namespace FS_LevelEditor.UI_Related
             }
 
             return '\0';
+        }
+        public static char ValidateFloatWithMaxDecimals(string text, int charIndex, char addedChar, int maxDecimals)
+        {
+            if (addedChar == '.')
+            {
+                if (text.Contains(".")) return '\0';
+                else return addedChar;
+            }
+
+            if (addedChar == '-')
+            {
+                if (text.Contains("-") || charIndex != 0) return '\0';
+                else return addedChar;
+            }
+
+            int dotIndex = text.IndexOf('.');
+            if (dotIndex != -1)
+            {
+                int decimals = text.Length - dotIndex;
+                if (decimals > 2)
+                    return '\0';
+            }
+
+            if (!char.IsDigit(addedChar) && addedChar != '.')
+                return '\0';
+
+            return addedChar;
         }
     }
 }
