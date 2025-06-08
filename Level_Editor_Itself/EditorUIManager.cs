@@ -878,6 +878,8 @@ namespace FS_LevelEditor
                 globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().SetToggleState(true, true);
             }
 
+            UpdateGlobalObjectAttributes(objComponent);
+
             if (objComponent.canBeDisabledAtStart)
             {
                 selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(true);

@@ -239,7 +239,7 @@ namespace FS_LevelEditor
                 DeleteSelectedObj();
             }
 
-            if (currentSelectedObjComponent != null && !multipleObjectsSelected)
+            if (currentSelectedObjComponent != null && !multipleObjectsSelected && isCurrentlyMovingAnObject)
             {
                 EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
             }
@@ -373,6 +373,11 @@ namespace FS_LevelEditor
                             else
                             {
                                 toUndo.targetObj.transform.localPosition = toUndo.oldPos;
+                                // In case the selected object is already the object to undo, update its global attributes manually:
+                                if (currentSelectedObj == toUndo.targetObj)
+                                {
+                                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.GetComponent<LE_Object>());
+                                }
                                 SetSelectedObj(toUndo.targetObj);
                             }
                             break;
