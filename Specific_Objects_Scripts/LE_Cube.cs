@@ -19,7 +19,8 @@ namespace FS_LevelEditor
         {
             if (EditorController.Instance)
             {
-                gameObject.GetChildWithName("Content").GetComponent<Rigidbody>().isKinematic = true;
+                // COME ON, STUPID CUBE PHYSICS, I HATE YOU!!!!
+                Destroy(gameObject.GetChildWithName("Content").GetComponent<Rigidbody>());
             }
         }
 
