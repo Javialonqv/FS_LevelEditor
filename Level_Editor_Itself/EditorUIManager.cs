@@ -312,7 +312,8 @@ namespace FS_LevelEditor
             setActiveAtStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
             setActiveAtStartToggle.SetActive(false);
 
-            globalObjAttributesToggle = NGUI_Utils.CreateButtonAsToggle(selectedObjPanel.transform, new Vector3(220f, 0f, 0f), new Vector3Int(45, 45, 0), toggleDepth:2);
+            globalObjAttributesToggle = NGUI_Utils.CreateButtonAsToggleWithSprite(selectedObjPanel.transform, new Vector3(220f, 0f, 0f), new Vector3Int(45, 45, 0), 2, "Global",
+                Vector2Int.one * 25);
             globalObjAttributesToggle.name = "GlobalObjectAttributesBtnToggle";
             globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().onClick += ShowGlobalObjectAttributes;
             globalObjAttributesToggle.SetActive(false);
