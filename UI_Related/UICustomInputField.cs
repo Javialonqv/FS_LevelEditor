@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor.UI_Related
 {
@@ -15,7 +16,9 @@ namespace FS_LevelEditor.UI_Related
         {
             HEX_COLOR,
             NON_NEGATIVE_INT,
-            NON_NEGATIVE_FLOAT
+            NON_NEGATIVE_FLOAT,
+            INT,
+            FLOAT
         }
 
         public UIInput input { get; private set; }
@@ -37,7 +40,7 @@ namespace FS_LevelEditor.UI_Related
             fieldSprite = GetComponent<UISprite>();
         }
 
-        public void Setup(UIInputType type, string? defaultText = null)
+        public void Setup(UIInputType type, string? defaultText = null, int maxDecimals = 0)
         {
             inputType = type;
 
@@ -60,6 +63,21 @@ namespace FS_LevelEditor.UI_Related
 
                 case UIInputType.NON_NEGATIVE_FLOAT:
                     input.onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
+                    break;
+
+                case UIInputType.INT:
+                    input.validation = UIInput.Validation.Integer;
+                    break;
+
+                case UIInputType.FLOAT:
+                    if (maxDecimals <= 0)
+                    {
+                        input.validation = UIInput.Validation.Float;
+                    }
+                    else
+                    {
+                        input.onValidate += (UIInput.OnValidate)((text, index, ch) => NGUI_Utils.ValidateFloatWithMaxDecimals(text, index, ch, maxDecimals));
+                    }
                     break;
             }
             if (defaultText != null) input.defaultText = defaultText;
@@ -112,6 +130,12 @@ namespace FS_LevelEditor.UI_Related
                         return floatResult >= 0;
                     }
                     return false;
+
+                case UIInputType.INT:
+                    return int.TryParse(GetText(), out int intResult2);
+
+                case UIInputType.FLOAT:
+                    return float.TryParse(GetText(), out float floatResult2);
             }
 
             return false;
@@ -131,6 +155,29 @@ namespace FS_LevelEditor.UI_Related
             {
                 return input.defaultText;
             }
+        }
+
+        public void SetText(string newText)
+        {
+            if (input.selected) return;
+
+            input.text = newText;
+        }
+        public void SetText(float value)
+        {
+            if (input.selected) return;
+
+            input.text = value + "";
+        }
+        public void SetText(float value, int maxDecimals)
+        {
+            if (input.selected) return;
+
+            string format = "0";
+            if (maxDecimals > 0)
+                format += "." + new string('#', maxDecimals);
+
+            input.text = value.ToString(format);
         }
     }
 }
