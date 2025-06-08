@@ -239,6 +239,11 @@ namespace FS_LevelEditor
                 DeleteSelectedObj();
             }
 
+            if (currentSelectedObjComponent != null && !multipleObjectsSelected)
+            {
+                EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
+            }
+
             // The code to force reset the gizmos arrows to 0 when global gizmos are enabled, is in LateUpdate().
 
             ManageSomeShortcuts();

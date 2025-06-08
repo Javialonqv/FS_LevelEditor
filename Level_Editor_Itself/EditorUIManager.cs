@@ -14,6 +14,7 @@ using static Il2Cpp.UIAtlas;
 using FS_LevelEditor.UI_Related;
 using System.Xml.Serialization;
 using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
+using UnityEngine.Rendering.PostProcessing;
 
 namespace FS_LevelEditor
 {
@@ -363,13 +364,35 @@ namespace FS_LevelEditor
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
             #region Position Input Field
-            GameObject positionTitle = Instantiate(labelTemplate, globalObjectPanelsParent);
+            UILabel positionTitle = NGUI_Utils.CreateLabel(globalObjectPanelsParent, new Vector3(-230f, 90f, 0f), new Vector3Int(150, 38, 0), "Position");
             positionTitle.name = "PositionTitle";
-            positionTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
-            positionTitle.RemoveComponent<UILocalize>();
-            positionTitle.GetComponent<UILabel>().width = 235;
-            positionTitle.GetComponent<UILabel>().text = "Position";
-            positionTitle.GetComponent<UILabel>().color = Color.white;
+
+            UILabel xPositionTitle = NGUI_Utils.CreateLabel(globalObjectPanelsParent, new Vector3(-40f, 90f, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            xPositionTitle.name = "XPositionTitle";
+            GameObject xPositionField = NGUI_Utils.CreateInputField(globalObjectPanelsParent, new Vector3(10f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0");
+            xPositionField.name = "XPositionField";
+            var xPositionFieldScript = xPositionField.AddComponent<UICustomInputField>();
+            xPositionFieldScript.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals:2);
+            xPositionFieldScript.onChange += (() => SetPropertyWithInput("XPosition", xPositionFieldScript));
+
+            UILabel yPositionTitle = NGUI_Utils.CreateLabel(globalObjectPanelsParent, new Vector3(60f, 90f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            yPositionTitle.name = "YPositionTitle";
+            GameObject yPositionField = NGUI_Utils.CreateInputField(globalObjectPanelsParent, new Vector3(110f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0");
+            yPositionField.name = "YPositionField";
+            var yPositionFieldScript = yPositionField.AddComponent<UICustomInputField>();
+            yPositionFieldScript.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals:2);
+            yPositionFieldScript.onChange += (() => SetPropertyWithInput("YPosition", yPositionFieldScript));
+
+            UILabel zPositionTitle = NGUI_Utils.CreateLabel(globalObjectPanelsParent, new Vector3(160f, 90f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            zPositionTitle.name = "ZPositionTitle";
+            GameObject zPositionField = NGUI_Utils.CreateInputField(globalObjectPanelsParent, new Vector3(210f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0");
+            zPositionField.name = "ZPositionField";
+            var zPositionFieldScript = zPositionField.AddComponent<UICustomInputField>();
+            zPositionFieldScript.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals:2);
+            zPositionFieldScript.onChange += (() => SetPropertyWithInput("ZPosition", zPositionFieldScript));
             #endregion
         }
 
@@ -852,8 +875,6 @@ namespace FS_LevelEditor
             {
                 globalObjAttributesToggle.SetActive(false);
                 globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().SetToggleState(true, true);
-                //globalObjectPanelsParent.gameObject.SetActive(true);
-                //attrbutesPanels["None"].SetActive(true);
             }
 
             if (objComponent.canBeDisabledAtStart)
@@ -873,6 +894,15 @@ namespace FS_LevelEditor
             objectSpecificPanelsParent.gameObject.SetActive(!show);
             globalObjectPanelsParent.gameObject.SetActive(show);
         }
+        public void UpdateGlobalObjectAttributes(LE_Object objComponent)
+        {
+            // UICustomInput already verifies if the user is typing on the field, if so, SetText does nothing, we don't need to worry about that.
+
+            // Set Global Attributes...
+            globalObjectPanelsParent.GetChildWithName("XPositionField").GetComponent<UICustomInputField>().SetText(objComponent.transform.position.x, 2);
+            globalObjectPanelsParent.GetChildWithName("YPositionField").GetComponent<UICustomInputField>().SetText(objComponent.transform.position.y, 2);
+            globalObjectPanelsParent.GetChildWithName("ZPositionField").GetComponent<UICustomInputField>().SetText(objComponent.transform.position.z, 2);
+        }
         // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
         // AAALSO now its seems crapGUI can't recognize between two different overloads of a method, so I need to put different names foreach method, DAMN IT.
         public void SetSetActiveAtStart(UIToggle toggle)
@@ -882,6 +912,27 @@ namespace FS_LevelEditor
         }
         public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
         {
+            // Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
+            if (propertyName.Contains("Position") && float.TryParse(inputField.GetText(), out float floatValue))
+            {
+                switch (propertyName)
+                {
+                    case "XPosition":
+                        EditorController.Instance.currentSelectedObj.transform.SetXPosition(floatValue);
+                        break;
+
+                    case "YPosition":
+                        EditorController.Instance.currentSelectedObj.transform.SetYPosition(floatValue);
+                        break;
+
+                    case "ZPosition":
+                        EditorController.Instance.currentSelectedObj.transform.SetZPosition(floatValue);
+                        break;
+                }
+
+                return;
+            }
+
             if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.GetText()))
             {
                 EditorController.Instance.levelHasBeenModified = true;
