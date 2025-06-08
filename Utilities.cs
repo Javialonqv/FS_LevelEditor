@@ -440,5 +440,18 @@ namespace FS_LevelEditor
                 MenuController.GetInstance().m_uiAudioSource.PlayOneShot(toPlay);
             }
         }
+
+        public static void SetXRotation(this Transform transform, float newValue)
+        {
+            transform.localEulerAngles = new Vector3(newValue, transform.localEulerAngles.y, transform.localEulerAngles.z);
+        }
+        public static void SetYRotation(this Transform transform, float newValue)
+        {
+            transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, newValue, transform.localEulerAngles.z);
+        }
+        public static void SetZRotation(this Transform transform, float newValue)
+        {
+            transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, newValue);
+        }
     }
 }

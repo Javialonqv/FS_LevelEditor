@@ -1059,6 +1059,9 @@ namespace FS_LevelEditor
             // If the rotation changed and the object isn't the preview object...
             if (rotation != targetObj.transform.localRotation && currentMode != Mode.Building)
             {
+                // Update global attributes IF is not selecting multiple objects.
+                if (!multipleObjectsSelected) EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
+
                 // Save it to editor history.
                 #region Register LEAction
                 currentExecutingAction = new LEAction();
