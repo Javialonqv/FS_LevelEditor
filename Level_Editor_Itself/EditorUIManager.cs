@@ -33,6 +33,7 @@ namespace FS_LevelEditor
         List<GameObject> currentCategoryButtons = new List<GameObject>();
 
         public GameObject selectedObjPanel;
+        Transform objectSpecificPanelsParent;
         Dictionary<string, GameObject> attrbutesPanels = new Dictionary<string, GameObject>();
 
         GameObject savingLevelLabel;
@@ -325,6 +326,12 @@ namespace FS_LevelEditor
             BoxCollider bodyCollider = selectedObjPanelBody.AddComponent<BoxCollider>();
             bodyCollider.size = new Vector3(500f, 300f, 1f);
 
+            GameObject objectSpecificOptionsParent = new GameObject("ObjectSpecificOptions");
+            objectSpecificOptionsParent.transform.parent = selectedObjPanelBody.transform;
+            objectSpecificOptionsParent.transform.localPosition = Vector3.zero;
+            objectSpecificOptionsParent.transform.localScale = Vector3.one;
+            objectSpecificPanelsParent = objectSpecificOptionsParent.transform;
+
             SetSelectedObjPanelAsNone();
 
             CreateNoAttributesPanel();
@@ -342,7 +349,7 @@ namespace FS_LevelEditor
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
             GameObject noAttributes = new GameObject("NoAttributes");
-            noAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            noAttributes.transform.parent = objectSpecificPanelsParent;
             noAttributes.transform.localPosition = Vector3.zero;
             noAttributes.transform.localScale = Vector3.one;
 
@@ -361,7 +368,7 @@ namespace FS_LevelEditor
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
             GameObject lightAttributes = new GameObject("LightAttributes");
-            lightAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            lightAttributes.transform.parent = objectSpecificPanelsParent;
             lightAttributes.transform.localPosition = Vector3.zero;
             lightAttributes.transform.localScale = Vector3.one;
 
@@ -419,7 +426,7 @@ namespace FS_LevelEditor
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
             GameObject sawAttributes = new GameObject("SawAttributes");
-            sawAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            sawAttributes.transform.parent = objectSpecificPanelsParent;
             sawAttributes.transform.localPosition = Vector3.zero;
             sawAttributes.transform.localScale = Vector3.one;
 
@@ -478,7 +485,7 @@ namespace FS_LevelEditor
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
             GameObject sawWaypointAttributes = new GameObject("SawWaypointAttributes");
-            sawWaypointAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            sawWaypointAttributes.transform.parent = objectSpecificPanelsParent;
             sawWaypointAttributes.transform.localPosition = Vector3.zero;
             sawWaypointAttributes.transform.localScale = Vector3.one;
 
@@ -519,7 +526,7 @@ namespace FS_LevelEditor
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
             GameObject switchAttributes = new GameObject("SwitchAttributes");
-            switchAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            switchAttributes.transform.parent = objectSpecificPanelsParent;
             switchAttributes.transform.localPosition = Vector3.zero;
             switchAttributes.transform.localScale = Vector3.one;
 
@@ -579,7 +586,7 @@ namespace FS_LevelEditor
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
             GameObject ammoHealthAttributes = new GameObject("AmmoAndHealthPackAttributes");
-            ammoHealthAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            ammoHealthAttributes.transform.parent = objectSpecificPanelsParent;
             ammoHealthAttributes.transform.localPosition = Vector3.zero;
             ammoHealthAttributes.transform.localScale = Vector3.one;
 
@@ -609,7 +616,7 @@ namespace FS_LevelEditor
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
             GameObject laserAttributes = new GameObject("LaserAttributes");
-            laserAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            laserAttributes.transform.parent = objectSpecificPanelsParent;
             laserAttributes.transform.localPosition = Vector3.zero;
             laserAttributes.transform.localScale = Vector3.one;
 
@@ -657,7 +664,7 @@ namespace FS_LevelEditor
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
             GameObject ceilingLightAttributes = new GameObject("CeilingLightAttributes");
-            ceilingLightAttributes.transform.parent = selectedObjPanel.GetChildWithName("Body").transform;
+            ceilingLightAttributes.transform.parent = objectSpecificPanelsParent;
             ceilingLightAttributes.transform.localPosition = Vector3.zero;
             ceilingLightAttributes.transform.localScale = Vector3.one;
 
