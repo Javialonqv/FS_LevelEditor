@@ -119,8 +119,6 @@ namespace FS_LevelEditor
                 // Disable this so fades can work correctly.
                 InGameUIManager.Instance.isInPauseMode = false;
 
-                Invoke("FixFSPostProccesingInMenuBug", 0.1f);
-
                 // Reset this variable, so the user can click level buttons again.
                 levelButtonsWasClicked = false;
 
@@ -134,14 +132,6 @@ namespace FS_LevelEditor
                 {
                     GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().Play();
                 }
-            }
-        }
-
-        void FixFSPostProccesingInMenuBug()
-        {
-            if (Camera.main.GetComponent<PostProcessLayer>().forcedVolume == null)
-            {
-                Camera.main.GetComponent<PostProcessLayer>().forcedVolume = GameObject.Find("MenuPPVolume").GetComponent<PostProcessVolume>();
             }
         }
 
@@ -194,7 +184,7 @@ namespace FS_LevelEditor
         public void CreateLEMenuPanel()
         {
             // Get the Options menu and create a copy.
-            GameObject originalOptionsMenu = GameObject.Find("MainMenu/Camera/Holder/Options");
+            GameObject originalOptionsMenu = NGUI_Utils.optionsPanel;
             leMenuPanel = GameObject.Instantiate(originalOptionsMenu, originalOptionsMenu.transform.parent);
 
             // Change the name of the copy.
@@ -233,8 +223,7 @@ namespace FS_LevelEditor
         public void CreateBackButton()
         {
             // Get the template, spawn the copy and set some parameters.
-            GameObject template = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            backButton = Instantiate(template, leMenuButtonsParent.transform);
+            backButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuButtonsParent.transform);
             backButton.name = "BackButton";
             backButton.transform.localPosition = new Vector3(-690f, 290f, 0f);
 
@@ -284,8 +273,7 @@ namespace FS_LevelEditor
         public void CreateAddButton()
         {
             // Get the template, spawn the copy and set some parameters.
-            GameObject template = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            addButton = Instantiate(template, leMenuButtonsParent.transform);
+            addButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuButtonsParent.transform);
             addButton.name = "AddButton";
             addButton.transform.localPosition = new Vector3(690f, 290f, 0f);
 
@@ -384,7 +372,7 @@ namespace FS_LevelEditor
         public void CreateLevelsList()
         {
             Dictionary<string, LevelData> levels = LevelData.GetLevelsList();
-            GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            GameObject btnTemplate = NGUI_Utils.buttonTemplate;
             currentLevelsGridID = 0;
 
             // Manage correctly when the parent already exists or no, since the whole UI is on DontDestroyOnLoad :').
@@ -641,8 +629,7 @@ namespace FS_LevelEditor
         public void CreatePreviousListButton()
         {
             // Create the button.
-            GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            GameObject btnPrevious = Instantiate(btnTemplate, lvlButtonsParent.transform);
+            GameObject btnPrevious = Instantiate(NGUI_Utils.buttonTemplate, lvlButtonsParent.transform);
             btnPrevious.name = "BtnPrevious";
             btnPrevious.transform.localPosition = new Vector3(-840f, -70f, 0f);
 
@@ -669,8 +656,7 @@ namespace FS_LevelEditor
         public void CreateNextListButton()
         {
             // Create the button.
-            GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            GameObject btnNext = Instantiate(btnTemplate, lvlButtonsParent.transform);
+            GameObject btnNext = Instantiate(NGUI_Utils.buttonTemplate, lvlButtonsParent.transform);
             btnNext.name = "BtnNext";
             btnNext.transform.localPosition = new Vector3(840f, -70f, 0f);
 
@@ -702,11 +688,14 @@ namespace FS_LevelEditor
 
             IEnumerator Init()
             {
+                SwitchBetweenMenuAndLEMenu(false);
+
                 // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
                 InGameUIManager.Instance.StartTotalFadeOut(3, true);
                 yield return new WaitForSecondsRealtime(1.5f);
 
-                SwitchBetweenMenuAndLEMenu();
+                mainMenu.SetActive(true);
+                leMenuPanel.SetActive(false);
                 Melon<Core>.Instance.SetupTheWholeEditor();
                 EditorController.Instance.levelName = LevelData.GetAvailableLevelName();
                 EditorController.Instance.levelFileNameWithoutExtension = EditorController.Instance.levelName;
