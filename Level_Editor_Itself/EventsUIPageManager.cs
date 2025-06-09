@@ -777,7 +777,8 @@ namespace FS_LevelEditor
             }
             else
             {
-                targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => obj.objectFullNameWithID == inputText);
+                targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => string.Equals(obj.objectFullNameWithID, inputText,
+                    StringComparison.OrdinalIgnoreCase));
                 if (targetObj)
                 {
                     if (targetObj.canBeUsedInEventsTab)
