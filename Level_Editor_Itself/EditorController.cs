@@ -1167,6 +1167,7 @@ namespace FS_LevelEditor
                                 {
                                     currentSelectedObj.transform.position = hit.collider.transform.position;
                                     currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
+                                    if (!multipleObjectsSelected) EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
 
                                     levelHasBeenModified = true;
 
@@ -1177,6 +1178,8 @@ namespace FS_LevelEditor
                             {
                                 currentSelectedObj.transform.position = hit.collider.transform.position;
                                 currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
+                                // Don't update global object attributes, since if the current selected component is null, that means the user is 100% selecting
+                                // multiple objects.
 
                                 levelHasBeenModified = true;
 
