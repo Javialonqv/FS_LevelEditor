@@ -365,6 +365,7 @@ namespace FS_LevelEditor
         {
             CreateObjectPositionUIElements();
             CreateObjectRotationUIElements();
+            CreateObjectScaleUIElements();
         }
         void CreateObjectPositionUIElements()
         {
@@ -443,6 +444,45 @@ namespace FS_LevelEditor
             zScript.onChange += (() => SetPropertyWithInput("ZRotation", zScript));
 
             globalAttributesList.Add("Rotation", rotationThingsParent);
+        }
+        void CreateObjectScaleUIElements()
+        {
+            Transform scaleThingsParent = new GameObject("Scale").transform;
+            scaleThingsParent.parent = globalObjectPanelsParent;
+            scaleThingsParent.localPosition = Vector3.zero;
+            scaleThingsParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(-230f, -10f, 0f), new Vector3Int(150, 38, 0), "Scale");
+            title.name = "Title";
+
+            UILabel xTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(-40f, -10f, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            xTitle.name = "XTitle";
+            GameObject xField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(10f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "0");
+            xField.name = "XField";
+            var xScript = xField.AddComponent<UICustomInputField>();
+            xScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, maxDecimals: 2);
+            xScript.onChange += (() => SetPropertyWithInput("XScale", xScript));
+
+            UILabel yTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(60f, -10f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            yTitle.name = "YTitle";
+            GameObject yField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(110f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "0");
+            yField.name = "YField";
+            var yScript = yField.AddComponent<UICustomInputField>();
+            yScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, maxDecimals: 2);
+            yScript.onChange += (() => SetPropertyWithInput("YScale", yScript));
+
+            UILabel zTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(160f, -10f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            zTitle.name = "ZTitle";
+            GameObject zField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(210f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "0");
+            zField.name = "ZField";
+            var zScript = zField.AddComponent<UICustomInputField>();
+            zScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, maxDecimals: 2);
+            zScript.onChange += (() => SetPropertyWithInput("ZScale", zScript));
+
+            globalAttributesList.Add("Scale", scaleThingsParent);
         }
 
         void CreateNoAttributesPanel()
@@ -957,6 +997,10 @@ namespace FS_LevelEditor
             globalAttributesList["Rotation"].GetChildWithName("XField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localEulerAngles.x, 2);
             globalAttributesList["Rotation"].GetChildWithName("YField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localEulerAngles.y, 2);
             globalAttributesList["Rotation"].GetChildWithName("ZField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localEulerAngles.z, 2);
+
+            globalAttributesList["Scale"].GetChildWithName("XField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localScale.x, 2);
+            globalAttributesList["Scale"].GetChildWithName("YField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localScale.y, 2);
+            globalAttributesList["Scale"].GetChildWithName("ZField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localScale.z, 2);
         }
         // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
         // AAALSO now its seems crapGUI can't recognize between two different overloads of a method, so I need to put different names foreach method, DAMN IT.
@@ -968,18 +1012,17 @@ namespace FS_LevelEditor
         public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
         {
             // Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
-            if ((propertyName.Contains("Position") || propertyName.Contains("Rotation")) && float.TryParse(inputField.GetText(), out float floatValue))
+            if ((propertyName.Contains("Position") || propertyName.Contains("Rotation") || propertyName.Contains("Scale")) &&
+                float.TryParse(inputField.GetText(), out float floatValue))
             {
                 switch (propertyName)
                 {
                     case "XPosition":
                         EditorController.Instance.currentSelectedObj.transform.SetXPosition(floatValue);
                         break;
-
                     case "YPosition":
                         EditorController.Instance.currentSelectedObj.transform.SetYPosition(floatValue);
                         break;
-
                     case "ZPosition":
                         EditorController.Instance.currentSelectedObj.transform.SetZPosition(floatValue);
                         break;
@@ -987,13 +1030,24 @@ namespace FS_LevelEditor
                     case "XRotation":
                         EditorController.Instance.currentSelectedObj.transform.SetXRotation(floatValue);
                         break;
-
                     case "YRotation":
                         EditorController.Instance.currentSelectedObj.transform.SetYRotation(floatValue);
                         break;
-
                     case "ZRotation":
                         EditorController.Instance.currentSelectedObj.transform.SetZRotation(floatValue);
+                        break;
+
+                    case "XScale":
+                        EditorController.Instance.currentSelectedObj.transform.SetXScale(floatValue);
+                        EditorController.Instance.ResetGizmosArrowsScale();
+                        break;
+                    case "YScale":
+                        EditorController.Instance.currentSelectedObj.transform.SetYScale(floatValue);
+                        EditorController.Instance.ResetGizmosArrowsScale();
+                        break;
+                    case "ZScale":
+                        EditorController.Instance.currentSelectedObj.transform.SetZScale(floatValue);
+                        EditorController.Instance.ResetGizmosArrowsScale();
                         break;
                 }
 

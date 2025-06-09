@@ -19,6 +19,7 @@ namespace FS_LevelEditor
 
         public Vector3Serializable objPosition { get; set; }
         public Vector3Serializable objRotation { get; set; }
+        public Vector3Serializable objScale { get; set; } = new Vector3Serializable(Vector3.one);
         
         public LE_ObjectData()
         {
@@ -49,6 +50,7 @@ namespace FS_LevelEditor
 
             objPosition = originalObj.transform.localPosition;
             objRotation = originalObj.transform.localEulerAngles;
+            objScale = originalObj.transform.localScale;
         }
     }
 }

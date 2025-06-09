@@ -107,20 +107,20 @@ namespace FS_LevelEditor
                     position.x += width * 4f;
                     position.z += height * 4f;
 
-                    EditorController.Instance.PlaceObject("Ground", position, Vector3.zero, false);
+                    EditorController.Instance.PlaceObject("Ground", position, Vector3.zero, Vector3.one, false);
                 }
             }
         }
 
         public GameObject CreateDirectionalLight(Vector3 position, Vector3 rotation)
         {
-            GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, false);
+            GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, Vector3.one, false);
             return lightObj;
         }
 
         public GameObject CreatePlayerSpawn(Vector3 position, Vector3 rotation)
         {
-            GameObject playerSpanw = EditorController.Instance.PlaceObject("Player Spawn", position, rotation, false);
+            GameObject playerSpanw = EditorController.Instance.PlaceObject("Player Spawn", position, rotation, Vector3.one, false);
             return playerSpanw;
         }
 

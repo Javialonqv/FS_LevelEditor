@@ -552,7 +552,9 @@ namespace FS_LevelEditor
         void InstanceObjectInThePreviewObjectPos()
         {
             levelHasBeenModified = true;
-            PlaceObject(currentObjectToBuildName, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, true);
+            PlaceObject(currentObjectToBuildName, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, Vector3.one, true);
+
+            // About the scale being fixed to 1... you can't change the scale of the preview object, so...
         }
 
         bool CanUseThatSnapToGridTrigger(string objToBuildName, GameObject triggerObj)
@@ -776,6 +778,7 @@ namespace FS_LevelEditor
             gizmosArrows.transform.parent = null;
             gizmosArrows.transform.localPosition = Vector3.zero;
             gizmosArrows.transform.localRotation = Quaternion.identity;
+            gizmosArrows.transform.localScale = Vector3.one * 2;
 
             snapToGridCube.transform.parent = null;
             snapToGridCube.transform.localPosition = Vector3.zero;
@@ -942,6 +945,15 @@ namespace FS_LevelEditor
             }
         }
 
+        // This method is called when the scale of the object is changed, so the gizmos arrows aren't affected.
+        public void ResetGizmosArrowsScale()
+        {
+            Transform currentParent = gizmosArrows.transform.parent;
+            gizmosArrows.transform.parent = null;
+            gizmosArrows.transform.localScale = Vector3.one * 2;
+            gizmosArrows.transform.parent = currentParent;
+        }
+
         public void SetMultipleObjectsAsSelected(List<GameObject> objects)
         {
             // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
@@ -960,7 +972,7 @@ namespace FS_LevelEditor
             }
         }
 
-        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
+        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, Vector3 scale, bool setAsSelected = true)
         {
             if (setAsSelected)
             {
@@ -979,6 +991,7 @@ namespace FS_LevelEditor
 
             obj.transform.localPosition = position;
             obj.transform.localEulerAngles = eulerAngles;
+            obj.transform.localScale = scale;
 
             LE_Object addedComp = LE_Object.AddComponentToObject(obj, objName);
 
@@ -1017,7 +1030,8 @@ namespace FS_LevelEditor
                 foreach (var obj in currentSelectedObjects)
                 {
                     LE_Object objComponent = obj.GetComponent<LE_Object>();
-                    newSelectedObjectsList.Add(PlaceObject(objComponent.objectOriginalName, objComponent.transform.position, objComponent.transform.eulerAngles, false));
+                    newSelectedObjectsList.Add(PlaceObject(objComponent.objectOriginalName, objComponent.transform.position, objComponent.transform.eulerAngles,
+                        objComponent.transform.localScale, false));
                 }
 
                 SetMultipleObjectsAsSelected(newSelectedObjectsList);
@@ -1027,7 +1041,8 @@ namespace FS_LevelEditor
             {
                 isDuplicatingObj = true;
                 LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
-                PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles);
+                PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
+                    objComponent.transform.localScale);
                 isDuplicatingObj = false;
                 levelHasBeenModified = true;
             }

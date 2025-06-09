@@ -177,7 +177,7 @@ namespace FS_LevelEditor
 
             foreach (LE_ObjectData obj in data.objects)
             {
-                GameObject objInstance = EditorController.Instance.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, false);
+                GameObject objInstance = EditorController.Instance.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, obj.objScale, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
 
                 objClassInstance.objectID = obj.objectID;
@@ -249,7 +249,7 @@ namespace FS_LevelEditor
 
             foreach (LE_ObjectData obj in toCheck)
             {
-                GameObject objInstance = playModeCtrl.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, false);
+                GameObject objInstance = playModeCtrl.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, obj.objScale, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
 
                 objClassInstance.objectID = obj.objectID;

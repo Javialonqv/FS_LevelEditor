@@ -121,13 +121,14 @@ namespace FS_LevelEditor
             return null;
         }
 
-        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
+        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, Vector3 scale, bool setAsSelected = true)
         {
             GameObject template = allCategoriesObjects[objName];
             GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
             obj.transform.localPosition = position;
             obj.transform.localEulerAngles = eulerAngles;
+            obj.transform.localScale = scale;
 
             LE_Object addedComp = LE_Object.AddComponentToObject(obj, objName);
 

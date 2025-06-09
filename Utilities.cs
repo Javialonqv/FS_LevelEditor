@@ -453,5 +453,18 @@ namespace FS_LevelEditor
         {
             transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, newValue);
         }
+
+        public static void SetXScale(this Transform transform, float newValue)
+        {
+            transform.localScale = new Vector3(newValue, transform.localScale.y, transform.localScale.z);
+        }
+        public static void SetYScale(this Transform transform, float newValue)
+        {
+            transform.localScale = new Vector3(transform.localScale.x, newValue, transform.localScale.z);
+        }
+        public static void SetZScale(this Transform transform, float newValue)
+        {
+            transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, newValue);
+        }
     }
 }
