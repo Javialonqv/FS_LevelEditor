@@ -62,7 +62,14 @@ namespace FS_LevelEditor.UI_Related
                     break;
 
                 case UIInputType.NON_NEGATIVE_FLOAT:
-                    input.onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
+                    if (maxDecimals <= 0)
+                    {
+                        input.onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
+                    }
+                    else
+                    {
+                        input.onValidate += (UIInput.OnValidate)((text, index, ch) => NGUI_Utils.ValidateNonNegativeFloatWithMaxDecimals(text, index, ch, maxDecimals));
+                    }
                     break;
 
                 case UIInputType.INT:

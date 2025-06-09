@@ -277,6 +277,28 @@ namespace FS_LevelEditor.UI_Related
 
             return '\0';
         }
+        public static char ValidateNonNegativeFloatWithMaxDecimals(string text, int charIndex, char addedChar, int maxDecimals)
+        {
+            if (!char.IsDigit(addedChar) && addedChar != '.')
+            {
+                return '\0';
+            }
+
+            if (addedChar == '.' && text.Contains('.'))
+            {
+                return '\0';
+            }
+
+            int dotIndex = text.IndexOf('.');
+            if (dotIndex != -1)
+            {
+                int decimals = text.Length - dotIndex;
+                if (decimals > 2)
+                    return '\0';
+            }
+
+            return addedChar;
+        }
         public static char ValidateFloatWithMaxDecimals(string text, int charIndex, char addedChar, int maxDecimals)
         {
             // Only accept numbers, dots and negatives (duuno how that's called in english, forgive me lol).
