@@ -11,12 +11,29 @@ namespace FS_LevelEditor.UI_Related
     public static class NGUI_Utils
     {
         // Returns "Fractal_Space" atlas.
+        static UIAtlas _fractalSpaceAtlas;
         public static UIAtlas fractalSpaceAtlas
         {
             get
             {
-                // It's one of the objects I found it uses the Fractal_Space atlas...
-                return GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/1_Resume").GetComponent<UISprite>().atlas;
+                if (!_fractalSpaceAtlas)
+                {
+                    // It's one of the objects I found it uses the Fractal_Space atlas...
+                    _fractalSpaceAtlas = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/1_Resume").GetComponent<UISprite>().atlas;
+                }
+                return _fractalSpaceAtlas;
+            }
+        }
+        static UIFont _labelFont;
+        public static UIFont labelFont
+        {
+            get
+            {
+                if (!_labelFont)
+                {
+                    _labelFont = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label").GetComponent<UILabel>().font;
+                }
+                return _labelFont;
             }
         }
 
@@ -33,11 +50,40 @@ namespace FS_LevelEditor.UI_Related
             get { return new Color(0.2868f, 0.971f, 1f, 1f); }
         }
 
+        static GameObject _labelTemplate;
         public static GameObject labelTemplate
         {
             get
             {
-                return GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+                if (!_labelTemplate)
+                {
+                    _labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+                }
+                return _labelTemplate;
+            }
+        }
+        static GameObject _buttonTemplate;
+        public static GameObject buttonTemplate
+        {
+            get
+            {
+                if (!_buttonTemplate)
+                {
+                    _buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Controls_Options/Buttons/RemapControls");
+                }
+                return _buttonTemplate;
+            }
+        }
+        static GameObject _optionsPanel;
+        public static GameObject optionsPanel
+        {
+            get
+            {
+                if (!_optionsPanel)
+                {
+                    _optionsPanel = GameObject.Find("MainMenu/Camera/Holder/Options");
+                }
+                return _optionsPanel;
             }
         }
 
@@ -50,7 +96,7 @@ namespace FS_LevelEditor.UI_Related
             inputField.transform.localScale = Vector3.one;
 
             UISprite bgSprite = inputField.AddComponent<UISprite>();
-            bgSprite.atlas = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/1_Resume").GetComponent<UISprite>().atlas;
+            bgSprite.atlas = fractalSpaceAtlas;
             bgSprite.spriteName = "Square";
             bgSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
             bgSprite.width = size.x;
@@ -74,7 +120,7 @@ namespace FS_LevelEditor.UI_Related
             labelObj.transform.localPosition = Vector3.zero;
             labelObj.transform.localScale = Vector3.one;
             UILabel label = labelObj.AddComponent<UILabel>();
-            label.font = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label").GetComponent<UILabel>().font;
+            label.font = labelFont;
             label.fontSize = fontSize;
             label.width = size.x - 5;
             label.height = size.y;
@@ -124,11 +170,12 @@ namespace FS_LevelEditor.UI_Related
             }
             else
             {
-                GameObject.Destroy(toggle.GetChildWithName("Label").GetComponent<UILocalize>());
-                toggle.GetChildWithName("Label").GetComponent<UILabel>().text = text;
-                toggle.GetChildWithName("Label").GetComponent<UILabel>().width = size.x;
-                Vector3 colliderCenter = toggle.GetChildWithName("Label").transform.localPosition;
-                colliderCenter.x += toggle.GetChildWithName("Label").GetComponent<UILabel>().width / 2 - (size.y / 2) - 6;
+                UILabel toggleLabel = toggle.GetChildWithName("Label").GetComponent<UILabel>();
+                GameObject.Destroy(toggleLabel.GetComponent<UILocalize>());
+                toggleLabel.text = text;
+                toggleLabel.width = size.x;
+                Vector3 colliderCenter = toggleLabel.transform.localPosition;
+                colliderCenter.x += toggleLabel.width / 2 - (size.y / 2) - 6;
                 toggle.GetComponent<BoxCollider>().center = colliderCenter;
                 Vector2 colliderSize = new Vector2(size.x + 56, size.y);
                 toggle.GetComponent<BoxCollider>().size = colliderSize;
@@ -141,8 +188,6 @@ namespace FS_LevelEditor.UI_Related
 
         public static GameObject CreateButton(Transform parent, Vector3 position, Vector3Int size, string text = "")
         {
-            GameObject buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Controls_Options/Buttons/RemapControls");
-
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
             button.transform.localScale = Vector3.one;
@@ -154,9 +199,10 @@ namespace FS_LevelEditor.UI_Related
 
             // For some reason the buttons have two labels? One is disabled (Button/Label) and the other one is the one being used (Button/Background/Label).
             // UPDATE: We'll still be using that one, for SOME FUCKING REASON if you change the label the button colors start to behave weird... idk...
-            GameObject.Destroy(button.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            button.GetChildAt("Background/Label").GetComponent<UILabel>().text = text;
-            button.GetChildAt("Background/Label").GetComponent<UILabel>().SetAnchor(button, 0, 0, 0, 0);
+            UILabel buttonLabel = button.GetChildAt("Background/Label").GetComponent<UILabel>();
+            GameObject.Destroy(buttonLabel.GetComponent<UILocalize>());
+            buttonLabel.text = text;
+            buttonLabel.SetAnchor(button, 0, 0, 0, 0);
             // Just change the label anchor so its size is the same as the button size.
 
             return button;
@@ -164,8 +210,6 @@ namespace FS_LevelEditor.UI_Related
 
         public static GameObject CreateButtonAsToggle(Transform parent, Vector3 position, Vector3Int size, string text = "", int toggleDepth = 0)
         {
-            GameObject buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Controls_Options/Buttons/RemapControls");
-
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
             button.transform.localScale = Vector3.one;
@@ -179,17 +223,16 @@ namespace FS_LevelEditor.UI_Related
 
             // For some reason the buttons have two labels? One is disabled (Button/Label) and the other one is the one being used (Button/Background/Label).
             // UPDATE: We'll still be using that one, for SOME FUCKING REASON if you change the label the button colors start to behave weird... idk...
-            GameObject.Destroy(button.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            button.GetChildAt("Background/Label").GetComponent<UILabel>().text = text;
-            button.GetChildAt("Background/Label").GetComponent<UILabel>().SetAnchor(button, 0, 0, 0, 0);
+            UILabel buttonLabel = button.GetChildAt("Background/Label").GetComponent<UILabel>();
+            GameObject.Destroy(buttonLabel.GetComponent<UILocalize>());
+            buttonLabel.text = text;
+            buttonLabel.SetAnchor(button, 0, 0, 0, 0);
             // Just change the label anchor so its size is the same as the button size.
 
             return button;
         }
         public static GameObject CreateButtonAsToggleWithSprite(Transform parent, Vector3 position, Vector3Int size, int toggleDepth, string spriteName, Vector2Int spriteSize)
         {
-            GameObject buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Controls_Options/Buttons/RemapControls");
-
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
             button.transform.localScale = Vector3.one;
