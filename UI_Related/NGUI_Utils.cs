@@ -256,16 +256,17 @@ namespace FS_LevelEditor.UI_Related
 
         public static char ValidateNonNegativeFloat(string text, int charIndex, char addedChar)
         {
-            if (char.IsDigit(addedChar) || addedChar == '.')
+            if (!char.IsDigit(addedChar) && addedChar != '.')
             {
-                if (addedChar == '.' && text.Contains('.'))
-                {
-                    return '\0';
-                }
-                return addedChar;
+                return '\0';
             }
 
-            return '\0';
+            if (addedChar == '.' && text.Contains('.'))
+            {
+                return '\0';
+            }
+
+            return addedChar;
         }
         public static char ValidateNonNegativeInt(string text, int charIndex, char addedChar)
         {
@@ -278,18 +279,25 @@ namespace FS_LevelEditor.UI_Related
         }
         public static char ValidateFloatWithMaxDecimals(string text, int charIndex, char addedChar, int maxDecimals)
         {
+            // Only accept numbers, dots and negatives (duuno how that's called in english, forgive me lol).
+            if (!char.IsDigit(addedChar) && addedChar != '.' && addedChar != '-')
+                return '\0';
+
+            // Only accept ONE dot.
             if (addedChar == '.')
             {
                 if (text.Contains(".")) return '\0';
                 else return addedChar;
             }
 
+            // Only accept ONE negative when it's at the beginning.
             if (addedChar == '-')
             {
                 if (text.Contains("-") || charIndex != 0) return '\0';
                 else return addedChar;
             }
 
+            // Only accept up to 2 decimals.
             int dotIndex = text.IndexOf('.');
             if (dotIndex != -1)
             {
@@ -297,9 +305,6 @@ namespace FS_LevelEditor.UI_Related
                 if (decimals > 2)
                     return '\0';
             }
-
-            if (!char.IsDigit(addedChar) && addedChar != '.')
-                return '\0';
 
             return addedChar;
         }
