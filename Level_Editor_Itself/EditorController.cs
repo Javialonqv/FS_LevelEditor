@@ -554,7 +554,7 @@ namespace FS_LevelEditor
             levelHasBeenModified = true;
             PlaceObject(currentObjectToBuildName, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, Vector3.one, true);
 
-            // About the scale being fixed to 1... you can't change the scale of the preview object, so...
+            // About the scale being fixed to 1... you can't change the scale of the PREVIEW object, so...
         }
 
         bool CanUseThatSnapToGridTrigger(string objToBuildName, GameObject triggerObj)
@@ -584,6 +584,73 @@ namespace FS_LevelEditor
             if (triggerObj.transform.parent.name == "Global" && !existsSpecificTriggerForThisObjToBuild) return true;
 
             return false;
+        }
+
+        void StartMovingObject(string arrowColliderName, Ray cameraRay)
+        {
+            // Save the position of the object from the first time we clicked.
+            objPositionWhenArrowClick = currentSelectedObj.transform.position;
+
+            #region Register LEAction
+            currentExecutingAction = new LEAction();
+            currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+
+            currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
+
+            if (multipleObjectsSelected)
+            {
+                currentExecutingAction.targetObjs = new List<GameObject>();
+                foreach (var obj in currentSelectedObj.GetChilds())
+                {
+                    if (obj.name == "MoveObjectArrows") continue;
+                    if (obj.name == "SnapToGridCube") continue;
+
+                    currentExecutingAction.targetObjs.Add(obj);
+                }
+            }
+            else
+            {
+                currentExecutingAction.targetObj = currentSelectedObj;
+            }
+            currentExecutingAction.oldPos = currentSelectedObj.transform.localPosition;
+            #endregion
+
+            // Create the panel with the rigt normals.
+            if (arrowColliderName == "X" || arrowColliderName == "Z")
+            {
+                if (globalGizmosArrowsEnabled)
+                {
+                    movementPlane = new Plane(Vector3.up, objPositionWhenArrowClick);
+                }
+                else
+                {
+                    movementPlane = new Plane(currentSelectedObj.transform.up, objPositionWhenArrowClick);
+                }
+            }
+            else if (arrowColliderName == "Y")
+            {
+                Vector3 cameraPosition = Camera.main.transform.position;
+                Vector3 directionToCamera = cameraPosition - objPositionWhenArrowClick;
+                Vector3 planeNormal = new Vector3(directionToCamera.normalized.x, 0f, directionToCamera.normalized.z);
+
+                movementPlane = new Plane(planeNormal, objPositionWhenArrowClick);
+            }
+
+            // Then get the right offset of the arrows.
+            offsetObjPositionAndMosueWhenClick = Vector3.zero;
+            if (movementPlane.Raycast(cameraRay, out float enter))
+            {
+                Vector3 collisionOnPlane = cameraRay.GetPoint(enter);
+                // Not do any of this complex math that I don't even understand anymore LMAO.
+                if (!globalGizmosArrowsEnabled)
+                {
+                    collisionOnPlane = RotatePositionAroundPivot(collisionOnPlane, objPositionWhenArrowClick, Quaternion.Inverse(currentSelectedObj.transform.rotation));
+                }
+
+                if (arrowColliderName == "X") offsetObjPositionAndMosueWhenClick.x = objPositionWhenArrowClick.x - collisionOnPlane.x;
+                if (arrowColliderName == "Y") offsetObjPositionAndMosueWhenClick.y = objPositionWhenArrowClick.y - collisionOnPlane.y;
+                if (arrowColliderName == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - collisionOnPlane.z;
+            }
         }
 
         void MoveObject(GizmosArrow direction)
@@ -1326,69 +1393,7 @@ namespace FS_LevelEditor
                     // If one of them are the move object gizmos...
                     if (hit.collider.transform.parent.name == "MoveObjectArrows")
                     {
-                        // Save the position of the object from the first time we clicked.
-                        objPositionWhenArrowClick = currentSelectedObj.transform.position;
-
-                        #region Register LEAction
-                        currentExecutingAction = new LEAction();
-                        currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
-
-                        currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
-
-                        if (multipleObjectsSelected)
-                        {
-                            currentExecutingAction.targetObjs = new List<GameObject>();
-                            foreach (var obj in currentSelectedObj.GetChilds())
-                            {
-                                if (obj.name == "MoveObjectArrows") continue;
-                                if (obj.name == "SnapToGridCube") continue;
-
-                                currentExecutingAction.targetObjs.Add(obj);
-                            }
-                        }
-                        else
-                        {
-                            currentExecutingAction.targetObj = currentSelectedObj;
-                        }
-                        currentExecutingAction.oldPos = currentSelectedObj.transform.localPosition;
-                        #endregion
-
-                        // Create the panel with the rigt normals.
-                        if (hit.collider.name == "X" || hit.collider.name == "Z")
-                        {
-                            if (globalGizmosArrowsEnabled)
-                            {
-                                movementPlane = new Plane(Vector3.up, objPositionWhenArrowClick);
-                            }
-                            else
-                            {
-                                movementPlane = new Plane(currentSelectedObj.transform.up, objPositionWhenArrowClick);
-                            }
-                        }
-                        else if (hit.collider.name == "Y")
-                        {
-                            Vector3 cameraPosition = Camera.main.transform.position;
-                            Vector3 directionToCamera = cameraPosition - objPositionWhenArrowClick;
-                            Vector3 planeNormal = new Vector3(directionToCamera.normalized.x, 0f, directionToCamera.normalized.z);
-
-                            movementPlane = new Plane(planeNormal, objPositionWhenArrowClick);
-                        }
-
-                        // Then get the right offset of the arrows.
-                        offsetObjPositionAndMosueWhenClick = Vector3.zero;
-                        if (movementPlane.Raycast(ray, out float enter))
-                        {
-                            Vector3 collisionOnPlane = ray.GetPoint(enter);
-                            // Not do any of this complex math that I don't even understand anymore LMAO.
-                            if (!globalGizmosArrowsEnabled)
-                            {
-                                collisionOnPlane = RotatePositionAroundPivot(collisionOnPlane, objPositionWhenArrowClick, Quaternion.Inverse(currentSelectedObj.transform.rotation));
-                            }
-
-                            if (hit.collider.name == "X") offsetObjPositionAndMosueWhenClick.x = objPositionWhenArrowClick.x - collisionOnPlane.x;
-                            if (hit.collider.name == "Y") offsetObjPositionAndMosueWhenClick.y = objPositionWhenArrowClick.y - collisionOnPlane.y;
-                            if (hit.collider.name == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - collisionOnPlane.z;
-                        }
+                        StartMovingObject(hit.collider.name, ray);
 
                         // Finally, return the final result of the gizmos arrow we touched.
                         if (hit.collider.name == "X") return GizmosArrow.X;
