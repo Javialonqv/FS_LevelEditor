@@ -26,7 +26,6 @@ namespace FS_LevelEditor
             MovingObject,
             SnapingToGrid,
             Paused,
-            EventsPanel,
         }
         public EditorState previousEditorState;
         public EditorState currentEditorState;
@@ -118,7 +117,7 @@ namespace FS_LevelEditor
         {
             ManageEscAction();
 
-            if (IsPaused() || IsInEventsPanel()) return;
+            if (IsPaused() || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL)) return;
 
             // When click, check if it's clicking a gizmos arrow.
             if (Input.GetMouseButtonDown(0))
@@ -257,7 +256,7 @@ namespace FS_LevelEditor
             // Shortcut for pausing LE.
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                if (IsInEventsPanel())
+                if (EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL))
                 {
                     EventsUIPageManager.Instance.HideEventsPage();
                     return;
@@ -467,8 +466,7 @@ namespace FS_LevelEditor
             {
                 case Mode.Building:
                     // Only enable the panel if the keybinds help panel is DISABLED.
-                    if (!EditorUIManager.Instance.helpPanel.activeSelf &&
-                        !EditorUIManager.Instance.isShowingGlobalProperties)
+                    if (EditorUIManager.IsCurrentUIContext(EditorUIContext.NORMAL))
                     {
                         EditorUIManager.Instance.categoryButtonsParent.SetActive(true);
                         EditorUIManager.Instance.currentCategoryBG.SetActive(true);
@@ -1367,14 +1365,6 @@ namespace FS_LevelEditor
         #region Current Editor State Methods
         public void SetCurrentEditorState(EditorState newState)
         {
-            if (currentEditorState == EditorState.Paused)
-            {
-                if (previousEditorState == EditorState.EventsPanel && newState == EditorState.Normal)
-                {
-                    newState = EditorState.EventsPanel;
-                }
-            }
-
             previousEditorState = currentEditorState;
             currentEditorState = newState;
         }
@@ -1393,10 +1383,6 @@ namespace FS_LevelEditor
         public bool IsSnapingSelectedObjToGrid()
         {
             return currentEditorState == EditorState.SnapingToGrid;
-        }
-        public bool IsInEventsPanel()
-        {
-            return currentEditorState == EditorState.EventsPanel;
         }
         #endregion
 

@@ -1327,7 +1327,7 @@ namespace FS_LevelEditor
             eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
             Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
 
-            EditorController.Instance.SetCurrentEditorState(EditorController.EditorState.EventsPanel);
+            EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
 
             OnEnableBtnClick(false);
             // CreateEventsList();
@@ -1341,7 +1341,9 @@ namespace FS_LevelEditor
 
             eventsPanel.SetActive(true);
             GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
+
             EditorController.Instance.SetCurrentEditorState(EditorController.EditorState.Normal);
+            EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 
             HideEventSettings();
         }

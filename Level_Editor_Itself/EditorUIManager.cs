@@ -18,6 +18,14 @@ using UnityEngine.Rendering.PostProcessing;
 
 namespace FS_LevelEditor
 {
+    public enum EditorUIContext
+    {
+        NORMAL,
+        HELP_PANEL,
+        EVENTS_PANEL,
+        GLOBAL_PROPERTIES
+    }
+
     [RegisterTypeInIl2Cpp]
     public class EditorUIManager : MonoBehaviour
     {
@@ -25,14 +33,19 @@ namespace FS_LevelEditor
 
         public GameObject editorUIParent;
 
+        EditorUIContext previousUIContext;
+        EditorUIContext currentUIContext;
+
         // This is for the top buttons, like "Structures", "Decorations", "System", etc.
         public List<GameObject> categoryButtons = new List<GameObject>();
         public GameObject categoryButtonsParent;
         bool categoryButtonsAreHidden = false;
 
+        // For the object buttons.
         public GameObject currentCategoryBG;
         List<GameObject> currentCategoryButtons = new List<GameObject>();
 
+        // Current Selected Object Panel related:
         public GameObject selectedObjPanel;
         Transform objectSpecificPanelsParent;
         Transform globalObjectPanelsParent;
@@ -52,9 +65,7 @@ namespace FS_LevelEditor
         bool exitPopupEnabled = false;
 
         public GameObject helpPanel;
-
         GameObject globalPropertiesPanel;
-        public bool isShowingGlobalProperties;
 
         // Misc
         GameObject occluderForWhenPaused;
@@ -1263,21 +1274,8 @@ namespace FS_LevelEditor
         {
             bool isEnablingIt = !helpPanel.activeSelf;
 
-            helpPanel.SetActive(isEnablingIt);
-            // Only enable these panels if the current editor mode is building.
-            if (EditorController.Instance.currentMode == EditorController.Mode.Building && !isEnablingIt)
-            {
-                categoryButtonsParent.SetActive(true);
-                currentCategoryBG.SetActive(true);
-            }
-            else
-            {
-                categoryButtonsParent.SetActive(false);
-                currentCategoryBG.SetActive(false);
-            }
-
-            selectedObjPanel.SetActive(!isEnablingIt);
-            currentModeLabel.gameObject.SetActive(!isEnablingIt);
+            if (isEnablingIt) { SetEditorUIContext(EditorUIContext.HELP_PANEL); }
+            else { SetEditorUIContext(EditorUIContext.NORMAL); }
         }
 
         #region Global Properties Related
@@ -1381,27 +1379,8 @@ namespace FS_LevelEditor
         }
         public void ShowOrHideGlobalPropertiesPanel()
         {
-            isShowingGlobalProperties = !isShowingGlobalProperties;
-
-            if (isShowingGlobalProperties) RefreshGlobalPropertiesPanelValues();
-
-            if (isShowingGlobalProperties) globalPropertiesPanel.GetComponent<TweenPosition>().PlayReverse();
-            else globalPropertiesPanel.GetComponent<TweenPosition>().PlayForward();
-
-            // Only enable these panels if the current editor mode is building.
-            if (EditorController.Instance.currentMode == EditorController.Mode.Building && !isShowingGlobalProperties)
-            {
-                categoryButtonsParent.SetActive(true);
-                currentCategoryBG.SetActive(true);
-            }
-            else
-            {
-                categoryButtonsParent.SetActive(false);
-                currentCategoryBG.SetActive(false);
-            }
-
-            selectedObjPanel.SetActive(!isShowingGlobalProperties);
-            currentModeLabel.gameObject.SetActive(!isShowingGlobalProperties);
+            if (!IsCurrentUIContext(EditorUIContext.GLOBAL_PROPERTIES)) { SetEditorUIContext(EditorUIContext.GLOBAL_PROPERTIES); }
+            else { SetEditorUIContext(EditorUIContext.NORMAL); }
         }
         void RefreshGlobalPropertiesPanelValues()
         {
@@ -1715,6 +1694,94 @@ namespace FS_LevelEditor
             Destroy(pauseMenu.GetChildWithName("SavingLevelInPauseMenu"));
 
             Logger.Log("LE UI deleted!");
+        }
+
+        public void SetEditorUIContext(EditorUIContext context)
+        {
+            if (context == EditorUIContext.HELP_PANEL)
+            {
+                helpPanel.SetActive(true);
+
+                if (currentUIContext == EditorUIContext.GLOBAL_PROPERTIES)
+                {
+                    globalPropertiesPanel.GetComponent<TweenPosition>().PlayForward();
+                }
+            }
+
+            // If the user is trying to switch from Events Panel to Normal but the previous context was help panel.
+            // Techinically, that SHOULD be impossible since help panel disables all of the buttons to open events panel, but who knows...
+            if (context == EditorUIContext.NORMAL && currentUIContext == EditorUIContext.EVENTS_PANEL && previousUIContext == EditorUIContext.HELP_PANEL)
+            {
+                SetEditorUIContext(EditorUIContext.HELP_PANEL);
+                return;
+            }
+
+            if (context == EditorUIContext.GLOBAL_PROPERTIES)
+            {
+                RefreshGlobalPropertiesPanelValues();
+                globalPropertiesPanel.GetComponent<TweenPosition>().PlayReverse();
+
+                if (currentUIContext == EditorUIContext.HELP_PANEL)
+                {
+                    helpPanel.SetActive(false);
+                }
+            }
+
+            if (context == EditorUIContext.NORMAL)
+            {
+                switch (currentUIContext)
+                {
+                    case EditorUIContext.HELP_PANEL:
+                        helpPanel.SetActive(false);
+                        break;
+
+                    case EditorUIContext.GLOBAL_PROPERTIES:
+                        globalPropertiesPanel.GetComponent<TweenPosition>().PlayForward();
+                        break;
+                }
+
+                switch (previousUIContext)
+                {
+                    case EditorUIContext.HELP_PANEL:
+                        if (currentUIContext != EditorUIContext.GLOBAL_PROPERTIES) // Avoid an infinite loop with help panel and global properties.
+                        {
+                            helpPanel.SetActive(true);
+                            context = EditorUIContext.HELP_PANEL;
+                        }
+                        break;
+
+                    case EditorUIContext.GLOBAL_PROPERTIES:
+                        globalPropertiesPanel.GetComponent<TweenPosition>().PlayReverse();
+                        context = EditorUIContext.GLOBAL_PROPERTIES;
+                        break;
+                }
+            }
+
+            // Only enable these panels if the current editor mode is building, and the UI is normal.
+            if (context != EditorUIContext.NORMAL)
+            {
+                categoryButtonsParent.SetActive(false);
+                currentCategoryBG.SetActive(false);
+            }
+            else if (EditorController.Instance.currentMode == EditorController.Mode.Building)
+            {
+                categoryButtonsParent.SetActive(true);
+                currentCategoryBG.SetActive(true);
+            }
+            // Only when normal.
+            selectedObjPanel.SetActive(context == EditorUIContext.NORMAL);
+            currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
+
+            previousUIContext = currentUIContext;
+            currentUIContext = context;
+
+            Logger.Log($"Switched Editor UI Context from {previousUIContext} to {currentUIContext}.");
+        }
+        public static bool IsCurrentUIContext(EditorUIContext context)
+        {
+            if (Instance == null) return false;
+
+            return Instance.currentUIContext == context;
         }
     }
 }
