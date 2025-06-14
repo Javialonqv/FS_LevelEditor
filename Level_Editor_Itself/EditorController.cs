@@ -126,6 +126,7 @@ namespace FS_LevelEditor
                 collidingArrow = GetCollidingWithAnArrow();
             }
 
+            #region Preview Object
             // For previewing the current selected object...
             // !Input.GetMouseButton(1) is to detect when LE camera isn't rotating.
             if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == GizmosArrow.None && previewObjectToBuildObj != null && !Utilities.IsMouseOverUIElement())
@@ -137,6 +138,7 @@ namespace FS_LevelEditor
             {
                 previewObjectToBuildObj.SetActive(false);
             }
+            #endregion
 
             #region Align Instantiated Object to Grid
             // For snap already instantiated object to grid again.
@@ -177,6 +179,7 @@ namespace FS_LevelEditor
             }
             #endregion
 
+            #region Select Object
             // For object selection...
             if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !IsSnapingSelectedObjToGrid())
             {
@@ -192,7 +195,9 @@ namespace FS_LevelEditor
                     SetSelectedObj(null);
                 }
             }
+            #endregion
 
+            #region Delete With Click
             // If click and it's on deletion and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element..
             if (Input.GetMouseButtonDown(0) && currentMode == Mode.Deletion && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement())
             {
@@ -200,11 +205,13 @@ namespace FS_LevelEditor
                 if (CanSelectObjectWithRay(out GameObject obj))
                 {
                     // Yep, I'm lazy and Ik this isn't the best way of doing it... but it works I think :D
-                    SetSelectedObj(obj);
-                    DeleteSelectedObj();
+                    // UPDATE: NEW FUNCTION TO DELETE OBJECTS IN THE RIGHT WAY, LET'S GO
+                    DeleteObject(obj);
                 }
             }
+            #endregion
 
+            #region Move Object
             // If it's clicking a gizmos arrow.
             if (Input.GetMouseButton(0) && collidingArrow != GizmosArrow.None)
             {
@@ -221,13 +228,16 @@ namespace FS_LevelEditor
 
                 levelHasBeenModified = true;
             }
+            #endregion
 
+            #region Delete Object With Delete
             // If press the Delete key and there's a selected object, delete it.
             // Also, only delete when the user is NOT typing in an input field.
             if (Input.GetKeyDown(KeyCode.Delete) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
             {
                 DeleteSelectedObj();
             }
+            #endregion
 
             // Update the global attributes of the object if it's moving it and it's only one (multiple objects aren't supported).
             if (currentSelectedObjComponent != null && !multipleObjectsSelected && IsMovingAnObject())
@@ -694,6 +704,48 @@ namespace FS_LevelEditor
             }
         }
 
+        void DeleteObject(GameObject obj)
+        {
+            // This function doesn't support multiple selected objects.
+            if (multipleObjectsSelected) return;
+
+            // Get the current existing objects in the level objects parent.
+            int existingObjects = levelObjectsParent.GetChilds(false).Where(x => x.name != "MoveObjectArrows" && x.name != "SnapToGridCube").ToArray().Length;
+
+            if (existingObjects <= 1)
+            {
+                Logger.Warning("Attemped to delete one single object but IS THE LAST OBJECT IN THE SCENE!");
+
+                Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+                return;
+            }
+            LE_Object objComp = obj.GetComponent<LE_Object>();
+            objComp.OnDelete();
+            if (objComp.canUndoDeletion)
+            {
+                Logger.Log("Single object deleted, but it can be undone.");
+                obj.SetActive(false);
+            }
+            else
+            {
+                Logger.Log("Single object deleted permanently!");
+                Destroy(obj);
+            }
+            levelHasBeenModified = true;
+
+            if (objComp.canUndoDeletion)
+            {
+                #region Register LEAction
+                currentExecutingAction = new LEAction();
+                currentExecutingAction.actionType = LEAction.LEActionType.DeleteObject;
+
+                currentExecutingAction.forMultipleObjects = false;
+                currentExecutingAction.targetObj = currentSelectedObj;
+
+                actionsMade.Add(currentExecutingAction);
+                #endregion
+            }
+        }
         void DeleteSelectedObj()
         {
             // Get the current existing objects in the level objects parent.
