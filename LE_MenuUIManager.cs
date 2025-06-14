@@ -744,7 +744,7 @@ namespace FS_LevelEditor
                 InGameUIManager.Instance.StartTotalFadeIn(3, true);
                 EditorController.Instance.levelName = levelName;
                 EditorController.Instance.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
-                LevelData.LoadLevelData(levelFileNameWithoutExtension);
+                LevelData.LoadLevelDataInEditor(levelFileNameWithoutExtension);
             }
         }
         public void GoBackToLEWhileInPlayMode(string levelFileNameWithoutExtension, string levelName)

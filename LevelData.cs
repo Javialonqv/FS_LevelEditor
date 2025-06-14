@@ -143,12 +143,8 @@ namespace FS_LevelEditor
             return data;
         }
 
-        // This method is for loading the saved level in the LE.
-        public static void LoadLevelData(string levelFileNameWithoutExtension)
+        static LevelData LoadLevelData(string levelFileNameWithoutExtension)
         {
-            GameObject objectsParent = EditorController.Instance.levelObjectsParent;
-            objectsParent.DeleteAllChildren();
-
             var jsonOptions = new JsonSerializerOptions
             {
                 Converters = { new LEPropertiesConverter() }
@@ -166,15 +162,24 @@ namespace FS_LevelEditor
                 Logger.Warning("Multiple objects with same ID detected, trying to fix...");
                 toCheck = FixMultipleObjectsWithSameID(toCheck);
             }
+            data.objects = toCheck;
 
-            currentLevelObjsCount = toCheck.Count;
-
+            currentLevelObjsCount = data.objects.Count;
 #if DEBUG
             if (currentLevelObjsCount > 100)
             {
                 Logger.DebugWarning("More than 100 objects in the level, not printing logs while instantiating objects!");
             }
 #endif
+
+            return data;
+        }
+        public static void LoadLevelDataInEditor(string levelFileNameWithoutExtension)
+        {
+            LevelData data = LoadLevelData(levelFileNameWithoutExtension);
+
+            GameObject objectsParent = EditorController.Instance.levelObjectsParent;
+            objectsParent.DeleteAllChildren();
 
             foreach (LE_ObjectData obj in data.objects)
             {
@@ -217,8 +222,6 @@ namespace FS_LevelEditor
 
             Logger.Log($"\"{data.levelName}\" level loaded in the editor!");
         }
-
-        // And this for loading the saved level in playmode lol.
         public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
         {
             LE_Object.GetTemplatesReferences();
@@ -228,27 +231,9 @@ namespace FS_LevelEditor
             GameObject objectsParent = playModeCtrl.levelObjectsParent;
             objectsParent.DeleteAllChildren();
 
-            var jsonOptions = new JsonSerializerOptions
-            {
-                Converters = { new LEPropertiesConverter() }
-            };
+            LevelData data = LoadLevelData(levelFileNameWithoutExtension);
 
-            string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
-
-            playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
-            playModeCtrl.levelName = data.levelName;
-
-            List<LE_ObjectData> toCheck = data.objects;
-            if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
-            {
-                Logger.Warning("Multiple objects with same ID detected, trying to fix...");
-                toCheck = FixMultipleObjectsWithSameID(toCheck);
-            }
-
-            currentLevelObjsCount = toCheck.Count;
-
-            foreach (LE_ObjectData obj in toCheck)
+            foreach (LE_ObjectData obj in data.objects)
             {
                 GameObject objInstance = playModeCtrl.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, obj.objScale, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
