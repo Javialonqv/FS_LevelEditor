@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,6 +43,12 @@ namespace FS_LevelEditor
                 {
                     properties.Add(property.Key, new ColorSerializable((Color)property.Value));
                 }
+                else if (property.Value is ICollection collection) // Skip empty lists
+                {
+                    if (collection.Count == 0) continue;
+
+                    properties.Add(property.Key, property.Value);
+                }
                 else
                 {
                     properties.Add(property.Key, property.Value);
@@ -51,6 +58,25 @@ namespace FS_LevelEditor
             objPosition = originalObj.transform.localPosition;
             objRotation = originalObj.transform.localEulerAngles;
             objScale = originalObj.transform.localScale;
+        }
+
+        static Dictionary<string, object> ParseEventsData(LE_Event eventToParse)
+        {
+            Dictionary<string, object> simplifiedData = new();
+            LE_Event defaultEvent = new LE_Event();
+
+            foreach (var property in eventToParse.GetType().GetProperties())
+            {
+                var defaultValue = property.GetValue(defaultEvent);
+                var value = property.GetValue(eventToParse);
+
+                if (!defaultValue.Equals(value))
+                {
+                    simplifiedData.Add(property.Name, value);
+                }
+            }
+
+            return simplifiedData;
         }
     }
 }

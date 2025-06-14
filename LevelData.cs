@@ -10,6 +10,7 @@ using MelonLoader;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Il2Cpp;
+using System.Reflection;
 
 namespace FS_LevelEditor
 {
@@ -98,7 +99,7 @@ namespace FS_LevelEditor
 #if DEBUG
                     WriteIndented = true,
 #endif
-                    Converters = { new LEPropertiesConverter() }
+                    Converters = { new LEIgnoreDefaultValuesInLEEvents(), new LEPropertiesConverter() }
                 };
 
                 if (!Directory.Exists(levelsDirectory))
@@ -563,6 +564,34 @@ namespace FS_LevelEditor
             }
 
             throw new JsonException("JSON unexpected end.");
+        }
+    }
+    public class LEIgnoreDefaultValuesInLEEvents : JsonConverter<LE_Event>
+    {
+        public override LE_Event Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return JsonSerializer.Deserialize<LE_Event>(ref reader, options);
+        }
+
+        public override void Write(Utf8JsonWriter writer, LE_Event value, JsonSerializerOptions options)
+        {
+            var defaultInstance = new LE_Event();
+            writer.WriteStartObject();
+
+            foreach (var property in typeof(LE_Event).GetProperties())
+            {
+                if (!property.CanRead || !property.CanWrite) continue;
+                object defaultValue = property.GetValue(defaultInstance);
+                object currentValue = property.GetValue(value);
+
+                if (!object.Equals(defaultValue, currentValue))
+                {
+                    writer.WritePropertyName(property.Name);
+                    JsonSerializer.Serialize(writer, currentValue, property.PropertyType, options);
+                }
+            }
+
+            writer.WriteEndObject();
         }
     }
 }
