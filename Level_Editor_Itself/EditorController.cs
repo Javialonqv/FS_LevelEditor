@@ -31,17 +31,17 @@ namespace FS_LevelEditor
         public EditorState previousEditorState;
         public EditorState currentEditorState;
 
+
+        // Avaiable objects from all of the categories.
         GameObject editorObjectsRootFromBundle;
+        public List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
+        public Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
+        GameObject[] otherObjectsFromBundle;
 
         // Available categories related variables.
         public List<string> categoriesNames = new List<string>();
         public string currentCategory = "";
         public int currentCategoryID = 0;
-
-        // Avaiable objects from all of the categories.
-        public List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
-        public Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
-        GameObject[] otherObjectsFromBundle;
 
         public string currentObjectToBuildName = "";
         GameObject currentObjectToBuild;
