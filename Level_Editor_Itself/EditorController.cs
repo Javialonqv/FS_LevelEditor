@@ -20,7 +20,16 @@ namespace FS_LevelEditor
         public string levelName = "test_level";
         public string levelFileNameWithoutExtension = "test_level";
 
-        public bool isEditorPaused = false;
+        public enum EditorState
+        {
+            Normal,
+            MovingObject,
+            SnapingToGrid,
+            Paused,
+            EventsPanel,
+        }
+        public EditorState previousEditorState;
+        public EditorState currentEditorState;
 
         GameObject editorObjectsRootFromBundle;
 
@@ -65,12 +74,10 @@ namespace FS_LevelEditor
         Vector3 objPositionWhenArrowClick;
         Vector3 offsetObjPositionAndMosueWhenClick;
         Plane movementPlane;
-        bool isCurrentlyMovingAnObject = false;
         bool globalGizmosArrowsEnabled = false;
 
         // SNAP
         GameObject snapToGridCube;
-        bool startSnapToGridWithCurrentSelectedObj = false;
 
         List<LEAction> actionsMade = new List<LEAction>();
         LEAction currentExecutingAction;
@@ -109,28 +116,9 @@ namespace FS_LevelEditor
 
         void Update()
         {
-            //Logger.DebugLog($"Is over UI element: {Utilities.IsMouseOverUIElement()}. Is input field selected: {Utilities.theresAnInputFieldSelected}");
+            ManageEscAction();
 
-            // Shortcut for pausing LE.
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                if (EventsUIPageManager.Instance.isShowingPage)
-                {
-                    EventsUIPageManager.Instance.HideEventsPage();
-                    return;
-                }
-
-                if (!isEditorPaused)
-                {
-                    EditorUIManager.Instance.ShowPause();
-                }
-                else
-                {
-                    EditorUIManager.Instance.Resume();
-                }
-            }
-
-            if (isEditorPaused || EventsUIPageManager.Instance.isShowingPage) return;
+            if (IsPaused() || IsInEventsPanel()) return;
 
             // When click, check if it's clicking a gizmos arrow.
             if (Input.GetMouseButtonDown(0))
@@ -138,20 +126,21 @@ namespace FS_LevelEditor
                 collidingArrow = GetCollidingWithAnArrow();
             }
 
-            // If it's not rotating camera, and it's building, and it's NOT clicking a gizmos arrow and there's actually a selected object to build AND the mouse isn't over
-            // a UI element... preview that object.
+            // For previewing the current selected object...
+            // !Input.GetMouseButton(1) is to detect when LE camera isn't rotating.
             if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == GizmosArrow.None && previewObjectToBuildObj != null && !Utilities.IsMouseOverUIElement())
             {
                 PreviewObject();
             }
-            // If not, at least if the preview object isn't null, disable it.
+            // If isn't previewing, disable the preview object if not null.
             else if (previewObjectToBuildObj != null)
             {
                 previewObjectToBuildObj.SetActive(false);
             }
 
-            // If pressing F key and it's not typing in an input field.
-            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
+            #region Align Instantiated Object to Grid
+            // For snap already instantiated object to grid again.
+            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null && currentMode == Mode.Selection && !Utilities.theresAnInputFieldSelected)
             {
                 snapToGridCube.SetActive(true);
                 gizmosArrows.SetActive(false);
@@ -160,16 +149,16 @@ namespace FS_LevelEditor
                 {
                     if (IsClickingSnapToGridCube())
                     {
-                        startSnapToGridWithCurrentSelectedObj = true;
+                        SetCurrentEditorState(EditorState.SnapingToGrid);
                     }
                 }
-                if (Input.GetMouseButton(0) && startSnapToGridWithCurrentSelectedObj)
+                if (Input.GetMouseButton(0) && IsSnapingSelectedObjToGrid())
                 {
                     AlignSelectedObjectToGrid();
                 }
                 if (Input.GetMouseButtonUp(0))
                 {
-                    startSnapToGridWithCurrentSelectedObj = false;
+                    SetCurrentEditorState(EditorState.Normal);
                 }
             }
             else
@@ -183,12 +172,13 @@ namespace FS_LevelEditor
 
                 if (Input.GetMouseButtonUp(0))
                 {
-                    startSnapToGridWithCurrentSelectedObj = false;
+                    SetCurrentEditorState(EditorState.Normal);
                 }
             }
+            #endregion
 
-            // If click and it's on selection and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element AAAND it's not using snap to grid while edition right now...
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !startSnapToGridWithCurrentSelectedObj)
+            // For object selection...
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !IsSnapingSelectedObjToGrid())
             {
                 // If it's selecting an object, well, set it as the selected one.
                 if (CanSelectObjectWithRay(out GameObject obj))
@@ -221,10 +211,10 @@ namespace FS_LevelEditor
                 // Move the object.
                 MoveObject(collidingArrow);
             }
-            else if (isCurrentlyMovingAnObject) // This SHOULD be executed only when the user stopped moving an object.
+            else if (IsMovingAnObject()) // This SHOULD be executed only when the user stopped moving an object.
             {
                 collidingArrow = GizmosArrow.None;
-                isCurrentlyMovingAnObject = false;
+                SetCurrentEditorState(EditorState.Normal);
 
                 currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
                 actionsMade.Add(currentExecutingAction);
@@ -239,7 +229,8 @@ namespace FS_LevelEditor
                 DeleteSelectedObj();
             }
 
-            if (currentSelectedObjComponent != null && !multipleObjectsSelected && isCurrentlyMovingAnObject)
+            // Update the global attributes of the object if it's moving it and it's only one (multiple objects aren't supported).
+            if (currentSelectedObjComponent != null && !multipleObjectsSelected && IsMovingAnObject())
             {
                 EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
             }
@@ -249,6 +240,28 @@ namespace FS_LevelEditor
             ManageSomeShortcuts();
 
             ManageUndo();
+        }
+
+        void ManageEscAction()
+        {
+            // Shortcut for pausing LE.
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (IsInEventsPanel())
+                {
+                    EventsUIPageManager.Instance.HideEventsPage();
+                    return;
+                }
+
+                if (!IsPaused())
+                {
+                    EditorUIManager.Instance.ShowPause();
+                }
+                else
+                {
+                    EditorUIManager.Instance.Resume();
+                }
+            }
         }
 
         void LateUpdate()
@@ -470,10 +483,8 @@ namespace FS_LevelEditor
             RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
             System.Array.Sort(hits, (hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
 
-            // If it hits at least one object.
             if (hits.Length > 0)
             {
-                // Detect if hte first ray hit is colliding with a snap trigger.
                 bool firstRayIsATrigger = hits[0].collider.gameObject.name.StartsWith("StaticPos");
 
                 foreach (var hit in hits)
@@ -481,10 +492,9 @@ namespace FS_LevelEditor
                     bool snapNow = false;
                     bool breakAtTheEnd = false;
 
-                    // If the hit is an static pos trigger (snap trigger)...
                     if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                     {
-                        // Set the preview position to a snapped to grid position only if is pressing the ctrl key or if it's the only object it's colliding to.
+                        // Only if pressing Ctrl OR if the object is the only one hitten by ray.
                         if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
                         {
                             // Also, only snap if the hitten object trigger CAN be used with the current selected object.
@@ -492,7 +502,7 @@ namespace FS_LevelEditor
                             {
                                 previewObjectToBuildObj.SetActive(true);
                                 previewObjectToBuildObj.transform.position = hit.collider.transform.position;
-                                // Only update the preview object rotation when the current snap trigger is different, so the user can rotate the preview object before placing it.
+                                // Only update rotation when the trigger is different, so user can rotate preview object even when snap trigger is found.
                                 if (currentHittenSnapTrigger != hit.collider.gameObject)
                                 {
                                     currentHittenSnapTrigger = hit.collider.gameObject;
@@ -543,7 +553,7 @@ namespace FS_LevelEditor
                     if (breakAtTheEnd) break;
                 }
             }
-            else // Disable the preview object if it's not hitting nothing in the world space.
+            else // Disable the preview object if it's not hitting anything in the world space.
             {
                 previewObjectToBuildObj.SetActive(false);
             }
@@ -661,7 +671,7 @@ namespace FS_LevelEditor
             // If the ray can collide with the "invisible" plane.
             if (movementPlane.Raycast(ray, out float distance))
             {
-                isCurrentlyMovingAnObject = true;
+                if (!IsMovingAnObject()) SetCurrentEditorState(EditorState.MovingObject);
 
                 // IT WORKS, DON'T EVEN DARE TO TOUCH THIS EVER AGAIN!
 
@@ -1302,6 +1312,42 @@ namespace FS_LevelEditor
             }
         }
 
+        #region Current Editor State Methods
+        public void SetCurrentEditorState(EditorState newState)
+        {
+            if (currentEditorState == EditorState.Paused)
+            {
+                if (previousEditorState == EditorState.EventsPanel && newState == EditorState.Normal)
+                {
+                    newState = EditorState.EventsPanel;
+                }
+            }
+
+            previousEditorState = currentEditorState;
+            currentEditorState = newState;
+        }
+        public bool IsInNormalState()
+        {
+            return currentEditorState == EditorState.Normal;
+        }
+        public bool IsPaused()
+        {
+            return currentEditorState == EditorState.Paused;
+        }
+        public bool IsMovingAnObject()
+        {
+            return currentEditorState == EditorState.MovingObject;
+        }
+        public bool IsSnapingSelectedObjToGrid()
+        {
+            return currentEditorState == EditorState.SnapingToGrid;
+        }
+        public bool IsInEventsPanel()
+        {
+            return currentEditorState == EditorState.EventsPanel;
+        }
+        #endregion
+
         #region Methods called from UI buttons
         public void ChangeCategory(int categoryID)
         {
@@ -1382,25 +1428,15 @@ namespace FS_LevelEditor
         /// <returns></returns>
         GizmosArrow GetCollidingWithAnArrow()
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
-
-            // Loop foreach all of the collisions of the ray.
-            foreach (var hit in hits)
+            // The parent of the gizmos arrows is "MoveObjectsArrows".
+            // hittenArrow is NOT the parent, it's the actual hitten arrow :)
+            if (IsHittingObjectWhoseParentIs("MoveObjectArrows", out GameObject hittenArrow, out Ray cameraRay))
             {
-                if (hit.collider.transform.parent != null)
-                {
-                    // If one of them are the move object gizmos...
-                    if (hit.collider.transform.parent.name == "MoveObjectArrows")
-                    {
-                        StartMovingObject(hit.collider.name, ray);
+                StartMovingObject(hittenArrow.name, cameraRay);
 
-                        // Finally, return the final result of the gizmos arrow we touched.
-                        if (hit.collider.name == "X") return GizmosArrow.X;
-                        if (hit.collider.name == "Y") return GizmosArrow.Y;
-                        if (hit.collider.name == "Z") return GizmosArrow.Z;
-                    }
-                }
+                if (hittenArrow.name == "X") return GizmosArrow.X;
+                if (hittenArrow.name == "Y") return GizmosArrow.Y;
+                if (hittenArrow.name == "Z") return GizmosArrow.Z;
             }
 
             return GizmosArrow.None;
@@ -1408,16 +1444,7 @@ namespace FS_LevelEditor
 
         bool IsClickingSnapToGridCube()
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
-
-            // Loop foreach all of the collisions of the ray.
-            foreach (var hit in hits)
-            {
-                if (hit.collider.gameObject.name == "SnapToGridCube") return true;
-            }
-
-            return false;
+            return IsHittingObject("SnapToGridCube");
         }
 
         Vector3 GetAxisDirection(GizmosArrow arrow, GameObject obj)
@@ -1438,6 +1465,61 @@ namespace FS_LevelEditor
             return Vector3.zero;
         }
 
+        public bool IsHittingObject(GameObject targetObj)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
+
+            // Loop foreach all of the collisions of the ray.
+            foreach (var hit in hits)
+            {
+                if (hit.collider.gameObject == targetObj) return true;
+            }
+
+            return false;
+        }
+        public bool IsHittingObject(string targetObjName)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
+
+            // Loop foreach all of the collisions of the ray.
+            foreach (var hit in hits)
+            {
+                if (hit.collider.gameObject.name == targetObjName) return true;
+            }
+
+            return false;
+        }
+        /// <summary>
+        /// Detects if the user is currently hitting an object whose parent is of the specified name.
+        /// </summary>
+        /// <param name="objParentName">The parent name.</param>
+        /// <param name="hittenObj">The actual hitten object (NOT THE PARENT).</param>
+        /// <returns></returns>
+        public bool IsHittingObjectWhoseParentIs(string objParentName, out GameObject hittenObj, out Ray cameraRay)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
+
+            cameraRay = ray;
+
+            // Loop foreach all of the collisions of the ray.
+            foreach (var hit in hits)
+            {
+                if (hit.collider.transform.parent != null)
+                {
+                    if (hit.collider.transform.parent.name == objParentName)
+                    {
+                        hittenObj = hit.collider.gameObject;
+                        return true;
+                    }
+                }
+            }
+
+            hittenObj = null;
+            return false;
+        }
         Vector3 RotatePositionAroundPivot(Vector3 position, Vector3 pivot, Quaternion rotation)
         {
             // I DON'T WANNA TOUCH THIS FUCKING CODE IN MY LIFE!!!

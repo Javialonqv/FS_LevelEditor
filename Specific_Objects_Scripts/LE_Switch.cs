@@ -81,7 +81,7 @@ namespace FS_LevelEditor
         {
             if (editorLinksParent)
             {
-                if (editorLinksParent.activeSelf && !EventsUIPageManager.Instance.isShowingPage)
+                if (editorLinksParent.activeSelf && !EditorController.Instance.IsInEventsPanel())
                 {
                     UpdateEditorLinksPositions();
                 }

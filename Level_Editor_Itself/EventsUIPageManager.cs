@@ -72,8 +72,6 @@ namespace FS_LevelEditor
         CurrentEventType currentEventType;
         LE_Event currentSelectedEvent;
 
-        public bool isShowingPage;
-
         LE_Object targetObj;
 
         public static void Create()
@@ -1329,7 +1327,7 @@ namespace FS_LevelEditor
             eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
             Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
 
-            isShowingPage = true;
+            EditorController.Instance.SetCurrentEditorState(EditorController.EditorState.EventsPanel);
 
             OnEnableBtnClick(false);
             // CreateEventsList();
@@ -1343,7 +1341,7 @@ namespace FS_LevelEditor
 
             eventsPanel.SetActive(true);
             GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
-            isShowingPage = false;
+            EditorController.Instance.SetCurrentEditorState(EditorController.EditorState.Normal);
 
             HideEventSettings();
         }
