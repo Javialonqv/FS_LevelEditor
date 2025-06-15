@@ -471,6 +471,18 @@ namespace FS_LevelEditor
                         targetObj.SetProperty("Color", Utilities.HexToColor(@event.newCeilingLightColor, false, null));
                     }
                 }
+                else if (targetObj is LE_Health_Pack || targetObj is LE_Ammo_Pack)
+                {
+                    if (@event.changePackRespawnTime)
+                    {
+                        targetObj.SetProperty("RespawnTime", @event.packRespawnTime);
+                    }
+
+                    if (@event.spawnPackNow)
+                    {
+                        targetObj.TriggerAction("SpawnNow");
+                    }
+                }
             }
         }
     }

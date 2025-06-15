@@ -153,9 +153,6 @@ namespace FS_LevelEditor
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
 
-            Camera.main.transform.position = data.cameraPosition;
-            Camera.main.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
-
             List<LE_ObjectData> toCheck = data.objects;
             if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
             {
@@ -177,6 +174,9 @@ namespace FS_LevelEditor
         public static void LoadLevelDataInEditor(string levelFileNameWithoutExtension)
         {
             LevelData data = LoadLevelData(levelFileNameWithoutExtension);
+
+            Camera.main.transform.position = data.cameraPosition;
+            Camera.main.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
 
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
             objectsParent.DeleteAllChildren();

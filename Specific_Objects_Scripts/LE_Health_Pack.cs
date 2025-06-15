@@ -106,5 +106,15 @@ namespace FS_LevelEditor
 
             return false;
         }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "SpawnNow")
+            {
+                health.Activate();
+            }
+
+            return base.TriggerAction(actionName);
+        }
     }
 }

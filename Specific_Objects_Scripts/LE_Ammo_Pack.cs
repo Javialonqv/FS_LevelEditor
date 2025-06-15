@@ -101,5 +101,15 @@ namespace FS_LevelEditor
 
             return false;
         }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "SpawnNow")
+            {
+                ammo.Activate();
+            }
+
+            return base.TriggerAction(actionName);
+        }
     }
 }

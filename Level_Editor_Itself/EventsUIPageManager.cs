@@ -67,6 +67,12 @@ namespace FS_LevelEditor
         UIDropdownPatcher ceilingLightStateDropdown;
         UIToggle changeCeilingLightColorToggle;
         UIInput newCeilingLightColorInputField;
+        //-----------------------------------
+        GameObject healthAmmoPacksObjectsSettings;
+        UIToggle changePackRespawnTimeToggle;
+        UILabel newPackRespawnTimeTitleLabel;
+        UICustomInputField newPackRespawnTimeInputField;
+        UIToggle spawnPackNowToggle;
 
         enum CurrentEventType { OnEnable, OnDisable, OnChange }
         CurrentEventType currentEventType;
@@ -97,6 +103,7 @@ namespace FS_LevelEditor
                 Instance.CreateLaserObjectSettings();
                 Instance.CreateLightObjectSettings();
                 Instance.CreateCeilingLightObjectSettings();
+                Instance.CreateHealthAndAmmoPacksObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -752,6 +759,11 @@ namespace FS_LevelEditor
             ceilingLightStateDropdown.SelectOption((int)currentSelectedEvent.ceilingLightState);
             changeCeilingLightColorToggle.Set(currentSelectedEvent.changeCeilingLightColor);
             newCeilingLightColorInputField.text = currentSelectedEvent.newCeilingLightColor;
+            changePackRespawnTimeToggle.Set(currentSelectedEvent.changePackRespawnTime);
+            newPackRespawnTimeTitleLabel.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
+            newPackRespawnTimeInputField.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
+            newPackRespawnTimeInputField.SetText(currentSelectedEvent.packRespawnTime);
+            spawnPackNowToggle.Set(currentSelectedEvent.spawnPackNow);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -817,6 +829,10 @@ namespace FS_LevelEditor
                 else if (targetObj is LE_Ceiling_Light)
                 {
                     ceilingLightObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Health_Pack || targetObj is LE_Ammo_Pack)
+                {
+                    healthAmmoPacksObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -1226,6 +1242,93 @@ namespace FS_LevelEditor
 
             newCeilingLightColorInputField = inputField.GetComponent<UIInput>();
         }
+        // -----------------------------------------
+        void CreateHealthAndAmmoPacksObjectSettings()
+        {
+            healthAmmoPacksObjectsSettings = new GameObject("HealthAndAmmoPcks");
+            healthAmmoPacksObjectsSettings.transform.parent = eventOptionsParent.transform;
+            healthAmmoPacksObjectsSettings.transform.localPosition = Vector3.zero;
+            healthAmmoPacksObjectsSettings.transform.localScale = Vector3.one;
+            healthAmmoPacksObjectsSettings.SetActive(false);
+
+            CreateHealthAndAmmoPacksObjectsTitleLabel();
+            CreateChangePackRespawnTimeToggle();
+            CreateNewPackRespawnTimeTitleLabel();
+            CreateNewPackRespawnTimeInputField();
+            CreateSpawnPackNowToggle();
+        }
+        void CreateHealthAndAmmoPacksObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, healthAmmoPacksObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "HEALTH & AMMO PACK OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateChangePackRespawnTimeToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(healthAmmoPacksObjectsSettings.transform, new Vector3(-380f, -30f, 0f),
+                new Vector3Int(250, 48, 1), "Change Respawn Time");
+            toggle.name = "ChangeRespawnTimeToggle";
+            changePackRespawnTimeToggle = toggle.GetComponent<UIToggle>();
+            changePackRespawnTimeToggle.onChange.Clear();
+            changePackRespawnTimeToggle.onChange.Add(new EventDelegate(this, nameof(OnChangePackRespawnTimeToggleChanged)));
+        }
+        void CreateNewPackRespawnTimeTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, healthAmmoPacksObjectsSettings.transform);
+            titleLabel.name = "NewRespawnTimeTitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 150;
+            label.fontSize = 27;
+            label.text = "Time";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(50f, -30f, 0f);
+
+            newPackRespawnTimeTitleLabel = label;
+        }
+        void CreateNewPackRespawnTimeInputField()
+        {
+            GameObject inputField = NGUI_Utils.CreateInputField(healthAmmoPacksObjectsSettings.transform, new Vector3(270f, -30f, 0f),
+                new Vector3Int(250, 40, 1), 27, "60");
+            inputField.name = "NewInputField";
+            inputField.AddComponent<UICustomInputField>().Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            inputField.GetComponent<UICustomInputField>().onChange += OnNewPackRespawnTimeInputFieldChanged;
+
+            newPackRespawnTimeInputField = inputField.GetComponent<UICustomInputField>();
+        }
+        void CreateSpawnPackNowToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(healthAmmoPacksObjectsSettings.transform, new Vector3(-140f, -100f, 0f),
+                new Vector3Int(250, 48, 1), "Spawn Pack Now");
+            toggle.name = "SpawnPackNowToggle";
+            spawnPackNowToggle = toggle.GetComponent<UIToggle>();
+            spawnPackNowToggle.onChange.Clear();
+            spawnPackNowToggle.onChange.Add(new EventDelegate(this, nameof(OnSpawnPackNowToggleChanged)));
+        }
 
 
         void OnSetActiveDropdownChanged()
@@ -1314,6 +1417,24 @@ namespace FS_LevelEditor
             }
 
             currentSelectedEvent.newCeilingLightColor = newCeilingLightColorInputField.text;
+        }
+        // -----------------------------------------
+        void OnChangePackRespawnTimeToggleChanged()
+        {
+            currentSelectedEvent.changePackRespawnTime = changePackRespawnTimeToggle.isChecked;
+            newPackRespawnTimeTitleLabel.gameObject.SetActive(changePackRespawnTimeToggle.isChecked);
+            newPackRespawnTimeInputField.gameObject.SetActive(changePackRespawnTimeToggle.isChecked);
+        }
+        void OnNewPackRespawnTimeInputFieldChanged()
+        {
+            if (newPackRespawnTimeInputField.isValid)
+            {
+                currentSelectedEvent.packRespawnTime = float.Parse(newPackRespawnTimeInputField.GetText());
+            }
+        }
+        void OnSpawnPackNowToggleChanged()
+        {
+            currentSelectedEvent.spawnPackNow = spawnPackNowToggle.isChecked;
         }
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -1407,5 +1528,11 @@ public class LE_Event
     public CeilingLightState ceilingLightState { get; set; } = CeilingLightState.Do_Nothing;
     public bool changeCeilingLightColor { get; set; } = false;
     public string newCeilingLightColor { get; set; } = "FFFFFF";
+    #endregion
+
+    #region Health and Ammo Pack Options
+    public bool changePackRespawnTime { get; set; } = false;
+    public float packRespawnTime { get; set; } = 60;
+    public bool spawnPackNow { get; set; } = false;
     #endregion
 }

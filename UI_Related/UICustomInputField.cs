@@ -107,6 +107,8 @@ namespace FS_LevelEditor.UI_Related
 
         public void Set(bool newState)
         {
+            isValid = newState;
+
             if (newState)
             {
                 fieldSprite.color = validValueColor;
