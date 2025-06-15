@@ -253,6 +253,9 @@ namespace FS_LevelEditor
                 objInstance.SetActive(obj.setActiveAtStart);
             }
 
+            playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
+            playModeCtrl.levelName = data.levelName;
+
             // Load Global Properties.
             // In PlayModeController the global properties list is empty, since it's meant to be replaced with
             // ALL of the values inside of the saved global properties list.
