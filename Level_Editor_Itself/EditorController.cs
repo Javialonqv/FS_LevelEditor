@@ -125,12 +125,17 @@ namespace FS_LevelEditor
                 collidingArrow = GetCollidingWithAnArrow();
             }
 
-            #region Preview Object
+            #region Preview Object and Build
             // For previewing the current selected object...
             // !Input.GetMouseButton(1) is to detect when LE camera isn't rotating.
             if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == GizmosArrow.None && previewObjectToBuildObj != null && !Utilities.IsMouseOverUIElement())
             {
                 PreviewObject();
+
+                if (Input.GetMouseButtonDown(0))
+                {
+                    InstanceObjectInThePreviewObjectPos();
+                }
             }
             // If isn't previewing, disable the preview object if not null.
             else if (previewObjectToBuildObj != null)
@@ -486,82 +491,79 @@ namespace FS_LevelEditor
 
         void PreviewObject()
         {
-            // Get all of the possible rays and short them, since Unity doesn't short them by defualt.
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
-            System.Array.Sort(hits, (hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+            List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
+            hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
 
-            if (hits.Length > 0)
+            bool snapWithTrigger = false;
+            RaycastHit rayToUseWithSnap = new RaycastHit();
+
+            if (hits.Count > 0)
             {
-                bool firstRayIsATrigger = hits[0].collider.gameObject.name.StartsWith("StaticPos");
-
-                foreach (var hit in hits)
+                // If there's only one hit and if it is a snap trigger, it has to be the only hitten object for sure.
+                if (hits.Count == 1)
                 {
-                    bool snapNow = false;
-                    bool breakAtTheEnd = false;
-
-                    if (hit.collider.gameObject.name.StartsWith("StaticPos"))
+                    if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
                     {
-                        // Only if pressing Ctrl OR if the object is the only one hitten by ray.
-                        if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
+                        if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hits[0].collider.gameObject))
                         {
-                            // Also, only snap if the hitten object trigger CAN be used with the current selected object.
-                            if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hit.collider.transform.gameObject))
-                            {
-                                previewObjectToBuildObj.SetActive(true);
-                                previewObjectToBuildObj.transform.position = hit.collider.transform.position;
-                                // Only update rotation when the trigger is different, so user can rotate preview object even when snap trigger is found.
-                                if (currentHittenSnapTrigger != hit.collider.gameObject)
-                                {
-                                    currentHittenSnapTrigger = hit.collider.gameObject;
-                                    previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
-                                }
-
-                                // We don't need anything else, if the user wants to use snap to grid and this is the correct trigger to use, use this and break the loop.
-                                snapNow = true;
-                                breakAtTheEnd = true;
-                            }
-                            // If the user actually wants to use snap, but this isn't the right trigger BUT the first one was a trigger, start looping again till find the correct one.
-                            else if (firstRayIsATrigger)
-                            {
-                                continue;
-                            }
+                            snapWithTrigger = true;
+                            rayToUseWithSnap = hits[0];
                         }
                     }
-                    else // If we couldn't find any compatible triggers, just use the default behaviour and break the loop at the end, since we only care about the trigger that are
-                         // BEFORE the object itself.
+                }
+                else
+                {
+                    // If there are 2 hits or more, then iterate over the hits and check if you can snap with them.
+                    // Only if you're pressing Ctrl.
+                    foreach (var hit in hits)
                     {
-                        breakAtTheEnd = true;
-                    }
-
-                    // If no correct trigger was found, use the default behaviour.
-                    if (!snapNow)
-                    {
-                        // Set the current hitten snap trigger variable to null.
-                        currentHittenSnapTrigger = null;
-
-                        // Set the preview object posiiton to the hit point.
-                        previewObjectToBuildObj.SetActive(true);
-                        previewObjectToBuildObj.transform.position = hit.point;
-                        // Only update the preview object rotation when the ray hit ANOTHER surface, so the user can rotate the preview object before placing it.
-                        if (lastHittenNormalByPreviewRay != hit.normal)
+                        if (hit.collider.gameObject.name.StartsWith("StaticPos") && Input.GetKey(KeyCode.LeftControl))
                         {
-                            lastHittenNormalByPreviewRay = hit.normal;
-                            previewObjectToBuildObj.transform.up = hit.normal;
+                            if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hit.collider.gameObject))
+                            {
+                                snapWithTrigger = true;
+                                rayToUseWithSnap = hit;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            // Hits are shorted from the closest one to the farthest one.
+                            // If at some point, we stop detecting snap triggers, remove all of the snap triggeres from the hits list.
+                            // This is to avoid things like grounds colliding with the triggers and no snapping since there are more objects below.
+                            hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+                            break;
                         }
                     }
+                }
 
-                    // If press left click while previewing, place the object :)
-                    if (Input.GetMouseButtonDown(0))
+                if (snapWithTrigger)
+                {
+                    previewObjectToBuildObj.SetActive(true);
+                    previewObjectToBuildObj.transform.position = rayToUseWithSnap.collider.transform.position;
+                    // Only update rotation when the trigger is different, so user can rotate preview object even when snap trigger is found.
+                    if (currentHittenSnapTrigger != rayToUseWithSnap.collider.gameObject)
                     {
-                        InstanceObjectInThePreviewObjectPos();
-                        break;
+                        currentHittenSnapTrigger = rayToUseWithSnap.collider.gameObject;
+                        previewObjectToBuildObj.transform.rotation = rayToUseWithSnap.collider.transform.rotation;
                     }
+                }
+                else // When using the default preview behaviour, use the closest hit, why not?
+                {
+                    currentHittenSnapTrigger = null;
 
-                    if (breakAtTheEnd) break;
+                    previewObjectToBuildObj.SetActive(true);
+                    previewObjectToBuildObj.transform.position = hits[0].point;
+                    // Only update the preview object rotation when the ray hit ANOTHER surface, so the user can rotate the preview object before placing it.
+                    if (lastHittenNormalByPreviewRay != hits[0].normal)
+                    {
+                        lastHittenNormalByPreviewRay = hits[0].normal;
+                        previewObjectToBuildObj.transform.up = hits[0].normal;
+                    }
                 }
             }
-            else // Disable the preview object if it's not hitting anything in the world space.
+            else
             {
                 previewObjectToBuildObj.SetActive(false);
             }
