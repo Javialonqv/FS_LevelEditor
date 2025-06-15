@@ -100,6 +100,7 @@ namespace FS_LevelEditor
                 else if (value is float)
                 {
                     properties["RespawnTime"] = (float)value;
+                    if (health) health.respawnTime = (float)value;
                     return true;
                 }
             }
@@ -111,7 +112,7 @@ namespace FS_LevelEditor
         {
             if (actionName == "SpawnNow")
             {
-                health.Activate();
+                if (health) health.Activate();
             }
 
             return base.TriggerAction(actionName);

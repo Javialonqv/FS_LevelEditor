@@ -95,6 +95,7 @@ namespace FS_LevelEditor
                 else if (value is float)
                 {
                     properties["RespawnTime"] = (float)value;
+                    if (ammo) ammo.respawnTime = (float)value;
                     return true;
                 }
             }
@@ -106,7 +107,7 @@ namespace FS_LevelEditor
         {
             if (actionName == "SpawnNow")
             {
-                ammo.Activate();
+                if (ammo) ammo.Activate();
             }
 
             return base.TriggerAction(actionName);
