@@ -167,7 +167,7 @@ namespace FS_LevelEditor
                     SetCurrentEditorState(EditorState.Normal);
                 }
             }
-            else
+            else if (IsSnapingSelectedObjToGrid())
             {
                 snapToGridCube.SetActive(false);
 
