@@ -498,10 +498,13 @@ namespace FS_LevelEditor
             bool snapWithTrigger = false;
             RaycastHit rayToUseWithSnap = new RaycastHit();
 
+            bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+
             if (hits.Count > 0)
             {
                 // If there's only one hit and if it is a snap trigger, it has to be the only hitten object for sure.
-                if (hits.Count == 1)
+                // Or, if all of the hits are snap to grid triggers, also execute this and use the first hit as well, it doesn't matter.
+                if (hits.Count == 1 || theyAreAllSnapTriggers)
                 {
                     if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
                     {
