@@ -141,6 +141,7 @@ namespace FS_LevelEditor
             // If isn't previewing, disable the preview object if not null.
             else if (previewObjectToBuildObj != null)
             {
+                lastHittenNormalByPreviewRay = null;
                 previewObjectToBuildObj.SetActive(false);
             }
             #endregion
