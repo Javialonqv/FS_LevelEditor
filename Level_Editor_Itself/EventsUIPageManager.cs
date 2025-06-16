@@ -43,7 +43,7 @@ namespace FS_LevelEditor
         /// </summary>
         GameObject eventOptionsParent;
         GameObject defaultObjectsSettings;
-        UIDropdownPatcher setActiveDropdown;
+        UIDropdownPatcher spawnOptionsDropdown;
         //-----------------------------------
         GameObject sawObjectsSettings;
         UIDropdownPatcher sawStateDropdown;
@@ -746,7 +746,7 @@ namespace FS_LevelEditor
         {
             targetObjInputField.text = currentSelectedEvent.targetObjName;
 
-            setActiveDropdown.SelectOption((int)currentSelectedEvent.setActive);
+            spawnOptionsDropdown.SelectOption((int)currentSelectedEvent.spawn);
             sawStateDropdown.SelectOption((int)currentSelectedEvent.sawState);
             zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
@@ -854,29 +854,29 @@ namespace FS_LevelEditor
             defaultObjectsSettings.transform.localScale = Vector3.one;
             defaultObjectsSettings.SetActive(false);
 
-            CreateSetActiveDropdown();
+            CreateSpawnOptionsDropdown();
         }
-        void CreateSetActiveDropdown()
+        void CreateSpawnOptionsDropdown()
         {
-            GameObject setActiveDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), defaultObjectsSettings.transform);
-            setActiveDropdownPanel.name = "SetActiveDropdownPanel";
-            setActiveDropdownPanel.transform.localPosition = new Vector3(0f, 105f, 0f);
-            setActiveDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+            GameObject spawnOptionsDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), defaultObjectsSettings.transform);
+            spawnOptionsDropdownPanel.name = "SetActiveDropdownPanel";
+            spawnOptionsDropdownPanel.transform.localPosition = new Vector3(0f, 105f, 0f);
+            spawnOptionsDropdownPanel.transform.localScale = Vector3.one * 0.8f;
 
-            UIDropdownPatcher patcher = setActiveDropdownPanel.AddComponent<UIDropdownPatcher>();
+            UIDropdownPatcher patcher = spawnOptionsDropdownPanel.AddComponent<UIDropdownPatcher>();
             patcher.Init();
-            patcher.SetTitle("Set Active");
+            patcher.SetTitle("Spawn Options");
             patcher.ClearOptions();
             patcher.AddOption("Do Nothing", true);
-            patcher.AddOption("Enable", false);
-            patcher.AddOption("Disable", false);
+            patcher.AddOption("Spawn", false);
+            patcher.AddOption("Despawn", false);
             patcher.AddOption("Toggle", false);
 
             patcher.ClearOnChangeOptions();
-            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSetActiveDropdownChanged)));
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSpawnOptionsDropdownChanged)));
 
-            setActiveDropdown = patcher;
-            setActiveDropdownPanel.SetActive(true);
+            spawnOptionsDropdown = patcher;
+            spawnOptionsDropdownPanel.SetActive(true);
         }
         // -----------------------------------------
         void CreateSawObjectSettings()
@@ -1331,9 +1331,9 @@ namespace FS_LevelEditor
         }
 
 
-        void OnSetActiveDropdownChanged()
+        void OnSpawnOptionsDropdownChanged()
         {
-            currentSelectedEvent.setActive = (LE_Event.SetActiveState)setActiveDropdown.currentlySelectedID;
+            currentSelectedEvent.spawn = (LE_Event.SpawnState)spawnOptionsDropdown.currentlySelectedID;
         }
         // -----------------------------------------
         void OnSawStateDropdownChanged()
@@ -1496,8 +1496,8 @@ public class LE_Event
     public string eventName { get; set; } = "New Event";
     public string targetObjName { get; set; } = "";
 
-    public enum SetActiveState { Do_Nothing, Enable, Disable, Toggle }
-    public SetActiveState setActive { get; set; } = SetActiveState.Do_Nothing;
+    public enum SpawnState { Do_Nothing, Spawn, Despawn, Toggle }
+    public SpawnState spawn { get; set; } = SpawnState.Do_Nothing;
 
     #region Saw Options
     public enum SawState { Do_Nothing, Activate, Deactivate, Toggle_State }

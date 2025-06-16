@@ -379,17 +379,17 @@ namespace FS_LevelEditor
                 LE_Object targetObj =
                     PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.objectFullNameWithID == @event.targetObjName);
 
-                switch (@event.setActive)
+                switch (@event.spawn)
                 {
-                    case LE_Event.SetActiveState.Enable:
+                    case LE_Event.SpawnState.Spawn:
                         targetObj.TriggerAction("SetActive_True");
                         break;
 
-                    case LE_Event.SetActiveState.Disable:
+                    case LE_Event.SpawnState.Despawn:
                         targetObj.TriggerAction("SetActive_False");
                         break;
 
-                    case LE_Event.SetActiveState.Toggle:
+                    case LE_Event.SpawnState.Toggle:
                         if (targetObj.gameObject.activeSelf)
                         {
                             targetObj.TriggerAction("SetActive_False");

@@ -147,7 +147,14 @@ namespace FS_LevelEditor
         {
             var jsonOptions = new JsonSerializerOptions
             {
-                Converters = { new LEPropertiesConverter() }
+                Converters =
+                {
+                    new LEPropertiesConverter(),
+                    new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
+                    {
+                        { "setActive", "spawn" }
+                    })
+                }
             };
 
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
@@ -612,6 +619,53 @@ namespace FS_LevelEditor
             }
 
             writer.WriteEndObject();
+        }
+    }
+    public class OldPropertiesRename<T> : JsonConverter<T>
+    {
+        private readonly Dictionary<string, string> renames;
+
+        public OldPropertiesRename(Dictionary<string, string> renames)
+        {
+            this.renames = renames;
+        }
+
+        public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            using var doc = JsonDocument.ParseValue(ref reader);
+            var root = doc.RootElement;
+
+            var newProperties = new Dictionary<string, JsonElement>();
+
+            foreach (var prop in root.EnumerateObject())
+            {
+                string nameToAdd = prop.Name;
+                if (renames.ContainsKey(prop.Name))
+                {
+                    nameToAdd = renames[prop.Name];
+                }
+                newProperties[nameToAdd] = prop.Value;
+            }
+
+            using var modifiedStream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(modifiedStream))
+            {
+                writer.WriteStartObject();
+                foreach (var property in newProperties)
+                {
+                    writer.WritePropertyName(property.Key);
+                    property.Value.WriteTo(writer);
+                }
+                writer.WriteEndObject();
+            }
+
+            modifiedStream.Position = 0;
+            return JsonSerializer.Deserialize<T>(modifiedStream)!;
+        }
+
+        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        {
+            JsonSerializer.Serialize(writer, value, options);
         }
     }
 }
