@@ -1463,7 +1463,7 @@ namespace FS_LevelEditor
             eventsPanel.SetActive(true);
             GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
 
-            EditorController.Instance.SetCurrentEditorState(EditorController.EditorState.Normal);
+            EditorController.Instance.SetCurrentEditorState(EditorState.Normal);
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 
             HideEventSettings();

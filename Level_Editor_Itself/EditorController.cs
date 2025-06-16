@@ -12,6 +12,14 @@ using FS_LevelEditor.Level_Editor_Itself;
 
 namespace FS_LevelEditor
 {
+    public enum EditorState
+    {
+        Normal,
+        MovingObject,
+        SnapingToGrid,
+        Paused,
+    }
+
     [RegisterTypeInIl2Cpp]
     public class EditorController : MonoBehaviour
     {
@@ -20,16 +28,8 @@ namespace FS_LevelEditor
         public string levelName = "test_level";
         public string levelFileNameWithoutExtension = "test_level";
 
-        public enum EditorState
-        {
-            Normal,
-            MovingObject,
-            SnapingToGrid,
-            Paused,
-        }
         public EditorState previousEditorState;
         public EditorState currentEditorState;
-
 
         // Avaiable objects from all of the categories.
         GameObject editorObjectsRootFromBundle;
@@ -117,7 +117,7 @@ namespace FS_LevelEditor
         {
             ManageEscAction();
 
-            if (IsPaused() || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL)) return;
+            if (IsCurrentState(EditorState.Paused) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL)) return;
 
             // When click, check if it's clicking a gizmos arrow.
             if (Input.GetMouseButtonDown(0))
@@ -153,21 +153,21 @@ namespace FS_LevelEditor
 
                 if (Input.GetMouseButtonDown(0))
                 {
-                    if (IsClickingSnapToGridCube())
+                    if (IsHittingObject("SnapToGridCube"))
                     {
                         SetCurrentEditorState(EditorState.SnapingToGrid);
                     }
                 }
-                if (Input.GetMouseButton(0) && IsSnapingSelectedObjToGrid())
+                if (Input.GetMouseButton(0) && IsCurrentState(EditorState.SnapingToGrid))
                 {
                     AlignSelectedObjectToGrid();
                 }
-                if (Input.GetMouseButtonUp(0))
+                if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SnapingToGrid))
                 {
                     SetCurrentEditorState(EditorState.Normal);
                 }
             }
-            else if (IsSnapingSelectedObjToGrid())
+            else
             {
                 snapToGridCube.SetActive(false);
 
@@ -176,7 +176,7 @@ namespace FS_LevelEditor
                     gizmosArrows.SetActive(true);
                 }
 
-                if (Input.GetMouseButtonUp(0))
+                if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SnapingToGrid))
                 {
                     SetCurrentEditorState(EditorState.Normal);
                 }
@@ -185,7 +185,7 @@ namespace FS_LevelEditor
 
             #region Select Object
             // For object selection...
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !IsSnapingSelectedObjToGrid())
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !IsCurrentState(EditorState.SnapingToGrid))
             {
                 // If it's selecting an object, well, set it as the selected one.
                 if (CanSelectObjectWithRay(out GameObject obj))
@@ -222,7 +222,7 @@ namespace FS_LevelEditor
                 // Move the object.
                 MoveObject(collidingArrow);
             }
-            else if (IsMovingAnObject()) // This SHOULD be executed only when the user stopped moving an object.
+            else if (IsCurrentState(EditorState.MovingObject)) // This SHOULD be executed only when the user stopped moving an object.
             {
                 collidingArrow = GizmosArrow.None;
                 SetCurrentEditorState(EditorState.Normal);
@@ -244,7 +244,7 @@ namespace FS_LevelEditor
             #endregion
 
             // Update the global attributes of the object if it's moving it and it's only one (multiple objects aren't supported).
-            if (currentSelectedObjComponent != null && !multipleObjectsSelected && IsMovingAnObject())
+            if (currentSelectedObjComponent != null && !multipleObjectsSelected && IsCurrentState(EditorState.MovingObject))
             {
                 EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
             }
@@ -267,7 +267,7 @@ namespace FS_LevelEditor
                     return;
                 }
 
-                if (!IsPaused())
+                if (!IsCurrentState(EditorState.Paused))
                 {
                     EditorUIManager.Instance.ShowPause();
                 }
@@ -681,7 +681,7 @@ namespace FS_LevelEditor
             // If the ray can collide with the "invisible" plane.
             if (movementPlane.Raycast(ray, out float distance))
             {
-                if (!IsMovingAnObject()) SetCurrentEditorState(EditorState.MovingObject);
+                if (!IsCurrentState(EditorState.MovingObject)) SetCurrentEditorState(EditorState.MovingObject);
 
                 // IT WORKS, DON'T EVEN DARE TO TOUCH THIS EVER AGAIN!
 
@@ -1370,21 +1370,11 @@ namespace FS_LevelEditor
             previousEditorState = currentEditorState;
             currentEditorState = newState;
         }
-        public bool IsInNormalState()
+        public static bool IsCurrentState(EditorState state)
         {
-            return currentEditorState == EditorState.Normal;
-        }
-        public bool IsPaused()
-        {
-            return currentEditorState == EditorState.Paused;
-        }
-        public bool IsMovingAnObject()
-        {
-            return currentEditorState == EditorState.MovingObject;
-        }
-        public bool IsSnapingSelectedObjToGrid()
-        {
-            return currentEditorState == EditorState.SnapingToGrid;
+            if (Instance == null) return false;
+
+            return Instance.currentEditorState == state;
         }
         #endregion
 
@@ -1480,11 +1470,6 @@ namespace FS_LevelEditor
             }
 
             return GizmosArrow.None;
-        }
-
-        bool IsClickingSnapToGridCube()
-        {
-            return IsHittingObject("SnapToGridCube");
         }
 
         Vector3 GetAxisDirection(GizmosArrow arrow, GameObject obj)

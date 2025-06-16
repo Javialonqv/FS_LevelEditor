@@ -100,7 +100,7 @@ namespace FS_LevelEditor
         void Update()
         {
             // For some reason the occluder sometimes is disabled, so I need to force it to be enabled EVERYTIME.
-            occluderForWhenPaused.SetActive(EditorController.Instance.IsPaused());
+            occluderForWhenPaused.SetActive(EditorController.IsCurrentState(EditorState.Paused));
         }
 
         void SetupEditorUI()
@@ -1512,7 +1512,7 @@ namespace FS_LevelEditor
             pauseMenu.GetComponent<TweenAlpha>().PlayForward();
 
             // Set the paused variable in the LE controller.
-            EditorController.Instance.SetCurrentEditorState(EditorController.EditorState.Paused);
+            EditorController.Instance.SetCurrentEditorState(EditorState.Paused);
 
             Logger.Log("LE paused!");
         }
@@ -1546,7 +1546,7 @@ namespace FS_LevelEditor
                 pauseMenu.SetActive(false);
 
                 // And set the paused variable in the controller as false.
-                EditorController.Instance.SetCurrentEditorState(EditorController.EditorState.Normal);
+                EditorController.Instance.SetCurrentEditorState(EditorState.Normal);
             }
 
             Logger.Log("LE resumed!");

@@ -22,7 +22,7 @@ namespace FS_LevelEditor
 
         void Update()
         {
-            if (!EditorController.Instance.IsInNormalState()) return;
+            if (!EditorController.IsCurrentState(EditorState.Normal)) return;
 
             if (Input.GetMouseButton(1) && !Input.GetMouseButton(0))
             {
