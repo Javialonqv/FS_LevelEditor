@@ -1249,85 +1249,74 @@ namespace FS_LevelEditor
 
         void AlignSelectedObjectToGrid()
         {
-            // Get all of the possible rays and short them, since Unity doesn't short them by defualt.
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
-            System.Array.Sort(hits, (hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+            List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
+            hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
 
-            // If it hits at least one object.
-            if (hits.Length > 0)
+            if (hits.Count > 0)
             {
                 foreach (var hit in hits)
                 {
-                    bool theHittenObjectIsTheSelectedOne = false;
+                    #region Skip if it's the current selected object
+                    bool hitIsFromTheCurrentSelectedObj = false;
                     if (multipleObjectsSelected)
                     {
-                        foreach (var obj in currentSelectedObjects)
-                        {
-                            if (hit.collider.transform.parent.gameObject == obj) theHittenObjectIsTheSelectedOne = true;
-                        }
+                        hitIsFromTheCurrentSelectedObj = currentSelectedObjects.Any(obj => obj == hit.collider.transform.parent.gameObject);
                     }
                     else
                     {
-                        if (hit.collider.transform.parent.gameObject == currentSelectedObj) theHittenObjectIsTheSelectedOne = true;
+                        hitIsFromTheCurrentSelectedObj = currentSelectedObj == hit.collider.transform.parent.gameObject;
                     }
+                    if (hitIsFromTheCurrentSelectedObj) continue;
+                    #endregion
 
-                    // If the hit is an static pos trigger (snap trigger)...
                     if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                     {
-                        // Only if the snap trigger is NOT from the current selected object.
-                        bool isFromTheSameObject = false;
+                        #region Skip trigger if it's from the current selected object
+                        bool triggerIsFromTheCurrentSelectedObj = false;
                         if (multipleObjectsSelected)
                         {
-                            foreach (var obj in currentSelectedObjects)
-                            {
-                                if (hit.collider.transform.parent.parent.parent.gameObject == obj) isFromTheSameObject = true;
-                            }
+                            triggerIsFromTheCurrentSelectedObj =
+                                currentSelectedObjects.Any(obj => obj == hit.collider.transform.parent.parent.parent.gameObject);
                         }
                         else
                         {
-                            if (hit.collider.transform.parent.parent.parent.gameObject == currentSelectedObj) isFromTheSameObject = true;
+                            triggerIsFromTheCurrentSelectedObj = hit.collider.transform.parent.parent.parent.gameObject == currentSelectedObj;
                         }
+                        if (triggerIsFromTheCurrentSelectedObj) continue;
+                        #endregion
 
-                        if (!isFromTheSameObject)
+                        // currentSelectedObjComponent isn't null even when selecting multiple objects, but only when the selected objects are of the
+                        // same type, so, use it to identify the available snap triggers (no matter if is selecting multiple objects or not).
+                        if (currentSelectedObjComponent != null)
                         {
-                            // If the component isn't null, use it to idenfity which snap triggers use and which ones no.
-                            if (currentSelectedObjComponent != null)
-                            {
-                                // Detect if that trigger actually CAN be used with the selected object.
-                                if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectOriginalName, hit.collider.gameObject))
-                                {
-                                    currentSelectedObj.transform.position = hit.collider.transform.position;
-                                    currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
-                                    if (!multipleObjectsSelected) EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
-
-                                    levelHasBeenModified = true;
-
-                                    return;
-                                }
-                            }
-                            else // If it's null, use any snap trigger we find.
+                            if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectOriginalName, hit.collider.gameObject))
                             {
                                 currentSelectedObj.transform.position = hit.collider.transform.position;
                                 currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
-                                // Don't update global object attributes, since if the current selected component is null, that means the user is 100% selecting
-                                // multiple objects.
+                                if (!multipleObjectsSelected) EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
 
                                 levelHasBeenModified = true;
 
                                 return;
                             }
                         }
+                        else
+                        {
+                            currentSelectedObj.transform.position = hit.collider.transform.position;
+                            currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
+                            // Don't update global object attributes, since if the current selected component is null, that means the user is 100% selecting
+                            // multiple objects.
+
+                            levelHasBeenModified = true;
+
+                            return;
+                        }
                     }
-                    // If the hitten object is the current selected one, keep iterating...
-                    else if (theHittenObjectIsTheSelectedOne)
-                    {
-                        continue;
-                    }
-                    // Otherwise, return and do nothing.
                     else
                     {
-                        return;
+                        // Avoid detecting triggers by traspassing objects.
+                        break;
                     }
                 }
             }
