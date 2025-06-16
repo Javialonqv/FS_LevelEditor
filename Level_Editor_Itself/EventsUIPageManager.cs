@@ -25,9 +25,9 @@ namespace FS_LevelEditor
         GameObject currentEventPageLabel;
         GameObject noEventsLabel;
 
-        GameObject onActivatedButton;
-        GameObject onDeactivatedButton;
-        GameObject onChangeButton;
+        GameObject whenActivatingButton;
+        GameObject whenDeactivatingButton;
+        GameObject whenInvertingButton;
 
         GameObject eventsListBg;
         List<GameObject> eventsGridList = new List<GameObject>();
@@ -74,7 +74,7 @@ namespace FS_LevelEditor
         UICustomInputField newPackRespawnTimeInputField;
         UIToggle spawnPackNowToggle;
 
-        enum CurrentEventType { OnEnable, OnDisable, OnChange }
+        enum CurrentEventType { WhenActivating, WhenDeactivating, WhenInverting }
         CurrentEventType currentEventType;
         LE_Event currentSelectedEvent;
 
@@ -168,28 +168,28 @@ namespace FS_LevelEditor
         }
         void CreateTopButtons()
         {
-            onActivatedButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 300f, 0f), new Vector3Int(480, 55, 0), "On Activated");
-            onActivatedButton.name = "OnActivatedButton";
-            onActivatedButton.GetComponent<UISprite>().depth = 1;
-            EventDelegate onActivatedDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(OnEnableBtnClick),
+            whenActivatingButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 300f, 0f), new Vector3Int(480, 55, 0), "When Activating");
+            whenActivatingButton.name = "WhenActivatingButton";
+            whenActivatingButton.GetComponent<UISprite>().depth = 1;
+            EventDelegate onActivatedDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(WhenActivatingBtnClick),
                 NGUI_Utils.CreateEventDelegateParamter(this, "playSound", true));
-            onActivatedButton.GetComponent<UIButton>().onClick.Add(onActivatedDelegate);
-            onActivatedButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            onActivatedButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            whenActivatingButton.GetComponent<UIButton>().onClick.Add(onActivatedDelegate);
+            whenActivatingButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            whenActivatingButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
-            onDeactivatedButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 300f, 0f), new Vector3Int(480, 55, 0), "On Deactivated");
-            onDeactivatedButton.name = "OnDeactivatedButton";
-            onDeactivatedButton.GetComponent<UISprite>().depth = 1;
-            onDeactivatedButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnDisableBtnClick)));
-            onDeactivatedButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            onDeactivatedButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            whenDeactivatingButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 300f, 0f), new Vector3Int(480, 55, 0), "When Deactivating");
+            whenDeactivatingButton.name = "WhenDeactivatingButton";
+            whenDeactivatingButton.GetComponent<UISprite>().depth = 1;
+            whenDeactivatingButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(WhenDeactivatingBtnClick)));
+            whenDeactivatingButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            whenDeactivatingButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
-            onChangeButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(500f, 300f, 0f), new Vector3Int(480, 55, 0), "On Change");
-            onChangeButton.name = "OnChangeButton";
-            onChangeButton.GetComponent<UISprite>().depth = 1;
-            onChangeButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnChangeBtnClick)));
-            onChangeButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            onChangeButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            whenInvertingButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(500f, 300f, 0f), new Vector3Int(480, 55, 0), "When Inverting");
+            whenInvertingButton.name = "WhenInvertingButton";
+            whenInvertingButton.GetComponent<UISprite>().depth = 1;
+            whenInvertingButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(WhenInvertingBtnClick)));
+            whenInvertingButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            whenInvertingButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
         }
         void CreateEventsListBackground()
         {
@@ -574,43 +574,43 @@ namespace FS_LevelEditor
 
             Logger.Log("RENAMED " + eventID + " TO: " + inputRef.text);
         }
-        void OnEnableBtnClick(bool playSound = true)
+        void WhenActivatingBtnClick(bool playSound = true)
         {
             // This method is the only one with the playSound parm because it's the only one I wanna call when
             // opening the events windows with NO sound at all.
             if (playSound) Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
 
-            onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-            onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            whenActivatingButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            whenDeactivatingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            whenInvertingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 
-            currentEventType = CurrentEventType.OnEnable;
-
-            HideEventSettings();
-            CreateEventsList(0);
-        }
-        void OnDisableBtnClick()
-        {
-            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
-
-            onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-            onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-
-            currentEventType = CurrentEventType.OnDisable;
+            currentEventType = CurrentEventType.WhenActivating;
 
             HideEventSettings();
             CreateEventsList(0);
         }
-        void OnChangeBtnClick()
+        void WhenDeactivatingBtnClick()
         {
             Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
 
-            onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            whenActivatingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            whenDeactivatingButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            whenInvertingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 
-            currentEventType = CurrentEventType.OnChange;
+            currentEventType = CurrentEventType.WhenDeactivating;
+
+            HideEventSettings();
+            CreateEventsList(0);
+        }
+        void WhenInvertingBtnClick()
+        {
+            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+
+            whenActivatingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            whenDeactivatingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            whenInvertingButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+
+            currentEventType = CurrentEventType.WhenInverting;
 
             HideEventSettings();
             CreateEventsList(0);
@@ -621,16 +621,16 @@ namespace FS_LevelEditor
 
             switch (currentEventType)
             {
-                case CurrentEventType.OnEnable:
-                    ((List<LE_Event>)targetObj.properties["OnActivatedEvents"]).Add(new LE_Event());
+                case CurrentEventType.WhenActivating:
+                    ((List<LE_Event>)targetObj.properties["WhenActivatingEvents"]).Add(new LE_Event());
                     break;
 
-                case CurrentEventType.OnDisable:
-                    ((List<LE_Event>)targetObj.properties["OnDeactivatedEvents"]).Add(new LE_Event());
+                case CurrentEventType.WhenDeactivating:
+                    ((List<LE_Event>)targetObj.properties["WhenDeactivatingEvents"]).Add(new LE_Event());
                     break;
 
-                case CurrentEventType.OnChange:
-                    ((List<LE_Event>)targetObj.properties["OnChangeEvents"]).Add(new LE_Event());
+                case CurrentEventType.WhenInverting:
+                    ((List<LE_Event>)targetObj.properties["WhenInvertingEvents"]).Add(new LE_Event());
                     break;
             }
 
@@ -1450,7 +1450,7 @@ namespace FS_LevelEditor
 
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
 
-            OnEnableBtnClick(false);
+            WhenActivatingBtnClick(false);
             // CreateEventsList();
         }
         public void HideEventsPage()
@@ -1473,14 +1473,14 @@ namespace FS_LevelEditor
         {
             switch (currentEventType)
             {
-                case CurrentEventType.OnEnable:
-                    return (List<LE_Event>)targetObj.GetProperty("OnActivatedEvents");
+                case CurrentEventType.WhenActivating:
+                    return (List<LE_Event>)targetObj.GetProperty("WhenActivatingEvents");
 
-                case CurrentEventType.OnDisable:
-                    return (List<LE_Event>)targetObj.GetProperty("OnDeactivatedEvents");
+                case CurrentEventType.WhenDeactivating:
+                    return (List<LE_Event>)targetObj.GetProperty("WhenDeactivatingEvents");
 
-                case CurrentEventType.OnChange:
-                    return (List<LE_Event>)targetObj.GetProperty("OnChangeEvents");
+                case CurrentEventType.WhenInverting:
+                    return (List<LE_Event>)targetObj.GetProperty("WhenInvertingEvents");
             }
 
             return null;

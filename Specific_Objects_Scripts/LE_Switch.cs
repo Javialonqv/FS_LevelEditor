@@ -48,9 +48,9 @@ namespace FS_LevelEditor
             {
                 { "UsableOnce", false },
                 { "CanUseTaser", true },
-                { "OnActivatedEvents", new List<LE_Event>() },
-                { "OnDeactivatedEvents", new List<LE_Event>() },
-                { "OnChangeEvents", new List<LE_Event>() }
+                { "WhenActivatingEvents", new List<LE_Event>() },
+                { "WhenDeactivatingEvents", new List<LE_Event>() },
+                { "WhenInvertingEvents", new List<LE_Event>() }
             };
 
             CreateEditorLinksParent();
@@ -187,25 +187,25 @@ namespace FS_LevelEditor
                     return false;
                 }
             }
-            else if (name == "OnActivatedEvents")
+            else if (name == "WhenActivatingEvents")
             {
                 if (value is List<LE_Event>)
                 {
-                    properties["OnActivatedEvents"] = (List<LE_Event>)value;
+                    properties["WhenActivatingEvents"] = (List<LE_Event>)value;
                 }
             }
-            else if (name == "OnDeactivatedEvents")
+            else if (name == "WhenDeactivatingEvents")
             {
                 if (value is List<LE_Event>)
                 {
-                    properties["OnDeactivatedEvents"] = (List<LE_Event>)value;
+                    properties["WhenDeactivatingEvents"] = (List<LE_Event>)value;
                 }
             }
-            else if (name == "OnChangeEvents")
+            else if (name == "WhenInvertingEvents")
             {
                 if (value is List<LE_Event>)
                 {
-                    properties["OnChangeEvents"] = (List<LE_Event>)value;
+                    properties["WhenInvertingEvents"] = (List<LE_Event>)value;
                 }
             }
 
@@ -263,7 +263,7 @@ namespace FS_LevelEditor
 
             List<string> alreadyLinkedObjectsNames = new List<string>();
 
-            string[] eventKeys = { "OnActivatedEvents", "OnDeactivatedEvents", "OnChangeEvents" };
+            string[] eventKeys = { "WhenActivatingEvents", "WhenDeactivatingEvents", "WhenInvertingEvents" };
             foreach (string eventKey in eventKeys)
             {
                 foreach (var @event in (List<LE_Event>)properties[eventKey])
@@ -332,25 +332,25 @@ namespace FS_LevelEditor
         void ConfigureEvents(InterrupteurController controller)
         {
             controller.m_onActivate = new UnityEngine.Events.UnityEvent();
-            controller.m_onActivate.AddListener((UnityAction)ExecuteOnActivatedEvents);
-            controller.m_onActivate.AddListener((UnityAction)ExecuteOnChangeEvents);
+            controller.m_onActivate.AddListener((UnityAction)ExecuteWhenActivatingEvents);
+            controller.m_onActivate.AddListener((UnityAction)ExecuteWhenInvertingEvents);
 
             controller.m_onDeactivate = new UnityEngine.Events.UnityEvent();
-            controller.m_onDeactivate.AddListener((UnityAction)ExecuteOnDeactivatedEvents);
-            controller.m_onDeactivate.AddListener((UnityAction)ExecuteOnChangeEvents);
+            controller.m_onDeactivate.AddListener((UnityAction)ExecuteWhenDeactivatingEvents);
+            controller.m_onDeactivate.AddListener((UnityAction)ExecuteWhenInvertingEvents);
         }
 
-        void ExecuteOnActivatedEvents()
+        void ExecuteWhenActivatingEvents()
         {
-            ExecuteEvents((List<LE_Event>)properties["OnActivatedEvents"]);
+            ExecuteEvents((List<LE_Event>)properties["WhenActivatingEvents"]);
         }
-        void ExecuteOnDeactivatedEvents()
+        void ExecuteWhenDeactivatingEvents()
         {
-            ExecuteEvents((List<LE_Event>)properties["OnDeactivatedEvents"]);
+            ExecuteEvents((List<LE_Event>)properties["WhenDeactivatingEvents"]);
         }
-        void ExecuteOnChangeEvents()
+        void ExecuteWhenInvertingEvents()
         {
-            ExecuteEvents((List<LE_Event>)properties["OnChangeEvents"]);
+            ExecuteEvents((List<LE_Event>)properties["WhenInvertingEvents"]);
         }
 
         void ExecuteEvents(List<LE_Event> events)

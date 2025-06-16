@@ -153,6 +153,8 @@ namespace FS_LevelEditor
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
 
+            ReevaluateOldProperties(ref data);
+
             List<LE_ObjectData> toCheck = data.objects;
             if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
             {
@@ -380,6 +382,36 @@ namespace FS_LevelEditor
             }
 
             return result;
+        }
+
+        static void ReevaluateOldProperties(ref LevelData data)
+        {
+            foreach (var obj in data.objects)
+            {
+                Dictionary<string, object> newProperties = new();
+
+                foreach (var property in obj.properties)
+                {
+                    switch (property.Key)
+                    {
+                        case "OnActivatedEvents":
+                            newProperties.Add("WhenActivatingEvents", property.Value);
+                            break;
+                        case "OnDeactivatedEvents":
+                            newProperties.Add("WhenDeactivatingEvents", property.Value);
+                            break;
+                        case "OnChangeEvents":
+                            newProperties.Add("WhenInvertingEvents", property.Value);
+                            break;
+
+                        default:
+                            newProperties.Add(property.Key, property.Value);
+                            break;
+                    }
+                }
+
+                obj.properties = newProperties;
+            }
         }
     }
 
