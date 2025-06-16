@@ -77,6 +77,7 @@ namespace FS_LevelEditor
 
         // SNAP
         GameObject snapToGridCube;
+        Vector3 objPositionWhenStartToSnap;
 
         List<LEAction> actionsMade = new List<LEAction>();
         LEAction currentExecutingAction;
@@ -155,7 +156,32 @@ namespace FS_LevelEditor
                 {
                     if (IsHittingObject("SnapToGridCube"))
                     {
+                        objPositionWhenStartToSnap = currentSelectedObj.transform.position;
                         SetCurrentEditorState(EditorState.SnapingToGrid);
+
+                        #region Register LEAction
+                        currentExecutingAction = new LEAction();
+                        currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+
+                        currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
+
+                        if (multipleObjectsSelected)
+                        {
+                            currentExecutingAction.targetObjs = new List<GameObject>();
+                            foreach (var obj in currentSelectedObj.GetChilds())
+                            {
+                                if (obj.name == "MoveObjectArrows") continue;
+                                if (obj.name == "SnapToGridCube") continue;
+
+                                currentExecutingAction.targetObjs.Add(obj);
+                            }
+                        }
+                        else
+                        {
+                            currentExecutingAction.targetObj = currentSelectedObj;
+                        }
+                        currentExecutingAction.oldPos = currentSelectedObj.transform.localPosition;
+                        #endregion
                     }
                 }
                 if (Input.GetMouseButton(0) && IsCurrentState(EditorState.SnapingToGrid))
@@ -165,6 +191,12 @@ namespace FS_LevelEditor
                 if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SnapingToGrid))
                 {
                     SetCurrentEditorState(EditorState.Normal);
+
+                    if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
+                    {
+                        currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
+                        actionsMade.Add(currentExecutingAction);
+                    }
                 }
             }
             else
@@ -179,6 +211,12 @@ namespace FS_LevelEditor
                 if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SnapingToGrid))
                 {
                     SetCurrentEditorState(EditorState.Normal);
+
+                    if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
+                    {
+                        currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
+                        actionsMade.Add(currentExecutingAction);
+                    }
                 }
             }
             #endregion
@@ -675,7 +713,6 @@ namespace FS_LevelEditor
                 if (arrowColliderName == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - collisionOnPlane.z;
             }
         }
-
         void MoveObject(GizmosArrow direction)
         {
             // Get the ray from the camera.
