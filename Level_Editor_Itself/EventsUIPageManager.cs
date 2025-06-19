@@ -813,6 +813,7 @@ namespace FS_LevelEditor
             {
                 fieldSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
                 eventOptionsParent.SetActive(true);
+                eventOptionsParent.DisableAllChildren();
 
                 if (!string.Equals(inputText, "Player", StringComparison.OrdinalIgnoreCase)) defaultObjectsSettings.SetActive(true);
                 if (string.Equals(inputText, "Player", StringComparison.OrdinalIgnoreCase))
