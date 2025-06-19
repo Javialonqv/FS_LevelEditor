@@ -24,6 +24,19 @@ namespace FS_LevelEditor.UI_Related
                 return _fractalSpaceAtlas;
             }
         }
+        static UIAtlas _uiTexturesAtlas;
+        public static UIAtlas UITexturesAtlas
+        {
+            get
+            {
+                if (!_uiTexturesAtlas)
+                {
+                    _uiTexturesAtlas = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background").GetComponent<UISprite>().atlas;
+                }
+                return _uiTexturesAtlas;
+            }
+        }
+
         static UIFont _labelFont;
         public static UIFont labelFont
         {
@@ -84,6 +97,17 @@ namespace FS_LevelEditor.UI_Related
                     _optionsPanel = GameObject.Find("MainMenu/Camera/Holder/Options");
                 }
                 return _optionsPanel;
+            }
+        }
+
+        static Camera _mainMenuCamera;
+        public static Camera mainMenuCamera
+        {
+            get
+            {
+                if (_mainMenuCamera == null) _mainMenuCamera = GameObject.Find("MainMenu/Camera").GetComponent<Camera>();
+
+                return _mainMenuCamera;
             }
         }
 

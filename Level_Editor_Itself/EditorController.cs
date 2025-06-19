@@ -17,6 +17,7 @@ namespace FS_LevelEditor
         Normal,
         MovingObject,
         SnapingToGrid,
+        SelectingTargetObj,
         Paused,
     }
 
@@ -119,6 +120,32 @@ namespace FS_LevelEditor
             ManageEscAction();
 
             if (IsCurrentState(EditorState.Paused) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL)) return;
+
+            #region Select Target Object For Events
+            if (IsCurrentState(EditorState.SelectingTargetObj))
+            {
+                if (GetCollidingWithAnArrow() == GizmosArrow.None)
+                {
+                    if (CanSelectObjectWithRay(out GameObject obj))
+                    {
+                        LE_Object objComp = obj.GetComponent<LE_Object>();
+
+                        EditorUIManager.Instance.UpdateHittenTargetObjPanel(objComp.objectFullNameWithID);
+                        if (Input.GetMouseButtonDown(0))
+                        {
+                            SetCurrentEditorState(EditorState.Normal);
+                            EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
+                            EventsUIPageManager.Instance.SetTargetObjectWithLE_Object(objComp);
+                        }
+                        return;
+                    }
+                }
+
+                EditorUIManager.Instance.UpdateHittenTargetObjPanel("");
+
+                return;
+            }
+            #endregion
 
             // When click, check if it's clicking a gizmos arrow.
             if (Input.GetMouseButtonDown(0))
@@ -303,6 +330,11 @@ namespace FS_LevelEditor
                 if (EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL))
                 {
                     EventsUIPageManager.Instance.HideEventsPage();
+                    return;
+                }
+                else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ))
+                {
+                    EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
                     return;
                 }
 

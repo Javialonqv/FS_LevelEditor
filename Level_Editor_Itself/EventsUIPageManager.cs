@@ -95,6 +95,7 @@ namespace FS_LevelEditor
                 Instance.CreateEventSettingsPanelAndOptionsParent();
                 Instance.CreateTargetObjectINSTRUCTIONLabel();
                 Instance.CreateTargetObjectInputField();
+                Instance.CreateSelectTargetObjectButton();
 
                 Instance.CreateDefaultObjectSettings();
                 Instance.CreateSawObjectSettings();
@@ -741,6 +742,14 @@ namespace FS_LevelEditor
                 NGUI_Utils.CreateEvenDelegate(this, nameof(OnTargetObjectFieldChanged), inputScriptParm1, inputScriptParm2);
             targetObjInputField.onChange.Add(inputScriptDelegate);
         }
+        void CreateSelectTargetObjectButton()
+        {
+            GameObject button = NGUI_Utils.CreateButton(eventSettingsPanel.transform, new Vector3(300f, 230f, 0f), new Vector3Int(60, 60, 0));
+            button.name = "SelectTargetObjectButton";
+
+            UIButtonPatcher patcher = button.AddComponent<UIButtonPatcher>();
+            patcher.onClick += OnSelectTargetObjectButtonClick;
+        }
 
         void ShowEventSettings()
         {
@@ -844,6 +853,17 @@ namespace FS_LevelEditor
 
             currentSelectedEvent.isValid = objIsValid;
             currentSelectedEvent.targetObjName = inputText;
+        }
+        void OnSelectTargetObjectButtonClick()
+        {
+            EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.SELECTING_TARGET_OBJ);
+            EditorController.Instance.SetCurrentEditorState(EditorState.SelectingTargetObj);
+        }
+        
+        public void SetTargetObjectWithLE_Object(LE_Object obj)
+        {
+            targetObjInputField.text = obj.objectFullNameWithID;
+            OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
 
         void CreateDefaultObjectSettings()
@@ -1467,6 +1487,11 @@ namespace FS_LevelEditor
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 
             HideEventSettings();
+        }
+
+        public void StartedSelectingTargetObject(bool state)
+        {
+            eventsPanel.SetActive(!state);
         }
 
         List<LE_Event> GetEventsList()

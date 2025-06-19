@@ -23,6 +23,7 @@ namespace FS_LevelEditor
         NORMAL,
         HELP_PANEL,
         EVENTS_PANEL,
+        SELECTING_TARGET_OBJ,
         GLOBAL_PROPERTIES
     }
 
@@ -67,6 +68,9 @@ namespace FS_LevelEditor
         public GameObject helpPanel;
         GameObject globalPropertiesPanel;
 
+        GameObject hittenTargetObjPanel;
+        UILabel hittenTargetObjLabel;
+
         // Misc
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
@@ -101,6 +105,8 @@ namespace FS_LevelEditor
         {
             // For some reason the occluder sometimes is disabled, so I need to force it to be enabled EVERYTIME.
             occluderForWhenPaused.SetActive(EditorController.IsCurrentState(EditorState.Paused));
+
+            hittenTargetObjPanel.SetActive(!EditorCameraMovement.isRotatingCamera && IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ));
         }
 
         void SetupEditorUI()
@@ -123,6 +129,8 @@ namespace FS_LevelEditor
             CreateGlobalPropertiesPanel();
 
             EventsUIPageManager.Create();
+
+            CreateHittenTargetObjPanel();
 
             // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
@@ -1187,6 +1195,46 @@ namespace FS_LevelEditor
             }
         }
 
+        void CreateHittenTargetObjPanel()
+        {
+            hittenTargetObjPanel = new GameObject("HittenTargetObjPanel");
+            hittenTargetObjPanel.transform.parent = editorUIParent.transform;
+            hittenTargetObjPanel.transform.localPosition = Vector3.zero;
+            hittenTargetObjPanel.transform.localScale = Vector3.one;
+
+            UISprite sprite = hittenTargetObjPanel.AddComponent<UISprite>();
+            sprite.atlas = NGUI_Utils.UITexturesAtlas;
+            sprite.spriteName = "Square_Border_Beveled_HighOpacity";
+            sprite.type = UIBasicSprite.Type.Sliced;
+            sprite.width = 300;
+            sprite.height = 50;
+            sprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            sprite.pivot = UIWidget.Pivot.TopLeft;
+            sprite.depth = 0;
+
+            GameObject label = new GameObject("HittenObjName");
+            label.transform.parent = hittenTargetObjPanel.transform;
+            label.transform.localScale = Vector3.one;
+            hittenTargetObjLabel = label.AddComponent<UILabel>();
+            hittenTargetObjLabel.font = NGUI_Utils.labelFont;
+            hittenTargetObjLabel.fontSize = 27;
+            hittenTargetObjLabel.width = 290;
+            hittenTargetObjLabel.height = 40;
+            hittenTargetObjLabel.pivot = UIWidget.Pivot.Left;
+            hittenTargetObjLabel.depth = 1;
+            label.transform.localPosition = new Vector3(5f, -25f);
+
+            hittenTargetObjPanel.SetActive(false);
+        }
+        public void UpdateHittenTargetObjPanel(string hittenObjName)
+        {
+            Vector3 mousePos = Input.mousePosition;
+            Vector3 worldPos = NGUI_Utils.mainMenuCamera.ScreenToWorldPoint(mousePos);
+            Vector3 localPos = hittenTargetObjPanel.transform.parent.InverseTransformPoint(worldPos);
+            hittenTargetObjPanel.transform.localPosition = localPos - new Vector3(-20f, 20f);
+            hittenTargetObjLabel.text = hittenObjName;
+        }
+
         public void CreateHelpPanel()
         {
             GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
@@ -1714,6 +1762,17 @@ namespace FS_LevelEditor
             {
                 SetEditorUIContext(EditorUIContext.HELP_PANEL);
                 return;
+            }
+
+            if (context == EditorUIContext.SELECTING_TARGET_OBJ && currentUIContext == EditorUIContext.EVENTS_PANEL)
+            {
+                hittenTargetObjPanel.SetActive(true);
+                EventsUIPageManager.Instance.StartedSelectingTargetObject(true);
+            }
+            if (context == EditorUIContext.EVENTS_PANEL && currentUIContext == EditorUIContext.SELECTING_TARGET_OBJ)
+            {
+                hittenTargetObjPanel.SetActive(false);
+                EventsUIPageManager.Instance.StartedSelectingTargetObject(false);
             }
 
             if (context == EditorUIContext.GLOBAL_PROPERTIES)
