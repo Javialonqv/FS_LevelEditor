@@ -231,6 +231,30 @@ namespace FS_LevelEditor.UI_Related
 
             return button;
         }
+        public static GameObject CreateButtonWithSprite(Transform parent, Vector3 position, Vector3Int size, int buttonDepth, string spriteName, Vector2Int spriteSize)
+        {
+            GameObject button = GameObject.Instantiate(buttonTemplate, parent);
+            button.transform.localPosition = position;
+            button.transform.localScale = Vector3.one;
+
+            button.GetComponent<UISprite>().width = size.x;
+            button.GetComponent<UISprite>().height = size.y;
+            button.GetComponent<BoxCollider>().size = size;
+            GameObject.Destroy(button.GetComponent<ButtonController>());
+
+            GameObject labelObj = button.GetChildAt("Background/Label");
+            GameObject.Destroy(labelObj.GetComponent<UILocalize>());
+            GameObject.Destroy(labelObj.GetComponent<UILabel>());
+            UISprite sprite = labelObj.AddComponent<UISprite>();
+            sprite.transform.localPosition = Vector3.zero;
+            sprite.transform.parent.localPosition = Vector3.zero;
+            sprite.SetExternalSprite(spriteName);
+            sprite.width = spriteSize.x;
+            sprite.height = spriteSize.y;
+            sprite.depth = buttonDepth + 1;
+
+            return button;
+        }
 
         public static GameObject CreateButtonAsToggle(Transform parent, Vector3 position, Vector3Int size, string text = "", int toggleDepth = 0)
         {

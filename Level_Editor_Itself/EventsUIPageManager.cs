@@ -744,7 +744,8 @@ namespace FS_LevelEditor
         }
         void CreateSelectTargetObjectButton()
         {
-            GameObject button = NGUI_Utils.CreateButton(eventSettingsPanel.transform, new Vector3(300f, 230f, 0f), new Vector3Int(60, 60, 0));
+            GameObject button = NGUI_Utils.CreateButtonWithSprite(eventSettingsPanel.transform, new Vector3(300f, 230f, 0f), new Vector3Int(60, 60, 0),
+                1, "MouseClickingObj", new Vector2Int(40, 40));
             button.name = "SelectTargetObjectButton";
 
             UIButtonPatcher patcher = button.AddComponent<UIButtonPatcher>();
