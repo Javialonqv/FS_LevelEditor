@@ -91,7 +91,7 @@ namespace FS_LevelEditor
             {
                 if (value is string)
                 {
-                    if (float.TryParse((string)value, out float result))
+                    if (Utilities.TryParseFloat((string)value, out float result))
                     {
                         properties["RespawnTime"] = result;
                         return true;

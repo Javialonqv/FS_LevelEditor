@@ -77,7 +77,7 @@ namespace FS_LevelEditor
                 }
                 else if (value is string)
                 {
-                    if (float.TryParse((string)value, out float result))
+                    if (Utilities.TryParseFloat((string)value, out float result))
                     {
                         light.intensity = result;
                         properties["Intensity"] = result;

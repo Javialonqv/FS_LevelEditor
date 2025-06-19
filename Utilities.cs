@@ -466,5 +466,32 @@ namespace FS_LevelEditor
         {
             transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, newValue);
         }
+
+        public static bool TryParseFloat(string text, out float result)
+        {
+            if (float.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float value))
+            {
+                result = value;
+                return true;
+            }
+            else
+            {
+                result = 0f;
+                return false;
+            }
+        }
+
+        public static float ParseFloat(string text, bool throwErrorIfCantParse = false)
+        {
+            if (float.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float value))
+            {
+                return value;
+            }
+            else
+            {
+                if (throwErrorIfCantParse) Logger.Error($"Couldn't parse \"{text}\" to float!");
+                return value;
+            }
+        }
     }
 }

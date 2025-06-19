@@ -134,7 +134,7 @@ namespace FS_LevelEditor.UI_Related
                     return false;
 
                 case UIInputType.NON_NEGATIVE_FLOAT:
-                    if (float.TryParse(GetText(), out float floatResult))
+                    if (Utilities.TryParseFloat(GetText(), out float floatResult))
                     {
                         return floatResult >= 0;
                     }
@@ -144,7 +144,7 @@ namespace FS_LevelEditor.UI_Related
                     return int.TryParse(GetText(), out int intResult2);
 
                 case UIInputType.FLOAT:
-                    return float.TryParse(GetText(), out float floatResult2);
+                    return Utilities.TryParseFloat(GetText(), out float floatResult2);
             }
 
             return false;
@@ -176,7 +176,7 @@ namespace FS_LevelEditor.UI_Related
         {
             if (input.selected) return;
 
-            input.text = value + "";
+            input.text = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
         public void SetText(float value, int maxDecimals)
         {
@@ -186,7 +186,7 @@ namespace FS_LevelEditor.UI_Related
             if (maxDecimals > 0)
                 format += "." + new string('#', maxDecimals);
 
-            input.text = value.ToString(format);
+            input.text = value.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }

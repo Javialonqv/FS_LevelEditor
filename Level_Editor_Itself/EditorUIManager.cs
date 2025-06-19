@@ -1032,7 +1032,7 @@ namespace FS_LevelEditor
         {
             // Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
             if ((propertyName.Contains("Position") || propertyName.Contains("Rotation") || propertyName.Contains("Scale")) &&
-                float.TryParse(inputField.GetText(), out float floatValue))
+                Utilities.TryParseFloat(inputField.GetText(), out float floatValue))
             {
                 switch (propertyName)
                 {
@@ -1462,7 +1462,7 @@ namespace FS_LevelEditor
             switch (inputFieldName)
             {
                 case "DeathYLimit":
-                    bool toReturn = float.TryParse(fieldText, out float result);
+                    bool toReturn = Utilities.TryParseFloat(fieldText, out float result);
                     parsedData = result;
                     return toReturn;
             }

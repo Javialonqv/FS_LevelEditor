@@ -1449,7 +1449,7 @@ namespace FS_LevelEditor
         {
             if (newPackRespawnTimeInputField.isValid)
             {
-                currentSelectedEvent.packRespawnTime = float.Parse(newPackRespawnTimeInputField.GetText());
+                currentSelectedEvent.packRespawnTime = Utilities.ParseFloat(newPackRespawnTimeInputField.GetText());
             }
         }
         void OnSpawnPackNowToggleChanged()
