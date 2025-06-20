@@ -106,7 +106,10 @@ namespace FS_LevelEditor
             // For some reason the occluder sometimes is disabled, so I need to force it to be enabled EVERYTIME.
             occluderForWhenPaused.SetActive(EditorController.IsCurrentState(EditorState.Paused));
 
-            hittenTargetObjPanel.SetActive(!EditorCameraMovement.isRotatingCamera && IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ));
+            if (hittenTargetObjPanel)
+            {
+                hittenTargetObjPanel.SetActive(!EditorCameraMovement.isRotatingCamera && IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ));
+            }
         }
 
         void SetupEditorUI()

@@ -73,6 +73,11 @@ namespace FS_LevelEditor
         UILabel newPackRespawnTimeTitleLabel;
         UICustomInputField newPackRespawnTimeInputField;
         UIToggle spawnPackNowToggle;
+        //-----------------------------------
+        GameObject switchObjectsSettings;
+        UIDropdownPatcher switchStateDropdown;
+        UIToggle executeSwitchActionsToggle;
+        UIDropdownPatcher switchUsableStateDropdown;
 
         enum CurrentEventType { WhenActivating, WhenDeactivating, WhenInverting }
         CurrentEventType currentEventType;
@@ -105,6 +110,7 @@ namespace FS_LevelEditor
                 Instance.CreateLightObjectSettings();
                 Instance.CreateCeilingLightObjectSettings();
                 Instance.CreateHealthAndAmmoPacksObjectSettings();
+                Instance.CreateSwitchObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -774,6 +780,9 @@ namespace FS_LevelEditor
             newPackRespawnTimeInputField.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
             newPackRespawnTimeInputField.SetText(currentSelectedEvent.packRespawnTime);
             spawnPackNowToggle.Set(currentSelectedEvent.spawnPackNow);
+            switchStateDropdown.SelectOption((int)currentSelectedEvent.switchState);
+            executeSwitchActionsToggle.Set(currentSelectedEvent.executeSwitchActions);
+            switchUsableStateDropdown.SelectOption((int)currentSelectedEvent.switchUsableState);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -844,6 +853,10 @@ namespace FS_LevelEditor
                 else if (targetObj is LE_Health_Pack || targetObj is LE_Ammo_Pack)
                 {
                     healthAmmoPacksObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Switch)
+                {
+                    switchObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -1351,6 +1364,95 @@ namespace FS_LevelEditor
             spawnPackNowToggle.onChange.Clear();
             spawnPackNowToggle.onChange.Add(new EventDelegate(this, nameof(OnSpawnPackNowToggleChanged)));
         }
+        // -----------------------------------------
+        void CreateSwitchObjectSettings()
+        {
+            switchObjectsSettings = new GameObject("Switch");
+            switchObjectsSettings.transform.parent = eventOptionsParent.transform;
+            switchObjectsSettings.transform.localPosition = Vector3.zero;
+            switchObjectsSettings.transform.localScale = Vector3.one;
+            switchObjectsSettings.SetActive(false);
+
+            CreateSwitchObjectsTitleLabel();
+            CreateSwitchStateSettings();
+            CreateExecuteSwitchActionsToggle();
+            CreateSwitchUsableStateSettings();
+        }
+        void CreateSwitchObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, switchObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "SWITCH OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateSwitchStateSettings()
+        {
+            GameObject switchStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), switchObjectsSettings.transform);
+            switchStateDropdownPanel.name = "SwitchStateDropdownPanel";
+            switchStateDropdownPanel.transform.localPosition = new Vector3(-200f, -50f, 0f);
+            switchStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+
+            UIDropdownPatcher patcher = switchStateDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Set Active State");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("Activated", false);
+            patcher.AddOption("Deactivated", false);
+            patcher.AddOption("Toggle", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchStateDropdownChanged)));
+
+            switchStateDropdown = patcher;
+            switchStateDropdownPanel.SetActive(true);
+        }
+        void CreateExecuteSwitchActionsToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(switchObjectsSettings.transform, new Vector3(-350f, -120f, 0f),
+                new Vector3Int(250, 48, 1), "Execute Actions");
+            toggle.name = "ExecuteActionsToggle";
+
+            executeSwitchActionsToggle = toggle.GetComponent<UIToggle>();
+            executeSwitchActionsToggle.onChange.Clear();
+            executeSwitchActionsToggle.onChange.Add(new EventDelegate(this, nameof(OnExecuteSwitchActionsToggleChanged)));
+        }
+        void CreateSwitchUsableStateSettings()
+        {
+            GameObject switchUsableStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), switchObjectsSettings.transform);
+            switchUsableStateDropdownPanel.name = "SwitchUsableStateDropdownPanel";
+            switchUsableStateDropdownPanel.transform.localPosition = new Vector3(200f, -50f, 0f);
+            switchUsableStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+
+            UIDropdownPatcher patcher = switchUsableStateDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Set Usable State");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("Usable", false);
+            patcher.AddOption("Unusable", false);
+            patcher.AddOption("Toggle", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchUsableStateDropdownChanged)));
+
+            switchUsableStateDropdown = patcher;
+            switchUsableStateDropdownPanel.SetActive(true);
+        }
 
 
         void OnSpawnOptionsDropdownChanged()
@@ -1458,6 +1560,21 @@ namespace FS_LevelEditor
         {
             currentSelectedEvent.spawnPackNow = spawnPackNowToggle.isChecked;
         }
+        // -----------------------------------------
+        void OnSwitchStateDropdownChanged()
+        {
+            currentSelectedEvent.switchState = (LE_Event.SwitchState)switchStateDropdown.currentlySelectedID;
+
+            executeSwitchActionsToggle.gameObject.SetActive(currentSelectedEvent.switchState != LE_Event.SwitchState.Do_Nothing);
+        }
+        void OnExecuteSwitchActionsToggleChanged()
+        {
+            currentSelectedEvent.executeSwitchActions = executeSwitchActionsToggle.isChecked;
+        }
+        void OnSwitchUsableStateDropdownChanged()
+        {
+            currentSelectedEvent.switchUsableState = (LE_Event.SwitchUsableState)switchUsableStateDropdown.currentlySelectedID;
+        }
 
         public void ShowEventsPage(LE_Object targetObj)
         {
@@ -1561,5 +1678,13 @@ public class LE_Event
     public bool changePackRespawnTime { get; set; } = false;
     public float packRespawnTime { get; set; } = 60;
     public bool spawnPackNow { get; set; } = false;
+    #endregion
+
+    #region Switch Options
+    public enum SwitchState { Do_Nothing, Activated, Deactivated, Toggle }
+    public SwitchState switchState { get; set; } = SwitchState.Do_Nothing;
+    public bool executeSwitchActions { get; set; } = true;
+    public enum SwitchUsableState { Do_Nothing, Usable, Unusable, Toggle }
+    public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Do_Nothing;
     #endregion
 }

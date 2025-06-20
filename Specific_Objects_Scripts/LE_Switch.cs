@@ -42,6 +42,8 @@ namespace FS_LevelEditor
         List<EditorLink> editorLinks = new();
         bool dontDisableLinksParentWhenCreating;
 
+        InterrupteurController controller;
+
         void Awake()
         {
             properties = new Dictionary<string, object>
@@ -111,7 +113,7 @@ namespace FS_LevelEditor
             button.GetChildWithName("AutoAimCollider").layer = LayerMask.NameToLayer("Water");
             #endregion
 
-            InterrupteurController controller = button.AddComponent<InterrupteurController>();
+            controller = button.AddComponent<InterrupteurController>();
 
             controller.ActivateButtonSound = t_switch.ActivateButtonSound;
             controller.additionalInteractionGO = button.GetChildWithName("AdditionalInteractionCollider_Sides");
@@ -223,6 +225,66 @@ namespace FS_LevelEditor
             {
                 CreateInEditorLinksToTargetObjects();
                 return true;
+            }
+
+            else if (actionName == "Activate")
+            {
+                UnityEvent onActivate = controller.m_onActivate;
+                controller.m_onActivate = new UnityEvent();
+                controller.ActivateSwitch();
+                controller.m_onActivate = onActivate;
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                UnityEvent onDeactivate = controller.m_onDeactivate;
+                controller.m_onDeactivate = new UnityEvent();
+                controller.DeactivateSwitch();
+                controller.m_onDeactivate = onDeactivate;
+                return true;
+            }
+            else if (actionName == "ToggleActivated")
+            {
+                if (controller.activated)
+                {
+                    UnityEvent onDeactivate = controller.m_onDeactivate;
+                    controller.m_onDeactivate = new UnityEvent();
+                    controller.DeactivateSwitch();
+                    controller.m_onDeactivate = onDeactivate;
+                }
+                else
+                {
+                    UnityEvent onActivate = controller.m_onActivate;
+                    controller.m_onActivate = new UnityEvent();
+                    controller.ActivateSwitch();
+                    controller.m_onActivate = onActivate;
+                }
+                return true;
+            }
+            else if (actionName == "ExecuteWhenActivatingActions")
+            {
+                ExecuteWhenActivatingEvents();
+            }
+            else if (actionName == "ExecuteWhenDeactivatingActions")
+            {
+                ExecuteWhenDeactivatingEvents();
+            }
+            else if (actionName == "ExecuteWhenInvertingActions")
+            {
+                ExecuteWhenInvertingEvents();
+            }
+
+            else if (actionName == "SetUsable")
+            {
+                controller.IsNowUsable();
+            }
+            else if (actionName == "SetUnusable")
+            {
+                controller.IsNowUnusable();
+            }
+            else if (actionName == "ToggleUsable")
+            {
+                controller.InvertUsableState();
             }
 
             return base.TriggerAction(actionName);
@@ -481,6 +543,41 @@ namespace FS_LevelEditor
                     if (@event.spawnPackNow)
                     {
                         targetObj.TriggerAction("SpawnNow");
+                    }
+                }
+                else if (targetObj is LE_Switch)
+                {
+                    switch (@event.switchState)
+                    {
+                        case LE_Event.SwitchState.Activated:
+                            targetObj.TriggerAction("Activate");
+                            if (@event.executeSwitchActions) targetObj.TriggerAction("ExecuteWhenActivatingActions");
+                            break;
+
+                        case LE_Event.SwitchState.Deactivated:
+                            targetObj.TriggerAction("Deactivate");
+                            if (@event.executeSwitchActions) targetObj.TriggerAction("ExecuteWhenDeactivatingActions");
+                            break;
+
+                        case LE_Event.SwitchState.Toggle:
+                            targetObj.TriggerAction("ToggleActivated");
+                            if (@event.executeSwitchActions) targetObj.TriggerAction("ExecuteWhenInvertingActions");
+                            break;
+                    }
+
+                    switch (@event.switchUsableState)
+                    {
+                        case LE_Event.SwitchUsableState.Usable:
+                            targetObj.TriggerAction("SetUsable");
+                            break;
+
+                        case LE_Event.SwitchUsableState.Unusable:
+                            targetObj.TriggerAction("SetUnusable");
+                            break;
+
+                        case LE_Event.SwitchUsableState.Toggle:
+                            targetObj.TriggerAction("ToggleUsable");
+                            break;
                     }
                 }
             }
