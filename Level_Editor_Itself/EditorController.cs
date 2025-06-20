@@ -404,7 +404,7 @@ namespace FS_LevelEditor
 
             ManageObjectRotationShortcuts();
 
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P))
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P) && enteringPlayMode)
             {
                 // Save data automatically.
                 LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
