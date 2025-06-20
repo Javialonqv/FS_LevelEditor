@@ -87,6 +87,8 @@ namespace FS_LevelEditor
         // Misc?
         public DeathYPlaneCtrl deathYPlane;
 
+        public bool enteringPlayMode = false;
+
         // ----------------------------
         public Dictionary<string, object> globalProperties = new Dictionary<string, object>()
         {
@@ -1394,6 +1396,8 @@ namespace FS_LevelEditor
 
         public void EnterPlayMode()
         {
+            if (enteringPlayMode) return;
+
             if (!EditorController.Instance.currentInstantiatedObjects.Any(x => x is LE_Player_Spawn && x.gameObject.activeSelf))
             {
                 Logger.Warning("Attemped to enter playmode but THERE'S NO PLAYER SPAWN OBJECT!");
@@ -1406,6 +1410,8 @@ namespace FS_LevelEditor
 
             IEnumerator Coroutine()
             {
+                enteringPlayMode = true;
+
                 Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
                 Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
                 EditorUIManager.Instance.DeleteUI();
