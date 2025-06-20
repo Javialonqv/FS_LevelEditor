@@ -27,7 +27,8 @@ namespace FS_LevelEditor
             {
                 this.originalEvent = originalEvent;
                 this.originalSwitch = originalSwitch;
-                targetObj = EditorController.Instance.currentInstantiatedObjects.Find(x => x.objectFullNameWithID == @event.targetObjName);
+                targetObj = EditorController.Instance.currentInstantiatedObjects.Find(x => string.Equals(x.objectFullNameWithID, @event.targetObjName,
+                    StringComparison.OrdinalIgnoreCase));
                 this.editorLinkRenderer = editorLinkRenderer;
             }
 
@@ -379,7 +380,8 @@ namespace FS_LevelEditor
             {
                 // Check if the event is REALLY valid, the event may NOT be valid, but if the player already added an object that mades
                 // it valid, then, check that when the switch is selected, to show the links.
-                LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(x => x.objectFullNameWithID == editorLink.originalEvent.targetObjName);
+                LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(x => string.Equals(x.objectFullNameWithID,
+                    editorLink.originalEvent.targetObjName, StringComparison.OrdinalIgnoreCase));
                 bool isReallyValid = targetObj != null;
 
                 // If the event wasn't valid before, that means the target obj didn't exist, which menas it was null, assign it.
