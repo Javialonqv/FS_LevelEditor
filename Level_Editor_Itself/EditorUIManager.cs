@@ -890,10 +890,14 @@ namespace FS_LevelEditor
         public void SetMultipleObjectsSelected()
         {
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "Multiple Objects Selected";
+            selectedObjPanel.GetChildWithName("Body").SetActive(true);
+            selectedObjPanel.transform.localPosition = new Vector3(-700f, -220f, 0f);
             selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
+
             globalObjAttributesToggle.SetActive(false);
-            selectedObjPanel.GetChildWithName("Body").SetActive(false);
-            selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
+            globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().SetToggleState(true, true);
+
+            UpdateGlobalObjectAttributes(EditorController.Instance.currentSelectedObj.transform);
         }
         public void SetSelectedObject(LE_Object objComponent)
         {
@@ -988,7 +992,7 @@ namespace FS_LevelEditor
                 globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().SetToggleState(true, true);
             }
 
-            UpdateGlobalObjectAttributes(objComponent);
+            UpdateGlobalObjectAttributes(objComponent.transform);
 
             if (objComponent.canBeDisabledAtStart)
             {
@@ -1007,22 +1011,22 @@ namespace FS_LevelEditor
             objectSpecificPanelsParent.gameObject.SetActive(!show);
             globalObjectPanelsParent.gameObject.SetActive(show);
         }
-        public void UpdateGlobalObjectAttributes(LE_Object objComponent)
+        public void UpdateGlobalObjectAttributes(Transform obj)
         {
             // UICustomInput already verifies if the user is typing on the field, if so, SetText does nothing, we don't need to worry about that.
 
             // Set Global Attributes...
-            globalAttributesList["Position"].GetChildWithName("XField").GetComponent<UICustomInputField>().SetText(objComponent.transform.position.x, 2);
-            globalAttributesList["Position"].GetChildWithName("YField").GetComponent<UICustomInputField>().SetText(objComponent.transform.position.y, 2);
-            globalAttributesList["Position"].GetChildWithName("ZField").GetComponent<UICustomInputField>().SetText(objComponent.transform.position.z, 2);
+            globalAttributesList["Position"].GetChildWithName("XField").GetComponent<UICustomInputField>().SetText(obj.position.x, 2);
+            globalAttributesList["Position"].GetChildWithName("YField").GetComponent<UICustomInputField>().SetText(obj.position.y, 2);
+            globalAttributesList["Position"].GetChildWithName("ZField").GetComponent<UICustomInputField>().SetText(obj.position.z, 2);
 
-            globalAttributesList["Rotation"].GetChildWithName("XField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localEulerAngles.x, 2);
-            globalAttributesList["Rotation"].GetChildWithName("YField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localEulerAngles.y, 2);
-            globalAttributesList["Rotation"].GetChildWithName("ZField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localEulerAngles.z, 2);
+            globalAttributesList["Rotation"].GetChildWithName("XField").GetComponent<UICustomInputField>().SetText(obj.localEulerAngles.x, 2);
+            globalAttributesList["Rotation"].GetChildWithName("YField").GetComponent<UICustomInputField>().SetText(obj.localEulerAngles.y, 2);
+            globalAttributesList["Rotation"].GetChildWithName("ZField").GetComponent<UICustomInputField>().SetText(obj.localEulerAngles.z, 2);
 
-            globalAttributesList["Scale"].GetChildWithName("XField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localScale.x, 2);
-            globalAttributesList["Scale"].GetChildWithName("YField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localScale.y, 2);
-            globalAttributesList["Scale"].GetChildWithName("ZField").GetComponent<UICustomInputField>().SetText(objComponent.transform.localScale.z, 2);
+            globalAttributesList["Scale"].GetChildWithName("XField").GetComponent<UICustomInputField>().SetText(obj.localScale.x, 2);
+            globalAttributesList["Scale"].GetChildWithName("YField").GetComponent<UICustomInputField>().SetText(obj.localScale.y, 2);
+            globalAttributesList["Scale"].GetChildWithName("ZField").GetComponent<UICustomInputField>().SetText(obj.localScale.z, 2);
         }
         // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
         // AAALSO now its seems crapGUI can't recognize between two different overloads of a method, so I need to put different names foreach method, DAMN IT.

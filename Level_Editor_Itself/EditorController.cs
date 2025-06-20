@@ -314,9 +314,16 @@ namespace FS_LevelEditor
             #endregion
 
             // Update the global attributes of the object if it's moving it and it's only one (multiple objects aren't supported).
-            if (currentSelectedObjComponent != null && !multipleObjectsSelected && IsCurrentState(EditorState.MovingObject))
+            if (IsCurrentState(EditorState.MovingObject))
             {
-                EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
+                if (multipleObjectsSelected)
+                {
+                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
+                }
+                else
+                {
+                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+                }
             }
 
             // The code to force reset the gizmos arrows to 0 when global gizmos are enabled, is in LateUpdate().
@@ -471,6 +478,8 @@ namespace FS_LevelEditor
                                 SetMultipleObjectsAsSelected(toUndo.targetObjs);
                                 // Move the parent so the whole selection is moved too.
                                 multipleSelectedObjsParent.transform.localPosition = toUndo.oldPos;
+
+                                EditorUIManager.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
                             }
                             else
                             {
@@ -478,7 +487,7 @@ namespace FS_LevelEditor
                                 // In case the selected object is already the object to undo, update its global attributes manually:
                                 if (currentSelectedObj == toUndo.targetObj)
                                 {
-                                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.GetComponent<LE_Object>());
+                                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.transform);
                                 }
                                 SetSelectedObj(toUndo.targetObj);
                             }
@@ -492,6 +501,8 @@ namespace FS_LevelEditor
                                 SetMultipleObjectsAsSelected(toUndo.targetObjs);
                                 // Rotate the parent so the whole selection is rotated too.
                                 multipleSelectedObjsParent.transform.localRotation = toUndo.oldRot;
+
+                                EditorUIManager.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
                             }
                             else
                             {
@@ -499,7 +510,7 @@ namespace FS_LevelEditor
                                 // In case the selected object is already the object to undo, update its global attributes manually:
                                 if (currentSelectedObj == toUndo.targetObj)
                                 {
-                                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.GetComponent<LE_Object>());
+                                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.transform);
                                 }
                                 SetSelectedObj(toUndo.targetObj);
                             }
@@ -1028,6 +1039,7 @@ namespace FS_LevelEditor
 
                     // Remove the parent from the selected objects, set the new parent position and put the parent in the objects again.
                     currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
+                    multipleSelectedObjsParent.transform.localScale = Vector3.one;
                     multipleSelectedObjsParent.transform.position = centeredPosition;
                     multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
                     currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform);
@@ -1169,6 +1181,7 @@ namespace FS_LevelEditor
 
             if (objects != null)
             {
+                multipleSelectedObjsParent.transform.localScale = Vector3.one;
                 if (objects.Count > 0)
                 {
                     currentSelectedObjects = new List<GameObject>(objects); // Replace the list with the new one with the copied objects.
@@ -1285,8 +1298,8 @@ namespace FS_LevelEditor
             // If the rotation changed and the object isn't the preview object...
             if (rotation != targetObj.transform.localRotation && currentMode != Mode.Building)
             {
-                // Update global attributes IF is not selecting multiple objects.
-                if (!multipleObjectsSelected) EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
+                // Update global attributes.
+                EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
 
                 // Save it to editor history.
                 #region Register LEAction
@@ -1368,7 +1381,7 @@ namespace FS_LevelEditor
                             {
                                 currentSelectedObj.transform.position = hit.collider.transform.position;
                                 currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
-                                if (!multipleObjectsSelected) EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObjComponent);
+                                EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
 
                                 levelHasBeenModified = true;
 
