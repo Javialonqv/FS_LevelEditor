@@ -53,6 +53,7 @@ namespace FS_LevelEditor
         GameObject globalObjAttributesToggle;
         Dictionary<string, Transform> globalAttributesList = new Dictionary<string, Transform>();
         Dictionary<string, GameObject> attrbutesPanels = new Dictionary<string, GameObject>();
+        bool executeSetActiveAtStartToggleActions = true;
 
         GameObject savingLevelLabel;
         GameObject savingLevelLabelInPauseMenu;
@@ -333,7 +334,20 @@ namespace FS_LevelEditor
             var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetSetActiveAtStart),
                 NGUI_Utils.CreateEventDelegateParamter(this, "toggle", setActiveAtStartToggle.GetComponent<UIToggle>()));
             setActiveAtStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            setActiveAtStartToggle.GetComponent<UIToggle>().instantTween = true;
             setActiveAtStartToggle.SetActive(false);
+
+            GameObject setActiveAtStartLine = new GameObject("Line");
+            setActiveAtStartLine.transform.parent = setActiveAtStartToggle.GetChildWithName("Background").transform;
+            setActiveAtStartLine.transform.localPosition = Vector3.zero;
+            setActiveAtStartLine.transform.localScale = Vector3.one;
+            UISprite setActiveAtStartLineSprite = setActiveAtStartLine.AddComponent<UISprite>();
+            setActiveAtStartLineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
+            setActiveAtStartLineSprite.spriteName = "Square";
+            setActiveAtStartLineSprite.width = 35;
+            setActiveAtStartLineSprite.height = 6;
+            setActiveAtStartLineSprite.depth = 8;
+            setActiveAtStartLine.SetActive(false);
 
             globalObjAttributesToggle = NGUI_Utils.CreateButtonAsToggleWithSprite(selectedObjPanel.transform, new Vector3(220f, 0f, 0f), new Vector3Int(45, 45, 0), 2, "Global",
                 Vector2Int.one * 25);
@@ -892,7 +906,43 @@ namespace FS_LevelEditor
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "Multiple Objects Selected";
             selectedObjPanel.GetChildWithName("Body").SetActive(true);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -220f, 0f);
-            selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
+
+            selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(true);
+            // If this is null, that means the "Set Active At Start" in the current selected objects is different in at least one of them.
+            // If it's true or false, then ALL of them are true or false.
+            bool? setActiveStateInObjects = null;
+            foreach (var obj in EditorController.Instance.currentSelectedObjects)
+            {
+                LE_Object comp = obj.GetComponent<LE_Object>();
+                if (setActiveStateInObjects == null)
+                {
+                    setActiveStateInObjects = comp.setActiveAtStart;
+                    continue;
+                }
+
+                if (setActiveStateInObjects == comp.setActiveAtStart)
+                {
+                    continue;
+                }
+                else
+                {
+                    setActiveStateInObjects = null;
+                    break;
+                }
+            }
+
+            if (setActiveStateInObjects != null)
+            {
+                selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").GetComponent<UIToggle>().Set((bool)setActiveStateInObjects);
+                selectedObjPanel.GetChildAt("SetActiveAtStartToggle/Background/Line").SetActive(false);
+            }
+            else
+            {
+                executeSetActiveAtStartToggleActions = false;
+                selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").GetComponent<UIToggle>().Set(false);
+                executeSetActiveAtStartToggleActions = true;
+                selectedObjPanel.GetChildAt("SetActiveAtStartToggle/Background/Line").SetActive(true);
+            }
 
             globalObjAttributesToggle.SetActive(false);
             globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().SetToggleState(true, true);
@@ -998,6 +1048,7 @@ namespace FS_LevelEditor
             {
                 selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(true);
                 selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").GetComponent<UIToggle>().Set(objComponent.setActiveAtStart);
+                selectedObjPanel.GetChildAt("SetActiveAtStartToggle/Background/Line").SetActive(false);
             }
             else
             {
@@ -1032,7 +1083,21 @@ namespace FS_LevelEditor
         // AAALSO now its seems crapGUI can't recognize between two different overloads of a method, so I need to put different names foreach method, DAMN IT.
         public void SetSetActiveAtStart(UIToggle toggle)
         {
-            EditorController.Instance.currentSelectedObjComponent.setActiveAtStart = toggle.isChecked;
+            if (!executeSetActiveAtStartToggleActions) return;
+
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                selectedObjPanel.GetChildAt("SetActiveAtStartToggle/Background/Line").SetActive(false);
+                foreach (var obj in EditorController.Instance.currentSelectedObjects)
+                {
+                    LE_Object comp = obj.GetComponent<LE_Object>();
+                    comp.setActiveAtStart = toggle.isChecked;
+                }
+            }
+            else
+            {
+                EditorController.Instance.currentSelectedObjComponent.setActiveAtStart = toggle.isChecked;
+            }
             EditorController.Instance.levelHasBeenModified = true;
         }
         public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
