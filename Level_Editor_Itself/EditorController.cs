@@ -439,6 +439,11 @@ namespace FS_LevelEditor
                 }
             }
 
+            if (Input.GetKeyDown(KeyCode.Space) && currentSelectedObj)
+            {
+                EditorUIManager.Instance.setActiveAtStartToggle.Set(!EditorUIManager.Instance.setActiveAtStartToggle.isChecked);
+            }
+
             // Shortcut to show keybinds help panel.
             if (Input.GetKeyDown(KeyCode.F1))
             {

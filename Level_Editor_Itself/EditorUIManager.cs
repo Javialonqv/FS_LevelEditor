@@ -53,7 +53,7 @@ namespace FS_LevelEditor
         GameObject globalObjAttributesToggle;
         Dictionary<string, Transform> globalAttributesList = new Dictionary<string, Transform>();
         Dictionary<string, GameObject> attrbutesPanels = new Dictionary<string, GameObject>();
-        UIToggle setActiveAtStartToggle;
+        public UIToggle setActiveAtStartToggle;
         bool executeSetActiveAtStartToggleActions = true;
 
         GameObject savingLevelLabel;
