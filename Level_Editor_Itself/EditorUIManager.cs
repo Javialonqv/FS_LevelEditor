@@ -53,6 +53,7 @@ namespace FS_LevelEditor
         GameObject globalObjAttributesToggle;
         Dictionary<string, Transform> globalAttributesList = new Dictionary<string, Transform>();
         Dictionary<string, GameObject> attrbutesPanels = new Dictionary<string, GameObject>();
+        UIToggle setActiveAtStartToggle;
         bool executeSetActiveAtStartToggleActions = true;
 
         GameObject savingLevelLabel;
@@ -328,17 +329,17 @@ namespace FS_LevelEditor
             headerLabel.width = 520;
             headerLabel.height = 60;
 
-            GameObject setActiveAtStartToggle = NGUI_Utils.CreateToggle(selectedObjPanel.transform, new Vector3(-220f, 0f, 0f), new Vector3Int(48, 48, 0));
-            setActiveAtStartToggle.name = "SetActiveAtStartToggle";
-            setActiveAtStartToggle.GetComponent<UIToggle>().onChange.Clear();
-            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetSetActiveAtStart),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", setActiveAtStartToggle.GetComponent<UIToggle>()));
-            setActiveAtStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
-            setActiveAtStartToggle.GetComponent<UIToggle>().instantTween = true;
-            setActiveAtStartToggle.SetActive(false);
+            GameObject setActiveAtStartToggleObj = NGUI_Utils.CreateToggle(selectedObjPanel.transform, new Vector3(-220f, 0f, 0f),
+                new Vector3Int(48, 48, 0));
+            setActiveAtStartToggleObj.name = "SetActiveAtStartToggle";
+            setActiveAtStartToggle = setActiveAtStartToggleObj.GetComponent<UIToggle>();
+            setActiveAtStartToggle.onChange.Clear();
+            setActiveAtStartToggle.onChange.Add(new EventDelegate(this, nameof(SetSetActiveAtStart)));
+            setActiveAtStartToggle.instantTween = true;
+            setActiveAtStartToggleObj.SetActive(false);
 
             GameObject setActiveAtStartLine = new GameObject("Line");
-            setActiveAtStartLine.transform.parent = setActiveAtStartToggle.GetChildWithName("Background").transform;
+            setActiveAtStartLine.transform.parent = setActiveAtStartToggleObj.GetChildWithName("Background").transform;
             setActiveAtStartLine.transform.localPosition = Vector3.zero;
             setActiveAtStartLine.transform.localScale = Vector3.one;
             UISprite setActiveAtStartLineSprite = setActiveAtStartLine.AddComponent<UISprite>();
@@ -1081,7 +1082,7 @@ namespace FS_LevelEditor
         }
         // I need this EXTRA AND USELESS function just because NGUIzzzzzz can't call the LE_Object function directly...
         // AAALSO now its seems crapGUI can't recognize between two different overloads of a method, so I need to put different names foreach method, DAMN IT.
-        public void SetSetActiveAtStart(UIToggle toggle)
+        public void SetSetActiveAtStart()
         {
             if (!executeSetActiveAtStartToggleActions) return;
 
@@ -1091,12 +1092,12 @@ namespace FS_LevelEditor
                 foreach (var obj in EditorController.Instance.currentSelectedObjects)
                 {
                     LE_Object comp = obj.GetComponent<LE_Object>();
-                    comp.setActiveAtStart = toggle.isChecked;
+                    comp.setActiveAtStart = setActiveAtStartToggle.isChecked;
                 }
             }
             else
             {
-                EditorController.Instance.currentSelectedObjComponent.setActiveAtStart = toggle.isChecked;
+                EditorController.Instance.currentSelectedObjComponent.setActiveAtStart = setActiveAtStartToggle.isChecked;
             }
             EditorController.Instance.levelHasBeenModified = true;
         }
