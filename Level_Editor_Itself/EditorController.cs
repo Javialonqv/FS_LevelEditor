@@ -119,6 +119,8 @@ namespace FS_LevelEditor
 
         void Update()
         {
+            if (enteringPlayMode) return;
+
             ManageEscAction();
 
             if (IsCurrentState(EditorState.Paused) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL)) return;
@@ -404,7 +406,7 @@ namespace FS_LevelEditor
 
             ManageObjectRotationShortcuts();
 
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P) && enteringPlayMode)
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P) && !enteringPlayMode)
             {
                 // Save data automatically.
                 LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
