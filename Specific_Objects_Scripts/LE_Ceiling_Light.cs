@@ -32,7 +32,7 @@ namespace FS_LevelEditor
             light = lightObj.GetComponent<Light>();
         }
 
-        void Start()
+        public override void Start()
         {
             if (EditorController.Instance)
             {
@@ -45,7 +45,7 @@ namespace FS_LevelEditor
 
                 SetMeshOnEditor();
             }
-            else if (PlayModeController.Instance)
+            else if (PlayModeController.Instance && !initialized)
             {
                 gameObject.GetChildWithName("EditorCollider").SetActive(false);
                 gameObject.GetChildAt("Content/ActivateTrigger").SetActive(false);
@@ -125,6 +125,7 @@ namespace FS_LevelEditor
 
             gameObject.SetActive(true);
 
+            initialized = true;
         }
 
         public override bool SetProperty(string name, object value)

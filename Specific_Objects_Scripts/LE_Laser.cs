@@ -34,7 +34,7 @@ namespace FS_LevelEditor
             }
         }
 
-        void Start()
+        public override void Start()
         {
             if (EditorController.Instance)
             {
@@ -43,7 +43,7 @@ namespace FS_LevelEditor
 
             if (PlayModeController.Instance)
             {
-                InitComponent();
+                if (!initialized) InitComponent();
             }
         }
 
@@ -156,6 +156,8 @@ namespace FS_LevelEditor
             {
                 Invoke("ActivateLaserDelayed", 0.2f);
             }
+
+            initialized = true;
         }
 
         // This method is meant to be invoked with Invoke().

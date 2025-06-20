@@ -24,11 +24,11 @@ namespace FS_LevelEditor
             }
         }
 
-        void Start()
+        public override void Start()
         {
             if (PlayModeController.Instance)
             {
-                InitComponent();
+                if (!initialized) InitComponent();
             }
         }
 
@@ -130,6 +130,8 @@ namespace FS_LevelEditor
             blocScript.m_collisionAudioSource2.outputAudioMixerGroup = template.m_collisionAudioSource2.outputAudioMixerGroup;
 
             gameObject.GetChildWithName("Content").SetActive(true);
+
+            initialized = true;
         }
 
         public override bool TriggerAction(string actionName)

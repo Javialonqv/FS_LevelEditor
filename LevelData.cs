@@ -261,7 +261,11 @@ namespace FS_LevelEditor
                     }
                 }
 
-                objInstance.SetActive(obj.setActiveAtStart);
+                if (!obj.setActiveAtStart)
+                {
+                    objClassInstance.Start();
+                    objInstance.SetActive(false);
+                }
             }
 
             playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;

@@ -65,7 +65,7 @@ namespace FS_LevelEditor
             }
         }
 
-        void Start()
+        public override void Start()
         {
             // A few days ago I put this on the Awake() function, but if I did that, then the links weren't created
             // correctly at the start of the editor, already fixed...
@@ -76,7 +76,7 @@ namespace FS_LevelEditor
 
             if (PlayModeController.Instance != null)
             {
-                InitComponent();
+                if (!initialized) InitComponent();
             }
         }
 
@@ -160,6 +160,8 @@ namespace FS_LevelEditor
             controller.ignoreLaser = !(bool)GetProperty("CanUseTaser");
 
             ConfigureEvents(controller);
+
+            initialized = true;
         }
 
         public override bool SetProperty(string name, object value)
@@ -441,7 +443,8 @@ namespace FS_LevelEditor
                     continue;
                 }
                 LE_Object targetObj =
-                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.objectFullNameWithID == @event.targetObjName);
+                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => string.Equals(x.objectFullNameWithID, @event.targetObjName,
+                    StringComparison.OrdinalIgnoreCase));
 
                 switch (@event.spawn)
                 {

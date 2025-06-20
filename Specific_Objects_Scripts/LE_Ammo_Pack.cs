@@ -23,11 +23,11 @@ namespace FS_LevelEditor
             };
         }
 
-        void Start()
+        public override void Start()
         {
             if (PlayModeController.Instance != null)
             {
-                InitComponent();
+                if (!initialized) InitComponent();
             }
             else // If it's not in playmode, just create a collider so the user can click the object in LE.
             {
@@ -72,6 +72,8 @@ namespace FS_LevelEditor
             ammo.m_dissolve = disolve;
 
             gameObject.GetChildWithName("Content").SetActive(true);
+
+            initialized = true;
         }
 
         // Since respawn time is fixed and is changed to default (20) at Start() of Ammo class, change it after 0.1s

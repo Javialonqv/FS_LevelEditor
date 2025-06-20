@@ -42,11 +42,11 @@ namespace FS_LevelEditor
             }
         }
 
-        void Start()
+        public override void Start()
         {
             if (PlayModeController.Instance != null)
             {
-                InitComponent();
+                if (!initialized) InitComponent();
 
                 // Disable the transparent saw mesh ingame.
                 gameObject.GetChildWithName("Mesh").SetActive(false);
@@ -106,6 +106,8 @@ namespace FS_LevelEditor
                 }
             }
             waypoint.checkpoints = mainSaw.waypointsGOs.ToArray();
+
+            initialized = true;
         }
 
         void CreateWaypointEditorLine()

@@ -78,6 +78,8 @@ namespace FS_LevelEditor
         public bool canBeUsedInEventsTab { get; protected set; } = true;
         public bool canBeDisabledAtStart { get; protected set; } = true;
 
+        public bool initialized = false;
+
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
 
@@ -102,6 +104,11 @@ namespace FS_LevelEditor
                 .GetComponent<BlocScript>();
             t_laser = FindObjectOfType<Laser_H_Controller>();
             t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
+        }
+
+        public virtual void Start()
+        {
+
         }
 
         /// <summary>

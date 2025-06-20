@@ -13,7 +13,6 @@ namespace FS_LevelEditor
     public class LE_Health_Pack : LE_Object
     {
         Health health;
-        bool initialized = false;
 
         void Awake()
         {
@@ -23,9 +22,8 @@ namespace FS_LevelEditor
             };
         }
 
-        void Start()
+        public override void Start()
         {
-            Logger.DebugLog("Health Pack Start() test");
             if (PlayModeController.Instance != null)
             {
                 if (!initialized) InitComponent();

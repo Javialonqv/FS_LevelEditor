@@ -36,11 +36,11 @@ namespace FS_LevelEditor
             waypointsParent = gameObject.GetChildWithName("Waypoints");
         }
 
-        void Start()
+        public override void Start()
         {
             if (PlayModeController.Instance != null)
             {
-                InitComponent();
+                if (!initialized) InitComponent();
             }
             else // If it's not in playmode, just create a collider so the user can click the object in LE.
             {
@@ -112,6 +112,8 @@ namespace FS_LevelEditor
             }
 
             content.SetActive(true);
+
+            initialized = true;
         }
 
         void CreateWaypointEditorLine()
