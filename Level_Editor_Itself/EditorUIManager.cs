@@ -499,7 +499,7 @@ namespace FS_LevelEditor
             GameObject xField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(10f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "0");
             xField.name = "XField";
             var xScript = xField.AddComponent<UICustomInputField>();
-            xScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, maxDecimals: 2);
+            xScript.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
             xScript.onChange += (() => SetPropertyWithInput("XScale", xScript));
 
             UILabel yTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(60f, -10f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
@@ -508,7 +508,7 @@ namespace FS_LevelEditor
             GameObject yField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(110f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "0");
             yField.name = "YField";
             var yScript = yField.AddComponent<UICustomInputField>();
-            yScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, maxDecimals: 2);
+            yScript.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
             yScript.onChange += (() => SetPropertyWithInput("YScale", yScript));
 
             UILabel zTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(160f, -10f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
@@ -517,7 +517,7 @@ namespace FS_LevelEditor
             GameObject zField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(210f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "0");
             zField.name = "ZField";
             var zScript = zField.AddComponent<UICustomInputField>();
-            zScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, maxDecimals: 2);
+            zScript.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
             zScript.onChange += (() => SetPropertyWithInput("ZScale", zScript));
 
             globalAttributesList.Add("Scale", scaleThingsParent);
