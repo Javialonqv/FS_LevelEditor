@@ -1217,6 +1217,7 @@ namespace FS_LevelEditor
                 gizmosArrows.transform.parent = currentSelectedObj.transform;
                 gizmosArrows.transform.localPosition = Vector3.zero;
                 gizmosArrows.transform.localRotation = Quaternion.identity;
+                ResetGizmosArrowsScale();
 
                 snapToGridCube.transform.parent = currentSelectedObj.transform;
                 snapToGridCube.transform.localPosition = Vector3.zero;
