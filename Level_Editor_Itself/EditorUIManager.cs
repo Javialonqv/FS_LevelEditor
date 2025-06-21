@@ -1504,8 +1504,7 @@ namespace FS_LevelEditor
             skyboxDropdown.SetTitle("Skybox");
             skyboxDropdown.AddOption("Chapter 1", true);
             skyboxDropdown.AddOption("Chapter 2", false);
-            skyboxDropdown.AddOption("Chapter 3", false);
-            skyboxDropdown.AddOption("Chapter 4", false);
+            skyboxDropdown.AddOption("Chapter 3 & 4", false);
 
             skyboxDropdown.AddOnChangeOption((id) => SetGlobalPropertyWithDropdown("Skybox", id));
             #endregion
