@@ -363,6 +363,7 @@
 		<Compile Include="Specific_Objects_Scripts\LE_Ammo_Pack.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Ceiling_Light.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Cube.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Flame_Trap.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Laser.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Player_Spawn.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Health_Pack.cs" />

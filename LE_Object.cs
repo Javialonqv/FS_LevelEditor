@@ -27,7 +27,8 @@ namespace FS_LevelEditor
             SWITCH,
             PLAYER_SPAWN,
             CUBE,
-            LASER
+            LASER,
+            FLAME_TRAP
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
@@ -91,6 +92,7 @@ namespace FS_LevelEditor
         public static BlocScript t_cube;
         public static Laser_H_Controller t_laser;
         public static RealtimeCeilingLight t_ceilingLight;
+        public static FlameTrapController t_flameTrap;
         #endregion
 
         public static void GetTemplatesReferences()
@@ -104,6 +106,7 @@ namespace FS_LevelEditor
                 .GetComponent<BlocScript>();
             t_laser = FindObjectOfType<Laser_H_Controller>();
             t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
+            t_flameTrap = FindObjectOfType<FlameTrapController>();
         }
 
         public virtual void Start()
