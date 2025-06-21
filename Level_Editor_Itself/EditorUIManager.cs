@@ -396,6 +396,7 @@ namespace FS_LevelEditor
             CreateAmmoAndHealthPackAttributesPanel();
             CreateLaserAttributesPanel();
             CreateCeilingLightPanel();
+            CreateFlameTrapAttributesPanel();
         }
 
         void CreateGlobalObjectAttributesPanel()
@@ -893,6 +894,34 @@ namespace FS_LevelEditor
             ceilingLightAttributes.SetActive(false);
             attrbutesPanels.Add("Ceiling Light", ceilingLightAttributes);
         }
+        void CreateFlameTrapAttributesPanel()
+        {
+            GameObject flameTrapAttributes = new GameObject("FlameTrapAttributes");
+            flameTrapAttributes.transform.parent = objectSpecificPanelsParent;
+            flameTrapAttributes.transform.localPosition = Vector3.zero;
+            flameTrapAttributes.transform.localScale = Vector3.one;
+
+            #region Activate On Start Toggle
+            GameObject activateOnStartTitle = Instantiate(NGUI_Utils.labelTemplate, flameTrapAttributes.transform);
+            activateOnStartTitle.name = "ActivateOnStartTitle";
+            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
+            activateOnStartTitle.RemoveComponent<UILocalize>();
+            activateOnStartTitle.GetComponent<UILabel>().width = 395;
+            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
+            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(flameTrapAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
+            activateOnStartToggle.name = "ActivateOnStartToggle";
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
+            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
+            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
+            #endregion
+
+            flameTrapAttributes.SetActive(false);
+            attrbutesPanels.Add("Flame Trap", flameTrapAttributes);
+        }
 
         public void SetSelectedObjPanelAsNone()
         {
@@ -1036,6 +1065,14 @@ namespace FS_LevelEditor
                 // Set color input...
                 var colorInput = attrbutesPanels["Ceiling Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
                 colorInput.text = Utilities.ColorToHex((Color)objComponent.GetProperty("Color"));
+            }
+            else if (objComponent.objectOriginalName == "Flame Trap")
+            {
+                attrbutesPanels["Flame Trap"].SetActive(true);
+
+                // Set activate on start toggle...
+                var activateOnStartToggle = attrbutesPanels["Flame Trap"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
+                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
             }
             else
             {

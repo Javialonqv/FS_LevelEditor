@@ -13,7 +13,10 @@ namespace FS_LevelEditor
     {
         void Awake()
         {
-
+            properties = new Dictionary<string, object>
+            {
+                { "ActivateOnStart", true }
+            };
         }
 
         void Start()
@@ -66,9 +69,28 @@ namespace FS_LevelEditor
 
             content.SetActive(true);
 
-            trap.Activate();
+            if (GetProperty<bool>("ActivateOnStart")) trap.Activate();
 
             initialized = true;
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "ActivateOnStart")
+            {
+                if (value is bool)
+                {
+                    properties["ActivateOnStart"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+
+            return base.SetProperty(name, value);
         }
     }
 }
