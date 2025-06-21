@@ -136,7 +136,21 @@ namespace FS_LevelEditor
             LevelData data = null;
             try
             {
-                data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new LEPropertiesConverter(),
+                        new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
+                        {
+                            { "setActive", "spawn" }
+                        })
+                        // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
+                        // same type.
+                    }
+                };
+
+                data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
             }
             catch { }
 
@@ -310,7 +324,21 @@ namespace FS_LevelEditor
                 LevelData levelData = null;
                 try
                 {
-                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath));
+                    var jsonOptions = new JsonSerializerOptions
+                    {
+                        Converters =
+                        {
+                            new LEPropertiesConverter(),
+                            new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
+                            {
+                                { "setActive", "spawn" }
+                            })
+                            // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
+                            // same type.
+                        }
+                    };
+
+                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), jsonOptions);
                 }
                 catch { }
                 levels.Add(Path.GetFileNameWithoutExtension(levelPath), levelData);
