@@ -18,8 +18,9 @@ namespace FS_LevelEditor
     {
         static Coroutine customNotificationCoroutine;
 
-        static Material propsMat, propsNoSpecMat;
-        static Material propsTransMat, propsTransNoSpecMat;
+        static Material propsMat, propsTransMat;
+        static Material propsNoSpecMat, propsTransNoSpecMat;
+        static Material newPropsv1Mat, newPropsv1TransMat;
 
         public static bool theresAnInputFieldSelected
         {
@@ -37,10 +38,13 @@ namespace FS_LevelEditor
         public static void LoadMaterials(Il2CppAssetBundle bundle)
         {
             propsMat = bundle.Load<Material>("Props_Mat");
-            propsNoSpecMat = bundle.Load<Material>("Props_NoSpec");
-
             propsTransMat = bundle.Load<Material>("PropsTransparent_Mat");
+
+            propsNoSpecMat = bundle.Load<Material>("Props_NoSpec");
             propsTransNoSpecMat = bundle.Load<Material>("PropsTransparent_NoSpec");
+
+            newPropsv1Mat = bundle.Load<Material>("NewProps_v1");
+            newPropsv1TransMat = bundle.Load<Material>("NewProps_v1_Transparent");
         }
 
         public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
@@ -388,6 +392,12 @@ namespace FS_LevelEditor
                         materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
                                 renderer.materials[i].color.b, 0.392f);
                     }
+                    else if (renderer.materials[i].name.Contains("NewProps_v1"))
+                    {
+                        materials[i] = new Material(newPropsv1TransMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                renderer.materials[i].color.b, 0.392f);
+                    }
                 }
 
                 renderer.materials = materials;
@@ -409,6 +419,12 @@ namespace FS_LevelEditor
                     else if (renderer.materials[i].name.Contains("PropsTransparent_NoSpec"))
                     {
                         materials[i] = new Material(propsNoSpecMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                renderer.materials[i].color.b, 1f);
+                    }
+                    else if (renderer.materials[i].name.Contains("NewProps_v1_Transparent"))
+                    {
+                        materials[i] = new Material(newPropsv1Mat);
                         materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
                                 renderer.materials[i].color.b, 1f);
                     }
