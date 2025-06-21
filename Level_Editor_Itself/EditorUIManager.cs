@@ -1458,12 +1458,6 @@ namespace FS_LevelEditor
 
             BoxCollider collider = globalPropertiesPanel.AddComponent<BoxCollider>();
             collider.size = new Vector2(650f, 1010f);
-
-            TweenPosition tween = globalPropertiesPanel.AddComponent<TweenPosition>();
-            tween.from = new Vector3(600f, 0f);
-            tween.to = new Vector3(1320f, 0f);
-            tween.duration = 0.2f;
-            tween.Invoke("ResetToBeginning", 0.1f);
             #endregion
 
             #region Create Title
@@ -1883,7 +1877,7 @@ namespace FS_LevelEditor
 
                 if (currentUIContext == EditorUIContext.GLOBAL_PROPERTIES)
                 {
-                    globalPropertiesPanel.GetComponent<TweenPosition>().PlayForward();
+                    TweenPosition.Begin(globalPropertiesPanel, 0.2f, new Vector2(1320, 0));
                 }
             }
 
@@ -1909,7 +1903,7 @@ namespace FS_LevelEditor
             if (context == EditorUIContext.GLOBAL_PROPERTIES)
             {
                 RefreshGlobalPropertiesPanelValues();
-                globalPropertiesPanel.GetComponent<TweenPosition>().PlayReverse();
+                TweenPosition.Begin(globalPropertiesPanel, 0.2f, new Vector2(600, 0));
 
                 if (currentUIContext == EditorUIContext.HELP_PANEL)
                 {
@@ -1926,7 +1920,7 @@ namespace FS_LevelEditor
                         break;
 
                     case EditorUIContext.GLOBAL_PROPERTIES:
-                        globalPropertiesPanel.GetComponent<TweenPosition>().PlayForward();
+                        TweenPosition.Begin(globalPropertiesPanel, 0.2f, new Vector2(1320, 0));
                         break;
                 }
 
@@ -1941,7 +1935,7 @@ namespace FS_LevelEditor
                         break;
 
                     case EditorUIContext.GLOBAL_PROPERTIES:
-                        globalPropertiesPanel.GetComponent<TweenPosition>().PlayReverse();
+                        TweenPosition.Begin(globalPropertiesPanel, 0.2f, new Vector2(600, 0));
                         context = EditorUIContext.GLOBAL_PROPERTIES;
                         break;
                 }
