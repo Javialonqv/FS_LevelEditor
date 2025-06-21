@@ -40,7 +40,21 @@ namespace FS_LevelEditor
         {
             if (PlayModeController.Instance != null)
             {
-                if (!initialized) InitComponent();
+                if (!initialized)
+                {
+                    InitComponent();
+                }
+                else // If it's already initialized, that means the object NOW IS REALLY SPAWNED, activate the saw if needed.
+                {
+                    // There's a good reason for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
+                    // do the same thing, so first enable it, and then disable if needed, cause if we don't do anything, there's a bug with the saw animation.
+                    script.Activate();
+                    bool activateOnStart = (bool)GetProperty("ActivateOnStart");
+                    if (!activateOnStart)
+                    {
+                        script.Deactivate();
+                    }
+                }
             }
             else // If it's not in playmode, just create a collider so the user can click the object in LE.
             {
@@ -102,13 +116,16 @@ namespace FS_LevelEditor
             script.physicsCollider = content.GetChildWithName("Saw_PhysicsCollider").GetComponent<MeshCollider>();
 
 
-            // There's a good reason for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
-            // do the same thing, so first enable it, and then disable if needed, cause if we don't do anything, there's a bug with the saw animation.
-            script.Activate();
-            bool activateOnStart = (bool)GetProperty("ActivateOnStart");
-            if (!activateOnStart)
+            if (setActiveAtStart) // Only do this if it's meant to be enabled at start, otherwise, the saw will be bugged.
             {
-                script.Deactivate();
+                // There's a good reason for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
+                // do the same thing, so first enable it, and then disable if needed, cause if we don't do anything, there's a bug with the saw animation.
+                script.Activate();
+                bool activateOnStart = (bool)GetProperty("ActivateOnStart");
+                if (!activateOnStart)
+                {
+                    script.Deactivate();
+                }
             }
 
             content.SetActive(true);
