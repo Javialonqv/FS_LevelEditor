@@ -57,12 +57,6 @@ namespace FS_LevelEditor
             };
 
             CreateEditorLinksParent();
-
-            foreach (var collider in gameObject.TryGetComponents<Collider>())
-            {
-                if (collider.name == "Button") continue;
-                collider.enabled = false;
-            }
         }
 
         public override void Start()
@@ -71,6 +65,8 @@ namespace FS_LevelEditor
             // correctly at the start of the editor, already fixed...
             if (EditorController.Instance != null)
             {
+                SetCollidersState(false, "Button");
+
                 CreateInEditorLinksToTargetObjects();
             }
 

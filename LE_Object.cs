@@ -331,5 +331,21 @@ namespace FS_LevelEditor
 
             return null;
         }
+
+        public void SetCollidersState(bool newEnabledState, params string[] collidersToSkip)
+        {
+            foreach (var collider in gameObject.TryGetComponents<Collider>())
+            {
+                if (collidersToSkip.Contains(collider.name)) continue;
+
+                // Skip gizmos arrows as well.
+                if (collider.transform.parent != null)
+                {
+                    if (collider.transform.parent.name == "MoveObjectArrows") continue;
+                }
+
+                collider.enabled = newEnabledState;
+            }
+        }
     }
 }

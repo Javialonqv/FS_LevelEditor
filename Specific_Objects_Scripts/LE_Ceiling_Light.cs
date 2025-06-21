@@ -36,12 +36,7 @@ namespace FS_LevelEditor
         {
             if (EditorController.Instance)
             {
-                foreach (var collider in gameObject.TryGetComponents<Collider>())
-                {
-                    if (collider.gameObject.name == "EditorCollider") continue;
-
-                    collider.enabled = false;
-                }
+                SetCollidersState(false, "EditorCollider");
 
                 SetMeshOnEditor();
             }

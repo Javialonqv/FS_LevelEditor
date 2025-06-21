@@ -973,11 +973,6 @@ namespace FS_LevelEditor
             gizmosArrows.transform.localPosition = Vector3.zero;
             gizmosArrows.SetActive(false);
 
-            foreach (var collider in gizmosArrows.TryGetComponents<Collider>())
-            {
-                collider.gameObject.layer = LayerMask.NameToLayer("ARROWS");
-            }
-
             snapToGridCube = Instantiate(bundle.Load<GameObject>("SnapToGridCube"));
             snapToGridCube.name = "SnapToGridCube";
             snapToGridCube.transform.localPosition = Vector3.zero;
