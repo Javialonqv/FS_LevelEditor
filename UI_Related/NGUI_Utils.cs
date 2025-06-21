@@ -87,6 +87,16 @@ namespace FS_LevelEditor.UI_Related
                 return _buttonTemplate;
             }
         }
+        static GameObject _dropdownTemplate;
+        public static GameObject dropdownTemplate
+        {
+            get
+            {
+                if (!_dropdownTemplate) _dropdownTemplate = optionsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel");
+
+                return _dropdownTemplate;
+            }
+        }
         static GameObject _optionsPanel;
         public static GameObject optionsPanel
         {
@@ -324,6 +334,21 @@ namespace FS_LevelEditor.UI_Related
             labelObj.transform.localPosition = position;
 
             return label;
+        }
+
+        public static UIDropdownPatcher CreateDropdown(Transform parent, Vector3 position, Vector3 scale)
+        {
+            GameObject dropdownPanel = GameObject.Instantiate(dropdownTemplate, parent);
+            dropdownPanel.name = "Dropdown";
+            dropdownPanel.transform.localPosition = position;
+            dropdownPanel.transform.localScale = scale;
+
+            UIDropdownPatcher patcher = dropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.ClearOptions();
+            patcher.ClearOnChangeOptions();
+
+            return patcher;
         }
 
 

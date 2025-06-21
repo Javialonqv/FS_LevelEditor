@@ -231,6 +231,7 @@ namespace FS_LevelEditor
                 }
             }
 
+            EditorController.Instance.AfterFinishedLoadingLevel();
             Logger.Log($"\"{data.levelName}\" level loaded in the editor!");
         }
         public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)

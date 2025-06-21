@@ -1497,6 +1497,18 @@ namespace FS_LevelEditor
             visualizeDeathYLimitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
             visualizeDeathYLimitButton.GetComponent<UIButtonAsToggle>().onClick += OnVisualizeDeathYLimitToggleClick;
             #endregion
+
+            #region Create Level Skybox Dropdown
+            UIDropdownPatcher skyboxDropdown = NGUI_Utils.CreateDropdown(globalPropertiesPanel.transform, new Vector3(0f, 160f), Vector3.one * 0.8f);
+            skyboxDropdown.gameObject.name = "SkyboxDropdown";
+            skyboxDropdown.SetTitle("Skybox");
+            skyboxDropdown.AddOption("Chapter 1", true);
+            skyboxDropdown.AddOption("Chapter 2", false);
+            skyboxDropdown.AddOption("Chapter 3", false);
+            skyboxDropdown.AddOption("Chapter 4", false);
+
+            skyboxDropdown.AddOnChangeOption((id) => SetGlobalPropertyWithDropdown("Skybox", id));
+            #endregion
         }
         public void ShowOrHideGlobalPropertiesPanel()
         {
@@ -1510,6 +1522,7 @@ namespace FS_LevelEditor
             panel.GetChildWithName("HasTaserToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasTaser"));
             panel.GetChildWithName("HasJetpackToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasJetpack"));
             panel.GetChildWithName("DeathYLimit").GetComponent<UIInput>().text = (float)GetGlobalProperty("DeathYLimit") + "";
+            panel.GetChildWithName("SkyboxDropdown").GetComponent<UIDropdownPatcher>().SelectOption((int)GetGlobalProperty("Skybox"));
         }
 
         public void SetGlobalPropertyWithToggle(string name, UIToggle toggle)
@@ -1543,6 +1556,10 @@ namespace FS_LevelEditor
             parsedData = null;
             return false;
         }
+        public void SetGlobalPropertyWithDropdown(string propertyName, int selectedID)
+        {
+            SetGlobalProperty(propertyName, selectedID);
+        }
         public void SetGlobalProperty(string name, object value)
         {
             if (EditorController.Instance.globalProperties.ContainsKey(name))
@@ -1551,6 +1568,11 @@ namespace FS_LevelEditor
                 {
                     EditorController.Instance.globalProperties[name] = value;
                     EditorController.Instance.levelHasBeenModified = true;
+
+                    if (name == "Skybox")
+                    {
+                        EditorController.Instance.SetupSkybox((int)value);
+                    }
                 }
             }
         }

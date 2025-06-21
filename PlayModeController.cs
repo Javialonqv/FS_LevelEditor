@@ -57,14 +57,14 @@ namespace FS_LevelEditor
         {
             TeleportPlayer();
             ConfigureGlobalProperties();
+
+            UnloadBundle();
         }
 
-        // When the script obj is destroyed, that means the scene has changed, unload the asset bundle and destroy the back to LE button, since it'll be created again when entering...
+        // When the script obj is destroyed, that means the scene has changed, destroy the back to LE button, since it'll be created again when entering...
         // again...
         void OnDestroy()
         {
-            UnloadBundle();
-
             Destroy(backToLEButton);
         }
 
@@ -110,6 +110,8 @@ namespace FS_LevelEditor
                 Controls.Instance.DeactivateWeapon();
             }
             Controls.Instance.hasJetPack = (bool)GetGlobalProperty("HasJetpack");
+
+            SetupLevelSkybox((int)GetGlobalProperty("Skybox"));
         }
         object GetGlobalProperty(string name)
         {
@@ -205,9 +207,13 @@ namespace FS_LevelEditor
             return otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
         }
 
-        public T LoadFromLEBundle<T>(string name) where T : UnityEngine.Object
+        void SetupLevelSkybox(int skyboxID)
         {
-            return LEBundle.Load<T>(name);
+            string skyboxMatName = $"Skybox_CH{skyboxID + 1}";
+            Material skyboxMat = LEBundle.Load<Material>(skyboxMatName);
+
+            skyboxMat.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+            RenderSettings.skybox = skyboxMat;
         }
 
         public void UnloadBundle()

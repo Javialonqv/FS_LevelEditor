@@ -94,8 +94,10 @@ namespace FS_LevelEditor
         {
             { "HasTaser", true },
             { "HasJetpack", true },
-            { "DeathYLimit", 100f }
+            { "DeathYLimit", 100f },
+            { "Skybox", 0 }
         };
+        List<Material> skyboxes = new List<Material>();
 
         void Awake()
         {
@@ -115,6 +117,10 @@ namespace FS_LevelEditor
         {
             // Disable occlusion culling.
             Camera.main.useOcclusionCulling = false;
+        }
+        public void AfterFinishedLoadingLevel()
+        {
+            SetupSkybox((int)globalProperties["Skybox"]);
         }
 
         void Update()
@@ -981,6 +987,15 @@ namespace FS_LevelEditor
 
             Utilities.LoadMaterials(bundle);
 
+            foreach (var material in bundle.LoadAll<Material>())
+            {
+                if (material.name.StartsWith("Skybox"))
+                {
+                    material.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+                    skyboxes.Add(material);
+                }
+            }
+
             bundle.Unload(false);
         }
 
@@ -1644,6 +1659,11 @@ namespace FS_LevelEditor
             return rotatedPositionWithOriginalPivot;
         }
         #endregion
+
+        public void SetupSkybox(int skyboxID)
+        {
+            RenderSettings.skybox = skyboxes[skyboxID];
+        }
     }
 }
 
