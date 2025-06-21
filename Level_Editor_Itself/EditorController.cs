@@ -337,6 +337,8 @@ namespace FS_LevelEditor
             ManageSomeShortcuts();
 
             ManageUndo();
+
+            ManageMoveObjectShortcuts();
         }
 
         void ManageEscAction()
@@ -555,6 +557,65 @@ namespace FS_LevelEditor
                     }
 
                     actionsMade.Remove(toUndo);
+                }
+            }
+        }
+
+        void ManageMoveObjectShortcuts()
+        {
+            GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
+            if (targetObj == null) return;
+
+            Vector3 toMove = Vector3.zero;
+
+            if (Input.GetKeyDown(KeyCode.LeftArrow)) toMove += Vector3.left * 0.01f;
+            if (Input.GetKeyDown(KeyCode.RightArrow)) toMove += Vector3.right * 0.01f;
+            if (Input.GetKeyDown(KeyCode.UpArrow)) toMove += Vector3.up * 0.01f;
+            if (Input.GetKeyDown(KeyCode.DownArrow)) toMove += Vector3.down * 0.01f;
+
+            if (toMove != Vector3.zero)
+            {
+                Vector3 oldPos = targetObj.transform.localPosition;
+
+                if (globalGizmosArrowsEnabled)
+                {
+                    targetObj.transform.Translate(toMove, Space.World);
+                }
+                else
+                {
+                    targetObj.transform.Translate(toMove, Space.Self);
+                }
+
+                if (currentSelectedObj) // If the target obj is the current selected object, to check if it's NOT the preview object.
+                {
+                    #region Register LE Action
+                    currentExecutingAction = new LEAction();
+                    currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
+
+                    currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+                    if (multipleObjectsSelected)
+                    {
+                        currentExecutingAction.targetObjs = new List<GameObject>();
+                        foreach (var obj in currentSelectedObj.GetChilds())
+                        {
+                            if (obj.name == "MoveObjectArrows") continue;
+                            if (obj.name == "SnapToGridCube") continue;
+
+                            currentExecutingAction.targetObjs.Add(obj);
+                        }
+                    }
+                    else
+                    {
+                        currentExecutingAction.targetObj = currentSelectedObj;
+                    }
+
+                    currentExecutingAction.oldPos = oldPos;
+                    currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
+
+                    actionsMade.Add(currentExecutingAction);
+                    #endregion
+
+                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
                 }
             }
         }
