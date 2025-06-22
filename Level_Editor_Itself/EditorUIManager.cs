@@ -919,6 +919,24 @@ namespace FS_LevelEditor
             activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
             #endregion
 
+            #region Constant Toggle
+            GameObject constantTitle = Instantiate(NGUI_Utils.labelTemplate, flameTrapAttributes.transform);
+            constantTitle.name = "ConstantTitle";
+            constantTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
+            constantTitle.RemoveComponent<UILocalize>();
+            constantTitle.GetComponent<UILabel>().width = 395;
+            constantTitle.GetComponent<UILabel>().text = "Constant";
+            constantTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject constantToggle = NGUI_Utils.CreateToggle(flameTrapAttributes.transform, new Vector3(200f, 40f, 0f), new Vector3Int(48, 48, 0));
+            constantToggle.name = "ConstantToggle";
+            constantToggle.GetComponent<UIToggle>().onChange.Clear();
+            var constantDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Constant"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", constantToggle.GetComponent<UIToggle>()));
+            constantToggle.GetComponent<UIToggle>().onChange.Add(constantDelegate);
+            #endregion
+
             flameTrapAttributes.SetActive(false);
             attrbutesPanels.Add("Flame Trap", flameTrapAttributes);
         }
@@ -1073,6 +1091,10 @@ namespace FS_LevelEditor
                 // Set activate on start toggle...
                 var activateOnStartToggle = attrbutesPanels["Flame Trap"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
                 activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
+
+                // Set constant toggle...
+                var constantToggle = attrbutesPanels["Flame Trap"].GetChildWithName("ConstantToggle").GetComponent<UIToggle>();
+                constantToggle.Set((bool)objComponent.GetProperty("Constant"));
             }
             else
             {

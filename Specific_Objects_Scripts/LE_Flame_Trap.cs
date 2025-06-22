@@ -17,7 +17,8 @@ namespace FS_LevelEditor
         {
             properties = new Dictionary<string, object>
             {
-                { "ActivateOnStart", true }
+                { "ActivateOnStart", true },
+                { "Constant", false }
             };
         }
 
@@ -37,7 +38,7 @@ namespace FS_LevelEditor
             trap.dotActvationDelay = -1;
             trap.useDOTScaling = true;
             trap.dotScalingSpeed = 0.7f;
-            trap.constant = false;
+            trap.constant = (bool)GetProperty("Constant");
             trap.onDuration = 3;
             trap.offDuration = 2;
             trap.firstOnAddition = 0;
@@ -79,6 +80,19 @@ namespace FS_LevelEditor
                 else
                 {
                     Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+            else if (name == "Constant")
+            {
+                if (value is bool)
+                {
+                    properties["Constant"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"Constant\" property with value of type \"{value.GetType().Name}\".");
                     return false;
                 }
             }
