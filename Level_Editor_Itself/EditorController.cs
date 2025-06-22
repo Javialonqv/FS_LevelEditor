@@ -385,6 +385,11 @@ namespace FS_LevelEditor
                 }
             }
 
+            if (snapToGridCube.activeSelf && currentSelectedObj)
+            {
+                snapToGridCube.transform.position = currentSelectedObj.transform.position;
+            }
+
             if (deathYPlane && deathYPlane.gameObject.activeSelf)
             {
                 deathYPlane.gameObject.SetActive(true);
@@ -1081,9 +1086,7 @@ namespace FS_LevelEditor
 
             gizmosArrows.SetActive(false);
 
-            snapToGridCube.transform.parent = null;
-            snapToGridCube.transform.localPosition = Vector3.zero;
-            snapToGridCube.transform.localRotation = Quaternion.identity;
+            // SnapToGrid cube is adjusted in Late Update.
 
             if (currentSelectedObj != null)
             {
@@ -1223,10 +1226,6 @@ namespace FS_LevelEditor
 
                 gizmosArrows.SetActive(true);
                 gizmosArrows.transform.localRotation = currentSelectedObj.transform.rotation;
-
-                snapToGridCube.transform.parent = currentSelectedObj.transform;
-                snapToGridCube.transform.localPosition = Vector3.zero;
-                snapToGridCube.transform.localRotation = Quaternion.identity;
 
                 if (multipleObjectsSelected)
                 {
@@ -1432,6 +1431,8 @@ namespace FS_LevelEditor
             {
                 foreach (var hit in hits)
                 {
+                    if (hit.collider.gameObject.name == snapToGridCube.name) continue;
+
                     #region Skip if it's the current selected object
                     bool hitIsFromTheCurrentSelectedObj = false;
                     if (multipleObjectsSelected)
