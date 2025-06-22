@@ -11,6 +11,8 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Flame_Trap : LE_Object
     {
+        FlameTrapController trap;
+
         void Awake()
         {
             properties = new Dictionary<string, object>
@@ -25,7 +27,7 @@ namespace FS_LevelEditor
 
             content.SetActive(false);
 
-            FlameTrapController trap = content.AddComponent<FlameTrapController>();
+            trap = content.AddComponent<FlameTrapController>();
             trap.flameLight = content.GetChildAt("VFX/FlameLight").GetComponent<Light>();
             trap.loopAudioSource = content.GetChildWithName("LoopAudioSource").GetComponent<AudioSource>();
             trap.startClip = t_flameTrap.startClip;
@@ -82,6 +84,34 @@ namespace FS_LevelEditor
             }
 
             return base.SetProperty(name, value);
+        }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "Activate")
+            {
+                trap.TurnOn();
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                trap.TurnOff();
+                return true;
+            }
+            else if (actionName == "ToggleActivated")
+            {
+                if (trap.IsOn())
+                {
+                    trap.TurnOff();
+                }
+                else
+                {
+                    trap.TurnOn();
+                }
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
         }
     }
 }

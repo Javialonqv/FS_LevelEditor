@@ -576,6 +576,23 @@ namespace FS_LevelEditor
                             break;
                     }
                 }
+                else if (targetObj is LE_Flame_Trap)
+                {
+                    switch (@event.flameTrapState)
+                    {
+                        case LE_Event.FlameTrapState.Activate:
+                            targetObj.TriggerAction("Activate");
+                            break;
+
+                        case LE_Event.FlameTrapState.Deactivate:
+                            targetObj.TriggerAction("Deactivate");
+                            break;
+
+                        case LE_Event.FlameTrapState.Toggle_State:
+                            targetObj.TriggerAction("ToggleActivated");
+                            break;
+                    }
+                }
             }
         }
     }

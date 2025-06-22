@@ -78,6 +78,9 @@ namespace FS_LevelEditor
         UIDropdownPatcher switchStateDropdown;
         UIToggle executeSwitchActionsToggle;
         UIDropdownPatcher switchUsableStateDropdown;
+        //-----------------------------------
+        GameObject flameTrapObjectsSettings;
+        UIDropdownPatcher flameTrapStateDropdown;
 
         enum CurrentEventType { WhenActivating, WhenDeactivating, WhenInverting }
         CurrentEventType currentEventType;
@@ -111,6 +114,7 @@ namespace FS_LevelEditor
                 Instance.CreateCeilingLightObjectSettings();
                 Instance.CreateHealthAndAmmoPacksObjectSettings();
                 Instance.CreateSwitchObjectSettings();
+                Instance.CreateFlameTrapObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -783,6 +787,7 @@ namespace FS_LevelEditor
             switchStateDropdown.SelectOption((int)currentSelectedEvent.switchState);
             executeSwitchActionsToggle.Set(currentSelectedEvent.executeSwitchActions);
             switchUsableStateDropdown.SelectOption((int)currentSelectedEvent.switchUsableState);
+            flameTrapStateDropdown.SelectOption((int)currentSelectedEvent.flameTrapState);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -857,6 +862,10 @@ namespace FS_LevelEditor
                 else if (targetObj is LE_Switch)
                 {
                     switchObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Flame_Trap)
+                {
+                    flameTrapObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -1453,6 +1462,61 @@ namespace FS_LevelEditor
             switchUsableStateDropdown = patcher;
             switchUsableStateDropdownPanel.SetActive(true);
         }
+        // -----------------------------------------
+        void CreateFlameTrapObjectSettings()
+        {
+            flameTrapObjectsSettings = new GameObject("Flame Trap");
+            flameTrapObjectsSettings.transform.parent = eventOptionsParent.transform;
+            flameTrapObjectsSettings.transform.localPosition = Vector3.zero;
+            flameTrapObjectsSettings.transform.localScale = Vector3.one;
+            flameTrapObjectsSettings.SetActive(false);
+
+            CreateFlameTrapObjectsTitleLabel();
+            CreateFlameTrapStateDropdown();
+        }
+        void CreateFlameTrapObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, flameTrapObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "FLAME TRAP OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateFlameTrapStateDropdown()
+        {
+            GameObject flameTrapStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), flameTrapObjectsSettings.transform);
+            flameTrapStateDropdownPanel.name = "FlameTrapStateDropdownPanel";
+            flameTrapStateDropdownPanel.transform.localPosition = new Vector3(0f, -50f, 0f);
+            flameTrapStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+
+            UIDropdownPatcher patcher = flameTrapStateDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Flame State");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("Activate", false);
+            patcher.AddOption("Deactivate", false);
+            patcher.AddOption("Toggle State", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnFlameTrapStateDropdownChanged)));
+
+            flameTrapStateDropdown = patcher;
+            flameTrapStateDropdownPanel.SetActive(true);
+        }
 
 
         void OnSpawnOptionsDropdownChanged()
@@ -1575,6 +1639,11 @@ namespace FS_LevelEditor
         {
             currentSelectedEvent.switchUsableState = (LE_Event.SwitchUsableState)switchUsableStateDropdown.currentlySelectedID;
         }
+        // -----------------------------------------
+        void OnFlameTrapStateDropdownChanged()
+        {
+            currentSelectedEvent.flameTrapState = (LE_Event.FlameTrapState)flameTrapStateDropdown.currentlySelectedID;
+        }
 
         public void ShowEventsPage(LE_Object targetObj)
         {
@@ -1686,5 +1755,10 @@ public class LE_Event
     public bool executeSwitchActions { get; set; } = true;
     public enum SwitchUsableState { Do_Nothing, Usable, Unusable, Toggle }
     public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Do_Nothing;
+    #endregion
+
+    #region Flame Trap Options
+    public enum FlameTrapState { Do_Nothing, Activate, Deactivate, Toggle_State }
+    public FlameTrapState flameTrapState { get; set; } = FlameTrapState.Do_Nothing;
     #endregion
 }
