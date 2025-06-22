@@ -278,8 +278,10 @@ namespace FS_LevelEditor
 
                 if (!obj.setActiveAtStart)
                 {
-                    objClassInstance.Start();
+                    // Only god knows when the user will enable the obj, so call Start() so the object calls InitComponent() to init the
+                    // component NOW and not later.
                     objInstance.SetActive(false);
+                    objClassInstance.Start();
                 }
             }
 

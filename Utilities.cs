@@ -1,16 +1,15 @@
 ﻿using Il2Cpp;
 using Il2CppI2.Loc;
 using Il2CppInControl.NativeDeviceProfiles;
-using Il2CppSystem;
 using MelonLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor
 {
@@ -508,6 +507,16 @@ namespace FS_LevelEditor
                 if (throwErrorIfCantParse) Logger.Error($"Couldn't parse \"{text}\" to float!");
                 return value;
             }
+        }
+
+        public static bool IsOverridingMethod(Type type, string methodName)
+        {
+            var flags = BindingFlags.Instance
+                  | BindingFlags.Public
+                  | BindingFlags.NonPublic
+                  | BindingFlags.DeclaredOnly;
+
+            return type.GetMethod(methodName, flags) != null;
         }
     }
 }

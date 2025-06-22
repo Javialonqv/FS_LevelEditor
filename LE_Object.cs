@@ -122,7 +122,24 @@ namespace FS_LevelEditor
             {
                 if (EditorController.Instance) OnInstantiated(LEScene.Editor);
                 else if (PlayModeController.Instance) OnInstantiated(LEScene.Playmode);
+
+                if (Utilities.IsOverridingMethod(this.GetType(), "Start"))
+                {
+                    Logger.Error($"\"{GetType().Name}\" is overriding Start() method, this is not allowed, please use ObjectStart() instead.");
+                }
+
+                // ObjectStart is only called when the object is ACTUALLY being spawned, since Start() is also called when loading the
+                // level in playmode to init the component.
+                if (gameObject.activeSelf || EditorController.Instance)
+                {
+                    if (EditorController.Instance) ObjectStart(LEScene.Editor);
+                    else if (PlayModeController.Instance) ObjectStart(LEScene.Playmode);
+                }
             }
+        }
+        public virtual void ObjectStart(LEScene scene)
+        {
+
         }
 
         /// <summary>
