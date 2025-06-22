@@ -496,6 +496,9 @@ namespace FS_LevelEditor
                             }
                             else
                             {
+                                // Since we use local coordinates, set the selected obj to null to avoid breaking the object position lol.
+                                if (multipleObjectsSelected && currentSelectedObjects.Contains(toUndo.targetObj)) SetSelectedObj(null);
+
                                 toUndo.targetObj.transform.localPosition = toUndo.oldPos;
                                 // In case the selected object is already the object to undo, update its global attributes manually:
                                 if (currentSelectedObj == toUndo.targetObj)
