@@ -1245,22 +1245,19 @@ namespace FS_LevelEditor
             }
         }
 
-        // This method is called when the scale of the object is changed, so the gizmos arrows aren't affected.
-        public void ResetGizmosArrowsScale()
+        // This method is called when the scale of the object is changed, this is to adjust the gizmos scale in case the current selected object's scale is smaller than 1.
+        public void ApplyGizmosArrowsScale()
         {
-            return;
-
             float highestAxis = Utilities.HighestValueOfVector(currentSelectedObj.transform.localScale);
-            Vector3 desiredWorldScale = highestAxis >= 0f ? Vector3.one * 2f : Vector3.one * 2 * highestAxis;
-
-            Vector3 parentScale = gizmosArrows.transform.parent.localScale;
-            Vector3 newLocalScale = new Vector3(
-                parentScale.x != 0f ? desiredWorldScale.x / parentScale.x : desiredWorldScale.x,
-                parentScale.y != 0f ? desiredWorldScale.y / parentScale.y : desiredWorldScale.y,
-                parentScale.z != 0f ? desiredWorldScale.z / parentScale.z : desiredWorldScale.z
-            );
-
-            gizmosArrows.transform.localScale = newLocalScale;
+            
+            if (highestAxis >= 1f)
+            {
+                gizmosArrows.transform.localScale = Vector3.one * 2f;
+            }
+            else
+            {
+                gizmosArrows.transform.localScale = Vector3.one * 2f * highestAxis;
+            }
         }
 
         public void SetMultipleObjectsAsSelected(List<GameObject> objects)

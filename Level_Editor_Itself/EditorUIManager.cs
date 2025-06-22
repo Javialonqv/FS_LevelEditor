@@ -1168,15 +1168,15 @@ namespace FS_LevelEditor
 
                     case "XScale":
                         EditorController.Instance.currentSelectedObj.transform.SetXScale(floatValue);
-                        EditorController.Instance.ResetGizmosArrowsScale();
+                        EditorController.Instance.ApplyGizmosArrowsScale();
                         break;
                     case "YScale":
                         EditorController.Instance.currentSelectedObj.transform.SetYScale(floatValue);
-                        EditorController.Instance.ResetGizmosArrowsScale();
+                        EditorController.Instance.ApplyGizmosArrowsScale();
                         break;
                     case "ZScale":
                         EditorController.Instance.currentSelectedObj.transform.SetZScale(floatValue);
-                        EditorController.Instance.ResetGizmosArrowsScale();
+                        EditorController.Instance.ApplyGizmosArrowsScale();
                         break;
                 }
 
