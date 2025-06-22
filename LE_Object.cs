@@ -118,11 +118,11 @@ namespace FS_LevelEditor
 
         public virtual void Start()
         {
+            if (EditorController.Instance) OnInstantiated(LEScene.Editor);
+            else if (PlayModeController.Instance) OnInstantiated(LEScene.Playmode);
+
             if (hasItsOwnClass)
             {
-                if (EditorController.Instance) OnInstantiated(LEScene.Editor);
-                else if (PlayModeController.Instance) OnInstantiated(LEScene.Playmode);
-
                 if (Utilities.IsOverridingMethod(this.GetType(), "Start"))
                 {
                     Logger.Error($"\"{GetType().Name}\" is overriding Start() method, this is not allowed, please use ObjectStart() instead.");
