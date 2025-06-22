@@ -370,10 +370,19 @@ namespace FS_LevelEditor
 
         void LateUpdate()
         {
-            // If the global gizmos arrows are enabled, force them to be with 0 rotation.
-            if (globalGizmosArrowsEnabled && gizmosArrows.activeSelf)
+            if (gizmosArrows.activeSelf && currentSelectedObj)
             {
-                gizmosArrows.transform.rotation = Quaternion.identity;
+                gizmosArrows.transform.position = currentSelectedObj.transform.position;
+
+                // If the global gizmos arrows are enabled, force them to be with 0 rotation.
+                if (globalGizmosArrowsEnabled)
+                {
+                    gizmosArrows.transform.rotation = Quaternion.identity;
+                }
+                else
+                {
+                    gizmosArrows.transform.rotation = currentSelectedObj.transform.rotation;
+                }
             }
 
             if (deathYPlane && deathYPlane.gameObject.activeSelf)
@@ -1071,10 +1080,6 @@ namespace FS_LevelEditor
             else Logger.DebugLog($"SetSelectedObj called with NO NEW TARGET OBJECT (To deselect).");
 
             gizmosArrows.SetActive(false);
-            gizmosArrows.transform.parent = null;
-            gizmosArrows.transform.localPosition = Vector3.zero;
-            gizmosArrows.transform.localRotation = Quaternion.identity;
-            gizmosArrows.transform.localScale = Vector3.one * 2;
 
             snapToGridCube.transform.parent = null;
             snapToGridCube.transform.localPosition = Vector3.zero;
@@ -1217,10 +1222,7 @@ namespace FS_LevelEditor
                 }
 
                 gizmosArrows.SetActive(true);
-                gizmosArrows.transform.parent = currentSelectedObj.transform;
-                gizmosArrows.transform.localPosition = Vector3.zero;
-                gizmosArrows.transform.localRotation = Quaternion.identity;
-                ResetGizmosArrowsScale();
+                gizmosArrows.transform.localRotation = currentSelectedObj.transform.rotation;
 
                 snapToGridCube.transform.parent = currentSelectedObj.transform;
                 snapToGridCube.transform.localPosition = Vector3.zero;
@@ -1246,10 +1248,19 @@ namespace FS_LevelEditor
         // This method is called when the scale of the object is changed, so the gizmos arrows aren't affected.
         public void ResetGizmosArrowsScale()
         {
-            Transform currentParent = gizmosArrows.transform.parent;
-            gizmosArrows.transform.parent = null;
-            gizmosArrows.transform.localScale = Vector3.one * 2;
-            gizmosArrows.transform.parent = currentParent;
+            return;
+
+            float highestAxis = Utilities.HighestValueOfVector(currentSelectedObj.transform.localScale);
+            Vector3 desiredWorldScale = highestAxis >= 0f ? Vector3.one * 2f : Vector3.one * 2 * highestAxis;
+
+            Vector3 parentScale = gizmosArrows.transform.parent.localScale;
+            Vector3 newLocalScale = new Vector3(
+                parentScale.x != 0f ? desiredWorldScale.x / parentScale.x : desiredWorldScale.x,
+                parentScale.y != 0f ? desiredWorldScale.y / parentScale.y : desiredWorldScale.y,
+                parentScale.z != 0f ? desiredWorldScale.z / parentScale.z : desiredWorldScale.z
+            );
+
+            gizmosArrows.transform.localScale = newLocalScale;
         }
 
         public void SetMultipleObjectsAsSelected(List<GameObject> objects)

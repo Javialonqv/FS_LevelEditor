@@ -518,5 +518,10 @@ namespace FS_LevelEditor
 
             return type.GetMethod(methodName, flags) != null;
         }
+
+        public static float HighestValueOfVector(Vector3 vector)
+        {
+            return Mathf.Max(vector.x, Mathf.Max(vector.y, vector.z));
+        }
     }
 }
