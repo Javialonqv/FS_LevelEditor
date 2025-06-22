@@ -9,6 +9,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor
 {
@@ -36,28 +37,27 @@ namespace FS_LevelEditor
             waypointsParent = gameObject.GetChildWithName("Waypoints");
         }
 
-        public override void Start()
+        public override void OnInstantiated(LEScene scene)
         {
-            if (EditorController.Instance)
+            if (scene == LEScene.Editor)
             {
-                SetCollidersState(false);
-                SetEditorCollider(true);
-
                 // Set the saw on or off.
                 SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
 
                 CreateWaypointEditorLine();
             }
 
+            base.OnInstantiated(scene);
+        }
+
+        public override void Start()
+        {
+            base.Start();
+
             if (PlayModeController.Instance)
             {
-                SetEditorCollider(false);
-
-                if (!initialized)
-                {
-                    InitComponent();
-                }
-                else // If it's already initialized, that means the object NOW IS REALLY SPAWNED, activate the saw if needed.
+                // If it's false, that means the saw wasn't really spawned at the start of the level, activate it again to avoid bugs.
+                if (!setActiveAtStart)
                 {
                     // There's a good reason for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
                     // do the same thing, so first enable it, and then disable if needed, cause if we don't do anything, there's a bug with the saw animation.
@@ -81,9 +81,9 @@ namespace FS_LevelEditor
             }
         }
 
-        void InitComponent()
+        public override void InitComponent()
         {
-            GameObject content = gameObject.GetChildWithName("SawContent");
+            GameObject content = gameObject.GetChildWithName("Content");
 
             content.SetActive(false);
             content.tag = "Scie";
@@ -278,8 +278,8 @@ namespace FS_LevelEditor
 
         void SetMeshOnEditor(bool isSawOn)
         {
-            gameObject.GetChildAt("SawContent/Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;
-            gameObject.GetChildAt("SawContent/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
+            gameObject.GetChildAt("Content/Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;
+            gameObject.GetChildAt("Content/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
         }
 
         public LE_Saw_Waypoint AddWaypoint(bool isFromSavedData = false, bool ignoreIfCurrentNextWaypointIsNull = false)

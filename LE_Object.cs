@@ -13,6 +13,12 @@ using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor
 {
+    public enum LEScene
+    {
+        Editor,
+        Playmode
+    }
+
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Object : MonoBehaviour
     {
@@ -80,6 +86,7 @@ namespace FS_LevelEditor
         public bool canBeDisabledAtStart { get; protected set; } = true;
 
         public bool initialized = false;
+        bool hasItsOwnClass = false;
 
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
@@ -111,7 +118,11 @@ namespace FS_LevelEditor
 
         public virtual void Start()
         {
-
+            if (hasItsOwnClass)
+            {
+                if (EditorController.Instance) OnInstantiated(LEScene.Editor);
+                else if (PlayModeController.Instance) OnInstantiated(LEScene.Playmode);
+            }
         }
 
         /// <summary>
@@ -134,6 +145,7 @@ namespace FS_LevelEditor
                 }
                 LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
                 instancedComponent.Init(originalObjName);
+                instancedComponent.hasItsOwnClass = true;
                 return instancedComponent;
             }
             else
@@ -149,11 +161,6 @@ namespace FS_LevelEditor
             }
         }
 
-        public virtual void Init()
-        {
-            // This method is meant to be overrided by classes that inherit from this one.
-        }
-
         void Init(string originalObjName)
         {
             if (EditorController.Instance != null && PlayModeController.Instance == null)
@@ -167,12 +174,31 @@ namespace FS_LevelEditor
 
             SetNameAndType(originalObjName);
 
-            // If it's on playmode.
             if (PlayModeController.Instance != null)
             {
                 // Destroy the snap triggers of this object.
                 Destroy(gameObject.GetChildWithName("SnapTriggers"));
             }
+        }
+        public virtual void OnInstantiated(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                SetCollidersState(false);
+                SetEditorCollider(true);
+            }
+            else if (scene == LEScene.Playmode)
+            {
+                // Don't set the colliders to true because they can be objects with enabled AND disabled colliders, we don't want to break
+                // that.
+                SetEditorCollider(false);
+
+                if (!initialized) InitComponent();
+            }
+        }
+        public virtual void InitComponent()
+        {
+            initialized = true;
         }
 
         void SetNameAndType(string originalObjName)
@@ -242,21 +268,6 @@ namespace FS_LevelEditor
         {
             return false;
         }
-
-        public virtual bool TriggerAction(string actionName)
-        {
-            if (actionName == "SetActive_True")
-            {
-                gameObject.SetActive(true);
-            }
-            else if (actionName == "SetActive_False")
-            {
-                gameObject.SetActive(false);
-            }
-
-            return false;
-        }
-
         /// <summary>
         /// Gets a property from the object properties list.
         /// </summary>
@@ -286,6 +297,20 @@ namespace FS_LevelEditor
 
             Logger.Error($"Couldn't find property of name \"{name}\" OF TYPE \"{typeof(T).Name}\" for object with name: \"{objectFullNameWithID}\"");
             return default(T);
+        }
+
+        public virtual bool TriggerAction(string actionName)
+        {
+            if (actionName == "SetActive_True")
+            {
+                gameObject.SetActive(true);
+            }
+            else if (actionName == "SetActive_False")
+            {
+                gameObject.SetActive(false);
+            }
+
+            return false;
         }
 
         public virtual void OnSelect()

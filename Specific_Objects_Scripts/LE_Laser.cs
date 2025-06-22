@@ -23,25 +23,17 @@ namespace FS_LevelEditor
             };
         }
 
-        public override void Start()
+        public override void OnInstantiated(LEScene scene)
         {
-            if (EditorController.Instance)
+            if (scene == LEScene.Editor)
             {
-                SetCollidersState(false);
-                SetEditorCollider(true);
-
                 SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
             }
 
-            if (PlayModeController.Instance)
-            {
-                SetEditorCollider(false);
-
-                if (!initialized) InitComponent();
-            }
+            base.OnInstantiated(scene);
         }
 
-        void InitComponent()
+        public override void InitComponent()
         {
             Laser_H_Controller template = t_laser;
 

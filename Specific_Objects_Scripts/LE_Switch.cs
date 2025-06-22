@@ -59,24 +59,16 @@ namespace FS_LevelEditor
             CreateEditorLinksParent();
         }
 
-        public override void Start()
+        public override void OnInstantiated(LEScene scene)
         {
             // A few days ago I put this on the Awake() function, but if I did that, then the links weren't created
             // correctly at the start of the editor, already fixed...
-            if (EditorController.Instance)
+            if (scene == LEScene.Editor)
             {
-                SetCollidersState(false);
-                SetEditorCollider(true);
-
                 CreateInEditorLinksToTargetObjects();
             }
 
-            if (PlayModeController.Instance)
-            {
-                SetEditorCollider(false);
-
-                if (!initialized) InitComponent();
-            }
+            base.OnInstantiated(scene);
         }
 
         void Update()
@@ -90,7 +82,7 @@ namespace FS_LevelEditor
             }
         }
 
-        void InitComponent()
+        public override void InitComponent()
         {
             GameObject button = gameObject.GetChildWithName("Content");
 

@@ -42,16 +42,17 @@ namespace FS_LevelEditor
             }
         }
 
-        public override void Start()
+        public override void OnInstantiated(LEScene scene)
         {
-            if (PlayModeController.Instance != null)
+            if (scene == LEScene.Playmode)
             {
                 if (!initialized) InitComponent();
 
                 // Disable the transparent saw mesh ingame.
                 gameObject.GetChildWithName("Mesh").SetActive(false);
             }
-            else if (!isTheFirstWaypoint) // If it's not in playmode, just create a collider so the user can click the object in LE.
+            // The "first waypoint" is just supposed to be internal, the user can't interact with it and it's in the same pos as the original saw.
+            else if (!isTheFirstWaypoint)
             {
                 GameObject collider = new GameObject("Collider");
                 collider.transform.parent = transform;
@@ -64,6 +65,8 @@ namespace FS_LevelEditor
             {
                 gameObject.GetChildWithName("Mesh").SetActive(false);
             }
+
+            // Don't call the base function since saw waypoints don't have an EditorCollider and such.
         }
 
         void Update()
@@ -87,7 +90,7 @@ namespace FS_LevelEditor
             }
         }
 
-        void InitComponent()
+        public override void InitComponent()
         {
             Waypoint waypoint = gameObject.AddComponent<Waypoint>();
 

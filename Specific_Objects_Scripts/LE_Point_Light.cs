@@ -25,20 +25,15 @@ namespace FS_LevelEditor
             };
         }
 
-        public override void Start()
+        public override void OnInstantiated(LEScene scene)
         {
-            if (EditorController.Instance)
+            if (scene == LEScene.Playmode)
             {
-                SetEditorCollider(true);
-            }
-
-
-            if (PlayModeController.Instance != null)
-            {
-                SetEditorCollider(false);
                 Destroy(lightBulbSprite);
                 Destroy(gameObject.GetChildWithName("Arrow"));
             }
+
+            base.OnInstantiated(scene);
         }
 
         void Update()

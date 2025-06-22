@@ -22,23 +22,7 @@ namespace FS_LevelEditor
             };
         }
 
-        public override void Start()
-        {
-            if (EditorController.Instance)
-            {
-                SetCollidersState(false);
-                SetEditorCollider(true);
-            }
-
-            if (PlayModeController.Instance != null)
-            {
-                SetEditorCollider(false);
-
-                if (!initialized) InitComponent();
-            }
-        }
-
-        void InitComponent()
+        public override void InitComponent()
         {
             gameObject.GetChildWithName("Content").SetActive(false);
             gameObject.GetChildWithName("Content").tag = "Health";

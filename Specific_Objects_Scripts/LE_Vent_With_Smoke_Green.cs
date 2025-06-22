@@ -15,5 +15,10 @@ namespace FS_LevelEditor
         {
             gameObject.AddComponent<VentWithSmokeController>().m_particles = gameObject.GetChildAt("Content/Particles");
         }
+
+        public override void OnInstantiated(LEScene scene)
+        {
+            // Don't do anything since it doesn't have an EditorCollider obj.
+        }
     }
 }

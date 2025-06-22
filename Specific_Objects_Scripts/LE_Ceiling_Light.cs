@@ -32,28 +32,23 @@ namespace FS_LevelEditor
             light = lightObj.GetComponent<Light>();
         }
 
-        public override void Start()
+        public override void OnInstantiated(LEScene scene)
         {
-            if (EditorController.Instance)
+            if (scene == LEScene.Editor)
             {
-                SetCollidersState(false);
-                SetEditorCollider(true);
-
                 SetMeshOnEditor();
             }
-
-            else if (PlayModeController.Instance)
+            else if (scene == LEScene.Playmode)
             {
-                SetEditorCollider(false);
                 gameObject.GetChildAt("Content/ActivateTrigger").SetActive(false);
-
-                if (!initialized) InitComponent();
 
                 light.color = (Color)GetProperty("Color");
             }
+
+            base.OnInstantiated(scene);
         }
 
-        void InitComponent()
+        public override void InitComponent()
         {
             RealtimeCeilingLight template = t_ceilingLight;
 

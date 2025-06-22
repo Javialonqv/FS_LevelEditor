@@ -23,23 +23,7 @@ namespace FS_LevelEditor
             };
         }
 
-        public override void Start()
-        {
-            if (EditorController.Instance)
-            {
-                SetCollidersState(false);
-                SetEditorCollider(true);
-            }
-
-            if (PlayModeController.Instance)
-            {
-                if (!initialized) InitComponent();
-
-                SetEditorCollider(false);
-            }
-        }
-
-        void InitComponent()
+        public override void InitComponent()
         {
             gameObject.GetChildWithName("Content").SetActive(false);
             gameObject.GetChildWithName("Content").tag = "AmmoPack";

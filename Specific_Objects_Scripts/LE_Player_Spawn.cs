@@ -30,19 +30,15 @@ namespace FS_LevelEditor
             spawnSprite = gameObject.GetChildAt("Content/Sprite");
         }
 
-        public override void Start()
+        public override void OnInstantiated(LEScene scene)
         {
-            if (EditorController.Instance)
-            {
-                SetEditorCollider(true);
-            }
-
-            if (PlayModeController.Instance)
+            if (scene == LEScene.Playmode)
             {
                 Destroy(spawnSprite);
                 Destroy(gameObject.GetChildWithName("Arrow"));
-                SetEditorCollider(false);
             }
+
+            base.OnInstantiated(scene);
         }
 
         void Update()
