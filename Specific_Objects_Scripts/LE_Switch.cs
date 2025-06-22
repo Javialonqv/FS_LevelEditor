@@ -63,15 +63,18 @@ namespace FS_LevelEditor
         {
             // A few days ago I put this on the Awake() function, but if I did that, then the links weren't created
             // correctly at the start of the editor, already fixed...
-            if (EditorController.Instance != null)
+            if (EditorController.Instance)
             {
-                SetCollidersState(false, "Button");
+                SetCollidersState(false);
+                SetEditorCollider(true);
 
                 CreateInEditorLinksToTargetObjects();
             }
 
-            if (PlayModeController.Instance != null)
+            if (PlayModeController.Instance)
             {
+                SetEditorCollider(false);
+
                 if (!initialized) InitComponent();
             }
         }
@@ -89,7 +92,7 @@ namespace FS_LevelEditor
 
         void InitComponent()
         {
-            GameObject button = gameObject.GetChildWithName("Button");
+            GameObject button = gameObject.GetChildWithName("Content");
 
             #region Setup tags and layers
             button.tag = "Interrupteur";

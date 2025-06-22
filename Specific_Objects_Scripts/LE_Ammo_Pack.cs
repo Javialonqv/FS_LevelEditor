@@ -25,17 +25,17 @@ namespace FS_LevelEditor
 
         public override void Start()
         {
-            if (PlayModeController.Instance != null)
+            if (EditorController.Instance)
+            {
+                SetCollidersState(false);
+                SetEditorCollider(true);
+            }
+
+            if (PlayModeController.Instance)
             {
                 if (!initialized) InitComponent();
-            }
-            else // If it's not in playmode, just create a collider so the user can click the object in LE.
-            {
-                GameObject collider = new GameObject("Collider");
-                collider.transform.parent = transform;
-                collider.transform.localScale = Vector3.one;
-                collider.transform.localPosition = new Vector3(0f, 0.35f, 0f);
-                collider.AddComponent<BoxCollider>().size = Vector3.one * 0.7f;
+
+                SetEditorCollider(false);
             }
         }
 

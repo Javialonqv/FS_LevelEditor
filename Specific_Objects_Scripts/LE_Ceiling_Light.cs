@@ -36,15 +36,18 @@ namespace FS_LevelEditor
         {
             if (EditorController.Instance)
             {
-                SetCollidersState(false, "EditorCollider");
+                SetCollidersState(false);
+                SetEditorCollider(true);
 
                 SetMeshOnEditor();
             }
-            else if (PlayModeController.Instance && !initialized)
+
+            else if (PlayModeController.Instance)
             {
-                gameObject.GetChildWithName("EditorCollider").SetActive(false);
+                SetEditorCollider(false);
                 gameObject.GetChildAt("Content/ActivateTrigger").SetActive(false);
-                InitComponent();
+
+                if (!initialized) InitComponent();
 
                 light.color = (Color)GetProperty("Color");
             }

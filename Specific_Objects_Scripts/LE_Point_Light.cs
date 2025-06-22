@@ -15,18 +15,27 @@ namespace FS_LevelEditor
 
         void Awake()
         {
-            light = gameObject.GetChildWithName("Light").GetComponent<Light>();
-            lightBulbSprite = gameObject.GetChildWithName("Sprite");
+            light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
+            lightBulbSprite = gameObject.GetChildAt("Content/Sprite");
 
             properties = new Dictionary<string, object>()
             {
                 { "Color", Color.white },
                 { "Intensity", 1f }
             };
+        }
+
+        public override void Start()
+        {
+            if (EditorController.Instance)
+            {
+                SetEditorCollider(true);
+            }
+
 
             if (PlayModeController.Instance != null)
             {
-                Destroy(gameObject.GetChildWithName("Collider"));
+                SetEditorCollider(false);
                 Destroy(lightBulbSprite);
                 Destroy(gameObject.GetChildWithName("Arrow"));
             }

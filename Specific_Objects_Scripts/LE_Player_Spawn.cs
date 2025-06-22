@@ -27,13 +27,21 @@ namespace FS_LevelEditor
 
             canBeDisabledAtStart = false;
 
-            spawnSprite = gameObject.GetChildWithName("Sprite");
+            spawnSprite = gameObject.GetChildAt("Content/Sprite");
+        }
 
-            if (PlayModeController.Instance != null)
+        public override void Start()
+        {
+            if (EditorController.Instance)
             {
-                Destroy(gameObject.GetChildWithName("Collider"));
+                SetEditorCollider(true);
+            }
+
+            if (PlayModeController.Instance)
+            {
                 Destroy(spawnSprite);
                 Destroy(gameObject.GetChildWithName("Arrow"));
+                SetEditorCollider(false);
             }
         }
 

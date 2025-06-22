@@ -38,8 +38,21 @@ namespace FS_LevelEditor
 
         public override void Start()
         {
-            if (PlayModeController.Instance != null)
+            if (EditorController.Instance)
             {
+                SetCollidersState(false);
+                SetEditorCollider(true);
+
+                // Set the saw on or off.
+                SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
+
+                CreateWaypointEditorLine();
+            }
+
+            if (PlayModeController.Instance)
+            {
+                SetEditorCollider(false);
+
                 if (!initialized)
                 {
                     InitComponent();
@@ -55,19 +68,6 @@ namespace FS_LevelEditor
                         script.Deactivate();
                     }
                 }
-            }
-            else // If it's not in playmode, just create a collider so the user can click the object in LE.
-            {
-                GameObject collider = new GameObject("Collider");
-                collider.transform.parent = transform;
-                collider.transform.localScale = Vector3.one;
-                collider.transform.localPosition = Vector3.zero;
-                collider.AddComponent<BoxCollider>().size = new Vector3(0.1f, 2f, 2f);
-
-                // Also set the saw on or off.
-                SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
-
-                CreateWaypointEditorLine();
             }
         }
 

@@ -26,8 +26,16 @@ namespace FS_LevelEditor
 
         public override void Start()
         {
+            if (EditorController.Instance)
+            {
+                SetCollidersState(false);
+                SetEditorCollider(true);
+            }
+
             if (PlayModeController.Instance)
             {
+                SetEditorCollider(false);
+
                 if (!initialized) InitComponent();
             }
         }

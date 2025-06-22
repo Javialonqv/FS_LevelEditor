@@ -19,11 +19,17 @@ namespace FS_LevelEditor
             };
         }
 
-        void Start()
+        public override void Start()
         {
+            if (EditorController.Instance)
+            {
+                SetCollidersState(false);
+                SetEditorCollider(true);
+            }
+
             if (PlayModeController.Instance)
             {
-                gameObject.GetChildWithName("EditorCollider").SetActive(false);
+                SetEditorCollider(false);
                 if (!initialized) InitComponent();
             }
         }

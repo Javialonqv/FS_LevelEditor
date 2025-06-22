@@ -332,19 +332,28 @@ namespace FS_LevelEditor
             return null;
         }
 
-        public void SetCollidersState(bool newEnabledState, params string[] collidersToSkip)
+        public void SetCollidersState(bool newEnabledState)
         {
-            foreach (var collider in gameObject.TryGetComponents<Collider>())
+            if (!gameObject.ExistsChildWithName("Content"))
             {
-                if (collidersToSkip.Contains(collider.name)) continue;
+                Logger.Error($"\"{objectOriginalName}\" object doesn't contain a Content object for some reason???");
+                return;
+            }
 
-                // Skip gizmos arrows as well.
-                if (collider.transform.parent != null)
-                {
-                    if (collider.transform.parent.name == "MoveObjectArrows") continue;
-                }
-
+            foreach (var collider in gameObject.GetChildWithName("Content").TryGetComponents<Collider>())
+            {
                 collider.enabled = newEnabledState;
+            }
+        }
+        public void SetEditorCollider(bool newEnabledState)
+        {
+            if (gameObject.ExistsChildWithName("EditorCollider"))
+            {
+                gameObject.GetChildWithName("EditorCollider").SetActive(newEnabledState);
+            }
+            else
+            {
+                Logger.Error($"\"{objectOriginalName}\" object doesn't contain an EditorCollider.");
             }
         }
     }
