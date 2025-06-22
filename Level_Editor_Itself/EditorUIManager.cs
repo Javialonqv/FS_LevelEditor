@@ -1802,10 +1802,6 @@ namespace FS_LevelEditor
             ExitToMenu(false);
         }
 
-        public void ExitToMenuFromNavigationBarButton(NavigationBarController.ActionType type)
-        {
-            ShowExitPopup();
-        }
         public void SaveLevelWithPauseMenuButton()
         {
             Logger.Log("Saving Level Data from pause menu...");

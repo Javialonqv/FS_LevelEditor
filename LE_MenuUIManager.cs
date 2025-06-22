@@ -92,19 +92,6 @@ namespace FS_LevelEditor
                     SwitchBetweenMenuAndLEMenu();
                 }
             }
-
-            // To exit from the LE menu with the navigation bar buttons.
-            if (inLEMenu)
-            {
-                NavigationAction action = navigationBarButtonsParent.transform.GetChild(0).GetComponent<NavigationAction>();
-                if (action.assignedActionType != NavigationBarController.ActionType.BACK)
-                {
-                    navigationBarButtonsParent.DisableAllChildren();
-                    action.gameObject.SetActive(true);
-                    action.Setup(Localization.Get("Back").ToUpper(), "Keyboard_Black_Esc", NavigationBarController.ActionType.BACK);
-                    action.onButtonClick = new Action<NavigationBarController.ActionType>(ExitLEMenuInNavigationBarButton);
-                }
-            }
         }
 
         public void OnSceneLoaded(string sceneName)
@@ -866,13 +853,6 @@ namespace FS_LevelEditor
         }
 
 
-        public void ExitLEMenuInNavigationBarButton(NavigationBarController.ActionType type)
-        {
-            if (type == NavigationBarController.ActionType.BACK && inLEMenu)
-            {
-                SwitchBetweenMenuAndLEMenu();
-            }
-        }
         public void SwitchBetweenMenuAndLEMenu(bool showMainMenu = true)
         {
             // Switch!
@@ -887,12 +867,9 @@ namespace FS_LevelEditor
             else
             {
                 Logger.Log("Switching from LE Menu to main menu!");
-                // Put the navigation bar exit button to its original state one we exit from the LE menu.
-                NavigationAction action = navigationBarButtonsParent.transform.GetChild(0).GetComponent<NavigationAction>();
-                action.transform.parent.gameObject.EnableAllChildren();
-                action.Setup(Localization.Get("Exit").ToUpper(), "Keyboard_Black_Esc", NavigationBarController.ActionType.QUIT);
-                action.onButtonClick = new Action<NavigationBarController.ActionType>(NavigationBarController.Instance.ManualButtonPressed);
             }
+
+            NavigationBarController.Instance.RefreshNavigationBarActions();
 
             MelonCoroutines.Start(Animation());
 
