@@ -208,9 +208,6 @@ namespace FS_LevelEditor
                             currentExecutingAction.targetObjs = new List<GameObject>();
                             foreach (var obj in currentSelectedObj.GetChilds())
                             {
-                                if (obj.name == "MoveObjectArrows") continue;
-                                if (obj.name == "SnapToGridCube") continue;
-
                                 currentExecutingAction.targetObjs.Add(obj);
                             }
                         }
@@ -615,9 +612,6 @@ namespace FS_LevelEditor
                         currentExecutingAction.targetObjs = new List<GameObject>();
                         foreach (var obj in currentSelectedObj.GetChilds())
                         {
-                            if (obj.name == "MoveObjectArrows") continue;
-                            if (obj.name == "SnapToGridCube") continue;
-
                             currentExecutingAction.targetObjs.Add(obj);
                         }
                     }
@@ -800,9 +794,6 @@ namespace FS_LevelEditor
                 currentExecutingAction.targetObjs = new List<GameObject>();
                 foreach (var obj in currentSelectedObj.GetChilds())
                 {
-                    if (obj.name == "MoveObjectArrows") continue;
-                    if (obj.name == "SnapToGridCube") continue;
-
                     currentExecutingAction.targetObjs.Add(obj);
                 }
             }
@@ -887,7 +878,7 @@ namespace FS_LevelEditor
             if (multipleObjectsSelected) return;
 
             // Get the current existing objects in the level objects parent.
-            int existingObjects = levelObjectsParent.GetChilds(false).Where(x => x.name != "MoveObjectArrows" && x.name != "SnapToGridCube").ToArray().Length;
+            int existingObjects = levelObjectsParent.GetChilds(false).ToArray().Length;
 
             if (existingObjects <= 1)
             {
@@ -926,12 +917,12 @@ namespace FS_LevelEditor
         void DeleteSelectedObj()
         {
             // Get the current existing objects in the level objects parent.
-            int existingObjects = levelObjectsParent.GetChilds(false).Where(x => x.name != "MoveObjectArrows" && x.name != "SnapToGridCube").ToArray().Length;
+            int existingObjects = levelObjectsParent.GetChilds(false).ToArray().Length;
 
             if (multipleObjectsSelected)
             {
                 // Since the selected objects are in another parent, also count the objects in that parent.
-                existingObjects += multipleSelectedObjsParent.GetChilds(false).Where(x => x.name != "MoveObjectArrows" && x.name != "SnapToGridCube").ToArray().Length;
+                existingObjects += multipleSelectedObjsParent.GetChilds(false).ToArray().Length;
 
                 if (existingObjects - currentSelectedObjects.Count <= 0)
                 {
@@ -941,8 +932,6 @@ namespace FS_LevelEditor
 
                 foreach (var obj in currentSelectedObj.GetChilds())
                 {
-                    if (obj.name == "MoveObjectArrows" || obj.name == "SnapToGridCube") continue;
-
                     obj.GetComponent<LE_Object>().OnDelete();
 
                     if (obj.GetComponent<LE_Object>().canUndoDeletion)
@@ -994,9 +983,6 @@ namespace FS_LevelEditor
                     currentExecutingAction.targetObjs = new List<GameObject>();
                     foreach (var obj in currentSelectedObj.GetChilds())
                     {
-                        if (obj.name == "MoveObjectArrows") continue;
-                        if (obj.name == "SnapToGridCube") continue;
-                     
                         if (!obj.GetComponent<LE_Object>().canUndoDeletion) continue;
 
                         currentExecutingAction.targetObjs.Add(obj);
@@ -1397,13 +1383,7 @@ namespace FS_LevelEditor
                 if (multipleObjectsSelected)
                 {
                     currentExecutingAction.targetObjs = new List<GameObject>();
-                    foreach (var obj in currentSelectedObj.GetChilds())
-                    {
-                        if (obj.name == "MoveObjectArrows") continue;
-                        if (obj.name == "SnapToGridCube") continue;
-
-                        currentExecutingAction.targetObjs.Add(obj);
-                    }
+                    currentExecutingAction.targetObjs.AddRange(currentSelectedObj.GetChilds());
                 }
                 else
                 {
@@ -1632,7 +1612,7 @@ namespace FS_LevelEditor
         {
             // The parent of the gizmos arrows is "MoveObjectsArrows".
             // hittenArrow is NOT the parent, it's the actual hitten arrow :)
-            if (IsHittingObjectWhoseParentIs("MoveObjectArrows", out GameObject hittenArrow, out Ray cameraRay))
+            if (IsHittingObjectWhoseParentIs(gizmosArrows.name, out GameObject hittenArrow, out Ray cameraRay))
             {
                 StartMovingObject(hittenArrow.name, cameraRay);
 
