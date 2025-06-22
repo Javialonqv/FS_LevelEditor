@@ -52,12 +52,10 @@ namespace FS_LevelEditor
 
         public override void Start()
         {
-            base.Start();
-
             if (PlayModeController.Instance)
             {
                 // If it's false, that means the saw wasn't really spawned at the start of the level, activate it again to avoid bugs.
-                if (!setActiveAtStart)
+                if (!setActiveAtStart && initialized)
                 {
                     // There's a good reason for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
                     // do the same thing, so first enable it, and then disable if needed, cause if we don't do anything, there's a bug with the saw animation.
@@ -69,6 +67,8 @@ namespace FS_LevelEditor
                     }
                 }
             }
+
+            base.Start();
         }
 
         void Update()
