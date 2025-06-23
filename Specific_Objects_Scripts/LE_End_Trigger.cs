@@ -25,6 +25,8 @@ namespace FS_LevelEditor
             currentInstances++;
 
             gameObject.GetChildAt("Content/End").tag = "Checkpoint";
+
+            Logger.Error("END TRIGGER IS EXTREMELY EXPERIMENTAL, I JUST ADDED IT, DON'T COMPLAIN ABOUT IT SHRISS!!!");
         }
 
         public override void OnInstantiated(LEScene scene)
