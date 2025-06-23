@@ -35,7 +35,8 @@ namespace FS_LevelEditor
             CUBE,
             LASER,
             FLAME_TRAP,
-            COLLIDER
+            COLLIDER,
+            END_TRIGGER,
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
