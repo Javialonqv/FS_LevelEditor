@@ -374,6 +374,51 @@ namespace FS_LevelEditor
             return null;
         }
 
+        public enum LEObjectContext { PREVIEW, SELECT, NORMAL }
+        public static Color GetObjectColor(LEObjectContext context)
+        {
+            switch (context)
+            {
+                case LEObjectContext.PREVIEW:
+                    return new Color(0f, 0.666f, 0.894f, 1f);
+
+                case LEObjectContext.SELECT:
+                    return new Color(0f, 1f, 0f);
+
+                case LEObjectContext.NORMAL:
+                    return new Color(1f, 1f, 1f);
+            }
+
+            return new Color(1f, 1f, 1f);
+        }
+        public static Color GetObjectColorForObject(string objName, LEObjectContext context)
+        {
+            string className = "LE_" + objName.Replace(' ', '_');
+            Type classType = Type.GetType("FS_LevelEditor." + className);
+
+            if (classType != null)
+            {
+                var flags = BindingFlags.Static
+                    | BindingFlags.Public
+                    | BindingFlags.NonPublic
+                    | BindingFlags.DeclaredOnly;
+
+                MethodInfo method = classType.GetMethod(nameof(GetObjectColor), flags);
+                if (method != null)
+                {
+                    return (Color)method.Invoke(null, new object[] { context });
+                }
+                else // If it's null is prolly 'cause the class doesn't have the method declared, so, just use the default implementation.
+                {
+                    return GetObjectColor(context);
+                }
+            }
+            else
+            {
+                return GetObjectColor(context);
+            }
+        }
+
         public void SetCollidersState(bool newEnabledState)
         {
             if (!gameObject.ExistsChildWithName("Content"))
