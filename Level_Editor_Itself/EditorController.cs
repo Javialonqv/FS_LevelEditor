@@ -1074,15 +1074,19 @@ namespace FS_LevelEditor
 
             // SnapToGrid cube is adjusted in Late Update.
 
+            // Reset the last selected object color back to normal.
             if (currentSelectedObj != null)
             {
-                // Reset the last selected object color to white if there's one.
-                foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
+                if (multipleObjectsSelected)
                 {
-                    foreach (var material in renderer.materials)
+                    foreach (var @object in currentSelectedObjects)
                     {
-                        material.color = new Color(1f, 1f, 1f, material.color.a);
+                        @object.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.NORMAL);
                     }
+                }
+                else
+                {
+                    currentSelectedObjComponent.SetObjectColor(LE_Object.LEObjectContext.NORMAL);
                 }
             }
 
@@ -1202,12 +1206,17 @@ namespace FS_LevelEditor
 
             if (currentSelectedObj != null)
             {
-                foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
+                // Change the color of the new select object to the "selected" color.
+                if (multipleObjectsSelected)
                 {
-                    foreach (var material in renderer.materials)
+                    foreach (var @object in currentSelectedObjects)
                     {
-                        material.color = new Color(0f, 1f, 0f, material.color.a);
+                        @object.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.SELECT);
                     }
+                }
+                else
+                {
+                    currentSelectedObjComponent.SetObjectColor(LE_Object.LEObjectContext.SELECT);
                 }
 
                 gizmosArrows.SetActive(true);
@@ -1293,13 +1302,7 @@ namespace FS_LevelEditor
                 return null;
             }
 
-            foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
-            {
-                foreach (var material in renderer.materials)
-                {
-                    material.color = new Color(1f, 1f, 1f, 1f);
-                }
-            }
+            addedComp.SetObjectColor(LE_Object.LEObjectContext.NORMAL);
 
             obj.SetActive(true);
 
@@ -1570,14 +1573,8 @@ namespace FS_LevelEditor
             {
                 Destroy(rigidBody); // Destroy the RigidBody, fuck it.
             }
-            // Also change it's color to blue.
-            foreach (var renderer in previewObjectToBuildObj.TryGetComponents<MeshRenderer>())
-            {
-                foreach (var material in renderer.materials)
-                {
-                    material.color = new Color(0f, 0.666f, 0.894f, 1f);
-                }
-            }
+            // This is an static method used for cases like this, where there's no LE_Object at all, all we have is the preview object.
+            LE_Object.SetObjectColor(previewObjectToBuildObj, currentObjectToBuildName, LE_Object.LEObjectContext.PREVIEW);
         }
         #endregion
 

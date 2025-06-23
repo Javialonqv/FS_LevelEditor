@@ -34,7 +34,8 @@ namespace FS_LevelEditor
             PLAYER_SPAWN,
             CUBE,
             LASER,
-            FLAME_TRAP
+            FLAME_TRAP,
+            COLLIDER
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
@@ -416,6 +417,32 @@ namespace FS_LevelEditor
             else
             {
                 return GetObjectColor(context);
+            }
+        }
+        public void SetObjectColor(LEObjectContext context)
+        {
+            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
+            {
+                foreach (var material in renderer.materials)
+                {
+                    Color toSet = LE_Object.GetObjectColorForObject(objectOriginalName, context);
+                    toSet.a = material.color.a;
+                    material.color = toSet;
+                }
+            }
+        }
+        public static void SetObjectColor(GameObject obj, string objInternalName, LEObjectContext context)
+        {
+            foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
+            {
+                foreach (var material in renderer.materials)
+                {
+                    if (!material.HasProperty("_Color")) continue;
+
+                    Color toSet = LE_Object.GetObjectColorForObject(objInternalName, context);
+                    toSet.a = material.color.a;
+                    material.color = toSet;
+                }
             }
         }
 
