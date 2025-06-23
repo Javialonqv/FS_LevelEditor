@@ -446,6 +446,8 @@ namespace FS_LevelEditor
             }
             else if (eventsGridList.Count > 0)
             {
+                if (eventsPage > eventsGridList.Count() - 1) eventsPage = eventsGridList.Count() - 1;
+
                 eventsGridList[eventsPage].SetActive(true);
                 currentEventsGrid = eventsPage;
             }
@@ -684,7 +686,8 @@ namespace FS_LevelEditor
         {
             HideEventSettings();
             GetEventsList().RemoveAt(eventID);
-            CreateEventsList(int.MaxValue);
+            // And what if now the grid count is less than currentEventGrid? This comprobation is already inside of CreateEventsList() :)
+            CreateEventsList(currentEventsGrid);
         }
         void OnEventSelect(int selectedID)
         {
