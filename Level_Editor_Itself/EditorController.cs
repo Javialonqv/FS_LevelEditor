@@ -335,7 +335,9 @@ namespace FS_LevelEditor
 
             ManageUndo();
 
-            ManageMoveObjectShortcuts();
+            // If the user's typing and then he uses an arrow key to navigate to another character of the field... well... the arrow also moves the object LOL.
+            // We need to avoid that.
+            if (!Utilities.theresAnInputFieldSelected) ManageMoveObjectShortcuts();
         }
 
         void ManageEscAction()
