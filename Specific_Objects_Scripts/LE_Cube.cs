@@ -85,7 +85,7 @@ namespace FS_LevelEditor
             blocScript.onRespawn = new UnityEngine.Events.UnityEvent();
             blocScript.onStartFloating = new UnityEngine.Events.UnityEvent();
             blocScript.onStartSinking = new UnityEngine.Events.UnityEvent();
-            blocScript.respawnEulerAngles = new Vector3(0f, 300.7243f, 0f);
+            blocScript.respawnEulerAngles = blocScript.transform.eulerAngles;
             blocScript.respawnPosition = blocScript.transform.position;
             blocScript.useContinuousOnDrop = true;
             blocScript.useMeshSwap = true;
