@@ -52,6 +52,8 @@ namespace FS_LevelEditor
             trap.reducedFlameLengthMultiplier = 0.5f;
 
             DOT dot = content.GetChildWithName("DOT_Trigger").AddComponent<DOT>();
+            dot.pushCubes = true;
+            dot.pushForce = 8;
             dot.DPS = 80;
             dot.useDmgCollisionDetection = false;
             dot.collisionCheckPoint = content.GetChildWithName("DamageObstructionPoint").transform;
