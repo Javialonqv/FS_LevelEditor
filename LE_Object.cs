@@ -426,6 +426,8 @@ namespace FS_LevelEditor
             {
                 foreach (var material in renderer.materials)
                 {
+                    if (!material.HasProperty("_Color")) continue;
+
                     Color toSet = LE_Object.GetObjectColorForObject(objectOriginalName, context);
                     toSet.a = material.color.a;
                     material.color = toSet;
