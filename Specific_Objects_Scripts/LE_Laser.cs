@@ -87,6 +87,7 @@ namespace FS_LevelEditor
             laser.flareMultiplier = 1;
             laser.activeEditorState = true;
             laser.constantEditorState = true;
+            laser.showIfTouchesNothing = true;
 
             laser.Line.material = template.Line.material;
 
