@@ -25,6 +25,7 @@ namespace FS_LevelEditor
         {
             currentInstances++;
 
+            canUndoDeletion = false;
             canBeDisabledAtStart = false;
 
             spawnSprite = gameObject.GetChildAt("Content/Sprite");
