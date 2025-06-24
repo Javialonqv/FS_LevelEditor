@@ -36,10 +36,10 @@ namespace FS_LevelEditor
             trap.stopClip = t_flameTrap.stopClip;
             trap.doesDamage = true;
             trap.dotActvationDelay = -1;
-            trap.useDOTScaling = true;
-            trap.dotScalingSpeed = 0.7f;
+            trap.useDOTScaling = false;
+            trap.dotScalingSpeed = 0.8f;
             trap.constant = (bool)GetProperty("Constant");
-            trap.onDuration = 3;
+            trap.onDuration = 4;
             trap.offDuration = 2;
             trap.firstOnAddition = 0;
             trap.offMaterials = t_flameTrap.offMaterials;
