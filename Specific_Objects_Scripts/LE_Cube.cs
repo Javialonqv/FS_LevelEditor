@@ -123,6 +123,10 @@ namespace FS_LevelEditor
 
             gameObject.GetChildWithName("Content").SetActive(true);
 
+            // This is one of the worst bugfixes you'll ever see in game development, but HEY!! IT WORKS LOL.
+            // This forces the CheckForRespawn method to be called, just like it does in the BlocScript class.
+            blocScript.InvokeRepeating(nameof(BlocScript.CheckForRespawn), 2f, 2f);
+
             initialized = true;
         }
 
