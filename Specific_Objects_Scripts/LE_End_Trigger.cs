@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor;
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,6 +57,19 @@ namespace FS_LevelEditor
         void OnDestroy()
         {
             currentInstances--;
+        }
+    }
+}
+
+[HarmonyLib.HarmonyPatch(typeof(Controls), nameof(Controls.OnCheckpointPassed))]
+public static class EndCheckpointReachedPatch
+{
+    public static void Postfix(string _checkpointName, GameObject _objectCollided)
+    {
+        if (PlayModeController.Instance && _checkpointName == "End")
+        {
+            _objectCollided.SetActive(false);
+            PlayModeController.Instance.endTriggerReached = true;
         }
     }
 }

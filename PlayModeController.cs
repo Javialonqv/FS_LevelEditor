@@ -37,6 +37,8 @@ namespace FS_LevelEditor
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
         public int deathsInCurrentLevel = 0;
 
+        public bool endTriggerReached = false;
+
         void Awake()
         {
             Instance = this;
@@ -315,6 +317,12 @@ public static class CurrentLevelKeyPatch
 {
     public static bool Prefix(string _key)
     {
+        // Don't save when the user is ending the level in playmode.
+        if (PlayModeController.Instance && PlayModeController.Instance.endTriggerReached)
+        {
+            return false;
+        }
+
         if (PlayModeController.Instance || Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
         {
             if (_key == "Current_Level")
@@ -331,6 +339,12 @@ public static class CurrentLevelKeyPatch2
 {
     public static bool Prefix(string _key)
     {
+        // Don't save when the user is ending the level in playmode.
+        if (PlayModeController.Instance && PlayModeController.Instance.endTriggerReached)
+        {
+            return false;
+        }
+
         if (PlayModeController.Instance || Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
         {
             if (_key == "Current_Level")
