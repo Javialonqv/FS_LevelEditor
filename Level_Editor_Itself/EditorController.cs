@@ -1,14 +1,15 @@
-﻿using System;
-using System.Reflection;
+﻿using FS_LevelEditor.Level_Editor_Itself;
+using Il2Cpp;
+using MelonLoader;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using MelonLoader;
-using Il2Cpp;
-using System.Collections;
-using FS_LevelEditor.Level_Editor_Itself;
+using static MelonLoader.bHaptics;
 
 namespace FS_LevelEditor
 {
@@ -733,13 +734,49 @@ namespace FS_LevelEditor
                     if (lastHittenNormalByPreviewRay != hits[0].normal)
                     {
                         lastHittenNormalByPreviewRay = hits[0].normal;
-                        previewObjectToBuildObj.transform.up = hits[0].normal;
+                        previewObjectToBuildObj.transform.rotation = GetObjectRotationToPreview(hits[0], Camera.main.transform, previewObjectToBuildObj.transform);
                     }
                 }
             }
             else
             {
                 previewObjectToBuildObj.SetActive(false);
+            }
+        }
+        Quaternion GetObjectRotationToPreview(RaycastHit hit, Transform camTransform, Transform previewObj)
+        {
+            Vector3 surfaceNormal = hit.normal;
+            Vector3 cameraPosition = camTransform.position;
+            Vector3 hitPoint = hit.point;
+
+            // Determinar si es superficie horizontal o vertical
+            bool isHorizontal = Mathf.Abs(Vector3.Dot(surfaceNormal, Vector3.up)) > 0.7f;
+
+            if (isHorizontal)
+            {
+                // SUPERFICIE HORIZONTAL: up = normal, rotar Y según cámara
+                Vector3 toCameraFlat = new Vector3(
+                    cameraPosition.x - hitPoint.x,
+                    0,
+                    cameraPosition.z - hitPoint.z
+                ).normalized;
+
+                float angleY = Mathf.Atan2(toCameraFlat.x, toCameraFlat.z) * Mathf.Rad2Deg;
+                float snappedAngleY = Mathf.Round(angleY / 90f) * 90f;
+
+                Quaternion baseRotation = Quaternion.FromToRotation(Vector3.up, surfaceNormal);
+                Quaternion yRotation = Quaternion.Euler(0, snappedAngleY, 0);
+
+                return baseRotation * yRotation;
+            }
+            else
+            {
+                Logger.Log(hit.normal);
+                surfaceNormal.x = Mathf.Abs(surfaceNormal.x);
+                surfaceNormal.y = Mathf.Abs(surfaceNormal.y);
+                surfaceNormal.z = Mathf.Abs(surfaceNormal.z);
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.up, surfaceNormal);
+                return rotation;
             }
         }
 
