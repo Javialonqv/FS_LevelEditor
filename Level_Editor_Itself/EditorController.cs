@@ -734,7 +734,7 @@ namespace FS_LevelEditor
                     if (lastHittenNormalByPreviewRay != hits[0].normal)
                     {
                         lastHittenNormalByPreviewRay = hits[0].normal;
-                        previewObjectToBuildObj.transform.rotation = GetObjectRotationToPreview(hits[0], Camera.main.transform, previewObjectToBuildObj.transform);
+                        SetObjectRotationForPreviewObj(hits[0], Camera.main.transform, previewObjectToBuildObj.transform);
                     }
                 }
             }
@@ -743,7 +743,7 @@ namespace FS_LevelEditor
                 previewObjectToBuildObj.SetActive(false);
             }
         }
-        Quaternion GetObjectRotationToPreview(RaycastHit hit, Transform camTransform, Transform previewObj)
+        void SetObjectRotationForPreviewObj(RaycastHit hit, Transform camTransform, Transform previewObj)
         {
             Vector3 surfaceNormal = hit.normal;
             Vector3 cameraPosition = camTransform.position;
@@ -754,7 +754,6 @@ namespace FS_LevelEditor
 
             if (isHorizontal)
             {
-                // SUPERFICIE HORIZONTAL: up = normal, rotar Y según cámara
                 Vector3 toCameraFlat = new Vector3(
                     cameraPosition.x - hitPoint.x,
                     0,
@@ -765,18 +764,14 @@ namespace FS_LevelEditor
                 float snappedAngleY = Mathf.Round(angleY / 90f) * 90f;
 
                 Quaternion baseRotation = Quaternion.FromToRotation(Vector3.up, surfaceNormal);
-                Quaternion yRotation = Quaternion.Euler(0, snappedAngleY, 0);
+                Quaternion yRotation = Quaternion.Euler(0, -snappedAngleY, 0);
 
-                return baseRotation * yRotation;
+                previewObj.rotation = baseRotation * yRotation;
             }
             else
             {
-                Logger.Log(hit.normal);
-                surfaceNormal.x = Mathf.Abs(surfaceNormal.x);
-                surfaceNormal.y = Mathf.Abs(surfaceNormal.y);
-                surfaceNormal.z = Mathf.Abs(surfaceNormal.z);
                 Quaternion rotation = Quaternion.FromToRotation(Vector3.up, surfaceNormal);
-                return rotation;
+                previewObj.rotation = rotation;
             }
         }
 
