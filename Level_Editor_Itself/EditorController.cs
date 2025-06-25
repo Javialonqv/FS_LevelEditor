@@ -1359,8 +1359,17 @@ namespace FS_LevelEditor
                 foreach (var obj in currentSelectedObjects)
                 {
                     LE_Object objComponent = obj.GetComponent<LE_Object>();
-                    newSelectedObjectsList.Add(PlaceObject(objComponent.objectOriginalName, objComponent.transform.position, objComponent.transform.eulerAngles,
-                        objComponent.transform.localScale, false));
+
+                    GameObject placedObj = PlaceObject(objComponent.objectOriginalName, objComponent.transform.position, objComponent.transform.eulerAngles,
+                        objComponent.transform.localScale, false);
+                    LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
+
+                    foreach (var property in objComponent.properties)
+                    {
+                        newPlacedObjComp.properties[property.Key] = property.Value;
+                    }
+
+                    newSelectedObjectsList.Add(placedObj);
                 }
 
                 SetMultipleObjectsAsSelected(newSelectedObjectsList);
@@ -1370,8 +1379,15 @@ namespace FS_LevelEditor
             {
                 isDuplicatingObj = true;
                 LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
-                PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
+                GameObject placedObj = PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
                     objComponent.transform.localScale);
+
+                LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
+                foreach (var property in objComponent.properties)
+                {
+                    newPlacedObjComp.properties[property.Key] = property.Value;
+                }
+
                 isDuplicatingObj = false;
                 levelHasBeenModified = true;
             }
