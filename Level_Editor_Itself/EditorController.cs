@@ -1380,13 +1380,15 @@ namespace FS_LevelEditor
                 isDuplicatingObj = true;
                 LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
                 GameObject placedObj = PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
-                    objComponent.transform.localScale);
+                    objComponent.transform.localScale, false);
 
                 LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
                 foreach (var property in objComponent.properties)
                 {
                     newPlacedObjComp.properties[property.Key] = property.Value;
                 }
+
+                SetSelectedObj(placedObj);
 
                 isDuplicatingObj = false;
                 levelHasBeenModified = true;
