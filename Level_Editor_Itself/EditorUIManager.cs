@@ -817,16 +817,34 @@ namespace FS_LevelEditor
             activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
             #endregion
 
+            #region Insta Kill Toggle
+            GameObject instaKillTitle = Instantiate(labelTemplate, laserAttributes.transform);
+            instaKillTitle.name = "InstaKillTitle";
+            instaKillTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
+            instaKillTitle.RemoveComponent<UILocalize>();
+            instaKillTitle.GetComponent<UILabel>().width = 395;
+            instaKillTitle.GetComponent<UILabel>().text = "Instant Kill";
+            instaKillTitle.GetComponent<UILabel>().color = Color.white;
+
+            GameObject instaKillToggle = NGUI_Utils.CreateToggle(laserAttributes.transform, new Vector3(200f, 40f, 0f), new Vector3Int(48, 48, 0));
+            instaKillToggle.name = "InstaKillToggle";
+            instaKillToggle.GetComponent<UIToggle>().onChange.Clear();
+            var instaKillDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "InstaKill"),
+                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", instaKillToggle.GetComponent<UIToggle>()));
+            instaKillToggle.GetComponent<UIToggle>().onChange.Add(instaKillDelegate);
+            #endregion
+
             #region Damage Input Field
             GameObject damageTitle = Instantiate(labelTemplate, laserAttributes.transform);
             damageTitle.name = "DamageTitle";
-            damageTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
+            damageTitle.transform.localPosition = new Vector3(-230f, -10f, 0f);
             damageTitle.RemoveComponent<UILocalize>();
             damageTitle.GetComponent<UILabel>().width = 260;
             damageTitle.GetComponent<UILabel>().text = "Damage";
             damageTitle.GetComponent<UILabel>().color = Color.white;
 
-            GameObject damageInputField = NGUI_Utils.CreateInputField(laserAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+            GameObject damageInputField = NGUI_Utils.CreateInputField(laserAttributes.transform, new Vector3(140f, -10f, 0f), new Vector3Int(200, 38, 0), 27,
                 "34", false, NGUIText.Alignment.Left);
             damageInputField.name = "DamageInputField";
             var damageFieldCustomScript = damageInputField.AddComponent<UICustomInputField>();
@@ -1068,6 +1086,10 @@ namespace FS_LevelEditor
                 var activateOnStartToggle = attrbutesPanels["Laser"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
                 activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
 
+                // Set insta-kill toggle...
+                var instaKillToggle = attrbutesPanels["Laser"].GetChildWithName("InstaKillToggle").GetComponent<UIToggle>();
+                instaKillToggle.Set((bool)objComponent.GetProperty("InstaKill"));
+
                 // Set the damage input field...
                 var damageInput = attrbutesPanels["Laser"].GetChildWithName("DamageInputField").GetComponent<UIInput>();
                 damageInput.text = (int)objComponent.GetProperty("Damage") + "";
@@ -1217,6 +1239,13 @@ namespace FS_LevelEditor
         }
         public void SetPropertyWithToggle(string propertyName, UIToggle toggle)
         {
+            switch (propertyName)
+            {
+                case "InstaKill":
+                    OnLaserInstaKillChecked(toggle.isChecked);
+                    break;
+            }
+
             if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
             {
                 EditorController.Instance.levelHasBeenModified = true;
@@ -1228,6 +1257,13 @@ namespace FS_LevelEditor
             {
                 EditorController.Instance.levelHasBeenModified = true;
             }
+        }
+
+        // Extra functions for specific things for specific attributes for specific objects LOL.
+        void OnLaserInstaKillChecked(bool newState)
+        {
+            attrbutesPanels["Laser"].GetChildWithName("DamageTitle").SetActive(!newState);
+            attrbutesPanels["Laser"].GetChildWithName("DamageInputField").SetActive(!newState);
         }
         #endregion
 

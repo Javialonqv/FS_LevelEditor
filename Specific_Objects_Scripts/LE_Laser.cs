@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor;
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>()
             {
                 { "ActivateOnStart", true },
+                { "InstaKill", false },
                 { "Damage", 34 }
             };
         }
@@ -169,6 +171,19 @@ namespace FS_LevelEditor
                     return false;
                 }
             }
+            else if (name == "InstaKill")
+            {
+                if (value is bool)
+                {
+                    properties["InstaKill"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"InstaKill\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
             else if (name == "Damage")
             {
                 if (value is string)
@@ -221,6 +236,21 @@ namespace FS_LevelEditor
         {
             gameObject.GetChildAt("Content/MeshOff").GetComponent<MeshRenderer>().enabled = !isLaserOn;
             gameObject.GetChildAt("Content/MeshOn").GetComponent<MeshRenderer>().enabled = isLaserOn;
+        }
+    }
+}
+
+[HarmonyLib.HarmonyPatch(typeof(Laser_H_Controller), nameof(Laser_H_Controller.OnTouchPlayer))]
+public static class LaserInstaKillPatch
+{
+    public static void Prefix(Laser_H_Controller __instance)
+    {
+        if (__instance.transform.parent != null && __instance.transform.parent.GetComponent<LE_Laser>())
+        {
+            if ((bool)__instance.transform.parent.GetComponent<LE_Laser>().GetProperty("InstaKill"))
+            {
+                Controls.Instance.KillCharacter(true);
+            }
         }
     }
 }
