@@ -734,7 +734,10 @@ namespace FS_LevelEditor
                     if (lastHittenNormalByPreviewRay != hits[0].normal)
                     {
                         lastHittenNormalByPreviewRay = hits[0].normal;
-                        previewObjectToBuildObj.transform.up = hits[0].normal;
+                        //previewObjectToBuildObj.transform.up = hits[0].normal;
+                        //previewObjectToBuildObj.transform.eulerAngles += GetObjOffset(hits[0].normal);
+                        RotatePreviewObj(hits[0], previewObjectToBuildObj.transform);
+                        Logger.DebugLog(hits[0].normal);
                     }
                 }
             }
@@ -742,6 +745,42 @@ namespace FS_LevelEditor
             {
                 previewObjectToBuildObj.SetActive(false);
             }
+        }
+        void RotatePreviewObj(RaycastHit hit, Transform previewObj)
+        {
+            float dot = Vector3.Dot(hit.normal, Vector3.up);
+            if (Mathf.Abs(dot) > 0.9f) // Horizontal surface.
+            {
+                Vector3 forward = Vector3.ProjectOnPlane(Camera.main.transform.forward, hit.normal).normalized;
+
+                if (forward == Vector3.zero)
+                    forward = Vector3.Cross(hit.normal, Vector3.right);
+
+                Quaternion rawRotation = Quaternion.LookRotation(forward, hit.normal);
+
+                Vector3 euler = rawRotation.eulerAngles;
+                float snappedY = Mathf.Round(euler.y / 90f) * 90f;
+                Quaternion snappedRotation = Quaternion.Euler(euler.x, snappedY, euler.z);
+
+                previewObj.rotation = snappedRotation;
+            }
+            else
+            {
+                Vector3 offset = GetObjOffset(hit.normal);
+                previewObj.up = hit.normal;
+                previewObj.eulerAngles += offset;
+            }
+        }
+        Vector3 GetObjOffset(Vector3 hitNormal)
+        {
+            Vector3 offset = Vector3.zero;
+
+            if (hitNormal.x != 0f)
+            {
+                offset += new Vector3(-90f, 0f, 0f) * Mathf.Abs(hitNormal.x);
+            }
+
+            return offset;
         }
 
         void InstanceObjectInThePreviewObjectPos()
