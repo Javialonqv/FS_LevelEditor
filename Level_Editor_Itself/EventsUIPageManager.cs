@@ -1754,10 +1754,10 @@ public class LE_Event
 
     #region Switch Options
     public enum SwitchState { Do_Nothing, Activated, Deactivated, Toggle }
-    public SwitchState switchState { get; set; } = SwitchState.Toggle;
+    public SwitchState switchState { get; set; } = SwitchState.Do_Nothing;
     public bool executeSwitchActions { get; set; } = true;
     public enum SwitchUsableState { Do_Nothing, Usable, Unusable, Toggle }
-    public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Toggle;
+    public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Do_Nothing;
     #endregion
 
     #region Flame Trap Options
