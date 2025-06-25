@@ -1713,11 +1713,11 @@ public class LE_Event
     public string targetObjName { get; set; } = "";
 
     public enum SpawnState { Do_Nothing, Spawn, Despawn, Toggle }
-    public SpawnState spawn { get; set; } = SpawnState.Do_Nothing;
+    public SpawnState spawn { get; set; } = SpawnState.Toggle;
 
     #region Saw Options
     public enum SawState { Do_Nothing, Activate, Deactivate, Toggle_State }
-    public SawState sawState { get; set; } = SawState.Do_Nothing;
+    public SawState sawState { get; set; } = SawState.Toggle_State;
     #endregion
 
     #region Player Options
@@ -1731,7 +1731,7 @@ public class LE_Event
 
     #region Laser Options
     public enum LaserState { Do_Nothing, Activate, Deactivate, Toggle_State }
-    public LaserState laserState { get; set; } = LaserState.Do_Nothing;
+    public LaserState laserState { get; set; } = LaserState.Toggle_State;
     #endregion
 
     #region Light Options
@@ -1741,7 +1741,7 @@ public class LE_Event
 
     #region Ceiling Light Options
     public enum CeilingLightState { Do_Nothing, On, Off, ToggleOnOff }
-    public CeilingLightState ceilingLightState { get; set; } = CeilingLightState.Do_Nothing;
+    public CeilingLightState ceilingLightState { get; set; } = CeilingLightState.ToggleOnOff;
     public bool changeCeilingLightColor { get; set; } = false;
     public string newCeilingLightColor { get; set; } = "FFFFFF";
     #endregion
@@ -1754,14 +1754,14 @@ public class LE_Event
 
     #region Switch Options
     public enum SwitchState { Do_Nothing, Activated, Deactivated, Toggle }
-    public SwitchState switchState { get; set; } = SwitchState.Do_Nothing;
+    public SwitchState switchState { get; set; } = SwitchState.Toggle;
     public bool executeSwitchActions { get; set; } = true;
     public enum SwitchUsableState { Do_Nothing, Usable, Unusable, Toggle }
-    public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Do_Nothing;
+    public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Toggle;
     #endregion
 
     #region Flame Trap Options
     public enum FlameTrapState { Do_Nothing, Activate, Deactivate, Toggle_State }
-    public FlameTrapState flameTrapState { get; set; } = FlameTrapState.Do_Nothing;
+    public FlameTrapState flameTrapState { get; set; } = FlameTrapState.Toggle_State;
     #endregion
 }
