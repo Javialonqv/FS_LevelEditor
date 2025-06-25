@@ -1878,9 +1878,6 @@ namespace FS_LevelEditor
             // To avoid bugs, reset the MainMenu UI Camera depth to its default value.
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 10;
 
-            NavigationAction exitButtonFromNavigation = navigation.GetChildAt("Holder/Bar/ActionsHolder").transform.GetChild(0).GetComponent<NavigationAction>();
-            exitButtonFromNavigation.onButtonClick = new Action<NavigationBarController.ActionType>(NavigationBarController.Instance.ManualButtonPressed);
-
             Destroy(editorUIParent);
             Destroy(pauseMenu.GetChildWithName("SavingLevelInPauseMenu"));
 
