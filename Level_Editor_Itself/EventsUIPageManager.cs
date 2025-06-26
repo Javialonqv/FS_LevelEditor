@@ -25,9 +25,11 @@ namespace FS_LevelEditor
         GameObject currentEventPageLabel;
         GameObject noEventsLabel;
 
+        Transform topButtonsParent;
         GameObject firstEventsListButton;
         GameObject secondEventsListButton;
         GameObject thirdEventsListButton;
+        UILabel oneEventTypeLabel;
 
         GameObject eventsListBg;
         List<GameObject> eventsGridList = new List<GameObject>();
@@ -181,7 +183,15 @@ namespace FS_LevelEditor
         }
         void CreateTopButtons()
         {
-            firstEventsListButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 300f, 0f), new Vector3Int(480, 55, 0), "First List");
+            topButtonsParent = new GameObject("TopButtons").transform;
+            topButtonsParent.parent = eventsPanel.transform;
+            topButtonsParent.localPosition = new Vector3(0f, 300f, 0f);
+            topButtonsParent.localScale = Vector3.one;
+            UIWidget topButtonsParentWidget = topButtonsParent.gameObject.AddComponent<UIWidget>();
+            topButtonsParentWidget.width = 1480;
+            topButtonsParentWidget.height = 55;
+
+            firstEventsListButton = NGUI_Utils.CreateButton(topButtonsParent, new Vector3(-500f, 0f, 0f), new Vector3Int(480, 55, 0), "First List");
             firstEventsListButton.name = "FirstEventsListButton";
             firstEventsListButton.GetComponent<UISprite>().depth = 1;
             EventDelegate onActivatedDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(FirstEventsListBtnClick),
@@ -190,19 +200,24 @@ namespace FS_LevelEditor
             firstEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             firstEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
-            secondEventsListButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 300f, 0f), new Vector3Int(480, 55, 0), "Second List");
+            secondEventsListButton = NGUI_Utils.CreateButton(topButtonsParent, new Vector3(0f, 0f, 0f), new Vector3Int(480, 55, 0), "Second List");
             secondEventsListButton.name = "SecondEventsListButton";
             secondEventsListButton.GetComponent<UISprite>().depth = 1;
             secondEventsListButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(SecondEventsListBtnClick)));
             secondEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             secondEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
-            thirdEventsListButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(500f, 300f, 0f), new Vector3Int(480, 55, 0), "Third List");
+            thirdEventsListButton = NGUI_Utils.CreateButton(topButtonsParent, new Vector3(500f, 0f, 0f), new Vector3Int(480, 55, 0), "Third List");
             thirdEventsListButton.name = "ThirdEventsListButton";
             thirdEventsListButton.GetComponent<UISprite>().depth = 1;
             thirdEventsListButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(ThirdEventsListBtnClick)));
             thirdEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             thirdEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+
+            oneEventTypeLabel = NGUI_Utils.CreateLabel(topButtonsParent, Vector3.zero, new Vector3Int(1480, 55, 0), "One Event Type", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            oneEventTypeLabel.fontSize = 30;
+            oneEventTypeLabel.name = "OneEventTypeLabel";
         }
         void CreateEventsListBackground()
         {
@@ -250,6 +265,228 @@ namespace FS_LevelEditor
             addEventButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(AddNewEvent)));
         }
 
+        void CreatePreviousEventsPageButton()
+        {
+            // Create the button.
+            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            previousEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
+            previousEventPageButton.name = "PreviousEventsPageButton";
+            previousEventPageButton.transform.localPosition = new Vector3(-430f, 0f, 0f);
+
+            // Remove unnecesary components.
+            GameObject.Destroy(previousEventPageButton.GetComponent<ButtonController>());
+            GameObject.Destroy(previousEventPageButton.GetComponent<OptionsButton>());
+            GameObject.Destroy(previousEventPageButton.GetComponent<FractalTooltip>());
+
+            // Adjust the sprite and the collider as well.
+            UISprite sprite = previousEventPageButton.GetComponent<UISprite>();
+            sprite.width = 50;
+            sprite.height = 50;
+            sprite.depth = 1;
+            BoxCollider collider = previousEventPageButton.GetComponent<BoxCollider>();
+            collider.size = new Vector3(50f, 50f);
+
+            // Adjust the label, removing the FUCKING UILocalize.
+            GameObject.Destroy(previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            UILabel label = previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
+            label.depth = 2;
+            label.width = 60;
+            label.height = 60;
+            label.fontSize = 40;
+            label.text = "<";
+
+            // Set the button on click action.
+            UIButton button = previousEventPageButton.GetComponent<UIButton>();
+            button.onClick.Clear();
+            button.onClick.Add(new EventDelegate(this, nameof(PreviousEventsPage)));
+        }
+        void CreateNextEventsPageButton()
+        {
+            // Create the button.
+            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            nextEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
+            nextEventPageButton.name = "PreviousEventsPageButton";
+            nextEventPageButton.transform.localPosition = new Vector3(430f, 0f, 0f);
+
+            // Remove unnecesary components.
+            GameObject.Destroy(nextEventPageButton.GetComponent<ButtonController>());
+            GameObject.Destroy(nextEventPageButton.GetComponent<OptionsButton>());
+            GameObject.Destroy(nextEventPageButton.GetComponent<FractalTooltip>());
+
+            // Adjust the sprite and the collider as well.
+            UISprite sprite = nextEventPageButton.GetComponent<UISprite>();
+            sprite.width = 50;
+            sprite.height = 50;
+            sprite.depth = 1;
+            BoxCollider collider = nextEventPageButton.GetComponent<BoxCollider>();
+            collider.size = new Vector3(50f, 50f);
+
+            // Adjust the label, removing the FUCKING UILocalize.
+            GameObject.Destroy(nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            UILabel label = nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
+            label.depth = 2;
+            label.width = 60;
+            label.height = 60;
+            label.fontSize = 40;
+            label.text = ">";
+
+            // Set the button on click action.
+            UIButton button = nextEventPageButton.GetComponent<UIButton>();
+            button.onClick.Clear();
+            button.onClick.Add(new EventDelegate(this, nameof(NextEventsPage)));
+        }
+        void CreateCurrentEventsPageLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            currentEventPageLabel = Instantiate(labelTemplate, eventsListBg.transform);
+            currentEventPageLabel.name = "CurrentEventPageLabel";
+            currentEventPageLabel.transform.localScale = Vector3.one;
+
+            Destroy(currentEventPageLabel.GetComponent<UILocalize>());
+
+            UILabel label = currentEventPageLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 30;
+            label.width = 800;
+            label.fontSize = 30;
+            label.text = "0/0";
+
+            // Change the label position AFTER changing the pivot.
+            currentEventPageLabel.transform.localPosition = new Vector3(0f, 300f, 0f);
+        }
+        void CreateNoEventsLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            noEventsLabel = Instantiate(labelTemplate, eventsListBg.transform);
+            noEventsLabel.name = "NoEventsLabel";
+            noEventsLabel.transform.localScale = Vector3.one;
+
+            Destroy(noEventsLabel.GetComponent<UILocalize>());
+
+            UILabel label = noEventsLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 50;
+            label.width = 700;
+            label.fontSize = 30;
+            label.color = new Color(1f, 1f, 0f, 1f);
+            label.text = "No Events Yet";
+
+            // Change the label position AFTER changing the pivot.
+            noEventsLabel.transform.localPosition = new Vector3(0f, 220f, 0f);
+        }
+
+        void RenameEvent(int eventID, UIInput inputRef)
+        {
+            // GetEventsList should return the same events list that when creating the events list, it should be fine :)
+            LE_Event eventToRename = GetEventsList()[eventID];
+            eventToRename.eventName = inputRef.text;
+
+            Logger.Log("RENAMED " + eventID + " TO: " + inputRef.text);
+        }
+
+        void SetupTopButtons()
+        {
+            eventsListsNames = targetObj.GetAvailableEventsIDs();
+
+            if (eventsListsNames.Count > 1) // Setup with buttons.
+            {
+                int buttonsCount = eventsListsNames.Count;
+                float padding = 15f;
+
+                UIWidget container = topButtonsParent.GetComponent<UIWidget>();
+                float containerWidth = container.width;
+
+                float spaceAvailableForButtons = containerWidth - padding * (buttonsCount - 1);
+                float widthPerButton = spaceAvailableForButtons / buttonsCount;
+
+                float x = -containerWidth * 0.5f; // Start from the left side of the container.
+
+                for (int i = 0; i < topButtonsParent.childCount; i++)
+                {
+                    if (i > eventsListsNames.Count - 1 || topButtonsParent.GetChild(i).name == oneEventTypeLabel.name)
+                    {
+                        topButtonsParent.GetChild(i).gameObject.SetActive(false);
+                        continue;
+                    }
+                    else
+                    {
+                        topButtonsParent.GetChild(i).gameObject.SetActive(true);
+                    }
+
+                    UIWidget buttonWidget = topButtonsParent.GetChild(i).GetComponent<UIWidget>();
+                    if (buttonWidget != null)
+                    {
+                        buttonWidget.width = Mathf.RoundToInt(widthPerButton);
+                        // According to ChatGPT, this is used to ensure NGUI draws the object correctly after the width change? Dunno, but I'll leave it as is just in case.
+                        buttonWidget.SetDimensions(buttonWidget.width, buttonWidget.height);
+
+                        float mitadAncho = widthPerButton * 0.5f;
+                        buttonWidget.transform.localPosition = new Vector3(x + mitadAncho, 0, 0);
+
+                        x += widthPerButton + padding;
+
+                        topButtonsParent.GetChild(i).gameObject.GetChildAt("Background/Label").GetComponent<UILabel>().text = Loc.Get(eventsListsNames[i]);
+                    }
+                }
+            }
+            else // Setup with the One Event Type label only.
+            {
+                topButtonsParent.gameObject.DisableAllChildren();
+
+                oneEventTypeLabel.gameObject.SetActive(true);
+                oneEventTypeLabel.text = Loc.Get(eventsListsNames[0]);
+            }
+        }
+        void FirstEventsListBtnClick(bool playSound = true)
+        {
+            // This method is the only one with the playSound parm because it's the only one I wanna call when
+            // opening the events windows with NO sound at all.
+            if (playSound) Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+
+            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+
+            SetCurrentEventsList(0);
+
+            HideEventSettings();
+            CreateEventsList(0);
+        }
+        void SecondEventsListBtnClick()
+        {
+            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+
+            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+
+            SetCurrentEventsList(1);
+
+            HideEventSettings();
+            CreateEventsList(0);
+        }
+        void ThirdEventsListBtnClick()
+        {
+            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+
+            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+
+            SetCurrentEventsList(2);
+
+            HideEventSettings();
+            CreateEventsList(0);
+        }
+        void SetCurrentEventsList(int id)
+        {
+            currentEventsListID = id;
+            currentEventsListName = eventsListsNames[id];
+        }
         void CreateEventsList(int eventsPage)
         {
             GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
@@ -466,193 +703,6 @@ namespace FS_LevelEditor
             previousEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid > 0;
             nextEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid < eventsGridList.Count - 1;
             currentEventPageLabel.GetComponent<UILabel>().text = GetCurrentEventPageText();
-        }
-        void CreatePreviousEventsPageButton()
-        {
-            // Create the button.
-            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            previousEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
-            previousEventPageButton.name = "PreviousEventsPageButton";
-            previousEventPageButton.transform.localPosition = new Vector3(-430f, 0f, 0f);
-
-            // Remove unnecesary components.
-            GameObject.Destroy(previousEventPageButton.GetComponent<ButtonController>());
-            GameObject.Destroy(previousEventPageButton.GetComponent<OptionsButton>());
-            GameObject.Destroy(previousEventPageButton.GetComponent<FractalTooltip>());
-
-            // Adjust the sprite and the collider as well.
-            UISprite sprite = previousEventPageButton.GetComponent<UISprite>();
-            sprite.width = 50;
-            sprite.height = 50;
-            sprite.depth = 1;
-            BoxCollider collider = previousEventPageButton.GetComponent<BoxCollider>();
-            collider.size = new Vector3(50f, 50f);
-
-            // Adjust the label, removing the FUCKING UILocalize.
-            GameObject.Destroy(previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            UILabel label = previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
-            label.depth = 2;
-            label.width = 60;
-            label.height = 60;
-            label.fontSize = 40;
-            label.text = "<";
-
-            // Set the button on click action.
-            UIButton button = previousEventPageButton.GetComponent<UIButton>();
-            button.onClick.Clear();
-            button.onClick.Add(new EventDelegate(this, nameof(PreviousEventsPage)));
-        }
-        void CreateNextEventsPageButton()
-        {
-            // Create the button.
-            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            nextEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
-            nextEventPageButton.name = "PreviousEventsPageButton";
-            nextEventPageButton.transform.localPosition = new Vector3(430f, 0f, 0f);
-
-            // Remove unnecesary components.
-            GameObject.Destroy(nextEventPageButton.GetComponent<ButtonController>());
-            GameObject.Destroy(nextEventPageButton.GetComponent<OptionsButton>());
-            GameObject.Destroy(nextEventPageButton.GetComponent<FractalTooltip>());
-
-            // Adjust the sprite and the collider as well.
-            UISprite sprite = nextEventPageButton.GetComponent<UISprite>();
-            sprite.width = 50;
-            sprite.height = 50;
-            sprite.depth = 1;
-            BoxCollider collider = nextEventPageButton.GetComponent<BoxCollider>();
-            collider.size = new Vector3(50f, 50f);
-
-            // Adjust the label, removing the FUCKING UILocalize.
-            GameObject.Destroy(nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            UILabel label = nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
-            label.depth = 2;
-            label.width = 60;
-            label.height = 60;
-            label.fontSize = 40;
-            label.text = ">";
-
-            // Set the button on click action.
-            UIButton button = nextEventPageButton.GetComponent<UIButton>();
-            button.onClick.Clear();
-            button.onClick.Add(new EventDelegate(this, nameof(NextEventsPage)));
-        }
-        void CreateCurrentEventsPageLabel()
-        {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            currentEventPageLabel = Instantiate(labelTemplate, eventsListBg.transform);
-            currentEventPageLabel.name = "CurrentEventPageLabel";
-            currentEventPageLabel.transform.localScale = Vector3.one;
-
-            Destroy(currentEventPageLabel.GetComponent<UILocalize>());
-
-            UILabel label = currentEventPageLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 30;
-            label.width = 800;
-            label.fontSize = 30;
-            label.text = "0/0";
-
-            // Change the label position AFTER changing the pivot.
-            currentEventPageLabel.transform.localPosition = new Vector3(0f, 300f, 0f);
-        }
-        void CreateNoEventsLabel()
-        {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            noEventsLabel = Instantiate(labelTemplate, eventsListBg.transform);
-            noEventsLabel.name = "NoEventsLabel";
-            noEventsLabel.transform.localScale = Vector3.one;
-
-            Destroy(noEventsLabel.GetComponent<UILocalize>());
-
-            UILabel label = noEventsLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 50;
-            label.width = 700;
-            label.fontSize = 30;
-            label.color = new Color(1f, 1f, 0f, 1f);
-            label.text = "No Events Yet";
-
-            // Change the label position AFTER changing the pivot.
-            noEventsLabel.transform.localPosition = new Vector3(0f, 220f, 0f);
-        }
-
-        void RenameEvent(int eventID, UIInput inputRef)
-        {
-            // GetEventsList should return the same events list that when creating the events list, it should be fine :)
-            LE_Event eventToRename = GetEventsList()[eventID];
-            eventToRename.eventName = inputRef.text;
-
-            Logger.Log("RENAMED " + eventID + " TO: " + inputRef.text);
-        }
-
-        void SetupTopButtons()
-        {
-            eventsListsNames = targetObj.GetAvailableEventsIDs();
-
-            for (int i = 0; i < eventsListsNames.Count; i++)
-            {
-                GameObject targetButtonObj = null;
-                switch (i)
-                {
-                    case 0: targetButtonObj = firstEventsListButton; break;
-                    case 1: targetButtonObj = secondEventsListButton; break;
-                    case 2: targetButtonObj = thirdEventsListButton; break;
-                }
-
-                // Change the button label.
-                targetButtonObj.GetChildAt("Background/Label").GetComponent<UILabel>().text = Loc.Get(eventsListsNames[i]);
-            }
-        }
-        void FirstEventsListBtnClick(bool playSound = true)
-        {
-            // This method is the only one with the playSound parm because it's the only one I wanna call when
-            // opening the events windows with NO sound at all.
-            if (playSound) Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
-
-            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-
-            SetCurrentEventsList(0);
-
-            HideEventSettings();
-            CreateEventsList(0);
-        }
-        void SecondEventsListBtnClick()
-        {
-            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
-
-            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-
-            SetCurrentEventsList(1);
-
-            HideEventSettings();
-            CreateEventsList(0);
-        }
-        void ThirdEventsListBtnClick()
-        {
-            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
-
-            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-
-            SetCurrentEventsList(2);
-
-            HideEventSettings();
-            CreateEventsList(0);
-        }
-        void SetCurrentEventsList(int id)
-        {
-            currentEventsListID = id;
-            currentEventsListName = eventsListsNames[id];
         }
 
         void AddNewEvent()
