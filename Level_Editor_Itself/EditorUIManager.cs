@@ -1742,7 +1742,7 @@ namespace FS_LevelEditor
 
             // Enable the pause panel and play its animations.
             pauseMenu.SetActive(true);
-            pauseMenu.GetComponent<TweenAlpha>().PlayForward();
+            TweenAlpha.Begin(pauseMenu, 0.2f, 1f);
 
             // Set the paused variable in the LE controller.
             EditorController.Instance.SetCurrentEditorState(EditorState.Paused);
@@ -1769,7 +1769,7 @@ namespace FS_LevelEditor
                 navigation.SetActive(false);
 
                 // Play the pause menu animations backwards.
-                pauseMenu.GetComponent<TweenAlpha>().PlayReverse();
+                TweenAlpha.Begin(pauseMenu, 0.2f, 0f);
 
                 // Threshold to wait for the pause animation to end.
                 yield return new WaitForSecondsRealtime(0.3f);
