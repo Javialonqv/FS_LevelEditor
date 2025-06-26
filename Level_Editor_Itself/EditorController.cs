@@ -171,7 +171,7 @@ namespace FS_LevelEditor
             {
                 PreviewObject();
 
-                if (Input.GetMouseButtonDown(0))
+                if (Input.GetMouseButtonDown(0) && previewObjectToBuildObj.activeInHierarchy)
                 {
                     InstanceObjectInThePreviewObjectPos();
                 }
