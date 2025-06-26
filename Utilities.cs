@@ -438,7 +438,8 @@ namespace FS_LevelEditor
             POPUP_UI_SHOW,
             POPUP_UI_HIDE,
             INTERACTION_AVAILABLE,
-            INTERACTION_UNAVAILABLE
+            INTERACTION_UNAVAILABLE,
+            SHOW_NEW_PAGE_SOUND
         }
         public static void PlayFSUISound(FS_UISound sound)
         {
@@ -453,6 +454,10 @@ namespace FS_LevelEditor
                 AudioClip toPlay = sound == FS_UISound.INTERACTION_AVAILABLE ? InGameUIManager.Instance.interactionAvailableSound :
                     InGameUIManager.Instance.interactionNoLongerAvailableSound;
                 MenuController.GetInstance().m_uiAudioSource.PlayOneShot(toPlay);
+            }
+            else if (sound == FS_UISound.SHOW_NEW_PAGE_SOUND)
+            {
+                MenuController.GetInstance().m_uiAudioSource.PlayOneShot(MenuController.GetInstance().showNewPageSound);
             }
         }
 

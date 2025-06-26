@@ -1737,6 +1737,8 @@ namespace FS_LevelEditor
             editorUIParent.SetActive(false);
             navigation.SetActive(true);
 
+            Utilities.PlayFSUISound(Utilities.FS_UISound.SHOW_NEW_PAGE_SOUND);
+
             // Set the occluder color, it's opaque by defualt for some reason (Anyways, Charles and his weird systems...).
             occluderForWhenPaused.GetComponent<UISprite>().color = new Color(0f, 0f, 0f, 0.9f);
 
