@@ -72,6 +72,7 @@ namespace FS_LevelEditor
                 if (MenuController.GetInstance().GetUIContext() == MenuController.UIContext.MAIN_MENU)
                 {
                     toReturn.Add(NavigationBarController.ActionType.QUIT);
+                    toReturn.Add(NavigationBarController.ActionType.CONFIRM);
                 }
             }
             else if (LE_MenuUIManager.Instance)
