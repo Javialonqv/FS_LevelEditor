@@ -685,6 +685,11 @@ namespace FS_LevelEditor
                             snapWithTrigger = true;
                             rayToUseWithSnap = hits[0];
                         }
+                        hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+                    }
+                    else
+                    {
+                        hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
                     }
                 }
                 else
@@ -724,7 +729,7 @@ namespace FS_LevelEditor
                         previewObjectToBuildObj.transform.rotation = rayToUseWithSnap.collider.transform.rotation;
                     }
                 }
-                else // When using the default preview behaviour, use the closest hit, why not?
+                else if (hits.Count > 0) // When using the default preview behaviour, use the closest hit, why not?
                 {
                     currentHittenSnapTrigger = null;
 
@@ -736,6 +741,10 @@ namespace FS_LevelEditor
                         lastHittenNormalByPreviewRay = hits[0].normal;
                         previewObjectToBuildObj.transform.up = hits[0].normal;
                     }
+                }
+                else
+                {
+                    previewObjectToBuildObj.SetActive(false);
                 }
             }
             else
