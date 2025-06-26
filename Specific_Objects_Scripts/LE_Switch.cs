@@ -53,7 +53,7 @@ namespace FS_LevelEditor
                 { "CanUseTaser", true },
                 { "WhenInvertingEvents", new List<LE_Event>() },
                 { "WhenActivatingEvents", new List<LE_Event>() },
-                { "WhenDeactivatingEvents", new List<LE_Event>() },
+                { "WhenDeactivatingEvents", new List<LE_Event>() }
             };
 
             CreateEditorLinksParent();
@@ -159,9 +159,9 @@ namespace FS_LevelEditor
         {
             return new List<string>
             {
+                "WhenInvertingEvents",
                 "WhenActivatingEvents",
-                "WhenDeactivatingEvents",
-                "WhenInvertingEvents"
+                "WhenDeactivatingEvents"
             };
         }
 
