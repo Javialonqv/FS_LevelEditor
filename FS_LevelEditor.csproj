@@ -18,6 +18,7 @@
 	  <None Remove="KeybindsList.txt" />
 	  <None Remove="level_editor" />
 	  <None Remove="level_editor_sprites" />
+	  <None Remove="Translations\Translations.csv" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -375,6 +376,7 @@
 		<Compile Include="Specific_Objects_Scripts\LE_Saw_Waypoint.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Switch.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Vent_With_Smoke_Green.cs" />
+		<Compile Include="TranslationsManager.cs" />
 		<Compile Include="UI_Related\EditorPauseMenuPatcher.cs" />
 		<Compile Include="Level_Editor_Itself\EditorUIManager.cs" />
 		<Compile Include="LE_Object.cs" />
@@ -398,6 +400,7 @@
 	  <EmbeddedResource Include="KeybindsList.txt" />
 	  <EmbeddedResource Include="level_editor" />
 	  <EmbeddedResource Include="level_editor_sprites" />
+	  <EmbeddedResource Include="Translations\Translations.csv" />
 	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">

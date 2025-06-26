@@ -88,6 +88,8 @@ namespace FS_LevelEditor
         void Awake()
         {
             Instance = this;
+
+            TranslationsManager.Init();
         }
 
         void Start()
