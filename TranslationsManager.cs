@@ -25,6 +25,8 @@ namespace FS_LevelEditor
         public static void Init()
         {
             ReadTranslationsFile();
+
+            initialized = true;
         }
 
         static void ReadTranslationsFile()
