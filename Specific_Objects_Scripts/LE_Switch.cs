@@ -155,6 +155,16 @@ namespace FS_LevelEditor
             initialized = true;
         }
 
+        public override List<string> GetAvailableEventsIDs()
+        {
+            return new List<string>
+            {
+                "WhenActivatingEvents",
+                "WhenDeactivatingEvents",
+                "WhenInvertingEvents"
+            };
+        }
+
         public override bool SetProperty(string name, object value)
         {
             if (name == "UsableOnce")

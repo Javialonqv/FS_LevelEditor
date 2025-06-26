@@ -143,43 +143,6 @@ namespace FS_LevelEditor
         {
 
         }
-
-        /// <summary>
-        /// The correct way to add a LE_Object component to a GameObject.
-        /// </summary>
-        /// <param name="targetObj">The GameObject ot attach this component to.</param>
-        /// <param name="originalObjName">THe "original" name of the desired object.</param>
-        /// <returns>An instance of the created LE_Object component class.</returns>
-        public static LE_Object AddComponentToObject(GameObject targetObj, string originalObjName)
-        {
-            string className = "LE_" + originalObjName.Replace(' ', '_');
-            Type classType = Type.GetType("FS_LevelEditor." + className);
-
-            if (classType != null)
-            {
-                if (HasReachedObjectLimit(classType))
-                {
-                    Utilities.ShowCustomNotificationRed("Object limit reached for this object.", 2f);
-                    return null;
-                }
-                LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
-                instancedComponent.Init(originalObjName);
-                instancedComponent.hasItsOwnClass = true;
-                return instancedComponent;
-            }
-            else
-            {
-                if (LevelData.currentLevelObjsCount <= 100)
-                {
-                    Logger.DebugWarning($"Can't find class of name \"{className}\" for object: \"{originalObjName}\", using default LE_Object class.");
-                }
-
-                LE_Object instancedComponent = targetObj.AddComponent<LE_Object>();
-                instancedComponent.Init(originalObjName);
-                return instancedComponent;
-            }
-        }
-
         void Init(string originalObjName)
         {
             if (EditorController.Instance != null && PlayModeController.Instance == null)
@@ -218,6 +181,42 @@ namespace FS_LevelEditor
         public virtual void InitComponent()
         {
             initialized = true;
+        }
+
+        /// <summary>
+        /// The correct way to add a LE_Object component to a GameObject.
+        /// </summary>
+        /// <param name="targetObj">The GameObject ot attach this component to.</param>
+        /// <param name="originalObjName">THe "original" name of the desired object.</param>
+        /// <returns>An instance of the created LE_Object component class.</returns>
+        public static LE_Object AddComponentToObject(GameObject targetObj, string originalObjName)
+        {
+            string className = "LE_" + originalObjName.Replace(' ', '_');
+            Type classType = Type.GetType("FS_LevelEditor." + className);
+
+            if (classType != null)
+            {
+                if (HasReachedObjectLimit(classType))
+                {
+                    Utilities.ShowCustomNotificationRed("Object limit reached for this object.", 2f);
+                    return null;
+                }
+                LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
+                instancedComponent.Init(originalObjName);
+                instancedComponent.hasItsOwnClass = true;
+                return instancedComponent;
+            }
+            else
+            {
+                if (LevelData.currentLevelObjsCount <= 100)
+                {
+                    Logger.DebugWarning($"Can't find class of name \"{className}\" for object: \"{originalObjName}\", using default LE_Object class.");
+                }
+
+                LE_Object instancedComponent = targetObj.AddComponent<LE_Object>();
+                instancedComponent.Init(originalObjName);
+                return instancedComponent;
+            }
         }
 
         void SetNameAndType(string originalObjName)
@@ -360,6 +359,11 @@ namespace FS_LevelEditor
             {
                 PlayModeController.Instance.currentInstantiatedObjects.Remove(this);
             }
+        }
+
+        public virtual List<string> GetAvailableEventsIDs()
+        {
+            return new List<string>();
         }
 
         virtual protected LE_Object[] GetReferenceObjectsToGetObjID()

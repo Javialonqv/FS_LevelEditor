@@ -25,9 +25,9 @@ namespace FS_LevelEditor
         GameObject currentEventPageLabel;
         GameObject noEventsLabel;
 
-        GameObject whenActivatingButton;
-        GameObject whenDeactivatingButton;
-        GameObject whenInvertingButton;
+        GameObject firstEventsListButton;
+        GameObject secondEventsListButton;
+        GameObject thirdEventsListButton;
 
         GameObject eventsListBg;
         List<GameObject> eventsGridList = new List<GameObject>();
@@ -82,8 +82,10 @@ namespace FS_LevelEditor
         GameObject flameTrapObjectsSettings;
         UIDropdownPatcher flameTrapStateDropdown;
 
-        enum CurrentEventType { WhenActivating, WhenDeactivating, WhenInverting }
-        CurrentEventType currentEventType;
+
+        List<string> eventsListsNames = new List<string>();
+        int currentEventsListID;
+        string currentEventsListName;
         LE_Event currentSelectedEvent;
 
         LE_Object targetObj;
@@ -179,28 +181,28 @@ namespace FS_LevelEditor
         }
         void CreateTopButtons()
         {
-            whenActivatingButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 300f, 0f), new Vector3Int(480, 55, 0), "When Activating");
-            whenActivatingButton.name = "WhenActivatingButton";
-            whenActivatingButton.GetComponent<UISprite>().depth = 1;
-            EventDelegate onActivatedDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(WhenActivatingBtnClick),
+            firstEventsListButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 300f, 0f), new Vector3Int(480, 55, 0), "First List");
+            firstEventsListButton.name = "FirstEventsListButton";
+            firstEventsListButton.GetComponent<UISprite>().depth = 1;
+            EventDelegate onActivatedDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(FirstEventsListBtnClick),
                 NGUI_Utils.CreateEventDelegateParamter(this, "playSound", true));
-            whenActivatingButton.GetComponent<UIButton>().onClick.Add(onActivatedDelegate);
-            whenActivatingButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            whenActivatingButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            firstEventsListButton.GetComponent<UIButton>().onClick.Add(onActivatedDelegate);
+            firstEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            firstEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
-            whenDeactivatingButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 300f, 0f), new Vector3Int(480, 55, 0), "When Deactivating");
-            whenDeactivatingButton.name = "WhenDeactivatingButton";
-            whenDeactivatingButton.GetComponent<UISprite>().depth = 1;
-            whenDeactivatingButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(WhenDeactivatingBtnClick)));
-            whenDeactivatingButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            whenDeactivatingButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            secondEventsListButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 300f, 0f), new Vector3Int(480, 55, 0), "Second List");
+            secondEventsListButton.name = "SecondEventsListButton";
+            secondEventsListButton.GetComponent<UISprite>().depth = 1;
+            secondEventsListButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(SecondEventsListBtnClick)));
+            secondEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            secondEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
-            whenInvertingButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(500f, 300f, 0f), new Vector3Int(480, 55, 0), "When Inverting");
-            whenInvertingButton.name = "WhenInvertingButton";
-            whenInvertingButton.GetComponent<UISprite>().depth = 1;
-            whenInvertingButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(WhenInvertingBtnClick)));
-            whenInvertingButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            whenInvertingButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            thirdEventsListButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(500f, 300f, 0f), new Vector3Int(480, 55, 0), "Third List");
+            thirdEventsListButton.name = "ThirdEventsListButton";
+            thirdEventsListButton.GetComponent<UISprite>().depth = 1;
+            thirdEventsListButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(ThirdEventsListBtnClick)));
+            thirdEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            thirdEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
         }
         void CreateEventsListBackground()
         {
@@ -587,65 +589,77 @@ namespace FS_LevelEditor
 
             Logger.Log("RENAMED " + eventID + " TO: " + inputRef.text);
         }
-        void WhenActivatingBtnClick(bool playSound = true)
+
+        void SetupTopButtons()
+        {
+            eventsListsNames = targetObj.GetAvailableEventsIDs();
+
+            for (int i = 0; i < eventsListsNames.Count; i++)
+            {
+                GameObject targetButtonObj = null;
+                switch (i)
+                {
+                    case 0: targetButtonObj = firstEventsListButton; break;
+                    case 1: targetButtonObj = secondEventsListButton; break;
+                    case 2: targetButtonObj = thirdEventsListButton; break;
+                }
+
+                // Change the button label.
+                targetButtonObj.GetChildAt("Background/Label").GetComponent<UILabel>().text = Loc.Get(eventsListsNames[i]);
+            }
+        }
+        void FirstEventsListBtnClick(bool playSound = true)
         {
             // This method is the only one with the playSound parm because it's the only one I wanna call when
             // opening the events windows with NO sound at all.
             if (playSound) Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
 
-            whenActivatingButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-            whenDeactivatingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            whenInvertingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 
-            currentEventType = CurrentEventType.WhenActivating;
+            SetCurrentEventsList(0);
 
             HideEventSettings();
             CreateEventsList(0);
         }
-        void WhenDeactivatingBtnClick()
+        void SecondEventsListBtnClick()
         {
             Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
 
-            whenActivatingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            whenDeactivatingButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-            whenInvertingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 
-            currentEventType = CurrentEventType.WhenDeactivating;
+            SetCurrentEventsList(1);
 
             HideEventSettings();
             CreateEventsList(0);
         }
-        void WhenInvertingBtnClick()
+        void ThirdEventsListBtnClick()
         {
             Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
 
-            whenActivatingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            whenDeactivatingButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            whenInvertingButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
 
-            currentEventType = CurrentEventType.WhenInverting;
+            SetCurrentEventsList(2);
 
             HideEventSettings();
             CreateEventsList(0);
         }
+        void SetCurrentEventsList(int id)
+        {
+            currentEventsListID = id;
+            currentEventsListName = eventsListsNames[id];
+        }
+
         void AddNewEvent()
         {
             Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_UNAVAILABLE);
 
-            switch (currentEventType)
-            {
-                case CurrentEventType.WhenActivating:
-                    ((List<LE_Event>)targetObj.properties["WhenActivatingEvents"]).Add(new LE_Event());
-                    break;
-
-                case CurrentEventType.WhenDeactivating:
-                    ((List<LE_Event>)targetObj.properties["WhenDeactivatingEvents"]).Add(new LE_Event());
-                    break;
-
-                case CurrentEventType.WhenInverting:
-                    ((List<LE_Event>)targetObj.properties["WhenInvertingEvents"]).Add(new LE_Event());
-                    break;
-            }
+            ((List<LE_Event>)targetObj.properties[currentEventsListName]).Add(new LE_Event());
 
             // The int max value will stand for "the last damn grid you find!"
             CreateEventsList(int.MaxValue);
@@ -1650,6 +1664,11 @@ namespace FS_LevelEditor
 
         public void ShowEventsPage(LE_Object targetObj)
         {
+            if (targetObj.GetAvailableEventsIDs().Count <= 0)
+            {
+                Logger.Error("Requested to show Events Panel but the target object has NO Events List. IT'S NOT COMPATIBLE!");
+                return;
+            }
             this.targetObj = targetObj;
 
             // Change the title of the panel.
@@ -1661,7 +1680,8 @@ namespace FS_LevelEditor
 
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
 
-            WhenActivatingBtnClick(false);
+            SetupTopButtons();
+            FirstEventsListBtnClick(false);
             // CreateEventsList();
         }
         public void HideEventsPage()
@@ -1687,19 +1707,7 @@ namespace FS_LevelEditor
 
         List<LE_Event> GetEventsList()
         {
-            switch (currentEventType)
-            {
-                case CurrentEventType.WhenActivating:
-                    return (List<LE_Event>)targetObj.GetProperty("WhenActivatingEvents");
-
-                case CurrentEventType.WhenDeactivating:
-                    return (List<LE_Event>)targetObj.GetProperty("WhenDeactivatingEvents");
-
-                case CurrentEventType.WhenInverting:
-                    return (List<LE_Event>)targetObj.GetProperty("WhenInvertingEvents");
-            }
-
-            return null;
+            return (List<LE_Event>)targetObj.GetProperty(currentEventsListName);
         }
     }
 }
