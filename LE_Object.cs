@@ -72,6 +72,7 @@ namespace FS_LevelEditor
         }
         public bool setActiveAtStart = true;
         public Dictionary<string, object> properties = new Dictionary<string, object>();
+        public EventExecuter eventExecuter;
 
         public virtual Transform objectParent
         {
@@ -161,6 +162,12 @@ namespace FS_LevelEditor
                 // Destroy the snap triggers of this object.
                 Destroy(gameObject.GetChildWithName("SnapTriggers"));
             }
+
+            // If greater than 0 that means this object DOES support events.
+            if (GetAvailableEventsIDs().Count > 0)
+            {
+                eventExecuter = gameObject.AddComponent<EventExecuter>();
+            }
         }
         public virtual void OnInstantiated(LEScene scene)
         {
@@ -177,6 +184,8 @@ namespace FS_LevelEditor
 
                 if (!initialized) InitComponent();
             }
+
+            if (eventExecuter) eventExecuter.OnInstantiated(scene);
         }
         public virtual void InitComponent()
         {
@@ -334,6 +343,8 @@ namespace FS_LevelEditor
         public virtual void OnSelect()
         {
             if (canBeDisabledAtStart) gameObject.SetOpaqueMaterials();
+
+            if (eventExecuter) eventExecuter.OnSelect();
         }
         public virtual void OnDeselect(GameObject nextSelectedObj)
         {
@@ -348,6 +359,8 @@ namespace FS_LevelEditor
                     gameObject.SetOpaqueMaterials();
                 }
             }
+
+            if (eventExecuter) eventExecuter.OnDeselect();
         }
         public virtual void OnDelete()
         {
