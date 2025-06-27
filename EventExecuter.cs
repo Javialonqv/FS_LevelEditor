@@ -223,15 +223,15 @@ namespace FS_LevelEditor
                     switch (@event.sawState)
                     {
                         case LE_Event.SawState.Activate:
-                            ((LE_Saw)targetObj).TriggerAction("Activate");
+                            targetObj.TriggerAction("Activate");
                             break;
 
                         case LE_Event.SawState.Deactivate:
-                            ((LE_Saw)targetObj).TriggerAction("Deactivate");
+                            targetObj.TriggerAction("Deactivate");
                             break;
 
                         case LE_Event.SawState.Toggle_State:
-                            ((LE_Saw)targetObj).TriggerAction("ToggleActivated");
+                            targetObj.TriggerAction("ToggleActivated");
                             break;
                     }
                 }
@@ -239,7 +239,7 @@ namespace FS_LevelEditor
                 {
                     if (@event.respawnCube)
                     {
-                        ((LE_Cube)targetObj).TriggerAction("RespawnCube");
+                        targetObj.TriggerAction("RespawnCube");
                     }
                 }
                 else if (targetObj is LE_Laser)
@@ -247,15 +247,15 @@ namespace FS_LevelEditor
                     switch (@event.laserState)
                     {
                         case LE_Event.LaserState.Activate:
-                            ((LE_Laser)targetObj).TriggerAction("Activate");
+                            targetObj.TriggerAction("Activate");
                             break;
 
                         case LE_Event.LaserState.Deactivate:
-                            ((LE_Laser)targetObj).TriggerAction("Deactivate");
+                            targetObj.TriggerAction("Deactivate");
                             break;
 
                         case LE_Event.LaserState.Toggle_State:
-                            ((LE_Laser)targetObj).TriggerAction("ToggleActivated");
+                            targetObj.TriggerAction("ToggleActivated");
                             break;
                     }
                 }
@@ -271,15 +271,15 @@ namespace FS_LevelEditor
                     switch (@event.ceilingLightState)
                     {
                         case LE_Event.CeilingLightState.On:
-                            ((LE_Ceiling_Light)targetObj).TriggerAction("Activate");
+                            targetObj.TriggerAction("Activate");
                             break;
 
                         case LE_Event.CeilingLightState.Off:
-                            ((LE_Ceiling_Light)targetObj).TriggerAction("Deactivate");
+                            targetObj.TriggerAction("Deactivate");
                             break;
 
                         case LE_Event.CeilingLightState.ToggleOnOff:
-                            ((LE_Ceiling_Light)targetObj).TriggerAction("ToggleActivated");
+                            targetObj.TriggerAction("ToggleActivated");
                             break;
                     }
 
