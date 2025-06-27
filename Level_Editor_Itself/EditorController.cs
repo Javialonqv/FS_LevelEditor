@@ -239,7 +239,7 @@ namespace FS_LevelEditor
             {
                 snapToGridCube.SetActive(false);
 
-                if (currentSelectedObj != null)
+                if (currentSelectedObj != null && currentMode == Mode.Selection)
                 {
                     gizmosArrows.SetActive(true);
                 }
@@ -338,7 +338,7 @@ namespace FS_LevelEditor
 
             // If the user's typing and then he uses an arrow key to navigate to another character of the field... well... the arrow also moves the object LOL.
             // We need to avoid that.
-            if (!Utilities.theresAnInputFieldSelected) ManageMoveObjectShortcuts();
+            if (!Utilities.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
         }
 
         void ManageEscAction()
@@ -655,6 +655,16 @@ namespace FS_LevelEditor
                     EditorUIManager.Instance.categoryButtonsParent.SetActive(false);
                     EditorUIManager.Instance.currentCategoryBG.SetActive(false);
                     break;
+            }
+
+            if (currentMode == Mode.Selection)
+            {
+                // Only enable gizmos if there's a selected object.
+                if (currentSelectedObj) gizmosArrows.SetActive(true);
+            }
+            else
+            {
+                gizmosArrows.SetActive(false);
             }
 
             Logger.Log("Changed LE mode to: " + currentMode);
@@ -1231,7 +1241,7 @@ namespace FS_LevelEditor
                     currentSelectedObjComponent.SetObjectColor(LE_Object.LEObjectContext.SELECT);
                 }
 
-                gizmosArrows.SetActive(true);
+                if (currentMode == Mode.Selection) gizmosArrows.SetActive(true);
                 gizmosArrows.transform.localRotation = currentSelectedObj.transform.rotation;
 
                 if (multipleObjectsSelected)
