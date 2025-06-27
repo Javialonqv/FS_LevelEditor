@@ -50,7 +50,7 @@ namespace FS_LevelEditor
         public GameObject selectedObjPanel;
         Transform objectSpecificPanelsParent;
         Transform globalObjectPanelsParent;
-        GameObject globalObjAttributesToggle;
+        UIButtonAsToggle globalObjAttributesToggle;
         Dictionary<string, Transform> globalAttributesList = new Dictionary<string, Transform>();
         Dictionary<string, GameObject> attrbutesPanels = new Dictionary<string, GameObject>();
         public UIToggle setActiveAtStartToggle;
@@ -355,8 +355,8 @@ namespace FS_LevelEditor
             globalObjAttributesToggle = NGUI_Utils.CreateButtonAsToggleWithSprite(selectedObjPanel.transform, new Vector3(220f, 0f, 0f), new Vector3Int(45, 45, 0), 2, "Global",
                 Vector2Int.one * 25);
             globalObjAttributesToggle.name = "GlobalObjectAttributesBtnToggle";
-            globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().onClick += ShowGlobalObjectAttributes;
-            globalObjAttributesToggle.SetActive(false);
+            globalObjAttributesToggle.onClick += ShowGlobalObjectAttributes;
+            globalObjAttributesToggle.gameObject.SetActive(false);
 
             GameObject selectedObjPanelBody = new GameObject("Body");
             selectedObjPanelBody.transform.parent = selectedObjPanel.transform;
@@ -647,12 +647,9 @@ namespace FS_LevelEditor
             #endregion
 
             #region Add Waypoint
-            GameObject addWaypoint = NGUI_Utils.CreateButton(sawAttributes.transform, new Vector3(0f, -15f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
+            UIButtonPatcher addWaypoint = NGUI_Utils.CreateButton(sawAttributes.transform, new Vector3(0f, -15f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
             addWaypoint.name = "AddWaypointButton";
-            addWaypoint.GetComponent<UIButton>().onClick.Clear();
-            var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
-                NGUI_Utils.CreateEventDelegateParamter(this, "actionName", "AddWaypoint"));
-            addWaypoint.GetComponent<UIButton>().onClick.Add(addWaypointDelegate);
+            addWaypoint.onClick += () => TriggerAction("AddWaypoint");
             addWaypoint.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             addWaypoint.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
             #endregion
@@ -688,12 +685,9 @@ namespace FS_LevelEditor
             #endregion
 
             #region Add Waypoint
-            GameObject addWaypoint = NGUI_Utils.CreateButton(sawWaypointAttributes.transform, new Vector3(0f, 35f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
+            UIButtonPatcher addWaypoint = NGUI_Utils.CreateButton(sawWaypointAttributes.transform, new Vector3(0f, 35f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
             addWaypoint.name = "AddWaypointButton";
-            addWaypoint.GetComponent<UIButton>().onClick.Clear();
-            var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
-                NGUI_Utils.CreateEventDelegateParamter(this, "actionName", "AddWaypoint"));
-            addWaypoint.GetComponent<UIButton>().onClick.Add(addWaypointDelegate);
+            addWaypoint.onClick += () => TriggerAction("AddWaypoint");
             addWaypoint.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             addWaypoint.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
             #endregion
@@ -748,12 +742,9 @@ namespace FS_LevelEditor
             #endregion
 
             #region Manage Events
-            GameObject manageEvents = NGUI_Utils.CreateButton(switchAttributes.transform, new Vector3(0f, -20f, 0f), new Vector3Int(480, 55, 0), "Manage Events");
+            UIButtonPatcher manageEvents = NGUI_Utils.CreateButton(switchAttributes.transform, new Vector3(0f, -20f, 0f), new Vector3Int(480, 55, 0), "Manage Events");
             manageEvents.name = "ManageEventsButton";
-            manageEvents.GetComponent<UIButton>().onClick.Clear();
-            var addWaypointDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(TriggerAction),
-                NGUI_Utils.CreateEventDelegateParamter(this, "actionName", "ManageEvents"));
-            manageEvents.GetComponent<UIButton>().onClick.Add(addWaypointDelegate);
+            manageEvents.onClick += () => TriggerAction("ManageEvents");
             manageEvents.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             manageEvents.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
             #endregion
@@ -965,7 +956,7 @@ namespace FS_LevelEditor
         {
             selectedObjPanel.GetChildWithName("Label").GetComponent<UILabel>().text = "No Object Selected";
             selectedObjPanel.GetChildWithName("SetActiveAtStartToggle").SetActive(false);
-            globalObjAttributesToggle.SetActive(false);
+            globalObjAttributesToggle.gameObject.SetActive(false);
             selectedObjPanel.GetChildWithName("Body").SetActive(false);
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -505f, 0f);
         }
@@ -1012,8 +1003,8 @@ namespace FS_LevelEditor
                 selectedObjPanel.GetChildAt("SetActiveAtStartToggle/Background/Line").SetActive(true);
             }
 
-            globalObjAttributesToggle.SetActive(false);
-            globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().SetToggleState(true, true);
+            globalObjAttributesToggle.gameObject.SetActive(false);
+            globalObjAttributesToggle.SetToggleState(true, true);
 
             UpdateGlobalObjectAttributes(EditorController.Instance.currentSelectedObj.transform);
         }
@@ -1026,8 +1017,8 @@ namespace FS_LevelEditor
             attrbutesPanels.ToList().ForEach(x => x.Value.SetActive(false));
 
             // Enable the toggle and show object-specific attributes, then it will be disabled or changed to GLOBAL attributes if the object doesn't have unique ones.
-            globalObjAttributesToggle.SetActive(true);
-            globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().SetToggleState(false, true);
+            globalObjAttributesToggle.gameObject.SetActive(true);
+            globalObjAttributesToggle.SetToggleState(false, true);
 
             if (objComponent.objectOriginalName == "Directional Light" || objComponent.objectOriginalName == "Point Light")
             {
@@ -1122,8 +1113,8 @@ namespace FS_LevelEditor
             }
             else
             {
-                globalObjAttributesToggle.SetActive(false);
-                globalObjAttributesToggle.GetComponent<UIButtonAsToggle>().SetToggleState(true, true);
+                globalObjAttributesToggle.gameObject.SetActive(false);
+                globalObjAttributesToggle.SetToggleState(true, true);
             }
 
             UpdateGlobalObjectAttributes(objComponent.transform);
@@ -1581,12 +1572,12 @@ namespace FS_LevelEditor
             deathFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             deathFieldCustomScript.onChange += (() => SetGlobalPropertyWithInput("DeathYLimit", deathFieldCustomScript));
 
-            GameObject visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(globalPropertiesPanel.transform,
+            UIButtonAsToggle visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(globalPropertiesPanel.transform,
                 new Vector3(285f, 270f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);
             visualizeDeathYLimitButton.name = "VisualizeDeathYLimitBtnToggle";
             visualizeDeathYLimitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             visualizeDeathYLimitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-            visualizeDeathYLimitButton.GetComponent<UIButtonAsToggle>().onClick += OnVisualizeDeathYLimitToggleClick;
+            visualizeDeathYLimitButton.onClick += OnVisualizeDeathYLimitToggleClick;
             #endregion
 
             #region Create Level Skybox Dropdown

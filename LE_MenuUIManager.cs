@@ -28,7 +28,6 @@ namespace FS_LevelEditor
         AudioSource uiSoundSource;
         AudioClip okSound;
         AudioClip hidePageSound;
-        GameObject navigationBarButtonsParent;
         GameObject popup;
         PopupController popupController;
         GameObject popupTitle;
@@ -131,8 +130,6 @@ namespace FS_LevelEditor
             okSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
             hidePageSound = MenuController.GetInstance().hidePageSound;
             hidePageSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-            navigationBarButtonsParent = GameObject.Find("MainMenu/Camera/Holder/Navigation/Holder/Bar/ActionsHolder/");
 
             popup = GameObject.Find("MainMenu/Camera/Holder/Popup");
             popupController = popup.GetComponent<PopupController>();

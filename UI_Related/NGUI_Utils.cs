@@ -220,7 +220,7 @@ namespace FS_LevelEditor.UI_Related
             return toggle;
         }
 
-        public static GameObject CreateButton(Transform parent, Vector3 position, Vector3Int size, string text = "")
+        public static UIButtonPatcher CreateButton(Transform parent, Vector3 position, Vector3Int size, string text = "")
         {
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
@@ -239,9 +239,11 @@ namespace FS_LevelEditor.UI_Related
             buttonLabel.SetAnchor(button, 0, 0, 0, 0);
             // Just change the label anchor so its size is the same as the button size.
 
-            return button;
+            UIButtonPatcher patcher = button.AddComponent<UIButtonPatcher>();
+
+            return patcher;
         }
-        public static GameObject CreateButtonWithSprite(Transform parent, Vector3 position, Vector3Int size, int buttonDepth, string spriteName, Vector2Int spriteSize)
+        public static UIButtonPatcher CreateButtonWithSprite(Transform parent, Vector3 position, Vector3Int size, int buttonDepth, string spriteName, Vector2Int spriteSize)
         {
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
@@ -263,10 +265,12 @@ namespace FS_LevelEditor.UI_Related
             sprite.height = spriteSize.y;
             sprite.depth = buttonDepth + 1;
 
-            return button;
+            UIButtonPatcher patcher = button.AddComponent<UIButtonPatcher>();
+
+            return patcher;
         }
 
-        public static GameObject CreateButtonAsToggle(Transform parent, Vector3 position, Vector3Int size, string text = "", int toggleDepth = 0)
+        public static UIButtonAsToggle CreateButtonAsToggle(Transform parent, Vector3 position, Vector3Int size, string text = "", int toggleDepth = 0)
         {
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
@@ -277,7 +281,6 @@ namespace FS_LevelEditor.UI_Related
             button.GetComponent<UISprite>().depth = toggleDepth;
             button.GetComponent<BoxCollider>().size = size;
             GameObject.Destroy(button.GetComponent<ButtonController>());
-            button.AddComponent<UIButtonAsToggle>();
 
             // For some reason the buttons have two labels? One is disabled (Button/Label) and the other one is the one being used (Button/Background/Label).
             // UPDATE: We'll still be using that one, for SOME FUCKING REASON if you change the label the button colors start to behave weird... idk...
@@ -287,9 +290,11 @@ namespace FS_LevelEditor.UI_Related
             buttonLabel.SetAnchor(button, 0, 0, 0, 0);
             // Just change the label anchor so its size is the same as the button size.
 
-            return button;
+            UIButtonAsToggle toggle = button.AddComponent<UIButtonAsToggle>();
+
+            return toggle;
         }
-        public static GameObject CreateButtonAsToggleWithSprite(Transform parent, Vector3 position, Vector3Int size, int toggleDepth, string spriteName, Vector2Int spriteSize)
+        public static UIButtonAsToggle CreateButtonAsToggleWithSprite(Transform parent, Vector3 position, Vector3Int size, int toggleDepth, string spriteName, Vector2Int spriteSize)
         {
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
@@ -300,7 +305,6 @@ namespace FS_LevelEditor.UI_Related
             button.GetComponent<UISprite>().depth = toggleDepth;
             button.GetComponent<BoxCollider>().size = size;
             GameObject.Destroy(button.GetComponent<ButtonController>());
-            button.AddComponent<UIButtonAsToggle>();
 
             GameObject labelObj = button.GetChildAt("Background/Label");
             GameObject.Destroy(labelObj.GetComponent<UILocalize>());
@@ -313,7 +317,9 @@ namespace FS_LevelEditor.UI_Related
             sprite.height = spriteSize.y;
             sprite.depth = toggleDepth + 1;
 
-            return button;
+            UIButtonAsToggle toggle = button.AddComponent<UIButtonAsToggle>();
+
+            return toggle;
         }
 
         public static UILabel CreateLabel(Transform parent, Vector3 position, Vector3Int size, string text = "", NGUIText.Alignment alignment = NGUIText.Alignment.Left,

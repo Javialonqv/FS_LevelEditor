@@ -26,9 +26,9 @@ namespace FS_LevelEditor
         GameObject noEventsLabel;
 
         Transform topButtonsParent;
-        GameObject firstEventsListButton;
-        GameObject secondEventsListButton;
-        GameObject thirdEventsListButton;
+        UIButtonPatcher firstEventsListButton;
+        UIButtonPatcher secondEventsListButton;
+        UIButtonPatcher thirdEventsListButton;
         UILabel oneEventTypeLabel;
 
         GameObject eventsListBg;
@@ -194,23 +194,21 @@ namespace FS_LevelEditor
             firstEventsListButton = NGUI_Utils.CreateButton(topButtonsParent, new Vector3(-500f, 0f, 0f), new Vector3Int(480, 55, 0), "First List");
             firstEventsListButton.name = "FirstEventsListButton";
             firstEventsListButton.GetComponent<UISprite>().depth = 1;
-            EventDelegate onActivatedDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(FirstEventsListBtnClick),
-                NGUI_Utils.CreateEventDelegateParamter(this, "playSound", true));
-            firstEventsListButton.GetComponent<UIButton>().onClick.Add(onActivatedDelegate);
+            firstEventsListButton.onClick += () => FirstEventsListBtnClick(true);
             firstEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             firstEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
             secondEventsListButton = NGUI_Utils.CreateButton(topButtonsParent, new Vector3(0f, 0f, 0f), new Vector3Int(480, 55, 0), "Second List");
             secondEventsListButton.name = "SecondEventsListButton";
             secondEventsListButton.GetComponent<UISprite>().depth = 1;
-            secondEventsListButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(SecondEventsListBtnClick)));
+            secondEventsListButton.onClick += SecondEventsListBtnClick;
             secondEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             secondEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
             thirdEventsListButton = NGUI_Utils.CreateButton(topButtonsParent, new Vector3(500f, 0f, 0f), new Vector3Int(480, 55, 0), "Third List");
             thirdEventsListButton.name = "ThirdEventsListButton";
             thirdEventsListButton.GetComponent<UISprite>().depth = 1;
-            thirdEventsListButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(ThirdEventsListBtnClick)));
+            thirdEventsListButton.onClick += ThirdEventsListBtnClick;
             thirdEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             thirdEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
@@ -257,12 +255,12 @@ namespace FS_LevelEditor
         }
         void CreateAddEventButton()
         {
-            GameObject addEventButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-400f, -388f, 0f), new Vector3Int(800, 50, 0), "+ Add New Event");
+            UIButtonPatcher addEventButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-400f, -388f, 0f), new Vector3Int(800, 50, 0), "+ Add New Event");
             addEventButton.name = "AddEventButton";
             addEventButton.GetComponent<UISprite>().depth = 1;
             addEventButton.GetComponent<UIButtonScale>().hover = Vector3.one;
             addEventButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
-            addEventButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(AddNewEvent)));
+            addEventButton.onClick += AddNewEvent;
         }
 
         void CreatePreviousEventsPageButton()
@@ -821,12 +819,10 @@ namespace FS_LevelEditor
         }
         void CreateSelectTargetObjectButton()
         {
-            GameObject button = NGUI_Utils.CreateButtonWithSprite(eventSettingsPanel.transform, new Vector3(300f, 230f, 0f), new Vector3Int(60, 60, 0),
+            UIButtonPatcher button = NGUI_Utils.CreateButtonWithSprite(eventSettingsPanel.transform, new Vector3(300f, 230f, 0f), new Vector3Int(60, 60, 0),
                 1, "MouseClickingObj", new Vector2Int(40, 40));
             button.name = "SelectTargetObjectButton";
-
-            UIButtonPatcher patcher = button.AddComponent<UIButtonPatcher>();
-            patcher.onClick += OnSelectTargetObjectButtonClick;
+            button.onClick += OnSelectTargetObjectButtonClick;
         }
 
         void ShowEventSettings()
