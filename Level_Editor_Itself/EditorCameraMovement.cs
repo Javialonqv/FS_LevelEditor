@@ -30,7 +30,7 @@ namespace FS_LevelEditor
 
         void Update()
         {
-            if (!EditorController.IsCurrentState(EditorState.Normal) && !EditorController.IsCurrentState(EditorState.SelectingTargetObj)) return;
+            if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ)) return;
 
             if (Input.GetMouseButton(1) && !Input.GetMouseButton(0))
             {

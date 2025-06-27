@@ -15,11 +15,11 @@ namespace FS_LevelEditor
 {
     public enum EditorState
     {
-        Normal,
-        MovingObject,
-        SnapingToGrid,
-        SelectingTargetObj,
-        Paused,
+        NORMAL,
+        MOVING_OBJECT,
+        SNAPPING_TO_GRID,
+        SELECTING_TARGET_OBJ,
+        PAUSED,
     }
 
     [RegisterTypeInIl2Cpp]
@@ -130,10 +130,10 @@ namespace FS_LevelEditor
 
             ManageEscAction();
 
-            if (IsCurrentState(EditorState.Paused) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL)) return;
+            if (IsCurrentState(EditorState.PAUSED) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL)) return;
 
             #region Select Target Object For Events
-            if (IsCurrentState(EditorState.SelectingTargetObj))
+            if (IsCurrentState(EditorState.SELECTING_TARGET_OBJ))
             {
                 if (GetCollidingWithAnArrow() == GizmosArrow.None)
                 {
@@ -144,7 +144,7 @@ namespace FS_LevelEditor
                         EditorUIManager.Instance.UpdateHittenTargetObjPanel(objComp.objectFullNameWithID);
                         if (Input.GetMouseButtonDown(0))
                         {
-                            SetCurrentEditorState(EditorState.Normal);
+                            SetCurrentEditorState(EditorState.NORMAL);
                             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
                             EventsUIPageManager.Instance.SetTargetObjectWithLE_Object(objComp);
                         }
@@ -196,7 +196,7 @@ namespace FS_LevelEditor
                     if (IsHittingObject("SnapToGridCube"))
                     {
                         objPositionWhenStartToSnap = currentSelectedObj.transform.position;
-                        SetCurrentEditorState(EditorState.SnapingToGrid);
+                        SetCurrentEditorState(EditorState.SNAPPING_TO_GRID);
 
                         #region Register LEAction
                         currentExecutingAction = new LEAction();
@@ -220,13 +220,13 @@ namespace FS_LevelEditor
                         #endregion
                     }
                 }
-                if (Input.GetMouseButton(0) && IsCurrentState(EditorState.SnapingToGrid))
+                if (Input.GetMouseButton(0) && IsCurrentState(EditorState.SNAPPING_TO_GRID))
                 {
                     AlignSelectedObjectToGrid();
                 }
-                if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SnapingToGrid))
+                if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SNAPPING_TO_GRID))
                 {
-                    SetCurrentEditorState(EditorState.Normal);
+                    SetCurrentEditorState(EditorState.NORMAL);
 
                     if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
                     {
@@ -244,9 +244,9 @@ namespace FS_LevelEditor
                     gizmosArrows.SetActive(true);
                 }
 
-                if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SnapingToGrid))
+                if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SNAPPING_TO_GRID))
                 {
-                    SetCurrentEditorState(EditorState.Normal);
+                    SetCurrentEditorState(EditorState.NORMAL);
 
                     if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
                     {
@@ -259,7 +259,7 @@ namespace FS_LevelEditor
 
             #region Select Object
             // For object selection...
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !IsCurrentState(EditorState.SnapingToGrid))
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !IsCurrentState(EditorState.SNAPPING_TO_GRID))
             {
                 // If it's selecting an object, well, set it as the selected one.
                 if (CanSelectObjectWithRay(out GameObject obj))
@@ -296,10 +296,10 @@ namespace FS_LevelEditor
                 // Move the object.
                 MoveObject(collidingArrow);
             }
-            else if (IsCurrentState(EditorState.MovingObject)) // This SHOULD be executed only when the user stopped moving an object.
+            else if (IsCurrentState(EditorState.MOVING_OBJECT)) // This SHOULD be executed only when the user stopped moving an object.
             {
                 collidingArrow = GizmosArrow.None;
-                SetCurrentEditorState(EditorState.Normal);
+                SetCurrentEditorState(EditorState.NORMAL);
 
                 currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
                 actionsMade.Add(currentExecutingAction);
@@ -318,7 +318,7 @@ namespace FS_LevelEditor
             #endregion
 
             // Update the global attributes of the object if it's moving it and it's only one (multiple objects aren't supported).
-            if (IsCurrentState(EditorState.MovingObject))
+            if (IsCurrentState(EditorState.MOVING_OBJECT))
             {
                 if (multipleObjectsSelected)
                 {
@@ -357,7 +357,7 @@ namespace FS_LevelEditor
                     return;
                 }
 
-                if (!IsCurrentState(EditorState.Paused))
+                if (!IsCurrentState(EditorState.PAUSED))
                 {
                     EditorUIManager.Instance.ShowPause();
                 }
@@ -871,7 +871,7 @@ namespace FS_LevelEditor
             // If the ray can collide with the "invisible" plane.
             if (movementPlane.Raycast(ray, out float distance))
             {
-                if (!IsCurrentState(EditorState.MovingObject)) SetCurrentEditorState(EditorState.MovingObject);
+                if (!IsCurrentState(EditorState.MOVING_OBJECT)) SetCurrentEditorState(EditorState.MOVING_OBJECT);
 
                 // IT WORKS, DON'T EVEN DARE TO TOUCH THIS EVER AGAIN!
 

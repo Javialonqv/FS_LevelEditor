@@ -944,7 +944,7 @@ namespace FS_LevelEditor
         void OnSelectTargetObjectButtonClick()
         {
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.SELECTING_TARGET_OBJ);
-            EditorController.Instance.SetCurrentEditorState(EditorState.SelectingTargetObj);
+            EditorController.Instance.SetCurrentEditorState(EditorState.SELECTING_TARGET_OBJ);
         }
         
         public void SetTargetObjectWithLE_Object(LE_Object obj)
@@ -1740,7 +1740,7 @@ namespace FS_LevelEditor
             eventsPanel.SetActive(true);
             GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
 
-            EditorController.Instance.SetCurrentEditorState(EditorState.Normal);
+            EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 
             HideEventSettings();
