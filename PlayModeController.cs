@@ -23,7 +23,6 @@ namespace FS_LevelEditor
 
         public string levelFileNameWithoutExtension;
         public string levelName;
-        public Dictionary<string, object> globalProperties = new Dictionary<string, object>();
 
         GameObject editorObjectsRootFromBundle;
         List<string> categories = new List<string>();
@@ -31,15 +30,22 @@ namespace FS_LevelEditor
         List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
         GameObject[] otherObjectsFromBundle;
         public GameObject levelObjectsParent;
-        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
         GameObject backToLEButton;
+
+        public Dictionary<string, object> globalProperties = new Dictionary<string, object>();
+        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
+        public int deathsInCurrentLevel = 0;
+
+        public bool endTriggerReached = false;
 
         void Awake()
         {
             Instance = this;
 
             LoadAssetBundle();
+
+            deathsInCurrentLevel = Melon<Core>.Instance.totalDeathsInCurrentPlaymodeSession;
 
             Invoke("DisableTheCurrentScene", 0.2f);
 
@@ -53,20 +59,27 @@ namespace FS_LevelEditor
         {
             TeleportPlayer();
             ConfigureGlobalProperties();
+
+            UnloadBundle();
         }
 
-        // When the script obj is destroyed, that means the scene has changed, unload the asset bundle and destroy the back to LE button, since it'll be created again when entering...
+        // When the script obj is destroyed, that means the scene has changed, destroy the back to LE button, since it'll be created again when entering...
         // again...
         void OnDestroy()
         {
-            UnloadBundle();
-
             Destroy(backToLEButton);
         }
 
         void TeleportPlayer()
         {
             LE_Player_Spawn spawn = FindObjectOfType<LE_Player_Spawn>();
+
+            if (!spawn)
+            {
+                Logger.Error("Couldn't find player spawn object in the level!");
+                LE_CustomErrorPopups.NoPlayerSpawnObjectDetected();
+                return;
+            }
 
             Controls.Instance.transform.position = spawn.transform.position + Vector3.up;
             Controls.Instance.gameCamera.transform.localPosition = new Vector3(0f, 0.907f, 0f);
@@ -99,6 +112,8 @@ namespace FS_LevelEditor
                 Controls.Instance.DeactivateWeapon();
             }
             Controls.Instance.hasJetPack = (bool)GetGlobalProperty("HasJetpack");
+
+            SetupLevelSkybox((int)GetGlobalProperty("Skybox"));
         }
         object GetGlobalProperty(string name)
         {
@@ -110,13 +125,14 @@ namespace FS_LevelEditor
             return null;
         }
 
-        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
+        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, Vector3 scale, bool setAsSelected = true)
         {
             GameObject template = allCategoriesObjects[objName];
             GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
             obj.transform.localPosition = position;
             obj.transform.localEulerAngles = eulerAngles;
+            obj.transform.localScale = scale;
 
             LE_Object addedComp = LE_Object.AddComponentToObject(obj, objName);
 
@@ -193,9 +209,13 @@ namespace FS_LevelEditor
             return otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
         }
 
-        public T LoadFromLEBundle<T>(string name) where T : UnityEngine.Object
+        void SetupLevelSkybox(int skyboxID)
         {
-            return LEBundle.Load<T>(name);
+            string skyboxMatName = $"Skybox_CH{skyboxID + 1}";
+            Material skyboxMat = LEBundle.Load<Material>(skyboxMatName);
+
+            skyboxMat.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+            RenderSettings.skybox = skyboxMat;
         }
 
         public void UnloadBundle()
@@ -265,6 +285,8 @@ public static class OnPlayerDiePatch
     {
         if (PlayModeController.Instance != null)
         {
+            Melon<Core>.Instance.totalDeathsInCurrentPlaymodeSession++;
+
             // The asset bundle will be unloaded automatically in the PlayModeController class, since OnDestroy will be triggered.
 
             // Set this variable true again so when the scene is reloaded, the custom level is as well.
@@ -295,9 +317,18 @@ public static class CurrentLevelKeyPatch
 {
     public static bool Prefix(string _key)
     {
-        if (_key == "Current_Level")
+        // Don't save when the user is ending the level in playmode.
+        if (PlayModeController.Instance && PlayModeController.Instance.endTriggerReached)
         {
             return false;
+        }
+
+        if (PlayModeController.Instance || Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
+        {
+            if (_key == "Current_Level")
+            {
+                return false;
+            }
         }
 
         return true;
@@ -308,9 +339,18 @@ public static class CurrentLevelKeyPatch2
 {
     public static bool Prefix(string _key)
     {
-        if (_key == "Current_Level")
+        // Don't save when the user is ending the level in playmode.
+        if (PlayModeController.Instance && PlayModeController.Instance.endTriggerReached)
         {
             return false;
+        }
+
+        if (PlayModeController.Instance || Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
+        {
+            if (_key == "Current_Level")
+            {
+                return false;
+            }
         }
 
         return true;
@@ -325,5 +365,38 @@ public static class GamePauseCurrentLevelPath
         {
             PlayModeController.Instance.PatchPauseCurrentLevelNameInResumeButton();
         }
+    }
+}
+
+[HarmonyPatch(typeof(Controls), nameof(Controls.GetLevelDeathYLimit))]
+public static class DeathYLimitPatch
+{
+    public static bool Prefix(ref float __result)
+    {
+        if (PlayModeController.Instance)
+        {
+            __result = (float)PlayModeController.Instance.globalProperties["DeathYLimit"];
+            return false;
+        }
+
+        return true;
+    }
+}
+
+[HarmonyPatch(typeof(FractalSave), nameof(FractalSave.GetInt))]
+public static class FractalSaveGetIntPatches
+{
+    public static bool Prefix(ref int __result, string _key)
+    {
+        if (PlayModeController.Instance)
+        {
+            if (_key == "Total_Deaths")
+            {
+                __result = PlayModeController.Instance.deathsInCurrentLevel;
+                return false;
+            }
+        }
+
+        return true;
     }
 }

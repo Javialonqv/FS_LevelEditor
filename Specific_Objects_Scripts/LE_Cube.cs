@@ -19,27 +19,18 @@ namespace FS_LevelEditor
         {
             if (EditorController.Instance)
             {
-                gameObject.GetChildWithName("Content").GetComponent<Rigidbody>().isKinematic = true;
+                // COME ON, STUPID CUBE PHYSICS, I HATE YOU!!!!
+                Destroy(gameObject.GetChildWithName("Content").GetComponent<Rigidbody>());
             }
         }
 
-        void Start()
-        {
-            if (PlayModeController.Instance)
-            {
-                InitComponent();
-            }
-        }
-
-        void InitComponent()
+        public override void InitComponent()
         {
             gameObject.GetChildWithName("Content").SetActive(false);
             gameObject.GetChildWithName("Content").tag = "Bloc";
 
             //BlocScript template = FindObjectsOfType<BlocScript>().Where(x => x.IsCube()).ToArray()[0];
-            BlocScript template = SceneManager.GetActiveScene().GetRootGameObjects()
-                .FirstOrDefault(x => x.name == "CameraRunRoom").GetChildAt("BeforeCamera/Activable/Bloc")
-                .GetComponent<BlocScript>();
+            BlocScript template = t_cube;
 
             blocScript = gameObject.GetChildWithName("Content").AddComponent<BlocScript>();
             blocScript.allCompoundColliders = new Il2CppSystem.Collections.Generic.List<Collider>();
@@ -94,7 +85,7 @@ namespace FS_LevelEditor
             blocScript.onRespawn = new UnityEngine.Events.UnityEvent();
             blocScript.onStartFloating = new UnityEngine.Events.UnityEvent();
             blocScript.onStartSinking = new UnityEngine.Events.UnityEvent();
-            blocScript.respawnEulerAngles = new Vector3(0f, 300.7243f, 0f);
+            blocScript.respawnEulerAngles = blocScript.transform.eulerAngles;
             blocScript.respawnPosition = blocScript.transform.position;
             blocScript.useContinuousOnDrop = true;
             blocScript.useMeshSwap = true;
@@ -131,6 +122,12 @@ namespace FS_LevelEditor
             blocScript.m_collisionAudioSource2.outputAudioMixerGroup = template.m_collisionAudioSource2.outputAudioMixerGroup;
 
             gameObject.GetChildWithName("Content").SetActive(true);
+
+            // This is one of the worst bugfixes you'll ever see in game development, but HEY!! IT WORKS LOL.
+            // This forces the CheckForRespawn method to be called, just like it does in the BlocScript class.
+            blocScript.InvokeRepeating(nameof(BlocScript.CheckForRespawn), 2f, 2f);
+
+            initialized = true;
         }
 
         public override bool TriggerAction(string actionName)

@@ -1,16 +1,27 @@
-﻿using System;
-using System.Reflection;
+﻿using FS_LevelEditor.Level_Editor_Itself;
+using Il2Cpp;
+using MelonLoader;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using MelonLoader;
-using Il2Cpp;
-using System.Collections;
+using static MelonLoader.bHaptics;
 
 namespace FS_LevelEditor
 {
+    public enum EditorState
+    {
+        NORMAL,
+        MOVING_OBJECT,
+        SNAPPING_TO_GRID,
+        SELECTING_TARGET_OBJ,
+        PAUSED,
+    }
+
     [RegisterTypeInIl2Cpp]
     public class EditorController : MonoBehaviour
     {
@@ -19,22 +30,25 @@ namespace FS_LevelEditor
         public string levelName = "test_level";
         public string levelFileNameWithoutExtension = "test_level";
 
-        GameObject gizmosArrows;
-
-        GameObject editorObjectsRootFromBundle;
-
-        // Available categories related variables.
-        public List<string> categories = new List<string>();
-        public string currentCategory = "";
-        public int currentCategoryID = 0;
+        public EditorState previousEditorState;
+        public EditorState currentEditorState;
 
         // Avaiable objects from all of the categories.
+        GameObject editorObjectsRootFromBundle;
         public List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
         public Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
         GameObject[] otherObjectsFromBundle;
+
+        // Available categories related variables.
+        public List<string> categoriesNames = new List<string>();
+        public string currentCategory = "";
+        public int currentCategoryID = 0;
+
         public string currentObjectToBuildName = "";
         GameObject currentObjectToBuild;
         GameObject previewObjectToBuildObj = null;
+
+        // Related to object placement? Dunno how to call this.
         Vector3? lastHittenNormalByPreviewRay = null;
         GameObject currentHittenSnapTrigger = null;
 
@@ -48,37 +62,43 @@ namespace FS_LevelEditor
         public bool multipleObjectsSelected = false;
         public GameObject multipleSelectedObjsParent;
         bool isDuplicatingObj = false;
+        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
         // Selected mode.
         public enum Mode { Building, Selection, Deletion }
         public Mode currentMode = Mode.Building;
 
         // Gizmos arrows to move objects.
+        GameObject gizmosArrows;
         enum GizmosArrow { None, X, Y, Z }
         GizmosArrow collidingArrow;
         Vector3 objPositionWhenArrowClick;
         Vector3 offsetObjPositionAndMosueWhenClick;
         Plane movementPlane;
-        bool isCurrentlyMovingAnObject = false;
         bool globalGizmosArrowsEnabled = false;
 
+        // SNAP
         GameObject snapToGridCube;
-        bool startSnapToGridWithCurrentSelectedObj = false;
+        Vector3 objPositionWhenStartToSnap;
 
         List<LEAction> actionsMade = new List<LEAction>();
         LEAction currentExecutingAction;
-
-        public bool isEditorPaused = false;
         public bool levelHasBeenModified = false;
 
-        public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
+        // Misc?
+        public DeathYPlaneCtrl deathYPlane;
+
+        public bool enteringPlayMode = false;
 
         // ----------------------------
         public Dictionary<string, object> globalProperties = new Dictionary<string, object>()
         {
             { "HasTaser", true },
-            { "HasJetpack", true }
+            { "HasJetpack", true },
+            { "DeathYLimit", 100f },
+            { "Skybox", 0 }
         };
+        List<Material> skyboxes = new List<Material>();
 
         void Awake()
         {
@@ -90,6 +110,8 @@ namespace FS_LevelEditor
 
             multipleSelectedObjsParent = new GameObject("MultipleSelectedObjsParent");
             multipleSelectedObjsParent.transform.position = Vector3.zero;
+
+            deathYPlane = Instantiate(LoadOtherObjectInBundle("DeathYPlane")).AddComponent<DeathYPlaneCtrl>();
         }
 
         void Start()
@@ -97,31 +119,44 @@ namespace FS_LevelEditor
             // Disable occlusion culling.
             Camera.main.useOcclusionCulling = false;
         }
+        public void AfterFinishedLoadingLevel()
+        {
+            SetupSkybox((int)globalProperties["Skybox"]);
+        }
 
         void Update()
         {
-            //Logger.DebugLog($"Is over UI element: {Utilities.IsMouseOverUIElement()}. Is input field selected: {Utilities.theresAnInputFieldSelected}");
+            if (enteringPlayMode) return;
 
-            // Shortcut for pausing LE.
-            if (Input.GetKeyDown(KeyCode.Escape))
+            ManageEscAction();
+
+            if (IsCurrentState(EditorState.PAUSED) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL)) return;
+
+            #region Select Target Object For Events
+            if (IsCurrentState(EditorState.SELECTING_TARGET_OBJ))
             {
-                if (EventsUIPageManager.Instance.isShowingPage)
+                if (GetCollidingWithAnArrow() == GizmosArrow.None)
                 {
-                    EventsUIPageManager.Instance.HideEventsPage();
-                    return;
+                    if (CanSelectObjectWithRay(out GameObject obj))
+                    {
+                        LE_Object objComp = obj.GetComponent<LE_Object>();
+
+                        EditorUIManager.Instance.UpdateHittenTargetObjPanel(objComp.objectFullNameWithID);
+                        if (Input.GetMouseButtonDown(0))
+                        {
+                            SetCurrentEditorState(EditorState.NORMAL);
+                            EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
+                            EventsUIPageManager.Instance.SetTargetObjectWithLE_Object(objComp);
+                        }
+                        return;
+                    }
                 }
 
-                if (!isEditorPaused)
-                {
-                    EditorUIManager.Instance.ShowPause();
-                }
-                else
-                {
-                    EditorUIManager.Instance.Resume();
-                }
+                EditorUIManager.Instance.UpdateHittenTargetObjPanel("");
+
+                return;
             }
-
-            if (isEditorPaused || EventsUIPageManager.Instance.isShowingPage) return;
+            #endregion
 
             // When click, check if it's clicking a gizmos arrow.
             if (Input.GetMouseButtonDown(0))
@@ -129,52 +164,102 @@ namespace FS_LevelEditor
                 collidingArrow = GetCollidingWithAnArrow();
             }
 
-            // If it's not rotating camera, and it's building, and it's NOT clicking a gizmos arrow and there's actually a selected object to build AND the mouse isn't over
-            // a UI element... preview that object.
+            #region Preview Object and Build
+            // For previewing the current selected object...
+            // !Input.GetMouseButton(1) is to detect when LE camera isn't rotating.
             if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == GizmosArrow.None && previewObjectToBuildObj != null && !Utilities.IsMouseOverUIElement())
             {
                 PreviewObject();
+
+                if (Input.GetMouseButtonDown(0) && previewObjectToBuildObj.activeInHierarchy)
+                {
+                    InstanceObjectInThePreviewObjectPos();
+                }
             }
-            // If not, at least if the preview object isn't null, disable it.
+            // If isn't previewing, disable the preview object if not null.
             else if (previewObjectToBuildObj != null)
             {
+                lastHittenNormalByPreviewRay = null;
                 previewObjectToBuildObj.SetActive(false);
             }
+            #endregion
 
-            // If pressing F key and it's not typing in an input field.
-            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
+            #region Align Instantiated Object to Grid
+            // For snap already instantiated object to grid again.
+            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null && currentMode == Mode.Selection && !Utilities.theresAnInputFieldSelected)
             {
                 snapToGridCube.SetActive(true);
                 gizmosArrows.SetActive(false);
 
                 if (Input.GetMouseButtonDown(0))
                 {
-                    if (IsClickingSnapToGridCube())
+                    if (IsHittingObject("SnapToGridCube"))
                     {
-                        startSnapToGridWithCurrentSelectedObj = true;
+                        objPositionWhenStartToSnap = currentSelectedObj.transform.position;
+                        SetCurrentEditorState(EditorState.SNAPPING_TO_GRID);
+
+                        #region Register LEAction
+                        currentExecutingAction = new LEAction();
+                        currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+
+                        currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
+
+                        if (multipleObjectsSelected)
+                        {
+                            currentExecutingAction.targetObjs = new List<GameObject>();
+                            foreach (var obj in currentSelectedObj.GetChilds())
+                            {
+                                currentExecutingAction.targetObjs.Add(obj);
+                            }
+                        }
+                        else
+                        {
+                            currentExecutingAction.targetObj = currentSelectedObj;
+                        }
+                        currentExecutingAction.oldPos = currentSelectedObj.transform.localPosition;
+                        #endregion
                     }
                 }
-                if (Input.GetMouseButton(0) && startSnapToGridWithCurrentSelectedObj)
+                if (Input.GetMouseButton(0) && IsCurrentState(EditorState.SNAPPING_TO_GRID))
                 {
                     AlignSelectedObjectToGrid();
                 }
-                if (Input.GetMouseButtonUp(0))
+                if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SNAPPING_TO_GRID))
                 {
-                    startSnapToGridWithCurrentSelectedObj = false;
+                    SetCurrentEditorState(EditorState.NORMAL);
+
+                    if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
+                    {
+                        currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
+                        actionsMade.Add(currentExecutingAction);
+                    }
                 }
             }
             else
             {
                 snapToGridCube.SetActive(false);
 
-                if (currentSelectedObj != null)
+                if (currentSelectedObj != null && currentMode == Mode.Selection)
                 {
                     gizmosArrows.SetActive(true);
                 }
-            }
 
-            // If click and it's on selection and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element AAAND it's not using snap to grid while edition right now...
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !startSnapToGridWithCurrentSelectedObj)
+                if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SNAPPING_TO_GRID))
+                {
+                    SetCurrentEditorState(EditorState.NORMAL);
+
+                    if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
+                    {
+                        currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
+                        actionsMade.Add(currentExecutingAction);
+                    }
+                }
+            }
+            #endregion
+
+            #region Select Object
+            // For object selection...
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !IsCurrentState(EditorState.SNAPPING_TO_GRID))
             {
                 // If it's selecting an object, well, set it as the selected one.
                 if (CanSelectObjectWithRay(out GameObject obj))
@@ -188,7 +273,9 @@ namespace FS_LevelEditor
                     SetSelectedObj(null);
                 }
             }
+            #endregion
 
+            #region Delete With Click
             // If click and it's on deletion and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element..
             if (Input.GetMouseButtonDown(0) && currentMode == Mode.Deletion && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement())
             {
@@ -196,33 +283,51 @@ namespace FS_LevelEditor
                 if (CanSelectObjectWithRay(out GameObject obj))
                 {
                     // Yep, I'm lazy and Ik this isn't the best way of doing it... but it works I think :D
-                    SetSelectedObj(obj);
-                    DeleteSelectedObj();
+                    // UPDATE: NEW FUNCTION TO DELETE OBJECTS IN THE RIGHT WAY, LET'S GO
+                    DeleteObject(obj);
                 }
             }
+            #endregion
 
+            #region Move Object
             // If it's clicking a gizmos arrow.
             if (Input.GetMouseButton(0) && collidingArrow != GizmosArrow.None)
             {
                 // Move the object.
                 MoveObject(collidingArrow);
             }
-            else if (isCurrentlyMovingAnObject) // This SHOULD be executed only when the user stopped moving an object.
+            else if (IsCurrentState(EditorState.MOVING_OBJECT)) // This SHOULD be executed only when the user stopped moving an object.
             {
                 collidingArrow = GizmosArrow.None;
-                isCurrentlyMovingAnObject = false;
+                SetCurrentEditorState(EditorState.NORMAL);
 
                 currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
                 actionsMade.Add(currentExecutingAction);
 
                 levelHasBeenModified = true;
             }
+            #endregion
 
+            #region Delete Object With Delete
             // If press the Delete key and there's a selected object, delete it.
             // Also, only delete when the user is NOT typing in an input field.
             if (Input.GetKeyDown(KeyCode.Delete) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
             {
                 DeleteSelectedObj();
+            }
+            #endregion
+
+            // Update the global attributes of the object if it's moving it and it's only one (multiple objects aren't supported).
+            if (IsCurrentState(EditorState.MOVING_OBJECT))
+            {
+                if (multipleObjectsSelected)
+                {
+                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
+                }
+                else
+                {
+                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+                }
             }
 
             // The code to force reset the gizmos arrows to 0 when global gizmos are enabled, is in LateUpdate().
@@ -230,14 +335,65 @@ namespace FS_LevelEditor
             ManageSomeShortcuts();
 
             ManageUndo();
+
+            // If the user's typing and then he uses an arrow key to navigate to another character of the field... well... the arrow also moves the object LOL.
+            // We need to avoid that.
+            if (!Utilities.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
+        }
+
+        void ManageEscAction()
+        {
+            // Shortcut for pausing LE.
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL))
+                {
+                    EventsUIPageManager.Instance.HideEventsPage();
+                    return;
+                }
+                else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ))
+                {
+                    EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
+                    return;
+                }
+
+                if (!IsCurrentState(EditorState.PAUSED))
+                {
+                    EditorUIManager.Instance.ShowPause();
+                }
+                else
+                {
+                    EditorUIManager.Instance.Resume();
+                }
+            }
         }
 
         void LateUpdate()
         {
-            // If the global gizmos arrows are enabled, force them to be with 0 rotation.
-            if (globalGizmosArrowsEnabled && gizmosArrows.activeSelf)
+            if (gizmosArrows.activeSelf && currentSelectedObj)
             {
-                gizmosArrows.transform.rotation = Quaternion.identity;
+                gizmosArrows.transform.position = currentSelectedObj.transform.position;
+
+                // If the global gizmos arrows are enabled, force them to be with 0 rotation.
+                if (globalGizmosArrowsEnabled)
+                {
+                    gizmosArrows.transform.rotation = Quaternion.identity;
+                }
+                else
+                {
+                    gizmosArrows.transform.rotation = currentSelectedObj.transform.rotation;
+                }
+            }
+
+            if (snapToGridCube.activeSelf && currentSelectedObj)
+            {
+                snapToGridCube.transform.position = currentSelectedObj.transform.position;
+            }
+
+            if (deathYPlane && deathYPlane.gameObject.activeSelf)
+            {
+                deathYPlane.gameObject.SetActive(true);
+                deathYPlane.SetYPos((float)globalProperties["DeathYLimit"]);
             }
         }
 
@@ -279,8 +435,11 @@ namespace FS_LevelEditor
 
             ManageObjectRotationShortcuts();
 
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P))
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P) && !enteringPlayMode)
             {
+                // Save data automatically.
+                LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
+
                 EnterPlayMode();
             }
 
@@ -300,6 +459,11 @@ namespace FS_LevelEditor
                 {
                     gizmosArrows.transform.localRotation = Quaternion.identity;
                 }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Space) && currentSelectedObj)
+            {
+                EditorUIManager.Instance.setActiveAtStartToggle.Set(!EditorUIManager.Instance.setActiveAtStartToggle.isChecked);
             }
 
             // Shortcut to show keybinds help panel.
@@ -341,10 +505,20 @@ namespace FS_LevelEditor
                                 SetMultipleObjectsAsSelected(toUndo.targetObjs);
                                 // Move the parent so the whole selection is moved too.
                                 multipleSelectedObjsParent.transform.localPosition = toUndo.oldPos;
+
+                                EditorUIManager.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
                             }
                             else
                             {
+                                // Since we use local coordinates, set the selected obj to null to avoid breaking the object position lol.
+                                if (multipleObjectsSelected && currentSelectedObjects.Contains(toUndo.targetObj)) SetSelectedObj(null);
+
                                 toUndo.targetObj.transform.localPosition = toUndo.oldPos;
+                                // In case the selected object is already the object to undo, update its global attributes manually:
+                                if (currentSelectedObj == toUndo.targetObj)
+                                {
+                                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.transform);
+                                }
                                 SetSelectedObj(toUndo.targetObj);
                             }
                             break;
@@ -357,10 +531,17 @@ namespace FS_LevelEditor
                                 SetMultipleObjectsAsSelected(toUndo.targetObjs);
                                 // Rotate the parent so the whole selection is rotated too.
                                 multipleSelectedObjsParent.transform.localRotation = toUndo.oldRot;
+
+                                EditorUIManager.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
                             }
                             else
                             {
                                 toUndo.targetObj.transform.localRotation = toUndo.oldRot;
+                                // In case the selected object is already the object to undo, update its global attributes manually:
+                                if (currentSelectedObj == toUndo.targetObj)
+                                {
+                                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.transform);
+                                }
                                 SetSelectedObj(toUndo.targetObj);
                             }
                             break;
@@ -369,11 +550,13 @@ namespace FS_LevelEditor
                             if (toUndo.forMultipleObjects)
                             {
                                 SetMultipleObjectsAsSelected(null);
+                                toUndo.targetObjs.ForEach(obj => currentInstantiatedObjects.Add(obj.GetComponent<LE_Object>())); // Add the objects to the instantiated list again.
                                 toUndo.targetObjs.ForEach(obj => obj.SetActive(true)); // Enable the objects again and then select them again.
                                 SetMultipleObjectsAsSelected(toUndo.targetObjs);
                             }
                             else
                             {
+                                currentInstantiatedObjects.Add(toUndo.targetObj.GetComponent<LE_Object>());
                                 toUndo.targetObj.SetActive(true);
                                 SetSelectedObj(toUndo.targetObj);
                             }
@@ -395,6 +578,62 @@ namespace FS_LevelEditor
             }
         }
 
+        void ManageMoveObjectShortcuts()
+        {
+            GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
+            if (targetObj == null) return;
+
+            Vector3 toMove = Vector3.zero;
+
+            if (Input.GetKeyDown(KeyCode.LeftArrow)) toMove += Vector3.left * 0.01f;
+            if (Input.GetKeyDown(KeyCode.RightArrow)) toMove += Vector3.right * 0.01f;
+            if (Input.GetKeyDown(KeyCode.UpArrow)) toMove += Vector3.up * 0.01f;
+            if (Input.GetKeyDown(KeyCode.DownArrow)) toMove += Vector3.down * 0.01f;
+
+            if (toMove != Vector3.zero)
+            {
+                Vector3 oldPos = targetObj.transform.localPosition;
+
+                if (globalGizmosArrowsEnabled)
+                {
+                    targetObj.transform.Translate(toMove, Space.World);
+                }
+                else
+                {
+                    targetObj.transform.Translate(toMove, Space.Self);
+                }
+
+                if (currentSelectedObj) // If the target obj is the current selected object, to check if it's NOT the preview object.
+                {
+                    #region Register LE Action
+                    currentExecutingAction = new LEAction();
+                    currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
+
+                    currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+                    if (multipleObjectsSelected)
+                    {
+                        currentExecutingAction.targetObjs = new List<GameObject>();
+                        foreach (var obj in currentSelectedObj.GetChilds())
+                        {
+                            currentExecutingAction.targetObjs.Add(obj);
+                        }
+                    }
+                    else
+                    {
+                        currentExecutingAction.targetObj = currentSelectedObj;
+                    }
+
+                    currentExecutingAction.oldPos = oldPos;
+                    currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
+
+                    actionsMade.Add(currentExecutingAction);
+                    #endregion
+
+                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+                }
+            }
+        }
+
         // For now, this method only disables and enables the "building" UI, with the objects available to build.
         void ChangeMode(Mode mode)
         {
@@ -404,8 +643,7 @@ namespace FS_LevelEditor
             {
                 case Mode.Building:
                     // Only enable the panel if the keybinds help panel is DISABLED.
-                    if (!EditorUIManager.Instance.helpPanel.activeSelf &&
-                        !EditorUIManager.Instance.isShowingGlobalProperties)
+                    if (EditorUIManager.IsCurrentUIContext(EditorUIContext.NORMAL))
                     {
                         EditorUIManager.Instance.categoryButtonsParent.SetActive(true);
                         EditorUIManager.Instance.currentCategoryBG.SetActive(true);
@@ -419,91 +657,107 @@ namespace FS_LevelEditor
                     break;
             }
 
+            if (currentMode == Mode.Selection)
+            {
+                // Only enable gizmos if there's a selected object.
+                if (currentSelectedObj) gizmosArrows.SetActive(true);
+            }
+            else
+            {
+                gizmosArrows.SetActive(false);
+            }
+
             Logger.Log("Changed LE mode to: " + currentMode);
             EditorUIManager.Instance.SetCurrentModeLabelText(currentMode);
         }
 
         void PreviewObject()
         {
-            // Get all of the possible rays and short them, since Unity doesn't short them by defualt.
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
-            System.Array.Sort(hits, (hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+            List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
+            hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
 
-            // If it hits at least one object.
-            if (hits.Length > 0)
+            bool snapWithTrigger = false;
+            RaycastHit rayToUseWithSnap = new RaycastHit();
+
+            bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+
+            if (hits.Count > 0)
             {
-                // Detect if hte first ray hit is colliding with a snap trigger.
-                bool firstRayIsATrigger = hits[0].collider.gameObject.name.StartsWith("StaticPos");
-
-                foreach (var hit in hits)
+                // If there's only one hit and if it is a snap trigger, it has to be the only hitten object for sure.
+                // Or, if all of the hits are snap to grid triggers, also execute this and use the first hit as well, it doesn't matter.
+                if (hits.Count == 1 || theyAreAllSnapTriggers)
                 {
-                    bool snapNow = false;
-                    bool breakAtTheEnd = false;
-
-                    // If the hit is an static pos trigger (snap trigger)...
-                    if (hit.collider.gameObject.name.StartsWith("StaticPos"))
+                    if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
                     {
-                        // Set the preview position to a snapped to grid position only if is pressing the ctrl key or if it's the only object it's colliding to.
-                        if (Input.GetKey(KeyCode.LeftControl) || Utilities.ItsTheOnlyHittedObjectByRaycast(ray, Mathf.Infinity, hit.collider.gameObject))
+                        if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hits[0].collider.gameObject))
                         {
-                            // Also, only snap if the hitten object trigger CAN be used with the current selected object.
-                            if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hit.collider.transform.gameObject))
+                            snapWithTrigger = true;
+                            rayToUseWithSnap = hits[0];
+                        }
+                        hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+                    }
+                    else
+                    {
+                        hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+                    }
+                }
+                else
+                {
+                    // If there are 2 hits or more, then iterate over the hits and check if you can snap with them.
+                    // Only if you're pressing Ctrl.
+                    foreach (var hit in hits)
+                    {
+                        if (hit.collider.gameObject.name.StartsWith("StaticPos") && Input.GetKey(KeyCode.LeftControl))
+                        {
+                            if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hit.collider.gameObject))
                             {
-                                previewObjectToBuildObj.SetActive(true);
-                                previewObjectToBuildObj.transform.position = hit.collider.transform.position;
-                                // Only update the preview object rotation when the current snap trigger is different, so the user can rotate the preview object before placing it.
-                                if (currentHittenSnapTrigger != hit.collider.gameObject)
-                                {
-                                    currentHittenSnapTrigger = hit.collider.gameObject;
-                                    previewObjectToBuildObj.transform.rotation = hit.collider.transform.rotation;
-                                }
-
-                                // We don't need anything else, if the user wants to use snap to grid and this is the correct trigger to use, use this and break the loop.
-                                snapNow = true;
-                                breakAtTheEnd = true;
-                            }
-                            // If the user actually wants to use snap, but this isn't the right trigger BUT the first one was a trigger, start looping again till find the correct one.
-                            else if (firstRayIsATrigger)
-                            {
-                                continue;
+                                snapWithTrigger = true;
+                                rayToUseWithSnap = hit;
+                                break;
                             }
                         }
-                    }
-                    else // If we couldn't find any compatible triggers, just use the default behaviour and break the loop at the end, since we only care about the trigger that are
-                         // BEFORE the object itself.
-                    {
-                        breakAtTheEnd = true;
-                    }
-
-                    // If no correct trigger was found, use the default behaviour.
-                    if (!snapNow)
-                    {
-                        // Set the current hitten snap trigger variable to null.
-                        currentHittenSnapTrigger = null;
-
-                        // Set the preview object posiiton to the hit point.
-                        previewObjectToBuildObj.SetActive(true);
-                        previewObjectToBuildObj.transform.position = hit.point;
-                        // Only update the preview object rotation when the ray hit ANOTHER surface, so the user can rotate the preview object before placing it.
-                        if (lastHittenNormalByPreviewRay != hit.normal)
+                        else
                         {
-                            lastHittenNormalByPreviewRay = hit.normal;
-                            previewObjectToBuildObj.transform.up = hit.normal;
+                            // Hits are shorted from the closest one to the farthest one.
+                            // If at some point, we stop detecting snap triggers, remove all of the snap triggeres from the hits list.
+                            // This is to avoid things like grounds colliding with the triggers and no snapping since there are more objects below.
+                            hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+                            break;
                         }
                     }
+                }
 
-                    // If press left click while previewing, place the object :)
-                    if (Input.GetMouseButtonDown(0))
+                if (snapWithTrigger)
+                {
+                    previewObjectToBuildObj.SetActive(true);
+                    previewObjectToBuildObj.transform.position = rayToUseWithSnap.collider.transform.position;
+                    // Only update rotation when the trigger is different, so user can rotate preview object even when snap trigger is found.
+                    if (currentHittenSnapTrigger != rayToUseWithSnap.collider.gameObject)
                     {
-                        InstanceObjectInThePreviewObjectPos();
-                        break;
+                        currentHittenSnapTrigger = rayToUseWithSnap.collider.gameObject;
+                        previewObjectToBuildObj.transform.rotation = rayToUseWithSnap.collider.transform.rotation;
                     }
+                }
+                else if (hits.Count > 0) // When using the default preview behaviour, use the closest hit, why not?
+                {
+                    currentHittenSnapTrigger = null;
 
-                    if (breakAtTheEnd) break;
+                    previewObjectToBuildObj.SetActive(true);
+                    previewObjectToBuildObj.transform.position = hits[0].point;
+                    // Only update the preview object rotation when the ray hit ANOTHER surface, so the user can rotate the preview object before placing it.
+                    if (lastHittenNormalByPreviewRay != hits[0].normal)
+                    {
+                        lastHittenNormalByPreviewRay = hits[0].normal;
+                        previewObjectToBuildObj.transform.up = hits[0].normal;
+                    }
+                }
+                else
+                {
+                    previewObjectToBuildObj.SetActive(false);
                 }
             }
-            else // Disable the preview object if it's not hitting nothing in the world space.
+            else
             {
                 previewObjectToBuildObj.SetActive(false);
             }
@@ -512,7 +766,9 @@ namespace FS_LevelEditor
         void InstanceObjectInThePreviewObjectPos()
         {
             levelHasBeenModified = true;
-            PlaceObject(currentObjectToBuildName, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, true);
+            PlaceObject(currentObjectToBuildName, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, Vector3.one, true);
+
+            // About the scale being fixed to 1... you can't change the scale of the PREVIEW object, so...
         }
 
         bool CanUseThatSnapToGridTrigger(string objToBuildName, GameObject triggerObj)
@@ -544,6 +800,69 @@ namespace FS_LevelEditor
             return false;
         }
 
+        void StartMovingObject(string arrowColliderName, Ray cameraRay)
+        {
+            // Save the position of the object from the first time we clicked.
+            objPositionWhenArrowClick = currentSelectedObj.transform.position;
+
+            #region Register LEAction
+            currentExecutingAction = new LEAction();
+            currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
+
+            currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
+
+            if (multipleObjectsSelected)
+            {
+                currentExecutingAction.targetObjs = new List<GameObject>();
+                foreach (var obj in currentSelectedObj.GetChilds())
+                {
+                    currentExecutingAction.targetObjs.Add(obj);
+                }
+            }
+            else
+            {
+                currentExecutingAction.targetObj = currentSelectedObj;
+            }
+            currentExecutingAction.oldPos = currentSelectedObj.transform.localPosition;
+            #endregion
+
+            // Create the panel with the rigt normals.
+            if (arrowColliderName == "X" || arrowColliderName == "Z")
+            {
+                if (globalGizmosArrowsEnabled)
+                {
+                    movementPlane = new Plane(Vector3.up, objPositionWhenArrowClick);
+                }
+                else
+                {
+                    movementPlane = new Plane(currentSelectedObj.transform.up, objPositionWhenArrowClick);
+                }
+            }
+            else if (arrowColliderName == "Y")
+            {
+                Vector3 cameraPosition = Camera.main.transform.position;
+                Vector3 directionToCamera = cameraPosition - objPositionWhenArrowClick;
+                Vector3 planeNormal = new Vector3(directionToCamera.normalized.x, 0f, directionToCamera.normalized.z);
+
+                movementPlane = new Plane(planeNormal, objPositionWhenArrowClick);
+            }
+
+            // Then get the right offset of the arrows.
+            offsetObjPositionAndMosueWhenClick = Vector3.zero;
+            if (movementPlane.Raycast(cameraRay, out float enter))
+            {
+                Vector3 collisionOnPlane = cameraRay.GetPoint(enter);
+                // Not do any of this complex math that I don't even understand anymore LMAO.
+                if (!globalGizmosArrowsEnabled)
+                {
+                    collisionOnPlane = RotatePositionAroundPivot(collisionOnPlane, objPositionWhenArrowClick, Quaternion.Inverse(currentSelectedObj.transform.rotation));
+                }
+
+                if (arrowColliderName == "X") offsetObjPositionAndMosueWhenClick.x = objPositionWhenArrowClick.x - collisionOnPlane.x;
+                if (arrowColliderName == "Y") offsetObjPositionAndMosueWhenClick.y = objPositionWhenArrowClick.y - collisionOnPlane.y;
+                if (arrowColliderName == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - collisionOnPlane.z;
+            }
+        }
         void MoveObject(GizmosArrow direction)
         {
             // Get the ray from the camera.
@@ -552,7 +871,7 @@ namespace FS_LevelEditor
             // If the ray can collide with the "invisible" plane.
             if (movementPlane.Raycast(ray, out float distance))
             {
-                isCurrentlyMovingAnObject = true;
+                if (!IsCurrentState(EditorState.MOVING_OBJECT)) SetCurrentEditorState(EditorState.MOVING_OBJECT);
 
                 // IT WORKS, DON'T EVEN DARE TO TOUCH THIS EVER AGAIN!
 
@@ -575,15 +894,57 @@ namespace FS_LevelEditor
             }
         }
 
+        void DeleteObject(GameObject obj)
+        {
+            // This function doesn't support multiple selected objects.
+            if (multipleObjectsSelected) return;
+
+            // Get the current existing objects in the level objects parent.
+            int existingObjects = levelObjectsParent.GetChilds(false).ToArray().Length;
+
+            if (existingObjects <= 1)
+            {
+                Logger.Warning("Attemped to delete one single object but IS THE LAST OBJECT IN THE SCENE!");
+
+                Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+                return;
+            }
+            LE_Object objComp = obj.GetComponent<LE_Object>();
+            objComp.OnDelete();
+            if (objComp.canUndoDeletion)
+            {
+                Logger.Log("Single object deleted, but it can be undone.");
+                obj.SetActive(false);
+            }
+            else
+            {
+                Logger.Log("Single object deleted permanently!");
+                Destroy(obj);
+            }
+            levelHasBeenModified = true;
+
+            if (objComp.canUndoDeletion)
+            {
+                #region Register LEAction
+                currentExecutingAction = new LEAction();
+                currentExecutingAction.actionType = LEAction.LEActionType.DeleteObject;
+
+                currentExecutingAction.forMultipleObjects = false;
+                currentExecutingAction.targetObj = currentSelectedObj;
+
+                actionsMade.Add(currentExecutingAction);
+                #endregion
+            }
+        }
         void DeleteSelectedObj()
         {
             // Get the current existing objects in the level objects parent.
-            int existingObjects = levelObjectsParent.GetChilds(false).Where(x => x.name != "MoveObjectArrows" && x.name != "SnapToGridCube").ToArray().Length;
+            int existingObjects = levelObjectsParent.GetChilds(false).ToArray().Length;
 
             if (multipleObjectsSelected)
             {
                 // Since the selected objects are in another parent, also count the objects in that parent.
-                existingObjects += multipleSelectedObjsParent.GetChilds(false).Where(x => x.name != "MoveObjectArrows" && x.name != "SnapToGridCube").ToArray().Length;
+                existingObjects += multipleSelectedObjsParent.GetChilds(false).ToArray().Length;
 
                 if (existingObjects - currentSelectedObjects.Count <= 0)
                 {
@@ -593,7 +954,7 @@ namespace FS_LevelEditor
 
                 foreach (var obj in currentSelectedObj.GetChilds())
                 {
-                    if (obj.name == "MoveObjectArrows" || obj.name == "SnapToGridCube") continue;
+                    obj.GetComponent<LE_Object>().OnDelete();
 
                     if (obj.GetComponent<LE_Object>().canUndoDeletion)
                     {
@@ -644,9 +1005,6 @@ namespace FS_LevelEditor
                     currentExecutingAction.targetObjs = new List<GameObject>();
                     foreach (var obj in currentSelectedObj.GetChilds())
                     {
-                        if (obj.name == "MoveObjectArrows") continue;
-                        if (obj.name == "SnapToGridCube") continue;
-                     
                         if (!obj.GetComponent<LE_Object>().canUndoDeletion) continue;
 
                         currentExecutingAction.targetObjs.Add(obj);
@@ -677,10 +1035,10 @@ namespace FS_LevelEditor
 
             foreach (var child in editorObjectsRootFromBundle.GetChilds())
             {
-                categories.Add(child.name);
+                categoriesNames.Add(child.name);
             }
 
-            currentCategory = categories[0];
+            currentCategory = categoriesNames[0];
             currentCategoryID = 0;
 
             foreach (var categoryObj in editorObjectsRootFromBundle.GetChilds())
@@ -701,11 +1059,6 @@ namespace FS_LevelEditor
             gizmosArrows.transform.localPosition = Vector3.zero;
             gizmosArrows.SetActive(false);
 
-            foreach (var collider in gizmosArrows.TryGetComponents<Collider>())
-            {
-                collider.gameObject.layer = LayerMask.NameToLayer("ARROWS");
-            }
-
             snapToGridCube = Instantiate(bundle.Load<GameObject>("SnapToGridCube"));
             snapToGridCube.name = "SnapToGridCube";
             snapToGridCube.transform.localPosition = Vector3.zero;
@@ -714,6 +1067,15 @@ namespace FS_LevelEditor
             otherObjectsFromBundle = bundle.Load<GameObject>("OtherObjects").GetChilds();
 
             Utilities.LoadMaterials(bundle);
+
+            foreach (var material in bundle.LoadAll<Material>())
+            {
+                if (material.name.StartsWith("Skybox"))
+                {
+                    material.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+                    skyboxes.Add(material);
+                }
+            }
 
             bundle.Unload(false);
         }
@@ -731,23 +1093,22 @@ namespace FS_LevelEditor
             else Logger.DebugLog($"SetSelectedObj called with NO NEW TARGET OBJECT (To deselect).");
 
             gizmosArrows.SetActive(false);
-            gizmosArrows.transform.parent = null;
-            gizmosArrows.transform.localPosition = Vector3.zero;
-            gizmosArrows.transform.localRotation = Quaternion.identity;
 
-            snapToGridCube.transform.parent = null;
-            snapToGridCube.transform.localPosition = Vector3.zero;
-            snapToGridCube.transform.localRotation = Quaternion.identity;
+            // SnapToGrid cube is adjusted in Late Update.
 
+            // Reset the last selected object color back to normal.
             if (currentSelectedObj != null)
             {
-                // Reset the last selected object color to white if there's one.
-                foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
+                if (multipleObjectsSelected)
                 {
-                    foreach (var material in renderer.materials)
+                    foreach (var @object in currentSelectedObjects)
                     {
-                        material.color = new Color(1f, 1f, 1f, material.color.a);
+                        @object.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.NORMAL);
                     }
+                }
+                else
+                {
+                    currentSelectedObjComponent.SetObjectColor(LE_Object.LEObjectContext.NORMAL);
                 }
             }
 
@@ -777,6 +1138,7 @@ namespace FS_LevelEditor
 
                     // Remove the parent from the selected objects, set the new parent position and put the parent in the objects again.
                     currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
+                    multipleSelectedObjsParent.transform.localScale = Vector3.one;
                     multipleSelectedObjsParent.transform.position = centeredPosition;
                     multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
                     currentSelectedObjects.ForEach(x => x.transform.parent = multipleSelectedObjsParent.transform);
@@ -866,22 +1228,21 @@ namespace FS_LevelEditor
 
             if (currentSelectedObj != null)
             {
-                foreach (var renderer in currentSelectedObj.TryGetComponents<MeshRenderer>())
+                // Change the color of the new select object to the "selected" color.
+                if (multipleObjectsSelected)
                 {
-                    foreach (var material in renderer.materials)
+                    foreach (var @object in currentSelectedObjects)
                     {
-                        material.color = new Color(0f, 1f, 0f, material.color.a);
+                        @object.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.SELECT);
                     }
                 }
+                else
+                {
+                    currentSelectedObjComponent.SetObjectColor(LE_Object.LEObjectContext.SELECT);
+                }
 
-                gizmosArrows.SetActive(true);
-                gizmosArrows.transform.parent = currentSelectedObj.transform;
-                gizmosArrows.transform.localPosition = Vector3.zero;
-                gizmosArrows.transform.localRotation = Quaternion.identity;
-
-                snapToGridCube.transform.parent = currentSelectedObj.transform;
-                snapToGridCube.transform.localPosition = Vector3.zero;
-                snapToGridCube.transform.localRotation = Quaternion.identity;
+                if (currentMode == Mode.Selection) gizmosArrows.SetActive(true);
+                gizmosArrows.transform.localRotation = currentSelectedObj.transform.rotation;
 
                 if (multipleObjectsSelected)
                 {
@@ -900,6 +1261,21 @@ namespace FS_LevelEditor
             }
         }
 
+        // This method is called when the scale of the object is changed, this is to adjust the gizmos scale in case the current selected object's scale is smaller than 1.
+        public void ApplyGizmosArrowsScale()
+        {
+            float highestAxis = Utilities.HighestValueOfVector(currentSelectedObj.transform.localScale);
+            
+            if (highestAxis >= 1f)
+            {
+                gizmosArrows.transform.localScale = Vector3.one * 2f;
+            }
+            else
+            {
+                gizmosArrows.transform.localScale = Vector3.one * 2f * highestAxis;
+            }
+        }
+
         public void SetMultipleObjectsAsSelected(List<GameObject> objects)
         {
             // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
@@ -909,6 +1285,7 @@ namespace FS_LevelEditor
 
             if (objects != null)
             {
+                multipleSelectedObjsParent.transform.localScale = Vector3.one;
                 if (objects.Count > 0)
                 {
                     currentSelectedObjects = new List<GameObject>(objects); // Replace the list with the new one with the copied objects.
@@ -918,7 +1295,7 @@ namespace FS_LevelEditor
             }
         }
 
-        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, bool setAsSelected = true)
+        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, Vector3 scale, bool setAsSelected = true)
         {
             if (setAsSelected)
             {
@@ -937,6 +1314,7 @@ namespace FS_LevelEditor
 
             obj.transform.localPosition = position;
             obj.transform.localEulerAngles = eulerAngles;
+            obj.transform.localScale = scale;
 
             LE_Object addedComp = LE_Object.AddComponentToObject(obj, objName);
 
@@ -946,13 +1324,7 @@ namespace FS_LevelEditor
                 return null;
             }
 
-            foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
-            {
-                foreach (var material in renderer.materials)
-                {
-                    material.color = new Color(1f, 1f, 1f, 1f);
-                }
-            }
+            addedComp.SetObjectColor(LE_Object.LEObjectContext.NORMAL);
 
             obj.SetActive(true);
 
@@ -975,7 +1347,17 @@ namespace FS_LevelEditor
                 foreach (var obj in currentSelectedObjects)
                 {
                     LE_Object objComponent = obj.GetComponent<LE_Object>();
-                    newSelectedObjectsList.Add(PlaceObject(objComponent.objectOriginalName, objComponent.transform.position, objComponent.transform.eulerAngles, false));
+
+                    GameObject placedObj = PlaceObject(objComponent.objectOriginalName, objComponent.transform.position, objComponent.transform.eulerAngles,
+                        objComponent.transform.localScale, false);
+                    LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
+
+                    foreach (var property in objComponent.properties)
+                    {
+                        newPlacedObjComp.properties[property.Key] = property.Value;
+                    }
+
+                    newSelectedObjectsList.Add(placedObj);
                 }
 
                 SetMultipleObjectsAsSelected(newSelectedObjectsList);
@@ -985,7 +1367,17 @@ namespace FS_LevelEditor
             {
                 isDuplicatingObj = true;
                 LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
-                PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles);
+                GameObject placedObj = PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
+                    objComponent.transform.localScale, false);
+
+                LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
+                foreach (var property in objComponent.properties)
+                {
+                    newPlacedObjComp.properties[property.Key] = property.Value;
+                }
+
+                SetSelectedObj(placedObj);
+
                 isDuplicatingObj = false;
                 levelHasBeenModified = true;
             }
@@ -1022,6 +1414,9 @@ namespace FS_LevelEditor
             // If the rotation changed and the object isn't the preview object...
             if (rotation != targetObj.transform.localRotation && currentMode != Mode.Building)
             {
+                // Update global attributes.
+                EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+
                 // Save it to editor history.
                 #region Register LEAction
                 currentExecutingAction = new LEAction();
@@ -1031,13 +1426,7 @@ namespace FS_LevelEditor
                 if (multipleObjectsSelected)
                 {
                     currentExecutingAction.targetObjs = new List<GameObject>();
-                    foreach (var obj in currentSelectedObj.GetChilds())
-                    {
-                        if (obj.name == "MoveObjectArrows") continue;
-                        if (obj.name == "SnapToGridCube") continue;
-
-                        currentExecutingAction.targetObjs.Add(obj);
-                    }
+                    currentExecutingAction.targetObjs.AddRange(currentSelectedObj.GetChilds());
                 }
                 else
                 {
@@ -1057,82 +1446,76 @@ namespace FS_LevelEditor
 
         void AlignSelectedObjectToGrid()
         {
-            // Get all of the possible rays and short them, since Unity doesn't short them by defualt.
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
-            System.Array.Sort(hits, (hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+            List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
+            hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
 
-            // If it hits at least one object.
-            if (hits.Length > 0)
+            if (hits.Count > 0)
             {
                 foreach (var hit in hits)
                 {
-                    bool theHittenObjectIsTheSelectedOne = false;
+                    if (hit.collider.gameObject.name == snapToGridCube.name) continue;
+
+                    #region Skip if it's the current selected object
+                    bool hitIsFromTheCurrentSelectedObj = false;
                     if (multipleObjectsSelected)
                     {
-                        foreach (var obj in currentSelectedObjects)
-                        {
-                            if (hit.collider.transform.parent.gameObject == obj) theHittenObjectIsTheSelectedOne = true;
-                        }
+                        hitIsFromTheCurrentSelectedObj = currentSelectedObjects.Any(obj => obj == hit.collider.transform.parent.gameObject);
                     }
                     else
                     {
-                        if (hit.collider.transform.parent.gameObject == currentSelectedObj) theHittenObjectIsTheSelectedOne = true;
+                        hitIsFromTheCurrentSelectedObj = currentSelectedObj == hit.collider.transform.parent.gameObject;
                     }
+                    if (hitIsFromTheCurrentSelectedObj) continue;
+                    #endregion
 
-                    // If the hit is an static pos trigger (snap trigger)...
                     if (hit.collider.gameObject.name.StartsWith("StaticPos"))
                     {
-                        // Only if the snap trigger is NOT from the current selected object.
-                        bool isFromTheSameObject = false;
+                        #region Skip trigger if it's from the current selected object
+                        bool triggerIsFromTheCurrentSelectedObj = false;
                         if (multipleObjectsSelected)
                         {
-                            foreach (var obj in currentSelectedObjects)
-                            {
-                                if (hit.collider.transform.parent.parent.parent.gameObject == obj) isFromTheSameObject = true;
-                            }
+                            triggerIsFromTheCurrentSelectedObj =
+                                currentSelectedObjects.Any(obj => obj == hit.collider.transform.parent.parent.parent.gameObject);
                         }
                         else
                         {
-                            if (hit.collider.transform.parent.parent.parent.gameObject == currentSelectedObj) isFromTheSameObject = true;
+                            triggerIsFromTheCurrentSelectedObj = hit.collider.transform.parent.parent.parent.gameObject == currentSelectedObj;
                         }
+                        if (triggerIsFromTheCurrentSelectedObj) continue;
+                        #endregion
 
-                        if (!isFromTheSameObject)
+                        // currentSelectedObjComponent isn't null even when selecting multiple objects, but only when the selected objects are of the
+                        // same type, so, use it to identify the available snap triggers (no matter if is selecting multiple objects or not).
+                        if (currentSelectedObjComponent != null)
                         {
-                            // If the component isn't null, use it to idenfity which snap triggers use and which ones no.
-                            if (currentSelectedObjComponent != null)
-                            {
-                                // Detect if that trigger actually CAN be used with the selected object.
-                                if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectOriginalName, hit.collider.gameObject))
-                                {
-                                    currentSelectedObj.transform.position = hit.collider.transform.position;
-                                    currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
-
-                                    levelHasBeenModified = true;
-
-                                    return;
-                                }
-                            }
-                            else // If it's null, use any snap trigger we find.
+                            if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectOriginalName, hit.collider.gameObject))
                             {
                                 currentSelectedObj.transform.position = hit.collider.transform.position;
                                 currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
+                                EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
 
                                 levelHasBeenModified = true;
 
                                 return;
                             }
                         }
+                        else
+                        {
+                            currentSelectedObj.transform.position = hit.collider.transform.position;
+                            currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
+                            // Don't update global object attributes, since if the current selected component is null, that means the user is 100% selecting
+                            // multiple objects.
+
+                            levelHasBeenModified = true;
+
+                            return;
+                        }
                     }
-                    // If the hitten object is the current selected one, keep iterating...
-                    else if (theHittenObjectIsTheSelectedOne)
-                    {
-                        continue;
-                    }
-                    // Otherwise, return and do nothing.
                     else
                     {
-                        return;
+                        // Avoid detecting triggers by traspassing objects.
+                        break;
                     }
                 }
             }
@@ -1140,6 +1523,8 @@ namespace FS_LevelEditor
 
         public void EnterPlayMode()
         {
+            if (enteringPlayMode) return;
+
             if (!EditorController.Instance.currentInstantiatedObjects.Any(x => x is LE_Player_Spawn && x.gameObject.activeSelf))
             {
                 Logger.Warning("Attemped to enter playmode but THERE'S NO PLAYER SPAWN OBJECT!");
@@ -1152,6 +1537,8 @@ namespace FS_LevelEditor
 
             IEnumerator Coroutine()
             {
+                enteringPlayMode = true;
+
                 Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
                 Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
                 EditorUIManager.Instance.DeleteUI();
@@ -1172,13 +1559,27 @@ namespace FS_LevelEditor
             }
         }
 
+        #region Current Editor State Methods
+        public void SetCurrentEditorState(EditorState newState)
+        {
+            previousEditorState = currentEditorState;
+            currentEditorState = newState;
+        }
+        public static bool IsCurrentState(EditorState state)
+        {
+            if (Instance == null) return false;
+
+            return Instance.currentEditorState == state;
+        }
+        #endregion
+
         #region Methods called from UI buttons
         public void ChangeCategory(int categoryID)
         {
             if (currentCategoryID == categoryID) return;
 
             currentCategoryID = categoryID;
-            currentCategory = categories[currentCategoryID];
+            currentCategory = categoriesNames[currentCategoryID];
             EditorUIManager.Instance.SetupCurrentCategoryButtons();
         }
 
@@ -1210,16 +1611,10 @@ namespace FS_LevelEditor
             // STUPID CUBE PHYSICS!!
             foreach (var rigidBody in previewObjectToBuildObj.TryGetComponents<Rigidbody>())
             {
-                rigidBody.isKinematic = true;
+                Destroy(rigidBody); // Destroy the RigidBody, fuck it.
             }
-            // Also change it's color to blue.
-            foreach (var renderer in previewObjectToBuildObj.TryGetComponents<MeshRenderer>())
-            {
-                foreach (var material in renderer.materials)
-                {
-                    material.color = new Color(0f, 0.666f, 0.894f, 1f);
-                }
-            }
+            // This is an static method used for cases like this, where there's no LE_Object at all, all we have is the preview object.
+            LE_Object.SetObjectColor(previewObjectToBuildObj, currentObjectToBuildName, LE_Object.LEObjectContext.PREVIEW);
         }
         #endregion
 
@@ -1252,104 +1647,18 @@ namespace FS_LevelEditor
         /// <returns></returns>
         GizmosArrow GetCollidingWithAnArrow()
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
-
-            // Loop foreach all of the collisions of the ray.
-            foreach (var hit in hits)
+            // The parent of the gizmos arrows is "MoveObjectsArrows".
+            // hittenArrow is NOT the parent, it's the actual hitten arrow :)
+            if (IsHittingObjectWhoseParentIs(gizmosArrows.name, out GameObject hittenArrow, out Ray cameraRay))
             {
-                if (hit.collider.transform.parent != null)
-                {
-                    // If one of them are the move object gizmos...
-                    if (hit.collider.transform.parent.name == "MoveObjectArrows")
-                    {
-                        // Save the position of the object from the first time we clicked.
-                        objPositionWhenArrowClick = currentSelectedObj.transform.position;
+                StartMovingObject(hittenArrow.name, cameraRay);
 
-                        #region Register LEAction
-                        currentExecutingAction = new LEAction();
-                        currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
-
-                        currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
-
-                        if (multipleObjectsSelected)
-                        {
-                            currentExecutingAction.targetObjs = new List<GameObject>();
-                            foreach (var obj in currentSelectedObj.GetChilds())
-                            {
-                                if (obj.name == "MoveObjectArrows") continue;
-                                if (obj.name == "SnapToGridCube") continue;
-
-                                currentExecutingAction.targetObjs.Add(obj);
-                            }
-                        }
-                        else
-                        {
-                            currentExecutingAction.targetObj = currentSelectedObj;
-                        }
-                        currentExecutingAction.oldPos = currentSelectedObj.transform.localPosition;
-                        #endregion
-
-                        // Create the panel with the rigt normals.
-                        if (hit.collider.name == "X" || hit.collider.name == "Z")
-                        {
-                            if (globalGizmosArrowsEnabled)
-                            {
-                                movementPlane = new Plane(Vector3.up, objPositionWhenArrowClick);
-                            }
-                            else
-                            {
-                                movementPlane = new Plane(currentSelectedObj.transform.up, objPositionWhenArrowClick);
-                            }
-                        }
-                        else if (hit.collider.name == "Y")
-                        {
-                            Vector3 cameraPosition = Camera.main.transform.position;
-                            Vector3 directionToCamera = cameraPosition - objPositionWhenArrowClick;
-                            Vector3 planeNormal = new Vector3(directionToCamera.normalized.x, 0f, directionToCamera.normalized.z);
-
-                            movementPlane = new Plane(planeNormal, objPositionWhenArrowClick);
-                        }
-
-                        // Then get the right offset of the arrows.
-                        offsetObjPositionAndMosueWhenClick = Vector3.zero;
-                        if (movementPlane.Raycast(ray, out float enter))
-                        {
-                            Vector3 collisionOnPlane = ray.GetPoint(enter);
-                            // Not do any of this complex math that I don't even understand anymore LMAO.
-                            if (!globalGizmosArrowsEnabled)
-                            {
-                                collisionOnPlane = RotatePositionAroundPivot(collisionOnPlane, objPositionWhenArrowClick, Quaternion.Inverse(currentSelectedObj.transform.rotation));
-                            }
-
-                            if (hit.collider.name == "X") offsetObjPositionAndMosueWhenClick.x = objPositionWhenArrowClick.x - collisionOnPlane.x;
-                            if (hit.collider.name == "Y") offsetObjPositionAndMosueWhenClick.y = objPositionWhenArrowClick.y - collisionOnPlane.y;
-                            if (hit.collider.name == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - collisionOnPlane.z;
-                        }
-
-                        // Finally, return the final result of the gizmos arrow we touched.
-                        if (hit.collider.name == "X") return GizmosArrow.X;
-                        if (hit.collider.name == "Y") return GizmosArrow.Y;
-                        if (hit.collider.name == "Z") return GizmosArrow.Z;
-                    }
-                }
+                if (hittenArrow.name == "X") return GizmosArrow.X;
+                if (hittenArrow.name == "Y") return GizmosArrow.Y;
+                if (hittenArrow.name == "Z") return GizmosArrow.Z;
             }
 
             return GizmosArrow.None;
-        }
-
-        bool IsClickingSnapToGridCube()
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
-
-            // Loop foreach all of the collisions of the ray.
-            foreach (var hit in hits)
-            {
-                if (hit.collider.gameObject.name == "SnapToGridCube") return true;
-            }
-
-            return false;
         }
 
         Vector3 GetAxisDirection(GizmosArrow arrow, GameObject obj)
@@ -1370,6 +1679,61 @@ namespace FS_LevelEditor
             return Vector3.zero;
         }
 
+        public bool IsHittingObject(GameObject targetObj)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
+
+            // Loop foreach all of the collisions of the ray.
+            foreach (var hit in hits)
+            {
+                if (hit.collider.gameObject == targetObj) return true;
+            }
+
+            return false;
+        }
+        public bool IsHittingObject(string targetObjName)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity);
+
+            // Loop foreach all of the collisions of the ray.
+            foreach (var hit in hits)
+            {
+                if (hit.collider.gameObject.name == targetObjName) return true;
+            }
+
+            return false;
+        }
+        /// <summary>
+        /// Detects if the user is currently hitting an object whose parent is of the specified name.
+        /// </summary>
+        /// <param name="objParentName">The parent name.</param>
+        /// <param name="hittenObj">The actual hitten object (NOT THE PARENT).</param>
+        /// <returns></returns>
+        public bool IsHittingObjectWhoseParentIs(string objParentName, out GameObject hittenObj, out Ray cameraRay)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
+
+            cameraRay = ray;
+
+            // Loop foreach all of the collisions of the ray.
+            foreach (var hit in hits)
+            {
+                if (hit.collider.transform.parent != null)
+                {
+                    if (hit.collider.transform.parent.name == objParentName)
+                    {
+                        hittenObj = hit.collider.gameObject;
+                        return true;
+                    }
+                }
+            }
+
+            hittenObj = null;
+            return false;
+        }
         Vector3 RotatePositionAroundPivot(Vector3 position, Vector3 pivot, Quaternion rotation)
         {
             // I DON'T WANNA TOUCH THIS FUCKING CODE IN MY LIFE!!!
@@ -1381,6 +1745,11 @@ namespace FS_LevelEditor
             return rotatedPositionWithOriginalPivot;
         }
         #endregion
+
+        public void SetupSkybox(int skyboxID)
+        {
+            RenderSettings.skybox = skyboxes[skyboxID];
+        }
     }
 }
 

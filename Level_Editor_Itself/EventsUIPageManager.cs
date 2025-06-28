@@ -25,9 +25,11 @@ namespace FS_LevelEditor
         GameObject currentEventPageLabel;
         GameObject noEventsLabel;
 
-        GameObject onActivatedButton;
-        GameObject onDeactivatedButton;
-        GameObject onChangeButton;
+        Transform topButtonsParent;
+        UIButtonPatcher firstEventsListButton;
+        UIButtonPatcher secondEventsListButton;
+        UIButtonPatcher thirdEventsListButton;
+        UILabel oneEventTypeLabel;
 
         GameObject eventsListBg;
         List<GameObject> eventsGridList = new List<GameObject>();
@@ -43,7 +45,7 @@ namespace FS_LevelEditor
         /// </summary>
         GameObject eventOptionsParent;
         GameObject defaultObjectsSettings;
-        UIDropdownPatcher setActiveDropdown;
+        UIDropdownPatcher spawnOptionsDropdown;
         //-----------------------------------
         GameObject sawObjectsSettings;
         UIDropdownPatcher sawStateDropdown;
@@ -57,12 +59,36 @@ namespace FS_LevelEditor
         //-----------------------------------
         GameObject laserObjectsSettings;
         UIDropdownPatcher laserStateDropdown;
+        //-----------------------------------
+        GameObject lightObjectsSettings;
+        UIToggle changeLightColorToggle;
+        UILabel newLightColorTitleLabel;
+        UIInput newLightColorInputField;
+        //-----------------------------------
+        GameObject ceilingLightObjectsSettings;
+        UIDropdownPatcher ceilingLightStateDropdown;
+        UIToggle changeCeilingLightColorToggle;
+        UIInput newCeilingLightColorInputField;
+        //-----------------------------------
+        GameObject healthAmmoPacksObjectsSettings;
+        UIToggle changePackRespawnTimeToggle;
+        UILabel newPackRespawnTimeTitleLabel;
+        UICustomInputField newPackRespawnTimeInputField;
+        UIToggle spawnPackNowToggle;
+        //-----------------------------------
+        GameObject switchObjectsSettings;
+        UIDropdownPatcher switchStateDropdown;
+        UIToggle executeSwitchActionsToggle;
+        UIDropdownPatcher switchUsableStateDropdown;
+        //-----------------------------------
+        GameObject flameTrapObjectsSettings;
+        UIDropdownPatcher flameTrapStateDropdown;
 
-        enum CurrentEventType { OnEnable, OnDisable, OnChange }
-        CurrentEventType currentEventType;
+
+        List<string> eventsListsNames = new List<string>();
+        int currentEventsListID;
+        string currentEventsListName;
         LE_Event currentSelectedEvent;
-
-        public bool isShowingPage;
 
         LE_Object targetObj;
 
@@ -81,12 +107,18 @@ namespace FS_LevelEditor
                 Instance.CreateEventSettingsPanelAndOptionsParent();
                 Instance.CreateTargetObjectINSTRUCTIONLabel();
                 Instance.CreateTargetObjectInputField();
+                Instance.CreateSelectTargetObjectButton();
 
                 Instance.CreateDefaultObjectSettings();
                 Instance.CreateSawObjectSettings();
                 Instance.CreatePlayerSettings();
                 Instance.CreateCubeObjectSettings();
                 Instance.CreateLaserObjectSettings();
+                Instance.CreateLightObjectSettings();
+                Instance.CreateCeilingLightObjectSettings();
+                Instance.CreateHealthAndAmmoPacksObjectSettings();
+                Instance.CreateSwitchObjectSettings();
+                Instance.CreateFlameTrapObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -151,28 +183,39 @@ namespace FS_LevelEditor
         }
         void CreateTopButtons()
         {
-            onActivatedButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-500f, 300f, 0f), new Vector3Int(480, 55, 0), "On Activated");
-            onActivatedButton.name = "OnActivatedButton";
-            onActivatedButton.GetComponent<UISprite>().depth = 1;
-            EventDelegate onActivatedDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(OnEnableBtnClick),
-                NGUI_Utils.CreateEventDelegateParamter(this, "playSound", true));
-            onActivatedButton.GetComponent<UIButton>().onClick.Add(onActivatedDelegate);
-            onActivatedButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            onActivatedButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            topButtonsParent = new GameObject("TopButtons").transform;
+            topButtonsParent.parent = eventsPanel.transform;
+            topButtonsParent.localPosition = new Vector3(0f, 300f, 0f);
+            topButtonsParent.localScale = Vector3.one;
+            UIWidget topButtonsParentWidget = topButtonsParent.gameObject.AddComponent<UIWidget>();
+            topButtonsParentWidget.width = 1480;
+            topButtonsParentWidget.height = 55;
 
-            onDeactivatedButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(0f, 300f, 0f), new Vector3Int(480, 55, 0), "On Deactivated");
-            onDeactivatedButton.name = "OnDeactivatedButton";
-            onDeactivatedButton.GetComponent<UISprite>().depth = 1;
-            onDeactivatedButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnDisableBtnClick)));
-            onDeactivatedButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            onDeactivatedButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            firstEventsListButton = NGUI_Utils.CreateButton(topButtonsParent, new Vector3(-500f, 0f, 0f), new Vector3Int(480, 55, 0), "First List");
+            firstEventsListButton.name = "FirstEventsListButton";
+            firstEventsListButton.GetComponent<UISprite>().depth = 1;
+            firstEventsListButton.onClick += () => FirstEventsListBtnClick(true);
+            firstEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            firstEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
 
-            onChangeButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(500f, 300f, 0f), new Vector3Int(480, 55, 0), "On Change");
-            onChangeButton.name = "OnChangeButton";
-            onChangeButton.GetComponent<UISprite>().depth = 1;
-            onChangeButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnChangeBtnClick)));
-            onChangeButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            onChangeButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            secondEventsListButton = NGUI_Utils.CreateButton(topButtonsParent, new Vector3(0f, 0f, 0f), new Vector3Int(480, 55, 0), "Second List");
+            secondEventsListButton.name = "SecondEventsListButton";
+            secondEventsListButton.GetComponent<UISprite>().depth = 1;
+            secondEventsListButton.onClick += SecondEventsListBtnClick;
+            secondEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            secondEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+
+            thirdEventsListButton = NGUI_Utils.CreateButton(topButtonsParent, new Vector3(500f, 0f, 0f), new Vector3Int(480, 55, 0), "Third List");
+            thirdEventsListButton.name = "ThirdEventsListButton";
+            thirdEventsListButton.GetComponent<UISprite>().depth = 1;
+            thirdEventsListButton.onClick += ThirdEventsListBtnClick;
+            thirdEventsListButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            thirdEventsListButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+
+            oneEventTypeLabel = NGUI_Utils.CreateLabel(topButtonsParent, Vector3.zero, new Vector3Int(1480, 55, 0), "One Event Type", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            oneEventTypeLabel.fontSize = 30;
+            oneEventTypeLabel.name = "OneEventTypeLabel";
         }
         void CreateEventsListBackground()
         {
@@ -212,14 +255,236 @@ namespace FS_LevelEditor
         }
         void CreateAddEventButton()
         {
-            GameObject addEventButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-400f, -388f, 0f), new Vector3Int(800, 50, 0), "+ Add New Event");
+            UIButtonPatcher addEventButton = NGUI_Utils.CreateButton(eventsPanel.transform, new Vector3(-400f, -388f, 0f), new Vector3Int(800, 50, 0), "+ Add New Event");
             addEventButton.name = "AddEventButton";
             addEventButton.GetComponent<UISprite>().depth = 1;
             addEventButton.GetComponent<UIButtonScale>().hover = Vector3.one;
             addEventButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
-            addEventButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(AddNewEvent)));
+            addEventButton.onClick += AddNewEvent;
         }
 
+        void CreatePreviousEventsPageButton()
+        {
+            // Create the button.
+            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            previousEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
+            previousEventPageButton.name = "PreviousEventsPageButton";
+            previousEventPageButton.transform.localPosition = new Vector3(-430f, 0f, 0f);
+
+            // Remove unnecesary components.
+            GameObject.Destroy(previousEventPageButton.GetComponent<ButtonController>());
+            GameObject.Destroy(previousEventPageButton.GetComponent<OptionsButton>());
+            GameObject.Destroy(previousEventPageButton.GetComponent<FractalTooltip>());
+
+            // Adjust the sprite and the collider as well.
+            UISprite sprite = previousEventPageButton.GetComponent<UISprite>();
+            sprite.width = 50;
+            sprite.height = 50;
+            sprite.depth = 1;
+            BoxCollider collider = previousEventPageButton.GetComponent<BoxCollider>();
+            collider.size = new Vector3(50f, 50f);
+
+            // Adjust the label, removing the FUCKING UILocalize.
+            GameObject.Destroy(previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            UILabel label = previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
+            label.depth = 2;
+            label.width = 60;
+            label.height = 60;
+            label.fontSize = 40;
+            label.text = "<";
+
+            // Set the button on click action.
+            UIButton button = previousEventPageButton.GetComponent<UIButton>();
+            button.onClick.Clear();
+            button.onClick.Add(new EventDelegate(this, nameof(PreviousEventsPage)));
+        }
+        void CreateNextEventsPageButton()
+        {
+            // Create the button.
+            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            nextEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
+            nextEventPageButton.name = "PreviousEventsPageButton";
+            nextEventPageButton.transform.localPosition = new Vector3(430f, 0f, 0f);
+
+            // Remove unnecesary components.
+            GameObject.Destroy(nextEventPageButton.GetComponent<ButtonController>());
+            GameObject.Destroy(nextEventPageButton.GetComponent<OptionsButton>());
+            GameObject.Destroy(nextEventPageButton.GetComponent<FractalTooltip>());
+
+            // Adjust the sprite and the collider as well.
+            UISprite sprite = nextEventPageButton.GetComponent<UISprite>();
+            sprite.width = 50;
+            sprite.height = 50;
+            sprite.depth = 1;
+            BoxCollider collider = nextEventPageButton.GetComponent<BoxCollider>();
+            collider.size = new Vector3(50f, 50f);
+
+            // Adjust the label, removing the FUCKING UILocalize.
+            GameObject.Destroy(nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            UILabel label = nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
+            label.depth = 2;
+            label.width = 60;
+            label.height = 60;
+            label.fontSize = 40;
+            label.text = ">";
+
+            // Set the button on click action.
+            UIButton button = nextEventPageButton.GetComponent<UIButton>();
+            button.onClick.Clear();
+            button.onClick.Add(new EventDelegate(this, nameof(NextEventsPage)));
+        }
+        void CreateCurrentEventsPageLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            currentEventPageLabel = Instantiate(labelTemplate, eventsListBg.transform);
+            currentEventPageLabel.name = "CurrentEventPageLabel";
+            currentEventPageLabel.transform.localScale = Vector3.one;
+
+            Destroy(currentEventPageLabel.GetComponent<UILocalize>());
+
+            UILabel label = currentEventPageLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 30;
+            label.width = 800;
+            label.fontSize = 30;
+            label.text = "0/0";
+
+            // Change the label position AFTER changing the pivot.
+            currentEventPageLabel.transform.localPosition = new Vector3(0f, 300f, 0f);
+        }
+        void CreateNoEventsLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            noEventsLabel = Instantiate(labelTemplate, eventsListBg.transform);
+            noEventsLabel.name = "NoEventsLabel";
+            noEventsLabel.transform.localScale = Vector3.one;
+
+            Destroy(noEventsLabel.GetComponent<UILocalize>());
+
+            UILabel label = noEventsLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 50;
+            label.width = 700;
+            label.fontSize = 30;
+            label.color = new Color(1f, 1f, 0f, 1f);
+            label.text = "No Events Yet";
+
+            // Change the label position AFTER changing the pivot.
+            noEventsLabel.transform.localPosition = new Vector3(0f, 220f, 0f);
+        }
+
+        void RenameEvent(int eventID, UIInput inputRef)
+        {
+            // GetEventsList should return the same events list that when creating the events list, it should be fine :)
+            LE_Event eventToRename = GetEventsList()[eventID];
+            eventToRename.eventName = inputRef.text;
+
+            Logger.Log("RENAMED " + eventID + " TO: " + inputRef.text);
+        }
+
+        void SetupTopButtons()
+        {
+            eventsListsNames = targetObj.GetAvailableEventsIDs();
+
+            if (eventsListsNames.Count > 1) // Setup with buttons.
+            {
+                int buttonsCount = eventsListsNames.Count;
+                float padding = 15f;
+
+                UIWidget container = topButtonsParent.GetComponent<UIWidget>();
+                float containerWidth = container.width;
+
+                float spaceAvailableForButtons = containerWidth - padding * (buttonsCount - 1);
+                float widthPerButton = spaceAvailableForButtons / buttonsCount;
+
+                float x = -containerWidth * 0.5f; // Start from the left side of the container.
+
+                for (int i = 0; i < topButtonsParent.childCount; i++)
+                {
+                    if (i > eventsListsNames.Count - 1 || topButtonsParent.GetChild(i).name == oneEventTypeLabel.name)
+                    {
+                        topButtonsParent.GetChild(i).gameObject.SetActive(false);
+                        continue;
+                    }
+                    else
+                    {
+                        topButtonsParent.GetChild(i).gameObject.SetActive(true);
+                    }
+
+                    UIWidget buttonWidget = topButtonsParent.GetChild(i).GetComponent<UIWidget>();
+                    if (buttonWidget != null)
+                    {
+                        buttonWidget.width = Mathf.RoundToInt(widthPerButton);
+                        // According to ChatGPT, this is used to ensure NGUI draws the object correctly after the width change? Dunno, but I'll leave it as is just in case.
+                        buttonWidget.SetDimensions(buttonWidget.width, buttonWidget.height);
+
+                        float mitadAncho = widthPerButton * 0.5f;
+                        buttonWidget.transform.localPosition = new Vector3(x + mitadAncho, 0, 0);
+
+                        x += widthPerButton + padding;
+
+                        topButtonsParent.GetChild(i).gameObject.GetChildAt("Background/Label").GetComponent<UILabel>().text = Loc.Get(eventsListsNames[i]);
+                    }
+                }
+            }
+            else // Setup with the One Event Type label only.
+            {
+                topButtonsParent.gameObject.DisableAllChildren();
+
+                oneEventTypeLabel.gameObject.SetActive(true);
+                oneEventTypeLabel.text = Loc.Get(eventsListsNames[0]);
+            }
+        }
+        void FirstEventsListBtnClick(bool playSound = true)
+        {
+            // This method is the only one with the playSound parm because it's the only one I wanna call when
+            // opening the events windows with NO sound at all.
+            if (playSound) Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+
+            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+
+            SetCurrentEventsList(0);
+
+            HideEventSettings();
+            CreateEventsList(0);
+        }
+        void SecondEventsListBtnClick()
+        {
+            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+
+            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+
+            SetCurrentEventsList(1);
+
+            HideEventSettings();
+            CreateEventsList(0);
+        }
+        void ThirdEventsListBtnClick()
+        {
+            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+
+            firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
+
+            SetCurrentEventsList(2);
+
+            HideEventSettings();
+            CreateEventsList(0);
+        }
+        void SetCurrentEventsList(int id)
+        {
+            currentEventsListID = id;
+            currentEventsListName = eventsListsNames[id];
+        }
         void CreateEventsList(int eventsPage)
         {
             GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
@@ -418,6 +683,8 @@ namespace FS_LevelEditor
             }
             else if (eventsGridList.Count > 0)
             {
+                if (eventsPage > eventsGridList.Count() - 1) eventsPage = eventsGridList.Count() - 1;
+
                 eventsGridList[eventsPage].SetActive(true);
                 currentEventsGrid = eventsPage;
             }
@@ -435,187 +702,12 @@ namespace FS_LevelEditor
             nextEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid < eventsGridList.Count - 1;
             currentEventPageLabel.GetComponent<UILabel>().text = GetCurrentEventPageText();
         }
-        void CreatePreviousEventsPageButton()
-        {
-            // Create the button.
-            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            previousEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
-            previousEventPageButton.name = "PreviousEventsPageButton";
-            previousEventPageButton.transform.localPosition = new Vector3(-430f, 0f, 0f);
 
-            // Remove unnecesary components.
-            GameObject.Destroy(previousEventPageButton.GetComponent<ButtonController>());
-            GameObject.Destroy(previousEventPageButton.GetComponent<OptionsButton>());
-            GameObject.Destroy(previousEventPageButton.GetComponent<FractalTooltip>());
-
-            // Adjust the sprite and the collider as well.
-            UISprite sprite = previousEventPageButton.GetComponent<UISprite>();
-            sprite.width = 50;
-            sprite.height = 50;
-            sprite.depth = 1;
-            BoxCollider collider = previousEventPageButton.GetComponent<BoxCollider>();
-            collider.size = new Vector3(50f, 50f);
-
-            // Adjust the label, removing the FUCKING UILocalize.
-            GameObject.Destroy(previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            UILabel label = previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
-            label.depth = 2;
-            label.width = 60;
-            label.height = 60;
-            label.fontSize = 40;
-            label.text = "<";
-
-            // Set the button on click action.
-            UIButton button = previousEventPageButton.GetComponent<UIButton>();
-            button.onClick.Clear();
-            button.onClick.Add(new EventDelegate(this, nameof(PreviousEventsPage)));
-        }
-        void CreateNextEventsPageButton()
-        {
-            // Create the button.
-            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            nextEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
-            nextEventPageButton.name = "PreviousEventsPageButton";
-            nextEventPageButton.transform.localPosition = new Vector3(430f, 0f, 0f);
-
-            // Remove unnecesary components.
-            GameObject.Destroy(nextEventPageButton.GetComponent<ButtonController>());
-            GameObject.Destroy(nextEventPageButton.GetComponent<OptionsButton>());
-            GameObject.Destroy(nextEventPageButton.GetComponent<FractalTooltip>());
-
-            // Adjust the sprite and the collider as well.
-            UISprite sprite = nextEventPageButton.GetComponent<UISprite>();
-            sprite.width = 50;
-            sprite.height = 50;
-            sprite.depth = 1;
-            BoxCollider collider = nextEventPageButton.GetComponent<BoxCollider>();
-            collider.size = new Vector3(50f, 50f);
-
-            // Adjust the label, removing the FUCKING UILocalize.
-            GameObject.Destroy(nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            UILabel label = nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
-            label.depth = 2;
-            label.width = 60;
-            label.height = 60;
-            label.fontSize = 40;
-            label.text = ">";
-
-            // Set the button on click action.
-            UIButton button = nextEventPageButton.GetComponent<UIButton>();
-            button.onClick.Clear();
-            button.onClick.Add(new EventDelegate(this, nameof(NextEventsPage)));
-        }
-        void CreateCurrentEventsPageLabel()
-        {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            currentEventPageLabel = Instantiate(labelTemplate, eventsListBg.transform);
-            currentEventPageLabel.name = "CurrentEventPageLabel";
-            currentEventPageLabel.transform.localScale = Vector3.one;
-
-            Destroy(currentEventPageLabel.GetComponent<UILocalize>());
-
-            UILabel label = currentEventPageLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 30;
-            label.width = 800;
-            label.fontSize = 30;
-            label.text = "0/0";
-
-            // Change the label position AFTER changing the pivot.
-            currentEventPageLabel.transform.localPosition = new Vector3(0f, 300f, 0f);
-        }
-        void CreateNoEventsLabel()
-        {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            noEventsLabel = Instantiate(labelTemplate, eventsListBg.transform);
-            noEventsLabel.name = "NoEventsLabel";
-            noEventsLabel.transform.localScale = Vector3.one;
-
-            Destroy(noEventsLabel.GetComponent<UILocalize>());
-
-            UILabel label = noEventsLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 50;
-            label.width = 700;
-            label.fontSize = 30;
-            label.color = new Color(1f, 1f, 0f, 1f);
-            label.text = "No Events Yet";
-
-            // Change the label position AFTER changing the pivot.
-            noEventsLabel.transform.localPosition = new Vector3(0f, 220f, 0f);
-        }
-
-        void RenameEvent(int eventID, UIInput inputRef)
-        {
-            // GetEventsList should return the same events list that when creating the events list, it should be fine :)
-            LE_Event eventToRename = GetEventsList()[eventID];
-            eventToRename.eventName = inputRef.text;
-
-            Logger.Log("RENAMED " + eventID + " TO: " + inputRef.text);
-        }
-        void OnEnableBtnClick(bool playSound = true)
-        {
-            // This method is the only one with the playSound parm because it's the only one I wanna call when
-            // opening the events windows with NO sound at all.
-            if (playSound) Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
-
-            onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-            onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-
-            currentEventType = CurrentEventType.OnEnable;
-
-            HideEventSettings();
-            CreateEventsList(0);
-        }
-        void OnDisableBtnClick()
-        {
-            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
-
-            onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-            onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-
-            currentEventType = CurrentEventType.OnDisable;
-
-            HideEventSettings();
-            CreateEventsList(0);
-        }
-        void OnChangeBtnClick()
-        {
-            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
-
-            onActivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            onDeactivatedButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            onChangeButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
-
-            currentEventType = CurrentEventType.OnChange;
-
-            HideEventSettings();
-            CreateEventsList(0);
-        }
         void AddNewEvent()
         {
             Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_UNAVAILABLE);
 
-            switch (currentEventType)
-            {
-                case CurrentEventType.OnEnable:
-                    ((List<LE_Event>)targetObj.properties["OnActivatedEvents"]).Add(new LE_Event());
-                    break;
-
-                case CurrentEventType.OnDisable:
-                    ((List<LE_Event>)targetObj.properties["OnDeactivatedEvents"]).Add(new LE_Event());
-                    break;
-
-                case CurrentEventType.OnChange:
-                    ((List<LE_Event>)targetObj.properties["OnChangeEvents"]).Add(new LE_Event());
-                    break;
-            }
+            ((List<LE_Event>)targetObj.properties[currentEventsListName]).Add(new LE_Event());
 
             // The int max value will stand for "the last damn grid you find!"
             CreateEventsList(int.MaxValue);
@@ -656,7 +748,8 @@ namespace FS_LevelEditor
         {
             HideEventSettings();
             GetEventsList().RemoveAt(eventID);
-            CreateEventsList(int.MaxValue);
+            // And what if now the grid count is less than currentEventGrid? This comprobation is already inside of CreateEventsList() :)
+            CreateEventsList(currentEventsGrid);
         }
         void OnEventSelect(int selectedID)
         {
@@ -724,17 +817,40 @@ namespace FS_LevelEditor
                 NGUI_Utils.CreateEvenDelegate(this, nameof(OnTargetObjectFieldChanged), inputScriptParm1, inputScriptParm2);
             targetObjInputField.onChange.Add(inputScriptDelegate);
         }
+        void CreateSelectTargetObjectButton()
+        {
+            UIButtonPatcher button = NGUI_Utils.CreateButtonWithSprite(eventSettingsPanel.transform, new Vector3(300f, 230f, 0f), new Vector3Int(60, 60, 0),
+                1, "MouseClickingObj", new Vector2Int(40, 40));
+            button.name = "SelectTargetObjectButton";
+            button.onClick += OnSelectTargetObjectButtonClick;
+        }
 
         void ShowEventSettings()
         {
             targetObjInputField.text = currentSelectedEvent.targetObjName;
 
-            setActiveDropdown.SelectOption((int)currentSelectedEvent.setActive);
+            spawnOptionsDropdown.SelectOption((int)currentSelectedEvent.spawn);
             sawStateDropdown.SelectOption((int)currentSelectedEvent.sawState);
             zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
             respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
             laserStateDropdown.SelectOption((int)currentSelectedEvent.laserState);
+            changeLightColorToggle.Set(currentSelectedEvent.changeLightColor);
+            newLightColorTitleLabel.gameObject.SetActive(currentSelectedEvent.changeLightColor);
+            newLightColorInputField.gameObject.SetActive(currentSelectedEvent.changeLightColor);
+            newLightColorInputField.text = currentSelectedEvent.newLightColor;
+            ceilingLightStateDropdown.SelectOption((int)currentSelectedEvent.ceilingLightState);
+            changeCeilingLightColorToggle.Set(currentSelectedEvent.changeCeilingLightColor);
+            newCeilingLightColorInputField.text = currentSelectedEvent.newCeilingLightColor;
+            changePackRespawnTimeToggle.Set(currentSelectedEvent.changePackRespawnTime);
+            newPackRespawnTimeTitleLabel.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
+            newPackRespawnTimeInputField.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
+            newPackRespawnTimeInputField.SetText(currentSelectedEvent.packRespawnTime);
+            spawnPackNowToggle.Set(currentSelectedEvent.spawnPackNow);
+            switchStateDropdown.SelectOption((int)currentSelectedEvent.switchState);
+            executeSwitchActionsToggle.Set(currentSelectedEvent.executeSwitchActions);
+            switchUsableStateDropdown.SelectOption((int)currentSelectedEvent.switchUsableState);
+            flameTrapStateDropdown.SelectOption((int)currentSelectedEvent.flameTrapState);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -758,7 +874,8 @@ namespace FS_LevelEditor
             }
             else
             {
-                targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => obj.objectFullNameWithID == inputText);
+                targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => string.Equals(obj.objectFullNameWithID, inputText,
+                    StringComparison.OrdinalIgnoreCase));
                 if (targetObj)
                 {
                     if (targetObj.canBeUsedInEventsTab)
@@ -774,9 +891,10 @@ namespace FS_LevelEditor
             {
                 fieldSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
                 eventOptionsParent.SetActive(true);
+                eventOptionsParent.DisableAllChildren();
 
-                if (inputText != "Player") defaultObjectsSettings.SetActive(true);
-                if (inputText == "Player")
+                if (!string.Equals(inputText, "Player", StringComparison.OrdinalIgnoreCase)) defaultObjectsSettings.SetActive(true);
+                if (string.Equals(inputText, "Player", StringComparison.OrdinalIgnoreCase))
                 {
                     playerSettings.SetActive(true);
                 }
@@ -792,6 +910,26 @@ namespace FS_LevelEditor
                 {
                     laserObjectsSettings.SetActive(true);
                 }
+                else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
+                {
+                    lightObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Ceiling_Light)
+                {
+                    ceilingLightObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Health_Pack || targetObj is LE_Ammo_Pack)
+                {
+                    healthAmmoPacksObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Switch)
+                {
+                    switchObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Flame_Trap)
+                {
+                    flameTrapObjectsSettings.SetActive(true);
+                }
             }
             else
             {
@@ -803,6 +941,17 @@ namespace FS_LevelEditor
             currentSelectedEvent.isValid = objIsValid;
             currentSelectedEvent.targetObjName = inputText;
         }
+        void OnSelectTargetObjectButtonClick()
+        {
+            EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.SELECTING_TARGET_OBJ);
+            EditorController.Instance.SetCurrentEditorState(EditorState.SELECTING_TARGET_OBJ);
+        }
+        
+        public void SetTargetObjectWithLE_Object(LE_Object obj)
+        {
+            targetObjInputField.text = obj.objectFullNameWithID;
+            OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
+        }
 
         void CreateDefaultObjectSettings()
         {
@@ -812,29 +961,29 @@ namespace FS_LevelEditor
             defaultObjectsSettings.transform.localScale = Vector3.one;
             defaultObjectsSettings.SetActive(false);
 
-            CreateSetActiveDropdown();
+            CreateSpawnOptionsDropdown();
         }
-        void CreateSetActiveDropdown()
+        void CreateSpawnOptionsDropdown()
         {
-            GameObject setActiveDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), defaultObjectsSettings.transform);
-            setActiveDropdownPanel.name = "SetActiveDropdownPanel";
-            setActiveDropdownPanel.transform.localPosition = new Vector3(0f, 105f, 0f);
-            setActiveDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+            GameObject spawnOptionsDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), defaultObjectsSettings.transform);
+            spawnOptionsDropdownPanel.name = "SetActiveDropdownPanel";
+            spawnOptionsDropdownPanel.transform.localPosition = new Vector3(0f, 105f, 0f);
+            spawnOptionsDropdownPanel.transform.localScale = Vector3.one * 0.8f;
 
-            UIDropdownPatcher patcher = setActiveDropdownPanel.AddComponent<UIDropdownPatcher>();
+            UIDropdownPatcher patcher = spawnOptionsDropdownPanel.AddComponent<UIDropdownPatcher>();
             patcher.Init();
-            patcher.SetTitle("Set Active");
+            patcher.SetTitle("Spawn Options");
             patcher.ClearOptions();
             patcher.AddOption("Do Nothing", true);
-            patcher.AddOption("Enable", false);
-            patcher.AddOption("Disable", false);
+            patcher.AddOption("Spawn", false);
+            patcher.AddOption("Despawn", false);
             patcher.AddOption("Toggle", false);
 
             patcher.ClearOnChangeOptions();
-            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSetActiveDropdownChanged)));
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSpawnOptionsDropdownChanged)));
 
-            setActiveDropdown = patcher;
-            setActiveDropdownPanel.SetActive(true);
+            spawnOptionsDropdown = patcher;
+            spawnOptionsDropdownPanel.SetActive(true);
         }
         // -----------------------------------------
         void CreateSawObjectSettings()
@@ -1046,11 +1195,396 @@ namespace FS_LevelEditor
             laserStateDropdown = patcher;
             laserStateDropdownPanel.SetActive(true);
         }
-
-
-        void OnSetActiveDropdownChanged()
+        // -----------------------------------------
+        void CreateLightObjectSettings()
         {
-            currentSelectedEvent.setActive = (LE_Event.SetActiveState)setActiveDropdown.currentlySelectedID;
+            lightObjectsSettings = new GameObject("Light");
+            lightObjectsSettings.transform.parent = eventOptionsParent.transform;
+            lightObjectsSettings.transform.localPosition = Vector3.zero;
+            lightObjectsSettings.transform.localScale = Vector3.one;
+            lightObjectsSettings.SetActive(false);
+
+            CreateLightObjectsTitleLabel();
+            CreateChangeLightColorToggle();
+            CreateNewLightColorTitleLabel();
+            CreateNewLightColorInputField();
+        }
+        void CreateLightObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, lightObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "LIGHT OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateChangeLightColorToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(lightObjectsSettings.transform, new Vector3(-380f, -30f, 0f),
+                new Vector3Int(250, 48, 1), "Change Color");
+            toggle.name = "ChangeLightColorToggle";
+            changeLightColorToggle = toggle.GetComponent<UIToggle>();
+            changeLightColorToggle.onChange.Clear();
+            changeLightColorToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeLightColorToggleChanged)));
+        }
+        void CreateNewLightColorTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, lightObjectsSettings.transform);
+            titleLabel.name = "NewLightColorTitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 150;
+            label.fontSize = 27;
+            label.text = "New Color";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(50f, -30f, 0f);
+
+            newLightColorTitleLabel = label;
+        }
+        void CreateNewLightColorInputField()
+        {
+            GameObject inputField = NGUI_Utils.CreateInputField(lightObjectsSettings.transform, new Vector3(270f, -30f, 0f),
+                new Vector3Int(250, 40, 1), 27, "FFFFFF");
+            inputField.name = "NewLightColorInputField";
+            inputField.GetComponent<UIInput>().characterLimit = 6;
+            inputField.GetComponent<UIInput>().onChange.Add(new EventDelegate(this, nameof(OnNewLightColorInputFieldChanged)));
+
+            newLightColorInputField = inputField.GetComponent<UIInput>();
+        }
+        // -----------------------------------------
+        void CreateCeilingLightObjectSettings()
+        {
+            ceilingLightObjectsSettings = new GameObject("CeilingLight");
+            ceilingLightObjectsSettings.transform.parent = eventOptionsParent.transform;
+            ceilingLightObjectsSettings.transform.localPosition = Vector3.zero;
+            ceilingLightObjectsSettings.transform.localScale = Vector3.one;
+            ceilingLightObjectsSettings.SetActive(false);
+
+            CreateCeilingLightObjectsTitleLabel();
+            CreateCeilingLightStateDropdown();
+            CreateChangeCeilingLightColorToggle();
+            CreateNewCeilingLightColorInputField();
+        }
+        void CreateCeilingLightObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, ceilingLightObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "CEILING LIGHT OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateCeilingLightStateDropdown()
+        {
+            GameObject ceilingLightStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), ceilingLightObjectsSettings.transform);
+            ceilingLightStateDropdownPanel.name = "CeilingLightStateDropdownPanel";
+            ceilingLightStateDropdownPanel.transform.localPosition = new Vector3(-200f, -50f, 0f);
+            ceilingLightStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+
+            UIDropdownPatcher patcher = ceilingLightStateDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Turn");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("On", false);
+            patcher.AddOption("Off", false);
+            patcher.AddOption("Toggle On/Off", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnCeilingLightStateDropdownChanged)));
+
+            ceilingLightStateDropdown = patcher;
+            ceilingLightStateDropdownPanel.SetActive(true);
+        }
+        void CreateChangeCeilingLightColorToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(ceilingLightObjectsSettings.transform, new Vector3(20f, -17f, 0f),
+                new Vector3Int(250, 48, 1), "Change Color");
+            toggle.name = "ChangeCeilingLightColorToggle";
+
+            changeCeilingLightColorToggle = toggle.GetComponent<UIToggle>();
+            changeCeilingLightColorToggle.onChange.Clear();
+            changeCeilingLightColorToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeCeilingLightColorToggleChanged)));
+        }
+        void CreateNewCeilingLightColorInputField()
+        {
+            GameObject inputField = NGUI_Utils.CreateInputField(ceilingLightObjectsSettings.transform, new Vector3(160f, -70f, 0f),
+                new Vector3Int(250, 40, 1), 27, "FFFFFF");
+            inputField.name = "NewCeilingLightColorInputField";
+            inputField.GetComponent<UIInput>().characterLimit = 6;
+            inputField.GetComponent<UIInput>().onChange.Add(new EventDelegate(this, nameof(OnNewCeilingLightColorInputFieldChanged)));
+
+            newCeilingLightColorInputField = inputField.GetComponent<UIInput>();
+        }
+        // -----------------------------------------
+        void CreateHealthAndAmmoPacksObjectSettings()
+        {
+            healthAmmoPacksObjectsSettings = new GameObject("HealthAndAmmoPcks");
+            healthAmmoPacksObjectsSettings.transform.parent = eventOptionsParent.transform;
+            healthAmmoPacksObjectsSettings.transform.localPosition = Vector3.zero;
+            healthAmmoPacksObjectsSettings.transform.localScale = Vector3.one;
+            healthAmmoPacksObjectsSettings.SetActive(false);
+
+            CreateHealthAndAmmoPacksObjectsTitleLabel();
+            CreateChangePackRespawnTimeToggle();
+            CreateNewPackRespawnTimeTitleLabel();
+            CreateNewPackRespawnTimeInputField();
+            CreateSpawnPackNowToggle();
+        }
+        void CreateHealthAndAmmoPacksObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, healthAmmoPacksObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "HEALTH & AMMO PACK OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateChangePackRespawnTimeToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(healthAmmoPacksObjectsSettings.transform, new Vector3(-380f, -30f, 0f),
+                new Vector3Int(250, 48, 1), "Change Respawn Time");
+            toggle.name = "ChangeRespawnTimeToggle";
+            changePackRespawnTimeToggle = toggle.GetComponent<UIToggle>();
+            changePackRespawnTimeToggle.onChange.Clear();
+            changePackRespawnTimeToggle.onChange.Add(new EventDelegate(this, nameof(OnChangePackRespawnTimeToggleChanged)));
+        }
+        void CreateNewPackRespawnTimeTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, healthAmmoPacksObjectsSettings.transform);
+            titleLabel.name = "NewRespawnTimeTitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 150;
+            label.fontSize = 27;
+            label.text = "Time";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(50f, -30f, 0f);
+
+            newPackRespawnTimeTitleLabel = label;
+        }
+        void CreateNewPackRespawnTimeInputField()
+        {
+            GameObject inputField = NGUI_Utils.CreateInputField(healthAmmoPacksObjectsSettings.transform, new Vector3(270f, -30f, 0f),
+                new Vector3Int(250, 40, 1), 27, "60");
+            inputField.name = "NewInputField";
+            inputField.AddComponent<UICustomInputField>().Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            inputField.GetComponent<UICustomInputField>().onChange += OnNewPackRespawnTimeInputFieldChanged;
+
+            newPackRespawnTimeInputField = inputField.GetComponent<UICustomInputField>();
+        }
+        void CreateSpawnPackNowToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(healthAmmoPacksObjectsSettings.transform, new Vector3(-140f, -100f, 0f),
+                new Vector3Int(250, 48, 1), "Spawn Pack Now");
+            toggle.name = "SpawnPackNowToggle";
+            spawnPackNowToggle = toggle.GetComponent<UIToggle>();
+            spawnPackNowToggle.onChange.Clear();
+            spawnPackNowToggle.onChange.Add(new EventDelegate(this, nameof(OnSpawnPackNowToggleChanged)));
+        }
+        // -----------------------------------------
+        void CreateSwitchObjectSettings()
+        {
+            switchObjectsSettings = new GameObject("Switch");
+            switchObjectsSettings.transform.parent = eventOptionsParent.transform;
+            switchObjectsSettings.transform.localPosition = Vector3.zero;
+            switchObjectsSettings.transform.localScale = Vector3.one;
+            switchObjectsSettings.SetActive(false);
+
+            CreateSwitchObjectsTitleLabel();
+            CreateSwitchStateSettings();
+            CreateExecuteSwitchActionsToggle();
+            CreateSwitchUsableStateSettings();
+        }
+        void CreateSwitchObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, switchObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "SWITCH OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateSwitchStateSettings()
+        {
+            GameObject switchStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), switchObjectsSettings.transform);
+            switchStateDropdownPanel.name = "SwitchStateDropdownPanel";
+            switchStateDropdownPanel.transform.localPosition = new Vector3(-200f, -50f, 0f);
+            switchStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+
+            UIDropdownPatcher patcher = switchStateDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Set Active State");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("Activated", false);
+            patcher.AddOption("Deactivated", false);
+            patcher.AddOption("Toggle", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchStateDropdownChanged)));
+
+            switchStateDropdown = patcher;
+            switchStateDropdownPanel.SetActive(true);
+        }
+        void CreateExecuteSwitchActionsToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(switchObjectsSettings.transform, new Vector3(-350f, -120f, 0f),
+                new Vector3Int(250, 48, 1), "Execute Actions");
+            toggle.name = "ExecuteActionsToggle";
+
+            executeSwitchActionsToggle = toggle.GetComponent<UIToggle>();
+            executeSwitchActionsToggle.onChange.Clear();
+            executeSwitchActionsToggle.onChange.Add(new EventDelegate(this, nameof(OnExecuteSwitchActionsToggleChanged)));
+        }
+        void CreateSwitchUsableStateSettings()
+        {
+            GameObject switchUsableStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), switchObjectsSettings.transform);
+            switchUsableStateDropdownPanel.name = "SwitchUsableStateDropdownPanel";
+            switchUsableStateDropdownPanel.transform.localPosition = new Vector3(200f, -50f, 0f);
+            switchUsableStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+
+            UIDropdownPatcher patcher = switchUsableStateDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Set Usable State");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("Usable", false);
+            patcher.AddOption("Unusable", false);
+            patcher.AddOption("Toggle", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchUsableStateDropdownChanged)));
+
+            switchUsableStateDropdown = patcher;
+            switchUsableStateDropdownPanel.SetActive(true);
+        }
+        // -----------------------------------------
+        void CreateFlameTrapObjectSettings()
+        {
+            flameTrapObjectsSettings = new GameObject("Flame Trap");
+            flameTrapObjectsSettings.transform.parent = eventOptionsParent.transform;
+            flameTrapObjectsSettings.transform.localPosition = Vector3.zero;
+            flameTrapObjectsSettings.transform.localScale = Vector3.one;
+            flameTrapObjectsSettings.SetActive(false);
+
+            CreateFlameTrapObjectsTitleLabel();
+            CreateFlameTrapStateDropdown();
+        }
+        void CreateFlameTrapObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, flameTrapObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "FLAME TRAP OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateFlameTrapStateDropdown()
+        {
+            GameObject flameTrapStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), flameTrapObjectsSettings.transform);
+            flameTrapStateDropdownPanel.name = "FlameTrapStateDropdownPanel";
+            flameTrapStateDropdownPanel.transform.localPosition = new Vector3(0f, -50f, 0f);
+            flameTrapStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+
+            UIDropdownPatcher patcher = flameTrapStateDropdownPanel.AddComponent<UIDropdownPatcher>();
+            patcher.Init();
+            patcher.SetTitle("Flame State");
+            patcher.ClearOptions();
+            patcher.AddOption("Do Nothing", true);
+            patcher.AddOption("Activate", false);
+            patcher.AddOption("Deactivate", false);
+            patcher.AddOption("Toggle State", false);
+
+            patcher.ClearOnChangeOptions();
+            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnFlameTrapStateDropdownChanged)));
+
+            flameTrapStateDropdown = patcher;
+            flameTrapStateDropdownPanel.SetActive(true);
+        }
+
+
+        void OnSpawnOptionsDropdownChanged()
+        {
+            currentSelectedEvent.spawn = (LE_Event.SpawnState)spawnOptionsDropdown.currentlySelectedID;
         }
         // -----------------------------------------
         void OnSawStateDropdownChanged()
@@ -1088,9 +1622,99 @@ namespace FS_LevelEditor
         {
             currentSelectedEvent.laserState = (LE_Event.LaserState)laserStateDropdown.currentlySelectedID;
         }
+        // -----------------------------------------
+        void OnChangeLightColorToggleChanged()
+        {
+            currentSelectedEvent.changeLightColor = changeLightColorToggle.isChecked;
+            newLightColorTitleLabel.gameObject.SetActive(changeLightColorToggle.isChecked);
+            newLightColorInputField.gameObject.SetActive(changeLightColorToggle.isChecked);
+        }
+        void OnNewLightColorInputFieldChanged()
+        {
+            // Set the input field color:
+            Color? outputColor = Utilities.HexToColor(newLightColorInputField.text, false, null);
+            if (outputColor != null)
+            {
+                newLightColorInputField.GetComponent<UISprite>().color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
+            }
+            else
+            {
+                newLightColorInputField.GetComponent<UISprite>().color = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
+            }
+
+            currentSelectedEvent.newLightColor = newLightColorInputField.text;
+        }
+        // -----------------------------------------
+        void OnCeilingLightStateDropdownChanged()
+        {
+            currentSelectedEvent.ceilingLightState = (LE_Event.CeilingLightState)ceilingLightStateDropdown.currentlySelectedID;
+        }
+        void OnChangeCeilingLightColorToggleChanged()
+        {
+            currentSelectedEvent.changeCeilingLightColor = changeCeilingLightColorToggle.isChecked;
+            newCeilingLightColorInputField.gameObject.SetActive(changeCeilingLightColorToggle.isChecked);
+        }
+        void OnNewCeilingLightColorInputFieldChanged()
+        {
+            // Set the input field color:
+            Color? outputColor = Utilities.HexToColor(newCeilingLightColorInputField.text, false, null);
+            if (outputColor != null)
+            {
+                newCeilingLightColorInputField.GetComponent<UISprite>().color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
+            }
+            else
+            {
+                newCeilingLightColorInputField.GetComponent<UISprite>().color = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
+            }
+
+            currentSelectedEvent.newCeilingLightColor = newCeilingLightColorInputField.text;
+        }
+        // -----------------------------------------
+        void OnChangePackRespawnTimeToggleChanged()
+        {
+            currentSelectedEvent.changePackRespawnTime = changePackRespawnTimeToggle.isChecked;
+            newPackRespawnTimeTitleLabel.gameObject.SetActive(changePackRespawnTimeToggle.isChecked);
+            newPackRespawnTimeInputField.gameObject.SetActive(changePackRespawnTimeToggle.isChecked);
+        }
+        void OnNewPackRespawnTimeInputFieldChanged()
+        {
+            if (newPackRespawnTimeInputField.isValid)
+            {
+                currentSelectedEvent.packRespawnTime = Utilities.ParseFloat(newPackRespawnTimeInputField.GetText());
+            }
+        }
+        void OnSpawnPackNowToggleChanged()
+        {
+            currentSelectedEvent.spawnPackNow = spawnPackNowToggle.isChecked;
+        }
+        // -----------------------------------------
+        void OnSwitchStateDropdownChanged()
+        {
+            currentSelectedEvent.switchState = (LE_Event.SwitchState)switchStateDropdown.currentlySelectedID;
+
+            executeSwitchActionsToggle.gameObject.SetActive(currentSelectedEvent.switchState != LE_Event.SwitchState.Do_Nothing);
+        }
+        void OnExecuteSwitchActionsToggleChanged()
+        {
+            currentSelectedEvent.executeSwitchActions = executeSwitchActionsToggle.isChecked;
+        }
+        void OnSwitchUsableStateDropdownChanged()
+        {
+            currentSelectedEvent.switchUsableState = (LE_Event.SwitchUsableState)switchUsableStateDropdown.currentlySelectedID;
+        }
+        // -----------------------------------------
+        void OnFlameTrapStateDropdownChanged()
+        {
+            currentSelectedEvent.flameTrapState = (LE_Event.FlameTrapState)flameTrapStateDropdown.currentlySelectedID;
+        }
 
         public void ShowEventsPage(LE_Object targetObj)
         {
+            if (targetObj.GetAvailableEventsIDs().Count <= 0)
+            {
+                Logger.Error("Requested to show Events Panel but the target object has NO Events List. IT'S NOT COMPATIBLE!");
+                return;
+            }
             this.targetObj = targetObj;
 
             // Change the title of the panel.
@@ -1100,9 +1724,10 @@ namespace FS_LevelEditor
             eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
             Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
 
-            isShowingPage = true;
+            EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
 
-            OnEnableBtnClick(false);
+            SetupTopButtons();
+            FirstEventsListBtnClick(false);
             // CreateEventsList();
         }
         public void HideEventsPage()
@@ -1114,26 +1739,21 @@ namespace FS_LevelEditor
 
             eventsPanel.SetActive(true);
             GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
-            isShowingPage = false;
+
+            EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
+            EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 
             HideEventSettings();
         }
 
+        public void StartedSelectingTargetObject(bool state)
+        {
+            eventsPanel.SetActive(!state);
+        }
+
         List<LE_Event> GetEventsList()
         {
-            switch (currentEventType)
-            {
-                case CurrentEventType.OnEnable:
-                    return (List<LE_Event>)targetObj.GetProperty("OnActivatedEvents");
-
-                case CurrentEventType.OnDisable:
-                    return (List<LE_Event>)targetObj.GetProperty("OnDeactivatedEvents");
-
-                case CurrentEventType.OnChange:
-                    return (List<LE_Event>)targetObj.GetProperty("OnChangeEvents");
-            }
-
-            return null;
+            return (List<LE_Event>)targetObj.GetProperty(currentEventsListName);
         }
     }
 }
@@ -1146,12 +1766,12 @@ public class LE_Event
     public string eventName { get; set; } = "New Event";
     public string targetObjName { get; set; } = "";
 
-    public enum SetActiveState { Do_Nothing, Enable, Disable, Toggle }
-    public SetActiveState setActive { get; set; } = SetActiveState.Do_Nothing;
+    public enum SpawnState { Do_Nothing, Spawn, Despawn, Toggle }
+    public SpawnState spawn { get; set; } = SpawnState.Toggle;
 
     #region Saw Options
     public enum SawState { Do_Nothing, Activate, Deactivate, Toggle_State }
-    public SawState sawState { get; set; } = SawState.Do_Nothing;
+    public SawState sawState { get; set; } = SawState.Toggle_State;
     #endregion
 
     #region Player Options
@@ -1165,6 +1785,37 @@ public class LE_Event
 
     #region Laser Options
     public enum LaserState { Do_Nothing, Activate, Deactivate, Toggle_State }
-    public LaserState laserState { get; set; } = LaserState.Do_Nothing;
+    public LaserState laserState { get; set; } = LaserState.Toggle_State;
+    #endregion
+
+    #region Light Options
+    public bool changeLightColor { get; set; } = false;
+    public string newLightColor { get; set; } = "FFFFFF";
+    #endregion
+
+    #region Ceiling Light Options
+    public enum CeilingLightState { Do_Nothing, On, Off, ToggleOnOff }
+    public CeilingLightState ceilingLightState { get; set; } = CeilingLightState.ToggleOnOff;
+    public bool changeCeilingLightColor { get; set; } = false;
+    public string newCeilingLightColor { get; set; } = "FFFFFF";
+    #endregion
+
+    #region Health and Ammo Pack Options
+    public bool changePackRespawnTime { get; set; } = false;
+    public float packRespawnTime { get; set; } = 60;
+    public bool spawnPackNow { get; set; } = false;
+    #endregion
+
+    #region Switch Options
+    public enum SwitchState { Do_Nothing, Activated, Deactivated, Toggle }
+    public SwitchState switchState { get; set; } = SwitchState.Do_Nothing;
+    public bool executeSwitchActions { get; set; } = true;
+    public enum SwitchUsableState { Do_Nothing, Usable, Unusable, Toggle }
+    public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Do_Nothing;
+    #endregion
+
+    #region Flame Trap Options
+    public enum FlameTrapState { Do_Nothing, Activate, Deactivate, Toggle_State }
+    public FlameTrapState flameTrapState { get; set; } = FlameTrapState.Toggle_State;
     #endregion
 }

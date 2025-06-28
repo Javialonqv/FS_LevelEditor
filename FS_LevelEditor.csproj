@@ -18,6 +18,7 @@
 	  <None Remove="KeybindsList.txt" />
 	  <None Remove="level_editor" />
 	  <None Remove="level_editor_sprites" />
+	  <None Remove="Translations\Translations.csv" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -351,6 +352,8 @@
 
 	<ItemGroup>
 		<Compile Include="Core.cs" />
+		<Compile Include="EventExecuter.cs" />
+		<Compile Include="Level_Editor_Itself\DeathYPlaneCtrl.cs" />
 		<Compile Include="Level_Editor_Itself\EditorCameraMovement.cs" />
 		<Compile Include="Level_Editor_Itself\EditorController.cs" />
 		<Compile Include="Level_Editor_Itself\EventsUIPageManager.cs" />
@@ -361,7 +364,10 @@
 		<Compile Include="PlayModeController.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Ammo_Pack.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Ceiling_Light.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Collider.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Cube.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_End_Trigger.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Flame_Trap.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Laser.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Player_Spawn.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Health_Pack.cs" />
@@ -371,6 +377,7 @@
 		<Compile Include="Specific_Objects_Scripts\LE_Saw_Waypoint.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Switch.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Vent_With_Smoke_Green.cs" />
+		<Compile Include="TranslationsManager.cs" />
 		<Compile Include="UI_Related\EditorPauseMenuPatcher.cs" />
 		<Compile Include="Level_Editor_Itself\EditorUIManager.cs" />
 		<Compile Include="LE_Object.cs" />
@@ -380,8 +387,12 @@
 		<Compile Include="LevelData.cs" />
 		<Compile Include="LE_ObjectData.cs" />
 		<Compile Include="UI_Related\NGUI_Utils.cs" />
+		<Compile Include="UI_Related\UIButtonAsToggle.cs" />
+		<Compile Include="UI_Related\UIButtonPatcher.cs" />
+		<Compile Include="UI_Related\UICustomInputField.cs" />
 		<Compile Include="UI_Related\UIDropdownPatcher.cs" />
 		<Compile Include="UI_Related\UIInputSubmitFix.cs" />
+		<Compile Include="UI_Related\UIToggleCheckedFix.cs" />
 		<Compile Include="Utilities.cs" />
 	</ItemGroup>
 
@@ -390,6 +401,7 @@
 	  <EmbeddedResource Include="KeybindsList.txt" />
 	  <EmbeddedResource Include="level_editor" />
 	  <EmbeddedResource Include="level_editor_sprites" />
+	  <EmbeddedResource Include="Translations\Translations.csv" />
 	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">

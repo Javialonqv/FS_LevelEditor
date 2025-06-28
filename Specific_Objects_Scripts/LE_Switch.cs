@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Services.Analytics;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -13,29 +14,7 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Switch : LE_Object
     {
-        struct EditorLink
-        {
-            LE_Switch originalSwitch;
-            LE_Object targetObj;
-            LineRenderer editorLinkRenderer;
-
-            public EditorLink(LE_Switch originalSwitch, LE_Event @event, LineRenderer editorLinkRenderer)
-            {
-                this.originalSwitch = originalSwitch;
-                targetObj = EditorController.Instance.currentInstantiatedObjects.Find(x => x.objectFullNameWithID == @event.targetObjName);
-                this.editorLinkRenderer = editorLinkRenderer;
-            }
-
-            public void UpdateLinkPositions()
-            {
-                editorLinkRenderer.SetPosition(0, originalSwitch.transform.position);
-                editorLinkRenderer.SetPosition(1, targetObj.transform.position);
-            }
-        }
-
-        GameObject editorLinksParent;
-        List<EditorLink> editorLinks = new();
-        bool dontDisableLinksParentWhenCreating;
+        InterrupteurController controller;
 
         void Awake()
         {
@@ -43,49 +22,15 @@ namespace FS_LevelEditor
             {
                 { "UsableOnce", false },
                 { "CanUseTaser", true },
-                { "OnActivatedEvents", new List<LE_Event>() },
-                { "OnDeactivatedEvents", new List<LE_Event>() },
-                { "OnChangeEvents", new List<LE_Event>() }
+                { "WhenInvertingEvents", new List<LE_Event>() },
+                { "WhenActivatingEvents", new List<LE_Event>() },
+                { "WhenDeactivatingEvents", new List<LE_Event>() }
             };
-
-            CreateEditorLinksParent();
-
-            foreach (var collider in gameObject.TryGetComponents<Collider>())
-            {
-                if (collider.name == "Button") continue;
-                collider.enabled = false;
-            }
         }
 
-        void Start()
+        public override void InitComponent()
         {
-            // A few days ago I put this on the Awake() function, but if I did that, then the links weren't created
-            // correctly at the start of the editor, already fixed...
-            if (EditorController.Instance != null)
-            {
-                CreateInEditorLinksToTargetObjects();
-            }
-
-            if (PlayModeController.Instance != null)
-            {
-                InitComponent();
-            }
-        }
-
-        void Update()
-        {
-            if (editorLinksParent)
-            {
-                if (editorLinksParent.activeSelf && !EventsUIPageManager.Instance.isShowingPage)
-                {
-                    UpdateEditorLinksPositions();
-                }
-            }
-        }
-
-        void InitComponent()
-        {
-            GameObject button = gameObject.GetChildWithName("Button");
+            GameObject button = gameObject.GetChildWithName("Content");
 
             #region Setup tags and layers
             button.tag = "Interrupteur";
@@ -106,9 +51,9 @@ namespace FS_LevelEditor
             button.GetChildWithName("AutoAimCollider").layer = LayerMask.NameToLayer("Water");
             #endregion
 
-            InterrupteurController controller = button.AddComponent<InterrupteurController>();
+            controller = button.AddComponent<InterrupteurController>();
 
-            controller.ActivateButtonSound = FindObjectOfType<InterrupteurController>().ActivateButtonSound;
+            controller.ActivateButtonSound = t_switch.ActivateButtonSound;
             controller.additionalInteractionGO = button.GetChildWithName("AdditionalInteractionCollider_Sides");
             controller.allowManualInteractAnim = true;
             controller.allowWhenSwitchingUIContext = true;
@@ -119,25 +64,25 @@ namespace FS_LevelEditor
             controller.greenLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Green").GetComponent<MeshRenderer>();
             controller.greenPlane = button.GetChildAt("ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
             controller.handleAnimator = button.GetChildAt("ButtonMesh/HandleHolder").GetComponent<Animator>();
-            controller.iconActivationSound = FindObjectOfType<InterrupteurController>().iconActivationSound;
-            controller.iconDeactivationSound = FindObjectOfType<InterrupteurController>().iconDeactivationSound;
+            controller.iconActivationSound = t_switch.iconActivationSound;
+            controller.iconDeactivationSound = t_switch.iconDeactivationSound;
             controller.IGCType = Controls.InGamePlayerKineType.MANUAL_BUTTON_INTERACTION;
             controller.interactableWhileDodge = true;
-            controller.leverSound = FindObjectOfType<InterrupteurController>().leverSound;
+            controller.leverSound = t_switch.leverSound;
             controller.localizedInteractionString = "Activate";
             controller.lockboxAnimTrigger = "IGC_Open";
             controller.m_audioSource = button.GetComponent<AudioSource>();
             controller.m_meshRenderer = button.GetChildWithName("ButtonMesh").GetComponent<MeshRenderer>();
             controller.m_meshTransform = button.GetChildWithName("ButtonMesh").transform;
             controller.offColor = InterrupteurController.ColorType.RED;
-            controller.offMaterials = FindObjectOfType<InterrupteurController>().offMaterials;
+            controller.offMaterials = t_switch.offMaterials;
             controller.onColor = InterrupteurController.ColorType.GREEN;
-            controller.onMaterials = FindObjectOfType<InterrupteurController>().onMaterials;
+            controller.onMaterials = t_switch.onMaterials;
             controller.redLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Bottom/Lightbands_Bottom_Red").GetComponent<MeshRenderer>();
             controller.redPlane = button.GetChildAt("ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
             controller.unusableColor = InterrupteurController.ColorType.BLACK;
             controller.unusableCoverAnimator = button.GetChildAt("ButtonMesh/UnusableCoverHolder").GetComponent<Animator>();
-            controller.unusableMaterials = FindObjectOfType<InterrupteurController>().unusableMaterials;
+            controller.unusableMaterials = t_switch.unusableMaterials;
             controller.objectsToActivate = new GameObject[0];
             controller.objectsToDestroy = new GameObject[0];
             controller.objectsToEnableOnly = new GameObject[0];
@@ -152,6 +97,18 @@ namespace FS_LevelEditor
             controller.ignoreLaser = !(bool)GetProperty("CanUseTaser");
 
             ConfigureEvents(controller);
+
+            initialized = true;
+        }
+
+        public override List<string> GetAvailableEventsIDs()
+        {
+            return new List<string>
+            {
+                "WhenInvertingEvents",
+                "WhenActivatingEvents",
+                "WhenDeactivatingEvents"
+            };
         }
 
         public override bool SetProperty(string name, object value)
@@ -182,25 +139,25 @@ namespace FS_LevelEditor
                     return false;
                 }
             }
-            else if (name == "OnActivatedEvents")
+            else if (name == "WhenActivatingEvents")
             {
                 if (value is List<LE_Event>)
                 {
-                    properties["OnActivatedEvents"] = (List<LE_Event>)value;
+                    properties["WhenActivatingEvents"] = (List<LE_Event>)value;
                 }
             }
-            else if (name == "OnDeactivatedEvents")
+            else if (name == "WhenDeactivatingEvents")
             {
                 if (value is List<LE_Event>)
                 {
-                    properties["OnDeactivatedEvents"] = (List<LE_Event>)value;
+                    properties["WhenDeactivatingEvents"] = (List<LE_Event>)value;
                 }
             }
-            else if (name == "OnChangeEvents")
+            else if (name == "WhenInvertingEvents")
             {
                 if (value is List<LE_Event>)
                 {
-                    properties["OnChangeEvents"] = (List<LE_Event>)value;
+                    properties["WhenInvertingEvents"] = (List<LE_Event>)value;
                 }
             }
 
@@ -216,197 +173,95 @@ namespace FS_LevelEditor
             }
             else if (actionName == "OnEventsTabClose")
             {
-                CreateInEditorLinksToTargetObjects();
+                eventExecuter.CreateInEditorLinksToTargetObjects();
                 return true;
+            }
+
+            else if (actionName == "Activate")
+            {
+                UnityEvent onActivate = controller.m_onActivate;
+                controller.m_onActivate = new UnityEvent();
+                controller.ActivateSwitch();
+                controller.m_onActivate = onActivate;
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                UnityEvent onDeactivate = controller.m_onDeactivate;
+                controller.m_onDeactivate = new UnityEvent();
+                controller.DeactivateSwitch();
+                controller.m_onDeactivate = onDeactivate;
+                return true;
+            }
+            else if (actionName == "ToggleActivated")
+            {
+                if (controller.activated)
+                {
+                    UnityEvent onDeactivate = controller.m_onDeactivate;
+                    controller.m_onDeactivate = new UnityEvent();
+                    controller.DeactivateSwitch();
+                    controller.m_onDeactivate = onDeactivate;
+                }
+                else
+                {
+                    UnityEvent onActivate = controller.m_onActivate;
+                    controller.m_onActivate = new UnityEvent();
+                    controller.ActivateSwitch();
+                    controller.m_onActivate = onActivate;
+                }
+                return true;
+            }
+            else if (actionName == "ExecuteWhenActivatingActions")
+            {
+                ExecuteWhenActivatingEvents();
+            }
+            else if (actionName == "ExecuteWhenDeactivatingActions")
+            {
+                ExecuteWhenDeactivatingEvents();
+            }
+            else if (actionName == "ExecuteWhenInvertingActions")
+            {
+                ExecuteWhenInvertingEvents();
+            }
+
+            else if (actionName == "SetUsable")
+            {
+                controller.IsNowUsable();
+            }
+            else if (actionName == "SetUnusable")
+            {
+                controller.IsNowUnusable();
+            }
+            else if (actionName == "ToggleUsable")
+            {
+                controller.InvertUsableState();
             }
 
             return base.TriggerAction(actionName);
         }
 
-        public override void OnSelect()
-        {
-            base.OnSelect();
-            editorLinksParent.SetActive(true);
-            dontDisableLinksParentWhenCreating = true;
-        }
-        public override void OnDeselect(GameObject nextSelectedObj)
-        {
-            base.OnDeselect(nextSelectedObj);
-            editorLinksParent.SetActive(false);
-            dontDisableLinksParentWhenCreating = false;
-        }
-        void CreateEditorLinksParent()
-        {
-            editorLinksParent = new GameObject("EditorLinks");
-            editorLinksParent.transform.parent = transform;
-            editorLinksParent.transform.localPosition = Vector3.zero;
-        }
-        void CreateInEditorLinksToTargetObjects()
-        {
-            if (EditorController.Instance == null) return;
-
-            if (editorLinksParent == null)
-            {
-                CreateEditorLinksParent();
-            }
-            else
-            {
-                editorLinksParent.DeleteAllChildren();
-                editorLinks.Clear();
-            }
-
-            List<string> alreadyLinkedObjectsNames = new List<string>();
-
-            string[] eventKeys = { "OnActivatedEvents", "OnDeactivatedEvents", "OnChangeEvents" };
-            foreach (string eventKey in eventKeys)
-            {
-                foreach (var @event in (List<LE_Event>)properties[eventKey])
-                {
-                    // Not make a link if the target obj name in the event isn't valid, or it'll throw an error.
-                    // For optimization purposes, also don't create a link to an already linked object in another event,
-                    // doesn't matter the event type (On Activated, On Deactivated...).
-                    // ALSO, don't create editor links for the player related events.
-                    if (!@event.isValid || alreadyLinkedObjectsNames.Contains(@event.targetObjName) ||
-                        @event.targetObjName == "Player") continue;
-
-                    GameObject linkObj = new GameObject("Link");
-                    linkObj.transform.parent = editorLinksParent.transform;
-                    linkObj.transform.localPosition = Vector3.zero;
-
-                    LineRenderer linkRender = linkObj.AddComponent<LineRenderer>();
-                    linkRender.startWidth = 0.1f;
-                    linkRender.endWidth = 0.1f;
-                    linkRender.positionCount = 2;
-
-                    linkRender.material = new Material(Shader.Find("Sprites/Default"));
-                    linkRender.startColor = Color.white;
-                    linkRender.endColor = Color.white;
-
-                    alreadyLinkedObjectsNames.Add(@event.targetObjName);
-                    editorLinks.Add(new EditorLink(this, @event, linkRender));
-                }
-            }
-
-            if (!dontDisableLinksParentWhenCreating) editorLinksParent.SetActive(false);
-        }
-        void UpdateEditorLinksPositions()
-        {
-            foreach (var editorLink in editorLinks)
-            {
-                editorLink.UpdateLinkPositions();
-            }
-        }
-
         void ConfigureEvents(InterrupteurController controller)
         {
             controller.m_onActivate = new UnityEngine.Events.UnityEvent();
-            controller.m_onActivate.AddListener((UnityAction)ExecuteOnActivatedEvents);
-            controller.m_onActivate.AddListener((UnityAction)ExecuteOnChangeEvents);
+            controller.m_onActivate.AddListener((UnityAction)ExecuteWhenActivatingEvents);
+            controller.m_onActivate.AddListener((UnityAction)ExecuteWhenInvertingEvents);
 
             controller.m_onDeactivate = new UnityEngine.Events.UnityEvent();
-            controller.m_onDeactivate.AddListener((UnityAction)ExecuteOnDeactivatedEvents);
-            controller.m_onDeactivate.AddListener((UnityAction)ExecuteOnChangeEvents);
+            controller.m_onDeactivate.AddListener((UnityAction)ExecuteWhenDeactivatingEvents);
+            controller.m_onDeactivate.AddListener((UnityAction)ExecuteWhenInvertingEvents);
         }
 
-        void ExecuteOnActivatedEvents()
+        void ExecuteWhenActivatingEvents()
         {
-            ExecuteEvents((List<LE_Event>)properties["OnActivatedEvents"]);
+            eventExecuter.ExecuteEvents((List<LE_Event>)properties["WhenActivatingEvents"]);
         }
-        void ExecuteOnDeactivatedEvents()
+        void ExecuteWhenDeactivatingEvents()
         {
-            ExecuteEvents((List<LE_Event>)properties["OnDeactivatedEvents"]);
+            eventExecuter.ExecuteEvents((List<LE_Event>)properties["WhenDeactivatingEvents"]);
         }
-        void ExecuteOnChangeEvents()
+        void ExecuteWhenInvertingEvents()
         {
-            ExecuteEvents((List<LE_Event>)properties["OnChangeEvents"]);
-        }
-
-        void ExecuteEvents(List<LE_Event> events)
-        {
-            foreach (LE_Event @event in events)
-            {
-                if (!@event.isValid) continue;
-
-                if (@event.targetObjName == "Player")
-                {
-                    if (@event.enableOrDisableZeroG)
-                    {
-                        if (Controls.Instance.IsInZeroGravity()) Controls.Instance.DisableZeroGravityFromButton();
-                        else Controls.Instance.EnableZeroGravityFromButton();
-                    }
-                    else if (@event.invertGravity)
-                    {
-                        Controls.Instance.InverseGravity();
-                    }
-                    continue;
-                }
-                LE_Object targetObj =
-                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.objectFullNameWithID == @event.targetObjName);
-
-                switch (@event.setActive)
-                {
-                    case LE_Event.SetActiveState.Enable:
-                        targetObj.TriggerAction("SetActive_True");
-                        break;
-
-                    case LE_Event.SetActiveState.Disable:
-                        targetObj.TriggerAction("SetActive_False");
-                        break;
-
-                    case LE_Event.SetActiveState.Toggle:
-                        if (targetObj.gameObject.activeSelf)
-                        {
-                            targetObj.TriggerAction("SetActive_False");
-                        }
-                        else
-                        {
-                            targetObj.TriggerAction("SetActive_True");
-                        }
-                        break;
-                }
-
-                if (targetObj is LE_Saw)
-                {
-                    switch (@event.sawState)
-                    {
-                        case LE_Event.SawState.Activate:
-                            ((LE_Saw)targetObj).TriggerAction("Activate");
-                            break;
-
-                        case LE_Event.SawState.Deactivate:
-                            ((LE_Saw)targetObj).TriggerAction("Deactivate");
-                            break;
-
-                        case LE_Event.SawState.Toggle_State:
-                            ((LE_Saw)targetObj).TriggerAction("ToggleActivated");
-                            break;
-                    }
-                }
-                else if (targetObj is LE_Cube)
-                {
-                    if (@event.respawnCube)
-                    {
-                        ((LE_Cube)targetObj).TriggerAction("RespawnCube");
-                    }
-                }
-                else if (targetObj is LE_Laser)
-                {
-                    switch (@event.laserState)
-                    {
-                        case LE_Event.LaserState.Activate:
-                            ((LE_Laser)targetObj).TriggerAction("Activate");
-                            break;
-
-                        case LE_Event.LaserState.Deactivate:
-                            ((LE_Laser)targetObj).TriggerAction("Deactivate");
-                            break;
-
-                        case LE_Event.LaserState.Toggle_State:
-                            ((LE_Laser)targetObj).TriggerAction("ToggleActivated");
-                            break;
-                    }
-                }
-            }
+            eventExecuter.ExecuteEvents((List<LE_Event>)properties["WhenInvertingEvents"]);
         }
     }
 }

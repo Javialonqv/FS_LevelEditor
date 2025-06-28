@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.2.0", "Javialon_qv", null)]
+[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.2.1", "Javialon_qv", null)]
 [assembly: MelonGame("Haze Games", "Fractal Space")]
 
 namespace FS_LevelEditor
@@ -15,6 +15,7 @@ namespace FS_LevelEditor
         public static string currentSceneName;
         public bool loadCustomLevelOnSceneLoad;
         public string levelFileNameWithoutExtensionToLoad;
+        public int totalDeathsInCurrentPlaymodeSession = 0;
 
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
 
@@ -34,8 +35,8 @@ namespace FS_LevelEditor
 #endif
             if (sceneName.Contains("Menu"))
             {
-                if (ExternalSpriteLoader.Instance == null) new GameObject("LE_ExternalSpriteLoader").AddComponent<ExternalSpriteLoader>();
-                if (LE_MenuUIManager.Instance == null) new GameObject("LE_MEnuUIManager").AddComponent<LE_MenuUIManager>();
+                if (!ExternalSpriteLoader.Instance) new GameObject("LE_ExternalSpriteLoader").AddComponent<ExternalSpriteLoader>();
+                if (!LE_MenuUIManager.Instance) new GameObject("LE_MEnuUIManager").AddComponent<LE_MenuUIManager>();
                 LE_MenuUIManager.Instance.OnSceneLoaded(sceneName);
             }
 
@@ -43,6 +44,11 @@ namespace FS_LevelEditor
             {
                 LevelData.LoadLevelDataInPlaymode(levelFileNameWithoutExtensionToLoad);
                 loadCustomLevelOnSceneLoad = false;
+            }
+            else
+            {
+                // Reset this variable.
+                totalDeathsInCurrentPlaymodeSession = 0;
             }
         }
 
@@ -101,20 +107,20 @@ namespace FS_LevelEditor
                     position.x += width * 4f;
                     position.z += height * 4f;
 
-                    EditorController.Instance.PlaceObject("Ground", position, Vector3.zero, false);
+                    EditorController.Instance.PlaceObject("Ground", position, Vector3.zero, Vector3.one, false);
                 }
             }
         }
 
         public GameObject CreateDirectionalLight(Vector3 position, Vector3 rotation)
         {
-            GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, false);
+            GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, Vector3.one, false);
             return lightObj;
         }
 
         public GameObject CreatePlayerSpawn(Vector3 position, Vector3 rotation)
         {
-            GameObject playerSpanw = EditorController.Instance.PlaceObject("Player Spawn", position, rotation, false);
+            GameObject playerSpanw = EditorController.Instance.PlaceObject("Player Spawn", position, rotation, Vector3.one, false);
             return playerSpanw;
         }
 

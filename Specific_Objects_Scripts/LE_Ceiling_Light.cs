@@ -32,36 +32,29 @@ namespace FS_LevelEditor
             light = lightObj.GetComponent<Light>();
         }
 
-        void Start()
+        public override void OnInstantiated(LEScene scene)
         {
-            if (EditorController.Instance)
+            if (scene == LEScene.Editor)
             {
-                foreach (var collider in gameObject.TryGetComponents<Collider>())
-                {
-                    if (collider.gameObject.name == "EditorCollider") continue;
-
-                    collider.enabled = false;
-                }
-
                 SetMeshOnEditor();
             }
-            else if (PlayModeController.Instance)
+            else if (scene == LEScene.Playmode)
             {
-                gameObject.GetChildWithName("EditorCollider").SetActive(false);
                 gameObject.GetChildAt("Content/ActivateTrigger").SetActive(false);
-                InitComponent();
 
                 light.color = (Color)GetProperty("Color");
             }
+
+            base.OnInstantiated(scene);
         }
 
-        void InitComponent()
+        public override void InitComponent()
         {
-            RealtimeCeilingLight template = FindObjectOfType<RealtimeCeilingLight>();
+            RealtimeCeilingLight template = t_ceilingLight;
 
             gameObject.SetActive(false);
 
-            lightComp = gameObject.AddComponent<RealtimeCeilingLight>();
+            lightComp = gameObject.GetChildWithName("Content").AddComponent<RealtimeCeilingLight>();
             lightComp.m_light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
             lightComp.active = false;
             lightComp.activeEditorState = false;
@@ -69,7 +62,7 @@ namespace FS_LevelEditor
             lightComp.allLightConePlanesRenderers.Add(gameObject.GetChildAt("Content/LightConePlanes/LightConePlane").GetComponent<MeshRenderer>());
             lightComp.allLightConePlanesRenderers.Add(gameObject.GetChildAt("Content/LightConePlanes/LightConePlane (1)").GetComponent<MeshRenderer>());
             lightComp.animStateBeforeShot = true;
-            lightComp.audioSource = gameObject.GetComponent<AudioSource>();
+            lightComp.audioSource = gameObject.GetChildWithName("Content").GetComponent<AudioSource>();
             lightComp.canBeDestroyedByHS = true;
             lightComp.currentColor = RealtimeCeilingLight.LightColor.DEFAULT;
             lightComp.editorIntensity = 2;
@@ -84,7 +77,7 @@ namespace FS_LevelEditor
             lightComp.lightConePlane_greenColor = template.lightConePlane_greenColor;
             lightComp.lightConePlane_redColor = template.lightConePlane_redColor;
             lightComp.lightConePlanes = gameObject.GetChildAt("Content/LightConePlanes");
-            lightComp.m_animationComp = gameObject.GetComponent<Animation>();
+            lightComp.m_animationComp = gameObject.GetChildWithName("Content").GetComponent<Animation>();
             lightComp.m_defaultColor = (Color)GetProperty("Color");
             lightComp.m_defaultColorNeonMesh = template.m_defaultColorNeonMesh;
             lightComp.m_flareMultiplier = 7;
@@ -125,6 +118,7 @@ namespace FS_LevelEditor
 
             gameObject.SetActive(true);
 
+            initialized = true;
         }
 
         public override bool SetProperty(string name, object value)
@@ -148,6 +142,7 @@ namespace FS_LevelEditor
                 if (value is Color)
                 {
                     properties["Color"] = (Color)value;
+                    light.color = (Color)value;
                     if (EditorController.Instance) SetMeshOnEditor();
                     return true;
                 }
@@ -157,6 +152,7 @@ namespace FS_LevelEditor
                     if (color != null)
                     {
                         properties["Color"] = color;
+                        light.color = (Color)color;
                         if (EditorController.Instance) SetMeshOnEditor();
                         return true;
                     }
@@ -171,6 +167,34 @@ namespace FS_LevelEditor
             return false;
         }
 
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "Activate")
+            {
+                lightComp.SwitchOn();
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                lightComp.SwitchOff();
+                return true;
+            }
+            else if (actionName == "ToggleActivated")
+            {
+                if (lightComp.active)
+                {
+                    lightComp.SwitchOff();
+                }
+                else
+                {
+                    lightComp.SwitchOn();
+                }
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
+        }
+
         void SetMeshOnEditor()
         {
             bool lightEnabled = (bool)GetProperty("ActivateOnStart");
@@ -180,7 +204,6 @@ namespace FS_LevelEditor
             neonOn.SetActive(lightEnabled);
             neonOff.SetActive(!lightEnabled);
 
-            light.color = lightColor;
             Material neonOnMat = neonOn.GetComponent<MeshRenderer>().material;
             neonOnMat.color = lightColor;
             neonOn.GetComponent<MeshRenderer>().SetMaterial(neonOnMat);

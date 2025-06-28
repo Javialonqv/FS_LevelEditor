@@ -25,16 +25,21 @@ namespace FS_LevelEditor
         {
             currentInstances++;
 
+            canUndoDeletion = false;
             canBeDisabledAtStart = false;
 
-            spawnSprite = gameObject.GetChildWithName("Sprite");
+            spawnSprite = gameObject.GetChildAt("Content/Sprite");
+        }
 
-            if (PlayModeController.Instance != null)
+        public override void OnInstantiated(LEScene scene)
+        {
+            if (scene == LEScene.Playmode)
             {
-                Destroy(gameObject.GetChildWithName("Collider"));
                 Destroy(spawnSprite);
-                Destroy(gameObject.GetChildWithName("Arrow"));
+                Destroy(gameObject.GetChildAt("Content/Arrow"));
             }
+
+            base.OnInstantiated(scene);
         }
 
         void Update()

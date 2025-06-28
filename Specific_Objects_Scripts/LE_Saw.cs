@@ -9,6 +9,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor
 {
@@ -36,24 +37,35 @@ namespace FS_LevelEditor
             waypointsParent = gameObject.GetChildWithName("Waypoints");
         }
 
-        void Start()
+        public override void OnInstantiated(LEScene scene)
         {
-            if (PlayModeController.Instance != null)
+            if (scene == LEScene.Editor)
             {
-                InitComponent();
-            }
-            else // If it's not in playmode, just create a collider so the user can click the object in LE.
-            {
-                GameObject collider = new GameObject("Collider");
-                collider.transform.parent = transform;
-                collider.transform.localScale = Vector3.one;
-                collider.transform.localPosition = Vector3.zero;
-                collider.AddComponent<BoxCollider>().size = new Vector3(0.1f, 2f, 2f);
-
-                // Also set the saw on or off.
+                // Set the saw on or off.
                 SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
 
                 CreateWaypointEditorLine();
+            }
+
+            base.OnInstantiated(scene);
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Playmode)
+            {
+                // If it's false, that means the saw wasn't really spawned at the start of the level, activate it again to avoid bugs.
+                if (!setActiveAtStart)
+                {
+                    // There's a good reason for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
+                    // do the same thing, so first enable it, and then disable if needed, cause if we don't do anything, there's a bug with the saw animation.
+                    script.Activate();
+                    bool activateOnStart = (bool)GetProperty("ActivateOnStart");
+                    if (!activateOnStart)
+                    {
+                        script.Deactivate();
+                    }
+                }
             }
         }
 
@@ -67,14 +79,14 @@ namespace FS_LevelEditor
             }
         }
 
-        void InitComponent()
+        public override void InitComponent()
         {
-            GameObject content = gameObject.GetChildWithName("SawContent");
+            GameObject content = gameObject.GetChildWithName("Content");
 
             content.SetActive(false);
             content.tag = "Scie";
 
-            content.GetComponent<AudioSource>().outputAudioMixerGroup = FindObjectOfType<ScieScript>().GetComponent<AudioSource>().outputAudioMixerGroup;
+            content.GetComponent<AudioSource>().outputAudioMixerGroup = t_saw.GetComponent<AudioSource>().outputAudioMixerGroup;
 
             RotationScie rotationScie = content.GetChildWithName("Scie_OFF").AddComponent<RotationScie>();
             rotationScie.vitesseRotation = 500;
@@ -95,23 +107,28 @@ namespace FS_LevelEditor
                 script.allowSideRotation = true;
                 script.sideSpeedMultiplier = 5;
             }
-            script.scieSound = FindObjectOfType<ScieScript>().scieSound;
+            script.scieSound = t_saw.scieSound;
             script.offMesh = content.GetChildWithName("Scie_OFF").GetComponent<MeshRenderer>();
             script.onMesh = content.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>();
             script.m_collision = content.GetChildWithName("Collision").GetComponent<BoxCollider>();
             script.physicsCollider = content.GetChildWithName("Saw_PhysicsCollider").GetComponent<MeshCollider>();
 
 
-            // There's a good reason for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
-            // do the same thing, so first enable it, and then disable if needed, cause if we don't do anything, there's a bug with the saw animation.
-            script.Activate();
-            bool activateOnStart = (bool)GetProperty("ActivateOnStart");
-            if (!activateOnStart)
+            if (setActiveAtStart) // Only do this if it's meant to be enabled at start, otherwise, the saw will be bugged.
             {
-                script.Deactivate();
+                // There's a good reason for this, I swear, the Activate and Deactivate functions are just inverting the enabled bool in the saw LOL, the both functions
+                // do the same thing, so first enable it, and then disable if needed, cause if we don't do anything, there's a bug with the saw animation.
+                script.Activate();
+                bool activateOnStart = (bool)GetProperty("ActivateOnStart");
+                if (!activateOnStart)
+                {
+                    script.Deactivate();
+                }
             }
 
             content.SetActive(true);
+
+            initialized = true;
         }
 
         void CreateWaypointEditorLine()
@@ -259,8 +276,8 @@ namespace FS_LevelEditor
 
         void SetMeshOnEditor(bool isSawOn)
         {
-            gameObject.GetChildAt("SawContent/Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;
-            gameObject.GetChildAt("SawContent/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
+            gameObject.GetChildAt("Content/Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;
+            gameObject.GetChildAt("Content/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
         }
 
         public LE_Saw_Waypoint AddWaypoint(bool isFromSavedData = false, bool ignoreIfCurrentNextWaypointIsNull = false)

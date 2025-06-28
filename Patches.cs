@@ -59,4 +59,73 @@ namespace FS_LevelEditor
             }
         }
     }
+
+    [HarmonyPatch(typeof(NavigationBarController), nameof(NavigationBarController.GetActionsList))]
+    public static class NavigationBarControllerPatch
+    {
+        public static bool Prefix(ref Il2CppSystem.Collections.Generic.List<NavigationBarController.ActionType> __result)
+        {
+            var toReturn = new Il2CppSystem.Collections.Generic.List<NavigationBarController.ActionType>();
+            if (EditorPauseMenuPatcher.patcher)
+            {
+                // If the patcher exists and the UI context is MainMenu, that means it's in LE and it's paused, since LE is running in Main Menu lol.
+                if (MenuController.GetInstance().GetUIContext() == MenuController.UIContext.MAIN_MENU)
+                {
+                    toReturn.Add(NavigationBarController.ActionType.QUIT);
+                    toReturn.Add(NavigationBarController.ActionType.CONFIRM);
+                }
+            }
+            else if (LE_MenuUIManager.Instance)
+            {
+                if (LE_MenuUIManager.Instance.inLEMenu)
+                {
+                    toReturn.Add(NavigationBarController.ActionType.BACK);
+                }
+            }
+
+            if (toReturn.Count > 0)
+            {
+                __result = toReturn;
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(NavigationBarController), nameof(NavigationBarController.ManualButtonPressed))]
+    public static class NavigabtionButtonPressedPatch
+    {
+        public static bool Prefix(NavigationBarController.ActionType _type)
+        {
+            switch (_type)
+            {
+                case NavigationBarController.ActionType.QUIT:
+                    if (EditorPauseMenuPatcher.patcher)
+                    {
+                        // If the patcher exists and the UI context is MainMenu, that means it's in LE and it's paused, since LE is running in Main Menu lol.
+                        if (MenuController.GetInstance().GetUIContext() == MenuController.UIContext.MAIN_MENU)
+                        {
+                            EditorUIManager.Instance.ShowExitPopup();
+                            return false;
+                        }
+                    }
+                    break;
+
+                case NavigationBarController.ActionType.BACK:
+                    if (LE_MenuUIManager.Instance)
+                    {
+                        if (LE_MenuUIManager.Instance.inLEMenu)
+                        {
+                            LE_MenuUIManager.Instance.SwitchBetweenMenuAndLEMenu();
+                            return false;
+                        }
+                    }
+                    break;
+            }
+
+            return true;
+        }
+    }
 }

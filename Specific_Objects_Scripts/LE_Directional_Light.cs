@@ -26,21 +26,25 @@ namespace FS_LevelEditor
         {
             currentInstances++;
 
-            light = gameObject.GetChildWithName("Light").GetComponent<Light>();
-            lightSprite = gameObject.GetChildWithName("Sprite");
+            light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
+            lightSprite = gameObject.GetChildAt("Content/Sprite");
 
             properties = new Dictionary<string, object>()
             {
                 { "Color", Color.white },
                 { "Intensity", 1f }
             };
+        }
 
-            if (PlayModeController.Instance != null)
+        public override void OnInstantiated(LEScene scene)
+        {
+            if (scene == LEScene.Playmode)
             {
-                Destroy(gameObject.GetChildWithName("Collider"));
                 Destroy(lightSprite);
                 Destroy(gameObject.GetChildWithName("Arrow"));
             }
+
+            base.OnInstantiated(scene);
         }
 
         void Update()
@@ -93,7 +97,7 @@ namespace FS_LevelEditor
                 }
                 else if (value is string)
                 {
-                    if (float.TryParse((string)value, out float result))
+                    if (Utilities.TryParseFloat((string)value, out float result))
                     {
                         light.intensity = result;
                         properties["Intensity"] = result;

@@ -22,23 +22,7 @@ namespace FS_LevelEditor
             };
         }
 
-        void Start()
-        {
-            if (PlayModeController.Instance != null)
-            {
-                InitComponent();
-            }
-            else // If it's not in playmode, just create a collider so the user can click the object in LE.
-            {
-                GameObject collider = new GameObject("Collider");
-                collider.transform.parent = transform;
-                collider.transform.localScale = Vector3.one;
-                collider.transform.localPosition = new Vector3(0f, 0.35f, 0f);
-                collider.AddComponent<BoxCollider>().size = Vector3.one * 0.7f;
-            }
-        }
-
-        void InitComponent()
+        public override void InitComponent()
         {
             gameObject.GetChildWithName("Content").SetActive(false);
             gameObject.GetChildWithName("Content").tag = "Health";
@@ -48,7 +32,7 @@ namespace FS_LevelEditor
             disolve.onEnable = true;
             disolve.m_renderer = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
             // Extract the dissolve materials from another healthpack in the scene.
-            disolve.dissolveMaterials = FindObjectOfType<Health>().GetComponent<DisolveOnEnable>().dissolveMaterials;
+            disolve.dissolveMaterials = t_healthPack.GetComponent<DisolveOnEnable>().dissolveMaterials;
             disolve.finalMaterials = new Material[] { disolve.m_renderer.sharedMaterial };
             disolve.appearSpeed = 8;
             disolve.startOffset = -3.4f;
@@ -73,6 +57,8 @@ namespace FS_LevelEditor
             health.m_dissolve = disolve;
 
             gameObject.GetChildWithName("Content").SetActive(true);
+
+            initialized = true;
         }
 
         // Since respawn time is fixed and is changed to default (20) at Start() of Ammo class, change it after 0.1s
@@ -87,7 +73,7 @@ namespace FS_LevelEditor
             {
                 if (value is string)
                 {
-                    if (float.TryParse((string)value, out float result))
+                    if (Utilities.TryParseFloat((string)value, out float result))
                     {
                         properties["RespawnTime"] = result;
                         return true;
@@ -96,11 +82,22 @@ namespace FS_LevelEditor
                 else if (value is float)
                 {
                     properties["RespawnTime"] = (float)value;
+                    if (health) health.respawnTime = (float)value;
                     return true;
                 }
             }
 
             return false;
+        }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "SpawnNow")
+            {
+                if (health) health.Activate();
+            }
+
+            return base.TriggerAction(actionName);
         }
     }
 }

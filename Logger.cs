@@ -16,7 +16,7 @@ namespace FS_LevelEditor
         public static void DebugLog(object message)
         {
 #if DEBUG
-            Melon<Core>.Logger.Msg(message);
+            Melon<Core>.Logger.Msg("[DEBUG] " + message);
 #endif
         }
 
@@ -27,7 +27,7 @@ namespace FS_LevelEditor
         public static void DebugWarning(object message)
         {
 #if DEBUG
-            Melon<Core>.Logger.Warning(message);
+            Melon<Core>.Logger.Warning("[DEBUG] " + message);
 #endif
         }
 
@@ -38,7 +38,7 @@ namespace FS_LevelEditor
         public static void DebugError(object message)
         {
 #if DEBUG
-            Melon<Core>.Logger.Error(message);
+            Melon<Core>.Logger.Error("[DEBUG] " + message);
 #endif
         }
     }

@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor;
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,37 +20,24 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>()
             {
                 { "ActivateOnStart", true },
+                { "InstaKill", false },
                 { "Damage", 34 }
             };
-
-            // Disable the laser "original" colliders because they break the LE selection system.
-            if (EditorController.Instance)
-            {
-                gameObject.GetChildAt("Content/MeshOff").GetComponent<BoxCollider>().enabled = false;
-                gameObject.GetChildAt("Content/MeshOn").GetComponent<BoxCollider>().enabled = false;
-            }
-            else // The laser object contains a collider to use during LE only, disable it on playmode.
-            {
-                gameObject.GetChildAt("EditorCollider").SetActive(false);
-            }
         }
 
-        void Start()
+        public override void OnInstantiated(LEScene scene)
         {
-            if (EditorController.Instance)
+            if (scene == LEScene.Editor)
             {
                 SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
             }
 
-            if (PlayModeController.Instance)
-            {
-                InitComponent();
-            }
+            base.OnInstantiated(scene);
         }
 
-        void InitComponent()
+        public override void InitComponent()
         {
-            Laser_H_Controller template = FindObjectOfType<Laser_H_Controller>();
+            Laser_H_Controller template = t_laser;
 
             laser = gameObject.GetChildWithName("Content").AddComponent<Laser_H_Controller>();
             laser.laserOriginPoint = gameObject.GetChildAt("Content/LaserOriginPoint").transform;
@@ -101,6 +89,7 @@ namespace FS_LevelEditor
             laser.flareMultiplier = 1;
             laser.activeEditorState = true;
             laser.constantEditorState = true;
+            laser.showIfTouchesNothing = true;
 
             laser.Line.material = template.Line.material;
 
@@ -156,6 +145,8 @@ namespace FS_LevelEditor
             {
                 Invoke("ActivateLaserDelayed", 0.2f);
             }
+
+            initialized = true;
         }
 
         // This method is meant to be invoked with Invoke().
@@ -177,6 +168,19 @@ namespace FS_LevelEditor
                 else
                 {
                     Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+            else if (name == "InstaKill")
+            {
+                if (value is bool)
+                {
+                    properties["InstaKill"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"InstaKill\" property with value of type \"{value.GetType().Name}\".");
                     return false;
                 }
             }
@@ -232,6 +236,21 @@ namespace FS_LevelEditor
         {
             gameObject.GetChildAt("Content/MeshOff").GetComponent<MeshRenderer>().enabled = !isLaserOn;
             gameObject.GetChildAt("Content/MeshOn").GetComponent<MeshRenderer>().enabled = isLaserOn;
+        }
+    }
+}
+
+[HarmonyLib.HarmonyPatch(typeof(Laser_H_Controller), nameof(Laser_H_Controller.OnTouchPlayer))]
+public static class LaserInstaKillPatch
+{
+    public static void Prefix(Laser_H_Controller __instance)
+    {
+        if (__instance.transform.parent != null && __instance.transform.parent.GetComponent<LE_Laser>())
+        {
+            if ((bool)__instance.transform.parent.GetComponent<LE_Laser>().GetProperty("InstaKill"))
+            {
+                Controls.Instance.KillCharacter(true);
+            }
         }
     }
 }

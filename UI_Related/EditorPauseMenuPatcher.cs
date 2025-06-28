@@ -12,7 +12,14 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class EditorPauseMenuPatcher : MonoBehaviour
     {
+        public static EditorPauseMenuPatcher patcher;
+
         bool isAboutToDestroyThisObj;
+
+        void Awake()
+        {
+            patcher = this;
+        }
 
         public void OnEnable()
         {
@@ -40,9 +47,8 @@ namespace FS_LevelEditor
             pauseMenu.GetChildAt("LargeButtons").GetComponent<UITable>().Reposition();
             #endregion
 
-            // Change exit button behaviour in the navigation bar.
-            NavigationAction exitButtonFromNavigation = navigation.GetChildAt("Holder/Bar/ActionsHolder").transform.GetChild(0).GetComponent<NavigationAction>();
-            exitButtonFromNavigation.onButtonClick = new Action<NavigationBarController.ActionType>(EditorUIManager.Instance.ExitToMenuFromNavigationBarButton);
+            // The logic for changing the navigation bar buttons and their "on click" actions it's in Patches.cs ;)
+            NavigationBarController.Instance.RefreshNavigationBarActions();
         }
 
         void PatchPlayLevelButton()
@@ -104,10 +110,6 @@ namespace FS_LevelEditor
             Logger.DebugLog("LE pause menu disabled, patching!");
 
             GameObject navigation = transform.parent.GetChildWithName("Navigation").gameObject;
-
-            // Reset the exit button behaviour when in another menu instead of the main one.
-            NavigationAction exitButtonFromNavigation = navigation.GetChildAt("Holder/Bar/ActionsHolder").transform.GetChild(0).GetComponent<NavigationAction>();
-            exitButtonFromNavigation.onButtonClick = new Action<NavigationBarController.ActionType>(NavigationBarController.Instance.ManualButtonPressed);
         }
 
         public void BeforeDestroying()

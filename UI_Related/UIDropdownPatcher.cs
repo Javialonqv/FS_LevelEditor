@@ -12,6 +12,7 @@ namespace FS_LevelEditor
     public class UIDropdownPatcher : MonoBehaviour
     {
         UIPopupList popupScript;
+        Action<int> onClickAlt;
 
         public string currentlySelected
         {
@@ -83,10 +84,19 @@ namespace FS_LevelEditor
         {
             popupScript.onChange.Add(@delegate);
         }
+        public void AddOnChangeOption(Action<int> action)
+        {
+            onClickAlt += action;
+        }
 
         void OnDropdownChange()
         {
             SelectOption(popupScript.selection);
+
+            if (onClickAlt != null)
+            {
+                onClickAlt.Invoke(currentlySelectedID);
+            }
         }
     }
 }

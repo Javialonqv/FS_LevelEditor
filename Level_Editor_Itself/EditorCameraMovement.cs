@@ -20,9 +20,17 @@ namespace FS_LevelEditor
         public float xRotation = 0f;
         public float yRotation = 0f;
 
+        public static bool isRotatingCamera
+        {
+            get
+            {
+                return Input.GetMouseButton(1);
+            }
+        }
+
         void Update()
         {
-            if (EditorController.Instance.isEditorPaused || EventsUIPageManager.Instance.isShowingPage) return;
+            if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ)) return;
 
             if (Input.GetMouseButton(1) && !Input.GetMouseButton(0))
             {

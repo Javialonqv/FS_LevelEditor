@@ -28,7 +28,6 @@ namespace FS_LevelEditor
         AudioSource uiSoundSource;
         AudioClip okSound;
         AudioClip hidePageSound;
-        GameObject navigationBarButtonsParent;
         GameObject popup;
         PopupController popupController;
         GameObject popupTitle;
@@ -92,19 +91,6 @@ namespace FS_LevelEditor
                     SwitchBetweenMenuAndLEMenu();
                 }
             }
-
-            // To exit from the LE menu with the navigation bar buttons.
-            if (inLEMenu)
-            {
-                NavigationAction action = navigationBarButtonsParent.transform.GetChild(0).GetComponent<NavigationAction>();
-                if (action.assignedActionType != NavigationBarController.ActionType.BACK)
-                {
-                    navigationBarButtonsParent.DisableAllChildren();
-                    action.gameObject.SetActive(true);
-                    action.Setup(Localization.Get("Back").ToUpper(), "Keyboard_Black_Esc", NavigationBarController.ActionType.BACK);
-                    action.onButtonClick = new Action<NavigationBarController.ActionType>(ExitLEMenuInNavigationBarButton);
-                }
-            }
         }
 
         public void OnSceneLoaded(string sceneName)
@@ -118,8 +104,6 @@ namespace FS_LevelEditor
             {
                 // Disable this so fades can work correctly.
                 InGameUIManager.Instance.isInPauseMode = false;
-
-                Invoke("FixFSPostProccesingInMenuBug", 0.1f);
 
                 // Reset this variable, so the user can click level buttons again.
                 levelButtonsWasClicked = false;
@@ -137,14 +121,6 @@ namespace FS_LevelEditor
             }
         }
 
-        void FixFSPostProccesingInMenuBug()
-        {
-            if (Camera.main.GetComponent<PostProcessLayer>().forcedVolume == null)
-            {
-                Camera.main.GetComponent<PostProcessLayer>().forcedVolume = GameObject.Find("MenuPPVolume").GetComponent<PostProcessVolume>();
-            }
-        }
-
         void GetSomeReferences()
         {
             mainMenu = GameObject.Find("MainMenu/Camera/Holder/Main");
@@ -154,8 +130,6 @@ namespace FS_LevelEditor
             okSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
             hidePageSound = MenuController.GetInstance().hidePageSound;
             hidePageSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-            navigationBarButtonsParent = GameObject.Find("MainMenu/Camera/Holder/Navigation/Holder/Bar/ActionsHolder/");
 
             popup = GameObject.Find("MainMenu/Camera/Holder/Popup");
             popupController = popup.GetComponent<PopupController>();
@@ -194,7 +168,7 @@ namespace FS_LevelEditor
         public void CreateLEMenuPanel()
         {
             // Get the Options menu and create a copy.
-            GameObject originalOptionsMenu = GameObject.Find("MainMenu/Camera/Holder/Options");
+            GameObject originalOptionsMenu = NGUI_Utils.optionsPanel;
             leMenuPanel = GameObject.Instantiate(originalOptionsMenu, originalOptionsMenu.transform.parent);
 
             // Change the name of the copy.
@@ -233,8 +207,7 @@ namespace FS_LevelEditor
         public void CreateBackButton()
         {
             // Get the template, spawn the copy and set some parameters.
-            GameObject template = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            backButton = Instantiate(template, leMenuButtonsParent.transform);
+            backButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuButtonsParent.transform);
             backButton.name = "BackButton";
             backButton.transform.localPosition = new Vector3(-690f, 290f, 0f);
 
@@ -284,8 +257,7 @@ namespace FS_LevelEditor
         public void CreateAddButton()
         {
             // Get the template, spawn the copy and set some parameters.
-            GameObject template = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            addButton = Instantiate(template, leMenuButtonsParent.transform);
+            addButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuButtonsParent.transform);
             addButton.name = "AddButton";
             addButton.transform.localPosition = new Vector3(690f, 290f, 0f);
 
@@ -384,7 +356,7 @@ namespace FS_LevelEditor
         public void CreateLevelsList()
         {
             Dictionary<string, LevelData> levels = LevelData.GetLevelsList();
-            GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            GameObject btnTemplate = NGUI_Utils.buttonTemplate;
             currentLevelsGridID = 0;
 
             // Manage correctly when the parent already exists or no, since the whole UI is on DontDestroyOnLoad :').
@@ -641,8 +613,7 @@ namespace FS_LevelEditor
         public void CreatePreviousListButton()
         {
             // Create the button.
-            GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            GameObject btnPrevious = Instantiate(btnTemplate, lvlButtonsParent.transform);
+            GameObject btnPrevious = Instantiate(NGUI_Utils.buttonTemplate, lvlButtonsParent.transform);
             btnPrevious.name = "BtnPrevious";
             btnPrevious.transform.localPosition = new Vector3(-840f, -70f, 0f);
 
@@ -669,8 +640,7 @@ namespace FS_LevelEditor
         public void CreateNextListButton()
         {
             // Create the button.
-            GameObject btnTemplate = leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            GameObject btnNext = Instantiate(btnTemplate, lvlButtonsParent.transform);
+            GameObject btnNext = Instantiate(NGUI_Utils.buttonTemplate, lvlButtonsParent.transform);
             btnNext.name = "BtnNext";
             btnNext.transform.localPosition = new Vector3(840f, -70f, 0f);
 
@@ -702,11 +672,14 @@ namespace FS_LevelEditor
 
             IEnumerator Init()
             {
+                SwitchBetweenMenuAndLEMenu(false);
+
                 // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
                 InGameUIManager.Instance.StartTotalFadeOut(3, true);
                 yield return new WaitForSecondsRealtime(1.5f);
 
-                SwitchBetweenMenuAndLEMenu();
+                mainMenu.SetActive(true);
+                leMenuPanel.SetActive(false);
                 Melon<Core>.Instance.SetupTheWholeEditor();
                 EditorController.Instance.levelName = LevelData.GetAvailableLevelName();
                 EditorController.Instance.levelFileNameWithoutExtension = EditorController.Instance.levelName;
@@ -755,7 +728,7 @@ namespace FS_LevelEditor
                 InGameUIManager.Instance.StartTotalFadeIn(3, true);
                 EditorController.Instance.levelName = levelName;
                 EditorController.Instance.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
-                LevelData.LoadLevelData(levelFileNameWithoutExtension);
+                LevelData.LoadLevelDataInEditor(levelFileNameWithoutExtension);
             }
         }
         public void GoBackToLEWhileInPlayMode(string levelFileNameWithoutExtension, string levelName)
@@ -877,13 +850,6 @@ namespace FS_LevelEditor
         }
 
 
-        public void ExitLEMenuInNavigationBarButton(NavigationBarController.ActionType type)
-        {
-            if (type == NavigationBarController.ActionType.BACK && inLEMenu)
-            {
-                SwitchBetweenMenuAndLEMenu();
-            }
-        }
         public void SwitchBetweenMenuAndLEMenu(bool showMainMenu = true)
         {
             // Switch!
@@ -898,12 +864,9 @@ namespace FS_LevelEditor
             else
             {
                 Logger.Log("Switching from LE Menu to main menu!");
-                // Put the navigation bar exit button to its original state one we exit from the LE menu.
-                NavigationAction action = navigationBarButtonsParent.transform.GetChild(0).GetComponent<NavigationAction>();
-                action.transform.parent.gameObject.EnableAllChildren();
-                action.Setup(Localization.Get("Exit").ToUpper(), "Keyboard_Black_Esc", NavigationBarController.ActionType.QUIT);
-                action.onButtonClick = new Action<NavigationBarController.ActionType>(NavigationBarController.Instance.ManualButtonPressed);
             }
+
+            NavigationBarController.Instance.RefreshNavigationBarActions();
 
             MelonCoroutines.Start(Animation());
 

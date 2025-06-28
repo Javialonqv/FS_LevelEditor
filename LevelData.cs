@@ -10,6 +10,7 @@ using MelonLoader;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Il2Cpp;
+using System.Reflection;
 
 namespace FS_LevelEditor
 {
@@ -98,7 +99,7 @@ namespace FS_LevelEditor
 #if DEBUG
                     WriteIndented = true,
 #endif
-                    Converters = { new LEPropertiesConverter() }
+                    Converters = { new LEIgnoreDefaultValuesInLEEvents(), new LEPropertiesConverter() }
                 };
 
                 if (!Directory.Exists(levelsDirectory))
@@ -135,29 +136,47 @@ namespace FS_LevelEditor
             LevelData data = null;
             try
             {
-                data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath));
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new LEPropertiesConverter(),
+                        new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
+                        {
+                            { "setActive", "spawn" }
+                        })
+                        // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
+                        // same type.
+                    }
+                };
+
+                data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
             }
             catch { }
 
             return data;
         }
 
-        // This method is for loading the saved level in the LE.
-        public static void LoadLevelData(string levelFileNameWithoutExtension)
+        static LevelData LoadLevelData(string levelFileNameWithoutExtension)
         {
-            GameObject objectsParent = EditorController.Instance.levelObjectsParent;
-            objectsParent.DeleteAllChildren();
-
             var jsonOptions = new JsonSerializerOptions
             {
-                Converters = { new LEPropertiesConverter() }
+                Converters =
+                {
+                    new LEPropertiesConverter(),
+                    new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
+                    {
+                        { "setActive", "spawn" }
+                    })
+                    // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
+                    // same type.
+                }
             };
 
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
 
-            Camera.main.transform.position = data.cameraPosition;
-            Camera.main.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
+            ReevaluateOldProperties(ref data);
 
             List<LE_ObjectData> toCheck = data.objects;
             if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
@@ -165,9 +184,9 @@ namespace FS_LevelEditor
                 Logger.Warning("Multiple objects with same ID detected, trying to fix...");
                 toCheck = FixMultipleObjectsWithSameID(toCheck);
             }
+            data.objects = toCheck;
 
-            currentLevelObjsCount = toCheck.Count;
-
+            currentLevelObjsCount = data.objects.Count;
 #if DEBUG
             if (currentLevelObjsCount > 100)
             {
@@ -175,9 +194,21 @@ namespace FS_LevelEditor
             }
 #endif
 
+            return data;
+        }
+        public static void LoadLevelDataInEditor(string levelFileNameWithoutExtension)
+        {
+            LevelData data = LoadLevelData(levelFileNameWithoutExtension);
+
+            Camera.main.transform.position = data.cameraPosition;
+            Camera.main.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
+
+            GameObject objectsParent = EditorController.Instance.levelObjectsParent;
+            objectsParent.DeleteAllChildren();
+
             foreach (LE_ObjectData obj in data.objects)
             {
-                GameObject objInstance = EditorController.Instance.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, false);
+                GameObject objInstance = EditorController.Instance.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, obj.objScale, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
 
                 objClassInstance.objectID = obj.objectID;
@@ -214,40 +245,23 @@ namespace FS_LevelEditor
                 }
             }
 
+            EditorController.Instance.AfterFinishedLoadingLevel();
             Logger.Log($"\"{data.levelName}\" level loaded in the editor!");
         }
-
-        // And this for loading the saved level in playmode lol.
         public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
         {
+            LE_Object.GetTemplatesReferences();
+
             PlayModeController playModeCtrl = new GameObject("PlayModeController").AddComponent<PlayModeController>();
 
             GameObject objectsParent = playModeCtrl.levelObjectsParent;
             objectsParent.DeleteAllChildren();
 
-            var jsonOptions = new JsonSerializerOptions
+            LevelData data = LoadLevelData(levelFileNameWithoutExtension);
+
+            foreach (LE_ObjectData obj in data.objects)
             {
-                Converters = { new LEPropertiesConverter() }
-            };
-
-            string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
-
-            playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
-            playModeCtrl.levelName = data.levelName;
-
-            List<LE_ObjectData> toCheck = data.objects;
-            if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
-            {
-                Logger.Warning("Multiple objects with same ID detected, trying to fix...");
-                toCheck = FixMultipleObjectsWithSameID(toCheck);
-            }
-
-            currentLevelObjsCount = toCheck.Count;
-
-            foreach (LE_ObjectData obj in toCheck)
-            {
-                GameObject objInstance = playModeCtrl.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, false);
+                GameObject objInstance = playModeCtrl.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, obj.objScale, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
 
                 objClassInstance.objectID = obj.objectID;
@@ -262,8 +276,17 @@ namespace FS_LevelEditor
                     }
                 }
 
-                objInstance.SetActive(objClassInstance.setActiveAtStart);
+                if (!obj.setActiveAtStart)
+                {
+                    // Only god knows when the user will enable the obj, so call Start() so the object calls InitComponent() to init the
+                    // component NOW and not later.
+                    objInstance.SetActive(false);
+                    objClassInstance.Start();
+                }
             }
+
+            playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
+            playModeCtrl.levelName = data.levelName;
 
             // Load Global Properties.
             // In PlayModeController the global properties list is empty, since it's meant to be replaced with
@@ -303,7 +326,21 @@ namespace FS_LevelEditor
                 LevelData levelData = null;
                 try
                 {
-                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath));
+                    var jsonOptions = new JsonSerializerOptions
+                    {
+                        Converters =
+                        {
+                            new LEPropertiesConverter(),
+                            new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
+                            {
+                                { "setActive", "spawn" }
+                            })
+                            // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
+                            // same type.
+                        }
+                    };
+
+                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), jsonOptions);
                 }
                 catch { }
                 levels.Add(Path.GetFileNameWithoutExtension(levelPath), levelData);
@@ -389,6 +426,36 @@ namespace FS_LevelEditor
             }
 
             return result;
+        }
+
+        static void ReevaluateOldProperties(ref LevelData data)
+        {
+            foreach (var obj in data.objects)
+            {
+                Dictionary<string, object> newProperties = new();
+
+                foreach (var property in obj.properties)
+                {
+                    switch (property.Key)
+                    {
+                        case "OnActivatedEvents":
+                            newProperties.Add("WhenActivatingEvents", property.Value);
+                            break;
+                        case "OnDeactivatedEvents":
+                            newProperties.Add("WhenDeactivatingEvents", property.Value);
+                            break;
+                        case "OnChangeEvents":
+                            newProperties.Add("WhenInvertingEvents", property.Value);
+                            break;
+
+                        default:
+                            newProperties.Add(property.Key, property.Value);
+                            break;
+                    }
+                }
+
+                obj.properties = newProperties;
+            }
         }
     }
 
@@ -561,6 +628,81 @@ namespace FS_LevelEditor
             }
 
             throw new JsonException("JSON unexpected end.");
+        }
+    }
+    public class LEIgnoreDefaultValuesInLEEvents : JsonConverter<LE_Event>
+    {
+        public override LE_Event Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return JsonSerializer.Deserialize<LE_Event>(ref reader, options);
+        }
+
+        public override void Write(Utf8JsonWriter writer, LE_Event value, JsonSerializerOptions options)
+        {
+            var defaultInstance = new LE_Event();
+            writer.WriteStartObject();
+
+            foreach (var property in typeof(LE_Event).GetProperties())
+            {
+                if (!property.CanRead || !property.CanWrite) continue;
+                object defaultValue = property.GetValue(defaultInstance);
+                object currentValue = property.GetValue(value);
+
+                if (!object.Equals(defaultValue, currentValue))
+                {
+                    writer.WritePropertyName(property.Name);
+                    JsonSerializer.Serialize(writer, currentValue, property.PropertyType, options);
+                }
+            }
+
+            writer.WriteEndObject();
+        }
+    }
+    public class OldPropertiesRename<T> : JsonConverter<T>
+    {
+        private readonly Dictionary<string, string> renames;
+
+        public OldPropertiesRename(Dictionary<string, string> renames)
+        {
+            this.renames = renames;
+        }
+
+        public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            using var doc = JsonDocument.ParseValue(ref reader);
+            var root = doc.RootElement;
+
+            var newProperties = new Dictionary<string, JsonElement>();
+
+            foreach (var prop in root.EnumerateObject())
+            {
+                string nameToAdd = prop.Name;
+                if (renames.ContainsKey(prop.Name))
+                {
+                    nameToAdd = renames[prop.Name];
+                }
+                newProperties[nameToAdd] = prop.Value;
+            }
+
+            using var modifiedStream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(modifiedStream))
+            {
+                writer.WriteStartObject();
+                foreach (var property in newProperties)
+                {
+                    writer.WritePropertyName(property.Key);
+                    property.Value.WriteTo(writer);
+                }
+                writer.WriteEndObject();
+            }
+
+            modifiedStream.Position = 0;
+            return JsonSerializer.Deserialize<T>(modifiedStream)!;
+        }
+
+        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+        {
+            JsonSerializer.Serialize(writer, value, options);
         }
     }
 }

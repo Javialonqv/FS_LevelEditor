@@ -13,7 +13,7 @@ namespace FS_LevelEditor
     {
         void Awake()
         {
-            gameObject.AddComponent<VentWithSmokeController>().m_particles = gameObject.GetChildWithName("Particles");
+            gameObject.AddComponent<VentWithSmokeController>().m_particles = gameObject.GetChildAt("Content/Particles");
         }
     }
 }

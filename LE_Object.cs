@@ -9,9 +9,16 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor
 {
+    public enum LEScene
+    {
+        Editor,
+        Playmode
+    }
+
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Object : MonoBehaviour
     {
@@ -26,7 +33,10 @@ namespace FS_LevelEditor
             SWITCH,
             PLAYER_SPAWN,
             CUBE,
-            LASER
+            LASER,
+            FLAME_TRAP,
+            COLLIDER,
+            END_TRIGGER,
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
@@ -62,6 +72,7 @@ namespace FS_LevelEditor
         }
         public bool setActiveAtStart = true;
         public Dictionary<string, object> properties = new Dictionary<string, object>();
+        public EventExecuter eventExecuter;
 
         public virtual Transform objectParent
         {
@@ -77,8 +88,83 @@ namespace FS_LevelEditor
         public bool canBeUsedInEventsTab { get; protected set; } = true;
         public bool canBeDisabledAtStart { get; protected set; } = true;
 
+        public bool initialized = false;
+        bool hasItsOwnClass = false;
+
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
+
+        #region Object Templates References
+        public static Ammo t_ammoPack;
+        public static Health t_healthPack;
+        public static ScieScript t_saw;
+        public static InterrupteurController t_switch;
+        public static BlocScript t_cube;
+        public static Laser_H_Controller t_laser;
+        public static RealtimeCeilingLight t_ceilingLight;
+        public static FlameTrapController t_flameTrap;
+
+        public static void GetTemplatesReferences()
+        {
+            t_ammoPack = FindObjectOfType<Ammo>();
+            t_healthPack = FindObjectOfType<Health>();
+            t_saw = FindObjectOfType<ScieScript>();
+            t_switch = FindObjectOfType<InterrupteurController>();
+            t_cube = SceneManager.GetActiveScene().GetRootGameObjects()
+                .FirstOrDefault(x => x.name == "CameraRunRoom").GetChildAt("BeforeCamera/Activable/Bloc")
+                .GetComponent<BlocScript>();
+            t_laser = FindObjectOfType<Laser_H_Controller>();
+            t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
+            t_flameTrap = FindObjectOfType<FlameTrapController>();
+        }
+        #endregion
+
+        public virtual void Start()
+        {
+            if (EditorController.Instance) OnInstantiated(LEScene.Editor);
+            else if (PlayModeController.Instance) OnInstantiated(LEScene.Playmode);
+
+            if (hasItsOwnClass)
+            {
+                if (Utilities.IsOverridingMethod(this.GetType(), "Start"))
+                {
+                    Logger.Error($"\"{GetType().Name}\" is overriding Start() method, this is not allowed, please use ObjectStart() instead.");
+                }
+
+                // ObjectStart is only called when the object is ACTUALLY being spawned, since Start() is also called when loading the
+                // level in playmode to init the component.
+                if (gameObject.activeSelf || EditorController.Instance)
+                {
+                    if (EditorController.Instance) ObjectStart(LEScene.Editor);
+                    else if (PlayModeController.Instance) ObjectStart(LEScene.Playmode);
+                }
+            }
+        }
+        void Init(string originalObjName)
+        {
+            if (EditorController.Instance != null && PlayModeController.Instance == null)
+            {
+                EditorController.Instance.currentInstantiatedObjects.Add(this);
+            }
+            else if (EditorController.Instance == null && PlayModeController.Instance != null)
+            {
+                PlayModeController.Instance.currentInstantiatedObjects.Add(this);
+            }
+
+            SetNameAndType(originalObjName);
+
+            if (PlayModeController.Instance != null)
+            {
+                // Destroy the snap triggers of this object.
+                Destroy(gameObject.GetChildWithName("SnapTriggers"));
+            }
+
+            // If greater than 0 that means this object DOES support events.
+            if (GetAvailableEventsIDs().Count > 0)
+            {
+                eventExecuter = gameObject.AddComponent<EventExecuter>();
+            }
+        }
 
         /// <summary>
         /// The correct way to add a LE_Object component to a GameObject.
@@ -100,6 +186,7 @@ namespace FS_LevelEditor
                 }
                 LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
                 instancedComponent.Init(originalObjName);
+                instancedComponent.hasItsOwnClass = true;
                 return instancedComponent;
             }
             else
@@ -112,32 +199,6 @@ namespace FS_LevelEditor
                 LE_Object instancedComponent = targetObj.AddComponent<LE_Object>();
                 instancedComponent.Init(originalObjName);
                 return instancedComponent;
-            }
-        }
-
-        public virtual void Init()
-        {
-            // This method is meant to be overrided by classes that inherit from this one.
-        }
-
-        void Init(string originalObjName)
-        {
-            if (EditorController.Instance != null && PlayModeController.Instance == null)
-            {
-                EditorController.Instance.currentInstantiatedObjects.Add(this);
-            }
-            else if (EditorController.Instance == null && PlayModeController.Instance != null)
-            {
-                PlayModeController.Instance.currentInstantiatedObjects.Add(this);
-            }
-
-            SetNameAndType(originalObjName);
-
-            // If it's on playmode.
-            if (PlayModeController.Instance != null)
-            {
-                // Destroy the snap triggers of this object.
-                Destroy(gameObject.GetChildWithName("SnapTriggers"));
             }
         }
 
@@ -198,6 +259,34 @@ namespace FS_LevelEditor
             return currentInstances >= maxInstances;
         }
 
+        #region Virtual Methods
+        public virtual void OnInstantiated(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                SetCollidersState(false);
+                SetEditorCollider(true);
+            }
+            else if (scene == LEScene.Playmode)
+            {
+                // Don't set the colliders to true because they can be objects with enabled AND disabled colliders, we don't want to break
+                // that.
+                SetEditorCollider(false);
+
+                if (!initialized) InitComponent();
+            }
+
+            if (eventExecuter) eventExecuter.OnInstantiated(scene);
+        }
+        public virtual void InitComponent()
+        {
+            initialized = true;
+        }
+        public virtual void ObjectStart(LEScene scene)
+        {
+
+        }
+
         /// <summary>
         /// Sets a property inside of the object properties list if it exists.
         /// </summary>
@@ -208,21 +297,6 @@ namespace FS_LevelEditor
         {
             return false;
         }
-
-        public virtual bool TriggerAction(string actionName)
-        {
-            if (actionName == "SetActive_True")
-            {
-                gameObject.SetActive(true);
-            }
-            else if (actionName == "SetActive_False")
-            {
-                gameObject.SetActive(false);
-            }
-
-            return false;
-        }
-
         /// <summary>
         /// Gets a property from the object properties list.
         /// </summary>
@@ -248,15 +322,38 @@ namespace FS_LevelEditor
                 {
                     return (T)properties[name];
                 }
+                else
+                {
+                    Logger.Error($"The property of name \"{name}\" couldn't be casted to \"{typeof(T).Name}\" for object with name: \"{objectFullNameWithID}\".");
+                    return default(T);
+                }
+            }
+            else
+            {
+                Logger.Error($"Couldn't find property of name \"{name}\" OF TYPE \"{typeof(T).Name}\" for object with name: \"{objectFullNameWithID}\".");
+                return default(T);
+            }
+        }
+
+        public virtual bool TriggerAction(string actionName)
+        {
+            if (actionName == "SetActive_True")
+            {
+                gameObject.SetActive(true);
+            }
+            else if (actionName == "SetActive_False")
+            {
+                gameObject.SetActive(false);
             }
 
-            Logger.Error($"Couldn't find property of name \"{name}\" OF TYPE \"{typeof(T).Name}\" for object with name: \"{objectFullNameWithID}\"");
-            return default(T);
+            return false;
         }
 
         public virtual void OnSelect()
         {
             if (canBeDisabledAtStart) gameObject.SetOpaqueMaterials();
+
+            if (eventExecuter) eventExecuter.OnSelect();
         }
         public virtual void OnDeselect(GameObject nextSelectedObj)
         {
@@ -271,6 +368,8 @@ namespace FS_LevelEditor
                     gameObject.SetOpaqueMaterials();
                 }
             }
+
+            if (eventExecuter) eventExecuter.OnDeselect();
         }
         public virtual void OnDelete()
         {
@@ -284,7 +383,13 @@ namespace FS_LevelEditor
             }
         }
 
-        virtual protected LE_Object[] GetReferenceObjectsToGetObjID()
+        public virtual List<string> GetAvailableEventsIDs()
+        {
+            return new List<string>();
+        }
+        #endregion
+
+        LE_Object[] GetReferenceObjectsToGetObjID()
         {
             if (EditorController.Instance != null && PlayModeController.Instance == null)
             {
@@ -296,6 +401,104 @@ namespace FS_LevelEditor
             }
 
             return null;
+        }
+
+        public enum LEObjectContext { PREVIEW, SELECT, NORMAL }
+        public static Color GetObjectColor(LEObjectContext context)
+        {
+            switch (context)
+            {
+                case LEObjectContext.PREVIEW:
+                    return new Color(0f, 0.666f, 0.894f, 1f);
+
+                case LEObjectContext.SELECT:
+                    return new Color(0f, 1f, 0f);
+
+                case LEObjectContext.NORMAL:
+                    return new Color(1f, 1f, 1f);
+            }
+
+            return new Color(1f, 1f, 1f);
+        }
+        public static Color GetObjectColorForObject(string objName, LEObjectContext context)
+        {
+            string className = "LE_" + objName.Replace(' ', '_');
+            Type classType = Type.GetType("FS_LevelEditor." + className);
+
+            if (classType != null)
+            {
+                var flags = BindingFlags.Static
+                    | BindingFlags.Public
+                    | BindingFlags.NonPublic
+                    | BindingFlags.DeclaredOnly;
+
+                MethodInfo method = classType.GetMethod(nameof(GetObjectColor), flags);
+                if (method != null)
+                {
+                    return (Color)method.Invoke(null, new object[] { context });
+                }
+                else // If it's null is prolly 'cause the class doesn't have the method declared, so, just use the default implementation.
+                {
+                    return GetObjectColor(context);
+                }
+            }
+            else
+            {
+                return GetObjectColor(context);
+            }
+        }
+        public void SetObjectColor(LEObjectContext context)
+        {
+            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
+            {
+                foreach (var material in renderer.materials)
+                {
+                    if (!material.HasProperty("_Color")) continue;
+
+                    Color toSet = LE_Object.GetObjectColorForObject(objectOriginalName, context);
+                    toSet.a = material.color.a;
+                    material.color = toSet;
+                }
+            }
+        }
+        public static void SetObjectColor(GameObject obj, string objInternalName, LEObjectContext context)
+        {
+            foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
+            {
+                foreach (var material in renderer.materials)
+                {
+                    if (!material.HasProperty("_Color")) continue;
+
+                    Color toSet = LE_Object.GetObjectColorForObject(objInternalName, context);
+                    toSet.a = material.color.a;
+                    material.color = toSet;
+                }
+            }
+        }
+
+        public void SetCollidersState(bool newEnabledState)
+        {
+            if (!gameObject.ExistsChildWithName("Content"))
+            {
+                Logger.Error($"\"{objectOriginalName}\" object doesn't contain a Content object for some reason???");
+                return;
+            }
+
+            foreach (var collider in gameObject.GetChildWithName("Content").TryGetComponents<Collider>())
+            {
+                collider.enabled = newEnabledState;
+            }
+        }
+        public void SetEditorCollider(bool newEnabledState)
+        {
+            if (gameObject.ExistsChildWithName("EditorCollider"))
+            {
+                gameObject.GetChildWithName("EditorCollider").SetActive(newEnabledState);
+            }
+            else
+            {
+                Logger.Error($"\"{objectOriginalName}\" object doesn't contain an EditorCollider.");
+            }
         }
     }
 }

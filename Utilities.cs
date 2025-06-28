@@ -1,16 +1,15 @@
 ﻿using Il2Cpp;
 using Il2CppI2.Loc;
 using Il2CppInControl.NativeDeviceProfiles;
-using Il2CppSystem;
 using MelonLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor
 {
@@ -18,8 +17,9 @@ namespace FS_LevelEditor
     {
         static Coroutine customNotificationCoroutine;
 
-        static Material propsMat, propsNoSpecMat;
-        static Material propsTransMat, propsTransNoSpecMat;
+        static Material propsMat, propsTransMat;
+        static Material propsNoSpecMat, propsTransNoSpecMat;
+        static Material newPropsv1Mat, newPropsv1TransMat;
 
         public static bool theresAnInputFieldSelected
         {
@@ -37,10 +37,13 @@ namespace FS_LevelEditor
         public static void LoadMaterials(Il2CppAssetBundle bundle)
         {
             propsMat = bundle.Load<Material>("Props_Mat");
-            propsNoSpecMat = bundle.Load<Material>("Props_NoSpec");
-
             propsTransMat = bundle.Load<Material>("PropsTransparent_Mat");
+
+            propsNoSpecMat = bundle.Load<Material>("Props_NoSpec");
             propsTransNoSpecMat = bundle.Load<Material>("PropsTransparent_NoSpec");
+
+            newPropsv1Mat = bundle.Load<Material>("NewProps_v1");
+            newPropsv1TransMat = bundle.Load<Material>("NewProps_v1_Transparent");
         }
 
         public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
@@ -388,6 +391,12 @@ namespace FS_LevelEditor
                         materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
                                 renderer.materials[i].color.b, 0.392f);
                     }
+                    else if (renderer.materials[i].name.Contains("NewProps_v1"))
+                    {
+                        materials[i] = new Material(newPropsv1TransMat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                renderer.materials[i].color.b, 0.392f);
+                    }
                 }
 
                 renderer.materials = materials;
@@ -412,6 +421,12 @@ namespace FS_LevelEditor
                         materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
                                 renderer.materials[i].color.b, 1f);
                     }
+                    else if (renderer.materials[i].name.Contains("NewProps_v1_Transparent"))
+                    {
+                        materials[i] = new Material(newPropsv1Mat);
+                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
+                                renderer.materials[i].color.b, 1f);
+                    }
                 }
 
                 renderer.materials = materials;
@@ -423,7 +438,8 @@ namespace FS_LevelEditor
             POPUP_UI_SHOW,
             POPUP_UI_HIDE,
             INTERACTION_AVAILABLE,
-            INTERACTION_UNAVAILABLE
+            INTERACTION_UNAVAILABLE,
+            SHOW_NEW_PAGE_SOUND
         }
         public static void PlayFSUISound(FS_UISound sound)
         {
@@ -439,6 +455,78 @@ namespace FS_LevelEditor
                     InGameUIManager.Instance.interactionNoLongerAvailableSound;
                 MenuController.GetInstance().m_uiAudioSource.PlayOneShot(toPlay);
             }
+            else if (sound == FS_UISound.SHOW_NEW_PAGE_SOUND)
+            {
+                MenuController.GetInstance().m_uiAudioSource.PlayOneShot(MenuController.GetInstance().showNewPageSound);
+            }
+        }
+
+        public static void SetXRotation(this Transform transform, float newValue)
+        {
+            transform.localEulerAngles = new Vector3(newValue, transform.localEulerAngles.y, transform.localEulerAngles.z);
+        }
+        public static void SetYRotation(this Transform transform, float newValue)
+        {
+            transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, newValue, transform.localEulerAngles.z);
+        }
+        public static void SetZRotation(this Transform transform, float newValue)
+        {
+            transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, newValue);
+        }
+
+        public static void SetXScale(this Transform transform, float newValue)
+        {
+            transform.localScale = new Vector3(newValue, transform.localScale.y, transform.localScale.z);
+        }
+        public static void SetYScale(this Transform transform, float newValue)
+        {
+            transform.localScale = new Vector3(transform.localScale.x, newValue, transform.localScale.z);
+        }
+        public static void SetZScale(this Transform transform, float newValue)
+        {
+            transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, newValue);
+        }
+
+        public static bool TryParseFloat(string text, out float result)
+        {
+            if (float.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float value))
+            {
+                result = value;
+                return true;
+            }
+            else
+            {
+                result = 0f;
+                return false;
+            }
+        }
+
+        public static float ParseFloat(string text, bool throwErrorIfCantParse = false)
+        {
+            if (float.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float value))
+            {
+                return value;
+            }
+            else
+            {
+                if (throwErrorIfCantParse) Logger.Error($"Couldn't parse \"{text}\" to float!");
+                return value;
+            }
+        }
+
+        public static bool IsOverridingMethod(Type type, string methodName)
+        {
+            var flags = BindingFlags.Instance
+                  | BindingFlags.Public
+                  | BindingFlags.NonPublic
+                  | BindingFlags.DeclaredOnly;
+
+            return type.GetMethod(methodName, flags) != null;
+        }
+
+        public static float HighestValueOfVector(Vector3 vector)
+        {
+            return Mathf.Max(vector.x, Mathf.Max(vector.y, vector.z));
         }
     }
 }
