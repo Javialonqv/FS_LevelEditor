@@ -381,7 +381,8 @@ namespace FS_LevelEditor
             SetSelectedObjPanelAsNone();
 
             CreateGlobalObjectAttributesPanel();
-            CreateLightAttributesPanel();
+            CreateDirectionalLightAttributesPanel();
+            CreatePointLightAttributesPanel();
             CreateSawAttributesPanel();
             CreateSawWaypointAttributesPanel();
             CreateSwitchAttributesPanel();
@@ -515,24 +516,24 @@ namespace FS_LevelEditor
             globalAttributesList.Add("Scale", scaleThingsParent);
         }
 
-        void CreateLightAttributesPanel()
+        void CreateDirectionalLightAttributesPanel()
         {
-            GameObject lightAttributes = new GameObject("LightAttributes");
-            lightAttributes.transform.parent = objectSpecificPanelsParent;
-            lightAttributes.transform.localPosition = Vector3.zero;
-            lightAttributes.transform.localScale = Vector3.one;
+            GameObject directionalLightAttributes = new GameObject("DirectionalLightAttributes");
+            directionalLightAttributes.transform.parent = objectSpecificPanelsParent;
+            directionalLightAttributes.transform.localPosition = Vector3.zero;
+            directionalLightAttributes.transform.localScale = Vector3.one;
 
             #region Color Input Field
-            UILabel colorTitle = NGUI_Utils.CreateLabel(lightAttributes.transform, new Vector3(-230, 90), new Vector3Int(235, NGUI_Utils.defaultLabelSize.y, 0), "Color (Hex)");
+            UILabel colorTitle = NGUI_Utils.CreateLabel(directionalLightAttributes.transform, new Vector3(-230, 90), new Vector3Int(235, NGUI_Utils.defaultLabelSize.y, 0), "Color (Hex)");
             colorTitle.name = "ColorTitle";
             colorTitle.color = Color.white;
 
-            UILabel hashtagLOL = NGUI_Utils.CreateLabel(lightAttributes.transform, new Vector3(15, 90), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
+            UILabel hashtagLOL = NGUI_Utils.CreateLabel(directionalLightAttributes.transform, new Vector3(15, 90), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
                 NGUIText.Alignment.Center, UIWidget.Pivot.Left);
             hashtagLOL.name = "HashtagLOL";
             hashtagLOL.color = Color.white;
 
-            GameObject colorInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
+            GameObject colorInputField = NGUI_Utils.CreateInputField(directionalLightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
                 "FFFFFF", false);
             colorInputField.name = "ColorField";
             var colorFieldCustomScript = colorInputField.AddComponent<UICustomInputField>();
@@ -542,11 +543,11 @@ namespace FS_LevelEditor
             #endregion
 
             #region Intensity Input Field
-            UILabel intensityTitle = NGUI_Utils.CreateLabel(lightAttributes.transform, new Vector3(-230, 40), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0), "Intensity");
+            UILabel intensityTitle = NGUI_Utils.CreateLabel(directionalLightAttributes.transform, new Vector3(-230, 40), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0), "Intensity");
             intensityTitle.name = "IntensityTitle";
             intensityTitle.color = Color.white;
 
-            GameObject intensityInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+            GameObject intensityInputField = NGUI_Utils.CreateInputField(directionalLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
                 "1", false);
             intensityInputField.name = "IntensityField";
             var intensityFieldCustomScript = intensityInputField.AddComponent<UICustomInputField>();
@@ -555,8 +556,65 @@ namespace FS_LevelEditor
             intensityFieldCustomScript.onChange += (() => SetPropertyWithInput("Intensity", intensityFieldCustomScript));
             #endregion
 
-            lightAttributes.SetActive(false);
-            attrbutesPanels.Add("Light", lightAttributes);
+            directionalLightAttributes.SetActive(false);
+            attrbutesPanels.Add("Directional Light", directionalLightAttributes);
+        }
+        void CreatePointLightAttributesPanel()
+        {
+            GameObject pointLightAttributes = new GameObject("PointLightAttributes");
+            pointLightAttributes.transform.parent = objectSpecificPanelsParent;
+            pointLightAttributes.transform.localPosition = Vector3.zero;
+            pointLightAttributes.transform.localScale = Vector3.one;
+
+            #region Color Input Field
+            UILabel colorTitle = NGUI_Utils.CreateLabel(pointLightAttributes.transform, new Vector3(-230, 90), new Vector3Int(235, NGUI_Utils.defaultLabelSize.y, 0), "Color (Hex)");
+            colorTitle.name = "ColorTitle";
+            colorTitle.color = Color.white;
+
+            UILabel hashtagLOL = NGUI_Utils.CreateLabel(pointLightAttributes.transform, new Vector3(15, 90), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
+                NGUIText.Alignment.Center, UIWidget.Pivot.Left);
+            hashtagLOL.name = "HashtagLOL";
+            hashtagLOL.color = Color.white;
+
+            GameObject colorInputField = NGUI_Utils.CreateInputField(pointLightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
+                "FFFFFF", false);
+            colorInputField.name = "ColorField";
+            var colorFieldCustomScript = colorInputField.AddComponent<UICustomInputField>();
+            colorFieldCustomScript.Setup(UICustomInputField.UIInputType.HEX_COLOR);
+            colorFieldCustomScript.setFieldColorAutomatically = false;
+            colorFieldCustomScript.onChange += (() => SetPropertyWithInput("Color", colorFieldCustomScript));
+            #endregion
+
+            #region Intensity Input Field
+            UILabel intensityTitle = NGUI_Utils.CreateLabel(pointLightAttributes.transform, new Vector3(-230, 40), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0), "Intensity");
+            intensityTitle.name = "IntensityTitle";
+            intensityTitle.color = Color.white;
+
+            GameObject intensityInputField = NGUI_Utils.CreateInputField(pointLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
+                "1", false);
+            intensityInputField.name = "IntensityField";
+            var intensityFieldCustomScript = intensityInputField.AddComponent<UICustomInputField>();
+            intensityFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            intensityFieldCustomScript.setFieldColorAutomatically = false;
+            intensityFieldCustomScript.onChange += (() => SetPropertyWithInput("Intensity", intensityFieldCustomScript));
+            #endregion
+
+            #region Range Input Field
+            UILabel rangeTitle = NGUI_Utils.CreateLabel(pointLightAttributes.transform, new Vector3(-230, -10), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0), "Range");
+            rangeTitle.name = "RangeTitle";
+            rangeTitle.color = Color.white;
+
+            GameObject rangeInputField = NGUI_Utils.CreateInputField(pointLightAttributes.transform, new Vector3(140f, -10f, 0f), new Vector3Int(200, 38, 0), 27,
+                "10", false);
+            rangeInputField.name = "RangeField";
+            var rangeFieldCustomScript = rangeInputField.AddComponent<UICustomInputField>();
+            rangeFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            rangeFieldCustomScript.setFieldColorAutomatically = false;
+            rangeFieldCustomScript.onChange += (() => SetPropertyWithInput("Range", rangeFieldCustomScript));
+            #endregion
+
+            pointLightAttributes.SetActive(false);
+            attrbutesPanels.Add("Point Light", pointLightAttributes);
         }
         void CreateSawAttributesPanel()
         {
@@ -914,17 +972,33 @@ namespace FS_LevelEditor
             globalObjAttributesToggle.gameObject.SetActive(true);
             globalObjAttributesToggle.SetToggleState(false, true);
 
-            if (objComponent.objectOriginalName == "Directional Light" || objComponent.objectOriginalName == "Point Light")
+            if (objComponent.objectOriginalName == "Directional Light")
             {
-                attrbutesPanels["Light"].SetActive(true);
+                attrbutesPanels["Directional Light"].SetActive(true);
 
                 // Set color input...
-                var colorInput = attrbutesPanels["Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
+                var colorInput = attrbutesPanels["Directional Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
                 colorInput.text = Utilities.ColorToHex((Color)objComponent.GetProperty("Color"));
 
                 // Set intensity input...
-                var intensityInput = attrbutesPanels["Light"].GetChildWithName("IntensityField").GetComponent<UIInput>();
+                var intensityInput = attrbutesPanels["Directional Light"].GetChildWithName("IntensityField").GetComponent<UIInput>();
                 intensityInput.text = (float)objComponent.GetProperty("Intensity") + "";
+            }
+            else if (objComponent.objectOriginalName == "Point Light")
+            {
+                attrbutesPanels["Point Light"].SetActive(true);
+
+                // Set color input...
+                var colorInput = attrbutesPanels["Point Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
+                colorInput.text = Utilities.ColorToHex((Color)objComponent.GetProperty("Color"));
+
+                // Set intensity input...
+                var intensityInput = attrbutesPanels["Point Light"].GetChildWithName("IntensityField").GetComponent<UIInput>();
+                intensityInput.text = (float)objComponent.GetProperty("Intensity") + "";
+
+                // Set range input...
+                var rangeInput = attrbutesPanels["Point Light"].GetChildWithName("RangeField").GetComponent<UIInput>();
+                rangeInput.text = (float)objComponent.GetProperty("Range") + "";
             }
             else if (objComponent.objectOriginalName == "Saw")
             {

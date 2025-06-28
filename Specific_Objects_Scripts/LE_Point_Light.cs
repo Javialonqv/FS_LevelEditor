@@ -12,16 +12,19 @@ namespace FS_LevelEditor
     {
         Light light;
         GameObject lightBulbSprite;
+        GameObject rangeSphere;
 
         void Awake()
         {
             light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
             lightBulbSprite = gameObject.GetChildAt("Content/Sprite");
+            rangeSphere = gameObject.GetChildAt("Content/RangeSphere");
 
             properties = new Dictionary<string, object>()
             {
                 { "Color", Color.white },
-                { "Intensity", 1f }
+                { "Intensity", 1f },
+                { "Range", 10f }
             };
         }
 
@@ -30,7 +33,7 @@ namespace FS_LevelEditor
             if (scene == LEScene.Playmode)
             {
                 Destroy(lightBulbSprite);
-                Destroy(gameObject.GetChildWithName("Arrow"));
+                Destroy(rangeSphere);
             }
 
             base.OnInstantiated(scene);
@@ -94,8 +97,57 @@ namespace FS_LevelEditor
                     return false;
                 }
             }
+            else if (name == "Range")
+            {
+                if (value is float)
+                {
+                    light.range = (float)value;
+                    SetRangeSphereScale((float)value);
+                    properties["Range"] = (float)value;
+                    return true;
+                }
+                else if (value is string)
+                {
+                    if (Utilities.TryParseFloat((string)value, out float result))
+                    {
+                        light.range = result;
+                        SetRangeSphereScale(result);
+                        properties["Range"] = result;
+                        return true;
+                    }
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"Range\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
 
             return false;
+        }
+
+        void SetRangeSphereScale(float range)
+        {
+            Vector3 rangeSpherescale = Vector3.one * light.range * 2;
+            rangeSphere.transform.localScale = rangeSpherescale;
+        }
+
+        public override void OnSelect()
+        {
+            base.OnSelect();
+
+            rangeSphere.SetActive(true);
+        }
+        public override void OnDeselect(GameObject nextSelectedObj)
+        {
+            base.OnDeselect(nextSelectedObj);
+
+            rangeSphere.SetActive(false);
+        }
+
+        public static new Color GetObjectColor(LEObjectContext context)
+        {
+            return new Color(0.7735849f, 0.7735849f, 0.1131185f, 0.03921569f);
         }
     }
 }
