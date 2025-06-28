@@ -103,7 +103,6 @@ namespace FS_LevelEditor
         public static Laser_H_Controller t_laser;
         public static RealtimeCeilingLight t_ceilingLight;
         public static FlameTrapController t_flameTrap;
-        #endregion
 
         public static void GetTemplatesReferences()
         {
@@ -118,6 +117,7 @@ namespace FS_LevelEditor
             t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
             t_flameTrap = FindObjectOfType<FlameTrapController>();
         }
+        #endregion
 
         public virtual void Start()
         {
@@ -139,10 +139,6 @@ namespace FS_LevelEditor
                     else if (PlayModeController.Instance) ObjectStart(LEScene.Playmode);
                 }
             }
-        }
-        public virtual void ObjectStart(LEScene scene)
-        {
-
         }
         void Init(string originalObjName)
         {
@@ -168,28 +164,6 @@ namespace FS_LevelEditor
             {
                 eventExecuter = gameObject.AddComponent<EventExecuter>();
             }
-        }
-        public virtual void OnInstantiated(LEScene scene)
-        {
-            if (scene == LEScene.Editor)
-            {
-                SetCollidersState(false);
-                SetEditorCollider(true);
-            }
-            else if (scene == LEScene.Playmode)
-            {
-                // Don't set the colliders to true because they can be objects with enabled AND disabled colliders, we don't want to break
-                // that.
-                SetEditorCollider(false);
-
-                if (!initialized) InitComponent();
-            }
-
-            if (eventExecuter) eventExecuter.OnInstantiated(scene);
-        }
-        public virtual void InitComponent()
-        {
-            initialized = true;
         }
 
         /// <summary>
@@ -285,6 +259,34 @@ namespace FS_LevelEditor
             return currentInstances >= maxInstances;
         }
 
+        #region Virtual Methods
+        public virtual void OnInstantiated(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                SetCollidersState(false);
+                SetEditorCollider(true);
+            }
+            else if (scene == LEScene.Playmode)
+            {
+                // Don't set the colliders to true because they can be objects with enabled AND disabled colliders, we don't want to break
+                // that.
+                SetEditorCollider(false);
+
+                if (!initialized) InitComponent();
+            }
+
+            if (eventExecuter) eventExecuter.OnInstantiated(scene);
+        }
+        public virtual void InitComponent()
+        {
+            initialized = true;
+        }
+        public virtual void ObjectStart(LEScene scene)
+        {
+
+        }
+
         /// <summary>
         /// Sets a property inside of the object properties list if it exists.
         /// </summary>
@@ -320,10 +322,17 @@ namespace FS_LevelEditor
                 {
                     return (T)properties[name];
                 }
+                else
+                {
+                    Logger.Error($"The property of name \"{name}\" couldn't be casted to \"{typeof(T).Name}\" for object with name: \"{objectFullNameWithID}\".");
+                    return default(T);
+                }
             }
-
-            Logger.Error($"Couldn't find property of name \"{name}\" OF TYPE \"{typeof(T).Name}\" for object with name: \"{objectFullNameWithID}\"");
-            return default(T);
+            else
+            {
+                Logger.Error($"Couldn't find property of name \"{name}\" OF TYPE \"{typeof(T).Name}\" for object with name: \"{objectFullNameWithID}\".");
+                return default(T);
+            }
         }
 
         public virtual bool TriggerAction(string actionName)
@@ -378,8 +387,9 @@ namespace FS_LevelEditor
         {
             return new List<string>();
         }
+        #endregion
 
-        virtual protected LE_Object[] GetReferenceObjectsToGetObjID()
+        LE_Object[] GetReferenceObjectsToGetObjID()
         {
             if (EditorController.Instance != null && PlayModeController.Instance == null)
             {

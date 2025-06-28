@@ -10,7 +10,7 @@ namespace FS_LevelEditor.UI_Related
 {
     public static class NGUI_Utils
     {
-        #region Templates
+        #region Templates / References
         // UIAtlas
         static UIAtlas _fractalSpaceAtlas;
         public static UIAtlas fractalSpaceAtlas
