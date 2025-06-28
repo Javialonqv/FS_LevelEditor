@@ -10,7 +10,8 @@ namespace FS_LevelEditor.UI_Related
 {
     public static class NGUI_Utils
     {
-        // Returns "Fractal_Space" atlas.
+        #region Templates
+        // UIAtlas
         static UIAtlas _fractalSpaceAtlas;
         public static UIAtlas fractalSpaceAtlas
         {
@@ -37,6 +38,7 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
+        // UIFont
         static UIFont _labelFont;
         public static UIFont labelFont
         {
@@ -49,7 +51,18 @@ namespace FS_LevelEditor.UI_Related
                 return _labelFont;
             }
         }
+        static UIFont _robotoFont;
+        public static UIFont robotoFont
+        {
+            get
+            {
+                if (!_robotoFont) _robotoFont = GameObject.Find("MainMenu/Camera/Holder/Tooltip/Label").GetComponent<UILabel>().font;
 
+                return _robotoFont;
+            }
+        }
+
+        // Color
         public static Color fsButtonsDefaultColor
         {
             get { return new Color(0.218f, 0.6464f, 0.6509f, 1f); }
@@ -63,6 +76,7 @@ namespace FS_LevelEditor.UI_Related
             get { return new Color(0.2868f, 0.971f, 1f, 1f); }
         }
 
+        // GameObject
         static GameObject _labelTemplate;
         public static GameObject labelTemplate
         {
@@ -110,6 +124,19 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
+        // Material
+        static Material _controllerAtlasMat;
+        public static Material controllerAtlasMaterial
+        {
+            get
+            {
+                if (!_controllerAtlasMat) _controllerAtlasMat = GameObject.Find("MainMenu/Camera/Holder/Main/Window").GetComponent<UISprite>().material;
+
+                return _controllerAtlasMat;
+            }
+        }
+
+        // Camera
         static Camera _mainMenuCamera;
         public static Camera mainMenuCamera
         {
@@ -120,6 +147,16 @@ namespace FS_LevelEditor.UI_Related
                 return _mainMenuCamera;
             }
         }
+
+        // Misc
+        public static Vector3Int defaultLabelSize
+        {
+            get
+            {
+                return new Vector3Int(333, 38, 0);
+            }
+        }
+        #endregion
 
         public static GameObject CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize = 27, string defaultText = "",
             bool hasOutline = false, NGUIText.Alignment alignment = NGUIText.Alignment.Left)

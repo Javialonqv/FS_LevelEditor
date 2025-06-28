@@ -1,20 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FS_LevelEditor.UI_Related;
 using Il2Cpp;
+using Il2CppInControl.NativeDeviceProfiles;
 using Il2CppVLB;
 using MelonLoader;
-using UnityEngine;
-using System.Reflection;
+using System;
 using System.Collections;
-using Il2CppInControl.NativeDeviceProfiles;
-using static Il2Cpp.UIAtlas;
-using FS_LevelEditor.UI_Related;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
-using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
+using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
+using static Il2Cpp.UIAtlas;
+using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor
 {
@@ -56,8 +57,8 @@ namespace FS_LevelEditor
         public UIToggle setActiveAtStartToggle;
         bool executeSetActiveAtStartToggleActions = true;
 
-        GameObject savingLevelLabel;
-        GameObject savingLevelLabelInPauseMenu;
+        UILabel savingLevelLabel;
+        UILabel savingLevelLabelInPauseMenu;
         Coroutine savingLevelLabelRoutine;
 
         public UILabel currentModeLabel;
@@ -299,16 +300,13 @@ namespace FS_LevelEditor
         #region Selected Object Panel Related
         public void CreateSelectedObjPanel()
         {
-            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             selectedObjPanel = new GameObject("CurrentSelectedObjPanel");
             selectedObjPanel.transform.parent = editorUIParent.transform;
             selectedObjPanel.transform.localPosition = new Vector3(-700f, -220f, 0f);
             selectedObjPanel.transform.localScale = Vector3.one;
 
             UISprite headerSprite = selectedObjPanel.AddComponent<UISprite>();
-            headerSprite.atlas = template.GetComponent<UISprite>().atlas;
+            headerSprite.atlas = NGUI_Utils.UITexturesAtlas;
             headerSprite.spriteName = "Square_Border_Beveled_HighOpacity";
             headerSprite.type = UIBasicSprite.Type.Sliced;
             headerSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
@@ -318,18 +316,11 @@ namespace FS_LevelEditor
             BoxCollider headerCollider = selectedObjPanel.AddComponent<BoxCollider>();
             headerCollider.size = new Vector3(520f, 60f, 1f);
 
-            GameObject headerText = new GameObject("Label");
-            headerText.transform.parent = selectedObjPanel.transform;
-            headerText.transform.localPosition = Vector3.zero;
-            headerText.transform.localScale = Vector3.one;
-
-            UILabel headerLabel = headerText.AddComponent<UILabel>();
-            headerLabel.font = labelTemplate.GetComponent<UILabel>().font;
+            UILabel headerLabel = NGUI_Utils.CreateLabel(selectedObjPanel.transform, Vector3.zero, new Vector3Int(520, 60, 0), "No Object Selected", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            headerLabel.name = "Label";
             headerLabel.fontSize = 27;
-            headerLabel.text = "No Object Selected";
             headerLabel.depth = 1;
-            headerLabel.width = 520;
-            headerLabel.height = 60;
 
             GameObject setActiveAtStartToggleObj = NGUI_Utils.CreateToggle(selectedObjPanel.transform, new Vector3(-220f, 0f, 0f),
                 new Vector3Int(48, 48, 0));
@@ -364,7 +355,7 @@ namespace FS_LevelEditor
             selectedObjPanelBody.transform.localScale = Vector3.one;
 
             UISprite bodySprite = selectedObjPanelBody.AddComponent<UISprite>();
-            bodySprite.atlas = template.GetComponent<UISprite>().atlas;
+            bodySprite.atlas = NGUI_Utils.UITexturesAtlas;
             bodySprite.spriteName = "Square_Border_Beveled_HighOpacity";
             bodySprite.type = UIBasicSprite.Type.Sliced;
             bodySprite.color = new Color(0.0039f, 0.3568f, 0.3647f, 1f);
@@ -390,7 +381,6 @@ namespace FS_LevelEditor
             SetSelectedObjPanelAsNone();
 
             CreateGlobalObjectAttributesPanel();
-            CreateNoAttributesPanel();
             CreateLightAttributesPanel();
             CreateSawAttributesPanel();
             CreateSawWaypointAttributesPanel();
@@ -525,54 +515,25 @@ namespace FS_LevelEditor
             globalAttributesList.Add("Scale", scaleThingsParent);
         }
 
-        void CreateNoAttributesPanel()
-        {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject noAttributes = new GameObject("NoAttributes");
-            noAttributes.transform.parent = objectSpecificPanelsParent;
-            noAttributes.transform.localPosition = Vector3.zero;
-            noAttributes.transform.localScale = Vector3.one;
-
-            UILabel label = noAttributes.AddComponent<UILabel>();
-            label.font = labelTemplate.GetComponent<UILabel>().font;
-            label.fontSize = 27;
-            label.width = 500;
-            label.height = 300;
-            label.text = "No Attributes for this object.";
-
-            noAttributes.SetActive(false);
-            attrbutesPanels.Add("None", noAttributes);
-        }
         void CreateLightAttributesPanel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             GameObject lightAttributes = new GameObject("LightAttributes");
             lightAttributes.transform.parent = objectSpecificPanelsParent;
             lightAttributes.transform.localPosition = Vector3.zero;
             lightAttributes.transform.localScale = Vector3.one;
 
             #region Color Input Field
-            GameObject colorTitle = Instantiate(labelTemplate, lightAttributes.transform);
+            UILabel colorTitle = NGUI_Utils.CreateLabel(lightAttributes.transform, new Vector3(-230, 90), new Vector3Int(235, NGUI_Utils.defaultLabelSize.y, 0), "Color (Hex)");
             colorTitle.name = "ColorTitle";
-            colorTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
-            colorTitle.RemoveComponent<UILocalize>();
-            colorTitle.GetComponent<UILabel>().width = 235;
-            colorTitle.GetComponent<UILabel>().text = "Color (Hex)";
-            colorTitle.GetComponent<UILabel>().color = Color.white;
+            colorTitle.color = Color.white;
 
-            GameObject hashtagLOL = Instantiate(labelTemplate, lightAttributes.transform);
-            hashtagLOL.name = "ColorHashtag";
-            hashtagLOL.transform.localPosition = new Vector3(15f, 90f, 0f);
-            hashtagLOL.RemoveComponent<UILocalize>();
-            hashtagLOL.GetComponent<UILabel>().text = "#";
-            hashtagLOL.GetComponent<UILabel>().color = Color.white;
-            hashtagLOL.GetComponent<UILabel>().alignment = NGUIText.Alignment.Center;
-            hashtagLOL.GetComponent<UILabel>().width = 20;
+            UILabel hashtagLOL = NGUI_Utils.CreateLabel(lightAttributes.transform, new Vector3(15, 90), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
+                NGUIText.Alignment.Center, UIWidget.Pivot.Left);
+            hashtagLOL.name = "HashtagLOL";
+            hashtagLOL.color = Color.white;
 
             GameObject colorInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
-                "FFFFFF", false, NGUIText.Alignment.Left);
+                "FFFFFF", false);
             colorInputField.name = "ColorField";
             var colorFieldCustomScript = colorInputField.AddComponent<UICustomInputField>();
             colorFieldCustomScript.Setup(UICustomInputField.UIInputType.HEX_COLOR);
@@ -581,16 +542,12 @@ namespace FS_LevelEditor
             #endregion
 
             #region Intensity Input Field
-            GameObject intensityTitle = Instantiate(labelTemplate, lightAttributes.transform);
+            UILabel intensityTitle = NGUI_Utils.CreateLabel(lightAttributes.transform, new Vector3(-230, 40), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0), "Intensity");
             intensityTitle.name = "IntensityTitle";
-            intensityTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
-            intensityTitle.RemoveComponent<UILocalize>();
-            intensityTitle.GetComponent<UILabel>().width = 260;
-            intensityTitle.GetComponent<UILabel>().text = "Intensity";
-            intensityTitle.GetComponent<UILabel>().color = Color.white;
+            intensityTitle.color = Color.white;
 
             GameObject intensityInputField = NGUI_Utils.CreateInputField(lightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
-                "1", false, NGUIText.Alignment.Left);
+                "1", false);
             intensityInputField.name = "IntensityField";
             var intensityFieldCustomScript = intensityInputField.AddComponent<UICustomInputField>();
             intensityFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
@@ -603,22 +560,16 @@ namespace FS_LevelEditor
         }
         void CreateSawAttributesPanel()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             GameObject sawAttributes = new GameObject("SawAttributes");
             sawAttributes.transform.parent = objectSpecificPanelsParent;
             sawAttributes.transform.localPosition = Vector3.zero;
             sawAttributes.transform.localScale = Vector3.one;
 
             #region Activate On Start Toggle
-            GameObject activateOnStartTitle = Instantiate(labelTemplate, sawAttributes.transform);
+            UILabel activateOnStartTitle = NGUI_Utils.CreateLabel(sawAttributes.transform, new Vector3(-230, 90), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
+                "Activate On Start");
             activateOnStartTitle.name = "ActivateOnStartTitle";
-            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
-            activateOnStartTitle.RemoveComponent<UILocalize>();
-            activateOnStartTitle.GetComponent<UILabel>().width = 395;
-            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
-            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+            activateOnStartTitle.color = Color.white;
 
             GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(sawAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
             activateOnStartToggle.name = "ActivateOnStartToggle";
@@ -630,13 +581,9 @@ namespace FS_LevelEditor
             #endregion
 
             #region Damage Input Field
-            GameObject damageTitle = Instantiate(labelTemplate, sawAttributes.transform);
+            UILabel damageTitle = NGUI_Utils.CreateLabel(sawAttributes.transform, new Vector3(-230, 40), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0), "Damage");
             damageTitle.name = "DamageTitle";
-            damageTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
-            damageTitle.RemoveComponent<UILocalize>();
-            damageTitle.GetComponent<UILabel>().width = 260;
-            damageTitle.GetComponent<UILabel>().text = "Damage";
-            damageTitle.GetComponent<UILabel>().color = Color.white;
+            damageTitle.color = Color.white;
 
             GameObject damageInputField = NGUI_Utils.CreateInputField(sawAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
                 "50", false, NGUIText.Alignment.Left);
@@ -659,22 +606,16 @@ namespace FS_LevelEditor
         }
         void CreateSawWaypointAttributesPanel()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             GameObject sawWaypointAttributes = new GameObject("SawWaypointAttributes");
             sawWaypointAttributes.transform.parent = objectSpecificPanelsParent;
             sawWaypointAttributes.transform.localPosition = Vector3.zero;
             sawWaypointAttributes.transform.localScale = Vector3.one;
 
             #region Wait Time Input Field
-            GameObject waitTimeTitle = Instantiate(labelTemplate, sawWaypointAttributes.transform);
+            UILabel waitTimeTitle = NGUI_Utils.CreateLabel(sawWaypointAttributes.transform, new Vector3(-230, 90), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0),
+                "Wait Time");
             waitTimeTitle.name = "WaitTimeTitle";
-            waitTimeTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
-            waitTimeTitle.RemoveComponent<UILocalize>();
-            waitTimeTitle.GetComponent<UILabel>().width = 260;
-            waitTimeTitle.GetComponent<UILabel>().text = "Wait Time";
-            waitTimeTitle.GetComponent<UILabel>().color = Color.white;
+            waitTimeTitle.color = Color.white;
 
             GameObject waitTimeInputField = NGUI_Utils.CreateInputField(sawWaypointAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
                 "0.3", false, NGUIText.Alignment.Left);
@@ -697,22 +638,16 @@ namespace FS_LevelEditor
         }
         void CreateSwitchAttributesPanel()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             GameObject switchAttributes = new GameObject("SwitchAttributes");
             switchAttributes.transform.parent = objectSpecificPanelsParent;
             switchAttributes.transform.localPosition = Vector3.zero;
             switchAttributes.transform.localScale = Vector3.one;
 
             #region Usable Once Toggle
-            GameObject usableOnceTitle = Instantiate(labelTemplate, switchAttributes.transform);
+            UILabel usableOnceTitle = NGUI_Utils.CreateLabel(switchAttributes.transform, new Vector3(-230, 90), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
+                "Usable Once");
             usableOnceTitle.name = "UsableOnceTitle";
-            usableOnceTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
-            usableOnceTitle.RemoveComponent<UILocalize>();
-            usableOnceTitle.GetComponent<UILabel>().width = 395;
-            usableOnceTitle.GetComponent<UILabel>().text = "Usable Once";
-            usableOnceTitle.GetComponent<UILabel>().color = Color.white;
+            usableOnceTitle.color = Color.white;
 
             GameObject usableOnceToggle = NGUI_Utils.CreateToggle(switchAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
             usableOnceToggle.name = "UsableOnceToggle";
@@ -724,13 +659,10 @@ namespace FS_LevelEditor
             #endregion
 
             #region Can Use Taser Toggle
-            GameObject canUseTaserTitle = Instantiate(labelTemplate, switchAttributes.transform);
-            canUseTaserTitle.transform.localPosition = new Vector3(-230f, 35f, 0f);
+            UILabel canUseTaserTitle = NGUI_Utils.CreateLabel(switchAttributes.transform, new Vector3(-230, 35), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
+                "Can be shot by Taser");
             canUseTaserTitle.name = "CanUseTaserTitle";
-            canUseTaserTitle.RemoveComponent<UILocalize>();
-            canUseTaserTitle.GetComponent<UILabel>().width = 395;
-            canUseTaserTitle.GetComponent<UILabel>().text = "Can be shot by Taser";
-            canUseTaserTitle.GetComponent<UILabel>().color = Color.white;
+            canUseTaserTitle.color = Color.white;
 
             GameObject canUseTaserToggle = NGUI_Utils.CreateToggle(switchAttributes.transform, new Vector3(200f, 35f, 0f), new Vector3Int(48, 48, 0));
             canUseTaserToggle.name = "CanUseTaserToggle";
@@ -754,22 +686,16 @@ namespace FS_LevelEditor
         }
         void CreateAmmoAndHealthPackAttributesPanel()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             GameObject ammoHealthAttributes = new GameObject("AmmoAndHealthPackAttributes");
             ammoHealthAttributes.transform.parent = objectSpecificPanelsParent;
             ammoHealthAttributes.transform.localPosition = Vector3.zero;
             ammoHealthAttributes.transform.localScale = Vector3.one;
 
             #region Respawn Time Input Field
-            GameObject respawnTitle = Instantiate(labelTemplate, ammoHealthAttributes.transform);
+            UILabel respawnTitle = NGUI_Utils.CreateLabel(ammoHealthAttributes.transform, new Vector3(-230, 90), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0),
+                "Respawn Title");
             respawnTitle.name = "RespawnTitle";
-            respawnTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
-            respawnTitle.RemoveComponent<UILocalize>();
-            respawnTitle.GetComponent<UILabel>().width = 260;
-            respawnTitle.GetComponent<UILabel>().text = "Respawn Time";
-            respawnTitle.GetComponent<UILabel>().color = Color.white;
+            respawnTitle.color = Color.white;
 
             GameObject respawnInputField = NGUI_Utils.CreateInputField(ammoHealthAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
                 "50", false, NGUIText.Alignment.Left);
@@ -784,22 +710,16 @@ namespace FS_LevelEditor
         }
         void CreateLaserAttributesPanel()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             GameObject laserAttributes = new GameObject("LaserAttributes");
             laserAttributes.transform.parent = objectSpecificPanelsParent;
             laserAttributes.transform.localPosition = Vector3.zero;
             laserAttributes.transform.localScale = Vector3.one;
 
             #region Activate On Start Toggle
-            GameObject activateOnStartTitle = Instantiate(labelTemplate, laserAttributes.transform);
+            UILabel activateOnStartTitle = NGUI_Utils.CreateLabel(laserAttributes.transform, new Vector3(-230, 90), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
+                "Activate On Start");
             activateOnStartTitle.name = "ActivateOnStartTitle";
-            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
-            activateOnStartTitle.RemoveComponent<UILocalize>();
-            activateOnStartTitle.GetComponent<UILabel>().width = 395;
-            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
-            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+            activateOnStartTitle.color = Color.white;
 
             GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(laserAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
             activateOnStartToggle.name = "ActivateOnStartToggle";
@@ -811,13 +731,10 @@ namespace FS_LevelEditor
             #endregion
 
             #region Insta Kill Toggle
-            GameObject instaKillTitle = Instantiate(labelTemplate, laserAttributes.transform);
+            UILabel instaKillTitle = NGUI_Utils.CreateLabel(laserAttributes.transform, new Vector3(-230, 40), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
+                "Instant Kill");
             instaKillTitle.name = "InstaKillTitle";
-            instaKillTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
-            instaKillTitle.RemoveComponent<UILocalize>();
-            instaKillTitle.GetComponent<UILabel>().width = 395;
-            instaKillTitle.GetComponent<UILabel>().text = "Instant Kill";
-            instaKillTitle.GetComponent<UILabel>().color = Color.white;
+            instaKillTitle.color = Color.white;
 
             GameObject instaKillToggle = NGUI_Utils.CreateToggle(laserAttributes.transform, new Vector3(200f, 40f, 0f), new Vector3Int(48, 48, 0));
             instaKillToggle.name = "InstaKillToggle";
@@ -829,13 +746,10 @@ namespace FS_LevelEditor
             #endregion
 
             #region Damage Input Field
-            GameObject damageTitle = Instantiate(labelTemplate, laserAttributes.transform);
+            UILabel damageTitle = NGUI_Utils.CreateLabel(laserAttributes.transform, new Vector3(-230, -10), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0),
+                "Damage");
             damageTitle.name = "DamageTitle";
-            damageTitle.transform.localPosition = new Vector3(-230f, -10f, 0f);
-            damageTitle.RemoveComponent<UILocalize>();
-            damageTitle.GetComponent<UILabel>().width = 260;
-            damageTitle.GetComponent<UILabel>().text = "Damage";
-            damageTitle.GetComponent<UILabel>().color = Color.white;
+            damageTitle.color = Color.white;
 
             GameObject damageInputField = NGUI_Utils.CreateInputField(laserAttributes.transform, new Vector3(140f, -10f, 0f), new Vector3Int(200, 38, 0), 27,
                 "34", false, NGUIText.Alignment.Left);
@@ -850,22 +764,16 @@ namespace FS_LevelEditor
         }
         void CreateCeilingLightPanel()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             GameObject ceilingLightAttributes = new GameObject("CeilingLightAttributes");
             ceilingLightAttributes.transform.parent = objectSpecificPanelsParent;
             ceilingLightAttributes.transform.localPosition = Vector3.zero;
             ceilingLightAttributes.transform.localScale = Vector3.one;
 
             #region Activate On Start Toggle
-            GameObject activateOnStartTitle = Instantiate(labelTemplate, ceilingLightAttributes.transform);
+            UILabel activateOnStartTitle = NGUI_Utils.CreateLabel(ceilingLightAttributes.transform, new Vector3(-230, 90), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
+                "Activate On Start");
             activateOnStartTitle.name = "ActivateOnStartTitle";
-            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
-            activateOnStartTitle.RemoveComponent<UILocalize>();
-            activateOnStartTitle.GetComponent<UILabel>().width = 395;
-            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
-            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+            activateOnStartTitle.color = Color.white;
 
             GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(ceilingLightAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
             activateOnStartToggle.name = "ActivateOnStartToggle";
@@ -877,22 +785,14 @@ namespace FS_LevelEditor
             #endregion
 
             #region Color Input Field
-            GameObject colorTitle = Instantiate(labelTemplate, ceilingLightAttributes.transform);
+            UILabel colorTitle = NGUI_Utils.CreateLabel(ceilingLightAttributes.transform, new Vector3(-230, 40), new Vector3Int(235, NGUI_Utils.defaultLabelSize.y, 0),
+                "Color (Hex)");
             colorTitle.name = "ColorTitle";
-            colorTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
-            colorTitle.RemoveComponent<UILocalize>();
-            colorTitle.GetComponent<UILabel>().width = 235;
-            colorTitle.GetComponent<UILabel>().text = "Color (Hex)";
-            colorTitle.GetComponent<UILabel>().color = Color.white;
+            colorTitle.color = Color.white;
 
-            GameObject hashtagLOL = Instantiate(labelTemplate, ceilingLightAttributes.transform);
-            hashtagLOL.name = "ColorHashtag";
-            hashtagLOL.transform.localPosition = new Vector3(15f, 40f, 0f);
-            hashtagLOL.RemoveComponent<UILocalize>();
-            hashtagLOL.GetComponent<UILabel>().text = "#";
-            hashtagLOL.GetComponent<UILabel>().color = Color.white;
-            hashtagLOL.GetComponent<UILabel>().alignment = NGUIText.Alignment.Center;
-            hashtagLOL.GetComponent<UILabel>().width = 20;
+            UILabel hashtagLOL = NGUI_Utils.CreateLabel(ceilingLightAttributes.transform, new Vector3(15, 40), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#");
+            hashtagLOL.name = "HashtagLOL";
+            hashtagLOL.color = Color.white;
 
             GameObject colorInputField = NGUI_Utils.CreateInputField(ceilingLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
                 "FFFFFF", false, NGUIText.Alignment.Left);
@@ -913,13 +813,10 @@ namespace FS_LevelEditor
             flameTrapAttributes.transform.localScale = Vector3.one;
 
             #region Activate On Start Toggle
-            GameObject activateOnStartTitle = Instantiate(NGUI_Utils.labelTemplate, flameTrapAttributes.transform);
+            UILabel activateOnStartTitle = NGUI_Utils.CreateLabel(flameTrapAttributes.transform, new Vector3(-230, 90), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
+                "Activate On Start");
             activateOnStartTitle.name = "ActivateOnStartTitle";
-            activateOnStartTitle.transform.localPosition = new Vector3(-230f, 90f, 0f);
-            activateOnStartTitle.RemoveComponent<UILocalize>();
-            activateOnStartTitle.GetComponent<UILabel>().width = 395;
-            activateOnStartTitle.GetComponent<UILabel>().text = "Activate On Start";
-            activateOnStartTitle.GetComponent<UILabel>().color = Color.white;
+            activateOnStartTitle.color = Color.white;
 
             GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(flameTrapAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
             activateOnStartToggle.name = "ActivateOnStartToggle";
@@ -931,13 +828,10 @@ namespace FS_LevelEditor
             #endregion
 
             #region Constant Toggle
-            GameObject constantTitle = Instantiate(NGUI_Utils.labelTemplate, flameTrapAttributes.transform);
+            UILabel constantTitle = NGUI_Utils.CreateLabel(flameTrapAttributes.transform, new Vector3(-230, 40), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
+                "Constant");
             constantTitle.name = "ConstantTitle";
-            constantTitle.transform.localPosition = new Vector3(-230f, 40f, 0f);
-            constantTitle.RemoveComponent<UILocalize>();
-            constantTitle.GetComponent<UILabel>().width = 395;
-            constantTitle.GetComponent<UILabel>().text = "Constant";
-            constantTitle.GetComponent<UILabel>().color = Color.white;
+            constantTitle.color = Color.white;
 
             GameObject constantToggle = NGUI_Utils.CreateToggle(flameTrapAttributes.transform, new Vector3(200f, 40f, 0f), new Vector3Int(48, 48, 0));
             constantToggle.name = "ConstantToggle";
@@ -1262,32 +1156,22 @@ namespace FS_LevelEditor
 
         void CreateSavingLevelLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+            savingLevelLabel = NGUI_Utils.CreateLabel(editorUIParent.transform, new Vector3(0, 510), new Vector3Int(150, 50, 0), "Saving...", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            savingLevelLabel.name = "SavingLevelLabel";
+            savingLevelLabel.fontSize = 32;
 
-            savingLevelLabel = new GameObject("SavingLevel");
-            savingLevelLabel.transform.parent = editorUIParent.transform;
-            savingLevelLabel.transform.localScale = Vector3.one;
-            savingLevelLabel.transform.localPosition = new Vector3(0f, 510f, 0f);
-
-            UILabel label = savingLevelLabel.AddComponent<UILabel>();
-            label.font = labelTemplate.GetComponent<UILabel>().font;
-            label.text = "Saving...";
-            label.width = 150;
-            label.height = 50;
-            label.fontSize = 32;
-
-            TweenAlpha tween = savingLevelLabel.AddComponent<TweenAlpha>();
+            TweenAlpha tween = savingLevelLabel.gameObject.AddComponent<TweenAlpha>();
             tween.from = 1f;
             tween.to = 0f;
             tween.duration = 2f;
 
-            savingLevelLabel.SetActive(false);
+            savingLevelLabel.gameObject.SetActive(false);
 
-
-            savingLevelLabelInPauseMenu = Instantiate(savingLevelLabel, pauseMenu.transform);
-            savingLevelLabelInPauseMenu.name = "SavingLevelInPauseMenu";
+            savingLevelLabelInPauseMenu = Instantiate(savingLevelLabel.gameObject, pauseMenu.transform).GetComponent<UILabel>();
+            savingLevelLabelInPauseMenu.name = "SavingLevelInPauseMenuLabel";
             savingLevelLabelInPauseMenu.transform.localPosition = new Vector3(0f, -425f, 0f);
-            savingLevelLabelInPauseMenu.SetActive(false);
+            savingLevelLabelInPauseMenu.gameObject.SetActive(false);
         }
         public void PlaySavingLevelLabel()
         {
@@ -1298,8 +1182,8 @@ namespace FS_LevelEditor
             savingLevelLabelRoutine = (Coroutine)MelonCoroutines.Start(Coroutine());
             IEnumerator Coroutine()
             {
-                savingLevelLabel.SetActive(true);
-                savingLevelLabelInPauseMenu.SetActive(true);
+                savingLevelLabel.gameObject.SetActive(true);
+                savingLevelLabelInPauseMenu.gameObject.SetActive(true);
 
                 TweenAlpha tween = savingLevelLabel.GetComponent<TweenAlpha>();
                 TweenAlpha tweenInPauseMenu = savingLevelLabelInPauseMenu.GetComponent<TweenAlpha>();
@@ -1310,28 +1194,19 @@ namespace FS_LevelEditor
 
                 yield return new WaitForSecondsRealtime(2f);
 
-                savingLevelLabel.SetActive(false);
-                savingLevelLabelInPauseMenu.SetActive(false);
+                savingLevelLabel.gameObject.SetActive(false);
+                savingLevelLabelInPauseMenu.gameObject.SetActive(false);
             }
         }
 
         void CreateCurrentModeLabel()
         {
-            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject currentModeLabelObj = new GameObject("CurrentModeLabel");
-            currentModeLabelObj.transform.parent = editorUIParent.transform;
-            currentModeLabelObj.transform.localScale = Vector3.one;
-            currentModeLabelObj.transform.localPosition = new Vector3(0f, -515f, 0f);
-
-            currentModeLabel = currentModeLabelObj.AddComponent<UILabel>();
-            currentModeLabel.font = template.GetComponent<UILabel>().font;
-            currentModeLabel.width = 500;
-            currentModeLabel.height = 50;
+            currentModeLabel = NGUI_Utils.CreateLabel(editorUIParent.transform, new Vector3(0, -515), new Vector3Int(500, 50, 0), "Current Mode:", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
             currentModeLabel.fontSize = 35;
             SetCurrentModeLabelText(EditorController.Mode.Building);
 
-            currentModeLabelObj.SetActive(true);
+            currentModeLabel.gameObject.SetActive(true);
         }
         public void SetCurrentModeLabelText(EditorController.Mode mode)
         {
@@ -1398,16 +1273,13 @@ namespace FS_LevelEditor
 
         public void CreateHelpPanel()
         {
-            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             #region Create Help Panel With The BG
             helpPanel = new GameObject("HelpPanel");
             helpPanel.transform.parent = editorUIParent.transform;
             helpPanel.transform.localScale = Vector3.one;
 
             UISprite helpPanelBG = helpPanel.AddComponent<UISprite>();
-            helpPanelBG.atlas = template.GetComponent<UISprite>().atlas;
+            helpPanelBG.atlas = NGUI_Utils.UITexturesAtlas;
             helpPanelBG.spriteName = "Square_Border_Beveled_HighOpacity";
             helpPanelBG.type = UIBasicSprite.Type.Sliced;
             helpPanelBG.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
@@ -1416,18 +1288,10 @@ namespace FS_LevelEditor
             #endregion
 
             #region Create Title
-            GameObject title = new GameObject("Title");
-            title.transform.parent = helpPanel.transform;
-            title.transform.localScale = Vector3.one;
-            title.transform.localPosition = new Vector3(0f, 460f, 0f);
-
-            UILabel titleLabel = title.AddComponent<UILabel>();
-            titleLabel.depth = 1;
-            titleLabel.font = labelTemplate.GetComponent<UILabel>().font;
-            titleLabel.text = "KEYBINDS";
+            UILabel titleLabel = NGUI_Utils.CreateLabel(helpPanel.transform, new Vector3(0, 460), new Vector3Int(200, 50, 0), "KEYBINDS", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
+            titleLabel.name = "Title";
             titleLabel.fontSize = 50;
-            titleLabel.width = 200;
-            titleLabel.height = 50;
             #endregion
 
             #region Create Keybinds Text
@@ -1442,8 +1306,8 @@ namespace FS_LevelEditor
 
             UILabel keybindsLabel = keybindsObj.AddComponent<UILabel>();
             keybindsLabel.depth = 1;
-            keybindsLabel.material = GameObject.Find("MainMenu/Camera/Holder/Main/Window").GetComponent<UISprite>().material;
-            keybindsLabel.font = GameObject.Find("MainMenu/Camera/Holder/Tooltip/Label").GetComponent<UILabel>().font;
+            keybindsLabel.material = NGUI_Utils.controllerAtlasMaterial;
+            keybindsLabel.font = NGUI_Utils.robotoFont;
             keybindsLabel.text = Encoding.UTF8.GetString(keybindsTextBytes);
             keybindsLabel.alignment = NGUIText.Alignment.Left;
             keybindsLabel.pivot = UIWidget.Pivot.TopLeft;
@@ -1465,8 +1329,8 @@ namespace FS_LevelEditor
 
             UILabel keybindsLabel2 = keybindsObj2.AddComponent<UILabel>();
             keybindsLabel2.depth = 1;
-            keybindsLabel2.material = GameObject.Find("MainMenu/Camera/Holder/Main/Window").GetComponent<UISprite>().material;
-            keybindsLabel2.font = GameObject.Find("MainMenu/Camera/Holder/Tooltip/Label").GetComponent<UILabel>().font;
+            keybindsLabel2.material = NGUI_Utils.controllerAtlasMaterial;
+            keybindsLabel2.font = NGUI_Utils.robotoFont;
             keybindsLabel2.text = Encoding.UTF8.GetString(keybindsTextBytes2);
             keybindsLabel2.alignment = NGUIText.Alignment.Left;
             keybindsLabel2.pivot = UIWidget.Pivot.TopLeft;
@@ -1490,9 +1354,6 @@ namespace FS_LevelEditor
         #region Global Properties Related
         public void CreateGlobalPropertiesPanel()
         {
-            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             #region Create Object With Background
             globalPropertiesPanel = new GameObject("GlobalPropertiesPanel");
             globalPropertiesPanel.transform.parent = editorUIParent.transform;
@@ -1500,7 +1361,7 @@ namespace FS_LevelEditor
             globalPropertiesPanel.transform.localPosition = new Vector3(1320f, 0f, 0f);
 
             UISprite background = globalPropertiesPanel.AddComponent<UISprite>();
-            background.atlas = template.GetComponent<UISprite>().atlas;
+            background.atlas = NGUI_Utils.UITexturesAtlas;
             background.spriteName = "Square_Border_Beveled_HighOpacity";
             background.type = UIBasicSprite.Type.Sliced;
             background.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
@@ -1512,18 +1373,11 @@ namespace FS_LevelEditor
             #endregion
 
             #region Create Title
-            GameObject title = new GameObject("Title");
-            title.transform.parent = globalPropertiesPanel.transform;
-            title.transform.localScale = Vector3.one;
-            title.transform.localPosition = new Vector3(0f, 460f, 0f);
-
-            UILabel titleLabel = title.AddComponent<UILabel>();
+            UILabel titleLabel = NGUI_Utils.CreateLabel(globalPropertiesPanel.transform, new Vector3(0, 460), new Vector3Int(600, 50, 0), "Global Properties",
+                NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "Title";
             titleLabel.depth = 1;
-            titleLabel.font = labelTemplate.GetComponent<UILabel>().font;
-            titleLabel.text = "Global Properties";
             titleLabel.fontSize = 30;
-            titleLabel.width = 600;
-            titleLabel.height = 50;
             #endregion
 
             #region Create Has Taser Toggle
@@ -1549,20 +1403,10 @@ namespace FS_LevelEditor
             #endregion
 
             #region Create Death Y Limit Field
-            GameObject deathYLimitTitle = new GameObject("DeathYLimitLabel");
-            deathYLimitTitle.transform.parent = globalPropertiesPanel.transform;
-            deathYLimitTitle.transform.localScale = Vector3.one;
-
-            UILabel deathYLimitLabel = deathYLimitTitle.AddComponent<UILabel>();
-            deathYLimitLabel.pivot = UIWidget.Pivot.Left;
-            deathYLimitLabel.alignment = NGUIText.Alignment.Left;
+            UILabel deathYLimitLabel = NGUI_Utils.CreateLabel(globalPropertiesPanel.transform, new Vector3(-300, 270), new Vector3Int(250, 50, 0), "Death Y Limit");
+            deathYLimitLabel.name = "DeathYLimitLabel";
             deathYLimitLabel.depth = 1;
-            deathYLimitLabel.font = labelTemplate.GetComponent<UILabel>().font;
-            deathYLimitLabel.text = "Death Y Limit";
             deathYLimitLabel.fontSize = 30;
-            deathYLimitLabel.width = 250;
-            deathYLimitLabel.height = 50;
-            deathYLimitTitle.transform.localPosition = new Vector3(-300f, 270f, 0f);
 
             GameObject deathYLimitField = NGUI_Utils.CreateInputField(globalPropertiesPanel.transform, new Vector3(100f, 270f, 0f),
                 new Vector3Int(300, 50, 0), 30, "100");
