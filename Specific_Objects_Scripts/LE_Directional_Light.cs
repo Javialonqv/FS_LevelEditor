@@ -41,7 +41,7 @@ namespace FS_LevelEditor
             if (scene == LEScene.Playmode)
             {
                 Destroy(lightSprite);
-                Destroy(gameObject.GetChildWithName("Arrow"));
+                Destroy(gameObject.GetChildAt("Content/Arrow"));
             }
 
             base.OnInstantiated(scene);
