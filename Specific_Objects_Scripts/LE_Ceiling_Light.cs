@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor
@@ -115,6 +116,13 @@ namespace FS_LevelEditor
             gameObject.GetChildAt("Content/Mesh/NeonOn").layer = LayerMask.NameToLayer("IgnoreLighting");
             gameObject.GetChildAt("Content/LightConePlanes/LightConePlane").layer = LayerMask.NameToLayer("TransparentFX");
             gameObject.GetChildAt("Content/LightConePlanes/LightConePlane (1)").layer = LayerMask.NameToLayer("TransparentFX");
+
+            // Add ceiling lights animations.
+            foreach (var state in template.GetComponent<Animation>())
+            {
+                var animState = state.Cast<AnimationState>();
+                lightComp.GetComponent<Animation>().AddClip(animState.clip, animState.name);
+            }
 
             gameObject.SetActive(true);
 
