@@ -1342,6 +1342,8 @@ namespace FS_LevelEditor
 
             if (multipleObjectsSelected)
             {
+                Logger.Log("Duplicating multiple selected objects...");
+
                 // Create a copy of every object inside of the selected objects list.
                 List<GameObject> newSelectedObjectsList = new List<GameObject>();
                 foreach (var obj in currentSelectedObjects)
@@ -1350,6 +1352,11 @@ namespace FS_LevelEditor
 
                     GameObject placedObj = PlaceObject(objComponent.objectOriginalName, objComponent.transform.position, objComponent.transform.eulerAngles,
                         objComponent.transform.localScale, false);
+                    if (!placedObj)
+                    {
+                        Logger.Log($"PlaceObject when duplicating \"{objComponent.objectOriginalName}\" returned null. It probably reached its max object limit.");
+                        continue;
+                    }
                     LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
 
                     foreach (var property in objComponent.properties)
@@ -1365,10 +1372,17 @@ namespace FS_LevelEditor
             }
             else
             {
+                Logger.Log("Duplicating one single object...");
+
                 isDuplicatingObj = true;
                 LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
                 GameObject placedObj = PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
                     objComponent.transform.localScale, false);
+                if (!placedObj)
+                {
+                    Logger.Log($"PlaceObject when duplicating \"{objComponent.objectOriginalName}\" returned null. It probably reached its max object limit.");
+                    return;
+                }
 
                 LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
                 foreach (var property in objComponent.properties)
@@ -1381,6 +1395,8 @@ namespace FS_LevelEditor
                 isDuplicatingObj = false;
                 levelHasBeenModified = true;
             }
+
+            Logger.Log("DuplicateSelectedObj function finished!");
         }
 
         void ManageObjectRotationShortcuts()
