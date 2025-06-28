@@ -36,7 +36,7 @@ namespace FS_LevelEditor
         {
             if (scene == LEScene.Editor)
             {
-                SetMeshOnEditor();
+                SetEnabledMeshOnEditor();
             }
             else if (scene == LEScene.Playmode)
             {
@@ -128,7 +128,7 @@ namespace FS_LevelEditor
                 if (value is bool)
                 {
                     properties["ActivateOnStart"] = (bool)value;
-                    if (EditorController.Instance != null) SetMeshOnEditor();
+                    if (EditorController.Instance != null) SetEnabledMeshOnEditor();
                     return true;
                 }
                 else
@@ -143,7 +143,7 @@ namespace FS_LevelEditor
                 {
                     properties["Color"] = (Color)value;
                     light.color = (Color)value;
-                    if (EditorController.Instance) SetMeshOnEditor();
+                    SetMeshColor();
                     return true;
                 }
                 else if (value is string)
@@ -153,7 +153,7 @@ namespace FS_LevelEditor
                     {
                         properties["Color"] = color;
                         light.color = (Color)color;
-                        if (EditorController.Instance) SetMeshOnEditor();
+                        SetMeshColor();
                         return true;
                     }
                 }
@@ -195,18 +195,19 @@ namespace FS_LevelEditor
             return base.TriggerAction(actionName);
         }
 
-        void SetMeshOnEditor()
+        void SetEnabledMeshOnEditor()
         {
             bool lightEnabled = (bool)GetProperty("ActivateOnStart");
-            Color lightColor = (Color)GetProperty("Color");
 
             lightObj.SetActive(lightEnabled);
             neonOn.SetActive(lightEnabled);
             neonOff.SetActive(!lightEnabled);
+        }
+        void SetMeshColor()
+        {
+            Color lightColor = GetProperty<Color>("Color");
 
-            Material neonOnMat = neonOn.GetComponent<MeshRenderer>().material;
-            neonOnMat.color = lightColor;
-            neonOn.GetComponent<MeshRenderer>().SetMaterial(neonOnMat);
+            neonOn.GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", lightColor);
         }
     }
 }
