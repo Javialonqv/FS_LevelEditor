@@ -1354,7 +1354,7 @@ namespace FS_LevelEditor
 
                     foreach (var property in objComponent.properties)
                     {
-                        newPlacedObjComp.properties[property.Key] = property.Value;
+                        newPlacedObjComp.SetProperty(property.Key, property.Value);
                     }
 
                     newSelectedObjectsList.Add(placedObj);
@@ -1373,7 +1373,7 @@ namespace FS_LevelEditor
                 LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
                 foreach (var property in objComponent.properties)
                 {
-                    newPlacedObjComp.properties[property.Key] = property.Value;
+                    newPlacedObjComp.SetProperty(property.Key, property.Value);
                 }
 
                 SetSelectedObj(placedObj);
