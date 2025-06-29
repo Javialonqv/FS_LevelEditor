@@ -646,14 +646,14 @@ namespace FS_LevelEditor.Editor
                     if (EditorUIManager.IsCurrentUIContext(EditorUIContext.NORMAL))
                     {
                         EditorUIManager.Instance.categoryButtonsParent.SetActive(true);
-                        EditorUIManager.Instance.currentCategoryBG.SetActive(true);
+                        EditorUIManager.Instance.objectsBG.SetActive(true);
                     }
                     break;
 
                 case Mode.Selection:
                 case Mode.Deletion:
                     EditorUIManager.Instance.categoryButtonsParent.SetActive(false);
-                    EditorUIManager.Instance.currentCategoryBG.SetActive(false);
+                    EditorUIManager.Instance.objectsBG.SetActive(false);
                     break;
             }
 
@@ -1596,7 +1596,7 @@ namespace FS_LevelEditor.Editor
 
             currentCategoryID = categoryID;
             currentCategory = categoriesNames[currentCategoryID];
-            EditorUIManager.Instance.CreateObjectsForCategory(currentCategoryID);
+            EditorUIManager.Instance.ShowObjectButtonsForCategory(currentCategoryID);
         }
 
         public void SelectObjectToBuild(string objName)
