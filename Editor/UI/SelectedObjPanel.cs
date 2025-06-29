@@ -28,7 +28,7 @@ namespace FS_LevelEditor.Editor.UI
         // ------------------------------
         Transform objectSpecificPanelsParent;
         Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
-        // First string: Target obj name ("Directional Light", "Switch"), second string for the ATTRIBHUTE of that object, and then the action to do to update the attribute value.
+        // First string: Target obj name ("Directional Light", "Switch"), second string for the ATTRIBUTE of that object, and then the action to do to update the attribute value.
         Dictionary<string, Dictionary<string, Func<object>>> toUpdateAttributesPanels = new Dictionary<string, Dictionary<string, Func<object>>>();
 
         Transform whereToCreateObjAttributesParent;
@@ -388,7 +388,7 @@ namespace FS_LevelEditor.Editor.UI
             };
 
             sawWaypointAttributes.SetActive(false);
-            attributesPanels.Add("SawWaypoint", sawWaypointAttributes);
+            attributesPanels.Add("Saw Waypoint", sawWaypointAttributes);
             toUpdateAttributesPanels.Add("Saw Waypoint", toUpdateValues);
         }
         void CreateSwitchAttributesPanel()
