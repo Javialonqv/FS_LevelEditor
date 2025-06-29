@@ -395,6 +395,7 @@
 		<Compile Include="UI_Related\UIDropdownPatcher.cs" />
 		<Compile Include="UI_Related\UIInputSubmitFix.cs" />
 		<Compile Include="UI_Related\UIToggleCheckedFix.cs" />
+		<Compile Include="UI_Related\UITogglePatcher.cs" />
 		<Compile Include="Utilities.cs" />
 	</ItemGroup>
 

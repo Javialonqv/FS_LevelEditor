@@ -116,6 +116,10 @@ namespace FS_LevelEditor.Editor
             pauseMenu.SetActive(false);
             navigation.SetActive(false);
 
+            editorUIParent = new GameObject("LevelEditor");
+            editorUIParent.transform.parent = GameObject.Find("MainMenu/Camera/Holder").transform;
+            editorUIParent.transform.localScale = Vector3.one;
+
             SetupPauseWhenInEditor();
 
             SetupObjectsCategories();
@@ -152,10 +156,6 @@ namespace FS_LevelEditor.Editor
 
         void SetupObjectsCategories()
         {
-            editorUIParent = new GameObject("LevelEditor");
-            editorUIParent.transform.parent = GameObject.Find("MainMenu/Camera/Holder").transform;
-            editorUIParent.transform.localScale = Vector3.one;
-
             // Setup the category buttons parent and add a panel to it so I can modify the alpha of the whole buttons inside of it with just one panel.
             categoryButtonsParent = new GameObject("CategoryButtons");
             categoryButtonsParent.transform.parent = editorUIParent.transform;
@@ -164,34 +164,20 @@ namespace FS_LevelEditor.Editor
             categoryButtonsParent.layer = LayerMask.NameToLayer("2D GUI");
             categoryButtonsParent.AddComponent<UIPanel>();
 
-            GameObject buttonTemplate = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/Tabs/1_Taser");
-
             for (int i = 0; i < EditorController.Instance.categoriesNames.Count; i++)
             {
                 string category = EditorController.Instance.categoriesNames[i];
+                Vector3 buttonPosition = new Vector3(-800f + (250f * i), 450f, 0f);
 
-                GameObject categoryButton = Instantiate(buttonTemplate, categoryButtonsParent.transform);
+                UITogglePatcher categoryButton = NGUI_Utils.CreateTabToggle(categoryButtonsParent.transform, buttonPosition, category);
                 categoryButton.name = $"{category}_Button";
-                categoryButton.transform.localPosition = new Vector3(-800f + (250f * i), 450f, 0f);
-                Destroy(categoryButton.GetChildWithName("Label").GetComponent<UILocalize>());
-                categoryButton.GetChildWithName("Label").GetComponent<UILabel>().text = category;
+                // The toggle is set to false by default.
 
-                categoryButton.GetComponent<UIToggle>().onChange.Clear();
-                categoryButton.GetComponent<UIToggle>().Set(false);
+                // It seems it's a bug, I need to create a copy of 'i'. Otherwise ALL of the toggles will end using the same value.
+                int index = i;
+                categoryButton.onClick += () => EditorController.Instance.ChangeCategory(index);
 
-                EventDelegate onChange = new EventDelegate(EditorController.Instance, nameof(EditorController.ChangeCategory));
-                EventDelegate.Parameter parameter = new EventDelegate.Parameter
-                {
-                    field = "categoryID",
-                    value = i,
-                    obj = EditorController.Instance
-                };
-                onChange.mParameters = new EventDelegate.Parameter[] { parameter };
-                categoryButton.GetComponent<UIToggle>().onChange.Add(onChange);
-
-                categoryButton.SetActive(true);
-
-                categoryButtons.Add(categoryButton);
+                categoryButtons.Add(categoryButton.gameObject);
             }
 
 

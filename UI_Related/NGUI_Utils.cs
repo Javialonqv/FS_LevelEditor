@@ -123,6 +123,15 @@ namespace FS_LevelEditor.UI_Related
                 return _optionsPanel;
             }
         }
+        static GameObject _tabToggleTemplate;
+        public static GameObject tabToggleTemplate
+        {
+            get
+            {
+                if (!_tabToggleTemplate) _tabToggleTemplate = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/Tabs/1_Taser");
+                return _tabToggleTemplate;
+            }
+        }
 
         // Material
         static Material _controllerAtlasMat;
@@ -357,6 +366,27 @@ namespace FS_LevelEditor.UI_Related
             UIButtonAsToggle toggle = button.AddComponent<UIButtonAsToggle>();
 
             return toggle;
+        }
+
+        public static UITogglePatcher CreateTabToggle(Transform parent, Vector3 position, string text = "")
+        {
+            GameObject toggle = GameObject.Instantiate(tabToggleTemplate, parent);
+            toggle.name = "Toggle";
+            toggle.transform.localPosition = position;
+            toggle.transform.localScale = Vector3.one;
+
+            GameObject.Destroy(toggle.GetChildWithName("Label").GetComponent<UILocalize>());
+            toggle.GetChildWithName("Label").GetComponent<UILabel>().text = text;
+
+            UIToggle script = toggle.GetComponent<UIToggle>();
+            script.onChange.Clear();
+            script.Set(false);
+
+            UITogglePatcher patcher = toggle.AddComponent<UITogglePatcher>();
+
+            toggle.SetActive(true);
+
+            return patcher;
         }
 
         public static UILabel CreateLabel(Transform parent, Vector3 position, Vector3Int size, string text = "", NGUIText.Alignment alignment = NGUIText.Alignment.Left,
