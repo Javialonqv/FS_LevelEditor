@@ -28,10 +28,11 @@ namespace FS_LevelEditor.Editor.UI
         // ------------------------------
         Transform objectSpecificPanelsParent;
         Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
+        Dictionary<string, Dictionary<string, Func<object>>> toUpdateAttributesPanels = new Dictionary<string, Dictionary<string, Func<object>>>();
 
         Transform whereToCreateObjAttributesParent;
 
-
+        LE_Object currentSelectedObj;
         bool executeSetActiveAtStartToggleActions = true;
 
         public static void Create(Transform editorUIParent)
@@ -311,8 +312,15 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Color (Hex)", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
             CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
 
+            Dictionary<string, Func<object>> toUpdateValues = new()
+            {
+                { "Color", () => Utilities.ColorToHex(currentSelectedObj.GetProperty<Color>("Color")) },
+                { "Intensity", () => currentSelectedObj.GetProperty<float>("Intensity") + "" }
+            };
+
             directionalLightAttributes.SetActive(false);
             attributesPanels.Add("Directional Light", directionalLightAttributes);
+            toUpdateAttributesPanels.Add("Directional Light", toUpdateValues);
         }
         void CreatePointLightAttributesPanel()
         {
@@ -327,8 +335,16 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
             CreateObjectAttribute("Range", AttributeType.INPUT_FIELD, "10", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Range");
 
+            Dictionary<string, Func<object>> toUpdateValues = new()
+            {
+                { "Color", () => Utilities.ColorToHex(currentSelectedObj.GetProperty<Color>("Color")) },
+                { "Intensity", () => currentSelectedObj.GetProperty<float>("Intensity") + "" },
+                { "Range", () => currentSelectedObj.GetProperty<float>("Range") + "" }
+            };
+
             pointLightAttributes.SetActive(false);
             attributesPanels.Add("Point Light", pointLightAttributes);
+            toUpdateAttributesPanels.Add("Point Light", toUpdateValues);
         }
         void CreateSawAttributesPanel()
         {
@@ -343,8 +359,15 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
             CreateObjectAttribute("+ Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
+            Dictionary<string, Func<object>> toUpdateValues = new()
+            {
+                { "ActivateOnStart", () => currentSelectedObj.GetProperty<bool>("ActivateOnStart") },
+                { "Damage", () => currentSelectedObj.GetProperty<int>("Damage") + "" }
+            };
+
             sawAttributes.SetActive(false);
             attributesPanels.Add("Saw", sawAttributes);
+            toUpdateAttributesPanels.Add("Saw", toUpdateValues);
         }
         void CreateSawWaypointAttributesPanel()
         {
@@ -358,8 +381,14 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Wait Time", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
             CreateObjectAttribute("+ Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
+            Dictionary<string, Func<object>> toUpdateValues = new()
+            {
+                { "WaitTime", () => currentSelectedObj.GetProperty<float>("WaitTime") + "" }
+            };
+
             sawWaypointAttributes.SetActive(false);
             attributesPanels.Add("SawWaypoint", sawWaypointAttributes);
+            toUpdateAttributesPanels.Add("Saw Waypoint", toUpdateValues);
         }
         void CreateSwitchAttributesPanel()
         {
@@ -374,22 +403,35 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Can be shot by Taser", AttributeType.TOGGLE, true, null, "CanUseTaser");
             CreateObjectAttribute("Manage Events", AttributeType.BUTTON, null, null, "ManageEvents");
 
+            Dictionary<string, Func<object>> toUpdateValues = new()
+            {
+                { "UsableOnce", () => currentSelectedObj.GetProperty<bool>("UsableOnce") },
+                { "CanUseTaser", () => currentSelectedObj.GetProperty<bool>("CanUseTaser") }
+            };
+
             switchAttributes.SetActive(false);
             attributesPanels.Add("Switch", switchAttributes);
+            toUpdateAttributesPanels.Add("Switch", toUpdateValues);
         }
         void CreateAmmoAndHealthPackAttributesPanel()
         {
-            GameObject ammoHealthAttributes = new GameObject("Ammo & Health Packs");
+            GameObject ammoHealthAttributes = new GameObject("Ammo Pack | Health Pack");
             ammoHealthAttributes.transform.parent = objectSpecificPanelsParent;
             ammoHealthAttributes.transform.localPosition = Vector3.zero;
             ammoHealthAttributes.transform.localScale = Vector3.one;
 
             SetCurrentParentToCreateAttributes(ammoHealthAttributes);
 
-            CreateObjectAttribute("Respawn Title", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RespawnTime");
+            CreateObjectAttribute("Respawn Time", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RespawnTime");
+
+            Dictionary<string, Func<object>> toUpdateValues = new()
+            {
+                { "RespawnTime", () => currentSelectedObj.GetProperty<float>("RespawnTime") + "" }
+            };
 
             ammoHealthAttributes.SetActive(false);
-            attributesPanels.Add("AmmoAndHealth", ammoHealthAttributes);
+            attributesPanels.Add("Ammo Pack | Health Pack", ammoHealthAttributes);
+            toUpdateAttributesPanels.Add("Ammo Pack | Health Pack", toUpdateValues);
         }
         void CreateLaserAttributesPanel()
         {
@@ -404,8 +446,16 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Instant Kill", AttributeType.TOGGLE, false, null, "InstaKill");
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Damage");
 
+            Dictionary<string, Func<object>> toUpdateValues = new()
+            {
+                { "ActivateOnStart", () => currentSelectedObj.GetProperty<bool>("ActivateOnStart") },
+                { "InstaKill", () => currentSelectedObj.GetProperty<bool>("InstaKill") },
+                { "Damage", () => currentSelectedObj.GetProperty<int>("Damage") + "" }
+            };
+
             laserAttributes.SetActive(false);
             attributesPanels.Add("Laser", laserAttributes);
+            toUpdateAttributesPanels.Add("Laser", toUpdateValues);
         }
         void CreateCeilingLightPanel()
         {
@@ -419,8 +469,15 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Color (Hex)", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
 
+            Dictionary<string, Func<object>> toUpdateValues = new()
+            {
+                { "ActivateOnStart", () => currentSelectedObj.GetProperty<bool>("ActivateOnStart") },
+                { "Color", () => Utilities.ColorToHex(currentSelectedObj.GetProperty<Color>("Color")) }
+            };
+
             ceilingLightAttributes.SetActive(false);
             attributesPanels.Add("Ceiling Light", ceilingLightAttributes);
+            toUpdateAttributesPanels.Add("Ceiling Light", toUpdateValues);
         }
         void CreateFlameTrapAttributesPanel()
         {
@@ -434,8 +491,15 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Constant", AttributeType.TOGGLE, false, null, "Constant");
 
+            Dictionary<string, Func<object>> toUpdateValues = new()
+            {
+                { "ActivateOnStart", () => currentSelectedObj.GetProperty<bool>("ActivateOnStart") },
+                { "Constant", () => currentSelectedObj.GetProperty<bool>("Constant") }
+            };
+
             flameTrapAttributes.SetActive(false);
             attributesPanels.Add("Flame Trap", flameTrapAttributes);
+            toUpdateAttributesPanels.Add("Flame Trap", toUpdateValues);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON }
@@ -559,6 +623,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         public void SetSelectedObject(LE_Object objComponent)
         {
+            currentSelectedObj = objComponent;
+
             headerTitle.text = objComponent.objectFullNameWithID;
             body.SetActive(true);
             gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
@@ -569,74 +635,97 @@ namespace FS_LevelEditor.Editor.UI
             globalObjAttributesToggle.gameObject.SetActive(true);
             globalObjAttributesToggle.SetToggleState(false, true);
 
-            if (objComponent.objectOriginalName == "Directional Light")
+            bool specificAttributesFound = false;
+            // The child's name is the name of the target obj, but if it contains a '|' then that panel may be compatible for multiple objects (Like ammo & health packs).
+            foreach (var child in objectSpecificPanelsParent.gameObject.GetChilds())
             {
-                attributesPanels["Directional Light"].SetActive(true);
+                List<string> thisPanelIsForObjects = child.name.Split('|').ToList();
+                thisPanelIsForObjects = thisPanelIsForObjects.Select(x => x = x.Trim()).ToList();
 
-                UpdateObjectSpecificAttribute("Directional Light", "Color", Utilities.ColorToHex(objComponent.GetProperty<Color>("Color")));
-                UpdateObjectSpecificAttribute("Directional Light", "Intensity", objComponent.GetProperty<float>("Intensity") + "");
-            }
-            else if (objComponent.objectOriginalName == "Point Light")
-            {
-                attributesPanels["Point Light"].SetActive(true);
+                if (thisPanelIsForObjects.Contains(objComponent.objectOriginalName))
+                {
+                    specificAttributesFound = true;
 
-                UpdateObjectSpecificAttribute("Point Light", "Color", Utilities.ColorToHex(objComponent.GetProperty<Color>("Color")));
-                UpdateObjectSpecificAttribute("Point Light", "Intensity", objComponent.GetProperty<float>("Intensity") + "");
-                UpdateObjectSpecificAttribute("Point Light", "Range", objComponent.GetProperty<float>("Range") + "");
+                    child.SetActive(true);
+                    UpdateObjectSpecificAttribute(child.name, "", null);
+                    break;
+                }
             }
-            else if (objComponent.objectOriginalName == "Saw")
-            {
-                attributesPanels["Saw"].SetActive(true);
 
-                UpdateObjectSpecificAttribute("Saw", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
-                UpdateObjectSpecificAttribute("Saw", "Damage", objComponent.GetProperty<int>("Damage") + "");
-            }
-            else if (objComponent.objectOriginalName == "Saw Waypoint")
-            {
-                attributesPanels["SawWaypoint"].SetActive(true);
-
-                UpdateObjectSpecificAttribute("Saw Waypoint", "WaitTime", objComponent.GetProperty<float>("WaitTime") + "");
-            }
-            else if (objComponent.objectOriginalName == "Switch")
-            {
-                attributesPanels["Switch"].SetActive(true);
-
-                UpdateObjectSpecificAttribute("Switch", "UsableOnce", objComponent.GetProperty<bool>("UsableOnce"));
-                UpdateObjectSpecificAttribute("Switch", "CanUseTaser", objComponent.GetProperty<bool>("CanUseTaser"));
-            }
-            else if (objComponent.objectOriginalName == "Ammo Pack" || objComponent.objectOriginalName == "Health Pack")
-            {
-                attributesPanels["AmmoAndHealth"].SetActive(true);
-
-                UpdateObjectSpecificAttribute("Ammo & Health Packs", "RespawnTime", objComponent.GetProperty<float>("RespawnTime") + "");
-            }
-            else if (objComponent.objectOriginalName == "Laser")
-            {
-                attributesPanels["Laser"].SetActive(true);
-
-                UpdateObjectSpecificAttribute("Laser", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
-                UpdateObjectSpecificAttribute("Laser", "InstaKill", objComponent.GetProperty<bool>("InstaKill"));
-                UpdateObjectSpecificAttribute("Laser", "Damage", objComponent.GetProperty<int>("Damage") + "");
-            }
-            else if (objComponent.objectOriginalName == "Ceiling Light")
-            {
-                attributesPanels["Ceiling Light"].SetActive(true);
-
-                UpdateObjectSpecificAttribute("Ceiling Light", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
-                UpdateObjectSpecificAttribute("Ceiling Light", "Color", Utilities.ColorToHex((Color)objComponent.GetProperty("Color")));
-            }
-            else if (objComponent.objectOriginalName == "Flame Trap")
-            {
-                attributesPanels["Flame Trap"].SetActive(true);
-
-                UpdateObjectSpecificAttribute("Flame Trap", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
-                UpdateObjectSpecificAttribute("Flame Trap", "Constant", objComponent.GetProperty<bool>("Constant"));
-            }
-            else
+            if (!specificAttributesFound)
             {
                 globalObjAttributesToggle.gameObject.SetActive(false);
                 globalObjAttributesToggle.SetToggleState(true, true);
             }
+
+            //if (objComponent.objectOriginalName == "Directional Light")
+            //{
+            //    attributesPanels["Directional Light"].SetActive(true);
+
+            //    UpdateObjectSpecificAttribute("Directional Light", "Color", Utilities.ColorToHex(objComponent.GetProperty<Color>("Color")));
+            //    UpdateObjectSpecificAttribute("Directional Light", "Intensity", objComponent.GetProperty<float>("Intensity") + "");
+            //}
+            //else if (objComponent.objectOriginalName == "Point Light")
+            //{
+            //    attributesPanels["Point Light"].SetActive(true);
+
+            //    UpdateObjectSpecificAttribute("Point Light", "Color", Utilities.ColorToHex(objComponent.GetProperty<Color>("Color")));
+            //    UpdateObjectSpecificAttribute("Point Light", "Intensity", objComponent.GetProperty<float>("Intensity") + "");
+            //    UpdateObjectSpecificAttribute("Point Light", "Range", objComponent.GetProperty<float>("Range") + "");
+            //}
+            //else if (objComponent.objectOriginalName == "Saw")
+            //{
+            //    attributesPanels["Saw"].SetActive(true);
+
+            //    UpdateObjectSpecificAttribute("Saw", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
+            //    UpdateObjectSpecificAttribute("Saw", "Damage", objComponent.GetProperty<int>("Damage") + "");
+            //}
+            //else if (objComponent.objectOriginalName == "Saw Waypoint")
+            //{
+            //    attributesPanels["SawWaypoint"].SetActive(true);
+
+            //    UpdateObjectSpecificAttribute("Saw Waypoint", "WaitTime", objComponent.GetProperty<float>("WaitTime") + "");
+            //}
+            //else if (objComponent.objectOriginalName == "Switch")
+            //{
+            //    attributesPanels["Switch"].SetActive(true);
+
+            //    UpdateObjectSpecificAttribute("Switch", "UsableOnce", objComponent.GetProperty<bool>("UsableOnce"));
+            //    UpdateObjectSpecificAttribute("Switch", "CanUseTaser", objComponent.GetProperty<bool>("CanUseTaser"));
+            //}
+            //else if (objComponent.objectOriginalName == "Ammo Pack" || objComponent.objectOriginalName == "Health Pack")
+            //{
+            //    attributesPanels["AmmoAndHealth"].SetActive(true);
+
+            //    UpdateObjectSpecificAttribute("Ammo & Health Packs", "RespawnTime", objComponent.GetProperty<float>("RespawnTime") + "");
+            //}
+            //else if (objComponent.objectOriginalName == "Laser")
+            //{
+            //    attributesPanels["Laser"].SetActive(true);
+
+            //    UpdateObjectSpecificAttribute("Laser", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
+            //    UpdateObjectSpecificAttribute("Laser", "InstaKill", objComponent.GetProperty<bool>("InstaKill"));
+            //    UpdateObjectSpecificAttribute("Laser", "Damage", objComponent.GetProperty<int>("Damage") + "");
+            //}
+            //else if (objComponent.objectOriginalName == "Ceiling Light")
+            //{
+            //    attributesPanels["Ceiling Light"].SetActive(true);
+
+            //    UpdateObjectSpecificAttribute("Ceiling Light", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
+            //    UpdateObjectSpecificAttribute("Ceiling Light", "Color", Utilities.ColorToHex((Color)objComponent.GetProperty("Color")));
+            //}
+            //else if (objComponent.objectOriginalName == "Flame Trap")
+            //{
+            //    attributesPanels["Flame Trap"].SetActive(true);
+
+            //    UpdateObjectSpecificAttribute("Flame Trap", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
+            //    UpdateObjectSpecificAttribute("Flame Trap", "Constant", objComponent.GetProperty<bool>("Constant"));
+            //}
+            //else
+            //{
+            //    globalObjAttributesToggle.gameObject.SetActive(false);
+            //    globalObjAttributesToggle.SetToggleState(true, true);
+            //}
 
             UpdateGlobalObjectAttributes(objComponent.transform);
 
@@ -652,16 +741,20 @@ namespace FS_LevelEditor.Editor.UI
                 objComponent.setActiveAtStart = true; // Just in case ;)
             }
         }
-        void UpdateObjectSpecificAttribute(string objName, string attrName, object value)
+        void UpdateObjectSpecificAttribute(string objectName, string attrName, object value)
         {
-            GameObject attrParent = objectSpecificPanelsParent.gameObject.GetChildAt($"{objName}/{attrName}");
-            if (attrParent.ExistsChildWithName("Field"))
+            // This is complicated as fuck, but the childs of the panel (var "attribute") are the different attributes that that object has.
+            // EXAMPLE: Health pack | Ammo pack/RespawnTime/Field.
+            foreach (var attribute in attributesPanels[objectName].GetChilds())
             {
-                attrParent.GetChildWithName("Field").GetComponent<UICustomInputField>().SetText((string)value);
-            }
-            else if (attrParent.ExistsChildWithName("Toggle"))
-            {
-                attrParent.GetChildWithName("Toggle").GetComponent<UIToggle>().Set((bool)value);
+                if (attribute.ExistsChildWithName("Field"))
+                {
+                    attribute.GetChildWithName("Field").GetComponent<UIInput>().text = (string)toUpdateAttributesPanels[objectName][attribute.name]();
+                }
+                else if (attribute.ExistsChildWithName("Toggle"))
+                {
+                    attribute.GetChildWithName("Toggle").GetComponent<UIToggle>().Set((bool)toUpdateAttributesPanels[objectName][attribute.name]());
+                }
             }
         }
 
@@ -789,5 +882,11 @@ namespace FS_LevelEditor.Editor.UI
         {
             attributesPanels["Laser"].GetChildWithName("Damage").SetActive(!newState);
         }
+    }
+
+    [MelonLoader.RegisterTypeInIl2Cpp]
+    public class ObjectAttributeInUI : MonoBehaviour
+    {
+        
     }
 }
