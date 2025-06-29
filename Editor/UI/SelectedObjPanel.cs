@@ -363,209 +363,76 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSwitchAttributesPanel()
         {
-            GameObject switchAttributes = new GameObject("SwitchAttributes");
+            GameObject switchAttributes = new GameObject("Switch");
             switchAttributes.transform.parent = objectSpecificPanelsParent;
             switchAttributes.transform.localPosition = Vector3.zero;
             switchAttributes.transform.localScale = Vector3.one;
 
-            #region Usable Once Toggle
-            UILabel usableOnceTitle = NGUI_Utils.CreateLabel(switchAttributes.transform, new Vector3(-230, 90), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
-                "Usable Once");
-            usableOnceTitle.name = "UsableOnceTitle";
-            usableOnceTitle.color = Color.white;
+            SetCurrentParentToCreateAttributes(switchAttributes);
 
-            GameObject usableOnceToggle = NGUI_Utils.CreateToggle(switchAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
-            usableOnceToggle.name = "UsableOnceToggle";
-            usableOnceToggle.GetComponent<UIToggle>().onChange.Clear();
-            var usableOnceDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "UsableOnce"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", usableOnceToggle.GetComponent<UIToggle>()));
-            usableOnceToggle.GetComponent<UIToggle>().onChange.Add(usableOnceDelegate);
-            #endregion
-
-            #region Can Use Taser Toggle
-            UILabel canUseTaserTitle = NGUI_Utils.CreateLabel(switchAttributes.transform, new Vector3(-230, 35), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
-                "Can be shot by Taser");
-            canUseTaserTitle.name = "CanUseTaserTitle";
-            canUseTaserTitle.color = Color.white;
-
-            GameObject canUseTaserToggle = NGUI_Utils.CreateToggle(switchAttributes.transform, new Vector3(200f, 35f, 0f), new Vector3Int(48, 48, 0));
-            canUseTaserToggle.name = "CanUseTaserToggle";
-            canUseTaserToggle.GetComponent<UIToggle>().onChange.Clear();
-            var canUseTaserDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "CanUseTaser"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", canUseTaserToggle.GetComponent<UIToggle>()));
-            canUseTaserToggle.GetComponent<UIToggle>().onChange.Add(canUseTaserDelegate);
-            #endregion
-
-            #region Manage Events
-            UIButtonPatcher manageEvents = NGUI_Utils.CreateButton(switchAttributes.transform, new Vector3(0f, -20f, 0f), new Vector3Int(480, 55, 0), "Manage Events");
-            manageEvents.name = "ManageEventsButton";
-            manageEvents.onClick += () => TriggerAction("ManageEvents");
-            manageEvents.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            manageEvents.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-            #endregion
+            CreateObjectAttribute("Usable Once", AttributeType.TOGGLE, false, null, "UsableOnce");
+            CreateObjectAttribute("Can be shot by Taser", AttributeType.TOGGLE, true, null, "CanUseTaser");
+            CreateObjectAttribute("Manage Events", AttributeType.BUTTON, null, null, "ManageEvents");
 
             switchAttributes.SetActive(false);
             attributesPanels.Add("Switch", switchAttributes);
         }
         void CreateAmmoAndHealthPackAttributesPanel()
         {
-            GameObject ammoHealthAttributes = new GameObject("AmmoAndHealthPackAttributes");
+            GameObject ammoHealthAttributes = new GameObject("Ammo & Health Packs");
             ammoHealthAttributes.transform.parent = objectSpecificPanelsParent;
             ammoHealthAttributes.transform.localPosition = Vector3.zero;
             ammoHealthAttributes.transform.localScale = Vector3.one;
 
-            #region Respawn Time Input Field
-            UILabel respawnTitle = NGUI_Utils.CreateLabel(ammoHealthAttributes.transform, new Vector3(-230, 90), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0),
-                "Respawn Title");
-            respawnTitle.name = "RespawnTitle";
-            respawnTitle.color = Color.white;
+            SetCurrentParentToCreateAttributes(ammoHealthAttributes);
 
-            GameObject respawnInputField = NGUI_Utils.CreateInputField(ammoHealthAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
-                "50", false, NGUIText.Alignment.Left);
-            respawnInputField.name = "RespawnInputField";
-            var respawnFieldCustomScript = respawnInputField.AddComponent<UICustomInputField>();
-            respawnFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
-            respawnFieldCustomScript.onChange += (() => SetPropertyWithInput("RespawnTime", respawnFieldCustomScript));
-            #endregion
+            CreateObjectAttribute("Respawn Title", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RespawnTime");
 
             ammoHealthAttributes.SetActive(false);
             attributesPanels.Add("AmmoAndHealth", ammoHealthAttributes);
         }
         void CreateLaserAttributesPanel()
         {
-            GameObject laserAttributes = new GameObject("LaserAttributes");
+            GameObject laserAttributes = new GameObject("Laser");
             laserAttributes.transform.parent = objectSpecificPanelsParent;
             laserAttributes.transform.localPosition = Vector3.zero;
             laserAttributes.transform.localScale = Vector3.one;
 
-            #region Activate On Start Toggle
-            UILabel activateOnStartTitle = NGUI_Utils.CreateLabel(laserAttributes.transform, new Vector3(-230, 90), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
-                "Activate On Start");
-            activateOnStartTitle.name = "ActivateOnStartTitle";
-            activateOnStartTitle.color = Color.white;
+            SetCurrentParentToCreateAttributes(laserAttributes);
 
-            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(laserAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
-            activateOnStartToggle.name = "ActivateOnStartToggle";
-            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
-            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
-            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
-            #endregion
-
-            #region Insta Kill Toggle
-            UILabel instaKillTitle = NGUI_Utils.CreateLabel(laserAttributes.transform, new Vector3(-230, 40), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
-                "Instant Kill");
-            instaKillTitle.name = "InstaKillTitle";
-            instaKillTitle.color = Color.white;
-
-            GameObject instaKillToggle = NGUI_Utils.CreateToggle(laserAttributes.transform, new Vector3(200f, 40f, 0f), new Vector3Int(48, 48, 0));
-            instaKillToggle.name = "InstaKillToggle";
-            instaKillToggle.GetComponent<UIToggle>().onChange.Clear();
-            var instaKillDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "InstaKill"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", instaKillToggle.GetComponent<UIToggle>()));
-            instaKillToggle.GetComponent<UIToggle>().onChange.Add(instaKillDelegate);
-            #endregion
-
-            #region Damage Input Field
-            UILabel damageTitle = NGUI_Utils.CreateLabel(laserAttributes.transform, new Vector3(-230, -10), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0),
-                "Damage");
-            damageTitle.name = "DamageTitle";
-            damageTitle.color = Color.white;
-
-            GameObject damageInputField = NGUI_Utils.CreateInputField(laserAttributes.transform, new Vector3(140f, -10f, 0f), new Vector3Int(200, 38, 0), 27,
-                "34", false, NGUIText.Alignment.Left);
-            damageInputField.name = "DamageInputField";
-            var damageFieldCustomScript = damageInputField.AddComponent<UICustomInputField>();
-            damageFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
-            damageFieldCustomScript.onChange += (() => SetPropertyWithInput("Damage", damageFieldCustomScript));
-            #endregion
+            CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+            CreateObjectAttribute("Instant Kill", AttributeType.TOGGLE, false, null, "InstaKill");
+            CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Damage");
 
             laserAttributes.SetActive(false);
             attributesPanels.Add("Laser", laserAttributes);
         }
         void CreateCeilingLightPanel()
         {
-            GameObject ceilingLightAttributes = new GameObject("CeilingLightAttributes");
+            GameObject ceilingLightAttributes = new GameObject("Ceiling Light");
             ceilingLightAttributes.transform.parent = objectSpecificPanelsParent;
             ceilingLightAttributes.transform.localPosition = Vector3.zero;
             ceilingLightAttributes.transform.localScale = Vector3.one;
 
-            #region Activate On Start Toggle
-            UILabel activateOnStartTitle = NGUI_Utils.CreateLabel(ceilingLightAttributes.transform, new Vector3(-230, 90), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
-                "Activate On Start");
-            activateOnStartTitle.name = "ActivateOnStartTitle";
-            activateOnStartTitle.color = Color.white;
+            SetCurrentParentToCreateAttributes(ceilingLightAttributes);
 
-            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(ceilingLightAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
-            activateOnStartToggle.name = "ActivateOnStartToggle";
-            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
-            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
-            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
-            #endregion
-
-            #region Color Input Field
-            UILabel colorTitle = NGUI_Utils.CreateLabel(ceilingLightAttributes.transform, new Vector3(-230, 40), new Vector3Int(235, NGUI_Utils.defaultLabelSize.y, 0),
-                "Color (Hex)");
-            colorTitle.name = "ColorTitle";
-            colorTitle.color = Color.white;
-
-            UILabel hashtagLOL = NGUI_Utils.CreateLabel(ceilingLightAttributes.transform, new Vector3(15, 40), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#");
-            hashtagLOL.name = "HashtagLOL";
-            hashtagLOL.color = Color.white;
-
-            GameObject colorInputField = NGUI_Utils.CreateInputField(ceilingLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
-                "FFFFFF", false, NGUIText.Alignment.Left);
-            colorInputField.name = "ColorField";
-            var colorFieldCustomScript = colorInputField.AddComponent<UICustomInputField>();
-            colorFieldCustomScript.Setup(UICustomInputField.UIInputType.HEX_COLOR);
-            colorFieldCustomScript.onChange += (() => SetPropertyWithInput("Color", colorFieldCustomScript));
-            #endregion
+            CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+            CreateObjectAttribute("Color (Hex)", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
 
             ceilingLightAttributes.SetActive(false);
             attributesPanels.Add("Ceiling Light", ceilingLightAttributes);
         }
         void CreateFlameTrapAttributesPanel()
         {
-            GameObject flameTrapAttributes = new GameObject("FlameTrapAttributes");
+            GameObject flameTrapAttributes = new GameObject("Flame Trap");
             flameTrapAttributes.transform.parent = objectSpecificPanelsParent;
             flameTrapAttributes.transform.localPosition = Vector3.zero;
             flameTrapAttributes.transform.localScale = Vector3.one;
 
-            #region Activate On Start Toggle
-            UILabel activateOnStartTitle = NGUI_Utils.CreateLabel(flameTrapAttributes.transform, new Vector3(-230, 90), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
-                "Activate On Start");
-            activateOnStartTitle.name = "ActivateOnStartTitle";
-            activateOnStartTitle.color = Color.white;
+            SetCurrentParentToCreateAttributes(flameTrapAttributes);
 
-            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(flameTrapAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
-            activateOnStartToggle.name = "ActivateOnStartToggle";
-            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
-            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
-            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
-            #endregion
-
-            #region Constant Toggle
-            UILabel constantTitle = NGUI_Utils.CreateLabel(flameTrapAttributes.transform, new Vector3(-230, 40), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
-                "Constant");
-            constantTitle.name = "ConstantTitle";
-            constantTitle.color = Color.white;
-
-            GameObject constantToggle = NGUI_Utils.CreateToggle(flameTrapAttributes.transform, new Vector3(200f, 40f, 0f), new Vector3Int(48, 48, 0));
-            constantToggle.name = "ConstantToggle";
-            constantToggle.GetComponent<UIToggle>().onChange.Clear();
-            var constantDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "Constant"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", constantToggle.GetComponent<UIToggle>()));
-            constantToggle.GetComponent<UIToggle>().onChange.Add(constantDelegate);
-            #endregion
+            CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+            CreateObjectAttribute("Constant", AttributeType.TOGGLE, false, null, "Constant");
 
             flameTrapAttributes.SetActive(false);
             attributesPanels.Add("Flame Trap", flameTrapAttributes);
@@ -596,7 +463,7 @@ namespace FS_LevelEditor.Editor.UI
 
             if (createHastag && attrType == AttributeType.INPUT_FIELD)
             {
-                UILabel hashtagLOL = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(15, yPos - 5), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
+                UILabel hashtagLOL = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(15, yPos), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
                     NGUIText.Alignment.Center, UIWidget.Pivot.Left);
                 hashtagLOL.name = "HashtagLOL";
                 hashtagLOL.color = Color.white;
@@ -624,7 +491,7 @@ namespace FS_LevelEditor.Editor.UI
             }
             else if (attrType == AttributeType.BUTTON)
             {
-                UIButtonPatcher button = NGUI_Utils.CreateButton(attributeParent.transform, new Vector3(0, yPos), new Vector3Int(480, 55, 0), text);
+                UIButtonPatcher button = NGUI_Utils.CreateButton(attributeParent.transform, new Vector3(0, yPos - 5), new Vector3Int(480, 55, 0), text);
                 button.name = "Button";
                 button.onClick += () => TriggerAction(targetPropName);
                 button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
@@ -734,60 +601,36 @@ namespace FS_LevelEditor.Editor.UI
             {
                 attributesPanels["Switch"].SetActive(true);
 
-                // Set usable once toggle...
-                var usableOnceToggle = attributesPanels["Switch"].GetChildWithName("UsableOnceToggle").GetComponent<UIToggle>();
-                usableOnceToggle.Set((bool)objComponent.GetProperty("UsableOnce"));
-
-                // Set can use taser toggle...
-                var canUseTaserToggle = attributesPanels["Switch"].GetChildWithName("CanUseTaserToggle").GetComponent<UIToggle>();
-                canUseTaserToggle.Set((bool)objComponent.GetProperty("CanUseTaser"));
+                UpdateObjectSpecificAttribute("Switch", "UsableOnce", objComponent.GetProperty<bool>("UsableOnce"));
+                UpdateObjectSpecificAttribute("Switch", "CanUseTaser", objComponent.GetProperty<bool>("CanUseTaser"));
             }
             else if (objComponent.objectOriginalName == "Ammo Pack" || objComponent.objectOriginalName == "Health Pack")
             {
                 attributesPanels["AmmoAndHealth"].SetActive(true);
 
-                var respawnTimeInputField = attributesPanels["AmmoAndHealth"].GetChildWithName("RespawnInputField").GetComponent<UIInput>();
-                respawnTimeInputField.text = (float)objComponent.GetProperty("RespawnTime") + "";
+                UpdateObjectSpecificAttribute("Ammo & Health Packs", "RespawnTime", objComponent.GetProperty<float>("RespawnTime") + "");
             }
             else if (objComponent.objectOriginalName == "Laser")
             {
                 attributesPanels["Laser"].SetActive(true);
 
-                // Set activate on start toggle...
-                var activateOnStartToggle = attributesPanels["Laser"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
-                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
-
-                // Set insta-kill toggle...
-                var instaKillToggle = attributesPanels["Laser"].GetChildWithName("InstaKillToggle").GetComponent<UIToggle>();
-                instaKillToggle.Set((bool)objComponent.GetProperty("InstaKill"));
-
-                // Set the damage input field...
-                var damageInput = attributesPanels["Laser"].GetChildWithName("DamageInputField").GetComponent<UIInput>();
-                damageInput.text = (int)objComponent.GetProperty("Damage") + "";
+                UpdateObjectSpecificAttribute("Laser", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
+                UpdateObjectSpecificAttribute("Laser", "InstaKill", objComponent.GetProperty<bool>("InstaKill"));
+                UpdateObjectSpecificAttribute("Laser", "Damage", objComponent.GetProperty<int>("Damage") + "");
             }
             else if (objComponent.objectOriginalName == "Ceiling Light")
             {
                 attributesPanels["Ceiling Light"].SetActive(true);
 
-                // Set activate on start toggle...
-                var activateOnStartToggle = attributesPanels["Ceiling Light"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
-                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
-
-                // Set color input...
-                var colorInput = attributesPanels["Ceiling Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
-                colorInput.text = Utilities.ColorToHex((Color)objComponent.GetProperty("Color"));
+                UpdateObjectSpecificAttribute("Ceiling Light", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
+                UpdateObjectSpecificAttribute("Ceiling Light", "Color", Utilities.ColorToHex((Color)objComponent.GetProperty("Color")));
             }
             else if (objComponent.objectOriginalName == "Flame Trap")
             {
                 attributesPanels["Flame Trap"].SetActive(true);
 
-                // Set activate on start toggle...
-                var activateOnStartToggle = attributesPanels["Flame Trap"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
-                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
-
-                // Set constant toggle...
-                var constantToggle = attributesPanels["Flame Trap"].GetChildWithName("ConstantToggle").GetComponent<UIToggle>();
-                constantToggle.Set((bool)objComponent.GetProperty("Constant"));
+                UpdateObjectSpecificAttribute("Flame Trap", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
+                UpdateObjectSpecificAttribute("Flame Trap", "Constant", objComponent.GetProperty<bool>("Constant"));
             }
             else
             {
@@ -944,8 +787,7 @@ namespace FS_LevelEditor.Editor.UI
         // Extra functions for specific things for specific attributes for specific objects LOL.
         void OnLaserInstaKillChecked(bool newState)
         {
-            attributesPanels["Laser"].GetChildWithName("DamageTitle").SetActive(!newState);
-            attributesPanels["Laser"].GetChildWithName("DamageInputField").SetActive(!newState);
+            attributesPanels["Laser"].GetChildWithName("Damage").SetActive(!newState);
         }
     }
 }
