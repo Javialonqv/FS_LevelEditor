@@ -1596,7 +1596,7 @@ namespace FS_LevelEditor.Editor
 
             currentCategoryID = categoryID;
             currentCategory = categoriesNames[currentCategoryID];
-            EditorUIManager.Instance.SetupCurrentCategoryButtons();
+            EditorUIManager.Instance.CreateObjectsForCategory(currentCategoryID);
         }
 
         public void SelectObjectToBuild(string objName)

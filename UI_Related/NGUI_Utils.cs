@@ -132,6 +132,17 @@ namespace FS_LevelEditor.UI_Related
                 return _tabToggleTemplate;
             }
         }
+        static GameObject _colorToggleTemplate;
+        public static GameObject colorToggleTemplate
+        {
+            get
+            {
+                if (!_colorToggleTemplate)
+                    _colorToggleTemplate = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/ColorSelection/ColorSwatch");
+
+                return _colorToggleTemplate;
+            }
+        }
 
         // Material
         static Material _controllerAtlasMat;
@@ -386,6 +397,24 @@ namespace FS_LevelEditor.UI_Related
 
             toggle.SetActive(true);
 
+            return patcher;
+        }
+        public static UIButtonPatcher CreateColorButton(Transform parent, Vector3 position, string text = "")
+        {
+            GameObject toggle = GameObject.Instantiate(colorToggleTemplate, parent);
+            toggle.name = "Toggle";
+            toggle.transform.localPosition = position;
+            toggle.transform.localScale = Vector3.one * 0.8f;
+            toggle.GetChildWithName("ActiveSwatch").SetActive(false);
+            toggle.GetChildWithName("ColorSample").SetActive(false);
+            toggle.SetActive(true);
+
+            toggle.GetChildWithName("ColorName").GetComponent<UILabel>().text = text;
+            toggle.GetComponent<UIButton>().onClick.Clear();
+
+            toggle.SetActive(true);
+
+            UIButtonPatcher patcher = toggle.AddComponent<UIButtonPatcher>();
             return patcher;
         }
 

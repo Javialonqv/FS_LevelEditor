@@ -124,7 +124,7 @@ namespace FS_LevelEditor.Editor
 
             SetupObjectsCategories();
             CreateObjectsBackground();
-            SetupCurrentCategoryButtons();
+            CreateObjectsForCategory(0);
             SelectedObjPanel.Create(editorUIParent.transform);
             CreateSavingLevelLabel();
             CreateCurrentModeLabel();
@@ -183,11 +183,8 @@ namespace FS_LevelEditor.Editor
 
             categoryButtons[0].GetComponent<UIToggle>().Set(true);
         }
-
         void CreateObjectsBackground()
         {
-            GameObject template = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Background");
-
             currentCategoryBG = new GameObject("CategoryObjectsBackground");
             currentCategoryBG.transform.parent = editorUIParent.transform;
             currentCategoryBG.transform.localPosition = new Vector3(0f, 330f, 0f);
@@ -196,7 +193,7 @@ namespace FS_LevelEditor.Editor
             currentCategoryBG.AddComponent<UIPanel>();
 
             UISprite bgSprite = currentCategoryBG.AddComponent<UISprite>();
-            bgSprite.atlas = template.GetComponent<UISprite>().atlas;
+            bgSprite.atlas = NGUI_Utils.UITexturesAtlas;
             bgSprite.spriteName = "Square_Border_Beveled_HighOpacity";
             bgSprite.type = UIBasicSprite.Type.Sliced;
             bgSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
@@ -206,8 +203,7 @@ namespace FS_LevelEditor.Editor
             BoxCollider collider = currentCategoryBG.AddComponent<BoxCollider>();
             collider.size = new Vector3(1800f, 150f, 1f);
         }
-
-        public void SetupCurrentCategoryButtons()
+        public void CreateObjectsForCategory(int categoryID)
         {
             GameObject template = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/ColorSelection/ColorSwatch");
 
@@ -215,55 +211,26 @@ namespace FS_LevelEditor.Editor
             currentCategoryButtons.Clear();
             currentCategoryBG.DeleteAllChildren();
 
-            for (int i = 0; i < EditorController.Instance.allCategoriesObjectsSorted[EditorController.Instance.currentCategoryID].Count; i++)
+            for (int i = 0; i < EditorController.Instance.allCategoriesObjectsSorted[categoryID].Count; i++)
             {
                 // Get the object.
                 var currentCategoryObj = EditorController.Instance.allCategoriesObjectsSorted[EditorController.Instance.currentCategoryID].ToList()[i];
+                Vector3 buttonPos = new Vector3(-800 + (150f * i), -25f, 0f);
 
-                // Setup the position, scale and disable the selected ui object just in case.
-                GameObject currentCategoryButton = Instantiate(template, currentCategoryBG.transform);
-                currentCategoryButton.name = currentCategoryObj.Key;
-                currentCategoryButton.transform.localPosition = new Vector3(-800 + (150f * i), -25f, 0f);
+                var currentCategoryButton = NGUI_Utils.CreateColorButton(currentCategoryBG.transform, buttonPos, currentCategoryObj.Key);
+
+                currentCategoryButton.onClick += () => EditorController.Instance.SelectObjectToBuild(currentCategoryObj.Key);
+                currentCategoryButton.onClick += () => SetCurrentObjButtonAsSelected(currentCategoryButton.gameObject);
+
                 currentCategoryButton.transform.localScale = Vector3.one * 0.8f;
-                currentCategoryButton.GetChildWithName("ActiveSwatch").SetActive(false);
-                currentCategoryButton.GetChildWithName("ColorSample").SetActive(false);
-                currentCategoryButton.SetActive(true);
-
-                // Change the title and reset its on click actions.
-                currentCategoryButton.GetChildWithName("ColorName").GetComponent<UILabel>().text = currentCategoryObj.Key;
-                currentCategoryButton.GetComponent<UIButton>().onClick.Clear();
-
-                // This action to select the object to build in the EditorController class.
-                EventDelegate onChange = new EventDelegate(EditorController.Instance, nameof(EditorController.SelectObjectToBuild));
-                EventDelegate.Parameter onChangeParameter = new EventDelegate.Parameter
-                {
-                    field = "objName",
-                    value = currentCategoryObj.Key,
-                    obj = EditorController.Instance
-                };
-                onChange.mParameters = new EventDelegate.Parameter[] { onChangeParameter };
-                currentCategoryButton.GetComponent<UIButton>().onClick.Add(onChange);
-
-                // This to make the changes visible inside of the LE UI (setting this button as the selected one).
-                EventDelegate onChangeUI = new EventDelegate(this, nameof(SetCurrentObjButtonAsSelected));
-                EventDelegate.Parameter onChangeUIParameter = new EventDelegate.Parameter
-                {
-                    field = "selectedButton",
-                    value = currentCategoryButton,
-                    obj = this
-                };
-                onChangeUI.mParameters = new EventDelegate.Parameter[] { onChangeUIParameter };
-                currentCategoryButton.GetComponent<UIButton>().onClick.Add(onChangeUI);
-
                 currentCategoryButton.GetComponent<UIButtonScale>().mScale = Vector3.one * 0.8f;
 
-                currentCategoryButtons.Add(currentCategoryButton);
+                currentCategoryButtons.Add(currentCategoryButton.gameObject);
             }
 
             // Select the very first element on the objects list.
             currentCategoryButtons[0].GetComponent<UIButton>().OnClick();
         }
-
         public void SetCurrentObjButtonAsSelected(GameObject selectedButton)
         {
             foreach (var obj in currentCategoryButtons)
