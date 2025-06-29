@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Il2Cpp;
 using System.Reflection;
+using FS_LevelEditor.Editor;
 
 namespace FS_LevelEditor
 {

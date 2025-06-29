@@ -352,11 +352,13 @@
 
 	<ItemGroup>
 		<Compile Include="Core.cs" />
+		<Compile Include="Editor\UI\SelectedObjPanel.cs" />
 		<Compile Include="EventExecuter.cs" />
-		<Compile Include="Level_Editor_Itself\DeathYPlaneCtrl.cs" />
-		<Compile Include="Level_Editor_Itself\EditorCameraMovement.cs" />
-		<Compile Include="Level_Editor_Itself\EditorController.cs" />
-		<Compile Include="Level_Editor_Itself\EventsUIPageManager.cs" />
+		<Compile Include="Editor\DeathYPlaneCtrl.cs" />
+		<Compile Include="Editor\EditorCameraMovement.cs" />
+		<Compile Include="Editor\EditorController.cs" />
+		<Compile Include="Editor\EditorSelectedObjPanel.cs" />
+		<Compile Include="Editor\EventsUIPageManager.cs" />
 		<Compile Include="LE_MenuUIManager.cs" />
 		<Compile Include="ExternalSpriteLoader.cs" />
 		<Compile Include="Logger.cs" />
@@ -378,8 +380,8 @@
 		<Compile Include="Specific_Objects_Scripts\LE_Switch.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Vent_With_Smoke_Green.cs" />
 		<Compile Include="TranslationsManager.cs" />
-		<Compile Include="UI_Related\EditorPauseMenuPatcher.cs" />
-		<Compile Include="Level_Editor_Itself\EditorUIManager.cs" />
+		<Compile Include="Editor\EditorPauseMenuPatcher.cs" />
+		<Compile Include="Editor\EditorUIManager.cs" />
 		<Compile Include="LE_Object.cs" />
 		<Compile Include="UI_Related\LevelButtonController.cs" />
 		<Compile Include="UI_Related\LE_CustomErrorPopups.cs" />

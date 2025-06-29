@@ -1,4 +1,4 @@
-﻿using FS_LevelEditor.Level_Editor_Itself;
+﻿using FS_LevelEditor.Editor.UI;
 using Il2Cpp;
 using MelonLoader;
 using System;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using static MelonLoader.bHaptics;
 
-namespace FS_LevelEditor
+namespace FS_LevelEditor.Editor
 {
     public enum EditorState
     {
@@ -322,11 +322,11 @@ namespace FS_LevelEditor
             {
                 if (multipleObjectsSelected)
                 {
-                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
+                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
                 }
                 else
                 {
-                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
                 }
             }
 
@@ -463,7 +463,7 @@ namespace FS_LevelEditor
 
             if (Input.GetKeyDown(KeyCode.Space) && currentSelectedObj)
             {
-                EditorUIManager.Instance.setActiveAtStartToggle.Set(!EditorUIManager.Instance.setActiveAtStartToggle.isChecked);
+                SelectedObjPanel.Instance.setActiveAtStartToggle.Set(!SelectedObjPanel.Instance.setActiveAtStartToggle.isChecked);
             }
 
             // Shortcut to show keybinds help panel.
@@ -506,7 +506,7 @@ namespace FS_LevelEditor
                                 // Move the parent so the whole selection is moved too.
                                 multipleSelectedObjsParent.transform.localPosition = toUndo.oldPos;
 
-                                EditorUIManager.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
+                                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
                             }
                             else
                             {
@@ -517,7 +517,7 @@ namespace FS_LevelEditor
                                 // In case the selected object is already the object to undo, update its global attributes manually:
                                 if (currentSelectedObj == toUndo.targetObj)
                                 {
-                                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.transform);
+                                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.transform);
                                 }
                                 SetSelectedObj(toUndo.targetObj);
                             }
@@ -532,7 +532,7 @@ namespace FS_LevelEditor
                                 // Rotate the parent so the whole selection is rotated too.
                                 multipleSelectedObjsParent.transform.localRotation = toUndo.oldRot;
 
-                                EditorUIManager.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
+                                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
                             }
                             else
                             {
@@ -540,7 +540,7 @@ namespace FS_LevelEditor
                                 // In case the selected object is already the object to undo, update its global attributes manually:
                                 if (currentSelectedObj == toUndo.targetObj)
                                 {
-                                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.transform);
+                                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.transform);
                                 }
                                 SetSelectedObj(toUndo.targetObj);
                             }
@@ -629,7 +629,7 @@ namespace FS_LevelEditor
                     actionsMade.Add(currentExecutingAction);
                     #endregion
 
-                    EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
                 }
             }
         }
@@ -1246,18 +1246,18 @@ namespace FS_LevelEditor
 
                 if (multipleObjectsSelected)
                 {
-                    EditorUIManager.Instance.SetMultipleObjectsSelected();
+                    SelectedObjPanel.Instance.SetMultipleObjectsSelected();
                     currentSelectedObjects.ForEach(x => x.GetComponent<LE_Object>().OnSelect());
                 }
                 else
                 {
-                    EditorUIManager.Instance.SetSelectedObject(currentSelectedObjComponent);
+                    SelectedObjPanel.Instance.SetSelectedObject(currentSelectedObjComponent);
                     currentSelectedObjComponent.OnSelect();
                 }
             }
             else
             {
-                EditorUIManager.Instance.SetSelectedObjPanelAsNone();
+                SelectedObjPanel.Instance.SetSelectedObjPanelAsNone();
             }
         }
 
@@ -1431,7 +1431,7 @@ namespace FS_LevelEditor
             if (rotation != targetObj.transform.localRotation && currentMode != Mode.Building)
             {
                 // Update global attributes.
-                EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
 
                 // Save it to editor history.
                 #region Register LEAction
@@ -1509,7 +1509,7 @@ namespace FS_LevelEditor
                             {
                                 currentSelectedObj.transform.position = hit.collider.transform.position;
                                 currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
-                                EditorUIManager.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+                                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
 
                                 levelHasBeenModified = true;
 

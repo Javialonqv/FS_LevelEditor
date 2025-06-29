@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using static Il2CppSystem.Globalization.CultureInfo;
 
-namespace FS_LevelEditor
+namespace FS_LevelEditor.Editor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class EventsUIPageManager : MonoBehaviour

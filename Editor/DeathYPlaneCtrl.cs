@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace FS_LevelEditor.Level_Editor_Itself
+namespace FS_LevelEditor.Editor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class DeathYPlaneCtrl : MonoBehaviour

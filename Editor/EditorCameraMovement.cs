@@ -8,7 +8,7 @@ using Il2CppInControl;
 using MelonLoader;
 using UnityEngine;
 
-namespace FS_LevelEditor
+namespace FS_LevelEditor.Editor
 {
     [RegisterTypeInIl2Cpp]
     public class EditorCameraMovement : MonoBehaviour

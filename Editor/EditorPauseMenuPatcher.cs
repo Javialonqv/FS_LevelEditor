@@ -7,7 +7,7 @@ using UnityEngine;
 using Il2Cpp;
 using UnityEngine.UI;
 
-namespace FS_LevelEditor
+namespace FS_LevelEditor.Editor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class EditorPauseMenuPatcher : MonoBehaviour

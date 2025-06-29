@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using HarmonyLib;
 using MelonLoader;
+using FS_LevelEditor.Editor;
 
 namespace FS_LevelEditor
 {
