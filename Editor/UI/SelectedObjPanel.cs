@@ -28,6 +28,8 @@ namespace FS_LevelEditor.Editor.UI
         Transform objectSpecificPanelsParent;
         Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
 
+        Transform whereToCreateObjAttributesParent;
+
 
         bool executeSetActiveAtStartToggleActions = true;
 
@@ -298,43 +300,15 @@ namespace FS_LevelEditor.Editor.UI
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
         {
-            GameObject directionalLightAttributes = new GameObject("DirectionalLightAttributes");
+            GameObject directionalLightAttributes = new GameObject("Directional Light");
             directionalLightAttributes.transform.parent = objectSpecificPanelsParent;
             directionalLightAttributes.transform.localPosition = Vector3.zero;
             directionalLightAttributes.transform.localScale = Vector3.one;
 
-            #region Color Input Field
-            UILabel colorTitle = NGUI_Utils.CreateLabel(directionalLightAttributes.transform, new Vector3(-230, 90), new Vector3Int(235, NGUI_Utils.defaultLabelSize.y, 0), "Color (Hex)");
-            colorTitle.name = "ColorTitle";
-            colorTitle.color = Color.white;
+            SetCurrentParentToCreateAttributes(directionalLightAttributes);
 
-            UILabel hashtagLOL = NGUI_Utils.CreateLabel(directionalLightAttributes.transform, new Vector3(15, 90), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
-                NGUIText.Alignment.Center, UIWidget.Pivot.Left);
-            hashtagLOL.name = "HashtagLOL";
-            hashtagLOL.color = Color.white;
-
-            GameObject colorInputField = NGUI_Utils.CreateInputField(directionalLightAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
-                "FFFFFF", false);
-            colorInputField.name = "ColorField";
-            var colorFieldCustomScript = colorInputField.AddComponent<UICustomInputField>();
-            colorFieldCustomScript.Setup(UICustomInputField.UIInputType.HEX_COLOR);
-            colorFieldCustomScript.setFieldColorAutomatically = false;
-            colorFieldCustomScript.onChange += (() => SetPropertyWithInput("Color", colorFieldCustomScript));
-            #endregion
-
-            #region Intensity Input Field
-            UILabel intensityTitle = NGUI_Utils.CreateLabel(directionalLightAttributes.transform, new Vector3(-230, 40), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0), "Intensity");
-            intensityTitle.name = "IntensityTitle";
-            intensityTitle.color = Color.white;
-
-            GameObject intensityInputField = NGUI_Utils.CreateInputField(directionalLightAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
-                "1", false);
-            intensityInputField.name = "IntensityField";
-            var intensityFieldCustomScript = intensityInputField.AddComponent<UICustomInputField>();
-            intensityFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
-            intensityFieldCustomScript.setFieldColorAutomatically = false;
-            intensityFieldCustomScript.onChange += (() => SetPropertyWithInput("Intensity", intensityFieldCustomScript));
-            #endregion
+            CreateObjectAttribute("Color (Hex)", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+            CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
 
             directionalLightAttributes.SetActive(false);
             attributesPanels.Add("Directional Light", directionalLightAttributes);
@@ -683,6 +657,48 @@ namespace FS_LevelEditor.Editor.UI
             flameTrapAttributes.SetActive(false);
             attributesPanels.Add("Flame Trap", flameTrapAttributes);
         }
+
+        enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON }
+        void SetCurrentParentToCreateAttributes(GameObject newParent)
+        {
+            whereToCreateObjAttributesParent = newParent.transform;
+        }
+        void CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType fieldType, string targetPropName, bool createHastag = false)
+        {
+            GameObject attributeParent = new GameObject(targetPropName);
+            attributeParent.transform.parent = whereToCreateObjAttributesParent;
+            attributeParent.transform.localPosition = Vector3.zero;
+            attributeParent.transform.localScale = Vector3.one;
+
+            float yPos = 90 - (50 * (whereToCreateObjAttributesParent.childCount - 1));
+
+            if (attrType != AttributeType.BUTTON)
+            {
+                int titleWidth = attrType == AttributeType.INPUT_FIELD ? 260 : 395;
+                if (createHastag) titleWidth = 235;
+                UILabel title = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(-230, yPos), new Vector3Int(titleWidth, NGUI_Utils.defaultLabelSize.y, 0),
+                    text);
+                title.name = "Title";
+            }
+
+            if (createHastag && attrType == AttributeType.INPUT_FIELD)
+            {
+                UILabel hashtagLOL = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(15, yPos), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
+                    NGUIText.Alignment.Center, UIWidget.Pivot.Left);
+                hashtagLOL.name = "HashtagLOL";
+                hashtagLOL.color = Color.white;
+            }
+
+            if (attrType == AttributeType.INPUT_FIELD)
+            {
+                GameObject field = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(140, yPos), new Vector3Int(200, 38, 0), 27, (string)defaultValue, false);
+                field.name = "Field";
+                var fieldScript = field.AddComponent<UICustomInputField>();
+                fieldScript.Setup(fieldType);
+                fieldScript.setFieldColorAutomatically = false;
+                fieldScript.onChange += () => SetPropertyWithInput(targetPropName, fieldScript);
+            }
+        }
         #endregion
         #endregion
 
@@ -758,13 +774,8 @@ namespace FS_LevelEditor.Editor.UI
             {
                 attributesPanels["Directional Light"].SetActive(true);
 
-                // Set color input...
-                var colorInput = attributesPanels["Directional Light"].GetChildWithName("ColorField").GetComponent<UIInput>();
-                colorInput.text = Utilities.ColorToHex((Color)objComponent.GetProperty("Color"));
-
-                // Set intensity input...
-                var intensityInput = attributesPanels["Directional Light"].GetChildWithName("IntensityField").GetComponent<UIInput>();
-                intensityInput.text = (float)objComponent.GetProperty("Intensity") + "";
+                UpdateObjectSpecificAttribute("Directional Light", "Color", Utilities.ColorToHex(objComponent.GetProperty<Color>("Color")));
+                UpdateObjectSpecificAttribute("Directional Light", "Intensity", objComponent.GetProperty<float>("Intensity") + "");
             }
             else if (objComponent.objectOriginalName == "Point Light")
             {
@@ -879,6 +890,18 @@ namespace FS_LevelEditor.Editor.UI
             {
                 setActiveAtStartToggle.gameObject.SetActive(false);
                 objComponent.setActiveAtStart = true; // Just in case ;)
+            }
+        }
+        void UpdateObjectSpecificAttribute(string objName, string attrName, object value)
+        {
+            GameObject attrParent = objectSpecificPanelsParent.gameObject.GetChildAt($"{objName}/{attrName}");
+            if (attrParent.ExistsChildWithName("Field"))
+            {
+                attrParent.GetChildWithName("Field").GetComponent<UICustomInputField>().SetText((string)value);
+            }
+            else if (attrParent.ExistsChildWithName("Toggle"))
+            {
+                attrParent.GetChildWithName("Toggle").GetComponent<UIToggle>().Set((bool)value);
             }
         }
 
