@@ -341,6 +341,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
+            CreateObjectAttribute("+ Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
             sawAttributes.SetActive(false);
             attributesPanels.Add("Saw", sawAttributes);
@@ -612,7 +613,7 @@ namespace FS_LevelEditor.Editor.UI
 
             if (createHastag && attrType == AttributeType.INPUT_FIELD)
             {
-                UILabel hashtagLOL = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(15, yPos), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
+                UILabel hashtagLOL = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(15, yPos - 5), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
                     NGUIText.Alignment.Center, UIWidget.Pivot.Left);
                 hashtagLOL.name = "HashtagLOL";
                 hashtagLOL.color = Color.white;
@@ -637,6 +638,14 @@ namespace FS_LevelEditor.Editor.UI
                     NGUI_Utils.CreateEventDelegateParamter(this, "toggle", toggle.GetComponent<UIToggle>()));
                 toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
                 if ((bool)defaultValue) toggle.GetComponent<UIToggle>().Set(true);
+            }
+            else if (attrType == AttributeType.BUTTON)
+            {
+                UIButtonPatcher button = NGUI_Utils.CreateButton(attributeParent.transform, new Vector3(0, yPos), new Vector3Int(480, 55, 0), text);
+                button.name = "Button";
+                button.onClick += () => TriggerAction(targetPropName);
+                button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+                button.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
             }
         }
         #endregion
