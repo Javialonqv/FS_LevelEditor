@@ -348,32 +348,15 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSawWaypointAttributesPanel()
         {
-            GameObject sawWaypointAttributes = new GameObject("SawWaypointAttributes");
+            GameObject sawWaypointAttributes = new GameObject("Saw Waypoint");
             sawWaypointAttributes.transform.parent = objectSpecificPanelsParent;
             sawWaypointAttributes.transform.localPosition = Vector3.zero;
             sawWaypointAttributes.transform.localScale = Vector3.one;
 
-            #region Wait Time Input Field
-            UILabel waitTimeTitle = NGUI_Utils.CreateLabel(sawWaypointAttributes.transform, new Vector3(-230, 90), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0),
-                "Wait Time");
-            waitTimeTitle.name = "WaitTimeTitle";
-            waitTimeTitle.color = Color.white;
+            SetCurrentParentToCreateAttributes(sawWaypointAttributes);
 
-            GameObject waitTimeInputField = NGUI_Utils.CreateInputField(sawWaypointAttributes.transform, new Vector3(140f, 90f, 0f), new Vector3Int(200, 38, 0), 27,
-                "0.3", false, NGUIText.Alignment.Left);
-            waitTimeInputField.name = "WaitTimeInputField";
-            var waitTimeFieldCustomScript = waitTimeInputField.AddComponent<UICustomInputField>();
-            waitTimeFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
-            waitTimeFieldCustomScript.onChange += (() => SetPropertyWithInput("WaitTime", waitTimeFieldCustomScript));
-            #endregion
-
-            #region Add Waypoint
-            UIButtonPatcher addWaypoint = NGUI_Utils.CreateButton(sawWaypointAttributes.transform, new Vector3(0f, 35f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
-            addWaypoint.name = "AddWaypointButton";
-            addWaypoint.onClick += () => TriggerAction("AddWaypoint");
-            addWaypoint.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            addWaypoint.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-            #endregion
+            CreateObjectAttribute("Wait Time", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+            CreateObjectAttribute("+ Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
             sawWaypointAttributes.SetActive(false);
             attributesPanels.Add("SawWaypoint", sawWaypointAttributes);
@@ -745,9 +728,7 @@ namespace FS_LevelEditor.Editor.UI
             {
                 attributesPanels["SawWaypoint"].SetActive(true);
 
-                // Set wait time input field...
-                var waitTimeInputField = attributesPanels["SawWaypoint"].GetChildWithName("WaitTimeInputField").GetComponent<UIInput>();
-                waitTimeInputField.text = (float)objComponent.GetProperty("WaitTime") + "";
+                UpdateObjectSpecificAttribute("Saw Waypoint", "WaitTime", objComponent.GetProperty<float>("WaitTime") + "");
             }
             else if (objComponent.objectOriginalName == "Switch")
             {
