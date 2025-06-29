@@ -42,7 +42,7 @@ namespace FS_LevelEditor
         void Update()
         {
             // If the light sprite is null is probaly because we're already in playmode and the light sprite was destroyed.
-            if (lightBulbSprite != null)
+            if (lightBulbSprite && Camera.main)
             {
                 lightBulbSprite.transform.rotation = Camera.main.transform.rotation;
             }

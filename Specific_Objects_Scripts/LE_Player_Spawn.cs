@@ -45,7 +45,7 @@ namespace FS_LevelEditor
         void Update()
         {
             // If the spawn sprite is null is probaly because we're already in playmode and the spawn sprite was destroyed.
-            if (spawnSprite != null)
+            if (spawnSprite && Camera.main)
             {
                 spawnSprite.transform.rotation = Camera.main.transform.rotation;
             }
