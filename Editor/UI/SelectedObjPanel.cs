@@ -28,6 +28,7 @@ namespace FS_LevelEditor.Editor.UI
         // ------------------------------
         Transform objectSpecificPanelsParent;
         Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
+        // First string: Target obj name ("Directional Light", "Switch"), second string for the ATTRIBHUTE of that object, and then the action to do to update the attribute value.
         Dictionary<string, Dictionary<string, Func<object>>> toUpdateAttributesPanels = new Dictionary<string, Dictionary<string, Func<object>>>();
 
         Transform whereToCreateObjAttributesParent;
@@ -648,7 +649,7 @@ namespace FS_LevelEditor.Editor.UI
 
                     child.SetActive(true);
                     UpdateObjectSpecificAttribute(child.name);
-                    break;
+                    break; // We already found the right panel, stop iterating.
                 }
             }
             if (!specificAttributesFound)
@@ -812,11 +813,5 @@ namespace FS_LevelEditor.Editor.UI
         {
             attributesPanels["Laser"].GetChildWithName("Damage").SetActive(!newState);
         }
-    }
-
-    [MelonLoader.RegisterTypeInIl2Cpp]
-    public class ObjectAttributeInUI : MonoBehaviour
-    {
-        
     }
 }
