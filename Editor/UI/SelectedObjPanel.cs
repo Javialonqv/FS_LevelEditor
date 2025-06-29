@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using UnityEngine;
 
 namespace FS_LevelEditor.Editor.UI
@@ -331,46 +332,15 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSawAttributesPanel()
         {
-            GameObject sawAttributes = new GameObject("SawAttributes");
+            GameObject sawAttributes = new GameObject("Saw");
             sawAttributes.transform.parent = objectSpecificPanelsParent;
             sawAttributes.transform.localPosition = Vector3.zero;
             sawAttributes.transform.localScale = Vector3.one;
 
-            #region Activate On Start Toggle
-            UILabel activateOnStartTitle = NGUI_Utils.CreateLabel(sawAttributes.transform, new Vector3(-230, 90), new Vector3Int(395, NGUI_Utils.defaultLabelSize.y, 0),
-                "Activate On Start");
-            activateOnStartTitle.name = "ActivateOnStartTitle";
-            activateOnStartTitle.color = Color.white;
+            SetCurrentParentToCreateAttributes(sawAttributes);
 
-            GameObject activateOnStartToggle = NGUI_Utils.CreateToggle(sawAttributes.transform, new Vector3(200f, 90f, 0f), new Vector3Int(48, 48, 0));
-            activateOnStartToggle.name = "ActivateOnStartToggle";
-            activateOnStartToggle.GetComponent<UIToggle>().onChange.Clear();
-            var activateOnStartDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-                NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", "ActivateOnStart"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", activateOnStartToggle.GetComponent<UIToggle>()));
-            activateOnStartToggle.GetComponent<UIToggle>().onChange.Add(activateOnStartDelegate);
-            #endregion
-
-            #region Damage Input Field
-            UILabel damageTitle = NGUI_Utils.CreateLabel(sawAttributes.transform, new Vector3(-230, 40), new Vector3Int(260, NGUI_Utils.defaultLabelSize.y, 0), "Damage");
-            damageTitle.name = "DamageTitle";
-            damageTitle.color = Color.white;
-
-            GameObject damageInputField = NGUI_Utils.CreateInputField(sawAttributes.transform, new Vector3(140f, 40f, 0f), new Vector3Int(200, 38, 0), 27,
-                "50", false, NGUIText.Alignment.Left);
-            damageInputField.name = "DamageInputField";
-            var damangeFieldCustomScript = damageInputField.AddComponent<UICustomInputField>();
-            damangeFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_INT);
-            damangeFieldCustomScript.onChange += (() => SetPropertyWithInput("Damage", damangeFieldCustomScript));
-            #endregion
-
-            #region Add Waypoint
-            UIButtonPatcher addWaypoint = NGUI_Utils.CreateButton(sawAttributes.transform, new Vector3(0f, -15f, 0f), new Vector3Int(480, 55, 0), "+ Add Waypoint");
-            addWaypoint.name = "AddWaypointButton";
-            addWaypoint.onClick += () => TriggerAction("AddWaypoint");
-            addWaypoint.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            addWaypoint.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-            #endregion
+            CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+            CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
 
             sawAttributes.SetActive(false);
             attributesPanels.Add("Saw", sawAttributes);
@@ -622,7 +592,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             whereToCreateObjAttributesParent = newParent.transform;
         }
-        void CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType fieldType, string targetPropName, bool createHastag = false)
+        void CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType? fieldType, string targetPropName, bool createHastag = false)
         {
             GameObject attributeParent = new GameObject(targetPropName);
             attributeParent.transform.parent = whereToCreateObjAttributesParent;
@@ -653,9 +623,20 @@ namespace FS_LevelEditor.Editor.UI
                 GameObject field = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(140, yPos), new Vector3Int(200, 38, 0), 27, (string)defaultValue, false);
                 field.name = "Field";
                 var fieldScript = field.AddComponent<UICustomInputField>();
-                fieldScript.Setup(fieldType);
+                fieldScript.Setup((UICustomInputField.UIInputType)fieldType);
                 fieldScript.setFieldColorAutomatically = false;
                 fieldScript.onChange += () => SetPropertyWithInput(targetPropName, fieldScript);
+            }
+            else if (attrType == AttributeType.TOGGLE)
+            {
+                GameObject toggle = NGUI_Utils.CreateToggle(attributeParent.transform, new Vector3(200f, yPos), new Vector3Int(48, 48, 0));
+                toggle.name = "Toggle";
+                toggle.GetComponent<UIToggle>().onChange.Clear();
+                var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+                    NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", targetPropName),
+                    NGUI_Utils.CreateEventDelegateParamter(this, "toggle", toggle.GetComponent<UIToggle>()));
+                toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
+                if ((bool)defaultValue) toggle.GetComponent<UIToggle>().Set(true);
             }
         }
         #endregion
@@ -748,13 +729,8 @@ namespace FS_LevelEditor.Editor.UI
             {
                 attributesPanels["Saw"].SetActive(true);
 
-                // Set activate on start toggle...
-                var activateOnStartToggle = attributesPanels["Saw"].GetChildWithName("ActivateOnStartToggle").GetComponent<UIToggle>();
-                activateOnStartToggle.Set((bool)objComponent.GetProperty("ActivateOnStart"));
-
-                // Set the damage input field...
-                var damageInput = attributesPanels["Saw"].GetChildWithName("DamageInputField").GetComponent<UIInput>();
-                damageInput.text = (int)objComponent.GetProperty("Damage") + "";
+                UpdateObjectSpecificAttribute("Saw", "ActivateOnStart", objComponent.GetProperty<bool>("ActivateOnStart"));
+                UpdateObjectSpecificAttribute("Saw", "Damage", objComponent.GetProperty<int>("Damage") + "");
             }
             else if (objComponent.objectOriginalName == "Saw Waypoint")
             {
