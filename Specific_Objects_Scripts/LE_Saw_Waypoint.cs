@@ -74,13 +74,6 @@ namespace FS_LevelEditor
 
         void Update()
         {
-            // Update the waypoint link every frame.
-            if (editorWaypointLine && nextWaypoint && EditorController.Instance != null)
-            {
-                editorWaypointLine.SetPosition(0, transform.position);
-                editorWaypointLine.SetPosition(1, nextWaypoint.transform.position);
-            }
-
             // Update the position and rotation every frame :)
             if (EditorController.Instance != null)
             {
@@ -89,12 +82,16 @@ namespace FS_LevelEditor
                 toModify.waypointPosition = transform.localPosition;
                 toModify.waypointRotation = transform.localEulerAngles;
                 ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"])[waypointID] = toModify;
-                //LE_SawWaypointSerializable toModify = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).Find(x => x.objectID == objectID);
-                //int index = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).IndexOf(toModify);
-                //toModify.waitTime = (float)GetProperty("WaitTime");
-                //toModify.waypointPosition = transform.localPosition;
-                //toModify.waypointRotation = transform.localEulerAngles;
-                //((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"])[index] = toModify;
+            }
+        }
+        void LateUpdate()
+        {
+            // Update the waypoint link every frame.
+            // In LateUpdate() to avoid THAT ONE frame where the link is bugged, before it's set to the new position, dunno how to explain, good luck future me LOL.
+            if (editorWaypointLine && nextWaypoint && EditorController.Instance != null)
+            {
+                editorWaypointLine.SetPosition(0, transform.position);
+                editorWaypointLine.SetPosition(1, nextWaypoint.transform.position);
             }
         }
 
