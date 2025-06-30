@@ -145,6 +145,7 @@ namespace FS_LevelEditor
             wasDeleted = true;
 
             mainSaw.waypointsGOs.Remove(gameObject);
+            mainSaw.waypointsComps.Remove(this);
 
             mainSaw.RecalculateWaypoints();
         }

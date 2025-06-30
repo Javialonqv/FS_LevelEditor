@@ -19,7 +19,6 @@ namespace FS_LevelEditor
         ScieScript script;
 
         public LE_Saw_Waypoint nextWaypoint;
-        LineRenderer editorWaypointLine;
         public GameObject waypointsParent;
         public List<GameObject> waypointsGOs = new List<GameObject>();
         public List<LE_Saw_Waypoint> waypointsComps = new List<LE_Saw_Waypoint>();
@@ -37,7 +36,6 @@ namespace FS_LevelEditor
             };
 
             waypointsParent = gameObject.GetChildWithName("Waypoints");
-            editorWaypointLine = gameObject.GetChildWithName("EditorWaypointLine").GetComponent<LineRenderer>();
         }
 
         public override void OnInstantiated(LEScene scene)
@@ -67,16 +65,6 @@ namespace FS_LevelEditor
                         script.Deactivate();
                     }
                 }
-            }
-        }
-
-        void Update()
-        {
-            // Update the link with the position of this saw and the next waypoint.
-            if (editorWaypointLine && nextWaypoint && EditorController.Instance != null)
-            {
-                editorWaypointLine.SetPosition(0, transform.position);
-                editorWaypointLine.SetPosition(1, nextWaypoint.transform.position);
             }
         }
 
@@ -360,11 +348,6 @@ namespace FS_LevelEditor
             {
                 // This is a loop, when we call this in the next waypoint, it'll automatically call it in the OTHER waypoints till the end.
                 nextWaypoint.HideOrShowSawInEditor(show);
-            }
-
-            if (editorWaypointLine)
-            {
-                editorWaypointLine.gameObject.SetActive(show);
             }
         }
         public void RecalculateWaypoints()
