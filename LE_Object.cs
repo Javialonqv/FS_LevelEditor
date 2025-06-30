@@ -141,7 +141,7 @@ namespace FS_LevelEditor
                 }
             }
         }
-        void Init(string originalObjName)
+        void Init(string originalObjName, bool skipIDInitialization = false)
         {
             if (EditorController.Instance != null && PlayModeController.Instance == null)
             {
@@ -152,7 +152,7 @@ namespace FS_LevelEditor
                 PlayModeController.Instance.currentInstantiatedObjects.Add(this);
             }
 
-            SetNameAndType(originalObjName);
+            SetNameAndType(originalObjName, skipIDInitialization);
 
             if (PlayModeController.Instance != null)
             {
@@ -173,7 +173,7 @@ namespace FS_LevelEditor
         /// <param name="targetObj">The GameObject ot attach this component to.</param>
         /// <param name="originalObjName">THe "original" name of the desired object.</param>
         /// <returns>An instance of the created LE_Object component class.</returns>
-        public static LE_Object AddComponentToObject(GameObject targetObj, string originalObjName)
+        public static LE_Object AddComponentToObject(GameObject targetObj, string originalObjName, bool skipIDInitialization = false)
         {
             string className = "LE_" + originalObjName.Replace(' ', '_');
             Type classType = Type.GetType("FS_LevelEditor." + className);
@@ -186,7 +186,7 @@ namespace FS_LevelEditor
                     return null;
                 }
                 LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
-                instancedComponent.Init(originalObjName);
+                instancedComponent.Init(originalObjName, skipIDInitialization);
                 instancedComponent.hasItsOwnClass = true;
                 return instancedComponent;
             }
@@ -198,12 +198,12 @@ namespace FS_LevelEditor
                 }
 
                 LE_Object instancedComponent = targetObj.AddComponent<LE_Object>();
-                instancedComponent.Init(originalObjName);
+                instancedComponent.Init(originalObjName, skipIDInitialization);
                 return instancedComponent;
             }
         }
 
-        void SetNameAndType(string originalObjName)
+        void SetNameAndType(string originalObjName, bool skipIDInitialization = false)
         {
             objectType = ConvertNameToObjectType(originalObjName);
             objectOriginalName = originalObjName;
@@ -213,6 +213,28 @@ namespace FS_LevelEditor
                 LE_CustomErrorPopups.ObjectWithoutObjectType();
             }
 
+            if (!skipIDInitialization)
+            {
+                int id = 0;
+                LE_Object[] objects = GetReferenceObjectsToGetObjID();
+
+                while (objects.Any(x => x.objectID == id && x.objectOriginalName == objectOriginalName))
+                {
+                    id++;
+                }
+                objectID = id;
+
+                gameObject.name = objectFullNameWithID;
+
+                // If the objects list has more than 1 object of the same type AND with the same ID, well, that's not allowed, show an error popup.
+                if (!Utilities.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) &&  Utilities.ListHasMultipleObjectsWithSameID(objects.ToList()))
+                {
+                    LE_CustomErrorPopups.MultipleObjectsWithSameID();
+                }
+            }
+        }
+        public void SetupObjectID()
+        {
             int id = 0;
             LE_Object[] objects = GetReferenceObjectsToGetObjID();
 
@@ -225,7 +247,7 @@ namespace FS_LevelEditor
             gameObject.name = objectFullNameWithID;
 
             // If the objects list has more than 1 object of the same type AND with the same ID, well, that's not allowed, show an error popup.
-            if (Utilities.ListHasMultipleObjectsWithSameID(objects.ToList()))
+            if (!Utilities.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) && Utilities.ListHasMultipleObjectsWithSameID(objects.ToList()))
             {
                 LE_CustomErrorPopups.MultipleObjectsWithSameID();
             }
@@ -403,7 +425,7 @@ namespace FS_LevelEditor
         }
         #endregion
 
-        LE_Object[] GetReferenceObjectsToGetObjID()
+        public virtual LE_Object[] GetReferenceObjectsToGetObjID()
         {
             if (EditorController.Instance != null && PlayModeController.Instance == null)
             {

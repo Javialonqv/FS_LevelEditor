@@ -10,8 +10,6 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor
 {
@@ -24,6 +22,7 @@ namespace FS_LevelEditor
         LineRenderer editorWaypointLine;
         public GameObject waypointsParent;
         public List<GameObject> waypointsGOs = new List<GameObject>();
+        public List<LE_Saw_Waypoint> waypointsComps = new List<LE_Saw_Waypoint>();
 
         ScieScript sawScript;
 
@@ -38,6 +37,7 @@ namespace FS_LevelEditor
             };
 
             waypointsParent = gameObject.GetChildWithName("Waypoints");
+            editorWaypointLine = gameObject.GetChildWithName("EditorWaypointLine").GetComponent<LineRenderer>();
         }
 
         public override void OnInstantiated(LEScene scene)
@@ -46,8 +46,6 @@ namespace FS_LevelEditor
             {
                 // Set the saw on or off.
                 SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
-
-                CreateWaypointEditorLine();
             }
 
             base.OnInstantiated(scene);
@@ -284,13 +282,13 @@ namespace FS_LevelEditor
 
                 // Set the waypoint values, we don't need to worry about the waypoints list since when loading data, the data is not altered.
                 LE_Saw_Waypoint instance = AddWaypoint(true);
-                instance.objectID = waypoint.objectID;
-                instance.name = instance.objectFullNameWithID;
                 instance.transform.localPosition = waypoint.waypointPosition;
                 instance.transform.localEulerAngles = waypoint.waypointRotation;
 
                 // Set the waypoint properties:
                 instance.SetProperty("WaitTime", waypoint.waitTime);
+
+                if (i == 0) instance.isTheFirstWaypoint = true;
 
                 // The next waypoint and previows waypoint references and all that shit is already set by AddWaypoint().
             }
@@ -314,23 +312,26 @@ namespace FS_LevelEditor
                 nextWaypoint = firstWaypoint;
             }
 
-            GameObject waypoint = Instantiate(Core.LoadOtherObjectInBundle("TransparentSaw"), waypointsParent.transform);
+            GameObject waypoint = Instantiate(Core.LoadOtherObjectInBundle("Saw Waypoint"), waypointsParent.transform);
             waypoint.transform.localPosition = Vector3.zero;
             waypoint.transform.localEulerAngles = Vector3.zero;
             waypoint.transform.localScale = Vector3.one;
 
-            LE_Saw_Waypoint objComponent = (LE_Saw_Waypoint)LE_Object.AddComponentToObject(waypoint, "Saw Waypoint");
+            LE_Saw_Waypoint objComponent = (LE_Saw_Waypoint)LE_Object.AddComponentToObject(waypoint, "Saw Waypoint", true);
 
-            if (nextWaypoint == null)
+            if (nextWaypoint == null) // If null, then this waypoint will be the first one.
             {
                 nextWaypoint = objComponent;
                 objComponent.previousWaypoint = this;
+                objComponent.waypointID = 0;
                 objComponent.mainSaw = this;
+                objComponent.SetProperty("WaitTime", 0f);
             }
             else
             {
                 objComponent.previousWaypoint = GetLastWaypoint();
                 GetLastWaypoint().nextWaypoint = objComponent;
+                objComponent.waypointID = waypointsGOs.Count;
                 objComponent.mainSaw = this;
             }
 
@@ -339,7 +340,10 @@ namespace FS_LevelEditor
             {
                 AddNewWaypointToList(new LE_SawWaypointSerializable(objComponent));
             }
+            objComponent.SetupObjectID();
             waypointsGOs.Add(objComponent.gameObject);
+            waypointsComps.Add(objComponent);
+
 
             // Select the object only if the waypoint is NOT loaded from save data ;)
             if (!isFromSavedData && EditorController.Instance)
@@ -350,10 +354,18 @@ namespace FS_LevelEditor
             Logger.DebugLog($"Created waypoint! ID: {objComponent.objectID}, isFromSaveData: {isFromSavedData}, ignoreIfCurrentNextWaypointIsNull: {isToCreateTheVeryFirstWaypoint}.");
             return objComponent;
         }
-
-        void AddNewWaypointToList(LE_SawWaypointSerializable newWaypoint)
+        public void HideOrShowAllWaypointsInEditor(bool show)
         {
-            ((List<LE_SawWaypointSerializable>)properties["waypoints"]).Add(newWaypoint);
+            if (nextWaypoint != null)
+            {
+                // This is a loop, when we call this in the next waypoint, it'll automatically call it in the OTHER waypoints till the end.
+                nextWaypoint.HideOrShowSawInEditor(show);
+            }
+
+            if (editorWaypointLine)
+            {
+                editorWaypointLine.gameObject.SetActive(show);
+            }
         }
         public void RecalculateWaypoints()
         {
@@ -367,29 +379,34 @@ namespace FS_LevelEditor
 
             foreach (var waypoint in waypointsGOs)
             {
-                LE_Saw_Waypoint waypointComponent = waypoint.GetComponent<LE_Saw_Waypoint>();
-                waypointComponent.previousWaypoint = null;
-                waypointComponent.nextWaypoint = null;
+                LE_Saw_Waypoint waypointComp = waypoint.GetComponent<LE_Saw_Waypoint>();
+                waypointComp.previousWaypoint = null;
+                waypointComp.nextWaypoint = null;
 
                 if (lastWaypoint != null)
                 {
-                    lastWaypoint.nextWaypoint = waypointComponent;
-                    waypointComponent.previousWaypoint = lastWaypoint;
+                    lastWaypoint.nextWaypoint = waypointComp;
+                    waypointComp.previousWaypoint = lastWaypoint;
                 }
-                else
+                else // This is the very first waypoint ever.
                 {
-                    waypointComponent.previousWaypoint = this;
+                    waypointComp.previousWaypoint = this;
                 }
 
-                AddNewWaypointToList(new LE_SawWaypointSerializable(waypointComponent));
+                AddNewWaypointToList(new LE_SawWaypointSerializable(waypointComp));
 
                 // If the next waypoint from this saw is null, that means this is the first waypoint in this new list, assign it to this saw.
-                if (nextWaypoint == null) nextWaypoint = waypointComponent;
+                if (nextWaypoint == null) nextWaypoint = waypointComp;
 
-                lastWaypoint = waypointComponent;
+                lastWaypoint = waypointComp;
             }
 
             HideOrShowAllWaypointsInEditor(true);
+        }
+
+        void AddNewWaypointToList(LE_SawWaypointSerializable newWaypoint)
+        {
+            ((List<LE_SawWaypointSerializable>)properties["waypoints"]).Add(newWaypoint);
         }
         LE_Saw_Waypoint GetLastWaypoint()
         {
@@ -400,41 +417,6 @@ namespace FS_LevelEditor
             else
             {
                 return null;
-            }
-        }
-
-        void CreateWaypointEditorLine()
-        {
-            if (editorWaypointLine != null)
-            {
-                Destroy(editorWaypointLine.gameObject);
-            }
-
-            editorWaypointLine = new GameObject("EditorWaypointLine").AddComponent<LineRenderer>();
-            editorWaypointLine.transform.parent = transform;
-            editorWaypointLine.transform.localPosition = Vector3.zero;
-
-            editorWaypointLine.startWidth = 0.1f;
-            editorWaypointLine.endWidth = 0.1f;
-            editorWaypointLine.positionCount = 2;
-
-            editorWaypointLine.material = new Material(Shader.Find("Sprites/Default"));
-            editorWaypointLine.startColor = Color.white;
-            editorWaypointLine.endColor = Color.white;
-
-            editorWaypointLine.gameObject.SetActive(false);
-        }
-        public void HideOrShowAllWaypointsInEditor(bool show)
-        {
-            if (nextWaypoint != null)
-            {
-                // This is a loop, when we call this in the next waypoint, it'll automatically call it in the OTHER waypoints till the end.
-                nextWaypoint.HideOrShowSawInEditor(show);
-            }
-
-            if (editorWaypointLine)
-            {
-                editorWaypointLine.gameObject.SetActive(show);
             }
         }
     }

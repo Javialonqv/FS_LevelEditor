@@ -297,6 +297,8 @@ namespace FS_LevelEditor
 
             foreach (var obj in levelObjects)
             {
+                if (obj.objectOriginalName == "Saw Waypoint") continue;
+
                 if (!seenIds.Add(obj.objectFullNameWithID))
                 {
                     if (printError)

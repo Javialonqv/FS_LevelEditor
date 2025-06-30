@@ -18,6 +18,7 @@ namespace FS_LevelEditor
 
         public LE_Object previousWaypoint;
         public LE_Saw_Waypoint nextWaypoint;
+        public int waypointID;
         public LE_Saw mainSaw;
         public LineRenderer editorWaypointLine;
 
@@ -37,13 +38,20 @@ namespace FS_LevelEditor
             canBeUsedInEventsTab = false;
             canBeDisabledAtStart = false;
 
-            if (PlayModeController.Instance == null)
+            editorWaypointLine = gameObject.GetChildWithName("EditorWaypointLine").GetComponent<LineRenderer>();
+            if (EditorController.Instance)
             {
-                CreateWaypointEditorLine();
+                // For some reason the shader is broken when the game's running, assign it manually.
+                editorWaypointLine.material.shader = Shader.Find("Sprites/Default");
+                editorWaypointLine.gameObject.SetActive(true);
             }
         }
 
         public override void OnInstantiated(LEScene scene)
+        {
+            // Don't call the base function since saw waypoints don't have an EditorCollider and such.
+        }
+        public override void ObjectStart(LEScene scene)
         {
             if (scene == LEScene.Playmode)
             {
@@ -53,21 +61,15 @@ namespace FS_LevelEditor
                 gameObject.GetChildWithName("Mesh").SetActive(false);
             }
             // The "first waypoint" is just supposed to be internal, the user can't interact with it and it's in the same pos as the original saw.
-            else if (!isTheFirstWaypoint)
+            else if (isTheFirstWaypoint)
             {
-                GameObject collider = new GameObject("Collider");
-                collider.transform.parent = transform;
-                collider.transform.localScale = Vector3.one;
-                collider.transform.localPosition = Vector3.zero;
-                collider.AddComponent<BoxCollider>().size = new Vector3(0.1f, 2f, 2f);
+                gameObject.GetChildWithName("Collider").SetActive(false);
             }
 
             if (isTheFirstWaypoint)
             {
                 gameObject.GetChildWithName("Mesh").SetActive(false);
             }
-
-            // Don't call the base function since saw waypoints don't have an EditorCollider and such.
         }
 
         void Update()
@@ -82,12 +84,17 @@ namespace FS_LevelEditor
             // Update the position and rotation every frame :)
             if (EditorController.Instance != null)
             {
-                LE_SawWaypointSerializable toModify = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).Find(x => x.objectID == objectID);
-                int index = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).IndexOf(toModify);
-                toModify.waitTime = (float)GetProperty("WaitTime");
+                LE_SawWaypointSerializable toModify = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"])[waypointID];
+                toModify.waitTime = GetProperty<float>("WaitTime");
                 toModify.waypointPosition = transform.localPosition;
                 toModify.waypointRotation = transform.localEulerAngles;
-                ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"])[index] = toModify;
+                ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"])[waypointID] = toModify;
+                //LE_SawWaypointSerializable toModify = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).Find(x => x.objectID == objectID);
+                //int index = ((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"]).IndexOf(toModify);
+                //toModify.waitTime = (float)GetProperty("WaitTime");
+                //toModify.waypointPosition = transform.localPosition;
+                //toModify.waypointRotation = transform.localEulerAngles;
+                //((List<LE_SawWaypointSerializable>)mainSaw.properties["waypoints"])[index] = toModify;
             }
         }
 
@@ -112,26 +119,6 @@ namespace FS_LevelEditor
             waypoint.checkpoints = mainSaw.waypointsGOs.ToArray();
 
             initialized = true;
-        }
-
-        void CreateWaypointEditorLine()
-        {
-            if (editorWaypointLine != null)
-            {
-                Destroy(editorWaypointLine.gameObject);
-            }
-
-            editorWaypointLine = new GameObject("EditorWaypointLine").AddComponent<LineRenderer>();
-            editorWaypointLine.transform.parent = transform;
-            editorWaypointLine.transform.localPosition = Vector3.zero;
-
-            editorWaypointLine.startWidth = 0.1f;
-            editorWaypointLine.endWidth = 0.1f;
-            editorWaypointLine.positionCount = 2;
-
-            editorWaypointLine.material = new Material(Shader.Find("Sprites/Default"));
-            editorWaypointLine.startColor = Color.white;
-            editorWaypointLine.endColor = Color.white;
         }
 
         public override void OnSelect()
@@ -232,6 +219,11 @@ namespace FS_LevelEditor
             {
                 nextWaypoint.HideOrShowSawInEditor(show);
             }
+        }
+
+        public override LE_Object[] GetReferenceObjectsToGetObjID()
+        {
+            return mainSaw.waypointsComps.ToArray();
         }
     }
 }
