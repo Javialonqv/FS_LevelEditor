@@ -646,14 +646,14 @@ namespace FS_LevelEditor.Editor
                     if (EditorUIManager.IsCurrentUIContext(EditorUIContext.NORMAL))
                     {
                         EditorUIManager.Instance.categoryButtonsParent.SetActive(true);
-                        EditorUIManager.Instance.objectsBG.SetActive(true);
+                        EditorUIManager.Instance.objectsToBuildBG.SetActive(true);
                     }
                     break;
 
                 case Mode.Selection:
                 case Mode.Deletion:
                     EditorUIManager.Instance.categoryButtonsParent.SetActive(false);
-                    EditorUIManager.Instance.objectsBG.SetActive(false);
+                    EditorUIManager.Instance.objectsToBuildBG.SetActive(false);
                     break;
             }
 

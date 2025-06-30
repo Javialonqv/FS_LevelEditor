@@ -2,6 +2,7 @@
 using Il2Cpp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,8 +29,7 @@ namespace FS_LevelEditor.Editor.UI
         // ------------------------------
         Transform objectSpecificPanelsParent;
         Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
-        // First string: Target obj name ("Directional Light", "Switch"), second string for the ATTRIBUTE of that object, and then the action to do to update the attribute value.
-        Dictionary<string, Dictionary<string, Func<object>>> toUpdateAttributesPanels = new Dictionary<string, Dictionary<string, Func<object>>>();
+
 
         Transform whereToCreateObjAttributesParent;
 
@@ -313,15 +313,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Color (Hex)", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
             CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
 
-            Dictionary<string, Func<object>> toUpdateValues = new()
-            {
-                { "Color", () => Utilities.ColorToHex(currentSelectedObj.GetProperty<Color>("Color")) },
-                { "Intensity", () => currentSelectedObj.GetProperty<float>("Intensity") + "" }
-            };
-
             directionalLightAttributes.SetActive(false);
             attributesPanels.Add("Directional Light", directionalLightAttributes);
-            toUpdateAttributesPanels.Add("Directional Light", toUpdateValues);
         }
         void CreatePointLightAttributesPanel()
         {
@@ -336,16 +329,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
             CreateObjectAttribute("Range", AttributeType.INPUT_FIELD, "10", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Range");
 
-            Dictionary<string, Func<object>> toUpdateValues = new()
-            {
-                { "Color", () => Utilities.ColorToHex(currentSelectedObj.GetProperty<Color>("Color")) },
-                { "Intensity", () => currentSelectedObj.GetProperty<float>("Intensity") + "" },
-                { "Range", () => currentSelectedObj.GetProperty<float>("Range") + "" }
-            };
-
             pointLightAttributes.SetActive(false);
             attributesPanels.Add("Point Light", pointLightAttributes);
-            toUpdateAttributesPanels.Add("Point Light", toUpdateValues);
         }
         void CreateSawAttributesPanel()
         {
@@ -360,15 +345,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
             CreateObjectAttribute("+ Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
-            Dictionary<string, Func<object>> toUpdateValues = new()
-            {
-                { "ActivateOnStart", () => currentSelectedObj.GetProperty<bool>("ActivateOnStart") },
-                { "Damage", () => currentSelectedObj.GetProperty<int>("Damage") + "" }
-            };
-
             sawAttributes.SetActive(false);
             attributesPanels.Add("Saw", sawAttributes);
-            toUpdateAttributesPanels.Add("Saw", toUpdateValues);
         }
         void CreateSawWaypointAttributesPanel()
         {
@@ -382,14 +360,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Wait Time", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
             CreateObjectAttribute("+ Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
-            Dictionary<string, Func<object>> toUpdateValues = new()
-            {
-                { "WaitTime", () => currentSelectedObj.GetProperty<float>("WaitTime") + "" }
-            };
-
             sawWaypointAttributes.SetActive(false);
             attributesPanels.Add("Saw Waypoint", sawWaypointAttributes);
-            toUpdateAttributesPanels.Add("Saw Waypoint", toUpdateValues);
         }
         void CreateSwitchAttributesPanel()
         {
@@ -404,15 +376,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Can be shot by Taser", AttributeType.TOGGLE, true, null, "CanUseTaser");
             CreateObjectAttribute("Manage Events", AttributeType.BUTTON, null, null, "ManageEvents");
 
-            Dictionary<string, Func<object>> toUpdateValues = new()
-            {
-                { "UsableOnce", () => currentSelectedObj.GetProperty<bool>("UsableOnce") },
-                { "CanUseTaser", () => currentSelectedObj.GetProperty<bool>("CanUseTaser") }
-            };
-
             switchAttributes.SetActive(false);
             attributesPanels.Add("Switch", switchAttributes);
-            toUpdateAttributesPanels.Add("Switch", toUpdateValues);
         }
         void CreateAmmoAndHealthPackAttributesPanel()
         {
@@ -425,14 +390,8 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateObjectAttribute("Respawn Time", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RespawnTime");
 
-            Dictionary<string, Func<object>> toUpdateValues = new()
-            {
-                { "RespawnTime", () => currentSelectedObj.GetProperty<float>("RespawnTime") + "" }
-            };
-
             ammoHealthAttributes.SetActive(false);
             attributesPanels.Add("Ammo Pack | Health Pack", ammoHealthAttributes);
-            toUpdateAttributesPanels.Add("Ammo Pack | Health Pack", toUpdateValues);
         }
         void CreateLaserAttributesPanel()
         {
@@ -447,16 +406,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Instant Kill", AttributeType.TOGGLE, false, null, "InstaKill");
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Damage");
 
-            Dictionary<string, Func<object>> toUpdateValues = new()
-            {
-                { "ActivateOnStart", () => currentSelectedObj.GetProperty<bool>("ActivateOnStart") },
-                { "InstaKill", () => currentSelectedObj.GetProperty<bool>("InstaKill") },
-                { "Damage", () => currentSelectedObj.GetProperty<int>("Damage") + "" }
-            };
-
             laserAttributes.SetActive(false);
             attributesPanels.Add("Laser", laserAttributes);
-            toUpdateAttributesPanels.Add("Laser", toUpdateValues);
         }
         void CreateCeilingLightPanel()
         {
@@ -470,15 +421,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Color (Hex)", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
 
-            Dictionary<string, Func<object>> toUpdateValues = new()
-            {
-                { "ActivateOnStart", () => currentSelectedObj.GetProperty<bool>("ActivateOnStart") },
-                { "Color", () => Utilities.ColorToHex(currentSelectedObj.GetProperty<Color>("Color")) }
-            };
-
             ceilingLightAttributes.SetActive(false);
             attributesPanels.Add("Ceiling Light", ceilingLightAttributes);
-            toUpdateAttributesPanels.Add("Ceiling Light", toUpdateValues);
         }
         void CreateFlameTrapAttributesPanel()
         {
@@ -492,15 +436,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Constant", AttributeType.TOGGLE, false, null, "Constant");
 
-            Dictionary<string, Func<object>> toUpdateValues = new()
-            {
-                { "ActivateOnStart", () => currentSelectedObj.GetProperty<bool>("ActivateOnStart") },
-                { "Constant", () => currentSelectedObj.GetProperty<bool>("Constant") }
-            };
-
             flameTrapAttributes.SetActive(false);
             attributesPanels.Add("Flame Trap", flameTrapAttributes);
-            toUpdateAttributesPanels.Add("Flame Trap", toUpdateValues);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON }
@@ -630,6 +567,7 @@ namespace FS_LevelEditor.Editor.UI
             body.SetActive(true);
             gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
 
+            // Disable all of the attributes panels.
             attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
 
             // Enable the toggle and show object-specific attributes, then it will be disabled or changed to GLOBAL attributes if the object doesn't have unique ones.
@@ -648,7 +586,7 @@ namespace FS_LevelEditor.Editor.UI
                     specificAttributesFound = true;
 
                     child.SetActive(true);
-                    UpdateObjectSpecificAttribute(child.name);
+                    UpdateObjectSpecificAttribute(objComponent, child);
                     break; // We already found the right panel, stop iterating.
                 }
             }
@@ -672,19 +610,49 @@ namespace FS_LevelEditor.Editor.UI
                 objComponent.setActiveAtStart = true; // Just in case ;)
             }
         }
-        void UpdateObjectSpecificAttribute(string objectName)
+        void UpdateObjectSpecificAttribute(LE_Object objComp, GameObject panelInUI)
         {
-            // This is complicated as fuck, but the childs of the panel (var "attribute") are the different attributes that that object has.
-            // EXAMPLE: Health pack | Ammo pack/RespawnTime/Field.
-            foreach (var attribute in attributesPanels[objectName].GetChilds())
+            // OFFICIALLY, THIS IS THE ULTIMATE MOST BETTER AUTOMATED PROPERTY UPDATER OF THE WORLD!
+            foreach (var attribute in panelInUI.GetChilds())
             {
-                if (attribute.ExistsChildWithName("Field"))
+                string attributeName = attribute.name; // Assuming the name of the childs in the UI is the same as the REAL attribute name.
+                if (objComp.TryGetProperty(attributeName, out object value))
                 {
-                    attribute.GetChildWithName("Field").GetComponent<UIInput>().text = (string)toUpdateAttributesPanels[objectName][attribute.name]();
-                }
-                else if (attribute.ExistsChildWithName("Toggle"))
-                {
-                    attribute.GetChildWithName("Toggle").GetComponent<UIToggle>().Set((bool)toUpdateAttributesPanels[objectName][attribute.name]());
+                    if (attribute.ExistsChildWithName("Field"))
+                    {
+                        switch (value)
+                        {
+                            case int:
+                            case float:
+                                value = value + ""; // Convert to string.
+                                break;
+
+                            case Color:
+                                value = Utilities.ColorToHex((Color)value);
+                                break;
+
+                            case string:
+                                // With string there's no problem, but put this so it's not catched by "default:".
+                                break;
+
+                            default:
+                                Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in an INPUT FIELD?");
+                                continue;
+                        }
+
+                        attribute.GetChildWithName("Field").GetComponent<UIInput>().text = (string)value;
+                    }
+                    else if (attribute.ExistsChildWithName("Toggle"))
+                    {
+                        // Values for toggles can ONLY be bools, nothing else LOL.
+                        if (value is not bool)
+                        {
+                            Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in a TOGGLE?");
+                            continue;
+                        }
+
+                        attribute.GetChildWithName("Toggle").GetComponent<UIToggle>().Set((bool)value);
+                    }
                 }
             }
         }

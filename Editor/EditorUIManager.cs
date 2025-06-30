@@ -15,8 +15,6 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
-using static Il2Cpp.UIAtlas;
-using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor.Editor
 {
@@ -44,9 +42,9 @@ namespace FS_LevelEditor.Editor
         public GameObject categoryButtonsParent;
         bool categoryButtonsAreHidden = false;
 
-        // For the object buttons.
-        public GameObject objectsBG;
-        List<GameObject> objectsButtonsParents = new ();
+        // For the objects to build buttons.
+        public GameObject objectsToBuildBG;
+        List<GameObject> objectsToBuildButtonsParents = new();
 
         UILabel savingLevelLabel;
         UILabel savingLevelLabelInPauseMenu;
@@ -184,14 +182,14 @@ namespace FS_LevelEditor.Editor
         }
         void CreateObjectsBackground()
         {
-            objectsBG = new GameObject("CategoryObjectsBackground");
-            objectsBG.transform.parent = editorUIParent.transform;
-            objectsBG.transform.localPosition = new Vector3(0f, 330f, 0f);
-            objectsBG.transform.localScale = Vector3.one;
-            objectsBG.layer = LayerMask.NameToLayer("2D GUI");
-            objectsBG.AddComponent<UIPanel>();
+            objectsToBuildBG = new GameObject("CategoryObjectsBackground");
+            objectsToBuildBG.transform.parent = editorUIParent.transform;
+            objectsToBuildBG.transform.localPosition = new Vector3(0f, 330f, 0f);
+            objectsToBuildBG.transform.localScale = Vector3.one;
+            objectsToBuildBG.layer = LayerMask.NameToLayer("2D GUI");
+            objectsToBuildBG.AddComponent<UIPanel>();
 
-            UISprite bgSprite = objectsBG.AddComponent<UISprite>();
+            UISprite bgSprite = objectsToBuildBG.AddComponent<UISprite>();
             bgSprite.atlas = NGUI_Utils.UITexturesAtlas;
             bgSprite.spriteName = "Square_Border_Beveled_HighOpacity";
             bgSprite.type = UIBasicSprite.Type.Sliced;
@@ -199,7 +197,7 @@ namespace FS_LevelEditor.Editor
             bgSprite.width = 1800;
             bgSprite.height = 150;
 
-            BoxCollider collider = objectsBG.AddComponent<BoxCollider>();
+            BoxCollider collider = objectsToBuildBG.AddComponent<BoxCollider>();
             collider.size = new Vector3(1800f, 150f, 1f);
         }
         void CreateALLOfTheObjectsButtons()
@@ -215,7 +213,7 @@ namespace FS_LevelEditor.Editor
         public GameObject CreateObjectsForCategory(int categoryID)
         {
             GameObject parent = new GameObject(EditorController.Instance.categoriesNames[categoryID]);
-            parent.transform.parent = objectsBG.transform;
+            parent.transform.parent = objectsToBuildBG.transform;
             parent.transform.localPosition = Vector3.zero;
             parent.transform.localScale = Vector3.one;
 
@@ -234,27 +232,27 @@ namespace FS_LevelEditor.Editor
                 button.GetComponent<UIButtonScale>().mScale = Vector3.one * 0.8f;
             }
 
-            objectsButtonsParents.Add(parent);
+            objectsToBuildButtonsParents.Add(parent);
 
             return parent;
         }
 
         public void ShowObjectButtonsForCategory(int categoryID)
         {
-            foreach (var parent in objectsButtonsParents)
+            foreach (var parent in objectsToBuildButtonsParents)
             {
                 parent.SetActive(false);
             }
 
-            objectsButtonsParents[categoryID].SetActive(true);
+            objectsToBuildButtonsParents[categoryID].SetActive(true);
 
             // Select the very first element on the objects list.
-            objectsButtonsParents[categoryID].transform.GetChild(0).GetComponent<UIButton>().OnClick();
+            objectsToBuildButtonsParents[categoryID].transform.GetChild(0).GetComponent<UIButton>().OnClick();
         }
         public void SetCurrentObjButtonAsSelected(GameObject selectedButton)
         {
             // Disable the "selected" obj in the other buttons.
-            foreach (var button in objectsButtonsParents[EditorController.Instance.currentCategoryID].GetChilds())
+            foreach (var button in objectsToBuildButtonsParents[EditorController.Instance.currentCategoryID].GetChilds())
             {
                 button.GetChildWithName("ActiveSwatch").SetActive(false);
             }
@@ -328,13 +326,13 @@ namespace FS_LevelEditor.Editor
             if (categoryButtonsAreHidden)
             {
                 TweenAlpha.Begin(categoryButtonsParent, 0.2f, 0f);
-                TweenPosition.Begin(objectsBG, 0.2f, new Vector3(0f, 410f, 0f));
+                TweenPosition.Begin(objectsToBuildBG, 0.2f, new Vector3(0f, 410f, 0f));
                 InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.hideHUDSound);
             }
             else
             {
                 TweenAlpha.Begin(categoryButtonsParent, 0.2f, 1f);
-                TweenPosition.Begin(objectsBG, 0.2f, new Vector3(0f, 330f, 0f));
+                TweenPosition.Begin(objectsToBuildBG, 0.2f, new Vector3(0f, 330f, 0f));
                 InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.showHUDSound);
             }
         }
@@ -943,12 +941,12 @@ namespace FS_LevelEditor.Editor
             if (context != EditorUIContext.NORMAL)
             {
                 categoryButtonsParent.SetActive(false);
-                objectsBG.SetActive(false);
+                objectsToBuildBG.SetActive(false);
             }
             else if (EditorController.Instance.currentMode == EditorController.Mode.Building)
             {
                 categoryButtonsParent.SetActive(true);
-                objectsBG.SetActive(true);
+                objectsToBuildBG.SetActive(true);
             }
             // Only when normal.
             SelectedObjPanel.Instance.gameObject.SetActive(context == EditorUIContext.NORMAL);

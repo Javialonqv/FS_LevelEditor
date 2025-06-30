@@ -335,6 +335,19 @@ namespace FS_LevelEditor
                 return default(T);
             }
         }
+        public bool TryGetProperty(string name, out object value)
+        {
+            if (properties.ContainsKey(name))
+            {
+                value = GetProperty(name);
+                return true;
+            }
+            else
+            {
+                value = null;
+                return false;
+            }
+        }
 
         public virtual bool TriggerAction(string actionName)
         {
