@@ -126,7 +126,6 @@ namespace FS_LevelEditor
             base.OnSelect();
             mainSaw.HideOrShowAllWaypointsInEditor(true);
         }
-
         public override void OnDeselect(GameObject nextSelectedObj)
         {
             base.OnDeselect(nextSelectedObj);
@@ -136,7 +135,6 @@ namespace FS_LevelEditor
 
             mainSaw.HideOrShowAllWaypointsInEditor(false);
         }
-
         public override void OnDelete()
         {
             // Base method removes the object from the instantiated objects list.
@@ -171,7 +169,6 @@ namespace FS_LevelEditor
 
             return false;
         }
-
         public override bool TriggerAction(string actionName)
         {
             if (actionName == "AddWaypoint")
@@ -194,7 +191,6 @@ namespace FS_LevelEditor
                 return this;
             }
         }
-
         public void HideOrShowSawInEditor(bool show)
         {
             // This method only works if the object ISN'T deleted, otherwise, the deleted object can be enabled, and we don't want that..
@@ -221,7 +217,6 @@ namespace FS_LevelEditor
                 nextWaypoint.HideOrShowSawInEditor(show);
             }
         }
-
         public override LE_Object[] GetReferenceObjectsToGetObjID()
         {
             return mainSaw.waypointsComps.ToArray();
