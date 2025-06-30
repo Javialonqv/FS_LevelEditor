@@ -1089,7 +1089,7 @@ namespace FS_LevelEditor.Editor
         {
             if (currentSelectedObj == obj) return;
 
-            if (obj.name == gizmosArrows.name)
+            if (obj && obj.name == gizmosArrows.name)
             {
                 Logger.Error("HOW THE FUCK DID YOU MANAGE TO SELECT THE FUCKING GIZMOS ARROWS!? Anyways, this shouldn't case any trouble now :)");
                 return;
