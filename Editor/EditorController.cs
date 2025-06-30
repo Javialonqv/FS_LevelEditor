@@ -600,6 +600,8 @@ namespace FS_LevelEditor.Editor
                 }
                 else
                 {
+                    if (Vector3.Dot(targetObj.transform.forward, Camera.main.transform.forward) > 0.5) toMove *= -1;
+
                     targetObj.transform.Translate(toMove, Space.Self);
                 }
 
