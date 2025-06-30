@@ -1089,6 +1089,12 @@ namespace FS_LevelEditor.Editor
         {
             if (currentSelectedObj == obj) return;
 
+            if (obj.name == gizmosArrows.name)
+            {
+                Logger.Error("HOW THE FUCK DID YOU MANAGE TO SELECT THE FUCKING GIZMOS ARROWS!? Anyways, this shouldn't case any trouble now :)");
+                return;
+            }
+
             if (obj) Logger.DebugLog($"SetSelectedObj called for object with name: \"{obj.name}\".");
             else Logger.DebugLog($"SetSelectedObj called with NO NEW TARGET OBJECT (To deselect).");
 
