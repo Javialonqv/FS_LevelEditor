@@ -49,7 +49,6 @@ namespace FS_LevelEditor
 
             base.OnInstantiated(scene);
         }
-
         public override void ObjectStart(LEScene scene)
         {
             if (scene == LEScene.Playmode)
@@ -195,17 +194,6 @@ namespace FS_LevelEditor
 
             return false;
         }
-
-        public override void OnSelect()
-        {
-            base.OnSelect();
-            HideOrShowAllWaypointsInEditor(true);
-        }
-        public override void OnDeselect(GameObject nextSelectedObj)
-        {
-            base.OnDeselect(nextSelectedObj);
-            HideOrShowAllWaypointsInEditor(false);
-        }
         public override bool TriggerAction(string actionName)
         {
             if (actionName == "AddWaypoint")
@@ -237,6 +225,17 @@ namespace FS_LevelEditor
             }
 
             return base.TriggerAction(actionName);
+        }
+
+        public override void OnSelect()
+        {
+            base.OnSelect();
+            HideOrShowAllWaypointsInEditor(true);
+        }
+        public override void OnDeselect(GameObject nextSelectedObj)
+        {
+            base.OnDeselect(nextSelectedObj);
+            HideOrShowAllWaypointsInEditor(false);
         }
 
         void SetMeshOnEditor(bool isSawOn)
