@@ -343,6 +343,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
+            CreateObjectAttribute("Travel Back", AttributeType.TOGGLE, false, null, "TravelBack");
             CreateObjectAttribute("+ Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
             sawAttributes.SetActive(false);

@@ -32,6 +32,7 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>()
             {
                 { "ActivateOnStart", true },
+                { "TravelBack", false },
                 { "waypoints", new List<LE_SawWaypointSerializable>() },
                 { "Damage", 50 }
             };
@@ -106,7 +107,7 @@ namespace FS_LevelEditor
                 script.currentWaypoint = waypointsGOs[0];
                 script.movingSaw = true;
                 script.forcedHeading = true;
-                script.allowSideRotation = true;
+                script.allowSideRotation = false;
                 script.sideSpeedMultiplier = 5;
             }
             script.scieSound = t_saw.scieSound;
@@ -149,11 +150,33 @@ namespace FS_LevelEditor
                     return false;
                 }
             }
+            else if (name == "TravelBack")
+            {
+                if (value is bool)
+                {
+                    properties["TravelBack"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"TravelBack\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
             else if (name == "waypoints") // For now, this is only called when loading the level...
             {
                 if (value is List<LE_SawWaypointSerializable>)
                 {
-                    LoadWaypointsFromSave((List<LE_SawWaypointSerializable>)value);
+                    if (GetProperty<bool>("TravelBack") && PlayModeController.Instance)
+                    {
+                        var list = (List<LE_SawWaypointSerializable>)value;
+                        list.AddRange(CreateTravelBackWaypointsInPlaymode(list));
+                        LoadWaypointsFromSave(list);
+                    }
+                    else
+                    {
+                        LoadWaypointsFromSave((List<LE_SawWaypointSerializable>)value);
+                    }
 
                     // Since the data in the list is not altered when adding new waypoints while loading data, set the list manually rn.
                     properties["waypoints"] = value;
@@ -228,6 +251,30 @@ namespace FS_LevelEditor
             gameObject.GetChildAt("Content/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
         }
 
+        List<LE_SawWaypointSerializable> CreateTravelBackWaypointsInPlaymode(List<LE_SawWaypointSerializable> waypoints)
+        {
+            List<LE_SawWaypointSerializable> newWaypoints = new();
+
+            for (int i = waypoints.Count - 2; i >= 1; i--)
+            {
+                LE_SawWaypointSerializable waypoint = new LE_SawWaypointSerializable();
+
+                int objectID = 0;
+                while (waypoints.Any(x => x.objectID == objectID) || newWaypoints.Any(x => x.objectID == objectID) ||
+                    PlayModeController.Instance.currentInstantiatedObjects.Any(x => x.objectID == objectID && x.objectOriginalName == "Saw Waypoint"))
+                {
+                    objectID++;
+                }
+
+                waypoint.objectID = objectID;
+                waypoint.waypointPosition = waypoints[i].waypointPosition;
+                waypoint.waypointRotation = waypoints[i].waypointRotation;
+
+                newWaypoints.Add(waypoint);
+            }
+
+            return newWaypoints;
+        }
         void LoadWaypointsFromSave(List<LE_SawWaypointSerializable> waypoints)
         {
             // Foreach value in the saved list, create a new waypoint in the editor.
@@ -238,6 +285,7 @@ namespace FS_LevelEditor
                 // Set the waypoint values, we don't need to worry about the waypoints list since when loading data, the data is not altered.
                 LE_Saw_Waypoint instance = AddWaypoint(true);
                 instance.objectID = waypoint.objectID;
+                instance.name = instance.objectFullNameWithID;
                 instance.transform.localPosition = waypoint.waypointPosition;
                 instance.transform.localEulerAngles = waypoint.waypointRotation;
 
