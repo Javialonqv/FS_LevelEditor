@@ -345,6 +345,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
             CreateObjectAttribute("Travel Back", AttributeType.TOGGLE, false, null, "TravelBack");
             CreateObjectAttribute("+ Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+            CreateObjectAttribute("Wait Time", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
 
             sawAttributes.SetActive(false);
             attributesPanels.Add("Saw", sawAttributes);
@@ -494,7 +495,7 @@ namespace FS_LevelEditor.Editor.UI
             }
             else if (attrType == AttributeType.BUTTON)
             {
-                UIButtonPatcher button = NGUI_Utils.CreateButton(attributeParent.transform, new Vector3(0, yPos - 5), new Vector3Int(480, 55, 0), text);
+                UIButtonPatcher button = NGUI_Utils.CreateButton(attributeParent.transform, new Vector3(0, yPos), new Vector3Int(480, 50, 0), text);
                 button.name = "Button";
                 button.onClick += () => TriggerAction(targetPropName);
                 button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
@@ -656,6 +657,12 @@ namespace FS_LevelEditor.Editor.UI
                     }
                 }
             }
+
+            if (objComp is LE_Saw)
+            {
+                var waypoints = objComp.GetProperty<List<LE_SawWaypointSerializable>>("waypoints");
+                ShowOrHideSawWaitTimeField(waypoints.Count);
+            }
         }
 
         public void SetSetActiveAtStart()
@@ -781,6 +788,10 @@ namespace FS_LevelEditor.Editor.UI
         void OnLaserInstaKillChecked(bool newState)
         {
             attributesPanels["Laser"].GetChildWithName("Damage").SetActive(!newState);
+        }
+        void ShowOrHideSawWaitTimeField(int waypointsCount)
+        {
+            attributesPanels["Saw"].GetChildWithName("WaitTime").SetActive(waypointsCount > 0);
         }
     }
 }

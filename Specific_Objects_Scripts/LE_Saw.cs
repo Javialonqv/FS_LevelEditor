@@ -32,7 +32,8 @@ namespace FS_LevelEditor
                 { "ActivateOnStart", true },
                 { "TravelBack", false },
                 { "waypoints", new List<LE_SawWaypointSerializable>() },
-                { "Damage", 50 }
+                { "Damage", 50 },
+                { "WaitTime", 0f }
             };
 
             waypointsParent = gameObject.GetChildWithName("Waypoints");
@@ -153,16 +154,7 @@ namespace FS_LevelEditor
             {
                 if (value is List<LE_SawWaypointSerializable>)
                 {
-                    if (GetProperty<bool>("TravelBack") && PlayModeController.Instance)
-                    {
-                        var list = (List<LE_SawWaypointSerializable>)value;
-                        list.AddRange(CreateTravelBackWaypointsInPlaymode(list));
-                        LoadWaypointsFromSave(list);
-                    }
-                    else
-                    {
-                        LoadWaypointsFromSave((List<LE_SawWaypointSerializable>)value);
-                    }
+                    LoadWaypointsFromSave((List<LE_SawWaypointSerializable>)value);
 
                     // Since the data in the list is not altered when adding new waypoints while loading data, set the list manually rn.
                     properties["waypoints"] = value;
@@ -181,6 +173,22 @@ namespace FS_LevelEditor
                 else if (value is int)
                 {
                     properties["Damage"] = (int)value;
+                    return true;
+                }
+            }
+            else if (name == "WaitTime")
+            {
+                if (value is string)
+                {
+                    if (Utilities.TryParseFloat((string)value, out float result))
+                    {
+                        properties["WaitTime"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["WaitTime"] = (float)value;
                     return true;
                 }
             }
@@ -237,46 +245,25 @@ namespace FS_LevelEditor
             gameObject.GetChildAt("Content/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
         }
 
-        List<LE_SawWaypointSerializable> CreateTravelBackWaypointsInPlaymode(List<LE_SawWaypointSerializable> waypoints)
-        {
-            List<LE_SawWaypointSerializable> newWaypoints = new();
 
-            for (int i = waypoints.Count - 2; i >= 1; i--)
-            {
-                LE_SawWaypointSerializable waypoint = new LE_SawWaypointSerializable();
-
-                int objectID = 0;
-                while (waypoints.Any(x => x.objectID == objectID) || newWaypoints.Any(x => x.objectID == objectID) ||
-                    PlayModeController.Instance.currentInstantiatedObjects.Any(x => x.objectID == objectID && x.objectOriginalName == "Saw Waypoint"))
-                {
-                    objectID++;
-                }
-
-                waypoint.objectID = objectID;
-                waypoint.waypointPosition = waypoints[i].waypointPosition;
-                waypoint.waypointRotation = waypoints[i].waypointRotation;
-
-                newWaypoints.Add(waypoint);
-            }
-
-            return newWaypoints;
-        }
         void LoadWaypointsFromSave(List<LE_SawWaypointSerializable> waypoints)
         {
             // Foreach value in the saved list, create a new waypoint in the editor.
             for (int i = 0; i < waypoints.Count; i++)
             {
                 var waypoint = waypoints[i];
+                bool isTheFirstWaypoint = i == 0;
 
                 // Set the waypoint values, we don't need to worry about the waypoints list since when loading data, the data is not altered.
                 LE_Saw_Waypoint instance = AddWaypoint(true);
                 instance.transform.localPosition = waypoint.waypointPosition;
                 instance.transform.localEulerAngles = waypoint.waypointRotation;
 
-                // Set the waypoint properties:
-                instance.SetProperty("WaitTime", waypoint.waitTime);
+                // When it's the first waypoint, the wait time is in the SAW properties.
+                if (isTheFirstWaypoint) instance.SetProperty("WaitTime", this.GetProperty<float>("WaitTime"));
+                else instance.SetProperty("WaitTime", waypoint.waitTime);
 
-                if (i == 0) instance.isTheFirstWaypoint = true;
+                if (isTheFirstWaypoint) instance.isTheFirstWaypoint = true;
 
                 // The next waypoint and previows waypoint references and all that shit is already set by AddWaypoint().
             }
@@ -285,6 +272,23 @@ namespace FS_LevelEditor
             if (EditorController.Instance)
             {
                 HideOrShowAllWaypointsInEditor(false);
+            }
+
+            if (PlayModeController.Instance && GetProperty<bool>("TravelBack"))
+            {
+                CreateTravelBackWaypointsInPlaymode();
+            }
+        }
+        void CreateTravelBackWaypointsInPlaymode()
+        {
+            for (int i = waypointsGOs.Count - 2; i >= 1; i--)
+            {
+                LE_Saw_Waypoint waypoint = AddWaypoint(true);
+
+                waypoint.transform.localPosition = waypointsGOs[i].transform.localPosition;
+                waypoint.transform.localRotation = waypointsGOs[i].transform.localRotation;
+
+                waypoint.SetProperty("WaitTime", waypointsComps[i].GetProperty<float>("WaitTime"));
             }
         }
 
