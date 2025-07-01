@@ -151,15 +151,9 @@ namespace FS_LevelEditor.Editor
 
             // Change the title properties of the panel.
             eventsWindowTitle.transform.localPosition = new Vector3(0, 387, 0);
-            eventsWindowTitle.GetComponent<UILabel>().width = 1650;
-            eventsWindowTitle.GetComponent<UILabel>().height = 50;
-            eventsWindowTitle.GetComponent<UILabel>().text = "Events";
-
-            // Destroy the tabs and disable everything inside of the Game_Options object.
-            //GameObject.Destroy(eventsPanel.GetChildWithName("Tabs"));
-            //eventsPanel.GetChildWithName("Game_Options").SetActive(true);
-            //eventsButtonsParent = eventsPanel.GetChildAt("Game_Options/Buttons");
-            //eventsButtonsParent.DisableAllChildren();
+            eventsWindowTitle.width = 1650;
+            eventsWindowTitle.height = 50;
+            eventsWindowTitle.text = "Events";
 
             // Reset the scale of the new custom menu to one.
             eventsPanel.transform.localScale = Vector3.one;
@@ -252,7 +246,7 @@ namespace FS_LevelEditor.Editor
             verticalLine.GetComponent<UISprite>().height = 580;
             verticalLine.SetActive(true);
 
-            GameObject horizontalLine2 = Instantiate(eventsPanel.GetChildAt("Game_Options/HorizontalLine"), eventSettingsPanel.transform);
+            GameObject horizontalLine2 = Instantiate(optionsPanel.GetChildAt("Game_Options/HorizontalLine"), eventSettingsPanel.transform);
             horizontalLine2.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
             horizontalLine2.transform.localPosition = new Vector3(0f, 170f, 0f);
             horizontalLine2.GetComponent<UISprite>().width = 700;
@@ -1645,7 +1639,7 @@ namespace FS_LevelEditor.Editor
             this.targetObj = targetObj;
 
             // Change the title of the panel.
-            eventsWindowTitle.GetComponent<UILabel>().text = "Events for " + targetObj.objectFullNameWithID;
+            eventsWindowTitle.text = "Events for " + targetObj.objectFullNameWithID;
 
             eventsPanel.SetActive(true);
             eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
