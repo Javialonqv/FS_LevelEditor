@@ -11,11 +11,18 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Pressure_Plate : LE_Object
     {
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Playmode)
+            {
+                // The on mesh is disabled by default, enable it when playmode starts.
+                gameObject.GetChildAt("Content/MeshDynamic/MeshOnStatic").SetActive(true);
+            }
+        }
+
         public override void InitComponent()
         {
             GameObject content = gameObject.GetChildWithName("Content");
-
-            content.GetChildAt("MeshDynamic/MeshOnStatic").SetActive(true);
 
             BlocSwitchScript script = content.AddComponent<BlocSwitchScript>();
             script.boxCollider = content.GetComponent<BoxCollider>();
@@ -71,5 +78,7 @@ namespace FS_LevelEditor
 
             initialized = true;
         }
+
+       
     }
 }
