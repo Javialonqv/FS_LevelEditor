@@ -40,6 +40,10 @@ namespace FS_LevelEditor.Editor
                 ManageMoveSpeed();
                 MoveCamera();
             }
+            else if (Input.GetMouseButton(2))
+            {
+                MoveCameraWithMouseDrag();
+            }
             else
             {
                 Cursor.lockState = CursorLockMode.None;
@@ -68,6 +72,37 @@ namespace FS_LevelEditor.Editor
                 transform.forward * inputZ * moveSpeed * Time.deltaTime;
 
             transform.position += toMove;
+        }
+
+        Vector3 dragOrigin;
+        float dragSpeed = 0.1f;
+        void MoveCameraWithMouseDrag()
+        {
+            if (Input.GetMouseButtonDown(2))
+            {
+                dragOrigin = Input.mousePosition;
+                return;
+            }
+
+            if (Input.GetAxis("Mouse ScrollWhell") > 0)
+            {
+                dragSpeed++;
+                Logger.DebugLog("New drag speed: " + dragSpeed);
+            }
+            else if (Input.GetAxis("Mouse ScrollWhell") < 0)
+            {
+                dragSpeed--;
+                Logger.DebugLog("New drag speed: " + dragSpeed);
+            }
+
+            Vector3 delta = Input.mousePosition - dragOrigin;
+            dragOrigin = Input.mousePosition;
+
+            Vector3 right = transform.right;
+            Vector3 forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+
+            Vector3 movement = (-right * delta.x + -forward * delta.y) * dragSpeed;
+            transform.position += movement;
         }
 
         void RotateCamera()
