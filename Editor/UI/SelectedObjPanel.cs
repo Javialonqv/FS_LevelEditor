@@ -443,6 +443,7 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(pressurePlateAttributes);
 
+            CreateObjectAttribute("Only Once", AttributeType.TOGGLE, false, null, "OnlyOnce");
             CreateObjectAttribute("Manage Events", AttributeType.BUTTON, null, null, "ManageEvents");
 
             pressurePlateAttributes.SetActive(false);

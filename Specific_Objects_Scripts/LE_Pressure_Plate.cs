@@ -17,6 +17,7 @@ namespace FS_LevelEditor
         {
             properties = new Dictionary<string, object>
             {
+                { "OnlyOnce", false },
                 { "OnDrop", new List<LE_Event>() },
                 { "OnRemove", new List<LE_Event>() },
                 { "OnBoth", new List<LE_Event>() }
@@ -62,6 +63,8 @@ namespace FS_LevelEditor
             //script.onRemoveEvent = new UnityEngine.Events.UnityEvent();
             script.stayDownAfterOnce = false;
             script.usableEditorState = true;
+            script.onlyOnce = GetProperty<bool>("OnlyOnce");
+            script.stayDownAfterOnce = GetProperty<bool>("OnlyOnce");
 
             script.m_audioSource.outputAudioMixerGroup = t_pressurePlate.m_audioSource.outputAudioMixerGroup;
 
@@ -95,34 +98,26 @@ namespace FS_LevelEditor
 
         public override bool SetProperty(string name, object value)
         {
-            if (GetAvailableEventsIDs().Contains(name))
+            if (name == "OnlyOnce")
+            {
+                if (value is bool)
+                {
+                    properties["OnlyOnce"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"OnlyOnce\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+            else if (GetAvailableEventsIDs().Contains(name))
             {
                 if (value is List<LE_Event>)
                 {
                     properties[name] = (List<LE_Event>)value;
                 }
             }
-            //if (name == "OnDrop")
-            //{
-            //    if (value is List<LE_Event>)
-            //    {
-            //        properties["OnDrop"] = (List<LE_Event>)value;
-            //    }
-            //}
-            //else if (name == "OnRemove")
-            //{
-            //    if (value is List<LE_Event>)
-            //    {
-            //        properties["OnRemove"] = (List<LE_Event>)value;
-            //    }
-            //}
-            //else if (name == "OnBoth")
-            //{
-            //    if (value is List<LE_Event>)
-            //    {
-            //        properties["OnBoth"] = (List<LE_Event>)value;
-            //    }
-            //}
 
             return false;
         }
