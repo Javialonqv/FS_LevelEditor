@@ -114,7 +114,7 @@ namespace FS_LevelEditor
                 }
                 else if (value is ScreenColorType)
                 {
-                    properties["RespawnTime"] = value;
+                    properties["ColorType"] = value;
                     SetScreenMesh((ScreenColorType)value);
                     return true;
                 }
