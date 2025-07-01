@@ -22,6 +22,9 @@ namespace FS_LevelEditor.Editor
         public float xRotation = 0f;
         public float yRotation = 0f;
 
+        Vector3 dragOrigin;
+        float dragSpeed = 0.1f;
+
         public static bool isRotatingCamera
         {
             get
@@ -34,7 +37,19 @@ namespace FS_LevelEditor.Editor
         {
             if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ)) return;
 
-            if (Input.GetMouseButton(1) && !Input.GetMouseButton(0) && !Input.GetMouseButton(2))
+            if (!Input.GetMouseButton(0) && Input.GetMouseButton(1) && currentCameraMove == CameraMove.NONE)
+            {
+                currentCameraMove = CameraMove.NORMAL;
+            }
+            else if (!Input.GetMouseButton(0) && Input.GetMouseButton(2) && currentCameraMove == CameraMove.NONE)
+            {
+                currentCameraMove = CameraMove.MOUSE_DRAG;
+            }
+
+            if (Input.GetMouseButtonUp(1) && currentCameraMove == CameraMove.NORMAL) currentCameraMove = CameraMove.NONE;
+            if (Input.GetMouseButtonUp(2) && currentCameraMove == CameraMove.MOUSE_DRAG) currentCameraMove = CameraMove.NONE;
+
+            if (currentCameraMove == CameraMove.NORMAL)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -42,7 +57,7 @@ namespace FS_LevelEditor.Editor
                 ManageMoveSpeed();
                 MoveCamera();
             }
-            else if (Input.GetMouseButton(2) && !Input.GetMouseButton(0))
+            else if (currentCameraMove == CameraMove.MOUSE_DRAG)
             {
                 MoveCameraWithMouseDrag();
             }
@@ -51,7 +66,11 @@ namespace FS_LevelEditor.Editor
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
-            ManageDownAndUp();
+            
+            if (currentCameraMove != CameraMove.MOUSE_DRAG)
+            {
+                ManageDownAndUp();
+            }
         }
 
         void ManageMoveSpeed()
@@ -76,8 +95,6 @@ namespace FS_LevelEditor.Editor
             transform.position += toMove;
         }
 
-        Vector3 dragOrigin;
-        float dragSpeed = 0.1f;
         void MoveCameraWithMouseDrag()
         {
             if (Input.GetMouseButtonDown(2))
