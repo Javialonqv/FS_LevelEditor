@@ -12,6 +12,16 @@ namespace FS_LevelEditor.UI_Related
     [RegisterTypeInIl2Cpp]
     public class UIButtonPatcher : MonoBehaviour
     {
+        UIButton _button;
+        public UIButton button
+        {
+            get
+            {
+                if (!_button) _button = GetComponent<UIButton>();
+
+                return _button;
+            }
+        }
         public Action onClick;
 
         void OnClick()
