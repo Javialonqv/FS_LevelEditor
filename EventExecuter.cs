@@ -92,8 +92,7 @@ namespace FS_LevelEditor
 
             List<string> alreadyLinkedObjectsNames = new List<string>();
 
-            string[] eventKeys = { "WhenActivatingEvents", "WhenDeactivatingEvents", "WhenInvertingEvents" };
-            foreach (string eventKey in eventKeys)
+            foreach (string eventKey in originalObject.GetAvailableEventsIDs())
             {
                 foreach (var @event in (List<LE_Event>)originalObject.properties[eventKey])
                 {

@@ -291,6 +291,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateLaserAttributesPanel();
             CreateCeilingLightPanel();
             CreateFlameTrapAttributesPanel();
+            CreatePressurePlateAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -432,6 +433,20 @@ namespace FS_LevelEditor.Editor.UI
 
             flameTrapAttributes.SetActive(false);
             attributesPanels.Add("Flame Trap", flameTrapAttributes);
+        }
+        void CreatePressurePlateAttributesPanel()
+        {
+            GameObject pressurePlateAttributes = new GameObject("Pressure Plate");
+            pressurePlateAttributes.transform.parent = objectSpecificPanelsParent;
+            pressurePlateAttributes.transform.localPosition = Vector3.zero;
+            pressurePlateAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(pressurePlateAttributes);
+
+            CreateObjectAttribute("Manage Events", AttributeType.BUTTON, null, null, "ManageEvents");
+
+            pressurePlateAttributes.SetActive(false);
+            attributesPanels.Add("Pressure Plate", pressurePlateAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON }

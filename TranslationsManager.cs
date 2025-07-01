@@ -83,7 +83,7 @@ namespace FS_LevelEditor
             if (!translations.ContainsKey(key))
             {
                 Logger.Error($"\"{key}\" doesn't exists in the LE Translations!");
-                return null;
+                return key;
             }
 
             int langIndex = languages.Contains(Localization.language) ? languages.IndexOf(Localization.language) : 0;

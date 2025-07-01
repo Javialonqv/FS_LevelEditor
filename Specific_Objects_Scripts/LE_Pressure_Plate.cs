@@ -1,16 +1,28 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor;
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace FS_LevelEditor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Pressure_Plate : LE_Object
     {
+        void Awake()
+        {
+            properties = new Dictionary<string, object>
+            {
+                { "OnDrop", new List<LE_Event>() },
+                { "OnRemove", new List<LE_Event>() },
+                { "OnBoth", new List<LE_Event>() }
+            };
+        }
+
         public override void ObjectStart(LEScene scene)
         {
             if (scene == LEScene.Playmode)
@@ -45,9 +57,9 @@ namespace FS_LevelEditor
             script.canBeCancelled = true;
             script.worksWithCubes = true;
             script.switchType = SequenceSwitchController.SwitchType.RED;
-            script.onDropEvent = new UnityEngine.Events.UnityEvent();
-            script.onPandoraDropped = new UnityEngine.Events.UnityEvent();
-            script.onRemoveEvent = new UnityEngine.Events.UnityEvent();
+            //script.onDropEvent = new UnityEngine.Events.UnityEvent();
+            //script.onPandoraDropped = new UnityEngine.Events.UnityEvent();
+            //script.onRemoveEvent = new UnityEngine.Events.UnityEvent();
             script.stayDownAfterOnce = false;
             script.usableEditorState = true;
 
@@ -61,6 +73,8 @@ namespace FS_LevelEditor
             }
             content.GetChildWithName("MeshDynamic").GetComponent<BoxCollider>().material =
             t_pressurePlate.gameObject.GetChildWithName("MeshDynamic").GetComponent<BoxCollider>().material;
+
+            ConfigureEvents(script);
 
             // ---------- SETUP TAGS & LAYERS ----------
 
@@ -79,6 +93,87 @@ namespace FS_LevelEditor
             initialized = true;
         }
 
-       
+        public override bool SetProperty(string name, object value)
+        {
+            if (GetAvailableEventsIDs().Contains(name))
+            {
+                if (value is List<LE_Event>)
+                {
+                    properties[name] = (List<LE_Event>)value;
+                }
+            }
+            //if (name == "OnDrop")
+            //{
+            //    if (value is List<LE_Event>)
+            //    {
+            //        properties["OnDrop"] = (List<LE_Event>)value;
+            //    }
+            //}
+            //else if (name == "OnRemove")
+            //{
+            //    if (value is List<LE_Event>)
+            //    {
+            //        properties["OnRemove"] = (List<LE_Event>)value;
+            //    }
+            //}
+            //else if (name == "OnBoth")
+            //{
+            //    if (value is List<LE_Event>)
+            //    {
+            //        properties["OnBoth"] = (List<LE_Event>)value;
+            //    }
+            //}
+
+            return false;
+        }
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "ManageEvents")
+            {
+                EventsUIPageManager.Instance.ShowEventsPage(this);
+                return true;
+            }
+            else if (actionName == "OnEventsTabClose")
+            {
+                eventExecuter.CreateInEditorLinksToTargetObjects();
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
+        }
+
+        void ConfigureEvents(BlocSwitchScript script)
+        {
+            script.onDropEvent = new UnityEngine.Events.UnityEvent();
+            script.onDropEvent.AddListener((UnityAction)ExecuteOnDropEvents);
+            script.onDropEvent.AddListener((UnityAction)ExecuteOnBothEvents);
+
+            script.onRemoveEvent = new UnityEngine.Events.UnityEvent();
+            script.onRemoveEvent.AddListener((UnityAction)ExecuteOnRemoveEvents);
+            script.onRemoveEvent.AddListener((UnityAction)ExecuteOnBothEvents);
+        }
+
+        void ExecuteOnDropEvents()
+        {
+            eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnDrop"]);
+        }
+        void ExecuteOnRemoveEvents()
+        {
+            eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnRemove"]);
+        }
+        void ExecuteOnBothEvents()
+        {
+            eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnBoth"]);
+        }
+
+        public override List<string> GetAvailableEventsIDs()
+        {
+            return new List<string>()
+            {
+                "OnDrop",
+                "OnRemove",
+                "OnBoth"
+            };
+        }
     }
 }
