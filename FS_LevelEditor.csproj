@@ -378,6 +378,7 @@
 		<Compile Include="Specific_Objects_Scripts\LE_Pressure_Plate.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Saw.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Saw_Waypoint.cs" />
+		<Compile Include="Specific_Objects_Scripts\LE_Screen.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Switch.cs" />
 		<Compile Include="Specific_Objects_Scripts\LE_Vent_With_Smoke_Green.cs" />
 		<Compile Include="TranslationsManager.cs" />
