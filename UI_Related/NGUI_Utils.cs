@@ -425,6 +425,32 @@ namespace FS_LevelEditor.UI_Related
             return patcher;
         }
 
+        public static UIButtonMultiple CreateSmallButtonMultiple(Transform parent, Vector3 position, Vector3Int size, int maxOptions,
+            int initialOption, string text = "", int fontSize = 30)
+        {
+            GameObject button = GameObject.Instantiate(buttonTemplate, parent);
+            button.transform.localPosition = position;
+            button.transform.localScale = Vector3.one;
+
+            button.GetComponent<UISprite>().width = size.x;
+            button.GetComponent<UISprite>().height = size.y;
+            GameObject.Destroy(button.GetComponent<ButtonController>());
+
+            // For some reason the buttons have two labels? One is disabled (Button/Label) and the other one is the one being used (Button/Background/Label).
+            // UPDATE: We'll still be using that one, for SOME FUCKING REASON if you change the label the button colors start to behave weird... idk...
+            UILabel buttonLabel = button.GetChildAt("Background/Label").GetComponent<UILabel>();
+            GameObject.Destroy(buttonLabel.GetComponent<UILocalize>());
+            buttonLabel.text = text;
+            buttonLabel.fontSize = fontSize;
+            buttonLabel.SetAnchor(button, 0, 0, 0, 0);
+            // Just change the label anchor so its size is the same as the button size.
+
+            UIButtonMultiple script = button.AddComponent<UIButtonMultiple>();
+            script.Setup(maxOptions, initialOption);
+
+            return script;
+        }
+
         public static UILabel CreateLabel(Transform parent, Vector3 position, Vector3Int size, string text = "", NGUIText.Alignment alignment = NGUIText.Alignment.Left,
             UIWidget.Pivot pivot = UIWidget.Pivot.Left)
         {

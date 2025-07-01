@@ -12,11 +12,33 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Screen : LE_Object
     {
+        public enum ScreenColorType
+        {
+            CYAN = 0,
+            GREEN = 1,
+            RED = 2
+        }
         ScreenController screen;
 
-        public override void ObjectStart(LEScene scene)
+        GameObject greenMesh, redMesh;
+
+        void Awake()
         {
-            //screen.PlayShowAnimation();
+            properties = new Dictionary<string, object>()
+            {
+                { "ColorType", ScreenColorType.CYAN }
+            };
+
+            greenMesh = gameObject.GetChildAt("Content/Mesh/GreenPlane");
+            redMesh = gameObject.GetChildAt("Content/Mesh/RedPlane");
+        }
+
+        public override void OnInstantiated(LEScene scene)
+        {
+            // No matter the scene (Editor/Playmode) change the mesh.
+            SetScreenMesh(GetProperty<ScreenColorType>("ColorType"));
+
+            base.OnInstantiated(scene);
         }
 
         public override void InitComponent()
@@ -43,7 +65,7 @@ namespace FS_LevelEditor
             screen.cyanColor = t_screen.cyanColor;
             screen.whiteColor = Color.white;
             screen.useColorTint = true;
-            screen.currentColor = ScreenController.ColorType.CYAN;
+            screen.currentColor = ConvertColorToFSType(GetProperty<ScreenColorType>("ColorType"));
 
             screen.m_contentAnim.clip = t_screen.m_contentAnim.clip;
             foreach (var clip in t_screen.m_contentAnim)
@@ -78,6 +100,63 @@ namespace FS_LevelEditor
             content.SetActive(true);
 
             initialized = true;
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "ColorType")
+            {
+                if (value is int)
+                {
+                    properties["ColorType"] = (ScreenColorType)value;
+                    SetScreenMesh((ScreenColorType)value);
+                    return true;
+                }
+                else if (value is ScreenColorType)
+                {
+                    properties["RespawnTime"] = value;
+                    SetScreenMesh((ScreenColorType)value);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        void SetScreenMesh(ScreenColorType colorType)
+        {
+            if (colorType == ScreenColorType.CYAN)
+            {
+                greenMesh.SetActive(false);
+                redMesh.SetActive(false);
+            }
+            else if (colorType == ScreenColorType.GREEN)
+            {
+                greenMesh.SetActive(true);
+                redMesh.SetActive(false);
+            }
+            else // Only RED is left.
+            {
+                greenMesh.SetActive(false);
+                redMesh.SetActive(true);
+            }
+        }
+        ScreenController.ColorType ConvertColorToFSType(ScreenColorType colorType)
+        {
+            switch (colorType)
+            {
+                case ScreenColorType.CYAN:
+                    return ScreenController.ColorType.CYAN;
+
+                case ScreenColorType.GREEN:
+                    return ScreenController.ColorType.GREEN;
+
+                case ScreenColorType.RED:
+                    return ScreenController.ColorType.RED;
+
+                default:
+                    return ScreenController.ColorType.CYAN;
+            }
         }
     }
 }

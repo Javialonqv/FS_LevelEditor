@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace FS_LevelEditor.Editor.UI
 {
@@ -292,6 +293,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateCeilingLightPanel();
             CreateFlameTrapAttributesPanel();
             CreatePressurePlateAttributesPanel();
+            CreateScreenAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -449,8 +451,23 @@ namespace FS_LevelEditor.Editor.UI
             pressurePlateAttributes.SetActive(false);
             attributesPanels.Add("Pressure Plate", pressurePlateAttributes);
         }
+        void CreateScreenAttributesPanel()
+        {
+            GameObject screenAttributes = new GameObject("Screen");
+            screenAttributes.transform.parent = objectSpecificPanelsParent;
+            screenAttributes.transform.localPosition = Vector3.zero;
+            screenAttributes.transform.localScale = Vector3.one;
 
-        enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON }
+            SetCurrentParentToCreateAttributes(screenAttributes);
+
+            CreateObjectAttribute("Screen Color", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
+            screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonMultiple>().SetTitle("CYAN");
+
+            screenAttributes.SetActive(false);
+            attributesPanels.Add("Screen", screenAttributes);
+        }
+
+        enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
         void SetCurrentParentToCreateAttributes(GameObject newParent)
         {
             whereToCreateObjAttributesParent = newParent.transform;
@@ -466,7 +483,7 @@ namespace FS_LevelEditor.Editor.UI
 
             if (attrType != AttributeType.BUTTON)
             {
-                int titleWidth = attrType == AttributeType.INPUT_FIELD ? 260 : 395;
+                int titleWidth = attrType == AttributeType.INPUT_FIELD || attrType == AttributeType.BUTTON_MULTIPLE ? 260 : 395;
                 if (createHastag) titleWidth = 235;
                 UILabel title = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(-230, yPos), new Vector3Int(titleWidth, NGUI_Utils.defaultLabelSize.y, 0),
                     text);
@@ -505,6 +522,15 @@ namespace FS_LevelEditor.Editor.UI
                 UIButtonPatcher button = NGUI_Utils.CreateButton(attributeParent.transform, new Vector3(0, yPos), new Vector3Int(480, 50, 0), text);
                 button.name = "Button";
                 button.onClick += () => TriggerAction(targetPropName);
+                button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+                button.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+            }
+            else if (attrType == AttributeType.BUTTON_MULTIPLE)
+            {
+                UIButtonMultiple button = NGUI_Utils.CreateSmallButtonMultiple(attributeParent.transform, new Vector3(140, yPos),
+                    new Vector3Int(200, 38, 0), 3, 0, text, 25);
+                button.name = "ButtonMultiple";
+                button.onChange += (id) => SetPropertyWithButtonMultiple(targetPropName, button);
                 button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
                 button.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
             }
@@ -662,6 +688,17 @@ namespace FS_LevelEditor.Editor.UI
 
                         attribute.GetChildWithName("Toggle").GetComponent<UIToggle>().Set((bool)value);
                     }
+                    else if (attribute.ExistsChildWithName("ButtonMultiple"))
+                    {
+                        // Values for multiple option buttons can be, int or maybe an enum
+                        if (value is not int && value is not Enum)
+                        {
+                            Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in a BUTTON MULTIPLE?");
+                            continue;
+                        }
+
+                        attribute.GetChildWithName("ButtonMultiple").GetComponent<UIButtonMultiple>().SetOption((int)value);
+                    }
                 }
             }
 
@@ -783,6 +820,20 @@ namespace FS_LevelEditor.Editor.UI
                 EditorController.Instance.levelHasBeenModified = true;
             }
         }
+        public void SetPropertyWithButtonMultiple(string propertyName, UIButtonMultiple button)
+        {
+            switch (propertyName)
+            {
+                case "ColorType":
+                    SetScreenColorTypeButtonColor(button.currentOption);
+                    break;
+            }
+
+            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, button.currentOption))
+            {
+                EditorController.Instance.levelHasBeenModified = true;
+            }
+        }
         public void TriggerAction(string actionName)
         {
             if (EditorController.Instance.currentSelectedObjComponent.TriggerAction(actionName))
@@ -799,6 +850,28 @@ namespace FS_LevelEditor.Editor.UI
         void ShowOrHideSawWaitTimeField(int waypointsCount)
         {
             attributesPanels["Saw"].GetChildWithName("WaitTime").SetActive(waypointsCount > 0);
+        }
+        void SetScreenColorTypeButtonColor(int selectedOptionInButton)
+        {
+            LE_Screen.ScreenColorType colorType = (LE_Screen.ScreenColorType)selectedOptionInButton;
+            var button = attributesPanels["Screen"].GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonMultiple>();
+            var buttonColor = attributesPanels["Screen"].GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonColor>();
+
+            if (colorType == LE_Screen.ScreenColorType.CYAN)
+            {
+                button.SetTitle("CYAN");
+                buttonColor.defaultColor = NGUI_Utils.fsButtonsDefaultColor;
+            }
+            else if (colorType == LE_Screen.ScreenColorType.GREEN)
+            {
+                button.SetTitle("GREEN");
+                buttonColor.defaultColor = Color.green;
+            }
+            else // Only RED is remaining.
+            {
+                button.SetTitle("RED");
+                buttonColor.defaultColor = new Color(0.8f, 0f, 0f);
+            }
         }
     }
 }

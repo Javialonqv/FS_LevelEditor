@@ -392,6 +392,7 @@
 		<Compile Include="LE_ObjectData.cs" />
 		<Compile Include="UI_Related\NGUI_Utils.cs" />
 		<Compile Include="UI_Related\UIButtonAsToggle.cs" />
+		<Compile Include="UI_Related\UIButtonMultiple.cs" />
 		<Compile Include="UI_Related\UIButtonPatcher.cs" />
 		<Compile Include="UI_Related\UICustomInputField.cs" />
 		<Compile Include="UI_Related\UIDropdownPatcher.cs" />
