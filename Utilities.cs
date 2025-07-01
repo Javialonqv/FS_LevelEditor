@@ -530,5 +530,45 @@ namespace FS_LevelEditor
         {
             return Mathf.Max(vector.x, Mathf.Max(vector.y, vector.z));
         }
+
+        public static object CreateCopyOf(object value)
+        {
+            switch (value)
+            {
+                case int i:
+                    return i;
+                case float f:
+                    return f;
+                case string s:
+                    return s;
+                case bool b:
+                    return b;
+
+                case IList list:
+                    var newList = (IList)Activator.CreateInstance(list.GetType());
+                    foreach (var item in list)
+                    {
+                        newList.Add(CreateCopyOf(item));
+                    }
+                    return newList;
+
+                case LE_SawWaypointSerializable waypoint:
+                    return new LE_SawWaypointSerializable(waypoint);
+
+                case LE_Event @event:
+                    return new LE_Event(@event);
+            }
+
+            if (value.GetType().IsValueType)
+            {
+                Logger.Warning($"Couldn't copy object of type \"{value.GetType().Name}\", but it's an struct so who cares, " +
+                    $"don't worry user, everything's fine :)");
+            }
+            else
+            {
+                Logger.Error($"Couldn't copy object of type \"{value.GetType().Name}\", returning the reference, but could case some trouble.");
+            }
+            return value;
+        }
     }
 }

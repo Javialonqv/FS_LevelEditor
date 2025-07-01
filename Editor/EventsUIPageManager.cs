@@ -1682,6 +1682,17 @@ namespace FS_LevelEditor.Editor
 
 public class LE_Event
 {
+    public LE_Event() { }
+    public LE_Event(LE_Event toCopy)
+    {
+        var type = typeof(LE_Event);
+
+        foreach (var property in type.GetProperties())
+        {
+            property.SetValue(this, property.GetValue(toCopy));
+        }
+    }
+
     public bool isValid { get; set; } = false;
 
     // Yeah, why should I put a name to a freaking event? Dunno, may be useful :)

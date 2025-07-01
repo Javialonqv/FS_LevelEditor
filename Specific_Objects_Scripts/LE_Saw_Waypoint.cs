@@ -231,6 +231,12 @@ public class LE_SawWaypointSerializable
     public Vector3Serializable waypointRotation { get; set; }
 
     public LE_SawWaypointSerializable() { }
+    public LE_SawWaypointSerializable(LE_SawWaypointSerializable toCopy)
+    {
+        objectID = toCopy.objectID;
+        waypointPosition = toCopy.waypointPosition;
+        waypointRotation = toCopy.waypointRotation;
+    }
     public LE_SawWaypointSerializable(LE_Saw_Waypoint waypoint)
     {
         waitTime = (float)waypoint.GetProperty("WaitTime");
