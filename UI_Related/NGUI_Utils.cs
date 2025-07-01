@@ -179,7 +179,7 @@ namespace FS_LevelEditor.UI_Related
         #endregion
 
         public static GameObject CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize = 27, string defaultText = "",
-            bool hasOutline = false, NGUIText.Alignment alignment = NGUIText.Alignment.Left)
+            bool hasOutline = false, NGUIText.Alignment alignment = NGUIText.Alignment.Left, int depth = 1)
         {
             GameObject inputField = new GameObject("InputField");
             inputField.transform.parent = parent;
@@ -192,7 +192,7 @@ namespace FS_LevelEditor.UI_Related
             bgSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
             bgSprite.width = size.x;
             bgSprite.height = size.y;
-            bgSprite.depth = 1;
+            bgSprite.depth = depth;
 
             // Create the outline AFTER the main sprite, so the main sprite is the default result when using GetComponent.
             if (hasOutline)
@@ -203,7 +203,7 @@ namespace FS_LevelEditor.UI_Related
                 outlineSprite.color = Color.black;
                 outlineSprite.width = size.x + 10;
                 outlineSprite.height = size.y + 10;
-                outlineSprite.depth = 0;
+                outlineSprite.depth = depth - 1;
             }
 
             GameObject labelObj = new GameObject("Text");
@@ -215,7 +215,7 @@ namespace FS_LevelEditor.UI_Related
             label.fontSize = fontSize;
             label.width = size.x - 5;
             label.height = size.y;
-            label.depth = 2;
+            label.depth = depth + 1;
             label.alignment = alignment;
             label.color = Color.gray;
 
