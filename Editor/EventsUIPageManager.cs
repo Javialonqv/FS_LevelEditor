@@ -531,31 +531,22 @@ namespace FS_LevelEditor.Editor
                     eventsGridList.Add(currentGrid);
                 }
 
+                int index = i;
+
                 // Create the event button PARENT, since inside of it are the button, the name label, and delete btn.
                 GameObject eventButtonParent = new GameObject($"Event {i}");
                 eventButtonParent.transform.parent = currentGrid.transform;
                 eventButtonParent.transform.localScale = Vector3.one;
 
                 // Create the EVENT BUTTON itself...
-                GameObject eventButton = Instantiate(btnTemplate, eventButtonParent.transform);
+                UIButtonPatcher eventButton = NGUI_Utils.CreateButton(eventButtonParent.transform, Vector3.zero, new Vector3Int(780, 70, 0));
                 eventButton.name = "Button";
-                eventButton.transform.localPosition = Vector3.zero;
-                eventButton.layer = LayerMask.NameToLayer("2D GUI");
-
-                // Remove innecesary components.
-                Destroy(eventButton.GetComponent<ButtonController>());
-                Destroy(eventButton.GetComponent<OptionsButton>());
                 // Remove the SECOND UIButtonColor component, and then I ask, why did Charles add TWO UIButtonColor to the buttons
                 // if they target to the same object?
                 Destroy(eventButton.GetComponents<UIButtonColor>()[1]);
+                // Make the outline sprite size smaller.
 
-                // Set the sprite's size, as well in the BoxCollider.
-                UISprite sprite = eventButton.GetComponent<UISprite>();
-                sprite.width = 780;
-                sprite.height = 70;
-                sprite.depth = 2;
-                BoxCollider collider = eventButton.GetComponent<BoxCollider>();
-                collider.size = new Vector3(780f, 100f);
+                eventButton.GetComponent<UISprite>().depth = 2;
 
                 // Change button scale options, because with the default values it looks too big.
                 UIButtonScale scale = eventButton.GetComponent<UIButtonScale>();
@@ -564,50 +555,37 @@ namespace FS_LevelEditor.Editor
                 scale.pressed = Vector3.one * 0.95f;
 
                 // Destroy the "original" label, since it's going to be replaced with the other name label.
-                Destroy(eventButton.GetChildAt("Background/Label"));
+                Destroy(eventButton.gameObject.GetChildAt("Background/Label"));
 
-                UIButton button = eventButton.GetComponent<UIButton>();
-                button.onClick.Clear();
-                EventDelegate.Parameter buttonParm = NGUI_Utils.CreateEventDelegateParamter(this, "selectedID", i);
-                EventDelegate buttonDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(OnEventSelect), buttonParm);
-                button.onClick.Add(buttonDelegate);
+                eventButton.onClick += () => OnEventSelect(index);
 
                 if (currentSelectedEvent == events[i])
                 {
-                    button.defaultColor = new Color(0f, 0.6f, 0f, 1f);
+                    eventButton.button.defaultColor = new Color(0f, 0.6f, 0f, 1f);
                 }
                 else
                 {
-                    button.defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+                    eventButton.button.defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
                 }
 
                 #region Delete Button
                 // Create the button and set its name and positon.
-                GameObject deleteBtn = Instantiate(btnTemplate, eventButtonParent.transform);
+                UIButtonPatcher deleteBtn = NGUI_Utils.CreateButton(eventButtonParent.transform, new Vector3(350, 0), Vector3Int.one * 60);
                 deleteBtn.name = "DeleteBtn";
-                deleteBtn.transform.localPosition = new Vector3(350f, 0f, 0f);
+                // Destroy the label, since we're going to add a SPRITE.
+                Destroy(deleteBtn.gameObject.GetChildAt("Background/Label"));
 
-                // Destroy some unnecesary components and the label, since we're going to add a SPRITE.
-                Destroy(deleteBtn.GetComponent<ButtonController>());
-                Destroy(deleteBtn.GetComponent<OptionsButton>());
-                Destroy(deleteBtn.GetChildAt("Background/Label"));
-
-                // Adjust the button sprite and create the BoxCollider as well.
-                UISprite deleteSprite = deleteBtn.GetComponent<UISprite>();
-                deleteSprite.width = 60;
-                deleteSprite.height = 60;
-                deleteSprite.depth = 3;
-                BoxCollider deleteCollider = deleteBtn.GetComponent<BoxCollider>();
-                deleteCollider.size = new Vector3(60f, 60f, 0f);
+                deleteBtn.GetComponent<UISprite>().depth = 3;
 
                 // Adjust the button color with red color variants.
                 UIButtonColor deleteButtonColor = deleteBtn.GetComponent<UIButtonColor>();
+                deleteButtonColor.duration = 0f;
                 deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
                 deleteButtonColor.hover = new Color(1f, 0f, 0f, 1f);
                 deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
 
                 // Create another sprite "inside" of the button one.
-                UISprite trashSprite = deleteBtn.GetChildWithName("Background").GetComponent<UISprite>();
+                UISprite trashSprite = deleteBtn.gameObject.GetChildWithName("Background").GetComponent<UISprite>();
                 trashSprite.name = "Trash";
                 trashSprite.SetExternalSprite("Trash");
                 trashSprite.width = 30;
@@ -617,61 +595,27 @@ namespace FS_LevelEditor.Editor
                 trashSprite.transform.localPosition = Vector3.zero;
                 trashSprite.enabled = true;
 
-                UIButton deleteBtnScript = deleteBtn.GetComponent<UIButton>();
-                EventDelegate.Parameter deleteBtnParm1 = NGUI_Utils.CreateEventDelegateParamter(this, "eventID", i);
-                EventDelegate deleteBtnDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(DeleteEvent), deleteBtnParm1);
-                deleteBtnScript.onClick.Add(deleteBtnDelegate);
+                deleteBtn.onClick += () => DeleteEvent(index);
                 #endregion
 
                 #region Name Input Field
-                GameObject nameObj = new GameObject("NameInputField");
-                nameObj.transform.parent = eventButtonParent.transform;
-                nameObj.transform.localScale = Vector3.one;
-                nameObj.transform.localPosition = new Vector3(-150f, 0f, 0f);
-                nameObj.layer = LayerMask.NameToLayer("2D GUI");
+                GameObject nameObj = NGUI_Utils.CreateInputField(eventButtonParent.transform, new Vector3(-150, 0), new Vector3Int(450, 50, 0), 27, "", true, depth: 4);
+                nameObj.name = "NameInputField";
+                UISprite outlineSprite = nameObj.GetComponents<UISprite>()[1];
+                outlineSprite.width = 455;
+                outlineSprite.height = 55;
 
-                // This is just, to make a small outline in the name label "box".
-                UISprite nameBGSprite = nameObj.AddComponent<UISprite>();
-                nameBGSprite.atlas = occluder.GetComponent<UISprite>().atlas;
-                nameBGSprite.spriteName = "Square";
-                nameBGSprite.width = 455;
-                nameBGSprite.height = 55;
-                nameBGSprite.color = Color.black;
-                nameBGSprite.depth = 3;
-
-                // This is the box where the name label is.
-                UISprite nameSprite = nameObj.AddComponent<UISprite>();
-                nameSprite.atlas = occluder.GetComponent<UISprite>().atlas;
-                nameSprite.spriteName = "Square";
-                nameSprite.width = 450;
-                nameSprite.height = 50;
-                nameSprite.color = new Color(0.0509f, 0.3333f, 0.3764f);
-                nameSprite.depth = 4;
-
-                // The label itself.
-                UILabel nameLabel = nameObj.AddComponent<UILabel>();
-                nameLabel.font = labelTemplate.GetComponent<UILabel>().font;
-                nameLabel.fontSize = 27;
-                nameLabel.width = 440; // Smaller width so the text doesn't look like it's outside of the box sprite.
-                nameLabel.height = 50;
-                nameLabel.alignment = NGUIText.Alignment.Left;
-                nameLabel.depth = 5;
-
-                UIInput nameInputScript = nameObj.AddComponent<UIInput>();
-                nameInputScript.label = nameLabel;
-                nameInputScript.text = events[i].eventName;
+                UIInput nameObjInput = nameObj.GetComponent<UIInput>();
+                nameObjInput.text = events[i].eventName;
                 EventDelegate.Parameter onNameInputSubmitParm1 = NGUI_Utils.CreateEventDelegateParamter(this, "eventID", i);
-                EventDelegate.Parameter onNameInputSubmitParm2 = NGUI_Utils.CreateEventDelegateParamter(this, "newName", nameInputScript);
+                EventDelegate.Parameter onNameInputSubmitParm2 = NGUI_Utils.CreateEventDelegateParamter(this, "newName", nameObjInput);
                 EventDelegate onNameInputSubmit =
                     NGUI_Utils.CreateEvenDelegate(this, nameof(RenameEvent), onNameInputSubmitParm1, onNameInputSubmitParm2);
-                nameInputScript.onSubmit.Clear();
-                nameInputScript.onSubmit.Add(onNameInputSubmit);
+                nameObjInput.onSubmit.Clear();
+                nameObjInput.onSubmit.Add(onNameInputSubmit);
 
                 // GOD BLESS OLD ME FOR CREATING THIS FIX!!
-                nameInputScript.gameObject.AddComponent<UIInputSubmitFix>();
-
-                BoxCollider nameInputCollider = nameObj.AddComponent<BoxCollider>();
-                nameInputCollider.size = new Vector3(450f, 50f, 0f);
+                nameObjInput.gameObject.AddComponent<UIInputSubmitFix>();
                 #endregion
             }
 
