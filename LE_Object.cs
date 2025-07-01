@@ -48,6 +48,7 @@ namespace FS_LevelEditor
             { "LARGE_GROUND", ObjectType.GROUND },
             { "GROUND_2", ObjectType.GROUND },
 
+            { "WALL_NO_COLOR", ObjectType.WALL },
             { "X_WALL", ObjectType.WALL },
             { "WINDOW", ObjectType.WALL },
 
