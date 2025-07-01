@@ -353,6 +353,7 @@
 	<ItemGroup>
 		<Compile Include="Core.cs" />
 		<Compile Include="Editor\UI\SelectedObjPanel.cs" />
+		<Compile Include="Editor\UI\TextEditorUI.cs" />
 		<Compile Include="EventExecuter.cs" />
 		<Compile Include="Editor\DeathYPlaneCtrl.cs" />
 		<Compile Include="Editor\EditorCameraMovement.cs" />

@@ -24,7 +24,8 @@ namespace FS_LevelEditor.Editor
         HELP_PANEL,
         EVENTS_PANEL,
         SELECTING_TARGET_OBJ,
-        GLOBAL_PROPERTIES
+        GLOBAL_PROPERTIES,
+        TEXT_EDITOR
     }
 
     [RegisterTypeInIl2Cpp]
@@ -130,6 +131,7 @@ namespace FS_LevelEditor.Editor
             CreateGlobalPropertiesPanel();
 
             EventsUIPageManager.Create();
+            TextEditorUI.Create();
 
             CreateHittenTargetObjPanel();
 

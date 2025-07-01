@@ -1,4 +1,6 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
+using Il2Cpp;
 using Il2CppTMPro;
 using System;
 using System.Collections.Generic;
@@ -21,24 +23,26 @@ namespace FS_LevelEditor
         ScreenController screen;
 
         GameObject greenMesh, redMesh;
+        TextMeshPro screenText;
 
         void Awake()
         {
             properties = new Dictionary<string, object>()
             {
-                { "ColorType", ScreenColorType.CYAN }
+                { "ColorType", ScreenColorType.CYAN },
+                { "Text", "Text" }
             };
 
             greenMesh = gameObject.GetChildAt("Content/Mesh/GreenPlane");
             redMesh = gameObject.GetChildAt("Content/Mesh/RedPlane");
+            screenText = gameObject.GetChildAt("Content/Content/Label/MainLabel").GetComponent<TextMeshPro>();
         }
 
-        public override void OnInstantiated(LEScene scene)
+        public override void ObjectStart(LEScene scene)
         {
             // No matter the scene (Editor/Playmode) change the mesh.
             SetScreenMesh(GetProperty<ScreenColorType>("ColorType"));
-
-            base.OnInstantiated(scene);
+            SetScreenText(GetProperty<string>("Text"));
         }
 
         public override void InitComponent()
@@ -119,8 +123,32 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "Text")
+            {
+                properties["Text"] = value.ToString();
+
+                if (value is not string)
+                {
+                    Logger.Warning($"The value wasn't a string, that's not expected, the value type was \"{value.GetType().Name}\".");
+                }
+            }
 
             return false;
+        }
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "EditText")
+            {
+                TextEditorUI.Instance.ShowTextEditor(this);
+                return true;
+            }
+            else if (actionName == "OnTextEditorClose")
+            {
+                SetScreenText(GetProperty<string>("Text"));
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
         }
 
         void SetScreenMesh(ScreenColorType colorType)
@@ -156,6 +184,16 @@ namespace FS_LevelEditor
 
                 default:
                     return ScreenController.ColorType.CYAN;
+            }
+        }
+
+        void SetScreenText(string newText)
+        {
+            screenText.text = newText;
+
+            if (screen)
+            {
+                screen.m_mainLabelFormatter.SetLocalizedKey(newText, true);
             }
         }
     }

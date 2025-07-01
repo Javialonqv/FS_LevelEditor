@@ -462,6 +462,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateObjectAttribute("Screen Color", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
             screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonMultiple>().SetTitle("CYAN");
+            CreateObjectAttribute("Edit Text", AttributeType.BUTTON, null, null, "EditText");
 
             screenAttributes.SetActive(false);
             attributesPanels.Add("Screen", screenAttributes);

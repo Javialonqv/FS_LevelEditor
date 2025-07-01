@@ -130,7 +130,8 @@ namespace FS_LevelEditor.Editor
 
             ManageEscAction();
 
-            if (IsCurrentState(EditorState.PAUSED) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL)) return;
+            if (IsCurrentState(EditorState.PAUSED) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL) ||
+                EditorUIManager.IsCurrentUIContext(EditorUIContext.TEXT_EDITOR)) return;
 
             #region Select Target Object For Events
             if (IsCurrentState(EditorState.SELECTING_TARGET_OBJ))
@@ -349,6 +350,11 @@ namespace FS_LevelEditor.Editor
                 if (EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL))
                 {
                     EventsUIPageManager.Instance.HideEventsPage();
+                    return;
+                }
+                else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.TEXT_EDITOR))
+                {
+                    TextEditorUI.Instance.HideTextEditor();
                     return;
                 }
                 else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ))
