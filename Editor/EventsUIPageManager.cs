@@ -487,9 +487,6 @@ namespace FS_LevelEditor.Editor
         }
         void CreateEventsList(int eventsPage)
         {
-            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
             // Create page buttons in case they don't exist yet.
             if (previousEventPageButton == null && nextEventPageButton == null)
             {
@@ -606,7 +603,7 @@ namespace FS_LevelEditor.Editor
                 outlineSprite.height = 55;
 
                 nameInput.SetText(events[i].eventName);
-                nameInput.onChange += () => RenameEvent(index, nameInput);
+                nameInput.onSubmit += () => RenameEvent(index, nameInput);
                 #endregion
             }
 

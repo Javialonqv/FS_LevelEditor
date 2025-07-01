@@ -33,6 +33,7 @@ namespace FS_LevelEditor.UI_Related
         public bool setFieldColorAutomatically = true;
 
         public Action onChange;
+        public Action onSubmit;
 
         public UICustomInputField(IntPtr ptr) : base(ptr) { }
 
@@ -98,6 +99,7 @@ namespace FS_LevelEditor.UI_Related
             if (!initialized)
             {
                 EventDelegate.Add(input.onChange, new EventDelegate(this, nameof(OnChange)));
+                EventDelegate.Add(input.onSubmit, new EventDelegate(this, nameof(OnSubmit)));
             }
 
             initialized = true;
@@ -113,6 +115,13 @@ namespace FS_LevelEditor.UI_Related
             if (onChange != null)
             {
                 onChange.Invoke();
+            }
+        }
+        void OnSubmit()
+        {
+            if (onSubmit != null)
+            {
+                onSubmit.Invoke();
             }
         }
 
