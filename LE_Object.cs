@@ -38,6 +38,7 @@ namespace FS_LevelEditor
             FLAME_TRAP,
             COLLIDER,
             END_TRIGGER,
+            PRESSURE_PLATE
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
@@ -105,6 +106,7 @@ namespace FS_LevelEditor
         public static Laser_H_Controller t_laser;
         public static RealtimeCeilingLight t_ceilingLight;
         public static FlameTrapController t_flameTrap;
+        public static BlocSwitchScript t_pressurePlate;
 
         public static void GetTemplatesReferences()
         {
@@ -118,6 +120,8 @@ namespace FS_LevelEditor
             t_laser = FindObjectOfType<Laser_H_Controller>();
             t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
             t_flameTrap = FindObjectOfType<FlameTrapController>();
+            BlocSwitchScript[] test = FindObjectsOfType<BlocSwitchScript>();
+            t_pressurePlate = test[1];
         }
         #endregion
 
