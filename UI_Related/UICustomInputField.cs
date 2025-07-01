@@ -18,12 +18,14 @@ namespace FS_LevelEditor.UI_Related
             NON_NEGATIVE_INT,
             NON_NEGATIVE_FLOAT,
             INT,
-            FLOAT
+            FLOAT,
+            PLAIN_TEXT
         }
 
         public UIInput input { get; private set; }
         public UIInputType inputType { get; private set; }
         public bool isValid { get; private set; }
+        bool initialized = false;
 
         UISprite fieldSprite;
         public Color validValueColor { get; private set; } = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
@@ -86,10 +88,19 @@ namespace FS_LevelEditor.UI_Related
                         input.onValidate += (UIInput.OnValidate)((text, index, ch) => NGUI_Utils.ValidateFloatWithMaxDecimals(text, index, ch, maxDecimals));
                     }
                     break;
+
+                case UIInputType.PLAIN_TEXT:
+                    input.validation = UIInput.Validation.None;
+                    break;
             }
             if (defaultText != null) input.defaultText = defaultText;
 
-            EventDelegate.Add(input.onChange, new EventDelegate(this, nameof(OnChange)));
+            if (!initialized)
+            {
+                EventDelegate.Add(input.onChange, new EventDelegate(this, nameof(OnChange)));
+            }
+
+            initialized = true;
         }
 
         void OnChange()
@@ -145,6 +156,9 @@ namespace FS_LevelEditor.UI_Related
 
                 case UIInputType.FLOAT:
                     return Utilities.TryParseFloat(GetText(), out float floatResult2);
+
+                case UIInputType.PLAIN_TEXT:
+                    return true;
             }
 
             return false;

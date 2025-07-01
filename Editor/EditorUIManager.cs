@@ -514,13 +514,10 @@ namespace FS_LevelEditor.Editor
             deathYLimitLabel.depth = 1;
             deathYLimitLabel.fontSize = 30;
 
-            GameObject deathYLimitField = NGUI_Utils.CreateInputField(globalPropertiesPanel.transform, new Vector3(100f, 270f, 0f),
-                new Vector3Int(300, 50, 0), 30, "100");
+            UICustomInputField deathYLimitField = NGUI_Utils.CreateInputField(globalPropertiesPanel.transform, new Vector3(100f, 270f, 0f),
+                new Vector3Int(300, 50, 0), 30, "100", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             deathYLimitField.name = "DeathYLimit";
-            deathYLimitField.GetComponent<UIInput>().onValidate = (UIInput.OnValidate)NGUI_Utils.ValidateNonNegativeFloat;
-            var deathFieldCustomScript = deathYLimitField.AddComponent<UICustomInputField>();
-            deathFieldCustomScript.Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
-            deathFieldCustomScript.onChange += (() => SetGlobalPropertyWithInput("DeathYLimit", deathFieldCustomScript));
+            deathYLimitField.onChange += (() => SetGlobalPropertyWithInput("DeathYLimit", deathYLimitField));
 
             UIButtonAsToggle visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(globalPropertiesPanel.transform,
                 new Vector3(285f, 270f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);

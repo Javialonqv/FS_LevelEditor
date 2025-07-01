@@ -39,7 +39,7 @@ namespace FS_LevelEditor.Editor
         /// Contains all of the options of an event, including the target object name field.
         /// </summary>
         GameObject eventSettingsPanel;
-        UIInput targetObjInputField;
+        UICustomInputField targetObjInputField;
         /// <summary>
         /// Contains all of the options of an event, EXCEPT the target object name field.
         /// </summary>
@@ -377,13 +377,13 @@ namespace FS_LevelEditor.Editor
             noEventsLabel.transform.localPosition = new Vector3(0f, 220f, 0f);
         }
 
-        void RenameEvent(int eventID, UIInput inputRef)
+        void RenameEvent(int eventID, UICustomInputField inputRef)
         {
             // GetEventsList should return the same events list that when creating the events list, it should be fine :)
             LE_Event eventToRename = GetEventsList()[eventID];
-            eventToRename.eventName = inputRef.text;
+            eventToRename.eventName = inputRef.GetText();
 
-            Logger.Log("RENAMED " + eventID + " TO: " + inputRef.text);
+            Logger.Log("RENAMED " + eventID + " TO: " + inputRef.GetText());
         }
 
         void SetupTopButtons()
@@ -599,23 +599,14 @@ namespace FS_LevelEditor.Editor
                 #endregion
 
                 #region Name Input Field
-                GameObject nameObj = NGUI_Utils.CreateInputField(eventButtonParent.transform, new Vector3(-150, 0), new Vector3Int(450, 50, 0), 27, "", true, depth: 4);
-                nameObj.name = "NameInputField";
-                UISprite outlineSprite = nameObj.GetComponents<UISprite>()[1];
+                var nameInput = NGUI_Utils.CreateInputField(eventButtonParent.transform, new Vector3(-150, 0), new Vector3Int(450, 50, 0), 27, "", true, depth: 4);
+                nameInput.name = "NameInputField";
+                UISprite outlineSprite = nameInput.GetComponents<UISprite>()[1];
                 outlineSprite.width = 455;
                 outlineSprite.height = 55;
 
-                UIInput nameObjInput = nameObj.GetComponent<UIInput>();
-                nameObjInput.text = events[i].eventName;
-                EventDelegate.Parameter onNameInputSubmitParm1 = NGUI_Utils.CreateEventDelegateParamter(this, "eventID", i);
-                EventDelegate.Parameter onNameInputSubmitParm2 = NGUI_Utils.CreateEventDelegateParamter(this, "newName", nameObjInput);
-                EventDelegate onNameInputSubmit =
-                    NGUI_Utils.CreateEvenDelegate(this, nameof(RenameEvent), onNameInputSubmitParm1, onNameInputSubmitParm2);
-                nameObjInput.onSubmit.Clear();
-                nameObjInput.onSubmit.Add(onNameInputSubmit);
-
-                // GOD BLESS OLD ME FOR CREATING THIS FIX!!
-                nameObjInput.gameObject.AddComponent<UIInputSubmitFix>();
+                nameInput.SetText(events[i].eventName);
+                nameInput.onChange += () => RenameEvent(index, nameInput);
                 #endregion
             }
 
@@ -749,17 +740,10 @@ namespace FS_LevelEditor.Editor
         }
         void CreateTargetObjectInputField()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject targetObjField = NGUI_Utils.CreateInputField(eventSettingsPanel.transform, new Vector3(0f, 230f, 0f), new Vector3Int(500, 60, 0), 34,
+            targetObjInputField = NGUI_Utils.CreateInputField(eventSettingsPanel.transform, new Vector3(0f, 230f, 0f), new Vector3Int(500, 60, 0), 34,
                 "", true, NGUIText.Alignment.Center);
 
-            targetObjInputField = targetObjField.GetComponent<UIInput>();
-            EventDelegate.Parameter inputScriptParm1 = NGUI_Utils.CreateEventDelegateParamter(this, "input", targetObjInputField);
-            EventDelegate.Parameter inputScriptParm2 = NGUI_Utils.CreateEventDelegateParamter(this, "fieldSprite", targetObjField.GetComponent<UISprite>());
-            EventDelegate inputScriptDelegate =
-                NGUI_Utils.CreateEvenDelegate(this, nameof(OnTargetObjectFieldChanged), inputScriptParm1, inputScriptParm2);
-            targetObjInputField.onChange.Add(inputScriptDelegate);
+            targetObjInputField.onChange += () => OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
         void CreateSelectTargetObjectButton()
         {
@@ -771,7 +755,7 @@ namespace FS_LevelEditor.Editor
 
         void ShowEventSettings()
         {
-            targetObjInputField.text = currentSelectedEvent.targetObjName;
+            targetObjInputField.SetText(currentSelectedEvent.targetObjName);
 
             spawnOptionsDropdown.SelectOption((int)currentSelectedEvent.spawn);
             sawStateDropdown.SelectOption((int)currentSelectedEvent.sawState);
@@ -805,9 +789,9 @@ namespace FS_LevelEditor.Editor
             currentSelectedEvent = null;
             eventSettingsPanel.SetActive(false);
         }
-        void OnTargetObjectFieldChanged(UIInput input, UISprite fieldSprite)
+        void OnTargetObjectFieldChanged(UICustomInputField input, UISprite fieldSprite)
         {
-            string inputText = input.text;
+            string inputText = input.GetText();
             LE_Object targetObj = null;
             bool objIsValid = false;
 
@@ -893,7 +877,7 @@ namespace FS_LevelEditor.Editor
         
         public void SetTargetObjectWithLE_Object(LE_Object obj)
         {
-            targetObjInputField.text = obj.objectFullNameWithID;
+            targetObjInputField.SetText(obj.objectFullNameWithID);
             OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
 
@@ -1208,11 +1192,10 @@ namespace FS_LevelEditor.Editor
         }
         void CreateNewLightColorInputField()
         {
-            GameObject inputField = NGUI_Utils.CreateInputField(lightObjectsSettings.transform, new Vector3(270f, -30f, 0f),
-                new Vector3Int(250, 40, 1), 27, "FFFFFF");
+            UICustomInputField inputField = NGUI_Utils.CreateInputField(lightObjectsSettings.transform, new Vector3(270f, -30f, 0f),
+                new Vector3Int(250, 40, 1), 27, "FFFFFF", inputType: UICustomInputField.UIInputType.HEX_COLOR);
             inputField.name = "NewLightColorInputField";
-            inputField.GetComponent<UIInput>().characterLimit = 6;
-            inputField.GetComponent<UIInput>().onChange.Add(new EventDelegate(this, nameof(OnNewLightColorInputFieldChanged)));
+            inputField.onChange += OnNewLightColorInputFieldChanged;
 
             newLightColorInputField = inputField.GetComponent<UIInput>();
         }
@@ -1285,11 +1268,10 @@ namespace FS_LevelEditor.Editor
         }
         void CreateNewCeilingLightColorInputField()
         {
-            GameObject inputField = NGUI_Utils.CreateInputField(ceilingLightObjectsSettings.transform, new Vector3(160f, -70f, 0f),
-                new Vector3Int(250, 40, 1), 27, "FFFFFF");
+            UICustomInputField inputField = NGUI_Utils.CreateInputField(ceilingLightObjectsSettings.transform, new Vector3(160f, -70f, 0f),
+                new Vector3Int(250, 40, 1), 27, "FFFFFF", inputType: UICustomInputField.UIInputType.HEX_COLOR);
             inputField.name = "NewCeilingLightColorInputField";
-            inputField.GetComponent<UIInput>().characterLimit = 6;
-            inputField.GetComponent<UIInput>().onChange.Add(new EventDelegate(this, nameof(OnNewCeilingLightColorInputFieldChanged)));
+            inputField.onChange += OnNewCeilingLightColorInputFieldChanged;
 
             newCeilingLightColorInputField = inputField.GetComponent<UIInput>();
         }
@@ -1363,11 +1345,10 @@ namespace FS_LevelEditor.Editor
         }
         void CreateNewPackRespawnTimeInputField()
         {
-            GameObject inputField = NGUI_Utils.CreateInputField(healthAmmoPacksObjectsSettings.transform, new Vector3(270f, -30f, 0f),
-                new Vector3Int(250, 40, 1), 27, "60");
+            UICustomInputField inputField = NGUI_Utils.CreateInputField(healthAmmoPacksObjectsSettings.transform, new Vector3(270f, -30f, 0f),
+                new Vector3Int(250, 40, 1), 27, "60", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             inputField.name = "NewInputField";
-            inputField.AddComponent<UICustomInputField>().Setup(UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
-            inputField.GetComponent<UICustomInputField>().onChange += OnNewPackRespawnTimeInputFieldChanged;
+            inputField.onChange += OnNewPackRespawnTimeInputFieldChanged;
 
             newPackRespawnTimeInputField = inputField.GetComponent<UICustomInputField>();
         }

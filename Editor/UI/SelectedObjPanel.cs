@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace FS_LevelEditor.Editor.UI
 {
@@ -173,30 +174,27 @@ namespace FS_LevelEditor.Editor.UI
                 UIWidget.Pivot.Center);
             xTitle.name = "XTitle";
             // ------------------------------
-            GameObject xField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(10f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0");
-            xField.name = "XField";
-            posXField = xField.AddComponent<UICustomInputField>();
-            posXField.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
+            posXField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(10f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+                maxDecimals: 2);
+            posXField.name = "XField";
             posXField.onChange += (() => SetPropertyWithInput("XPosition", posXField));
 
             UILabel yTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(60f, 90f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
             yTitle.name = "YTitle";
             // ------------------------------
-            GameObject yField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(110f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0");
-            yField.name = "YField";
-            posYField = yField.AddComponent<UICustomInputField>();
-            posYField.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
+            posYField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(110f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+                maxDecimals: 2);
+            posYField.name = "YField";
             posYField.onChange += (() => SetPropertyWithInput("YPosition", posYField));
 
             UILabel zTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(160f, 90f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
             zTitle.name = "ZTitle";
             // ------------------------------
-            GameObject zField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(210f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0");
-            zField.name = "ZField";
-            posZField = zField.AddComponent<UICustomInputField>();
-            posZField.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
+            posZField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(210f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+                maxDecimals: 2);
+            posZField.name = "ZField";
             posZField.onChange += (() => SetPropertyWithInput("ZPosition", posZField));
         }
         void CreateObjectRotationUIElements()
@@ -213,30 +211,27 @@ namespace FS_LevelEditor.Editor.UI
                 UIWidget.Pivot.Center);
             xTitle.name = "XTitle";
             // ------------------------------
-            GameObject xField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(10f, 40f, 0f), new Vector3Int(65, 38, 0), 27, "0");
-            xField.name = "XField";
-            rotXField = xField.AddComponent<UICustomInputField>();
-            rotXField.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
+            rotXField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(10f, 40f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+                maxDecimals: 2);
+            rotXField.name = "XField";
             rotXField.onChange += (() => SetPropertyWithInput("XRotation", rotXField));
 
             UILabel yTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(60f, 40f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
             yTitle.name = "YTitle";
             // ------------------------------
-            GameObject yField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(110f, 40f, 0f), new Vector3Int(65, 38, 0), 27, "0");
-            yField.name = "YField";
-            rotYField = yField.AddComponent<UICustomInputField>();
-            rotYField.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
+            rotYField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(110f, 40f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+                maxDecimals: 2);
+            rotYField.name = "YField";
             rotYField.onChange += (() => SetPropertyWithInput("YRotation", rotYField));
 
             UILabel zTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(160f, 40f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
             zTitle.name = "ZTitle";
             // ------------------------------
-            GameObject zField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(210f, 40f, 0f), new Vector3Int(65, 38, 0), 27, "0");
-            zField.name = "ZField";
-            rotZField = zField.AddComponent<UICustomInputField>();
-            rotZField.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
+            rotZField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(210f, 40f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+                maxDecimals: 2);
+            rotZField.name = "ZField";
             rotZField.onChange += (() => SetPropertyWithInput("ZRotation", rotZField));
         }
         void CreateObjectScaleUIElements()
@@ -253,30 +248,27 @@ namespace FS_LevelEditor.Editor.UI
                 UIWidget.Pivot.Center);
             xTitle.name = "XTitle";
             // ------------------------------
-            GameObject xField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(10f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "0");
-            xField.name = "XField";
-            scaleXField = xField.AddComponent<UICustomInputField>();
-            scaleXField.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
+            scaleXField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(10f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
+                maxDecimals: 2);
+            scaleXField.name = "XField";
             scaleXField.onChange += (() => SetPropertyWithInput("XScale", scaleXField));
 
             UILabel yTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(60f, -10f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
             yTitle.name = "YTitle";
             // ------------------------------
-            GameObject yField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(110f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "0");
-            yField.name = "YField";
-            scaleYField = yField.AddComponent<UICustomInputField>();
-            scaleYField.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
+            scaleYField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(110f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
+                maxDecimals: 2);
+            scaleYField.name = "YField";
             scaleYField.onChange += (() => SetPropertyWithInput("YScale", scaleYField));
 
             UILabel zTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(160f, -10f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
             zTitle.name = "ZTitle";
             // ------------------------------
-            GameObject zField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(210f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "0");
-            zField.name = "ZField";
-            scaleZField = zField.AddComponent<UICustomInputField>();
-            scaleZField.Setup(UICustomInputField.UIInputType.FLOAT, maxDecimals: 2);
+            scaleZField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(210f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
+                maxDecimals: 2);
+            scaleZField.name = "ZField";
             scaleZField.onChange += (() => SetPropertyWithInput("ZScale", scaleZField));
         }
         // ------------------------------
@@ -475,12 +467,11 @@ namespace FS_LevelEditor.Editor.UI
 
             if (attrType == AttributeType.INPUT_FIELD)
             {
-                GameObject field = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(140, yPos), new Vector3Int(200, 38, 0), 27, (string)defaultValue, false);
+                var field = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(140, yPos), new Vector3Int(200, 38, 0), 27, (string)defaultValue, false,
+                    inputType: (UICustomInputField.UIInputType)fieldType);
                 field.name = "Field";
-                var fieldScript = field.AddComponent<UICustomInputField>();
-                fieldScript.Setup((UICustomInputField.UIInputType)fieldType);
-                fieldScript.setFieldColorAutomatically = false;
-                fieldScript.onChange += () => SetPropertyWithInput(targetPropName, fieldScript);
+                field.setFieldColorAutomatically = false;
+                field.onChange += () => SetPropertyWithInput(targetPropName, field);
             }
             else if (attrType == AttributeType.TOGGLE)
             {

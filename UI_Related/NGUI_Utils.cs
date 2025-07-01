@@ -178,8 +178,9 @@ namespace FS_LevelEditor.UI_Related
         }
         #endregion
 
-        public static GameObject CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize = 27, string defaultText = "",
-            bool hasOutline = false, NGUIText.Alignment alignment = NGUIText.Alignment.Left, int depth = 1)
+        public static UICustomInputField CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize = 27, string defaultText = "",
+            bool hasOutline = false, NGUIText.Alignment alignment = NGUIText.Alignment.Left, UICustomInputField.UIInputType inputType = UICustomInputField.UIInputType.PLAIN_TEXT,
+            int maxDecimals = 0, int depth = 1)
         {
             GameObject inputField = new GameObject("InputField");
             inputField.transform.parent = parent;
@@ -229,7 +230,13 @@ namespace FS_LevelEditor.UI_Related
             input.activeTextColor = Color.white;
             input.onChange.Clear();
 
-            return inputField;
+            UICustomInputField script = inputField.AddComponent<UICustomInputField>();
+            script.Setup(inputType, defaultText, maxDecimals);
+
+            // GOD BLESS OLD ME FOR CREATING THIS FIX!!
+            inputField.AddComponent<UIInputSubmitFix>();
+
+            return script;
         }
 
         // Never ever ever dare to change ANYTHING inside of this method, it's literally the worst code in the whole mod.
