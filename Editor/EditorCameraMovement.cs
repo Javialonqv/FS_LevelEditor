@@ -13,6 +13,8 @@ namespace FS_LevelEditor.Editor
     [RegisterTypeInIl2Cpp]
     public class EditorCameraMovement : MonoBehaviour
     {
+        enum CameraMove { NONE, NORMAL, MOUSE_DRAG }
+        CameraMove currentCameraMove;
         public float moveSpeed = 10f;
         public float mouseSensivility = 10f;
         public float downAndUpSpeed = 10f;
@@ -32,7 +34,7 @@ namespace FS_LevelEditor.Editor
         {
             if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ)) return;
 
-            if (Input.GetMouseButton(1) && !Input.GetMouseButton(0))
+            if (Input.GetMouseButton(1) && !Input.GetMouseButton(0) && !Input.GetMouseButton(2))
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -40,7 +42,7 @@ namespace FS_LevelEditor.Editor
                 ManageMoveSpeed();
                 MoveCamera();
             }
-            else if (Input.GetMouseButton(2))
+            else if (Input.GetMouseButton(2) && !Input.GetMouseButton(0))
             {
                 MoveCameraWithMouseDrag();
             }
@@ -99,7 +101,7 @@ namespace FS_LevelEditor.Editor
             dragOrigin = Input.mousePosition;
 
             Vector3 right = transform.right;
-            Vector3 forward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+            Vector3 forward = Vector3.ProjectOnPlane(transform.up, transform.forward).normalized;
 
             Vector3 movement = (-right * delta.x + -forward * delta.y) * dragSpeed;
             transform.position += movement;
