@@ -549,7 +549,7 @@ namespace FS_LevelEditor.Editor
                 UIButtonScale scale = eventButton.GetComponent<UIButtonScale>();
                 scale.mScale = Vector3.one;
                 scale.hover = Vector3.one;
-                scale.pressed = Vector3.one * 0.95f;
+                scale.pressed = Vector3.one * 0.98f;
 
                 // Destroy the "original" label, since it's going to be replaced with the other name label.
                 Destroy(eventButton.gameObject.GetChildAt("Background/Label"));
