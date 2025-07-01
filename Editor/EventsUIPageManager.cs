@@ -19,6 +19,7 @@ namespace FS_LevelEditor.Editor
         public static EventsUIPageManager Instance { get; private set; }
 
         GameObject eventsPanel;
+        UILabel eventsWindowTitle;
         GameObject eventsButtonsParent;
         GameObject occluder;
         GameObject previousEventPageButton, nextEventPageButton;
@@ -127,36 +128,38 @@ namespace FS_LevelEditor.Editor
         // Method copied from LE_MenuUIManager xD
         void CreateEventsPanel()
         {
-            // Get the Options menu and create a copy.
-            GameObject originalOptionsMenu = GameObject.Find("MainMenu/Camera/Holder/Options");
-            eventsPanel = GameObject.Instantiate(originalOptionsMenu, EditorUIManager.Instance.editorUIParent.transform);
-
-            // Change the name of the copy.
+            eventsPanel = GameObject.Instantiate(NGUI_Utils.optionsPanel, EditorUIManager.Instance.editorUIParent.transform);
             eventsPanel.name = "EventsPanel";
 
+            eventsWindowTitle = eventsPanel.GetChildWithName("Title").GetComponent<UILabel>();
+            eventsWindowTitle.gameObject.RemoveComponent<UILocalize>();
+
+            foreach (var child in eventsPanel.GetChilds())
+            {
+                string[] notDelete = { "Window", "Title" };
+                if (notDelete.Contains(child.name)) continue;
+
+                Destroy(child);
+            }
+
             eventsPanel.transform.GetChildWithName("Window").transform.localPosition = Vector3.zero;
-            eventsPanel.transform.GetChild(2).localPosition = new Vector3(0f, 386.4f, 0f);
+            eventsWindowTitle.transform.localPosition = new Vector3(0f, 386.4f, 0f);
 
             // Remove the OptionsController and UILocalize components so I can change the title of the panel. Also the TweenAlpha since it won't be needed.
             eventsPanel.RemoveComponent<OptionsController>();
             eventsPanel.RemoveComponent<TweenAlpha>();
-            eventsPanel.transform.GetChild(2).gameObject.RemoveComponent<UILocalize>();
 
             // Change the title properties of the panel.
-            eventsPanel.transform.GetChild(2).transform.localPosition = new Vector3(0, 387, 0);
-            eventsPanel.transform.GetChild(2).GetComponent<UILabel>().width = 1650;
-            eventsPanel.transform.GetChild(2).GetComponent<UILabel>().height = 50;
-            eventsPanel.transform.GetChild(2).GetComponent<UILabel>().text = "Events";
+            eventsWindowTitle.transform.localPosition = new Vector3(0, 387, 0);
+            eventsWindowTitle.GetComponent<UILabel>().width = 1650;
+            eventsWindowTitle.GetComponent<UILabel>().height = 50;
+            eventsWindowTitle.GetComponent<UILabel>().text = "Events";
 
             // Destroy the tabs and disable everything inside of the Game_Options object.
-            GameObject.Destroy(eventsPanel.GetChildWithName("Tabs"));
-            eventsPanel.GetChildWithName("Game_Options").SetActive(true);
-            eventsButtonsParent = eventsPanel.GetChildAt("Game_Options/Buttons");
-            eventsButtonsParent.DisableAllChildren();
-
-            // Disable the damn lines.
-            eventsPanel.GetChildAt("Game_Options/HorizontalLine").SetActive(false);
-            eventsPanel.GetChildAt("Game_Options/VerticalLine").SetActive(false);
+            //GameObject.Destroy(eventsPanel.GetChildWithName("Tabs"));
+            //eventsPanel.GetChildWithName("Game_Options").SetActive(true);
+            //eventsButtonsParent = eventsPanel.GetChildAt("Game_Options/Buttons");
+            //eventsButtonsParent.DisableAllChildren();
 
             // Reset the scale of the new custom menu to one.
             eventsPanel.transform.localScale = Vector3.one;
@@ -235,13 +238,15 @@ namespace FS_LevelEditor.Editor
         }
         void CreateDetails()
         {
-            GameObject horizontalLine = Instantiate(eventsPanel.GetChildAt("Game_Options/HorizontalLine"), eventsPanel.transform);
+            GameObject optionsPanel = NGUI_Utils.optionsPanel;
+
+            GameObject horizontalLine = Instantiate(optionsPanel.GetChildAt("Game_Options/HorizontalLine"), eventsPanel.transform);
             horizontalLine.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
             horizontalLine.transform.localPosition = new Vector3(0f, 250f, 0f);
             horizontalLine.GetComponent<UISprite>().width = 1600;
             horizontalLine.SetActive(true);
 
-            GameObject verticalLine = Instantiate(eventsPanel.GetChildAt("Game_Options/VerticalLine"), eventsPanel.transform);
+            GameObject verticalLine = Instantiate(optionsPanel.GetChildAt("Game_Options/VerticalLine"), eventsPanel.transform);
             verticalLine.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
             verticalLine.transform.localPosition = new Vector3(70f, -100f, 0f);
             verticalLine.GetComponent<UISprite>().height = 580;
@@ -1640,7 +1645,7 @@ namespace FS_LevelEditor.Editor
             this.targetObj = targetObj;
 
             // Change the title of the panel.
-            eventsPanel.transform.GetChild(2).GetComponent<UILabel>().text = "Events for " + targetObj.objectFullNameWithID;
+            eventsWindowTitle.GetComponent<UILabel>().text = "Events for " + targetObj.objectFullNameWithID;
 
             eventsPanel.SetActive(true);
             eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
