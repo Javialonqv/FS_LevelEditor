@@ -81,6 +81,8 @@ namespace FS_LevelEditor.Editor
             Instance = this;
 
             TranslationsManager.Init();
+
+            MenuController.GetInstance().m_uiCamera.submitKey0 = KeyCode.Return;
         }
 
         void Start()
@@ -961,6 +963,12 @@ namespace FS_LevelEditor.Editor
             if (Instance == null) return false;
 
             return Instance.currentUIContext == context;
+        }
+
+        void OnDestroy()
+        {
+            // Revert this just in case it breaks something LOL.
+            MenuController.GetInstance().m_uiCamera.submitKey0 = KeyCode.None;
         }
     }
 }

@@ -98,8 +98,6 @@ namespace FS_LevelEditor.Editor.UI
             textField.input.onReturnKey = UIInput.OnReturnKey.NewLine;
 
             textField.onSubmit += OnTextFieldChanged;
-
-            MenuController.GetInstance().m_uiCamera.submitKey0 = KeyCode.Return;
         }
 
         void UpdateTextEditorUIValues()
@@ -127,6 +125,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         public void HideTextEditor()
         {
+            textField.input.Submit(); // Force it to submit unsaved changes.
+
             editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
             Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_HIDE);
 
