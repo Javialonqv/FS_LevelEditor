@@ -17,6 +17,7 @@ namespace FS_LevelEditor.Editor.UI
 
         GameObject editorPanel;
         UILabel windowTitle;
+        UILabel textFieldTitle;
         UICustomInputField textField;
         UITogglePatcher autoFontSizeToggle;
         UILabel fontSizeLabel;
@@ -40,6 +41,7 @@ namespace FS_LevelEditor.Editor.UI
         void Awake()
         {
             CreateTextEditorPanel();
+            CreateTextFieldTitle();
             CreateTextField();
             CreateAutoFontSizeToggle();
             CreateFontSizeField();
@@ -98,9 +100,15 @@ namespace FS_LevelEditor.Editor.UI
 
             // We use the occluder from the pause menu, since when you open this editor, we set the editor state to paused.
         }
+        void CreateTextFieldTitle()
+        {
+            textFieldTitle = NGUI_Utils.CreateLabel(editorPanel.transform, Vector3.up * 125, new Vector3Int(1600, 38, 0), "TEXT",
+                NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            textFieldTitle.fontSize = 40;
+        }
         void CreateTextField()
         {
-            textField = NGUI_Utils.CreateInputField(editorPanel.transform, new Vector3(0, -100), new Vector3Int(1600, 500, 0),
+            textField = NGUI_Utils.CreateInputField(editorPanel.transform, new Vector3(0, -150), new Vector3Int(1600, 500, 0),
                 27, "", false, inputType: UICustomInputField.UIInputType.PLAIN_TEXT, depth: 5);
             textField.name = "TextField";
             textField.input.mPivot = UIWidget.Pivot.TopLeft;
