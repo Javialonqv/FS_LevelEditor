@@ -39,7 +39,8 @@ namespace FS_LevelEditor
             COLLIDER,
             END_TRIGGER,
             PRESSURE_PLATE,
-            SCREEN
+            SCREEN,
+            BREAKABLE_WINDOW
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
@@ -109,6 +110,7 @@ namespace FS_LevelEditor
         public static FlameTrapController t_flameTrap;
         public static BlocSwitchScript t_pressurePlate;
         public static ScreenController t_screen;
+        public static BreakableWindowController t_window;
 
         public static void GetTemplatesReferences()
         {
@@ -125,6 +127,8 @@ namespace FS_LevelEditor
             BlocSwitchScript[] test = FindObjectsOfType<BlocSwitchScript>();
             t_pressurePlate = test[1];
             t_screen = FindObjectOfType<ScreenController>();
+            //t_window = FindObjectOfType<BreakableWindowController>();
+            t_window = FindObjectsOfType<BreakableWindowController>().FirstOrDefault(x => x.name.Contains("BreakableWindow"));
         }
         #endregion
 
