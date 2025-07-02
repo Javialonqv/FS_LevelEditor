@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using FS_LevelEditor.Editor;
+using System.Text.Json;
 
 namespace FS_LevelEditor
 {
@@ -330,6 +331,18 @@ namespace FS_LevelEditor
         /// <returns>True ff the property was setted correctly or false if there's some invalid value.</returns>
         public virtual bool SetProperty(string name, object value)
         {
+            if (properties.ContainsKey(name) && value is JsonElement)
+            {
+                Type toConvert = properties[name].GetType();
+                object converted = LEPropertiesConverterNew.LegacyDeserealize(toConvert, (JsonElement)value);
+                if (converted != null)
+                {
+                    //return SetProperty(name, converted);
+                    // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
+                    Utilities.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, Utilities.ConvertFromSerializableValue(converted));
+                }
+            }
+
             return false;
         }
         /// <summary>

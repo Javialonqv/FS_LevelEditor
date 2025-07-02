@@ -33,7 +33,13 @@ namespace FS_LevelEditor
 
         GameObject backToLEButton;
 
-        public Dictionary<string, object> globalProperties = new Dictionary<string, object>();
+        public Dictionary<string, object> globalProperties = new Dictionary<string, object>()
+        {
+            { "HasTaser", true },
+            { "HasJetpack", true },
+            { "DeathYLimit", 100f },
+            { "Skybox", 0 }
+        };
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
         public int deathsInCurrentLevel = 0;
 

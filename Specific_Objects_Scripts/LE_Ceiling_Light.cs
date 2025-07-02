@@ -138,11 +138,6 @@ namespace FS_LevelEditor
                     if (EditorController.Instance != null) SetEnabledMeshOnEditor();
                     return true;
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (name == "Color")
             {
@@ -164,14 +159,9 @@ namespace FS_LevelEditor
                         return true;
                     }
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"Color\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
 
-            return false;
+            return base.SetProperty(name, value);
         }
 
         public override bool TriggerAction(string actionName)

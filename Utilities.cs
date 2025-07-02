@@ -373,6 +373,19 @@ namespace FS_LevelEditor
 
             return value;
         }
+        public static Type ConvertTypeToSerializedObjectType(Type originalType)
+        {
+            if (originalType == typeof(Vector3))
+            {
+                return typeof(Vector3Serializable);
+            }
+            else if (originalType == typeof(Color))
+            {
+                return typeof(ColorSerializable);
+            }
+
+            return originalType;
+        }
 
         public static void SetTransparentMaterials(this GameObject gameObject)
         {
@@ -524,6 +537,18 @@ namespace FS_LevelEditor
                   | BindingFlags.DeclaredOnly;
 
             return type.GetMethod(methodName, flags) != null;
+        }
+        public static void CallMethodIfOverrided(Type baseType, object instance, string methodName, params object[] parms)
+        {
+            var flags = BindingFlags.Instance
+                  | BindingFlags.Public
+                  | BindingFlags.NonPublic;
+
+            MethodInfo method = instance.GetType().GetMethod(methodName, flags);
+            if (method.DeclaringType != baseType)
+            {
+                method.Invoke(instance, parms);
+            }
         }
 
         public static float HighestValueOfVector(Vector3 vector)

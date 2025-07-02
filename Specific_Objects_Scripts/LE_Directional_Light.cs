@@ -81,11 +81,6 @@ namespace FS_LevelEditor
                         return true;
                     }
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"Color\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (name == "Intensity")
             {
@@ -104,14 +99,9 @@ namespace FS_LevelEditor
                         return true;
                     }
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"Intensity\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
 
-            return false;
+            return base.SetProperty(name, value);
         }
     }
 }

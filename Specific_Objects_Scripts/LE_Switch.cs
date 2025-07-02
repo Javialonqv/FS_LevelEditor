@@ -121,11 +121,6 @@ namespace FS_LevelEditor
                     properties["UsableOnce"] = (bool)value;
                     return true;
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"UsableOnce\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (name == "CanUseTaser")
             {
@@ -133,11 +128,6 @@ namespace FS_LevelEditor
                 {
                     properties["CanUseTaser"] = (bool)value;
                     return true;
-                }
-                else
-                {
-                    Logger.Error($"Tried to set \"CanUseTaser\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
                 }
             }
             else if (name == "WhenActivatingEvents")
@@ -162,7 +152,7 @@ namespace FS_LevelEditor
                 }
             }
 
-            return false;
+            return base.SetProperty(name, value);
         }
 
         public override bool TriggerAction(string actionName)

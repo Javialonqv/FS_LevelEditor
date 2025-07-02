@@ -68,11 +68,6 @@ namespace FS_LevelEditor
                         return true;
                     }
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"Color\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (name == "Intensity")
             {
@@ -90,11 +85,6 @@ namespace FS_LevelEditor
                         properties["Intensity"] = result;
                         return true;
                     }
-                }
-                else
-                {
-                    Logger.Error($"Tried to set \"Intensity\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
                 }
             }
             else if (name == "Range")
@@ -116,14 +106,9 @@ namespace FS_LevelEditor
                         return true;
                     }
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"Range\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
 
-            return false;
+            return base.SetProperty(name, value);
         }
 
         void SetRangeSphereScale(float range)

@@ -130,11 +130,6 @@ namespace FS_LevelEditor
                     properties["ActivateOnStart"] = (bool)value;
                     return true;
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (name == "TravelBack")
             {
@@ -142,11 +137,6 @@ namespace FS_LevelEditor
                 {
                     properties["TravelBack"] = (bool)value;
                     return true;
-                }
-                else
-                {
-                    Logger.Error($"Tried to set \"TravelBack\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
                 }
             }
             else if (name == "waypoints") // For now, this is only called when loading the level...
@@ -192,7 +182,7 @@ namespace FS_LevelEditor
                 }
             }
 
-            return false;
+            return base.SetProperty(name, value);
         }
         public override bool TriggerAction(string actionName)
         {

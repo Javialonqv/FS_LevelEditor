@@ -79,11 +79,6 @@ namespace FS_LevelEditor
                     properties["ActivateOnStart"] = (bool)value;
                     return true;
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (name == "Constant")
             {
@@ -91,11 +86,6 @@ namespace FS_LevelEditor
                 {
                     properties["Constant"] = (bool)value;
                     return true;
-                }
-                else
-                {
-                    Logger.Error($"Tried to set \"Constant\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
                 }
             }
 

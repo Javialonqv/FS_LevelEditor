@@ -105,11 +105,6 @@ namespace FS_LevelEditor
                     properties["OnlyOnce"] = (bool)value;
                     return true;
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"OnlyOnce\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (GetAvailableEventsIDs().Contains(name))
             {
@@ -119,7 +114,7 @@ namespace FS_LevelEditor
                 }
             }
 
-            return false;
+            return base.SetProperty(name, value);
         }
         public override bool TriggerAction(string actionName)
         {

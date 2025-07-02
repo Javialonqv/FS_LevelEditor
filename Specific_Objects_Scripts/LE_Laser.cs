@@ -165,11 +165,6 @@ namespace FS_LevelEditor
                     properties["ActivateOnStart"] = (bool)value;
                     return true;
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"ActivateOnStart\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (name == "InstaKill")
             {
@@ -177,11 +172,6 @@ namespace FS_LevelEditor
                 {
                     properties["InstaKill"] = (bool)value;
                     return true;
-                }
-                else
-                {
-                    Logger.Error($"Tried to set \"InstaKill\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
                 }
             }
             else if (name == "Damage")
@@ -201,7 +191,7 @@ namespace FS_LevelEditor
                 }
             }
 
-            return false;
+            return base.SetProperty(name, value);
         }
 
         public override bool TriggerAction(string actionName)

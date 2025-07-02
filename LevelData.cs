@@ -12,6 +12,7 @@ using System.Text.Json;
 using Il2Cpp;
 using System.Reflection;
 using FS_LevelEditor.Editor;
+using Il2CppSystem.Xml;
 
 namespace FS_LevelEditor
 {
@@ -100,7 +101,7 @@ namespace FS_LevelEditor
 #if DEBUG
                     WriteIndented = true,
 #endif
-                    Converters = { new LEIgnoreDefaultValuesInLEEvents(), new LEPropertiesConverter() }
+                    Converters = { new LEIgnoreDefaultValuesInLEEvents() }
                 };
 
                 if (!Directory.Exists(levelsDirectory))
@@ -141,7 +142,8 @@ namespace FS_LevelEditor
                 {
                     Converters =
                     {
-                        new LEPropertiesConverter(),
+                        //new LEPropertiesConverter(),
+                        new LEPropertiesConverterNew(),
                         new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
                         {
                             { "setActive", "spawn" }
@@ -164,7 +166,8 @@ namespace FS_LevelEditor
             {
                 Converters =
                 {
-                    new LEPropertiesConverter(),
+                    //new LEPropertiesConverter(),
+                    new LEPropertiesConverterNew(),
                     new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
                     {
                         { "setActive", "spawn" }
@@ -232,17 +235,20 @@ namespace FS_LevelEditor
             }
 
             // Load Global Properties.
-            // Load it in this way since we don't want to REMOVE elements from the editor list, only modify or
-            // add.
+            // Only load the SUPPORTED ones.
             foreach (var keyPair in data.globalProperties)
             {
                 if (EditorController.Instance.globalProperties.ContainsKey(keyPair.Key))
                 {
-                    EditorController.Instance.globalProperties[keyPair.Key] = keyPair.Value;
-                }
-                else
-                {
-                    EditorController.Instance.globalProperties.Add(keyPair.Key, keyPair.Value);
+                    if (keyPair.Value is JsonElement) // The expected behaviour.
+                    {
+                        Type toConvert = EditorController.Instance.globalProperties[keyPair.Key].GetType();
+                        EditorController.Instance.globalProperties[keyPair.Key] = LEPropertiesConverterNew.LegacyDeserealize(toConvert, (JsonElement)keyPair.Value);
+                    }
+                    else
+                    {
+                        EditorController.Instance.globalProperties[keyPair.Key] = keyPair.Value;
+                    }
                 }
             }
 
@@ -290,9 +296,22 @@ namespace FS_LevelEditor
             playModeCtrl.levelName = data.levelName;
 
             // Load Global Properties.
-            // In PlayModeController the global properties list is empty, since it's meant to be replaced with
-            // ALL of the values inside of the saved global properties list.
-            playModeCtrl.globalProperties = new Dictionary<string, object>(data.globalProperties);
+            // Only load the SUPPORTED ones.
+            foreach (var keyPair in data.globalProperties)
+            {
+                if (playModeCtrl.globalProperties.ContainsKey(keyPair.Key))
+                {
+                    if (keyPair.Value is JsonElement) // The expected behaviour.
+                    {
+                        Type toConvert = playModeCtrl.globalProperties[keyPair.Key].GetType();
+                        playModeCtrl.globalProperties[keyPair.Key] = LEPropertiesConverterNew.LegacyDeserealize(toConvert, (JsonElement)keyPair.Value);
+                    }
+                    else
+                    {
+                        playModeCtrl.globalProperties[keyPair.Key] = keyPair.Value;
+                    }
+                }
+            }
 
             Logger.Log($"\"{data.levelName}\" level loaded in playmode!");
         }
@@ -331,7 +350,8 @@ namespace FS_LevelEditor
                     {
                         Converters =
                         {
-                            new LEPropertiesConverter(),
+                            //new LEPropertiesConverter(),
+                            new LEPropertiesConverterNew(),
                             new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
                             {
                                 { "setActive", "spawn" }
@@ -537,7 +557,7 @@ namespace FS_LevelEditor
                 writer.WriteStartObject(); // Beginning of the object for Type and Value.
 
                 // Write the value type (AssemblyQualifiedName makes sure it includes the assembly).
-                writer.WriteString("Type", kvp.Value.GetType().AssemblyQualifiedName);
+                writer.WriteString("Type", kvp.Value.GetType().FullName);
 
                 // Write the value, serializing according to its real type.
                 writer.WritePropertyName("Value");
@@ -629,6 +649,77 @@ namespace FS_LevelEditor
             }
 
             throw new JsonException("JSON unexpected end.");
+        }
+    }
+    public class LEPropertiesConverterNew : JsonConverter<Dictionary<string, object>>
+    {
+        public override void Write(Utf8JsonWriter writer, Dictionary<string, object> value, JsonSerializerOptions options)
+        {
+            JsonSerializer.Serialize(writer, value, options);
+        }
+        public override Dictionary<string, object> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                Logger.Error("[SAVE FILE] JSON object was expected.");
+                throw new JsonException("JSON object was expected.");
+            }
+
+            var deserialized = new Dictionary<string, object>();
+
+            var doc = JsonDocument.ParseValue(ref reader);
+            foreach (var prop in doc.RootElement.EnumerateObject())
+            {
+                JsonElement rawValue = prop.Value;
+                object value = null;
+
+                if (rawValue.ValueKind == JsonValueKind.Object && rawValue.TryGetProperty("Type", out var rawType) && rawValue.TryGetProperty("Value", out var realRawValue))
+                {
+                    value = LegacyDeserealize(rawType, realRawValue);
+                }
+                else
+                {
+                    // It the json value isn't a primitive type (int, float, string, etc.) this will result in a JsonElement, but this is parsed later with SetProperty()
+                    // in LE_Object.
+                    value = JsonSerializer.Deserialize<object>(rawValue.GetRawText(), options);
+                }
+
+                deserialized.Add(prop.Name, value);
+            }
+
+            return deserialized;
+        }
+
+        object LegacyDeserealize(JsonElement rawType, JsonElement rawValue)
+        {
+            string realTypeName = rawType.GetString();
+            if (realTypeName == null)
+            {
+                Logger.Error("[SAVE FILE] [LEGACY] Couldn't get value type, value type was a null string.");
+                throw new JsonException("[SAVE FILE] [LEGACY] Couldn't get value type, value type was a null string.");
+            }
+            Type realType = Type.GetType(realTypeName);
+            if (realType == null)
+            {
+                Logger.Error($"[SAVE FILE] [LEGACY] Couldn't find type of name \"{realTypeName}\".");
+                throw new JsonException($"[SAVE FILE] [LEGACY] Couldn't find type of name \"{realTypeName}\".");
+            }
+
+            return JsonSerializer.Deserialize(rawValue.GetRawText(), realType);
+        }
+
+        public static object LegacyDeserealize(Type type, JsonElement rawValue)
+        {
+            try
+            {
+                // The properties only contain the ORIGINAL type, but what if the save data contains info about an object with a custom serialization type?
+                Type typeToDeserealize = Utilities.ConvertTypeToSerializedObjectType(type);
+                return JsonSerializer.Deserialize(rawValue.GetRawText(), typeToDeserealize);
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
     public class LEIgnoreDefaultValuesInLEEvents : JsonConverter<LE_Event>

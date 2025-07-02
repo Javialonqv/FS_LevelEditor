@@ -164,7 +164,7 @@ namespace FS_LevelEditor
                 }
             }
 
-            return false;
+            return base.SetProperty(name, value);
         }
         public override bool TriggerAction(string actionName)
         {

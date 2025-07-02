@@ -134,11 +134,6 @@ namespace FS_LevelEditor
                     properties["AutoFontSize"] = (bool)value;
                     return true;
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"AutoFontSize\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (name == "FontSize")
             {
@@ -154,11 +149,6 @@ namespace FS_LevelEditor
                 {
                     properties["FontSize"] = (float)value;
                     return true;
-                }
-                else
-                {
-                    Logger.Error($"Tried to set \"FontSize\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
                 }
             }
             else if (name == "MinFontSize")
@@ -176,11 +166,6 @@ namespace FS_LevelEditor
                     properties["MinFontSize"] = (float)value;
                     return true;
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"MinFontSize\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (name == "MaxFontSize")
             {
@@ -197,11 +182,6 @@ namespace FS_LevelEditor
                     properties["MaxFontSize"] = (float)value;
                     return true;
                 }
-                else
-                {
-                    Logger.Error($"Tried to set \"MaxFontSize\" property with value of type \"{value.GetType().Name}\".");
-                    return false;
-                }
             }
             else if (name == "Text")
             {
@@ -213,7 +193,7 @@ namespace FS_LevelEditor
                 }
             }
 
-            return false;
+            return base.SetProperty(name, value);
         }
         public override bool TriggerAction(string actionName)
         {
