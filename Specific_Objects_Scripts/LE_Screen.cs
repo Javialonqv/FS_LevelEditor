@@ -30,6 +30,10 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>()
             {
                 { "ColorType", ScreenColorType.CYAN },
+                { "AutoFontSize", true },
+                { "FontSize", 185f },
+                { "MinFontSize", 60f },
+                { "MaxFontSize", 185f },
                 { "Text", "Text" }
             };
 
@@ -123,6 +127,82 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "AutoFontSize")
+            {
+                if (value is bool)
+                {
+                    properties["AutoFontSize"] = (bool)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"AutoFontSize\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+            else if (name == "FontSize")
+            {
+                if (value is string)
+                {
+                    if (Utilities.TryParseFloat((string)value, out float result))
+                    {
+                        properties["FontSize"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["FontSize"] = (float)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"FontSize\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+            else if (name == "MinFontSize")
+            {
+                if (value is string)
+                {
+                    if (Utilities.TryParseFloat((string)value, out float result))
+                    {
+                        properties["MinFontSize"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["MinFontSize"] = (float)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"MinFontSize\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
+            else if (name == "MaxFontSize")
+            {
+                if (value is string)
+                {
+                    if (Utilities.TryParseFloat((string)value, out float result))
+                    {
+                        properties["MaxFontSize"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["MaxFontSize"] = (float)value;
+                    return true;
+                }
+                else
+                {
+                    Logger.Error($"Tried to set \"MaxFontSize\" property with value of type \"{value.GetType().Name}\".");
+                    return false;
+                }
+            }
             else if (name == "Text")
             {
                 properties["Text"] = value.ToString();
@@ -145,6 +225,7 @@ namespace FS_LevelEditor
             else if (actionName == "OnTextEditorClose")
             {
                 SetScreenText(GetProperty<string>("Text"));
+                UpdateScreenTextFont();
                 return true;
             }
 
@@ -187,6 +268,20 @@ namespace FS_LevelEditor
             }
         }
 
+        void UpdateScreenTextFont()
+        {
+            screenText.autoSizeTextContainer = GetProperty<bool>("AutoFontSize");
+
+            if (screenText.autoSizeTextContainer)
+            {
+                screenText.fontSizeMin = GetProperty<float>("MinFontSize");
+                screenText.fontSizeMax = GetProperty<float>("MaxFontSize");
+            }
+            else
+            {
+                screenText.fontSize = GetProperty<float>("FontSize");
+            }
+        }
         void SetScreenText(string newText)
         {
             screenText.text = newText;

@@ -967,8 +967,12 @@ namespace FS_LevelEditor.Editor
 
         void OnDestroy()
         {
-            // Revert this just in case it breaks something LOL.
-            MenuController.GetInstance().m_uiCamera.submitKey0 = KeyCode.None;
+            try
+            {
+                // Revert this just in case it breaks something LOL.
+                MenuController.GetInstance().m_uiCamera.submitKey0 = KeyCode.None;
+            }
+            catch { }
         }
     }
 }

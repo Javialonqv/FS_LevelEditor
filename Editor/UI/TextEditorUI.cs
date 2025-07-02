@@ -19,6 +19,13 @@ namespace FS_LevelEditor.Editor.UI
         UILabel windowTitle;
         GameObject occluder;
         UICustomInputField textField;
+        UITogglePatcher autoFontSizeToggle;
+        UILabel fontSizeLabel;
+        UICustomInputField fontSizeField;
+        UILabel minFontSizeLabel;
+        UICustomInputField minFontSizeField;
+        UILabel maxFontSizeLabel;
+        UICustomInputField maxFontSizeField;
 
         public static void Create()
         {
@@ -35,6 +42,10 @@ namespace FS_LevelEditor.Editor.UI
         {
             CreateTextEditorPanel();
             CreateTextField();
+            CreateAutoFontSizeToggle();
+            CreateFontSizeField();
+            CreateMinFontSizeField();
+            CreateMaxFontSizeField();
         }
 
         void CreateTextEditorPanel()
@@ -94,19 +105,105 @@ namespace FS_LevelEditor.Editor.UI
         {
             textField = NGUI_Utils.CreateInputField(editorPanel.transform, new Vector3(0, -100), new Vector3Int(1600, 500, 0),
                 27, "", false, inputType: UICustomInputField.UIInputType.PLAIN_TEXT, depth: 5);
+            textField.name = "TextField";
             textField.input.mPivot = UIWidget.Pivot.TopLeft;
             textField.input.onReturnKey = UIInput.OnReturnKey.NewLine;
 
-            textField.onSubmit += OnTextFieldChanged;
+            textField.onSubmit += OnTextFieldSubmited;
+        }
+        void CreateAutoFontSizeToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(editorPanel.transform, new Vector3(-600, 250), new Vector3Int(250, 48, 0),
+                "Auto Font Size");
+            toggle.name = "AutoFontSizeToggle";
+            autoFontSizeToggle = toggle.AddComponent<UITogglePatcher>();
+            autoFontSizeToggle.onClick += OnAutoFontSizeToggleChanged;
+        }
+        void CreateFontSizeField()
+        {
+            fontSizeLabel = NGUI_Utils.CreateLabel(editorPanel.transform, Vector3.up * 265, new Vector3Int(200,
+                NGUI_Utils.defaultLabelSize.y, 0), "Font Size", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            fontSizeLabel.name = "FontSizeLabel";
+
+            fontSizeField = NGUI_Utils.CreateInputField(editorPanel.transform, Vector3.up * 225, new Vector3Int(200,
+                NGUI_Utils.defaultLabelSize.y, 0), 27, "185", false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            fontSizeField.name = "FontSizeField";
+            fontSizeField.onChange = OnFontSizeFieldChanged;
+        }
+        void CreateMinFontSizeField()
+        {
+            minFontSizeLabel = NGUI_Utils.CreateLabel(editorPanel.transform, Vector3.up * 265, new Vector3Int(200,
+                NGUI_Utils.defaultLabelSize.y, 0), "Min Font Size", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            minFontSizeLabel.name = "MinFontSizeLabel";
+
+            minFontSizeField = NGUI_Utils.CreateInputField(editorPanel.transform, Vector3.up * 225, new Vector3Int(200,
+                NGUI_Utils.defaultLabelSize.y, 0), 27, "185", false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            minFontSizeField.name = "MinFontSizeField";
+            minFontSizeField.onChange = OnMinFontSizeFieldChanged;
+        }
+        void CreateMaxFontSizeField()
+        {
+            maxFontSizeLabel = NGUI_Utils.CreateLabel(editorPanel.transform, new Vector3(300, 265), new Vector3Int(200,
+                NGUI_Utils.defaultLabelSize.y, 0), "Max Font Size", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            maxFontSizeLabel.name = "MaxFontSizeLabel";
+
+            maxFontSizeField = NGUI_Utils.CreateInputField(editorPanel.transform, new Vector3(300, 225), new Vector3Int(200,
+                NGUI_Utils.defaultLabelSize.y, 0), 27, "185", false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            maxFontSizeField.name = "MaxFontSizeField";
+            maxFontSizeField.onChange = OnMaxFontSizeFieldChanged;
         }
 
         void UpdateTextEditorUIValues()
         {
             textField.SetText(targetObj.GetProperty<string>("Text"));
+            autoFontSizeToggle.toggle.Set(targetObj.GetProperty<bool>("AutoFontSize"));
+            fontSizeField.SetText(targetObj.GetProperty<float>("FontSize"));
+            minFontSizeField.SetText(targetObj.GetProperty<float>("MinFontSize"));
+            maxFontSizeField.SetText(targetObj.GetProperty<float>("MaxFontSize"));
         }
-        void OnTextFieldChanged()
+
+        void OnTextFieldSubmited()
         {
             targetObj.SetProperty("Text", textField.GetText());
+        }
+        void OnAutoFontSizeToggleChanged()
+        {
+            targetObj.SetProperty("AutoFontSize", autoFontSizeToggle.toggle.isChecked);
+
+            if (autoFontSizeToggle.toggle.isChecked)
+            {
+                fontSizeLabel.gameObject.SetActive(false);
+                fontSizeField.gameObject.SetActive(false);
+
+                minFontSizeLabel.gameObject.SetActive(true);
+                minFontSizeField.gameObject.SetActive(true);
+
+                maxFontSizeLabel.gameObject.SetActive(true);
+                maxFontSizeField.gameObject.SetActive(true);
+            }
+            else
+            {
+                fontSizeLabel.gameObject.SetActive(true);
+                fontSizeField.gameObject.SetActive(true);
+
+                minFontSizeLabel.gameObject.SetActive(false);
+                minFontSizeField.gameObject.SetActive(false);
+
+                maxFontSizeLabel.gameObject.SetActive(false);
+                maxFontSizeField.gameObject.SetActive(false);
+            }
+        }
+        void OnFontSizeFieldChanged()
+        {
+            targetObj.SetProperty("FontSize", fontSizeField.GetText());
+        }
+        void OnMinFontSizeFieldChanged()
+        {
+            targetObj.SetProperty("MinFontSize", minFontSizeField.GetText());
+        }
+        void OnMaxFontSizeFieldChanged()
+        {
+            targetObj.SetProperty("MaxFontSize", maxFontSizeField.GetText());
         }
 
         public void ShowTextEditor(LE_Object targetObj)
