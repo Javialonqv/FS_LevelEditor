@@ -270,9 +270,9 @@ namespace FS_LevelEditor
 
         void UpdateScreenTextFont()
         {
-            screenText.autoSizeTextContainer = GetProperty<bool>("AutoFontSize");
+            screenText.enableAutoSizing = GetProperty<bool>("AutoFontSize");
 
-            if (screenText.autoSizeTextContainer)
+            if (GetProperty<bool>("AutoFontSize"))
             {
                 screenText.fontSizeMin = GetProperty<float>("MinFontSize");
                 screenText.fontSizeMax = GetProperty<float>("MaxFontSize");
