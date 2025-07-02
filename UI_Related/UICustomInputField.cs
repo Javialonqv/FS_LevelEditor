@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor.UI_Related
 {
@@ -43,7 +42,7 @@ namespace FS_LevelEditor.UI_Related
             fieldSprite = GetComponent<UISprite>();
         }
 
-        public void Setup(UIInputType type, string? defaultText = null, int maxDecimals = 0)
+        public void Setup(UIInputType type, string defaultText = null, int maxDecimals = 0)
         {
             inputType = type;
 
