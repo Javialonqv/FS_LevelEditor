@@ -17,7 +17,6 @@ namespace FS_LevelEditor.Editor.UI
 
         GameObject editorPanel;
         UILabel windowTitle;
-        GameObject occluder;
         UICustomInputField textField;
         UITogglePatcher autoFontSizeToggle;
         UILabel fontSizeLabel;
@@ -97,9 +96,7 @@ namespace FS_LevelEditor.Editor.UI
             // Add a collider so the user can't interact with the other objects.
             editorPanel.AddComponent<BoxCollider>().size = new Vector3(100000f, 100000f, 1f);
 
-            occluder = Instantiate(GameObject.Find("MainMenu/Camera/Holder/Occluder"), editorPanel.transform);
-            occluder.name = "Occluder";
-            occluder.SetActive(true);
+            // We use the occluder from the pause menu, since when you open this editor, we set the editor state to paused.
         }
         void CreateTextField()
         {

@@ -21,7 +21,6 @@ namespace FS_LevelEditor.Editor
         GameObject eventsPanel;
         UILabel eventsWindowTitle;
         GameObject eventsButtonsParent;
-        GameObject occluder;
         GameObject previousEventPageButton, nextEventPageButton;
         GameObject currentEventPageLabel;
         GameObject noEventsLabel;
@@ -175,8 +174,7 @@ namespace FS_LevelEditor.Editor
             // Add a collider so the user can't interact with the other objects.
             eventsPanel.AddComponent<BoxCollider>().size = new Vector3(100000f, 100000f, 1f);
 
-            occluder = Instantiate(GameObject.Find("MainMenu/Camera/Holder/Occluder"), eventsPanel.transform);
-            occluder.SetActive(true);
+            // We use the occluder from the pause menu, since when you open this panel, we set the editor state to paused.
         }
         void CreateTopButtons()
         {
@@ -223,7 +221,7 @@ namespace FS_LevelEditor.Editor
 
             UISprite eventsBgSprite = eventsListBg.AddComponent<UISprite>();
             eventsBgSprite.transform.localPosition = new Vector3(-400f, -90f, 0f);
-            eventsBgSprite.atlas = occluder.GetComponent<UISprite>().atlas;
+            eventsBgSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
             eventsBgSprite.spriteName = "Square";
             eventsBgSprite.depth = 1;
             eventsBgSprite.color = new Color(0.0509f, 0.3333f, 0.3764f);
@@ -1644,7 +1642,8 @@ namespace FS_LevelEditor.Editor
             eventsPanel.SetActive(true);
             eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
             Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
-
+            
+            EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
 
             SetupTopButtons();
