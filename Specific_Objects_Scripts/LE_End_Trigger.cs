@@ -12,19 +12,8 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_End_Trigger : LE_Object
     {
-        // Since there's only ONE end trigger per level, don't even put the id on it.
-        public override string objectFullNameWithID
-        {
-            get { return objectOriginalName; }
-        }
-
-        static int currentInstances = 0;
-        const int maxInstances = 1;
-
         void Awake()
         {
-            currentInstances++;
-
             gameObject.GetChildAt("Content/End").tag = "Checkpoint";
 
             Logger.DebugError("END TRIGGER IS EXTREMELY EXPERIMENTAL, I JUST ADDED IT, DON'T COMPLAIN ABOUT IT SHRISS!!!");
@@ -52,11 +41,6 @@ namespace FS_LevelEditor
         public static new Color GetObjectColor(LEObjectContext context)
         {
             return new Color(1f, 1f, 0.07843138f);
-        }
-
-        void OnDestroy()
-        {
-            currentInstances--;
         }
     }
 }
