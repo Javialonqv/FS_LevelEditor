@@ -64,6 +64,7 @@ namespace FS_LevelEditor.Editor.UI
             // For some fucking reason the code enables the content in the SECOND category, I need to force it... damn it.
             EditorController.Instance.ChangeCategory(0);
             ChangeCategory(0);
+            SelectObjToBuild(0);
         }
 
         void CreateObjectsCategories()
