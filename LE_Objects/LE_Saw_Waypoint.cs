@@ -60,6 +60,9 @@ namespace FS_LevelEditor
 
                 // Disable the transparent saw mesh ingame.
                 gameObject.GetChildWithName("Mesh").SetActive(false);
+
+                // Disable the collider in playmode.
+                gameObject.GetChildWithName("Collider").SetActive(false);
             }
             // The "first waypoint" is just supposed to be internal, the user can't interact with it and it's in the same pos as the original saw.
             else if (isTheFirstWaypoint)
