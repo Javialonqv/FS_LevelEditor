@@ -255,6 +255,10 @@ namespace FS_LevelEditor
         void UpdateScreenTextFont()
         {
             screenText.enableAutoSizing = GetProperty<bool>("AutoFontSize");
+            if (PlayModeController.Instance)
+            {
+                screenText.GetComponent<FormatLabel>().useAutoSizing = GetProperty<bool>("AutoFontSize");
+            }
 
             if (GetProperty<bool>("AutoFontSize"))
             {
