@@ -382,6 +382,12 @@
 		<Compile Include="LE_Objects\LE_Screen.cs" />
 		<Compile Include="LE_Objects\LE_Switch.cs" />
 		<Compile Include="LE_Objects\LE_Vent_With_Smoke_Green.cs" />
+		<Compile Include="SaveSystem\Converters\LEIgnoreDefaultValuesInLEEvents.cs" />
+		<Compile Include="SaveSystem\Converters\LEPropertiesConverterNew.cs" />
+		<Compile Include="SaveSystem\Converters\OldPropertiesRename.cs" />
+		<Compile Include="SaveSystem\SavePatches.cs" />
+		<Compile Include="SaveSystem\SerializableTypes\ColorSerializable.cs" />
+		<Compile Include="SaveSystem\SerializableTypes\Vector3Serializable.cs" />
 		<Compile Include="TranslationsManager.cs" />
 		<Compile Include="Editor\EditorPauseMenuPatcher.cs" />
 		<Compile Include="Editor\UI\EditorUIManager.cs" />

@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using FS_LevelEditor.Editor;
-using FS_LevelEditor.SaveSystem;
+using FS_LevelEditor.SaveSystem.SerializableTypes;
 
 namespace FS_LevelEditor
 {

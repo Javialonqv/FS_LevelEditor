@@ -361,33 +361,6 @@ namespace FS_LevelEditor
             return $"{r:X2}{g:X2}{b:X2}";
         }
 
-        public static object ConvertFromSerializableValue(object value)
-        {
-            if (value is Vector3Serializable)
-            {
-                return (Vector3)(Vector3Serializable)value;
-            }
-            else if (value is ColorSerializable)
-            {
-                return (Color)(ColorSerializable)value;
-            }
-
-            return value;
-        }
-        public static Type ConvertTypeToSerializedObjectType(Type originalType)
-        {
-            if (originalType == typeof(Vector3))
-            {
-                return typeof(Vector3Serializable);
-            }
-            else if (originalType == typeof(Color))
-            {
-                return typeof(ColorSerializable);
-            }
-
-            return originalType;
-        }
-
         public static void SetTransparentMaterials(this GameObject gameObject)
         {
             foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())

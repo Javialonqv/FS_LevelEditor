@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using FS_LevelEditor.SaveSystem.SerializableTypes;
 
 namespace FS_LevelEditor.SaveSystem
 {
@@ -33,27 +34,7 @@ namespace FS_LevelEditor.SaveSystem
             objectOriginalName = originalObj.objectOriginalName;
             setActiveAtStart = originalObj.setActiveAtStart;
 
-            foreach (var property in originalObj.properties)
-            {
-                if (property.Value is Vector3)
-                {
-                    properties.Add(property.Key, new Vector3Serializable((Vector3)property.Value));
-                }
-                else if (property.Value is Color)
-                {
-                    properties.Add(property.Key, new ColorSerializable((Color)property.Value));
-                }
-                else if (property.Value is ICollection collection) // Skip empty lists
-                {
-                    if (collection.Count == 0) continue;
-
-                    properties.Add(property.Key, property.Value);
-                }
-                else
-                {
-                    properties.Add(property.Key, property.Value);
-                }
-            }
+            SavePatches.AddPropertiesToObjectToSave(this, originalObj);
 
             objPosition = originalObj.transform.localPosition;
             objRotation = originalObj.transform.localEulerAngles;

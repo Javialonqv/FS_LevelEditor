@@ -13,6 +13,7 @@ using UnityEngine.SceneManagement;
 using FS_LevelEditor.Editor;
 using System.Text.Json;
 using FS_LevelEditor.SaveSystem;
+using FS_LevelEditor.SaveSystem.Converters;
 
 namespace FS_LevelEditor
 {
@@ -335,12 +336,11 @@ namespace FS_LevelEditor
             if (properties.ContainsKey(name) && value is JsonElement)
             {
                 Type toConvert = properties[name].GetType();
-                object converted = LEPropertiesConverterNew.LegacyDeserealize(toConvert, (JsonElement)value);
+                object converted = LEPropertiesConverterNew.NewDeserealize(toConvert, (JsonElement)value);
                 if (converted != null)
                 {
-                    //return SetProperty(name, converted);
                     // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
-                    Utilities.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, Utilities.ConvertFromSerializableValue(converted));
+                    Utilities.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatches.ConvertFromSerializableValue(converted));
                 }
             }
 

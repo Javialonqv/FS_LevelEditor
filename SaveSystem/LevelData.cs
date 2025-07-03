@@ -5,14 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
 using UnityEngine;
-using System.Runtime.Serialization.Formatters.Binary;
-using MelonLoader;
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using Il2Cpp;
-using System.Reflection;
 using FS_LevelEditor.Editor;
-using Il2CppSystem.Xml;
+using FS_LevelEditor.SaveSystem.Converters;
+using FS_LevelEditor.SaveSystem.SerializableTypes;
 
 namespace FS_LevelEditor.SaveSystem
 {
@@ -95,22 +92,13 @@ namespace FS_LevelEditor.SaveSystem
 
             try
             {
-                // Serialize and save the level in JSON format.
-                var options = new JsonSerializerOptions
-                {
-#if DEBUG
-                    WriteIndented = true,
-#endif
-                    Converters = { new LEIgnoreDefaultValuesInLEEvents() }
-                };
-
                 if (!Directory.Exists(levelsDirectory))
                 {
                     Directory.CreateDirectory(levelsDirectory);
                 }
 
                 string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-                File.WriteAllText(filePath, JsonSerializer.Serialize(data, options));
+                File.WriteAllText(filePath, JsonSerializer.Serialize(data, SavePatches.OnWriteSaveFileOptions));
 
                 Logger.Log("Level saved! Path: " + filePath);
             }
@@ -138,22 +126,7 @@ namespace FS_LevelEditor.SaveSystem
             LevelData data = null;
             try
             {
-                var jsonOptions = new JsonSerializerOptions
-                {
-                    Converters =
-                    {
-                        //new LEPropertiesConverter(),
-                        new LEPropertiesConverterNew(),
-                        new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
-                        {
-                            { "setActive", "spawn" }
-                        })
-                        // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
-                        // same type.
-                    }
-                };
-
-                data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
+                data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), SavePatches.OnReadSaveFileOptions);
             }
             catch { }
 
@@ -162,25 +135,10 @@ namespace FS_LevelEditor.SaveSystem
 
         static LevelData LoadLevelData(string levelFileNameWithoutExtension)
         {
-            var jsonOptions = new JsonSerializerOptions
-            {
-                Converters =
-                {
-                    //new LEPropertiesConverter(),
-                    new LEPropertiesConverterNew(),
-                    new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
-                    {
-                        { "setActive", "spawn" }
-                    })
-                    // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
-                    // same type.
-                }
-            };
-
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), jsonOptions);
+            LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), SavePatches.OnReadSaveFileOptions);
 
-            ReevaluateOldProperties(ref data);
+            SavePatches.ReevaluateOldProperties(ref data);
 
             List<LE_ObjectData> toCheck = data.objects;
             if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
@@ -223,7 +181,7 @@ namespace FS_LevelEditor.SaveSystem
                 {
                     foreach (var property in obj.properties)
                     {
-                        objClassInstance.SetProperty(property.Key, Utilities.ConvertFromSerializableValue(property.Value));
+                        objClassInstance.SetProperty(property.Key, SavePatches.ConvertFromSerializableValue(property.Value));
                     }
                 }
 
@@ -243,7 +201,7 @@ namespace FS_LevelEditor.SaveSystem
                     if (keyPair.Value is JsonElement) // The expected behaviour.
                     {
                         Type toConvert = EditorController.Instance.globalProperties[keyPair.Key].GetType();
-                        EditorController.Instance.globalProperties[keyPair.Key] = LEPropertiesConverterNew.LegacyDeserealize(toConvert, (JsonElement)keyPair.Value);
+                        EditorController.Instance.globalProperties[keyPair.Key] = LEPropertiesConverterNew.NewDeserealize(toConvert, (JsonElement)keyPair.Value);
                     }
                     else
                     {
@@ -279,7 +237,7 @@ namespace FS_LevelEditor.SaveSystem
                 {
                     foreach (var property in obj.properties)
                     {
-                        objClassInstance.SetProperty(property.Key, Utilities.ConvertFromSerializableValue(property.Value));
+                        objClassInstance.SetProperty(property.Key, SavePatches.ConvertFromSerializableValue(property.Value));
                     }
                 }
 
@@ -304,7 +262,7 @@ namespace FS_LevelEditor.SaveSystem
                     if (keyPair.Value is JsonElement) // The expected behaviour.
                     {
                         Type toConvert = playModeCtrl.globalProperties[keyPair.Key].GetType();
-                        playModeCtrl.globalProperties[keyPair.Key] = LEPropertiesConverterNew.LegacyDeserealize(toConvert, (JsonElement)keyPair.Value);
+                        playModeCtrl.globalProperties[keyPair.Key] = LEPropertiesConverterNew.NewDeserealize(toConvert, (JsonElement)keyPair.Value);
                     }
                     else
                     {
@@ -448,251 +406,5 @@ namespace FS_LevelEditor.SaveSystem
 
             return result;
         }
-
-        static void ReevaluateOldProperties(ref LevelData data)
-        {
-            foreach (var obj in data.objects)
-            {
-                Dictionary<string, object> newProperties = new();
-
-                foreach (var property in obj.properties)
-                {
-                    switch (property.Key)
-                    {
-                        case "OnActivatedEvents":
-                            newProperties.Add("WhenActivatingEvents", property.Value);
-                            break;
-                        case "OnDeactivatedEvents":
-                            newProperties.Add("WhenDeactivatingEvents", property.Value);
-                            break;
-                        case "OnChangeEvents":
-                            newProperties.Add("WhenInvertingEvents", property.Value);
-                            break;
-
-                        default:
-                            newProperties.Add(property.Key, property.Value);
-                            break;
-                    }
-                }
-
-                obj.properties = newProperties;
-            }
-        }
     }
-}
-
-namespace FS_LevelEditor
-{
-    [Serializable]
-    public struct Vector3Serializable
-    {
-        public float x { get; set; }
-        public float y { get; set; }
-        public float z { get; set; }
-
-        public Vector3Serializable(float x, float y, float z)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-        public Vector3Serializable(Vector3 v)
-        {
-            x = v.x;
-            y = v.y;
-            z = v.z;
-        }
-
-        public static implicit operator Vector3Serializable(Vector3 v)
-        {
-            return new Vector3Serializable(v.x, v.y, v.z);
-        }
-        public static implicit operator Vector3(Vector3Serializable v)
-        {
-            return new Vector3(v.x, v.y, v.z);
-        }
-    }
-    [Serializable]
-    public struct ColorSerializable
-    {
-        public float r { get; set; }
-        public float g { get; set; }
-        public float b { get; set; }
-
-        public ColorSerializable(float r, float g, float b)
-        {
-            this.r = r;
-            this.g = g;
-            this.b = b;
-        }
-        public ColorSerializable(Color color)
-        {
-            r = color.r;
-            g = color.g;
-            b = color.b;
-        }
-
-        public static explicit operator ColorSerializable(Color color)
-        {
-            return new ColorSerializable(color.r, color.g, color.b);
-        }
-        public static explicit operator Color(ColorSerializable color)
-        {
-            return new Color(color.r, color.g, color.b);
-        }
-
-        public Color ToColor()
-        {
-            return new Color(r, g, b);
-        }
-    }
-
-
-    public class LEPropertiesConverterNew : JsonConverter<Dictionary<string, object>>
-    {
-        public override void Write(Utf8JsonWriter writer, Dictionary<string, object> value, JsonSerializerOptions options)
-        {
-            JsonSerializer.Serialize(writer, value, options);
-        }
-        public override Dictionary<string, object> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            if (reader.TokenType != JsonTokenType.StartObject)
-            {
-                Logger.Error("[SAVE FILE] JSON object was expected.");
-                throw new JsonException("JSON object was expected.");
-            }
-
-            var deserialized = new Dictionary<string, object>();
-
-            var doc = JsonDocument.ParseValue(ref reader);
-            foreach (var prop in doc.RootElement.EnumerateObject())
-            {
-                JsonElement rawValue = prop.Value;
-                object value = null;
-
-                if (rawValue.ValueKind == JsonValueKind.Object && rawValue.TryGetProperty("Type", out var rawType) && rawValue.TryGetProperty("Value", out var realRawValue))
-                {
-                    value = LegacyDeserealize(rawType, realRawValue);
-                }
-                else
-                {
-                    // It the json value isn't a primitive type (int, float, string, etc.) this will result in a JsonElement, but this is parsed later with SetProperty()
-                    // in LE_Object.
-                    value = JsonSerializer.Deserialize<object>(rawValue.GetRawText(), options);
-                }
-
-                deserialized.Add(prop.Name, value);
-            }
-
-            return deserialized;
-        }
-
-        object LegacyDeserealize(JsonElement rawType, JsonElement rawValue)
-        {
-            string realTypeName = rawType.GetString();
-            if (realTypeName == null)
-            {
-                Logger.Error("[SAVE FILE] [LEGACY] Couldn't get value type, value type was a null string.");
-                throw new JsonException("[SAVE FILE] [LEGACY] Couldn't get value type, value type was a null string.");
-            }
-            Type realType = Type.GetType(realTypeName);
-            if (realType == null)
-            {
-                Logger.Error($"[SAVE FILE] [LEGACY] Couldn't find type of name \"{realTypeName}\".");
-                throw new JsonException($"[SAVE FILE] [LEGACY] Couldn't find type of name \"{realTypeName}\".");
-            }
-
-            return JsonSerializer.Deserialize(rawValue.GetRawText(), realType);
-        }
-
-        public static object LegacyDeserealize(Type type, JsonElement rawValue)
-        {
-            try
-            {
-                // The properties only contain the ORIGINAL type, but what if the save data contains info about an object with a custom serialization type?
-                Type typeToDeserealize = Utilities.ConvertTypeToSerializedObjectType(type);
-                return JsonSerializer.Deserialize(rawValue.GetRawText(), typeToDeserealize);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-    }
-    public class LEIgnoreDefaultValuesInLEEvents : JsonConverter<LE_Event>
-    {
-        public override LE_Event Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            return JsonSerializer.Deserialize<LE_Event>(ref reader, options);
-        }
-
-        public override void Write(Utf8JsonWriter writer, LE_Event value, JsonSerializerOptions options)
-        {
-            var defaultInstance = new LE_Event();
-            writer.WriteStartObject();
-
-            foreach (var property in typeof(LE_Event).GetProperties())
-            {
-                if (!property.CanRead || !property.CanWrite) continue;
-                object defaultValue = property.GetValue(defaultInstance);
-                object currentValue = property.GetValue(value);
-
-                if (!Equals(defaultValue, currentValue))
-                {
-                    writer.WritePropertyName(property.Name);
-                    JsonSerializer.Serialize(writer, currentValue, property.PropertyType, options);
-                }
-            }
-
-            writer.WriteEndObject();
-        }
-    }
-    public class OldPropertiesRename<T> : JsonConverter<T>
-    {
-        private readonly Dictionary<string, string> renames;
-
-        public OldPropertiesRename(Dictionary<string, string> renames)
-        {
-            this.renames = renames;
-        }
-
-        public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            using var doc = JsonDocument.ParseValue(ref reader);
-            var root = doc.RootElement;
-
-            var newProperties = new Dictionary<string, JsonElement>();
-
-            foreach (var prop in root.EnumerateObject())
-            {
-                string nameToAdd = prop.Name;
-                if (renames.ContainsKey(prop.Name))
-                {
-                    nameToAdd = renames[prop.Name];
-                }
-                newProperties[nameToAdd] = prop.Value;
-            }
-
-            using var modifiedStream = new MemoryStream();
-            using (var writer = new Utf8JsonWriter(modifiedStream))
-            {
-                writer.WriteStartObject();
-                foreach (var property in newProperties)
-                {
-                    writer.WritePropertyName(property.Key);
-                    property.Value.WriteTo(writer);
-                }
-                writer.WriteEndObject();
-            }
-
-            modifiedStream.Position = 0;
-            return JsonSerializer.Deserialize<T>(modifiedStream)!;
-        }
-
-        public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
-        {
-            JsonSerializer.Serialize(writer, value, options);
-        }
-    }
-
 }
