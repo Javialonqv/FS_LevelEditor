@@ -87,25 +87,14 @@ namespace FS_LevelEditor
             screen.m_mainLabelRenderer.material = t_screen.m_mainLabelRenderer.material;
             screen.m_mainLabelTMP.m_fontAsset = t_screen.m_mainLabelTMP.m_fontAsset;
             screen.m_mainLabelTMP.m_sharedMaterial = t_screen.m_mainLabelTMP.m_sharedMaterial;
-            FormatLabel mainLabelFormat = screen.m_mainLabelTMP.gameObject.AddComponent<FormatLabel>();
-            mainLabelFormat.textMesh = screen.m_mainLabelTMP;
-            mainLabelFormat.localizationKey = "test";
 
             screen.m_secondaryLabelRenderer.material = t_screen.m_secondaryLabelRenderer.material;
             screen.m_secondaryLabelTMP.m_fontAsset = t_screen.m_secondaryLabelTMP.m_fontAsset;
             screen.m_secondaryLabelTMP.m_sharedMaterial = t_screen.m_secondaryLabelTMP.m_sharedMaterial;
-            FormatLabel secondaryLabelFormat = screen.m_secondaryLabelTMP.gameObject.AddComponent<FormatLabel>();
-            secondaryLabelFormat.textMesh = screen.m_secondaryLabelTMP;
 
             screen.m_lockdownLabelRenderer.material = t_screen.m_lockdownLabelRenderer.material;
             screen.m_lockdownLabelTMP.m_fontAsset = t_screen.m_lockdownLabelTMP.m_fontAsset;
             screen.m_lockdownLabelTMP.m_sharedMaterial = t_screen.m_lockdownLabelTMP.m_sharedMaterial;
-            FormatLabel lockdownLabelFormat = screen.m_lockdownLabelTMP.gameObject.AddComponent<FormatLabel>();
-            lockdownLabelFormat.textMesh = screen.m_lockdownLabelTMP;
-
-            screen.m_mainLabelFormatter = mainLabelFormat;
-            screen.m_secondaryLabelFormatter = secondaryLabelFormat;
-            screen.m_lockdownLabelFormatter = lockdownLabelFormat;
 
             content.SetActive(true);
 
@@ -255,10 +244,6 @@ namespace FS_LevelEditor
         void UpdateScreenTextFont()
         {
             screenText.enableAutoSizing = GetProperty<bool>("AutoFontSize");
-            if (PlayModeController.Instance)
-            {
-                screenText.GetComponent<FormatLabel>().useAutoSizing = GetProperty<bool>("AutoFontSize");
-            }
 
             if (GetProperty<bool>("AutoFontSize"))
             {
@@ -273,11 +258,6 @@ namespace FS_LevelEditor
         void SetScreenText(string newText)
         {
             screenText.text = newText;
-
-            if (screen)
-            {
-                screen.m_mainLabelFormatter.SetLocalizedKey(newText, true);
-            }
         }
     }
 }
