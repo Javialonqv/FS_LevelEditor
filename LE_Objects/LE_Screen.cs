@@ -47,6 +47,7 @@ namespace FS_LevelEditor
             // No matter the scene (Editor/Playmode) change the mesh.
             SetScreenMesh(GetProperty<ScreenColorType>("ColorType"));
             SetScreenText(GetProperty<string>("Text"));
+            UpdateScreenTextFont();
         }
 
         public override void InitComponent()
