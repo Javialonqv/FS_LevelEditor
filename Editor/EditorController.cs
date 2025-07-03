@@ -453,7 +453,7 @@ namespace FS_LevelEditor.Editor
             // Shortcut for hide/show category button in UI.
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H) && currentMode == Mode.Building)
             {
-                EditorUIManager.Instance.HideOrShowCategoryButtons();
+                EditorObjectsToBuildUI.Instance.HideOrShowCategoryButtons();
             }
 
             // Shortcuts to switch between local and global gizmos arrows.
@@ -654,15 +654,13 @@ namespace FS_LevelEditor.Editor
                     // Only enable the panel if the keybinds help panel is DISABLED.
                     if (EditorUIManager.IsCurrentUIContext(EditorUIContext.NORMAL))
                     {
-                        EditorUIManager.Instance.categoryButtonsParent.SetActive(true);
-                        EditorUIManager.Instance.objectsToBuildBG.SetActive(true);
+                        EditorObjectsToBuildUI.Instance.root.SetActive(true);
                     }
                     break;
 
                 case Mode.Selection:
                 case Mode.Deletion:
-                    EditorUIManager.Instance.categoryButtonsParent.SetActive(false);
-                    EditorUIManager.Instance.objectsToBuildBG.SetActive(false);
+                    EditorObjectsToBuildUI.Instance.root.SetActive(false);
                     break;
             }
 
@@ -1611,7 +1609,6 @@ namespace FS_LevelEditor.Editor
 
             currentCategoryID = categoryID;
             currentCategory = categoriesNames[currentCategoryID];
-            EditorUIManager.Instance.ShowObjectButtonsForCategory(currentCategoryID);
         }
 
         public void SelectObjectToBuild(string objName)

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MelonLoader;
 using UnityEngine;
+using System.Collections;
 
 namespace FS_LevelEditor.UI_Related
 {
@@ -22,14 +23,44 @@ namespace FS_LevelEditor.UI_Related
                 return _button;
             }
         }
-        public Action onClick;
 
-        void OnClick()
+        UISprite _buttonSprite;
+        public UISprite buttonSprite
         {
+            get
+            {
+                if (!_buttonSprite) _buttonSprite = GetComponent<UISprite>();
+
+                return _buttonSprite;
+            }
+        }
+
+        public Action onClick;
+        bool clickedRecently = false;
+
+        //void Awake()
+        //{
+        //    button.onClick.Clear();
+        //    button.onClick.Add(new EventDelegate(this, nameof(OnButtonClick)));
+        //}
+
+        public void OnClick()
+        {
+            if (clickedRecently) return;
+            clickedRecently = true;
+
             if (onClick != null)
             {
                 onClick.Invoke();
             }
+
+            MelonCoroutines.Start(ResetClick());
+        }
+
+        IEnumerator ResetClick()
+        {
+            yield return null;
+            clickedRecently = false;
         }
     }
 }
