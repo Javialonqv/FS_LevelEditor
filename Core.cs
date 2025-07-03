@@ -5,6 +5,8 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.SaveSystem;
 
 [assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.2.1", "Javialon_qv", null)]
 [assembly: MelonGame("Haze Games", "Fractal Space")]

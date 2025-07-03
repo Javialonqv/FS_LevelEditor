@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.SaveSystem;
 
 namespace FS_LevelEditor
 {

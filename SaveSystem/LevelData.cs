@@ -14,7 +14,7 @@ using System.Reflection;
 using FS_LevelEditor.Editor;
 using Il2CppSystem.Xml;
 
-namespace FS_LevelEditor
+namespace FS_LevelEditor.SaveSystem
 {
     [Serializable]
     public class LevelData
@@ -52,7 +52,7 @@ namespace FS_LevelEditor
             foreach (GameObject obj in objectsParent.GetChilds(false))
             {
                 // Only if the object has the LE_Object component.
-                if (obj.TryGetComponent<LE_Object>(out LE_Object component))
+                if (obj.TryGetComponent(out LE_Object component))
                 {
                     LE_ObjectData objData = new LE_ObjectData(component);
                     data.objects.Add(objData);
@@ -479,7 +479,10 @@ namespace FS_LevelEditor
             }
         }
     }
+}
 
+namespace FS_LevelEditor
+{
     [Serializable]
     public struct Vector3Serializable
     {
@@ -495,9 +498,9 @@ namespace FS_LevelEditor
         }
         public Vector3Serializable(Vector3 v)
         {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
+            x = v.x;
+            y = v.y;
+            z = v.z;
         }
 
         public static implicit operator Vector3Serializable(Vector3 v)
@@ -524,9 +527,9 @@ namespace FS_LevelEditor
         }
         public ColorSerializable(Color color)
         {
-            this.r = color.r;
-            this.g = color.g;
-            this.b = color.b;
+            r = color.r;
+            g = color.g;
+            b = color.b;
         }
 
         public static explicit operator ColorSerializable(Color color)
@@ -634,7 +637,7 @@ namespace FS_LevelEditor
                 object defaultValue = property.GetValue(defaultInstance);
                 object currentValue = property.GetValue(value);
 
-                if (!object.Equals(defaultValue, currentValue))
+                if (!Equals(defaultValue, currentValue))
                 {
                     writer.WritePropertyName(property.Name);
                     JsonSerializer.Serialize(writer, currentValue, property.PropertyType, options);
@@ -691,4 +694,5 @@ namespace FS_LevelEditor
             JsonSerializer.Serialize(writer, value, options);
         }
     }
+
 }

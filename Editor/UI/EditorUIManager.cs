@@ -1,4 +1,4 @@
-﻿using FS_LevelEditor.Editor.UI;
+﻿using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
 using Il2Cpp;
 using Il2CppInControl.NativeDeviceProfiles;
@@ -16,7 +16,7 @@ using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 
-namespace FS_LevelEditor.Editor
+namespace FS_LevelEditor.Editor.UI
 {
     public enum EditorUIContext
     {
@@ -168,7 +168,7 @@ namespace FS_LevelEditor.Editor
             for (int i = 0; i < EditorController.Instance.categoriesNames.Count; i++)
             {
                 string category = EditorController.Instance.categoriesNames[i];
-                Vector3 buttonPosition = new Vector3(-800f + (250f * i), 450f, 0f);
+                Vector3 buttonPosition = new Vector3(-800f + 250f * i, 450f, 0f);
 
                 UITogglePatcher categoryButton = NGUI_Utils.CreateTabToggle(categoryButtonsParent.transform, buttonPosition, category);
                 categoryButton.name = $"{category}_Button";
@@ -225,7 +225,7 @@ namespace FS_LevelEditor.Editor
             {
                 // Get the object.
                 var objectInfo = EditorController.Instance.allCategoriesObjectsSorted[categoryID].ToList()[i];
-                Vector3 buttonPos = new Vector3(-800 + (150f * i), -25f, 0f);
+                Vector3 buttonPos = new Vector3(-800 + 150f * i, -25f, 0f);
 
                 var button = NGUI_Utils.CreateColorButton(parent.transform, buttonPos, objectInfo.Key);
 
@@ -521,7 +521,7 @@ namespace FS_LevelEditor.Editor
             UICustomInputField deathYLimitField = NGUI_Utils.CreateInputField(globalPropertiesPanel.transform, new Vector3(100f, 270f, 0f),
                 new Vector3Int(300, 50, 0), 30, "100", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             deathYLimitField.name = "DeathYLimit";
-            deathYLimitField.onChange += (() => SetGlobalPropertyWithInput("DeathYLimit", deathYLimitField));
+            deathYLimitField.onChange += () => SetGlobalPropertyWithInput("DeathYLimit", deathYLimitField);
 
             UIButtonAsToggle visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(globalPropertiesPanel.transform,
                 new Vector3(285f, 270f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);
@@ -633,7 +633,7 @@ namespace FS_LevelEditor.Editor
             GameObject resumeBtnWhenInsideLE = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
             resumeBtnWhenInsideLE.name = "1_ResumeWhenInEditor";
             Destroy(resumeBtnWhenInsideLE.GetComponent<ButtonController>());
-            resumeBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.Resume)));
+            resumeBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(Resume)));
             // This two more lines are used just in case the original resume button is disabled, that may happen when you didn't start a new game yet.
             if (!resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled)
             {
@@ -666,7 +666,7 @@ namespace FS_LevelEditor.Editor
             Destroy(playLevelButton.GetComponent<ButtonController>());
             Destroy(playLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
             playLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Play Level";
-            playLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(EditorUIManager.PlayLevel)));
+            playLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(PlayLevel)));
             playLevelButton.SetActive(true);
 
             // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.

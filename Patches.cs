@@ -8,6 +8,7 @@ using UnityEngine;
 using HarmonyLib;
 using MelonLoader;
 using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
 
 namespace FS_LevelEditor
 {

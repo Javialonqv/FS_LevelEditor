@@ -1,6 +1,5 @@
 ﻿using FS_LevelEditor.UI_Related;
 using Il2Cpp;
-using Il2CppDiscord;
 using MelonLoader;
 using System;
 using System.Collections;
@@ -9,11 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static Il2CppSystem.Globalization.CultureInfo;
 
-namespace FS_LevelEditor.Editor
+namespace FS_LevelEditor.Editor.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp]
     public class EventsUIPageManager : MonoBehaviour
     {
         public static EventsUIPageManager Instance { get; private set; }
@@ -127,7 +125,7 @@ namespace FS_LevelEditor.Editor
         // Method copied from LE_MenuUIManager xD
         void CreateEventsPanel()
         {
-            eventsPanel = GameObject.Instantiate(NGUI_Utils.optionsPanel, EditorUIManager.Instance.editorUIParent.transform);
+            eventsPanel = Instantiate(NGUI_Utils.optionsPanel, EditorUIManager.Instance.editorUIParent.transform);
             eventsPanel.name = "EventsPanel";
 
             eventsWindowTitle = eventsPanel.GetChildWithName("Title").GetComponent<UILabel>();
@@ -269,9 +267,9 @@ namespace FS_LevelEditor.Editor
             previousEventPageButton.transform.localPosition = new Vector3(-430f, 0f, 0f);
 
             // Remove unnecesary components.
-            GameObject.Destroy(previousEventPageButton.GetComponent<ButtonController>());
-            GameObject.Destroy(previousEventPageButton.GetComponent<OptionsButton>());
-            GameObject.Destroy(previousEventPageButton.GetComponent<FractalTooltip>());
+            Destroy(previousEventPageButton.GetComponent<ButtonController>());
+            Destroy(previousEventPageButton.GetComponent<OptionsButton>());
+            Destroy(previousEventPageButton.GetComponent<FractalTooltip>());
 
             // Adjust the sprite and the collider as well.
             UISprite sprite = previousEventPageButton.GetComponent<UISprite>();
@@ -282,7 +280,7 @@ namespace FS_LevelEditor.Editor
             collider.size = new Vector3(50f, 50f);
 
             // Adjust the label, removing the FUCKING UILocalize.
-            GameObject.Destroy(previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            Destroy(previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
             UILabel label = previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.depth = 2;
             label.width = 60;
@@ -304,9 +302,9 @@ namespace FS_LevelEditor.Editor
             nextEventPageButton.transform.localPosition = new Vector3(430f, 0f, 0f);
 
             // Remove unnecesary components.
-            GameObject.Destroy(nextEventPageButton.GetComponent<ButtonController>());
-            GameObject.Destroy(nextEventPageButton.GetComponent<OptionsButton>());
-            GameObject.Destroy(nextEventPageButton.GetComponent<FractalTooltip>());
+            Destroy(nextEventPageButton.GetComponent<ButtonController>());
+            Destroy(nextEventPageButton.GetComponent<OptionsButton>());
+            Destroy(nextEventPageButton.GetComponent<FractalTooltip>());
 
             // Adjust the sprite and the collider as well.
             UISprite sprite = nextEventPageButton.GetComponent<UISprite>();
@@ -317,7 +315,7 @@ namespace FS_LevelEditor.Editor
             collider.size = new Vector3(50f, 50f);
 
             // Adjust the label, removing the FUCKING UILocalize.
-            GameObject.Destroy(nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            Destroy(nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
             UILabel label = nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.depth = 2;
             label.width = 60;
@@ -509,7 +507,7 @@ namespace FS_LevelEditor.Editor
                 if (i % 6 == 0 || i == 0) // Idk bro, this is literally copied from the OST mod LOL.
                 {
                     // Create a grid.
-                    currentGrid = new GameObject($"Grid {(int)(i / 6)}");
+                    currentGrid = new GameObject($"Grid {i / 6}");
                     currentGrid.transform.parent = eventsListBg.transform;
                     currentGrid.transform.localPosition = new Vector3(0f, 220f, 0f);
                     currentGrid.transform.localScale = Vector3.one;
@@ -671,7 +669,7 @@ namespace FS_LevelEditor.Editor
         }
         string GetCurrentEventPageText()
         {
-            return (currentEventsGrid + 1) + "/" + (eventsGridList.Count);
+            return currentEventsGrid + 1 + "/" + eventsGridList.Count;
         }
         void DeleteEvent(int eventID)
         {

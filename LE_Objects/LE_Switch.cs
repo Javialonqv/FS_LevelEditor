@@ -8,7 +8,7 @@ using Unity.Services.Analytics;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
 
 namespace FS_LevelEditor
 {
