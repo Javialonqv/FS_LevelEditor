@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -188,7 +189,9 @@ namespace FS_LevelEditor
             {
                 properties["Text"] = value.ToString();
 
-                if (value is not string)
+                // Since this will convert the value to string no matter what, it'll catch the JsonElement before base.SetProperty() does, so, skip the warning in case it is
+                // JsonElement.
+                if (value is not string && value is not JsonElement)
                 {
                     Logger.Warning($"The value wasn't a string, that's not expected, the value type was \"{value.GetType().Name}\".");
                 }
