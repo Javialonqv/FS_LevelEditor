@@ -52,7 +52,7 @@ namespace FS_LevelEditor
         {
             RealtimeCeilingLight template = t_ceilingLight;
 
-            gameObject.SetActive(false);
+            gameObject.GetChildWithName("Content").SetActive(false);
 
             lightComp = gameObject.GetChildWithName("Content").AddComponent<RealtimeCeilingLight>();
             lightComp.m_light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
@@ -123,7 +123,7 @@ namespace FS_LevelEditor
                 lightComp.GetComponent<Animation>().AddClip(animState.clip, animState.name);
             }
 
-            gameObject.SetActive(true);
+            gameObject.GetChildWithName("Content").SetActive(true);
 
             initialized = true;
         }
