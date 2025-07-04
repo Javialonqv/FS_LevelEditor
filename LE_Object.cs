@@ -14,6 +14,7 @@ using FS_LevelEditor.Editor;
 using System.Text.Json;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.SaveSystem.Converters;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace FS_LevelEditor
 {
@@ -122,17 +123,13 @@ namespace FS_LevelEditor
             t_healthPack = FindObjectOfType<Health>();
             t_saw = FindObjectOfType<ScieScript>();
             t_switch = FindObjectOfType<InterrupteurController>();
-            t_cube = SceneManager.GetActiveScene().GetRootGameObjects()
-                .FirstOrDefault(x => x.name == "CameraRunRoom").GetChildAt("BeforeCamera/Activable/Bloc")
-                .GetComponent<BlocScript>();
+            t_cube = Utilities.FindObjectOfType<BlocScript>(x => x.IsCube());
             t_laser = FindObjectOfType<Laser_H_Controller>();
             t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
             t_flameTrap = FindObjectOfType<FlameTrapController>();
-            BlocSwitchScript[] test = FindObjectsOfType<BlocSwitchScript>();
-            t_pressurePlate = test[1];
+            t_pressurePlate = Utilities.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer == null);
             t_screen = FindObjectOfType<ScreenController>();
-            //t_window = FindObjectOfType<BreakableWindowController>();
-            t_window = FindObjectsOfType<BreakableWindowController>().FirstOrDefault(x => x.name.Contains("BreakableWindow"));
+            t_window = Utilities.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
         }
         #endregion
 

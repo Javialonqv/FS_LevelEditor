@@ -2,6 +2,8 @@
 using Il2Cpp;
 using Il2CppI2.Loc;
 using Il2CppInControl.NativeDeviceProfiles;
+using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
 using System;
 using System.Collections;
@@ -568,6 +570,28 @@ namespace FS_LevelEditor
                 Logger.Error($"Couldn't copy object of type \"{value.GetType().Name}\", returning the reference, but could case some trouble.");
             }
             return value;
+        }
+
+        public static T FindObjectOfType<T>(Func<T, bool> predicate = null) where T : Component
+        {
+            Il2CppReferenceArray<UnityEngine.Object> array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
+            if (predicate == null)
+            {
+                return array[0].Cast<T>();
+            }
+            else
+            {
+                foreach (var obj in array)
+                {
+                    T casted = obj.Cast<T>();
+                    if (predicate.Invoke(casted))
+                    {
+                        return casted;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
