@@ -176,6 +176,7 @@ namespace FS_LevelEditor.SaveSystem
                 objClassInstance.objectID = obj.objectID;
                 objInstance.name = objClassInstance.objectFullNameWithID;
                 objClassInstance.setActiveAtStart = obj.setActiveAtStart;
+                objClassInstance.collision = obj.collision;
 
                 if (obj.properties != null)
                 {
@@ -232,6 +233,7 @@ namespace FS_LevelEditor.SaveSystem
                 objClassInstance.objectID = obj.objectID;
                 objInstance.name = objClassInstance.objectFullNameWithID;
                 objClassInstance.setActiveAtStart = obj.setActiveAtStart;
+                objClassInstance.collision = obj.collision;
 
                 if (obj.properties != null)
                 {

@@ -16,6 +16,7 @@ namespace FS_LevelEditor.SaveSystem
         public int objectID { get; set; }
         public string objectOriginalName { get; set; }
         public bool setActiveAtStart { get; set; } = true;
+        public bool collision { get; set; } = true;
 
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
 
@@ -33,6 +34,7 @@ namespace FS_LevelEditor.SaveSystem
             objectID = originalObj.objectID;
             objectOriginalName = originalObj.objectOriginalName;
             setActiveAtStart = originalObj.setActiveAtStart;
+            collision = originalObj.collision;
 
             SavePatches.AddPropertiesToObjectToSave(this, originalObj);
 

@@ -79,6 +79,7 @@ namespace FS_LevelEditor
             get { return objectOriginalName + " " + objectID; }
         }
         public bool setActiveAtStart = true;
+        public bool collision = true;
         public Dictionary<string, object> properties = new Dictionary<string, object>();
         public EventExecuter eventExecuter;
 
@@ -312,6 +313,12 @@ namespace FS_LevelEditor
                 SetEditorCollider(false);
 
                 if (!initialized) InitComponent();
+            }
+
+            // Colliders are enabled by default.
+            if (!collision && scene == LEScene.Playmode)
+            {
+                SetCollidersState(false);
             }
 
             if (eventExecuter) eventExecuter.OnInstantiated(scene);

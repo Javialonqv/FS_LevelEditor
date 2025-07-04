@@ -28,6 +28,7 @@ namespace FS_LevelEditor.Editor.UI
         UICustomInputField posXField, posYField, posZField;
         UICustomInputField rotXField, rotYField, rotZField;
         UICustomInputField scaleXField, scaleYField, scaleZField;
+        UIToggle collisionToggle;
         // ------------------------------
         Transform objectSpecificPanelsParent;
         Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
@@ -37,6 +38,7 @@ namespace FS_LevelEditor.Editor.UI
 
         LE_Object currentSelectedObj;
         bool executeSetActiveAtStartToggleActions = true;
+        bool executeCollisionToggleActions = true;
 
         public static void Create(Transform editorUIParent)
         {
@@ -160,6 +162,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectPositionUIElements();
             CreateObjectRotationUIElements();
             CreateObjectScaleUIElements();
+            CreateCollisionToggle();
         }
         void CreateObjectPositionUIElements()
         {
@@ -271,6 +274,37 @@ namespace FS_LevelEditor.Editor.UI
                 maxDecimals: 2);
             scaleZField.name = "ZField";
             scaleZField.onChange += (() => SetPropertyWithInput("ZScale", scaleZField));
+        }
+        void CreateCollisionToggle()
+        {
+            Transform collisionToggleParent = new GameObject("Collision").transform;
+            collisionToggleParent.parent = globalObjectPanelsParent;
+            collisionToggleParent.localPosition = Vector3.zero;
+            collisionToggleParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(collisionToggleParent, new Vector3(-230, -60), new Vector3Int(395, 38, 0), "Collision");
+            title.name = "Title";
+
+            GameObject toggle = NGUI_Utils.CreateToggle(collisionToggleParent, new Vector3(200, -60), Vector3Int.one * 48);
+            toggle.name = "Toggle";
+            toggle.GetComponent<UIToggle>().onChange.Clear();
+            var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetCollisionToggle));
+            toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
+            collisionToggle = toggle.GetComponent<UIToggle>();
+            collisionToggle.instantTween = true;
+
+            GameObject line = new GameObject("Line");
+            line.transform.parent = toggle.GetChildWithName("Background").transform;
+            line.transform.localPosition = Vector3.zero;
+            line.transform.localScale = Vector3.one;
+
+            UISprite lineSprite = line.AddComponent<UISprite>();
+            lineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
+            lineSprite.spriteName = "Square";
+            lineSprite.width = 35;
+            lineSprite.height = 6;
+            lineSprite.depth = 8;
+            line.SetActive(false);
         }
         // ------------------------------
         void CreateObjectSpecificOptionsParent()
@@ -729,6 +763,25 @@ namespace FS_LevelEditor.Editor.UI
             }
             EditorController.Instance.levelHasBeenModified = true;
         }
+        public void SetCollisionToggle()
+        {
+            if (!executeCollisionToggleActions) return;
+
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+                foreach (var obj in EditorController.Instance.currentSelectedObjects)
+                {
+                    LE_Object comp = obj.GetComponent<LE_Object>();
+                    comp.collision = collisionToggle.isChecked;
+                }
+            }
+            else
+            {
+                EditorController.Instance.currentSelectedObjComponent.collision = collisionToggle.isChecked;
+            }
+            EditorController.Instance.levelHasBeenModified = true;
+        }
         public void ShowGlobalObjectAttributes(bool show)
         {
             objectSpecificPanelsParent.gameObject.SetActive(!show);
@@ -750,6 +803,50 @@ namespace FS_LevelEditor.Editor.UI
             scaleXField.SetText(obj.localScale.x, 2);
             scaleYField.SetText(obj.localScale.y, 2);
             scaleZField.SetText(obj.localScale.z, 2);
+
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                // If this is null, that means the "Collision" in the current selected objects is different in at least one of them.
+                // If it's true or false, then ALL of them are true or false.
+                bool? collisionStateInObjects = null;
+                foreach (var @object in EditorController.Instance.currentSelectedObjects)
+                {
+                    LE_Object comp = @object.GetComponent<LE_Object>();
+                    if (collisionStateInObjects == null)
+                    {
+                        collisionStateInObjects = comp.collision;
+                        continue;
+                    }
+
+                    if (collisionStateInObjects == comp.collision)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        collisionStateInObjects = null;
+                        break;
+                    }
+                }
+
+                if (collisionStateInObjects != null)
+                {
+                    collisionToggle.Set((bool)collisionStateInObjects);
+                    collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+                }
+                else
+                {
+                    executeCollisionToggleActions = false;
+                    collisionToggle.Set(false);
+                    executeCollisionToggleActions = true;
+                    collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
+                }
+            }
+            else
+            {
+                collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
+                collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+            }
         }
 
         public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
