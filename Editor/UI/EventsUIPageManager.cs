@@ -788,7 +788,7 @@ namespace FS_LevelEditor.Editor.UI
             bool objIsValid = false;
 
             #region Check if the object is valid
-            if (inputText == "Player")
+            if (inputText.ToUpper() == "PLAYER")
             {
                 objIsValid = true;
             }

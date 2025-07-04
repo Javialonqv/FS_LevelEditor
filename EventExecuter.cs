@@ -180,7 +180,7 @@ namespace FS_LevelEditor
                     continue;
                 }
 
-                if (@event.targetObjName == "Player")
+                if (@event.targetObjName.ToUpper() == "PLAYER")
                 {
                     if (@event.enableOrDisableZeroG)
                     {
