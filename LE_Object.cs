@@ -72,6 +72,8 @@ namespace FS_LevelEditor
             { "SAW_WAYPOINT", ObjectType.SAW }
         };
 
+        public static Dictionary<ObjectType, int> alreadyUsedObjectIDs = new Dictionary<ObjectType, int>();
+
         public ObjectType? objectType;
         public int objectID;
         public string objectOriginalName;
@@ -100,6 +102,7 @@ namespace FS_LevelEditor
 
         public bool initialized = false;
         bool hasItsOwnClass = false;
+        public bool isDeleted = false;
 
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
@@ -440,13 +443,20 @@ namespace FS_LevelEditor
         }
         public virtual void OnDelete()
         {
-            if (EditorController.Instance != null && PlayModeController.Instance == null)
+            if (canUndoDeletion)
             {
-                EditorController.Instance.currentInstantiatedObjects.Remove(this);
+                isDeleted = true;
             }
-            else if (EditorController.Instance == null && PlayModeController.Instance != null)
+            else
             {
-                PlayModeController.Instance.currentInstantiatedObjects.Remove(this);
+                if (EditorController.Instance != null && PlayModeController.Instance == null)
+                {
+                    EditorController.Instance.currentInstantiatedObjects.Remove(this);
+                }
+                else if (EditorController.Instance == null && PlayModeController.Instance != null)
+                {
+                    PlayModeController.Instance.currentInstantiatedObjects.Remove(this);
+                }
             }
         }
 

@@ -313,7 +313,7 @@ namespace FS_LevelEditor.Editor
             #region Delete Object With Delete
             // If press the Delete key and there's a selected object, delete it.
             // Also, only delete when the user is NOT typing in an input field.
-            if (Input.GetKeyDown(KeyCode.Delete) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
+            if ((Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.KeypadPeriod)) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
             {
                 DeleteSelectedObj();
             }
@@ -557,13 +557,15 @@ namespace FS_LevelEditor.Editor
                             if (toUndo.forMultipleObjects)
                             {
                                 SetMultipleObjectsAsSelected(null);
-                                toUndo.targetObjs.ForEach(obj => currentInstantiatedObjects.Add(obj.GetComponent<LE_Object>())); // Add the objects to the instantiated list again.
+                                //toUndo.targetObjs.ForEach(obj => currentInstantiatedObjects.Add(obj.GetComponent<LE_Object>())); // Add the objects to the instantiated list again.
                                 toUndo.targetObjs.ForEach(obj => obj.SetActive(true)); // Enable the objects again and then select them again.
+                                toUndo.targetObjs.ForEach(obj => obj.GetComponent<LE_Object>().isDeleted = false);
                                 SetMultipleObjectsAsSelected(toUndo.targetObjs);
                             }
                             else
                             {
-                                currentInstantiatedObjects.Add(toUndo.targetObj.GetComponent<LE_Object>());
+                                //currentInstantiatedObjects.Add(toUndo.targetObj.GetComponent<LE_Object>());
+                                toUndo.targetObj.GetComponent<LE_Object>().isDeleted = false;
                                 toUndo.targetObj.SetActive(true);
                                 SetSelectedObj(toUndo.targetObj);
                             }
