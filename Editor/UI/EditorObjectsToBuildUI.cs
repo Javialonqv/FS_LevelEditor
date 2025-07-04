@@ -100,6 +100,8 @@ namespace FS_LevelEditor.Editor.UI
                     currentCategoryButtonYPos -= 75f;
                 }
             }
+
+            categoryButtonsParent.transform.GetChild(0).GetComponent<UITogglePatcher>().toggle.Set(true);
         }
 
         void CreateObjectsBackground()

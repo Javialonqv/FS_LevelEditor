@@ -36,31 +36,13 @@ namespace FS_LevelEditor.UI_Related
         }
 
         public Action onClick;
-        bool clickedRecently = false;
-
-        //void Awake()
-        //{
-        //    button.onClick.Clear();
-        //    button.onClick.Add(new EventDelegate(this, nameof(OnButtonClick)));
-        //}
 
         public void OnClick()
         {
-            if (clickedRecently) return;
-            clickedRecently = true;
-
             if (onClick != null)
             {
                 onClick.Invoke();
             }
-
-            MelonCoroutines.Start(ResetClick());
-        }
-
-        IEnumerator ResetClick()
-        {
-            yield return null;
-            clickedRecently = false;
         }
     }
 }
