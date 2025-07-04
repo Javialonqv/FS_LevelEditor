@@ -42,6 +42,7 @@ namespace FS_LevelEditor
         };
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
         public int deathsInCurrentLevel = 0;
+        public List<LE_Screen> screensOnTheLevel = new List<LE_Screen>();
 
         public bool endTriggerReached = false;
 
@@ -142,6 +143,11 @@ namespace FS_LevelEditor
 
             LE_Object addedComp = LE_Object.AddComponentToObject(obj, objName);
 
+            if (objName == "Screen")
+            {
+                screensOnTheLevel.Add((LE_Screen)addedComp);
+            }
+
             if (addedComp == null)
             {
                 Destroy(obj);
@@ -236,6 +242,18 @@ namespace FS_LevelEditor
             {
                 yield return new WaitForSecondsRealtime(0.025f);
                 MenuController.GetInstance().levelToResumeLabel.text = "Custom Level : " + levelName;
+            }
+        }
+
+        public void InvertPlayerGravity()
+        {
+            Controls.Instance.InverseGravity();
+
+            foreach (var screen in screensOnTheLevel)
+            {
+                if (!screen.GetProperty<bool>("InvertWithGravity")) continue;
+
+                screen.TriggerAction("InvertText");
             }
         }
     }

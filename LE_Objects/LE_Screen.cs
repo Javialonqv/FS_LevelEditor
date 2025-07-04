@@ -33,6 +33,7 @@ namespace FS_LevelEditor
             {
                 { "ColorType", ScreenColorType.CYAN },
                 { "InvisibleMesh", false },
+                { "InvertWithGravity", true },
                 { "AutoFontSize", true },
                 { "FontSize", 185f },
                 { "MinFontSize", 60f },
@@ -127,6 +128,15 @@ namespace FS_LevelEditor
                 if (value is bool)
                 {
                     properties["InvisibleMesh"] = (bool)value;
+                    SetScreenMeshVisibility((bool)value);
+                    return true;
+                }
+            }
+            else if (name == "InvertWithGravity")
+            {
+                if (value is bool)
+                {
+                    properties["InvertWithGravity"] = (bool)value;
                     return true;
                 }
             }
@@ -214,12 +224,24 @@ namespace FS_LevelEditor
                 return true;
             }
 
+            else if (actionName == "InvertText")
+            {
+                if (screen.isInverted)
+                {
+                    screen.SetNormalLabel();
+                }
+                else
+                {
+                    screen.SetInvertedLabel();
+                }
+            }
+
             return base.TriggerAction(actionName);
         }
 
         void SetScreenMeshVisibility(bool setInvisible)
         {
-            wholeMesh.SetActive(setInvisible);
+            wholeMesh.SetActive(!setInvisible);
         }
         void SetScreenColor(ScreenColorType colorType)
         {

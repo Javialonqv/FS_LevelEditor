@@ -189,7 +189,7 @@ namespace FS_LevelEditor
                     }
                     else if (@event.invertGravity)
                     {
-                        Controls.Instance.InverseGravity();
+                        PlayModeController.Instance.InvertPlayerGravity();
                     }
                     continue;
                 }

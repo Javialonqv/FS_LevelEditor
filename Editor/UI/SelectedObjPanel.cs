@@ -497,6 +497,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Screen Color", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
             screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonMultiple>().SetTitle("CYAN");
             CreateObjectAttribute("Invisible Mesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
+            CreateObjectAttribute("Invert Text With Gravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
             CreateObjectAttribute("Edit Text", AttributeType.BUTTON, null, null, "EditText");
 
             screenAttributes.SetActive(false);
