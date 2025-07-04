@@ -873,6 +873,7 @@ namespace FS_LevelEditor.Editor.UI
             OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
 
+        #region Create UI Elements For Objects
         void CreateDefaultObjectSettings()
         {
             defaultObjectsSettings = new GameObject("Default");
@@ -1497,8 +1498,10 @@ namespace FS_LevelEditor.Editor.UI
             flameTrapStateDropdown = patcher;
             flameTrapStateDropdownPanel.SetActive(true);
         }
+        #endregion
 
 
+        #region Logic For Objects UI Options
         void OnSpawnOptionsDropdownChanged()
         {
             currentSelectedEvent.spawn = (LE_Event.SpawnState)spawnOptionsDropdown.currentlySelectedID;
@@ -1624,6 +1627,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.flameTrapState = (LE_Event.FlameTrapState)flameTrapStateDropdown.currentlySelectedID;
         }
+        #endregion
 
         public void ShowEventsPage(LE_Object targetObj)
         {
