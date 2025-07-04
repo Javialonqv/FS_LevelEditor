@@ -246,6 +246,7 @@ namespace FS_LevelEditor
                 }
             }
         }
+        // For now, this method is only used to setup the ID manually for Saw Waypoints, because the main Saw needs to setup the reference to it in the waypoint.
         public void SetupObjectID()
         {
             int id = 0;
