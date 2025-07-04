@@ -353,6 +353,13 @@ namespace FS_LevelEditor
                             break;
                     }
                 }
+                else if (targetObj is LE_Screen)
+                {
+                    if (@event.changeScreenColorType)
+                    {
+                        targetObj.SetProperty("ColorType", (LE_Screen.ScreenColorType)@event.screenColorType);
+                    }
+                }
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using FS_LevelEditor.UI_Related;
+﻿using FS_LevelEditor;
+using FS_LevelEditor.UI_Related;
 using Il2Cpp;
 using MelonLoader;
 using System;
@@ -81,6 +82,10 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject flameTrapObjectsSettings;
         UIDropdownPatcher flameTrapStateDropdown;
+        //-----------------------------------
+        GameObject screenObjectsSettings;
+        UIToggle changeScreenColorTypeToggle;
+        UIButtonMultiple screenColorTypeButton;
 
 
         List<string> eventsListsNames = new List<string>();
@@ -117,6 +122,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateHealthAndAmmoPacksObjectSettings();
                 Instance.CreateSwitchObjectSettings();
                 Instance.CreateFlameTrapObjectSettings();
+                Instance.CreateScreenObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -771,6 +777,8 @@ namespace FS_LevelEditor.Editor.UI
             executeSwitchActionsToggle.Set(currentSelectedEvent.executeSwitchActions);
             switchUsableStateDropdown.SelectOption((int)currentSelectedEvent.switchUsableState);
             flameTrapStateDropdown.SelectOption((int)currentSelectedEvent.flameTrapState);
+            changeScreenColorTypeToggle.Set(currentSelectedEvent.changeScreenColorType);
+            screenColorTypeButton.SetOption((int)currentSelectedEvent.screenColorType, true);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -849,6 +857,10 @@ namespace FS_LevelEditor.Editor.UI
                 else if (targetObj is LE_Flame_Trap)
                 {
                     flameTrapObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Screen)
+                {
+                    screenObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -1498,6 +1510,40 @@ namespace FS_LevelEditor.Editor.UI
             flameTrapStateDropdown = patcher;
             flameTrapStateDropdownPanel.SetActive(true);
         }
+        // -----------------------------------------
+        void CreateScreenObjectSettings()
+        {
+            screenObjectsSettings = new GameObject("Screen");
+            screenObjectsSettings.transform.parent = eventOptionsParent.transform;
+            screenObjectsSettings.transform.localPosition = Vector3.zero;
+            screenObjectsSettings.transform.localScale = Vector3.one;
+            screenObjectsSettings.SetActive(false);
+
+            CreateScreenObjectsTitleLabel();
+            CreateChangeScreenColorTypeToggle();
+            CreateScreenColorTypeButton();
+        }
+        void CreateScreenObjectsTitleLabel()
+        {
+            UILabel titleLabel = NGUI_Utils.CreateLabel(screenObjectsSettings.transform, Vector3.up * 40, new Vector3Int(700, 40, 0), "SCREEN OPTIONS",
+                NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "TitleLabel";
+            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            titleLabel.fontSize = 35;
+        }
+        void CreateChangeScreenColorTypeToggle()
+        {
+            GameObject toggleObj = NGUI_Utils.CreateToggle(screenObjectsSettings.transform, new Vector3(-380, -30), new Vector3Int(300, 48, 0), "Change Color Type");
+            changeScreenColorTypeToggle = toggleObj.GetComponent<UIToggle>();
+            changeScreenColorTypeToggle.onChange.Clear();
+            changeScreenColorTypeToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeScreenColorTypeToggleChanged)));
+        }
+        void CreateScreenColorTypeButton()
+        {
+            screenColorTypeButton = NGUI_Utils.CreateSmallButtonMultiple(screenObjectsSettings.transform, new Vector3(200, -30), new Vector3Int(300, 48, 0), 3, 0,
+                "CYAN");
+            screenColorTypeButton.onChange += (option) => OnScreenColorTypeButtonChanged();
+        }
         #endregion
 
 
@@ -1627,6 +1673,34 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.flameTrapState = (LE_Event.FlameTrapState)flameTrapStateDropdown.currentlySelectedID;
         }
+        // -----------------------------------------
+        void OnChangeScreenColorTypeToggleChanged()
+        {
+            currentSelectedEvent.changeScreenColorType = changeScreenColorTypeToggle.isChecked;
+            screenColorTypeButton.gameObject.SetActive(changeScreenColorTypeToggle.isChecked);
+        }
+        void OnScreenColorTypeButtonChanged()
+        {
+            LE_Screen.ScreenColorType colorType = (LE_Screen.ScreenColorType)screenColorTypeButton.currentOption;
+            currentSelectedEvent.screenColorType = colorType;
+            var buttonColor = screenColorTypeButton.GetComponent<UIButtonColor>();
+
+            if (colorType == LE_Screen.ScreenColorType.CYAN)
+            {
+                screenColorTypeButton.SetTitle("CYAN");
+                buttonColor.defaultColor = NGUI_Utils.fsButtonsDefaultColor;
+            }
+            else if (colorType == LE_Screen.ScreenColorType.GREEN)
+            {
+                screenColorTypeButton.SetTitle("GREEN");
+                buttonColor.defaultColor = Color.green;
+            }
+            else // Only RED is remaining.
+            {
+                screenColorTypeButton.SetTitle("RED");
+                buttonColor.defaultColor = new Color(0.8f, 0f, 0f);
+            }
+        }
         #endregion
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -1750,5 +1824,10 @@ public class LE_Event
     #region Flame Trap Options
     public enum FlameTrapState { Do_Nothing, Activate, Deactivate, Toggle_State }
     public FlameTrapState flameTrapState { get; set; } = FlameTrapState.Toggle_State;
+    #endregion
+
+    #region Screen Options
+    public bool changeScreenColorType { get; set; } = false;
+    public LE_Screen.ScreenColorType screenColorType { get; set; } = LE_Screen.ScreenColorType.CYAN;
     #endregion
 }

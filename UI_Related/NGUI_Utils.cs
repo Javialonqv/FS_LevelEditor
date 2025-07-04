@@ -1,4 +1,5 @@
 ﻿using Il2Cpp;
+using Il2CppInControl.NativeDeviceProfiles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,6 +75,13 @@ namespace FS_LevelEditor.UI_Related
         public static Color fsButtonsPressedColor
         {
             get { return new Color(0.2868f, 0.971f, 1f, 1f); }
+        }
+        public static Color fsLabelDefaultColor
+        {
+            get
+            {
+                return new Color(0.4853f, 0.9787f, 1f, 1f);
+            }
         }
 
         // GameObject
