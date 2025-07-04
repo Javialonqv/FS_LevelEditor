@@ -146,7 +146,7 @@ namespace FS_LevelEditor.Editor
                         EditorUIManager.Instance.UpdateHittenTargetObjPanel(objComp.objectFullNameWithID);
                         if (Input.GetMouseButtonDown(0))
                         {
-                            SetCurrentEditorState(EditorState.NORMAL);
+                            SetCurrentEditorState(EditorState.PAUSED); // It's set to paused while in events panel, so the user can't move the camera or anything.
                             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
                             EventsUIPageManager.Instance.SetTargetObjectWithLE_Object(objComp);
                         }
