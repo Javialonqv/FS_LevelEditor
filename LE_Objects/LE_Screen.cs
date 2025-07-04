@@ -23,6 +23,7 @@ namespace FS_LevelEditor
         }
         ScreenController screen;
 
+        GameObject wholeMesh;
         GameObject greenMesh, redMesh;
         TextMeshPro screenText;
 
@@ -31,6 +32,7 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>()
             {
                 { "ColorType", ScreenColorType.CYAN },
+                { "InvisibleMesh", false },
                 { "AutoFontSize", true },
                 { "FontSize", 185f },
                 { "MinFontSize", 60f },
@@ -38,6 +40,7 @@ namespace FS_LevelEditor
                 { "Text", "Text" }
             };
 
+            wholeMesh = gameObject.GetChildAt("Content/Mesh");
             greenMesh = gameObject.GetChildAt("Content/Mesh/GreenPlane");
             redMesh = gameObject.GetChildAt("Content/Mesh/RedPlane");
             screenText = gameObject.GetChildAt("Content/Content/Label/MainLabel").GetComponent<TextMeshPro>();
@@ -46,7 +49,8 @@ namespace FS_LevelEditor
         public override void ObjectStart(LEScene scene)
         {
             // No matter the scene (Editor/Playmode) change the mesh.
-            SetScreenMesh(GetProperty<ScreenColorType>("ColorType"));
+            SetScreenMeshVisibility(GetProperty<bool>("InvisibleMesh"));
+            SetScreenColor(GetProperty<ScreenColorType>("ColorType"));
             SetScreenText(GetProperty<string>("Text"));
             UpdateScreenTextFont();
         }
@@ -108,13 +112,21 @@ namespace FS_LevelEditor
                 if (value is int)
                 {
                     properties["ColorType"] = (ScreenColorType)value;
-                    SetScreenMesh((ScreenColorType)value);
+                    SetScreenColor((ScreenColorType)value);
                     return true;
                 }
                 else if (value is ScreenColorType)
                 {
                     properties["ColorType"] = value;
-                    SetScreenMesh((ScreenColorType)value);
+                    SetScreenColor((ScreenColorType)value);
+                    return true;
+                }
+            }
+            else if (name == "InvisibleMesh")
+            {
+                if (value is bool)
+                {
+                    properties["InvisibleMesh"] = (bool)value;
                     return true;
                 }
             }
@@ -205,7 +217,11 @@ namespace FS_LevelEditor
             return base.TriggerAction(actionName);
         }
 
-        void SetScreenMesh(ScreenColorType colorType)
+        void SetScreenMeshVisibility(bool setInvisible)
+        {
+            wholeMesh.SetActive(setInvisible);
+        }
+        void SetScreenColor(ScreenColorType colorType)
         {
             if (colorType == ScreenColorType.CYAN)
             {
