@@ -17,7 +17,7 @@ namespace FS_LevelEditor.Editor.UI
     {
         public static EventsUIPageManager Instance { get; private set; }
 
-        GameObject eventsPanel;
+        public GameObject eventsPanel;
         UILabel eventsWindowTitle;
         GameObject eventsButtonsParent;
         GameObject previousEventPageButton, nextEventPageButton;
@@ -1698,12 +1698,8 @@ namespace FS_LevelEditor.Editor.UI
 
             // Change the title of the panel.
             eventsWindowTitle.text = "Events for " + targetObj.objectFullNameWithID;
-
-            eventsPanel.SetActive(true);
-            eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
-            Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
             
-            EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
+            EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED); // Just to stop camera movement and such.
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
 
             SetupTopButtons();
@@ -1714,21 +1710,10 @@ namespace FS_LevelEditor.Editor.UI
         {
             targetObj.TriggerAction("OnEventsTabClose");
 
-            eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
-            Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_HIDE);
-
-            eventsPanel.SetActive(true);
-            GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
-
             EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 
             HideEventSettings();
-        }
-
-        public void StartedSelectingTargetObject(bool state)
-        {
-            eventsPanel.SetActive(!state);
         }
 
         List<LE_Event> GetEventsList()

@@ -740,15 +740,28 @@ namespace FS_LevelEditor.Editor.UI
                 return;
             }
 
-            if (context == EditorUIContext.SELECTING_TARGET_OBJ && currentUIContext == EditorUIContext.EVENTS_PANEL)
+            if (context == EditorUIContext.SELECTING_TARGET_OBJ && currentUIContext == EditorUIContext.EVENTS_PANEL) // Event Panel --> Select Object With Mouse.
             {
                 hittenTargetObjPanel.SetActive(true);
-                EventsUIPageManager.Instance.StartedSelectingTargetObject(true);
+                EventsUIPageManager.Instance.eventsPanel.SetActive(false);
             }
-            if (context == EditorUIContext.EVENTS_PANEL && currentUIContext == EditorUIContext.SELECTING_TARGET_OBJ)
+            if (context == EditorUIContext.EVENTS_PANEL && currentUIContext == EditorUIContext.SELECTING_TARGET_OBJ) // Select Object With Mouse --> Events Panel.
             {
                 hittenTargetObjPanel.SetActive(false);
-                EventsUIPageManager.Instance.StartedSelectingTargetObject(false);
+                EventsUIPageManager.Instance.eventsPanel.SetActive(true);
+            }
+            else if (context == EditorUIContext.EVENTS_PANEL) // Normal Events Panel opening.
+            {
+                EventsUIPageManager.Instance.eventsPanel.SetActive(true);
+                EventsUIPageManager.Instance.eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
+                Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
+            }
+
+            if (context == EditorUIContext.TEXT_EDITOR && currentUIContext == EditorUIContext.NORMAL)
+            {
+                TextEditorUI.Instance.editorPanel.SetActive(true);
+                TextEditorUI.Instance.editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
+                Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
             }
 
             if (context == EditorUIContext.GLOBAL_PROPERTIES)
@@ -772,6 +785,16 @@ namespace FS_LevelEditor.Editor.UI
 
                     case EditorUIContext.GLOBAL_PROPERTIES:
                         TweenPosition.Begin(globalPropertiesPanel, 0.2f, new Vector2(1320, 0));
+                        break;
+
+                    case EditorUIContext.EVENTS_PANEL:
+                        EventsUIPageManager.Instance.eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
+                        Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_HIDE);
+                        break;
+
+                    case EditorUIContext.TEXT_EDITOR:
+                        TextEditorUI.Instance.editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
+                        Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_HIDE);
                         break;
                 }
 

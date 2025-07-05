@@ -15,7 +15,7 @@ namespace FS_LevelEditor.Editor.UI
         public static TextEditorUI Instance;
         LE_Object targetObj;
 
-        GameObject editorPanel;
+        public GameObject editorPanel;
         UILabel windowTitle;
         UILabel textFieldTitle;
         UICustomInputField textField;
@@ -216,10 +216,6 @@ namespace FS_LevelEditor.Editor.UI
             this.targetObj = targetObj;
             windowTitle.text = "Text Editor for " + targetObj.objectFullNameWithID;
 
-            editorPanel.SetActive(true);
-            editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
-            Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
-
             EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.TEXT_EDITOR);
 
@@ -228,12 +224,6 @@ namespace FS_LevelEditor.Editor.UI
         public void HideTextEditor()
         {
             textField.input.Submit(); // Force it to submit unsaved changes.
-
-            editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
-            Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_HIDE);
-
-            editorPanel.SetActive(true);
-            GameObject.Find("MainMenu/Camera/Holder/Main").SetActive(false);
 
             targetObj.TriggerAction("OnTextEditorClose");
 
