@@ -125,6 +125,7 @@ namespace FS_LevelEditor
             }
             content.GetChildWithName("ConstantPlayerBlockingCollider").layer = LayerMask.NameToLayer("Player");
 
+            staticVariablesInitialized = true;
             initialized = true;
         }
     }
