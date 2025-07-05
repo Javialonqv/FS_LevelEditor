@@ -20,8 +20,8 @@ namespace FS_LevelEditor
         static Mesh[] windowPartMeshes;
         static PhysicMaterial[] windowPartMaterials;
         static Mesh[] windowPartColliderMeshes;
-        static AudioClip[][] windowPartImpactSounds;
-        static AudioClip[][] windowPartCollisionSounds;
+        static AudioClip[] windowPartImpactSounds;
+        static AudioClip[] windowPartCollisionSounds;
 
         public override void InitComponent()
         {
@@ -88,20 +88,17 @@ namespace FS_LevelEditor
                 part.m_rigidBody = child.GetComponent<Rigidbody>();
                 part.m_meshRenderer = child.GetComponent<MeshRenderer>();
                 part.m_audioSource = child.GetComponent<AudioSource>();
-                if (!staticVariablesInitialized)
+                if (!staticVariablesInitialized && (windowPartImpactSounds == null || windowPartCollisionSounds == null))
                 {
-                    if (i == 0)
-                    {
-                        windowPartImpactSounds = new AudioClip[window.partsHolder.childCount][];
-                        windowPartCollisionSounds = new AudioClip[window.partsHolder.childCount][];
-                    }
+                    windowPartImpactSounds = new AudioClip[window.partsHolder.childCount];
+                    windowPartCollisionSounds = new AudioClip[window.partsHolder.childCount];
 
                     var templateComp = templateChild.GetComponent<BreakableWindowPart>();
-                    windowPartImpactSounds[i] = templateComp.m_impactSounds;
-                    windowPartCollisionSounds[i] = templateComp.m_collisionSounds;
+                    windowPartImpactSounds = templateComp.m_impactSounds;
+                    windowPartCollisionSounds = templateComp.m_collisionSounds;
                 }
-                part.m_impactSounds = windowPartImpactSounds[i];
-                part.m_collisionSounds = windowPartCollisionSounds[i];
+                part.m_impactSounds = windowPartImpactSounds;
+                part.m_collisionSounds = windowPartCollisionSounds;
                 part.m_meshCollider = child.GetComponent<MeshCollider>();
                 part.delayBeforeKinematic = 6;
                 part.lifeTime = 30;
