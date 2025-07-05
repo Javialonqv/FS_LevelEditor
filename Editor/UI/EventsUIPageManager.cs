@@ -1540,8 +1540,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateScreenColorTypeButton()
         {
-            screenColorTypeButton = NGUI_Utils.CreateSmallButtonMultiple(screenObjectsSettings.transform, new Vector3(200, -30), new Vector3Int(300, 48, 0), 3, 0,
-                "CYAN");
+            screenColorTypeButton = NGUI_Utils.CreateSmallButtonMultiple(screenObjectsSettings.transform, new Vector3(200, -30), new Vector3Int(300, 48, 0), "CYAN");
+            screenColorTypeButton.AddOption("CYAN", null); // Use the default button color, which is cyan LOL.
+            screenColorTypeButton.AddOption("GREEN", Color.green);
+            screenColorTypeButton.AddOption("RED", new Color(0.8f, 0f, 0f));
             screenColorTypeButton.onChange += (option) => OnScreenColorTypeButtonChanged();
         }
         #endregion
@@ -1681,25 +1683,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void OnScreenColorTypeButtonChanged()
         {
-            LE_Screen.ScreenColorType colorType = (LE_Screen.ScreenColorType)screenColorTypeButton.currentOption;
-            currentSelectedEvent.screenColorType = colorType;
-            var buttonColor = screenColorTypeButton.GetComponent<UIButtonColor>();
-
-            if (colorType == LE_Screen.ScreenColorType.CYAN)
-            {
-                screenColorTypeButton.SetTitle("CYAN");
-                buttonColor.defaultColor = NGUI_Utils.fsButtonsDefaultColor;
-            }
-            else if (colorType == LE_Screen.ScreenColorType.GREEN)
-            {
-                screenColorTypeButton.SetTitle("GREEN");
-                buttonColor.defaultColor = Color.green;
-            }
-            else // Only RED is remaining.
-            {
-                screenColorTypeButton.SetTitle("RED");
-                buttonColor.defaultColor = new Color(0.8f, 0f, 0f);
-            }
+            currentSelectedEvent.screenColorType = (LE_Screen.ScreenColorType)screenColorTypeButton.currentOption;
         }
         #endregion
 

@@ -433,8 +433,7 @@ namespace FS_LevelEditor.UI_Related
             return patcher;
         }
 
-        public static UIButtonMultiple CreateSmallButtonMultiple(Transform parent, Vector3 position, Vector3Int size, int maxOptions,
-            int initialOption, string text = "", int fontSize = 30)
+        public static UIButtonMultiple CreateSmallButtonMultiple(Transform parent, Vector3 position, Vector3Int size, string text = "", int fontSize = 30)
         {
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
@@ -454,7 +453,7 @@ namespace FS_LevelEditor.UI_Related
             // Just change the label anchor so its size is the same as the button size.
 
             UIButtonMultiple script = button.AddComponent<UIButtonMultiple>();
-            script.Setup(maxOptions, initialOption);
+            script.Setup();
 
             return script;
         }

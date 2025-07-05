@@ -495,7 +495,11 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentParentToCreateAttributes(screenAttributes);
 
             CreateObjectAttribute("Screen Color", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
-            screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonMultiple>().SetTitle("CYAN");
+            var screenColorButton = screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonMultiple>();
+            screenColorButton.AddOption("CYAN", null); // Use the default button color.
+            screenColorButton.AddOption("GREEN", Color.green);
+            screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
+
             CreateObjectAttribute("Invisible Mesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
             CreateObjectAttribute("Invert Text With Gravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
             CreateObjectAttribute("Edit Text", AttributeType.BUTTON, null, null, "EditText");
@@ -565,7 +569,7 @@ namespace FS_LevelEditor.Editor.UI
             else if (attrType == AttributeType.BUTTON_MULTIPLE)
             {
                 UIButtonMultiple button = NGUI_Utils.CreateSmallButtonMultiple(attributeParent.transform, new Vector3(140, yPos),
-                    new Vector3Int(200, 38, 0), 3, 0, text, 25);
+                    new Vector3Int(200, 38, 0), text, 25);
                 button.name = "ButtonMultiple";
                 button.onChange += (id) => SetPropertyWithButtonMultiple(targetPropName, button);
                 button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
@@ -922,13 +926,6 @@ namespace FS_LevelEditor.Editor.UI
         }
         public void SetPropertyWithButtonMultiple(string propertyName, UIButtonMultiple button)
         {
-            switch (propertyName)
-            {
-                case "ColorType":
-                    SetScreenColorTypeButtonColor(button.currentOption);
-                    break;
-            }
-
             if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, button.currentOption))
             {
                 EditorController.Instance.levelHasBeenModified = true;
@@ -950,28 +947,6 @@ namespace FS_LevelEditor.Editor.UI
         void ShowOrHideSawWaitTimeField(int waypointsCount)
         {
             attributesPanels["Saw"].GetChildWithName("WaitTime").SetActive(waypointsCount > 0);
-        }
-        void SetScreenColorTypeButtonColor(int selectedOptionInButton)
-        {
-            LE_Screen.ScreenColorType colorType = (LE_Screen.ScreenColorType)selectedOptionInButton;
-            var button = attributesPanels["Screen"].GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonMultiple>();
-            var buttonColor = attributesPanels["Screen"].GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonColor>();
-
-            if (colorType == LE_Screen.ScreenColorType.CYAN)
-            {
-                button.SetTitle("CYAN");
-                buttonColor.defaultColor = NGUI_Utils.fsButtonsDefaultColor;
-            }
-            else if (colorType == LE_Screen.ScreenColorType.GREEN)
-            {
-                button.SetTitle("GREEN");
-                buttonColor.defaultColor = Color.green;
-            }
-            else // Only RED is remaining.
-            {
-                button.SetTitle("RED");
-                buttonColor.defaultColor = new Color(0.8f, 0f, 0f);
-            }
         }
     }
 }
