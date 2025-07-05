@@ -359,6 +359,11 @@ namespace FS_LevelEditor
                     {
                         targetObj.SetProperty("ColorType", @event.screenColorType);
                     }
+
+                    if (@event.changeScreenText)
+                    {
+                        targetObj.SetProperty("Text", @event.screenNewText);
+                    }
                 }
             }
         }

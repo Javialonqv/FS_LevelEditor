@@ -86,6 +86,8 @@ namespace FS_LevelEditor.Editor.UI
         GameObject screenObjectsSettings;
         UIToggle changeScreenColorTypeToggle;
         UIButtonMultiple screenColorTypeButton;
+        UIToggle changeScreenTextToggle;
+        UICustomInputField screenNewTextField;
 
 
         List<string> eventsListsNames = new List<string>();
@@ -779,6 +781,8 @@ namespace FS_LevelEditor.Editor.UI
             flameTrapStateDropdown.SelectOption((int)currentSelectedEvent.flameTrapState);
             changeScreenColorTypeToggle.Set(currentSelectedEvent.changeScreenColorType);
             screenColorTypeButton.SetOption((int)currentSelectedEvent.screenColorType, true);
+            changeScreenTextToggle.Set(currentSelectedEvent.changeScreenText);
+            screenNewTextField.SetText(currentSelectedEvent.screenNewText);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -1522,6 +1526,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateScreenObjectsTitleLabel();
             CreateChangeScreenColorTypeToggle();
             CreateScreenColorTypeButton();
+            CreateChangeScreenTextToggle();
+            CreateScreenNewTextField();
         }
         void CreateScreenObjectsTitleLabel()
         {
@@ -1533,18 +1539,38 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateChangeScreenColorTypeToggle()
         {
-            GameObject toggleObj = NGUI_Utils.CreateToggle(screenObjectsSettings.transform, new Vector3(-380, -30), new Vector3Int(300, 48, 0), "Change Color Type");
+            GameObject toggleObj = NGUI_Utils.CreateToggle(screenObjectsSettings.transform, new Vector3(-380, -10), new Vector3Int(300, 48, 0), "Change Color Type");
+            toggleObj.name = "ChangeColorTypeToggle";
             changeScreenColorTypeToggle = toggleObj.GetComponent<UIToggle>();
             changeScreenColorTypeToggle.onChange.Clear();
             changeScreenColorTypeToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeScreenColorTypeToggleChanged)));
         }
         void CreateScreenColorTypeButton()
         {
-            screenColorTypeButton = NGUI_Utils.CreateSmallButtonMultiple(screenObjectsSettings.transform, new Vector3(200, -30), new Vector3Int(300, 48, 0), "CYAN");
+            screenColorTypeButton = NGUI_Utils.CreateSmallButtonMultiple(screenObjectsSettings.transform, new Vector3(200, -10), new Vector3Int(300, 48, 0), "CYAN");
+            screenColorTypeButton.name = "ChangeColorTypeButton";
             screenColorTypeButton.AddOption("CYAN", null); // Use the default button color, which is cyan LOL.
             screenColorTypeButton.AddOption("GREEN", Color.green);
             screenColorTypeButton.AddOption("RED", new Color(0.8f, 0f, 0f));
             screenColorTypeButton.onChange += (option) => OnScreenColorTypeButtonChanged();
+        }
+        void CreateChangeScreenTextToggle()
+        {
+            GameObject toggleObj = NGUI_Utils.CreateToggle(screenObjectsSettings.transform, new Vector3(-180, -65), new Vector3Int(300, 48, 0), "Change Text");
+            toggleObj.name = "ChangeTextToggle";
+            changeScreenTextToggle = toggleObj.GetComponent<UIToggle>();
+            changeScreenTextToggle.onChange.Clear();
+            changeScreenTextToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeScreenTextToggleChanged)));
+        }
+        void CreateScreenNewTextField()
+        {
+            screenNewTextField = NGUI_Utils.CreateInputField(screenObjectsSettings.transform, Vector3.down * 200, new Vector3Int(750, 200, 0), 27, inputType:
+                UICustomInputField.UIInputType.PLAIN_TEXT);
+            screenNewTextField.name = "ScreenNewTextField";
+            screenNewTextField.input.mPivot = UIWidget.Pivot.TopLeft;
+            screenNewTextField.input.onReturnKey = UIInput.OnReturnKey.NewLine;
+
+            screenNewTextField.onChange += OnNewScreenTextFieldChanged;
         }
         #endregion
 
@@ -1685,6 +1711,15 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.screenColorType = (LE_Screen.ScreenColorType)screenColorTypeButton.currentOption;
         }
+        void OnChangeScreenTextToggleChanged()
+        {
+            currentSelectedEvent.changeScreenText = changeScreenTextToggle.isChecked;
+            screenNewTextField.gameObject.SetActive(changeScreenTextToggle.isChecked);
+        }
+        void OnNewScreenTextFieldChanged()
+        {
+            currentSelectedEvent.screenNewText = screenNewTextField.GetText();
+        }
         #endregion
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -1798,5 +1833,7 @@ public class LE_Event
     #region Screen Options
     public bool changeScreenColorType { get; set; } = false;
     public LE_Screen.ScreenColorType screenColorType { get; set; } = LE_Screen.ScreenColorType.CYAN;
+    public bool changeScreenText { get; set; } = false;
+    public string screenNewText { get; set; } = "";
     #endregion
 }

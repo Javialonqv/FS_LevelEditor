@@ -199,6 +199,10 @@ namespace FS_LevelEditor
             else if (name == "Text")
             {
                 properties["Text"] = value.ToString();
+                if (PlayModeController.Instance)
+                {
+                    SetScreenText(value.ToString()); // Only requires manually update in playmode.
+                }
 
                 // Since this will convert the value to string no matter what, it'll catch the JsonElement before base.SetProperty() does, so, skip the warning in case it is
                 // JsonElement.
@@ -219,6 +223,7 @@ namespace FS_LevelEditor
             }
             else if (actionName == "OnTextEditorClose")
             {
+                // NOT update the screen mesh color since that's in another property that's NOT in the text editor.
                 SetScreenText(GetProperty<string>("Text"));
                 UpdateScreenTextFont();
                 return true;
