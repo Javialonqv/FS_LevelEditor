@@ -862,7 +862,7 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     flameTrapObjectsSettings.SetActive(true);
                 }
-                else if (targetObj is LE_Screen)
+                else if (targetObj is LE_Screen || targetObj is LE_Small_Screen)
                 {
                     screenObjectsSettings.SetActive(true);
                 }
@@ -1709,7 +1709,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void OnScreenColorTypeButtonChanged()
         {
-            currentSelectedEvent.screenColorType = (LE_Screen.ScreenColorType)screenColorTypeButton.currentOption;
+            currentSelectedEvent.screenColorType = (ScreenColorType)screenColorTypeButton.currentOption;
         }
         void OnChangeScreenTextToggleChanged()
         {
@@ -1832,7 +1832,7 @@ public class LE_Event
 
     #region Screen Options
     public bool changeScreenColorType { get; set; } = false;
-    public LE_Screen.ScreenColorType screenColorType { get; set; } = LE_Screen.ScreenColorType.CYAN;
+    public ScreenColorType screenColorType { get; set; } = ScreenColorType.CYAN;
     public bool changeScreenText { get; set; } = false;
     public string screenNewText { get; set; } = "";
     #endregion

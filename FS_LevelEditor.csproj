@@ -362,6 +362,7 @@
 		<Compile Include="Editor\UI\EventsUIPageManager.cs" />
 		<Compile Include="LE_MenuUIManager.cs" />
 		<Compile Include="ExternalSpriteLoader.cs" />
+		<Compile Include="LE_Objects\LE_Small_Screen.cs" />
 		<Compile Include="Logger.cs" />
 		<Compile Include="Patches.cs" />
 		<Compile Include="PlayModeController.cs" />

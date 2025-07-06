@@ -12,15 +12,16 @@ using UnityEngine;
 
 namespace FS_LevelEditor
 {
+    public enum ScreenColorType
+    {
+        CYAN = 0,
+        GREEN = 1,
+        RED = 2
+    }
+
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Screen : LE_Object
     {
-        public enum ScreenColorType
-        {
-            CYAN = 0,
-            GREEN = 1,
-            RED = 2
-        }
         ScreenController screen;
 
         GameObject wholeMesh;

@@ -353,7 +353,7 @@ namespace FS_LevelEditor
                             break;
                     }
                 }
-                else if (targetObj is LE_Screen)
+                else if (targetObj is LE_Screen || targetObj is LE_Small_Screen)
                 {
                     if (@event.changeScreenColorType)
                     {

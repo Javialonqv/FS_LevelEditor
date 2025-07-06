@@ -328,6 +328,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateFlameTrapAttributesPanel();
             CreatePressurePlateAttributesPanel();
             CreateScreenAttributesPanel();
+            CreateSmallScreenAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -506,6 +507,28 @@ namespace FS_LevelEditor.Editor.UI
 
             screenAttributes.SetActive(false);
             attributesPanels.Add("Screen", screenAttributes);
+        }
+        void CreateSmallScreenAttributesPanel()
+        {
+            GameObject smallScreenAttributes = new GameObject("Small Screen");
+            smallScreenAttributes.transform.parent = objectSpecificPanelsParent;
+            smallScreenAttributes.transform.localPosition = Vector3.zero;
+            smallScreenAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(smallScreenAttributes);
+
+            CreateObjectAttribute("Screen Color", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
+            var screenColorButton = smallScreenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonMultiple>();
+            screenColorButton.AddOption("CYAN", null); // Use the default button color.
+            screenColorButton.AddOption("GREEN", Color.green);
+            screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
+
+            CreateObjectAttribute("Invisible Mesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
+            CreateObjectAttribute("Invert Text With Gravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
+            CreateObjectAttribute("Edit Text", AttributeType.BUTTON, null, null, "EditText");
+
+            smallScreenAttributes.SetActive(false);
+            attributesPanels.Add("Small Screen", smallScreenAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }

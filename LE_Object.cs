@@ -44,6 +44,7 @@ namespace FS_LevelEditor
             END_TRIGGER,
             PRESSURE_PLATE,
             SCREEN,
+            SMALL_SCREEN,
             BREAKABLE_WINDOW
         }
 
