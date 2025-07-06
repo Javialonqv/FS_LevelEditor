@@ -540,7 +540,12 @@ namespace FS_LevelEditor.Editor.UI
 
             // Enable the pause panel and play its animations.
             pauseMenu.SetActive(true);
-            TweenAlpha.Begin(pauseMenu, 0.2f, 1f);
+            TweenAlpha pauseTween = pauseMenu.GetComponent<TweenAlpha>();
+            pauseTween.delay = 0f;
+            pauseTween.duration = 0.3f;
+            pauseTween.ignoreTimeScale = true;
+            pauseTween.PlayForward();
+            //TweenAlpha.Begin(pauseMenu, 0.2f, 1f);
 
             // Set the paused variable in the LE controller.
             EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
@@ -567,17 +572,24 @@ namespace FS_LevelEditor.Editor.UI
                 navigation.SetActive(false);
 
                 // Play the pause menu animations backwards.
-                TweenAlpha.Begin(pauseMenu, 0.2f, 0f);
+                TweenAlpha pauseTween = pauseMenu.GetComponent<TweenAlpha>();
+                pauseTween.delay = 0f;
+                pauseTween.ignoreTimeScale = true;
+                pauseTween.PlayReverse();
+                //TweenAlpha.Begin(pauseMenu, 0.2f, 0f);
 
                 // Threshold to wait for the pause animation to end.
                 yield return new WaitForSecondsRealtime(0.3f);
 
-                // Enable the LE UI and disable the pause menu.
-                editorUIParent.SetActive(true);
-                pauseMenu.SetActive(false);
+                if (!EditorController.Instance.enteringPlayMode) // The user may've pressed the play button right before the pause menu dissapeared.
+                {
+                    // Enable the LE UI and disable the pause menu.
+                    editorUIParent.SetActive(true);
+                    pauseMenu.SetActive(false);
 
-                // And set the paused variable in the controller as false.
-                EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
+                    // And set the paused variable in the controller as false.
+                    EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
+                }
             }
 
             Logger.Log("LE resumed!");
