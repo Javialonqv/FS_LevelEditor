@@ -73,6 +73,7 @@ namespace FS_LevelEditor
             controller.localizedInteractionString = "Activate";
             controller.lockboxAnimTrigger = "IGC_Open";
             controller.m_audioSource = button.GetComponent<AudioSource>();
+            controller.m_audioSource.outputAudioMixerGroup = t_switch.m_audioSource.outputAudioMixerGroup;
             controller.m_meshRenderer = button.GetChildWithName("ButtonMesh").GetComponent<MeshRenderer>();
             controller.m_meshTransform = button.GetChildWithName("ButtonMesh").transform;
             controller.offColor = InterrupteurController.ColorType.RED;
