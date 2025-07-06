@@ -405,6 +405,12 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(switchAttributes);
 
+            CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
+            var initiaStateButton = switchAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UIButtonMultiple>();
+            initiaStateButton.AddOption("DEACTIVATED", new Color(0.8f, 0f, 0f));
+            initiaStateButton.AddOption("ACTIVATED", Color.green);
+            initiaStateButton.AddOption("UNUSABLE", Color.black);
+
             CreateObjectAttribute("Usable Once", AttributeType.TOGGLE, false, null, "UsableOnce");
             CreateObjectAttribute("Can be shot by Taser", AttributeType.TOGGLE, true, null, "CanUseTaser");
             CreateObjectAttribute("Manage Events", AttributeType.BUTTON, null, null, "ManageEvents");
