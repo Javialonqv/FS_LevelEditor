@@ -329,6 +329,7 @@ namespace FS_LevelEditor.Editor.UI
             CreatePressurePlateAttributesPanel();
             CreateScreenAttributesPanel();
             CreateSmallScreenAttributesPanel();
+            CreateTriggerAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -529,6 +530,20 @@ namespace FS_LevelEditor.Editor.UI
 
             smallScreenAttributes.SetActive(false);
             attributesPanels.Add("Small Screen", smallScreenAttributes);
+        }
+        void CreateTriggerAttributesPanel()
+        {
+            GameObject triggerAttributes = new GameObject("Trigger");
+            triggerAttributes.transform.parent = objectSpecificPanelsParent;
+            triggerAttributes.transform.localPosition = Vector3.zero;
+            triggerAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(triggerAttributes);
+
+            CreateObjectAttribute("Manage Events", AttributeType.BUTTON, null, null, "ManageEvents");
+
+            triggerAttributes.SetActive(false);
+            attributesPanels.Add("Trigger", triggerAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }

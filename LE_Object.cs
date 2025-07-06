@@ -45,7 +45,8 @@ namespace FS_LevelEditor
             PRESSURE_PLATE,
             SCREEN,
             SMALL_SCREEN,
-            BREAKABLE_WINDOW
+            BREAKABLE_WINDOW,
+            TRIGGER
         }
 
         public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
