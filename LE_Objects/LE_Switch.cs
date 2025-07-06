@@ -9,24 +9,41 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.Editor;
 
 namespace FS_LevelEditor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Switch : LE_Object
     {
+        public enum SwitchState
+        {
+            DEACTIVATED,
+            ACTIVATED,
+            UNUSABLE
+        }
         InterrupteurController controller;
+        MeshRenderer redPlane, greenPlane;
 
         void Awake()
         {
             properties = new Dictionary<string, object>
             {
+                { "InitialState", SwitchState.DEACTIVATED },
                 { "UsableOnce", false },
                 { "CanUseTaser", true },
                 { "WhenInvertingEvents", new List<LE_Event>() },
                 { "WhenActivatingEvents", new List<LE_Event>() },
                 { "WhenDeactivatingEvents", new List<LE_Event>() }
             };
+
+            redPlane = gameObject.GetChildAt("Content/ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
+            greenPlane = gameObject.GetChildAt("Content/ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            SetMeshInEditor(GetProperty<SwitchState>("InitialState"));
         }
 
         public override void InitComponent()
@@ -98,6 +115,22 @@ namespace FS_LevelEditor
             controller.usableOnce = (bool)GetProperty("UsableOnce");
             controller.ignoreLaser = !(bool)GetProperty("CanUseTaser");
 
+            // Do all of this BEFORE configuring the switch events.
+            switch (GetProperty<SwitchState>("InitialState"))
+            {
+                case SwitchState.DEACTIVATED:
+                    // Switch is already disabled at start by default.
+                    break;
+
+                case SwitchState.ACTIVATED:
+                    controller.ActivateSwitch();
+                    break;
+
+                case SwitchState.UNUSABLE:
+                    controller.IsNowUnusable();
+                    break;
+            }
+
             ConfigureEvents(controller);
 
             initialized = true;
@@ -115,7 +148,22 @@ namespace FS_LevelEditor
 
         public override bool SetProperty(string name, object value)
         {
-            if (name == "UsableOnce")
+            if (name == "InitialState")
+            {
+                if (value is int)
+                {
+                    properties["InitialState"] = (SwitchState)value;
+                    if (EditorController.Instance) SetMeshInEditor((SwitchState)value);
+                    return true;
+                }
+                else if (value is SwitchState)
+                {
+                    properties["InitialState"] = value;
+                    if (EditorController.Instance) SetMeshInEditor((SwitchState)value);
+                    return true;
+                }
+            }
+            else if (name == "UsableOnce")
             {
                 if (value is bool)
                 {
@@ -155,7 +203,6 @@ namespace FS_LevelEditor
 
             return base.SetProperty(name, value);
         }
-
         public override bool TriggerAction(string actionName)
         {
             if (actionName == "ManageEvents")
@@ -230,6 +277,14 @@ namespace FS_LevelEditor
             }
 
             return base.TriggerAction(actionName);
+        }
+
+        void SetMeshInEditor(SwitchState newState)
+        {
+            redPlane.enabled = newState == SwitchState.DEACTIVATED;
+            greenPlane.enabled = newState == SwitchState.ACTIVATED;
+
+            // Both will be disabled if newState is UNUSABLE, that should show the UNUSABLE state as expected:)
         }
 
         void ConfigureEvents(InterrupteurController controller)
