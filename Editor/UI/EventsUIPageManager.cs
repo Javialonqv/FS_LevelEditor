@@ -93,7 +93,11 @@ namespace FS_LevelEditor.Editor.UI
         List<string> eventsListsNames = new List<string>();
         int currentEventsListID;
         string currentEventsListName;
+        int currentSelectedEventID;
         LE_Event currentSelectedEvent;
+
+        ContextMenu eventsContextMenu;
+        int selectedEventIDForContextMenu;
 
         LE_Object targetObj;
 
@@ -127,6 +131,8 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateScreenObjectSettings();
 
                 Instance.CreateDetails();
+
+                Instance.CreateContextMenu();
             }
         }
 
@@ -380,6 +386,36 @@ namespace FS_LevelEditor.Editor.UI
             noEventsLabel.transform.localPosition = new Vector3(0f, 220f, 0f);
         }
 
+        void CreateContextMenu()
+        {
+            if (eventsContextMenu)
+            {
+                Destroy(eventsContextMenu.gameObject);
+            }
+
+            ContextMenuOption option = new ContextMenuOption()
+            {
+                name = "Delete",
+                onClick = () => DeleteEvent(selectedEventIDForContextMenu)
+            };
+
+            eventsContextMenu = ContextMenu.Create(eventsPanel.transform, depth: 3);
+            eventsContextMenu.AddOption(option);
+        }
+
+        void Update()
+        {
+            if (Input.GetMouseButtonDown(1) && EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL))
+            {
+                if (UICamera.selectedObject.TryGetComponent<EventButton>(out var eventBtn))
+                {
+                    selectedEventIDForContextMenu = eventBtn.eventID;
+                    CreateContextMenu();
+                    eventsContextMenu.Show();
+                }
+            }
+        }
+
         void RenameEvent(int eventID, UICustomInputField inputRef)
         {
             // GetEventsList should return the same events list that when creating the events list, it should be fine :)
@@ -539,12 +575,8 @@ namespace FS_LevelEditor.Editor.UI
                 eventButtonParent.transform.localScale = Vector3.one;
 
                 // Create the EVENT BUTTON itself...
-                UIButtonPatcher eventButton = NGUI_Utils.CreateButton(eventButtonParent.transform, Vector3.zero, new Vector3Int(780, 70, 0));
+                GameObject eventButton = NGUI_Utils.CreateButton(eventButtonParent.transform, Vector3.zero, new Vector3Int(780, 70, 0)).gameObject;
                 eventButton.name = "Button";
-                // Remove the SECOND UIButtonColor component, and then I ask, why did Charles add TWO UIButtonColor to the buttons
-                // if they target to the same object?
-                Destroy(eventButton.GetComponents<UIButtonColor>()[1]);
-                // Make the outline sprite size smaller.
 
                 eventButton.GetComponent<UISprite>().depth = 2;
 
@@ -555,17 +587,23 @@ namespace FS_LevelEditor.Editor.UI
                 scale.pressed = Vector3.one * 0.98f;
 
                 // Destroy the "original" label, since it's going to be replaced with the other name label.
-                Destroy(eventButton.gameObject.GetChildAt("Background/Label"));
+                Destroy(eventButton.GetChildAt("Background/Label"));
 
-                eventButton.onClick += () => OnEventSelect(index);
+                // Destroy the UIButtonPatcher, we'll use a custom class instead:
+                Destroy(eventButton.GetComponent<UIButtonPatcher>());
+
+                EventButton eventScript = eventButton.AddComponent<EventButton>();
+                eventScript.eventsManager = this;
+                eventScript.eventTypeID = currentEventsListID;
+                eventScript.eventID = index;
 
                 if (currentSelectedEvent == events[i])
                 {
-                    eventButton.button.defaultColor = new Color(0f, 0.6f, 0f, 1f);
+                    eventButton.GetComponent<UIButton>().defaultColor = new Color(0f, 0.6f, 0f, 1f);
                 }
                 else
                 {
-                    eventButton.button.defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+                    eventButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
                 }
 
                 #region Delete Button
@@ -686,12 +724,13 @@ namespace FS_LevelEditor.Editor.UI
             // And what if now the grid count is less than currentEventGrid? This comprobation is already inside of CreateEventsList() :)
             CreateEventsList(currentEventsGrid);
         }
-        void OnEventSelect(int selectedID)
+        internal void OnEventSelect(int selectedID)
         {
             Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_UNAVAILABLE);
 
             // GetEventsList should return the same events list that when creating the events list, it should be fine :)
             // *Comment copied from RenameEvent() LOL.
+            currentEventsListID = selectedID;
             currentSelectedEvent = GetEventsList()[selectedID];
             ShowEventSettings();
 
@@ -1754,6 +1793,19 @@ namespace FS_LevelEditor.Editor.UI
         List<LE_Event> GetEventsList()
         {
             return (List<LE_Event>)targetObj.GetProperty(currentEventsListName);
+        }
+    }
+
+    [RegisterTypeInIl2Cpp]
+    public class EventButton : MonoBehaviour
+    {
+        public EventsUIPageManager eventsManager;
+        public int eventTypeID;
+        public int eventID;
+
+        public void OnClick()
+        {
+            eventsManager.OnEventSelect(eventID);
         }
     }
 }
