@@ -14,12 +14,12 @@ namespace FS_LevelEditor.Editor.UI
     public class ContextMenu : MonoBehaviour
     {
         UIPanel mainPanel;
-        UITable mainTable;
 
         int optionsWidth = 200;
         int optionsHeight = 50;
         int depth = 0;
         List<ContextMenuOption> menuOptions = new List<ContextMenuOption>();
+        internal List<ContextMenuButton> createdMenuButtons = new List<ContextMenuButton>();
 
         public static ContextMenu Create(Transform parent, int optionsWidth = 200, int optionsHeight = 50, int depth = 0)
         {
@@ -43,16 +43,10 @@ namespace FS_LevelEditor.Editor.UI
             mainPanel = gameObject.AddComponent<UIPanel>();
             mainPanel.alpha = 0;
             mainPanel.depth = depth;
-
-            mainTable = gameObject.AddComponent<UITable>();
-            mainTable.columns = 1;
-            mainTable.direction = UITable.Direction.Down;
-            mainTable.pivot = UIWidget.Pivot.TopLeft;
         }
 
         public void AddOption(ContextMenuOption option)
         {
-            option.parent = transform;
             menuOptions.Add(option);
         }
 
@@ -86,16 +80,15 @@ namespace FS_LevelEditor.Editor.UI
 
             for (int i = 0; i < menuOptions.Count; i++)
             {
-                CreateOptionButton(menuOptions[i]);
+                var button = CreateOptionButton(menuOptions[i], false);
+                button.transform.localPosition = new Vector3(0, -(optionsHeight * i));
             }
-
-            mainTable.Reposition();
         }
-        void CreateOptionButton(ContextMenuOption option)
+        ContextMenuButton CreateOptionButton(ContextMenuOption option, bool isSubOption)
         {
             string GOName = option.name.ToUpper().Replace(' ', '_');
             GameObject optionGO = new GameObject(GOName);
-            optionGO.transform.parent = option.parent;
+            optionGO.transform.parent = transform;
             optionGO.transform.localPosition = Vector3.zero;
             optionGO.transform.localScale = Vector3.one;
 
@@ -118,8 +111,10 @@ namespace FS_LevelEditor.Editor.UI
             button.pressed = option.pressedColor;
             button.duration = 0.1f;
 
-            UIButtonPatcher patcher = optionGO.AddComponent<UIButtonPatcher>();
-            patcher.onClick += option.onClick;
+            ContextMenuButton script = optionGO.AddComponent<ContextMenuButton>();
+            script.main = this;
+            script.isSubOption = isSubOption;
+            script.onClick += () => ExecuteButtonAction(option);
 
             // ---------- CREATE LABEL ----------
 
@@ -138,6 +133,33 @@ namespace FS_LevelEditor.Editor.UI
             label.pivot = UIWidget.Pivot.Left;
 
             labelObj.transform.localPosition = new Vector3(10, -(optionsHeight / 2));
+
+            // ---------- CREATE SUBOPTIONS ----------
+            
+            Transform subOptionsParent = null;
+            for (int i = 0; i < option.subOptions.Count; i++)
+            {
+                if (i == 0)
+                {
+                    script.hasSubOptions = true;
+
+                    subOptionsParent = new GameObject("SubOptions").transform;
+                    subOptionsParent.transform.parent = optionGO.transform;
+                    subOptionsParent.transform.localPosition = new Vector3(optionsWidth, 0);
+                    subOptionsParent.transform.localScale = Vector3.one;
+                }
+
+                ContextMenuButton subOption = CreateOptionButton(option.subOptions[i], true);
+                subOption.parentOption = script;
+                subOption.transform.parent = subOptionsParent;
+                subOption.transform.localPosition = new Vector3(0, -(optionsHeight * i));
+                subOption.transform.localScale = Vector3.one;
+
+                script.subOptionsGOs.Add(subOption.gameObject);
+            }
+
+            if (!isSubOption) createdMenuButtons.Add(script);
+            return script;
         }
         void ExecuteButtonAction(ContextMenuOption option)
         {
@@ -178,19 +200,80 @@ namespace FS_LevelEditor.Editor.UI
 
     public class ContextMenuOption
     {
-        internal Transform parent;
-
         public string name;
         public Color mainColor;
         public Color hoveredColor;
         public Color pressedColor;
         public Action onClick;
+        public List<ContextMenuOption> subOptions;
 
         public ContextMenuOption()
         {
             mainColor = new Color(0.0588f, 0.3176f, 0.3215f, 1f);
             hoveredColor = new Color(0f, 0.451f, 0.459f, 1f);
             pressedColor = new Color(0.082f, 0.376f, 0.38f, 1f);
+            subOptions = new List<ContextMenuOption>();
+        }
+    }
+
+    [MelonLoader.RegisterTypeInIl2Cpp]
+    public class ContextMenuButton : MonoBehaviour
+    {
+        internal ContextMenu main;
+        internal bool isSubOption;
+        internal ContextMenuButton parentOption;
+        internal bool hasSubOptions;
+        internal List<GameObject> subOptionsGOs = new List<GameObject>();
+        internal Action onClick;
+
+        void Start()
+        {
+            // Disable the suboption by default.
+            if (isSubOption)
+            {
+                gameObject.SetActive(false);
+            }
+        }
+        void OnHover(bool isHover)
+        {
+            if (!isSubOption && isHover)
+            {
+                Invoke(nameof(ForceSubOptionsDisable), 0.01f);
+            }
+
+            if (hasSubOptions)
+            {
+                gameObject.SetActive(true);
+                foreach (var subOption in subOptionsGOs)
+                {
+                    subOption.SetActive(true);
+                    float newAlpha = isHover ? 1f : 0f;
+                    TweenAlpha.Begin(subOption, 0.1f, newAlpha);
+                }
+            }
+
+            if (isSubOption && parentOption)
+            {
+                // This is to keep the other suboptions visible even when we are only hovering one.
+                parentOption.OnHover(isHover);
+            }
+        }
+        void OnClick()
+        {
+            if (onClick != null)
+            {
+                onClick();
+            }
+        }
+
+        void ForceSubOptionsDisable()
+        {
+            // Force the other suboptions to close when you're in a "main" option.
+            foreach (var button in main.createdMenuButtons)
+            {
+                if (button == this) continue;
+                button.subOptionsGOs.ForEach(subOptionGO => TweenAlpha.Begin(subOptionGO, 0.1f, 0f));
+            }
         }
     }
 }
