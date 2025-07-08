@@ -439,6 +439,7 @@ namespace FS_LevelEditor.Editor.UI
             ContextMenuOption moveUpOption = new ContextMenuOption()
             {
                 name = "Move Up",
+                isEnabled = selectedEventIDForContextMenu != 0,
                 onClick = () => MoveEventUp(selectedEventIDForContextMenu)
             };
             #endregion

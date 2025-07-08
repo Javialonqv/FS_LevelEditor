@@ -106,9 +106,18 @@ namespace FS_LevelEditor.Editor.UI
             sprite.depth = 0;
 
             UIButton button = optionGO.AddComponent<UIButton>();
-            button.defaultColor = option.mainColor;
-            button.hover = option.hoveredColor;
-            button.pressed = option.pressedColor;
+            if (option.isEnabled)
+            {
+                button.defaultColor = option.mainColor;
+                button.hover = option.hoveredColor;
+                button.pressed = option.pressedColor;
+            }
+            else
+            {
+                button.defaultColor = option.mainColor;
+                button.hover = option.mainColor;
+                button.pressed = option.mainColor;
+            }
             button.duration = 0.1f;
 
             ContextMenuButton script = optionGO.AddComponent<ContextMenuButton>();
@@ -127,7 +136,7 @@ namespace FS_LevelEditor.Editor.UI
             label.fontSize = 27;
             label.width = optionsWidth - 10;
             label.height = optionsHeight;
-            label.color = Color.white;
+            label.color = option.isEnabled ? Color.white : Color.gray;
             label.depth = 1;
             label.text = option.name;
             label.pivot = UIWidget.Pivot.Left;
@@ -201,6 +210,7 @@ namespace FS_LevelEditor.Editor.UI
     public class ContextMenuOption
     {
         public string name;
+        public bool isEnabled;
         public Color mainColor;
         public Color hoveredColor;
         public Color pressedColor;
@@ -209,6 +219,7 @@ namespace FS_LevelEditor.Editor.UI
 
         public ContextMenuOption()
         {
+            isEnabled = true;
             mainColor = new Color(0.0588f, 0.3176f, 0.3215f, 1f);
             hoveredColor = new Color(0f, 0.451f, 0.459f, 1f);
             pressedColor = new Color(0.082f, 0.376f, 0.38f, 1f);
