@@ -131,8 +131,6 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateScreenObjectSettings();
 
                 Instance.CreateDetails();
-
-                Instance.CreateContextMenu();
             }
         }
 
