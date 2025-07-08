@@ -885,18 +885,18 @@ namespace FS_LevelEditor.Editor.UI
             LE_Event downEvent = list[eventID + 1];
             LE_Event toMoveDown = list[eventID];
 
-            list[eventID - 1] = toMoveDown;
+            list[eventID + 1] = toMoveDown;
             list[eventID] = downEvent;
 
-            if (eventID % 6 == 0)
+            if ((eventID + 7) % 6 == 0)
             {
-                PreviousEventsPage();
-                OnEventSelect(eventID - 1);
+                NextEventsPage();
+                OnEventSelect(eventID + 1);
             }
             else
             {
                 CreateEventsList(currentEventsGrid);
-                OnEventSelect(eventID - 1);
+                OnEventSelect(eventID + 1);
             }
         }
         void DeleteEvent(int eventID)
