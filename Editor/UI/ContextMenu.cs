@@ -130,14 +130,14 @@ namespace FS_LevelEditor.Editor.UI
             UILabel label = labelObj.AddComponent<UILabel>();
             label.font = NGUI_Utils.labelFont;
             label.fontSize = 27;
-            label.width = optionsWidth;
+            label.width = optionsWidth - 10;
             label.height = optionsHeight;
             label.color = Color.white;
             label.depth = 1;
             label.text = option.name;
             label.pivot = UIWidget.Pivot.Left;
 
-            labelObj.transform.localPosition = new Vector3(0, -(optionsHeight / 2));
+            labelObj.transform.localPosition = new Vector3(10, -(optionsHeight / 2));
         }
         void ExecuteButtonAction(ContextMenuOption option)
         {
@@ -189,7 +189,6 @@ namespace FS_LevelEditor.Editor.UI
         public ContextMenuOption()
         {
             mainColor = new Color(0.0588f, 0.3176f, 0.3215f, 1f);
-            //hoveredColor = new Color(0f, 0.984f, 1f, 1f);
             hoveredColor = new Color(0f, 0.451f, 0.459f, 1f);
             pressedColor = new Color(0.082f, 0.376f, 0.38f, 1f);
         }
