@@ -644,9 +644,6 @@ namespace FS_LevelEditor.Editor.UI
                 // Create the EVENT BUTTON itself...
                 GameObject eventButton = NGUI_Utils.CreateButton(eventButtonParent.transform, Vector3.zero, new Vector3Int(780, 70, 0)).gameObject;
                 eventButton.name = "Button";
-                // Remove the SECOND UIButtonColor component, and then I ask, why did Charles add TWO UIButtonColor to the buttons
-                // if they target to the same object?
-                Destroy(eventButton.GetComponents<UIButtonColor>()[1]);
 
                 eventButton.GetComponent<UISprite>().depth = 2;
 

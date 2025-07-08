@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor.UI;
+using Il2Cpp;
 using Il2CppInControl.NativeDeviceProfiles;
 using System;
 using System.Collections.Generic;
@@ -310,6 +311,11 @@ namespace FS_LevelEditor.UI_Related
             buttonLabel.text = text;
             buttonLabel.SetAnchor(button, 0, 0, 0, 0);
             // Just change the label anchor so its size is the same as the button size.
+
+            // Remove the SECOND UIButtonColor component, and then I ask, why did Charles add TWO UIButtonColor to the buttons
+            // if they target to the same object?
+            // UPDATE: It seems that if I don't remove this, some weird shit happens with the button color or something.
+            GameObject.Destroy(button.GetComponents<UIButtonColor>()[1]);
 
             UIButtonPatcher patcher = button.AddComponent<UIButtonPatcher>();
 
