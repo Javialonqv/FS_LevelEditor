@@ -439,8 +439,17 @@ namespace FS_LevelEditor.Editor.UI
             ContextMenuOption moveUpOption = new ContextMenuOption()
             {
                 name = "Move Up",
-                isEnabled = selectedEventIDForContextMenu != 0,
+                isEnabled = selectedEventIDForContextMenu > 0,
                 onClick = () => MoveEventUp(selectedEventIDForContextMenu)
+            };
+            #endregion
+
+            #region Move Down
+            ContextMenuOption moveDownOption = new ContextMenuOption()
+            {
+                name = "Move Down",
+                isEnabled = selectedEventIDForContextMenu < GetEventsList().Count - 1,
+                onClick = () => MoveEventDown(selectedEventIDForContextMenu)
             };
             #endregion
 
@@ -457,6 +466,7 @@ namespace FS_LevelEditor.Editor.UI
             eventsContextMenu.AddOption(moveToOption);
             eventsContextMenu.AddOption(duplicateOption);
             eventsContextMenu.AddOption(moveUpOption);
+            eventsContextMenu.AddOption(moveDownOption);
             eventsContextMenu.AddOption(deleteOption);
         }
 
@@ -851,6 +861,32 @@ namespace FS_LevelEditor.Editor.UI
 
             list[eventID - 1] = toMoveUp;
             list[eventID] = upEvent;
+
+            if (eventID % 6 == 0)
+            {
+                PreviousEventsPage();
+                OnEventSelect(eventID - 1);
+            }
+            else
+            {
+                CreateEventsList(currentEventsGrid);
+                OnEventSelect(eventID - 1);
+            }
+        }
+        void MoveEventDown(int eventID)
+        {
+            List<LE_Event> list = GetEventsList();
+            if (eventID >= list.Count - 1)
+            {
+                Logger.Error("Requested to move event down but it's already the last event.");
+                return;
+            }
+
+            LE_Event downEvent = list[eventID + 1];
+            LE_Event toMoveDown = list[eventID];
+
+            list[eventID - 1] = toMoveDown;
+            list[eventID] = downEvent;
 
             if (eventID % 6 == 0)
             {
