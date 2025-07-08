@@ -393,14 +393,30 @@ namespace FS_LevelEditor.Editor.UI
                 Destroy(eventsContextMenu.gameObject);
             }
 
-            ContextMenuOption option = new ContextMenuOption()
+            ContextMenuOption copyToOption = new ContextMenuOption()
+            {
+                name = "Copy To"
+            };
+            for (int i = 0; i < eventsListsNames.Count; i++)
+            {
+                int index = i;
+                ContextMenuOption targetOption = new ContextMenuOption()
+                {
+                    name = Loc.Get(eventsListsNames[index]),
+                    onClick = () => CopyEventToList(currentSelectedEventID, index)
+                };
+                copyToOption.subOptions.Add(targetOption);
+            }
+
+            ContextMenuOption deleteOption = new ContextMenuOption()
             {
                 name = "Delete",
                 onClick = () => DeleteEvent(selectedEventIDForContextMenu)
             };
 
             eventsContextMenu = ContextMenu.Create(eventsPanel.transform, depth: 3);
-            eventsContextMenu.AddOption(option);
+            eventsContextMenu.AddOption(copyToOption);
+            eventsContextMenu.AddOption(deleteOption);
         }
 
         void Update()
@@ -717,13 +733,6 @@ namespace FS_LevelEditor.Editor.UI
         {
             return currentEventsGrid + 1 + "/" + eventsGridList.Count;
         }
-        void DeleteEvent(int eventID)
-        {
-            HideEventSettings();
-            GetEventsList().RemoveAt(eventID);
-            // And what if now the grid count is less than currentEventGrid? This comprobation is already inside of CreateEventsList() :)
-            CreateEventsList(currentEventsGrid);
-        }
         internal void OnEventSelect(int selectedID)
         {
             Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_UNAVAILABLE);
@@ -734,6 +743,32 @@ namespace FS_LevelEditor.Editor.UI
             currentSelectedEvent = GetEventsList()[selectedID];
             ShowEventSettings();
 
+            CreateEventsList(currentEventsGrid);
+        }
+
+        void CopyEventToList(int eventID, int targetListID)
+        {
+            LE_Event toCopy = GetEventsList()[eventID];
+            List<LE_Event> targetList = GetEventsList(targetListID);
+
+            targetList.Add(new LE_Event(toCopy));
+
+
+            switch (targetListID)
+            {
+                case 0: FirstEventsListBtnClick(); break;
+                case 1: SecondEventsListBtnClick(); break;
+                case 2: ThirdEventsListBtnClick(); break;
+            }
+
+            // The copied event will always be in the last element in the list.
+            OnEventSelect(targetList.Count - 1);
+        }
+        void DeleteEvent(int eventID)
+        {
+            HideEventSettings();
+            GetEventsList().RemoveAt(eventID);
+            // And what if now the grid count is less than currentEventGrid? This comprobation is already inside of CreateEventsList() :)
             CreateEventsList(currentEventsGrid);
         }
 
@@ -1793,6 +1828,11 @@ namespace FS_LevelEditor.Editor.UI
         List<LE_Event> GetEventsList()
         {
             return (List<LE_Event>)targetObj.GetProperty(currentEventsListName);
+        }
+        List<LE_Event> GetEventsList(int listID)
+        {
+            string targetListName = eventsListsNames[listID];
+            return (List<LE_Event>)targetObj.GetProperty(targetListName);
         }
     }
 
