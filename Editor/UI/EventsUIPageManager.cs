@@ -393,6 +393,7 @@ namespace FS_LevelEditor.Editor.UI
                 Destroy(eventsContextMenu.gameObject);
             }
 
+            #region Copy To
             ContextMenuOption copyToOption = new ContextMenuOption()
             {
                 name = "Copy To"
@@ -403,19 +404,58 @@ namespace FS_LevelEditor.Editor.UI
                 ContextMenuOption targetOption = new ContextMenuOption()
                 {
                     name = Loc.Get(eventsListsNames[index]),
-                    onClick = () => CopyEventToList(currentSelectedEventID, index)
+                    onClick = () => CopyEventToList(selectedEventIDForContextMenu, index)
                 };
                 copyToOption.subOptions.Add(targetOption);
             }
+            #endregion
 
+            #region Move To
+            ContextMenuOption moveToOption = new ContextMenuOption()
+            {
+                name = "Move To"
+            };
+            for (int i = 0; i < eventsListsNames.Count; i++)
+            {
+                int index = i;
+                ContextMenuOption targetOption = new ContextMenuOption()
+                {
+                    name = Loc.Get(eventsListsNames[index]),
+                    onClick = () => MoveEventToList(selectedEventIDForContextMenu, index)
+                };
+                moveToOption.subOptions.Add(targetOption);
+            }
+            #endregion
+
+            #region Duplicate
+            ContextMenuOption duplicateOption = new ContextMenuOption()
+            {
+                name = "Duplicate",
+                onClick = () => DuplicateEvent(selectedEventIDForContextMenu)
+            };
+            #endregion
+
+            #region Move Up
+            ContextMenuOption moveUpOption = new ContextMenuOption()
+            {
+                name = "Move Up",
+                onClick = () => MoveEventUp(selectedEventIDForContextMenu)
+            };
+            #endregion
+
+            #region Delete
             ContextMenuOption deleteOption = new ContextMenuOption()
             {
                 name = "Delete",
                 onClick = () => DeleteEvent(selectedEventIDForContextMenu)
             };
+            #endregion
 
             eventsContextMenu = ContextMenu.Create(eventsPanel.transform, depth: 3);
             eventsContextMenu.AddOption(copyToOption);
+            eventsContextMenu.AddOption(moveToOption);
+            eventsContextMenu.AddOption(duplicateOption);
+            eventsContextMenu.AddOption(moveUpOption);
             eventsContextMenu.AddOption(deleteOption);
         }
 
@@ -593,6 +633,9 @@ namespace FS_LevelEditor.Editor.UI
                 // Create the EVENT BUTTON itself...
                 GameObject eventButton = NGUI_Utils.CreateButton(eventButtonParent.transform, Vector3.zero, new Vector3Int(780, 70, 0)).gameObject;
                 eventButton.name = "Button";
+                // Remove the SECOND UIButtonColor component, and then I ask, why did Charles add TWO UIButtonColor to the buttons
+                // if they target to the same object?
+                Destroy(eventButton.GetComponents<UIButtonColor>()[1]);
 
                 eventButton.GetComponent<UISprite>().depth = 2;
 
@@ -763,6 +806,61 @@ namespace FS_LevelEditor.Editor.UI
 
             // The copied event will always be in the last element in the list.
             OnEventSelect(targetList.Count - 1);
+        }
+        void MoveEventToList(int eventID, int targetListID)
+        {
+            List<LE_Event> originList = GetEventsList();
+            LE_Event toMove = originList[eventID];
+            List<LE_Event> targetList = GetEventsList(targetListID);
+
+            originList.Remove(toMove);
+            targetList.Add(toMove);
+
+            switch (targetListID)
+            {
+                case 0: FirstEventsListBtnClick(); break;
+                case 1: SecondEventsListBtnClick(); break;
+                case 2: ThirdEventsListBtnClick(); break;
+            }
+
+            // The copied event will always be in the last element in the list.
+            OnEventSelect(targetList.Count - 1);
+        }
+        void DuplicateEvent(int eventID)
+        {
+            List<LE_Event> list = GetEventsList();
+            LE_Event toCopy = list[eventID];
+
+            list.Add(new LE_Event(toCopy));
+
+            // The duplicated event is in the last element in the list.
+            OnEventSelect(list.Count - 1);
+        }
+        void MoveEventUp(int eventID)
+        {
+            if (eventID <= 0)
+            {
+                Logger.Error("Requested to move event up but it's already the first event.");
+                return;
+            }
+
+            List<LE_Event> list = GetEventsList();
+            LE_Event upEvent = list[eventID - 1];
+            LE_Event toMoveUp = list[eventID];
+
+            list[eventID - 1] = toMoveUp;
+            list[eventID] = upEvent;
+
+            if (eventID % 6 == 0)
+            {
+                PreviousEventsPage();
+                OnEventSelect(eventID - 1);
+            }
+            else
+            {
+                CreateEventsList(currentEventsGrid);
+                OnEventSelect(eventID - 1);
+            }
         }
         void DeleteEvent(int eventID)
         {
