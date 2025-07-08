@@ -123,7 +123,7 @@ namespace FS_LevelEditor.Editor.UI
             ContextMenuButton script = optionGO.AddComponent<ContextMenuButton>();
             script.main = this;
             script.isSubOption = isSubOption;
-            if (option.isEnabled)
+            if (option.isEnabled && option.onClick != null)
             {
                 script.onClick += () => ExecuteButtonAction(option);
             }
@@ -226,6 +226,7 @@ namespace FS_LevelEditor.Editor.UI
             mainColor = new Color(0.0588f, 0.3176f, 0.3215f, 1f);
             hoveredColor = new Color(0f, 0.451f, 0.459f, 1f);
             pressedColor = new Color(0.082f, 0.376f, 0.38f, 1f);
+            onClick = null;
             subOptions = new List<ContextMenuOption>();
         }
     }
