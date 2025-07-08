@@ -854,12 +854,11 @@ namespace FS_LevelEditor.Editor.UI
 
         void OnDestroy()
         {
-            try
+            if (MenuController.GetInstance() && MenuController.GetInstance().m_uiCamera)
             {
                 // Revert this just in case it breaks something LOL.
                 MenuController.GetInstance().m_uiCamera.submitKey0 = KeyCode.None;
             }
-            catch { }
         }
     }
 }
