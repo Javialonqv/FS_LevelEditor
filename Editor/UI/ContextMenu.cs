@@ -4,6 +4,7 @@ using Il2CppVLB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -14,6 +15,11 @@ namespace FS_LevelEditor.Editor.UI
     public class ContextMenu : MonoBehaviour
     {
         UIPanel mainPanel;
+
+        enum VerticalDirection { Up, Down }
+        enum HorizontalDirection { Left, Right }
+        VerticalDirection verticalDir = VerticalDirection.Down;
+        HorizontalDirection horizontalDir = HorizontalDirection.Right;
 
         int optionsWidth = 200;
         int optionsHeight = 50;
@@ -52,6 +58,8 @@ namespace FS_LevelEditor.Editor.UI
 
         public void Show(bool instant = false)
         {
+            GetDirections();
+
             RefreshOptions();
 
             UpdateContextMenuPosition();
@@ -64,6 +72,14 @@ namespace FS_LevelEditor.Editor.UI
             {
                 TweenAlpha.Begin(gameObject, 0.1f, 1f);
             }
+        }
+        void GetDirections()
+        {
+            Vector3 mousePos = Input.mousePosition;
+            
+            horizontalDir = ((mousePos.x + optionsWidth) > Screen.width) ? HorizontalDirection.Left : HorizontalDirection.Right;
+            verticalDir = ((mousePos.y - (optionsHeight * menuOptions.Count)) < 0) ? VerticalDirection.Up :
+                VerticalDirection.Down;
         }
         void UpdateContextMenuPosition()
         {
@@ -81,7 +97,9 @@ namespace FS_LevelEditor.Editor.UI
             for (int i = 0; i < menuOptions.Count; i++)
             {
                 var button = CreateOptionButton(menuOptions[i], false);
-                button.transform.localPosition = new Vector3(0, -(optionsHeight * i));
+                float xPos = horizontalDir == HorizontalDirection.Right ? 0 : -optionsWidth;
+                float yPos = verticalDir == VerticalDirection.Down ? -(optionsHeight * i) : optionsHeight * i;
+                button.transform.localPosition = new Vector3(xPos, yPos);
             }
         }
         ContextMenuButton CreateOptionButton(ContextMenuOption option, bool isSubOption)
@@ -161,7 +179,8 @@ namespace FS_LevelEditor.Editor.UI
 
                     subOptionsParent = new GameObject("SubOptions").transform;
                     subOptionsParent.transform.parent = optionGO.transform;
-                    subOptionsParent.transform.localPosition = new Vector3(optionsWidth, 0);
+                    float xPos = horizontalDir == HorizontalDirection.Right ? optionsWidth : -optionsWidth;
+                    subOptionsParent.transform.localPosition = new Vector3(xPos, 0);
                     subOptionsParent.transform.localScale = Vector3.one;
                 }
 
@@ -234,6 +253,7 @@ namespace FS_LevelEditor.Editor.UI
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class ContextMenuButton : MonoBehaviour
     {
+        static bool requestedToHideSubOptions = false;
         internal ContextMenu main;
         internal bool isSubOption;
         internal ContextMenuButton parentOption;
@@ -251,7 +271,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void OnHover(bool isHover)
         {
-            if (!isSubOption && isHover)
+            if (!isSubOption && isHover && !requestedToHideSubOptions)
             {
                 Invoke(nameof(ForceSubOptionsDisable), 0.01f);
             }
@@ -262,6 +282,7 @@ namespace FS_LevelEditor.Editor.UI
                 foreach (var subOption in subOptionsGOs)
                 {
                     subOption.SetActive(true);
+                    subOption.GetComponent<UIButtonColor>().enabled = isHover;
                     float newAlpha = isHover ? 1f : 0f;
                     TweenAlpha.Begin(subOption, 0.1f, newAlpha);
                 }
@@ -282,14 +303,21 @@ namespace FS_LevelEditor.Editor.UI
             }
         }
 
-        void ForceSubOptionsDisable()
+        void ForceSubOptionsDisable(bool skipThis = false)
         {
+            requestedToHideSubOptions = true;
+
             // Force the other suboptions to close when you're in a "main" option.
             foreach (var button in main.createdMenuButtons)
             {
-                if (button == this) continue;
-                button.subOptionsGOs.ForEach(subOptionGO => TweenAlpha.Begin(subOptionGO, 0.1f, 0f));
+                if (button == this && skipThis) continue;
+
+                button.OnHover(false);
+                //button.subOptionsGOs.ForEach(subOptionGO => TweenAlpha.Begin(subOptionGO, 0.1f, 0f));
+                //button.subOptionsGOs.ForEach(subOptionGO => subOptionGO.GetComponent<ContextMenuButton>().Invoke("DisableButton", 0.1f));
             }
+
+            requestedToHideSubOptions = false;
         }
     }
 }
