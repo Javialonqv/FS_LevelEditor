@@ -123,7 +123,14 @@ namespace FS_LevelEditor.Editor.UI
             ContextMenuButton script = optionGO.AddComponent<ContextMenuButton>();
             script.main = this;
             script.isSubOption = isSubOption;
-            script.onClick += () => ExecuteButtonAction(option);
+            if (option.isEnabled)
+            {
+                script.onClick += () => ExecuteButtonAction(option);
+            }
+            else
+            {
+                script.onClick = null;
+            }
 
             // ---------- CREATE LABEL ----------
 
@@ -180,15 +187,11 @@ namespace FS_LevelEditor.Editor.UI
 
         void Update()
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && UICamera.selectedObject)
             {
-                Ray ray = UICamera.currentCamera.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
+                GameObject selected = UICamera.selectedObject;
 
-                if (Physics.Raycast(ray, out hit))
-                {
-                    if (hit.collider.transform.IsChildOf(transform)) return;
-                }
+                if (selected.transform.IsChildOf(transform)) return;
 
                 HideContextMenu();
             }
@@ -274,6 +277,7 @@ namespace FS_LevelEditor.Editor.UI
             if (onClick != null)
             {
                 onClick();
+                main.HideContextMenu();
             }
         }
 
