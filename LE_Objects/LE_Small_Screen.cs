@@ -15,6 +15,10 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Small_Screen : LE_Object
     {
+        public static Color textCyanColor = new Color(0.184f, 0.9297f, 1f);
+        public static Color textGreenColor = new Color(0.3255f, 1f, 0.5765f);
+        public static Color textRedColor = new Color(1, 0.4f, 0.3765f);
+
         ScreenController screen;
 
         GameObject wholeMesh;
@@ -244,20 +248,48 @@ namespace FS_LevelEditor
         }
         void SetScreenColor(ScreenColorType colorType)
         {
-            if (colorType == ScreenColorType.CYAN)
+            if (EditorController.Instance)
             {
-                greenMesh.SetActive(false);
-                redMesh.SetActive(false);
+                if (colorType == ScreenColorType.CYAN)
+                {
+                    greenMesh.SetActive(false);
+                    redMesh.SetActive(false);
+
+                    screenText.color = textCyanColor;
+                }
+                else if (colorType == ScreenColorType.GREEN)
+                {
+                    greenMesh.SetActive(true);
+                    redMesh.SetActive(false);
+
+                    screenText.color = textGreenColor;
+                }
+                else // Only RED is left.
+                {
+                    greenMesh.SetActive(false);
+                    redMesh.SetActive(true);
+
+                    screenText.color = textRedColor;
+                }
             }
-            else if (colorType == ScreenColorType.GREEN)
+            else if (screen)
             {
-                greenMesh.SetActive(true);
-                redMesh.SetActive(false);
-            }
-            else // Only RED is left.
-            {
-                greenMesh.SetActive(false);
-                redMesh.SetActive(true);
+                screen.currentColor = ConvertColorToFSType(colorType);
+
+                switch (colorType)
+                {
+                    case ScreenColorType.CYAN:
+                        screen.SetCyanBG();
+                        break;
+
+                    case ScreenColorType.GREEN:
+                        screen.SetGreenBG();
+                        break;
+
+                    case ScreenColorType.RED:
+                        screen.SetRedBG();
+                        break;
+                }
             }
         }
         ScreenController.ColorType ConvertColorToFSType(ScreenColorType colorType)
