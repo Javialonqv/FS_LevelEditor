@@ -85,13 +85,13 @@ namespace FS_LevelEditor
             content.layer = LayerMask.NameToLayer("Ignore Raycast");
 
             content.GetChildWithName("MeshDynamic").layer = LayerMask.NameToLayer("AllExceptPlayer");
-            content.GetChildAt("CompoundColliders").layer = LayerMask.NameToLayer("AllExceptPlayer");
-            content.GetChildAt("CompoundColliders/Edge1").layer = LayerMask.NameToLayer("AllExceptPlayer");
-            content.GetChildAt("CompoundColliders/Edge2").layer = LayerMask.NameToLayer("AllExceptPlayer");
-            content.GetChildAt("CompoundColliders/Edge3").layer = LayerMask.NameToLayer("AllExceptPlayer");
-            content.GetChildAt("CompoundColliders/Edge4").layer = LayerMask.NameToLayer("AllExceptPlayer");
+            content.GetChildAt("MeshDynamic/CompoundColliders").layer = LayerMask.NameToLayer("AllExceptPlayer");
+            content.GetChildAt("MeshDynamic/CompoundColliders/Edge1").layer = LayerMask.NameToLayer("AllExceptPlayer");
+            content.GetChildAt("MeshDynamic/CompoundColliders/Edge2").layer = LayerMask.NameToLayer("AllExceptPlayer");
+            content.GetChildAt("MeshDynamic/CompoundColliders/Edge3").layer = LayerMask.NameToLayer("AllExceptPlayer");
+            content.GetChildAt("MeshDynamic/CompoundColliders/Edge4").layer = LayerMask.NameToLayer("AllExceptPlayer");
 
-            content.GetChildAt("PlayerCollisionOnly").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+            content.GetChildAt("MeshDynamic/PlayerCollisionOnly").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
 
             initialized = true;
         }
