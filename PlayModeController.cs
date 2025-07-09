@@ -43,6 +43,7 @@ namespace FS_LevelEditor
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
         public int deathsInCurrentLevel = 0;
         public List<LE_Screen> screensOnTheLevel = new List<LE_Screen>();
+        public List<LE_Small_Screen> smallScreensOnTheLevel = new List<LE_Small_Screen>();
 
         public bool endTriggerReached = false;
 
@@ -147,6 +148,10 @@ namespace FS_LevelEditor
             {
                 screensOnTheLevel.Add((LE_Screen)addedComp);
             }
+            else if (objName == "Small Screen")
+            {
+                smallScreensOnTheLevel.Add((LE_Small_Screen)addedComp);
+            }
 
             if (addedComp == null)
             {
@@ -250,6 +255,12 @@ namespace FS_LevelEditor
             Controls.Instance.InverseGravity();
 
             foreach (var screen in screensOnTheLevel)
+            {
+                if (!screen.GetProperty<bool>("InvertWithGravity")) continue;
+
+                screen.TriggerAction("InvertText");
+            }
+            foreach (var screen in smallScreensOnTheLevel)
             {
                 if (!screen.GetProperty<bool>("InvertWithGravity")) continue;
 
