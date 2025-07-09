@@ -73,4 +73,45 @@ namespace FS_LevelEditor.Playmode.Patches
             return true;
         }
     }
+
+    [HarmonyPatch(typeof(FractalSave), nameof(FractalSave.SetSaveFileName))]
+    public static class SaveFileNamePatch
+    {
+        public static void Postfix(FractalSave __instance, string _new)
+        {
+            bool isForQuickSave = _new.Contains("QuickSave");
+            if (PlayModeController.Instance && isForQuickSave)
+            {
+                __instance.m_saveFileName = "CustomLevel_QuickSave.dat";
+            }
+        }
+    }
+    [HarmonyPatch(typeof(FractalSave), nameof(FractalSave.HasQuickSaveFile))]
+    public static class QuickSaveFileExistsPath
+    {
+        public static bool Prefix(ref bool __result)
+        {
+            if (PlayModeController.Instance)
+            {
+                string customLevelQuickSaveFilePath = Path.Combine(FractalSave.saveFileFolderPath, "CustomLevel_QuickSave.dat");
+                __result = File.Exists(customLevelQuickSaveFilePath);
+                return false;
+            }
+            return true;
+        }
+    }
+    [HarmonyPatch(typeof(FractalSave), nameof(FractalSave.QuickSaveFileHasLevelInformation))]
+    public static class QuickSaveFileExistsPath2
+    {
+        public static bool Prefix(ref bool __result)
+        {
+            if (PlayModeController.Instance)
+            {
+                string customLevelQuickSaveFilePath = Path.Combine(FractalSave.saveFileFolderPath, "CustomLevel_QuickSave.dat");
+                __result = File.Exists(customLevelQuickSaveFilePath);
+                return false;
+            }
+            return true;
+        }
+    }
 }
