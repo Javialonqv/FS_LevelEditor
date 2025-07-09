@@ -204,14 +204,11 @@ namespace FS_LevelEditor.UI_Related
         {
             if (input.selected) return;
 
-            decimal decimalValue = (decimal)value;
-            decimalValue = Math.Round(decimalValue, maxDecimals, MidpointRounding.ToZero);
-
             string format = "0";
             if (maxDecimals > 0)
                 format += "." + new string('#', maxDecimals);
 
-            input.text = decimalValue.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+            input.text = value.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }
