@@ -211,7 +211,7 @@ namespace FS_LevelEditor.UI_Related
 
             this.executeOnChange = executeOnChange;
             input.text = value.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
-            executeOnChange = true;
+            this.executeOnChange = true;
         }
     }
 }
