@@ -36,7 +36,7 @@ namespace FS_LevelEditor
                 { "FontSize", 170f },
                 { "MinFontSize", 60f },
                 { "MaxFontSize", 170f },
-                { "Text", "Text" }
+                { "Text", "<color=#FFFFFF>\n</color>" }
             };
 
             wholeMesh = gameObject.GetChildAt("Content/Mesh");
