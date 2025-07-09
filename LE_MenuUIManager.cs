@@ -736,6 +736,11 @@ namespace FS_LevelEditor
         }
         public void GoBackToLEWhileInPlayMode(string levelFileNameWithoutExtension, string levelName)
         {
+            // If it's invoking that's probably because the player already reached an end trigger, cancel it.
+            if (MenuController.GetInstance().IsInvoking("ReturnToMainMenu"))
+            {
+                MenuController.GetInstance().CancelInvoke("ReturnToMainMenu");
+            }
             MenuController.GetInstance().ReturnToMainMenu();
             isGoingBackToLE = true;
             levelFileNameWithoutExtensionWhileGoingBackToLE = levelFileNameWithoutExtension;
