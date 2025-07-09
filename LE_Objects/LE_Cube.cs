@@ -90,6 +90,7 @@ namespace FS_LevelEditor
             blocScript.respawnPosition = blocScript.transform.position;
             blocScript.useContinuousOnDrop = true;
             blocScript.useMeshSwap = true;
+            blocScript.useSwitchPosRespawn = false;
 
             blocScript.m_audioSource.outputAudioMixerGroup = template.m_audioSource.outputAudioMixerGroup;
 
