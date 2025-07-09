@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.Playmode;
 
 namespace FS_LevelEditor
 {

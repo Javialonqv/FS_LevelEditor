@@ -10,6 +10,7 @@ using System.Text.Json;
 using FS_LevelEditor.Editor;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
+using FS_LevelEditor.Playmode;
 
 namespace FS_LevelEditor.SaveSystem
 {
