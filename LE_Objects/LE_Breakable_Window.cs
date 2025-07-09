@@ -13,7 +13,7 @@ namespace FS_LevelEditor
     public class LE_Breakable_Window : LE_Object
     {
         // These values are the same for all of the windows.
-        static bool staticVariablesInitialized = false;
+        internal static bool staticVariablesInitialized = false;
         static AudioMixerGroup sfxOutputMixerGroup;
         static Vector3[] windowPartsOriginalPositions;
         static Vector3[] windowPartsOriginalScales;

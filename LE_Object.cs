@@ -580,5 +580,10 @@ namespace FS_LevelEditor
                 Logger.Error($"\"{objectOriginalName}\" object doesn't contain an EditorCollider.");
             }
         }
+
+        public static void ResetStaticVariablesInObjects()
+        {
+            LE_Breakable_Window.staticVariablesInitialized = false;
+        }
     }
 }

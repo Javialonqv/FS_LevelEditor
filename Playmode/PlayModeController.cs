@@ -73,6 +73,8 @@ namespace FS_LevelEditor.Playmode
         void OnDestroy()
         {
             Destroy(backToLEButton);
+
+            LE_Object.ResetStaticVariablesInObjects();
         }
 
         void TeleportPlayer()
