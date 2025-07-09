@@ -33,6 +33,7 @@ namespace FS_LevelEditor.UI_Related
 
         public Action onChange;
         public Action onSubmit;
+        bool executeOnChange;
 
         public UICustomInputField(IntPtr ptr) : base(ptr) { }
 
@@ -111,7 +112,7 @@ namespace FS_LevelEditor.UI_Related
                 Set(IsValueValid());
             }
 
-            if (onChange != null)
+            if (onChange != null && executeOnChange)
             {
                 onChange.Invoke();
             }
@@ -200,7 +201,7 @@ namespace FS_LevelEditor.UI_Related
 
             input.text = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
-        public void SetText(float value, int maxDecimals)
+        public void SetText(float value, int maxDecimals, bool executeOnChange = true)
         {
             if (input.selected) return;
 
@@ -208,7 +209,9 @@ namespace FS_LevelEditor.UI_Related
             if (maxDecimals > 0)
                 format += "." + new string('#', maxDecimals);
 
+            this.executeOnChange = executeOnChange;
             input.text = value.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+            executeOnChange = true;
         }
     }
 }

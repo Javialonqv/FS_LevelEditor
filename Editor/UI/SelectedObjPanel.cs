@@ -842,17 +842,17 @@ namespace FS_LevelEditor.Editor.UI
             // UICustomInput already verifies if the user is typing on the field, if so, SetText does nothing, we don't need to worry about that.
 
             // Set Global Attributes...
-            posXField.SetText(obj.position.x, 2);
-            posYField.SetText(obj.position.y, 2);
-            posZField.SetText(obj.position.z, 2);
+            posXField.SetText(obj.position.x, 2, false);
+            posYField.SetText(obj.position.y, 2, false);
+            posZField.SetText(obj.position.z, 2, false);
 
-            rotXField.SetText(obj.localEulerAngles.x, 2);
-            rotYField.SetText(obj.localEulerAngles.y, 2);
-            rotZField.SetText(obj.localEulerAngles.z, 2);
+            rotXField.SetText(obj.localEulerAngles.x, 2, false);
+            rotYField.SetText(obj.localEulerAngles.y, 2, false);
+            rotZField.SetText(obj.localEulerAngles.z, 2, false);
 
-            scaleXField.SetText(obj.localScale.x, 2);
-            scaleYField.SetText(obj.localScale.y, 2);
-            scaleZField.SetText(obj.localScale.z, 2);
+            scaleXField.SetText(obj.localScale.x, 2, false);
+            scaleYField.SetText(obj.localScale.y, 2, false);
+            scaleZField.SetText(obj.localScale.z, 2, false);
 
             if (EditorController.Instance.multipleObjectsSelected)
             {
