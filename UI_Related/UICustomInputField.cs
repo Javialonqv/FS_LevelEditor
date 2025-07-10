@@ -33,7 +33,7 @@ namespace FS_LevelEditor.UI_Related
 
         public Action onChange;
         public Action onSubmit;
-        bool executeOnChange;
+        bool executeOnChange = true;
 
         public UICustomInputField(IntPtr ptr) : base(ptr) { }
 
