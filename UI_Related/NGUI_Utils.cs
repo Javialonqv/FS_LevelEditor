@@ -120,6 +120,16 @@ namespace FS_LevelEditor.UI_Related
                 return _dropdownTemplate;
             }
         }
+        static GameObject _multipleButtonTemplate;
+        public static GameObject multipleButtonTemplate
+        {
+            get
+            {
+                if (!_multipleButtonTemplate) _multipleButtonTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/DifficulityLevel");
+
+                return _multipleButtonTemplate;
+            }
+        }
         static GameObject _optionsPanel;
         public static GameObject optionsPanel
         {
@@ -439,7 +449,7 @@ namespace FS_LevelEditor.UI_Related
             return patcher;
         }
 
-        public static UIButtonMultiple CreateSmallButtonMultiple(Transform parent, Vector3 position, Vector3Int size, string text = "", int fontSize = 30)
+        public static UISmallButtonMultiple CreateSmallButtonMultiple(Transform parent, Vector3 position, Vector3Int size, string text = "", int fontSize = 30)
         {
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
@@ -458,8 +468,22 @@ namespace FS_LevelEditor.UI_Related
             buttonLabel.SetAnchor(button, 0, 0, 0, 0);
             // Just change the label anchor so its size is the same as the button size.
 
-            UIButtonMultiple script = button.AddComponent<UIButtonMultiple>();
+            UISmallButtonMultiple script = button.AddComponent<UISmallButtonMultiple>();
             script.Setup();
+
+            return script;
+        }
+        public static UIButtonMultiple CreateButtonMultiple(Transform parent, Vector3 position, Vector3 scale)
+        {
+            GameObject button = GameObject.Instantiate(multipleButtonTemplate, parent);
+            button.transform.localPosition = position;
+            button.transform.localScale = scale;
+
+            GameObject.Destroy(button.GetComponent<ButtonController>());
+            GameObject.Destroy(button.GetComponent<OptionsButton>());
+
+            UIButtonMultiple script = button.AddComponent<UIButtonMultiple>();
+            script.Init();
 
             return script;
         }

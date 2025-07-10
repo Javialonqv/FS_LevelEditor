@@ -47,7 +47,7 @@ namespace FS_LevelEditor.Editor.UI
         UIDropdownPatcher spawnOptionsDropdown;
         //-----------------------------------
         GameObject sawObjectsSettings;
-        UIDropdownPatcher sawStateDropdown;
+        UIButtonMultiple sawStateButton;
         //-----------------------------------
         GameObject playerSettings;
         UIToggle zeroGToggle;
@@ -85,7 +85,7 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject screenObjectsSettings;
         UIToggle changeScreenColorTypeToggle;
-        UIButtonMultiple screenColorTypeButton;
+        UISmallButtonMultiple screenColorTypeButton;
         UIToggle changeScreenTextToggle;
         UICustomInputField screenNewTextField;
 
@@ -962,7 +962,7 @@ namespace FS_LevelEditor.Editor.UI
             targetObjInputField.SetText(currentSelectedEvent.targetObjName);
 
             spawnOptionsDropdown.SelectOption((int)currentSelectedEvent.spawn);
-            sawStateDropdown.SelectOption((int)currentSelectedEvent.sawState);
+            sawStateButton.SelectOption((int)currentSelectedEvent.sawState);
             zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
             respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
@@ -1161,25 +1161,17 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSawStateDropdown()
         {
-            GameObject sawStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), sawObjectsSettings.transform);
-            sawStateDropdownPanel.name = "SawStateDropdownPanel";
-            sawStateDropdownPanel.transform.localPosition = new Vector3(0f, -50f, 0f);
-            sawStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(sawObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+            button.SetTitle("Saw State");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Activate", false);
+            button.AddOption("Deactivate", false);
+            button.AddOption("Toggle State", false);
+            button.onClick += (option) => OnSawStateDropdownChanged();
 
-            UIDropdownPatcher patcher = sawStateDropdownPanel.AddComponent<UIDropdownPatcher>();
-            patcher.Init();
-            patcher.SetTitle("Saw State");
-            patcher.ClearOptions();
-            patcher.AddOption("Do Nothing", true);
-            patcher.AddOption("Activate", false);
-            patcher.AddOption("Deactivate", false);
-            patcher.AddOption("Toggle State", false);
-
-            patcher.ClearOnChangeOptions();
-            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSawStateDropdownChanged)));
-
-            sawStateDropdown = patcher;
-            sawStateDropdownPanel.SetActive(true);
+            sawStateButton = button;
+            button.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreatePlayerSettings()
@@ -1787,7 +1779,7 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnSawStateDropdownChanged()
         {
-            currentSelectedEvent.sawState = (LE_Event.SawState)sawStateDropdown.currentlySelectedID;
+            currentSelectedEvent.sawState = (LE_Event.SawState)sawStateButton.currentSelectedID;
         }
         // -----------------------------------------
         void OnZeroGToggleChanged()

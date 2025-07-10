@@ -12,73 +12,72 @@ namespace FS_LevelEditor.UI_Related
     public class UIButtonMultiple : MonoBehaviour
     {
         UIButton button;
-        UILabel buttonLabel;
-        UIButtonColor buttonColor;
+        UILabel titleLabel;
+        UILabel currentOptionLabel;
 
-        public Action<int> onChange;
-        List<(string text, Color color)> options = new List<(string text, Color color)>();
-        public int currentOption;
+        List<string> options;
+        public Action<int> onClick;
 
-        public UIButtonMultiple(IntPtr ptr) : base(ptr) { }
+        public int currentSelectedID { get; private set; }
+        public string currentSelectedText
+        {
+            get
+            {
+                return options[currentSelectedID];
+            }
+        }
 
-        void Awake()
+        public void Init()
         {
             button = GetComponent<UIButton>();
-            buttonLabel = gameObject.GetChildAt("Background/Label").GetComponent<UILabel>();
-            buttonColor = GetComponent<UIButtonColor>();
-        }
+            titleLabel = gameObject.GetChildWithName("Label").GetComponent<UILabel>();
+            currentOptionLabel = gameObject.GetChildAt("Background/Label").GetComponent<UILabel>();
 
-        public void Setup()
-        {
-            if (!button)
-            {
-                button = GetComponent<UIButton>();
-                buttonLabel = gameObject.GetChildAt("Background/Label").GetComponent<UILabel>();
-                buttonColor = GetComponent<UIButtonColor>();
-            }
+            // FUCKING UILOCALIZE
+            Destroy(titleLabel.GetComponent<UILocalize>());
+            // Good thing the currentOptionLabel doesn't have one :)
 
-            button.onClick.Clear();
-            EventDelegate.Add(button.onClick, new EventDelegate(this, nameof(OnChange)));
-        }
-
-        void OnChange()
-        {
-            currentOption++;
-            if (currentOption >= options.Count) currentOption = 0;
-
-            SetTextAndColor(currentOption);
-            if (onChange != null)
-            {
-                onChange(currentOption);
-            }
-        }
-        void SetTextAndColor(int optionID)
-        {
-            (string text, Color color) toSet = options[optionID];
-
-            buttonLabel.text = toSet.text;
-            buttonColor.defaultColor = toSet.color;
+            options = new List<string>();
         }
 
         public void SetTitle(string newTitle)
         {
-            buttonLabel.text = newTitle;
+            titleLabel.text = newTitle;
         }
-        public void AddOption(string buttonText, Color? buttonColor = null)
-        {
-            Color colorToSet = buttonColor != null ? buttonColor.Value : NGUI_Utils.fsButtonsDefaultColor;
-            options.Add((buttonText, colorToSet));
-        }
-        public void SetOption(int newOption, bool executeActions = true)
-        {
-            currentOption = newOption;
-            if (currentOption >= options.Count) currentOption = 0;
 
-            SetTextAndColor(currentOption);
-            if (executeActions && onChange != null)
+        public void ClearOptions()
+        {
+            options.Clear();
+            currentOptionLabel.text = "";
+        }
+        public void AddOption(string optionText, bool setAsSelected)
+        {
+            options.Add(optionText);
+
+            if (setAsSelected)
             {
-                onChange(currentOption);
+                SelectOption(options.Count - 1);
             }
+        }
+
+        public void SelectOption(int optionID, bool executeOnChange = true)
+        {
+            string optionText = options[optionID];
+            currentSelectedID = optionID;
+            currentOptionLabel.text = optionText;
+
+            if (onClick != null && executeOnChange)
+            {
+                onClick.Invoke(optionID);
+            }
+        }
+
+        void OnClick()
+        {
+            currentSelectedID++;
+            if (currentSelectedID > options.Count - 1) currentSelectedID = 0;
+
+            SelectOption(currentSelectedID);
         }
     }
 }

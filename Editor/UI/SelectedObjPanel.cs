@@ -406,7 +406,7 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentParentToCreateAttributes(switchAttributes);
 
             CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
-            var initiaStateButton = switchAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UIButtonMultiple>();
+            var initiaStateButton = switchAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
             initiaStateButton.AddOption("DEACTIVATED", new Color(0.8f, 0f, 0f));
             initiaStateButton.AddOption("ACTIVATED", Color.green);
             initiaStateButton.AddOption("UNUSABLE", Color.black);
@@ -503,7 +503,7 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentParentToCreateAttributes(screenAttributes);
 
             CreateObjectAttribute("Screen Color", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
-            var screenColorButton = screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonMultiple>();
+            var screenColorButton = screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
             screenColorButton.AddOption("CYAN", null); // Use the default button color.
             screenColorButton.AddOption("GREEN", Color.green);
             screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
@@ -525,7 +525,7 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentParentToCreateAttributes(smallScreenAttributes);
 
             CreateObjectAttribute("Screen Color", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
-            var screenColorButton = smallScreenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UIButtonMultiple>();
+            var screenColorButton = smallScreenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
             screenColorButton.AddOption("CYAN", null); // Use the default button color.
             screenColorButton.AddOption("GREEN", Color.green);
             screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
@@ -612,7 +612,7 @@ namespace FS_LevelEditor.Editor.UI
             }
             else if (attrType == AttributeType.BUTTON_MULTIPLE)
             {
-                UIButtonMultiple button = NGUI_Utils.CreateSmallButtonMultiple(attributeParent.transform, new Vector3(140, yPos),
+                UISmallButtonMultiple button = NGUI_Utils.CreateSmallButtonMultiple(attributeParent.transform, new Vector3(140, yPos),
                     new Vector3Int(200, 38, 0), text, 25);
                 button.name = "ButtonMultiple";
                 button.onChange += (id) => SetPropertyWithButtonMultiple(targetPropName, button);
@@ -782,7 +782,7 @@ namespace FS_LevelEditor.Editor.UI
                             continue;
                         }
 
-                        attribute.GetChildWithName("ButtonMultiple").GetComponent<UIButtonMultiple>().SetOption((int)value);
+                        attribute.GetChildWithName("ButtonMultiple").GetComponent<UISmallButtonMultiple>().SetOption((int)value);
                     }
                 }
             }
@@ -968,7 +968,7 @@ namespace FS_LevelEditor.Editor.UI
                 EditorController.Instance.levelHasBeenModified = true;
             }
         }
-        public void SetPropertyWithButtonMultiple(string propertyName, UIButtonMultiple button)
+        public void SetPropertyWithButtonMultiple(string propertyName, UISmallButtonMultiple button)
         {
             if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, button.currentOption))
             {
