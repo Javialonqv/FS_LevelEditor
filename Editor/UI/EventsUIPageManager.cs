@@ -57,7 +57,7 @@ namespace FS_LevelEditor.Editor.UI
         UIToggle respawnCubeToggle;
         //-----------------------------------
         GameObject laserObjectsSettings;
-        UIDropdownPatcher laserStateDropdown;
+        UIButtonMultiple laserStateButton;
         //-----------------------------------
         GameObject lightObjectsSettings;
         UIToggle changeLightColorToggle;
@@ -966,7 +966,7 @@ namespace FS_LevelEditor.Editor.UI
             zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
             respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
-            laserStateDropdown.SelectOption((int)currentSelectedEvent.laserState);
+            laserStateButton.SelectOption((int)currentSelectedEvent.laserState);
             changeLightColorToggle.Set(currentSelectedEvent.changeLightColor);
             newLightColorTitleLabel.gameObject.SetActive(currentSelectedEvent.changeLightColor);
             newLightColorInputField.gameObject.SetActive(currentSelectedEvent.changeLightColor);
@@ -1308,25 +1308,18 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateLaserStateDropdown()
         {
-            GameObject laserStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), laserObjectsSettings.transform);
-            laserStateDropdownPanel.name = "LaserStateDropdownPanel";
-            laserStateDropdownPanel.transform.localPosition = new Vector3(0f, -50f, 0f);
-            laserStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(laserObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+            button.Init();
+            button.SetTitle("Laser State");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Activate", false);
+            button.AddOption("Deactivate", false);
+            button.AddOption("Toggle State", false);
+            button.onClick += (option) => OnLaserStateDropdownChanged();
 
-            UIDropdownPatcher patcher = laserStateDropdownPanel.AddComponent<UIDropdownPatcher>();
-            patcher.Init();
-            patcher.SetTitle("Laser State");
-            patcher.ClearOptions();
-            patcher.AddOption("Do Nothing", true);
-            patcher.AddOption("Activate", false);
-            patcher.AddOption("Deactivate", false);
-            patcher.AddOption("Toggle State", false);
-
-            patcher.ClearOnChangeOptions();
-            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnLaserStateDropdownChanged)));
-
-            laserStateDropdown = patcher;
-            laserStateDropdownPanel.SetActive(true);
+            laserStateButton = button;
+            button.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateLightObjectSettings()
@@ -1810,7 +1803,7 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnLaserStateDropdownChanged()
         {
-            currentSelectedEvent.laserState = (LE_Event.LaserState)laserStateDropdown.currentlySelectedID;
+            currentSelectedEvent.laserState = (LE_Event.LaserState)laserStateButton.currentSelectedID;
         }
         // -----------------------------------------
         void OnChangeLightColorToggleChanged()
