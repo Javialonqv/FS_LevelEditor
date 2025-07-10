@@ -65,7 +65,7 @@ namespace FS_LevelEditor.Editor.UI
         UIInput newLightColorInputField;
         //-----------------------------------
         GameObject ceilingLightObjectsSettings;
-        UIDropdownPatcher ceilingLightStateDropdown;
+        UIButtonMultiple ceilingLightStateButton;
         UIToggle changeCeilingLightColorToggle;
         UIInput newCeilingLightColorInputField;
         //-----------------------------------
@@ -971,7 +971,7 @@ namespace FS_LevelEditor.Editor.UI
             newLightColorTitleLabel.gameObject.SetActive(currentSelectedEvent.changeLightColor);
             newLightColorInputField.gameObject.SetActive(currentSelectedEvent.changeLightColor);
             newLightColorInputField.text = currentSelectedEvent.newLightColor;
-            ceilingLightStateDropdown.SelectOption((int)currentSelectedEvent.ceilingLightState);
+            ceilingLightStateButton.SelectOption((int)currentSelectedEvent.ceilingLightState);
             changeCeilingLightColorToggle.Set(currentSelectedEvent.changeCeilingLightColor);
             newCeilingLightColorInputField.text = currentSelectedEvent.newCeilingLightColor;
             changePackRespawnTimeToggle.Set(currentSelectedEvent.changePackRespawnTime);
@@ -1434,25 +1434,18 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateCeilingLightStateDropdown()
         {
-            GameObject ceilingLightStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), ceilingLightObjectsSettings.transform);
-            ceilingLightStateDropdownPanel.name = "CeilingLightStateDropdownPanel";
-            ceilingLightStateDropdownPanel.transform.localPosition = new Vector3(-200f, -50f, 0f);
-            ceilingLightStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(ceilingLightObjectsSettings.transform, new Vector3(-200, -10), Vector3.one * 0.8f);
+            button.Init();
+            button.SetTitle("Turn");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("On", false);
+            button.AddOption("Off", false);
+            button.AddOption("Toggle On/Off", false);
+            button.onClick += (option) => OnCeilingLightStateDropdownChanged();
 
-            UIDropdownPatcher patcher = ceilingLightStateDropdownPanel.AddComponent<UIDropdownPatcher>();
-            patcher.Init();
-            patcher.SetTitle("Turn");
-            patcher.ClearOptions();
-            patcher.AddOption("Do Nothing", true);
-            patcher.AddOption("On", false);
-            patcher.AddOption("Off", false);
-            patcher.AddOption("Toggle On/Off", false);
-
-            patcher.ClearOnChangeOptions();
-            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnCeilingLightStateDropdownChanged)));
-
-            ceilingLightStateDropdown = patcher;
-            ceilingLightStateDropdownPanel.SetActive(true);
+            ceilingLightStateButton = button;
+            button.gameObject.SetActive(true);
         }
         void CreateChangeCeilingLightColorToggle()
         {
@@ -1830,7 +1823,7 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnCeilingLightStateDropdownChanged()
         {
-            currentSelectedEvent.ceilingLightState = (LE_Event.CeilingLightState)ceilingLightStateDropdown.currentlySelectedID;
+            currentSelectedEvent.ceilingLightState = (LE_Event.CeilingLightState)ceilingLightStateButton.currentSelectedID;
         }
         void OnChangeCeilingLightColorToggleChanged()
         {
