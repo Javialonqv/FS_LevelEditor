@@ -81,7 +81,7 @@ namespace FS_LevelEditor.Editor.UI
         UIButtonMultiple switchUsableStateButton;
         //-----------------------------------
         GameObject flameTrapObjectsSettings;
-        UIDropdownPatcher flameTrapStateDropdown;
+        UIButtonMultiple flameTrapStateButton;
         //-----------------------------------
         GameObject screenObjectsSettings;
         UIToggle changeScreenColorTypeToggle;
@@ -982,7 +982,7 @@ namespace FS_LevelEditor.Editor.UI
             switchStateButton.SelectOption((int)currentSelectedEvent.switchState);
             executeSwitchActionsToggle.Set(currentSelectedEvent.executeSwitchActions);
             switchUsableStateButton.SelectOption((int)currentSelectedEvent.switchUsableState);
-            flameTrapStateDropdown.SelectOption((int)currentSelectedEvent.flameTrapState);
+            flameTrapStateButton.SelectOption((int)currentSelectedEvent.flameTrapState);
             changeScreenColorTypeToggle.Set(currentSelectedEvent.changeScreenColorType);
             screenColorTypeButton.SetOption((int)currentSelectedEvent.screenColorType, true);
             changeScreenTextToggle.Set(currentSelectedEvent.changeScreenText);
@@ -1663,25 +1663,18 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateFlameTrapStateDropdown()
         {
-            GameObject flameTrapStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), flameTrapObjectsSettings.transform);
-            flameTrapStateDropdownPanel.name = "FlameTrapStateDropdownPanel";
-            flameTrapStateDropdownPanel.transform.localPosition = new Vector3(0f, -50f, 0f);
-            flameTrapStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(flameTrapObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+            button.Init();
+            button.SetTitle("Flame State");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Activate", false);
+            button.AddOption("Deactivate", false);
+            button.AddOption("Toggle State", false);
+            button.onClick += (option) => OnFlameTrapStateDropdownChanged();
 
-            UIDropdownPatcher patcher = flameTrapStateDropdownPanel.AddComponent<UIDropdownPatcher>();
-            patcher.Init();
-            patcher.SetTitle("Flame State");
-            patcher.ClearOptions();
-            patcher.AddOption("Do Nothing", true);
-            patcher.AddOption("Activate", false);
-            patcher.AddOption("Deactivate", false);
-            patcher.AddOption("Toggle State", false);
-
-            patcher.ClearOnChangeOptions();
-            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnFlameTrapStateDropdownChanged)));
-
-            flameTrapStateDropdown = patcher;
-            flameTrapStateDropdownPanel.SetActive(true);
+            flameTrapStateButton = button;
+            button.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateScreenObjectSettings()
@@ -1868,7 +1861,7 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnFlameTrapStateDropdownChanged()
         {
-            currentSelectedEvent.flameTrapState = (LE_Event.FlameTrapState)flameTrapStateDropdown.currentlySelectedID;
+            currentSelectedEvent.flameTrapState = (LE_Event.FlameTrapState)flameTrapStateButton.currentSelectedID;
         }
         // -----------------------------------------
         void OnChangeScreenColorTypeToggleChanged()
