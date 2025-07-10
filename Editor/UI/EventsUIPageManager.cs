@@ -76,9 +76,9 @@ namespace FS_LevelEditor.Editor.UI
         UIToggle spawnPackNowToggle;
         //-----------------------------------
         GameObject switchObjectsSettings;
-        UIDropdownPatcher switchStateDropdown;
+        UIButtonMultiple switchStateButton;
         UIToggle executeSwitchActionsToggle;
-        UIDropdownPatcher switchUsableStateDropdown;
+        UIButtonMultiple switchUsableStateButton;
         //-----------------------------------
         GameObject flameTrapObjectsSettings;
         UIDropdownPatcher flameTrapStateDropdown;
@@ -979,9 +979,9 @@ namespace FS_LevelEditor.Editor.UI
             newPackRespawnTimeInputField.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
             newPackRespawnTimeInputField.SetText(currentSelectedEvent.packRespawnTime);
             spawnPackNowToggle.Set(currentSelectedEvent.spawnPackNow);
-            switchStateDropdown.SelectOption((int)currentSelectedEvent.switchState);
+            switchStateButton.SelectOption((int)currentSelectedEvent.switchState);
             executeSwitchActionsToggle.Set(currentSelectedEvent.executeSwitchActions);
-            switchUsableStateDropdown.SelectOption((int)currentSelectedEvent.switchUsableState);
+            switchUsableStateButton.SelectOption((int)currentSelectedEvent.switchUsableState);
             flameTrapStateDropdown.SelectOption((int)currentSelectedEvent.flameTrapState);
             changeScreenColorTypeToggle.Set(currentSelectedEvent.changeScreenColorType);
             screenColorTypeButton.SetOption((int)currentSelectedEvent.screenColorType, true);
@@ -1589,25 +1589,18 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSwitchStateSettings()
         {
-            GameObject switchStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), switchObjectsSettings.transform);
-            switchStateDropdownPanel.name = "SwitchStateDropdownPanel";
-            switchStateDropdownPanel.transform.localPosition = new Vector3(-200f, -50f, 0f);
-            switchStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(switchObjectsSettings.transform, new Vector3(-200, -10), Vector3.one * 0.8f);
+            button.Init();
+            button.SetTitle("Set Active State");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Activated", false);
+            button.AddOption("Deactivated", false);
+            button.AddOption("Toggle", false);
+            button.onClick += (option) => OnSwitchStateDropdownChanged();
 
-            UIDropdownPatcher patcher = switchStateDropdownPanel.AddComponent<UIDropdownPatcher>();
-            patcher.Init();
-            patcher.SetTitle("Set Active State");
-            patcher.ClearOptions();
-            patcher.AddOption("Do Nothing", true);
-            patcher.AddOption("Activated", false);
-            patcher.AddOption("Deactivated", false);
-            patcher.AddOption("Toggle", false);
-
-            patcher.ClearOnChangeOptions();
-            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchStateDropdownChanged)));
-
-            switchStateDropdown = patcher;
-            switchStateDropdownPanel.SetActive(true);
+            switchStateButton = button;
+            button.gameObject.SetActive(true);
         }
         void CreateExecuteSwitchActionsToggle()
         {
@@ -1621,25 +1614,19 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSwitchUsableStateSettings()
         {
-            GameObject switchUsableStateDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), switchObjectsSettings.transform);
-            switchUsableStateDropdownPanel.name = "SwitchUsableStateDropdownPanel";
-            switchUsableStateDropdownPanel.transform.localPosition = new Vector3(200f, -50f, 0f);
-            switchUsableStateDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(switchObjectsSettings.transform, new Vector3(200, -10), Vector3.one * 0.8f);
+            button.name = "SwitchUsableStateDropdownPanel";
+            button.Init();
+            button.SetTitle("Set Usable State");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Usable", false);
+            button.AddOption("Unusable", false);
+            button.AddOption("Toggle", false);
+            button.onClick += (option) => OnSwitchUsableStateDropdownChanged();
 
-            UIDropdownPatcher patcher = switchUsableStateDropdownPanel.AddComponent<UIDropdownPatcher>();
-            patcher.Init();
-            patcher.SetTitle("Set Usable State");
-            patcher.ClearOptions();
-            patcher.AddOption("Do Nothing", true);
-            patcher.AddOption("Usable", false);
-            patcher.AddOption("Unusable", false);
-            patcher.AddOption("Toggle", false);
-
-            patcher.ClearOnChangeOptions();
-            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchUsableStateDropdownChanged)));
-
-            switchUsableStateDropdown = patcher;
-            switchUsableStateDropdownPanel.SetActive(true);
+            switchUsableStateButton = button;
+            button.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateFlameTrapObjectSettings()
@@ -1866,7 +1853,7 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnSwitchStateDropdownChanged()
         {
-            currentSelectedEvent.switchState = (LE_Event.SwitchState)switchStateDropdown.currentlySelectedID;
+            currentSelectedEvent.switchState = (LE_Event.SwitchState)switchStateButton.currentSelectedID;
 
             executeSwitchActionsToggle.gameObject.SetActive(currentSelectedEvent.switchState != LE_Event.SwitchState.Do_Nothing);
         }
@@ -1876,7 +1863,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void OnSwitchUsableStateDropdownChanged()
         {
-            currentSelectedEvent.switchUsableState = (LE_Event.SwitchUsableState)switchUsableStateDropdown.currentlySelectedID;
+            currentSelectedEvent.switchUsableState = (LE_Event.SwitchUsableState)switchUsableStateButton.currentSelectedID;
         }
         // -----------------------------------------
         void OnFlameTrapStateDropdownChanged()
