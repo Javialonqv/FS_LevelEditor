@@ -43,32 +43,6 @@ namespace FS_LevelEditor
             base.OnInstantiated(scene);
         }
 
-        public override void ObjectStart(LEScene scene)
-        {
-            if (scene == LEScene.Playmode)
-            {
-                Invoke("EnableStartCheckpoint", 1f);
-            }
-        }
-
-        public override void InitComponent()
-        {
-            gameObject.GetChildAt("Content/StartCheckpoint").tag = "Checkpoint";
-
-            CheckpointController checkpoint = gameObject.GetChildAt("Content/StartCheckpoint").AddComponent<CheckpointController>();
-            checkpoint.objectsToEnable = new GameObject[0];
-            checkpoint.onSave = new UnityEngine.Events.UnityEvent();
-            checkpoint.onSpawn = new UnityEngine.Events.UnityEvent();
-
-            checkpoint.gameObject.SetActive(false);
-
-            initialized = true;
-        }
-        void EnableStartCheckpoint()
-        {
-            gameObject.GetChildAt("Content/StartCheckpoint").SetActive(true);
-        }
-
         void Update()
         {
             // If the spawn sprite is null is probaly because we're already in playmode and the spawn sprite was destroyed.
