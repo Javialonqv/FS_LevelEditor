@@ -35,6 +35,7 @@ namespace FS_LevelEditor
                 cube.transform.parent = Camera.main.transform;
                 cube.transform.localPosition = Vector3.zero;
                 cube.transform.rotation = Quaternion.identity;
+                cube.GetComponent<MeshRenderer>().castShadows = false;
             }
 #endif
             if (sceneName.Contains("Menu"))
