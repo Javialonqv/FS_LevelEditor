@@ -360,6 +360,7 @@ namespace FS_LevelEditor.Editor
                 }
                 else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ))
                 {
+                    SetCurrentEditorState(EditorState.PAUSED); // It's set to paused while in events panel, so the user can't move the camera or anything.
                     EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
                     return;
                 }
