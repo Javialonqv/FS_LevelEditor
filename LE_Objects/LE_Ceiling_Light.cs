@@ -15,6 +15,7 @@ namespace FS_LevelEditor
         GameObject lightObj;
         GameObject neonOff, neonOn;
         Light light;
+        GameObject rangeSphere;
 
         RealtimeCeilingLight lightComp;
 
@@ -23,13 +24,15 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>
             {
                 { "ActivateOnStart", true },
-                { "Color", Color.white }
+                { "Color", Color.white },
+                { "Range", 6f }
             };
 
             lightObj = gameObject.GetChildAt("Content/Light");
             neonOff = gameObject.GetChildAt("Content/Mesh/NeonOff");
             neonOn = gameObject.GetChildAt("Content/Mesh/NeonOn");
             light = lightObj.GetComponent<Light>();
+            rangeSphere = gameObject.GetChildAt("Content/RangeSphere");
         }
 
         public override void OnInstantiated(LEScene scene)
@@ -160,10 +163,29 @@ namespace FS_LevelEditor
                     }
                 }
             }
+            else if (name == "Range")
+            {
+                if (value is float)
+                {
+                    light.range = (float)value;
+                    SetRangeSphereScale((float)value);
+                    properties["Range"] = (float)value;
+                    return true;
+                }
+                else if (value is string)
+                {
+                    if (Utilities.TryParseFloat((string)value, out float result))
+                    {
+                        light.range = result;
+                        SetRangeSphereScale(result);
+                        properties["Range"] = result;
+                        return true;
+                    }
+                }
+            }
 
             return base.SetProperty(name, value);
         }
-
         public override bool TriggerAction(string actionName)
         {
             if (actionName == "Activate")
@@ -192,6 +214,19 @@ namespace FS_LevelEditor
             return base.TriggerAction(actionName);
         }
 
+        public override void OnSelect()
+        {
+            base.OnSelect();
+
+            rangeSphere.SetActive(true);
+        }
+        public override void OnDeselect(GameObject nextSelectedObj)
+        {
+            base.OnDeselect(nextSelectedObj);
+
+            rangeSphere.SetActive(false);
+        }
+
         void SetEnabledMeshOnEditor()
         {
             bool lightEnabled = (bool)GetProperty("ActivateOnStart");
@@ -205,6 +240,30 @@ namespace FS_LevelEditor
             Color lightColor = GetProperty<Color>("Color");
 
             neonOn.GetComponent<MeshRenderer>().material.SetColor("_EmissionColor", lightColor);
+        }
+
+        void SetRangeSphereScale(float range)
+        {
+            Vector3 rangeSpherescale = Vector3.one * light.range * 2;
+            rangeSphere.transform.localScale = rangeSpherescale;
+        }
+
+        // Basically the same method as in the base class, but skipping the range sphere.
+        public override void SetObjectColor(LEObjectContext context)
+        {
+            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
+            {
+                if (renderer.name == rangeSphere.name) continue;
+
+                foreach (var material in renderer.materials)
+                {
+                    if (!material.HasProperty("_Color")) continue;
+
+                    Color toSet = LE_Object.GetObjectColorForObject(objectOriginalName, context);
+                    toSet.a = material.color.a;
+                    material.color = toSet;
+                }
+            }
         }
     }
 }

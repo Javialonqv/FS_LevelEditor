@@ -527,7 +527,7 @@ namespace FS_LevelEditor
                 return GetObjectColor(context);
             }
         }
-        public void SetObjectColor(LEObjectContext context)
+        public virtual void SetObjectColor(LEObjectContext context)
         {
             foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
             {

@@ -459,6 +459,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Color (Hex)", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+            CreateObjectAttribute("Range", AttributeType.INPUT_FIELD, "6", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Range");
 
             ceilingLightAttributes.SetActive(false);
             attributesPanels.Add("Ceiling Light", ceilingLightAttributes);
