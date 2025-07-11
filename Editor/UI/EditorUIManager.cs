@@ -50,7 +50,6 @@ namespace FS_LevelEditor.Editor.UI
         bool exitPopupEnabled = false;
 
         public GameObject helpPanel;
-        GameObject globalPropertiesPanel;
 
         GameObject hittenTargetObjPanel;
         UILabel hittenTargetObjLabel;
@@ -108,10 +107,10 @@ namespace FS_LevelEditor.Editor.UI
 
             EditorObjectsToBuildUI.Create(editorUIParent.transform);
             SelectedObjPanel.Create(editorUIParent.transform);
+            GlobalPropertiesPanel.Create(editorUIParent.transform);
             CreateSavingLevelLabel();
             CreateCurrentModeLabel();
             CreateHelpPanel();
-            CreateGlobalPropertiesPanel();
 
             EventsUIPageManager.Create();
             TextEditorUI.Create();
@@ -314,170 +313,6 @@ namespace FS_LevelEditor.Editor.UI
             if (isEnablingIt) { SetEditorUIContext(EditorUIContext.HELP_PANEL); }
             else { SetEditorUIContext(EditorUIContext.NORMAL); }
         }
-
-        #region Global Properties Related
-        public void CreateGlobalPropertiesPanel()
-        {
-            #region Create Object With Background
-            globalPropertiesPanel = new GameObject("GlobalPropertiesPanel");
-            globalPropertiesPanel.transform.parent = editorUIParent.transform;
-            globalPropertiesPanel.transform.localScale = Vector3.one;
-            globalPropertiesPanel.transform.localPosition = new Vector3(1320f, 0f, 0f);
-
-            UISprite background = globalPropertiesPanel.AddComponent<UISprite>();
-            background.atlas = NGUI_Utils.UITexturesAtlas;
-            background.spriteName = "Square_Border_Beveled_HighOpacity";
-            background.type = UIBasicSprite.Type.Sliced;
-            background.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            background.width = 650;
-            background.height = 1010;
-
-            BoxCollider collider = globalPropertiesPanel.AddComponent<BoxCollider>();
-            collider.size = new Vector2(650f, 1010f);
-            #endregion
-
-            #region Create Title
-            UILabel titleLabel = NGUI_Utils.CreateLabel(globalPropertiesPanel.transform, new Vector3(0, 460), new Vector3Int(600, 50, 0), "Global Properties",
-                NGUIText.Alignment.Center, UIWidget.Pivot.Center);
-            titleLabel.name = "Title";
-            titleLabel.depth = 1;
-            titleLabel.fontSize = 30;
-            #endregion
-
-            #region Create Has Taser Toggle
-            GameObject hasTaserToggle = NGUI_Utils.CreateToggle(globalPropertiesPanel.transform,
-                new Vector3(-300f, 350f), new Vector3Int(200, 42, 1), "Has Taser");
-            hasTaserToggle.name = "HasTaserToggle";
-            EventDelegate hasTaserDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithToggle),
-                NGUI_Utils.CreateEventDelegateParamter(this, "name", "HasTaser"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", hasTaserToggle.GetComponent<UIToggle>()));
-            hasTaserToggle.GetComponent<UIToggle>().onChange.Clear();
-            hasTaserToggle.GetComponent<UIToggle>().onChange.Add(hasTaserDelegate);
-            #endregion
-
-            #region Create Has Jetpack Toggle
-            GameObject hasJetpackToggle = NGUI_Utils.CreateToggle(globalPropertiesPanel.transform,
-                new Vector3(40f, 350f), new Vector3Int(200, 42, 1), "Has Jetpack");
-            hasJetpackToggle.name = "HasJetpackToggle";
-            EventDelegate hasJetpackDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithToggle),
-                NGUI_Utils.CreateEventDelegateParamter(this, "name", "HasJetpack"),
-                NGUI_Utils.CreateEventDelegateParamter(this, "toggle", hasJetpackToggle.GetComponent<UIToggle>()));
-            hasJetpackToggle.GetComponent<UIToggle>().onChange.Clear();
-            hasJetpackToggle.GetComponent<UIToggle>().onChange.Add(hasJetpackDelegate);
-            #endregion
-
-            #region Create Death Y Limit Field
-            UILabel deathYLimitLabel = NGUI_Utils.CreateLabel(globalPropertiesPanel.transform, new Vector3(-300, 270), new Vector3Int(250, 50, 0), "Death Y Limit");
-            deathYLimitLabel.name = "DeathYLimitLabel";
-            deathYLimitLabel.depth = 1;
-            deathYLimitLabel.fontSize = 30;
-
-            UICustomInputField deathYLimitField = NGUI_Utils.CreateInputField(globalPropertiesPanel.transform, new Vector3(100f, 270f, 0f),
-                new Vector3Int(300, 50, 0), 30, "100", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
-            deathYLimitField.name = "DeathYLimit";
-            deathYLimitField.onChange += () => SetGlobalPropertyWithInput("DeathYLimit", deathYLimitField);
-
-            UIButtonAsToggle visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(globalPropertiesPanel.transform,
-                new Vector3(285f, 270f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);
-            visualizeDeathYLimitButton.name = "VisualizeDeathYLimitBtnToggle";
-            visualizeDeathYLimitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            visualizeDeathYLimitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-            visualizeDeathYLimitButton.onClick += OnVisualizeDeathYLimitToggleClick;
-            #endregion
-
-            #region Create Level Skybox Dropdown
-            UIDropdownPatcher skyboxDropdown = NGUI_Utils.CreateDropdown(globalPropertiesPanel.transform, new Vector3(0f, 160f), Vector3.one * 0.8f);
-            skyboxDropdown.gameObject.name = "SkyboxDropdown";
-            skyboxDropdown.SetTitle("Skybox");
-            skyboxDropdown.AddOption("Chapter 1", true);
-            skyboxDropdown.AddOption("Chapter 2", false);
-            skyboxDropdown.AddOption("Chapter 3 & 4", false);
-
-            skyboxDropdown.AddOnChangeOption((id) => SetGlobalPropertyWithDropdown("Skybox", id));
-            #endregion
-        }
-        public void ShowOrHideGlobalPropertiesPanel()
-        {
-            if (!IsCurrentUIContext(EditorUIContext.GLOBAL_PROPERTIES)) { SetEditorUIContext(EditorUIContext.GLOBAL_PROPERTIES); }
-            else { SetEditorUIContext(EditorUIContext.NORMAL); }
-        }
-        void RefreshGlobalPropertiesPanelValues()
-        {
-            GameObject panel = globalPropertiesPanel;
-
-            panel.GetChildWithName("HasTaserToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasTaser"));
-            panel.GetChildWithName("HasJetpackToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasJetpack"));
-            panel.GetChildWithName("DeathYLimit").GetComponent<UIInput>().text = (float)GetGlobalProperty("DeathYLimit") + "";
-            panel.GetChildWithName("SkyboxDropdown").GetComponent<UIDropdownPatcher>().SelectOption((int)GetGlobalProperty("Skybox"));
-        }
-
-        public void SetGlobalPropertyWithToggle(string name, UIToggle toggle)
-        {
-            SetGlobalProperty(name, toggle.isChecked);
-        }
-        public void SetGlobalPropertyWithInput(string propertyName, UICustomInputField inputField)
-        {
-            // ParseInputFieldData returns true if the introduced data CAN be parsed.
-            if (ParseInputFieldData(inputField.name, inputField.GetText(), out object parsedData))
-            {
-                EditorController.Instance.levelHasBeenModified = true;
-                SetGlobalProperty(propertyName, parsedData);
-                inputField.Set(true);
-            }
-            else
-            {
-                inputField.Set(false);
-            }
-        }
-        bool ParseInputFieldData(string inputFieldName, string fieldText, out object parsedData)
-        {
-            switch (inputFieldName)
-            {
-                case "DeathYLimit":
-                    bool toReturn = Utilities.TryParseFloat(fieldText, out float result);
-                    parsedData = result;
-                    return toReturn;
-            }
-
-            parsedData = null;
-            return false;
-        }
-        public void SetGlobalPropertyWithDropdown(string propertyName, int selectedID)
-        {
-            SetGlobalProperty(propertyName, selectedID);
-        }
-        public void SetGlobalProperty(string name, object value)
-        {
-            if (EditorController.Instance.globalProperties.ContainsKey(name))
-            {
-                if (EditorController.Instance.globalProperties[name].GetType().Name == value.GetType().Name)
-                {
-                    EditorController.Instance.globalProperties[name] = value;
-                    EditorController.Instance.levelHasBeenModified = true;
-
-                    if (name == "Skybox")
-                    {
-                        EditorController.Instance.SetupSkybox((int)value);
-                    }
-                }
-            }
-        }
-        public object GetGlobalProperty(string name)
-        {
-            if (EditorController.Instance.globalProperties.ContainsKey(name))
-            {
-                return EditorController.Instance.globalProperties[name];
-            }
-
-            return null;
-        }
-
-        // Methods for "special" UI elements, such as buttons.
-        void OnVisualizeDeathYLimitToggleClick(bool newState)
-        {
-            EditorController.Instance.deathYPlane.gameObject.SetActive(newState);
-        }
-        #endregion
 
 
         public void SetupPauseWhenInEditor()
@@ -740,7 +575,7 @@ namespace FS_LevelEditor.Editor.UI
 
                 if (currentUIContext == EditorUIContext.GLOBAL_PROPERTIES)
                 {
-                    TweenPosition.Begin(globalPropertiesPanel, 0.2f, new Vector2(1320, 0));
+                    TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(1320, 0));
                 }
             }
 
@@ -778,8 +613,8 @@ namespace FS_LevelEditor.Editor.UI
 
             if (context == EditorUIContext.GLOBAL_PROPERTIES)
             {
-                RefreshGlobalPropertiesPanelValues();
-                TweenPosition.Begin(globalPropertiesPanel, 0.2f, new Vector2(600, 0));
+                GlobalPropertiesPanel.Instance.RefreshGlobalPropertiesPanelValues();
+                TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(600, 0));
 
                 if (currentUIContext == EditorUIContext.HELP_PANEL)
                 {
@@ -796,7 +631,7 @@ namespace FS_LevelEditor.Editor.UI
                         break;
 
                     case EditorUIContext.GLOBAL_PROPERTIES:
-                        TweenPosition.Begin(globalPropertiesPanel, 0.2f, new Vector2(1320, 0));
+                        TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(1320, 0));
                         break;
 
                     case EditorUIContext.EVENTS_PANEL:
@@ -821,7 +656,7 @@ namespace FS_LevelEditor.Editor.UI
                         break;
 
                     case EditorUIContext.GLOBAL_PROPERTIES:
-                        TweenPosition.Begin(globalPropertiesPanel, 0.2f, new Vector2(600, 0));
+                        TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(600, 0));
                         context = EditorUIContext.GLOBAL_PROPERTIES;
                         break;
                 }

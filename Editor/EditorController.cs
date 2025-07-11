@@ -482,7 +482,7 @@ namespace FS_LevelEditor.Editor
 
             if (Input.GetKeyDown(KeyCode.O))
             {
-                EditorUIManager.Instance.ShowOrHideGlobalPropertiesPanel();
+                GlobalPropertiesPanel.Instance.ShowOrHideGlobalPropertiesPanel();
             }
         }
 

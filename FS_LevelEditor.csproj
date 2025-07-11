@@ -354,6 +354,7 @@
 		<Compile Include="Core.cs" />
 		<Compile Include="Editor\UI\ContextMenu.cs" />
 		<Compile Include="Editor\UI\EditorObjectsToBuildUI.cs" />
+		<Compile Include="Editor\UI\GlobalPropertiesPanel.cs" />
 		<Compile Include="Editor\UI\SelectedObjPanel.cs" />
 		<Compile Include="Editor\UI\TextEditorUI.cs" />
 		<Compile Include="EventExecuter.cs" />
