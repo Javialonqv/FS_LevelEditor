@@ -781,31 +781,38 @@ namespace FS_LevelEditor.Editor
             // About the scale being fixed to 1... you can't change the scale of the PREVIEW object, so...
         }
 
+        // Optimized and cleaned version of CanUseThatSnapToGridTrigger
         bool CanUseThatSnapToGridTrigger(string objToBuildName, GameObject triggerObj)
         {
-            GameObject triggerRootObj = triggerObj.transform.parent.parent.gameObject;
+            var triggerRootObj = triggerObj.transform.parent.parent.gameObject;
+            var objToBuildType = LE_Object.ConvertNameToObjectType(objToBuildName);
+
+            // Check for ALL of the object-specific triggers for this object, and see if there's a specific trigger for this object to build.
             bool existsSpecificTriggerForThisObjToBuild = false;
-            LE_Object.ObjectType? objToBuildType = LE_Object.ConvertNameToObjectType(objToBuildName);
-
-            // First, check if the object already has a specific trigger set for it, just to make sure it doesn't pick up the global one ;)
-            foreach (GameObject rootChild in triggerRootObj.GetChilds())
+            foreach (var child in triggerRootObj.GetChilds())
             {
-                List<LE_Object.ObjectType?> availableObjectsForTriggerInCurrentChild = rootChild.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim())).ToList();
-
-                if (availableObjectsForTriggerInCurrentChild.Contains(objToBuildType))
+                foreach (var availableObjectNames in child.name.Split('|'))
                 {
-                    existsSpecificTriggerForThisObjToBuild = true;
+                    var trimmedName = availableObjectNames.Trim();
+                    var objectTypesForTriggerSet = LE_Object.GetObjectTypesForSnapToGrid(trimmedName);
+                    if (objectTypesForTriggerSet.Contains(objToBuildType))
+                    {
+                        existsSpecificTriggerForThisObjToBuild = true;
+                        break;
+                    }
                 }
             }
 
-            // Then, check if the object CAN use that trigger the player is clicking.
-            List<LE_Object.ObjectType?> availableObjectsForTrigger = triggerObj.transform.parent.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim())).ToList();
-            if (availableObjectsForTrigger.Contains(objToBuildType))
-            {
-                return true;
-            }
+            // Now get the objects that this trigger is compatible with.
+            var availableObjectsForTrigger = triggerObj.transform.parent.name
+                .Split('|')
+                .SelectMany(x => LE_Object.GetObjectTypesForSnapToGrid(x.Trim())).ToList();
 
-            if (triggerObj.transform.parent.name == "Global" && !existsSpecificTriggerForThisObjToBuild) return true;
+            if (availableObjectsForTrigger.Contains(objToBuildType))
+                return true;
+
+            if (triggerObj.transform.parent.name == "Global" && !existsSpecificTriggerForThisObjToBuild)
+                return true;
 
             return false;
         }

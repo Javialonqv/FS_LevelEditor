@@ -30,12 +30,35 @@ namespace FS_LevelEditor
     {
         public enum ObjectType
         {
+            #region GROUNDS
             GROUND,
+            CYAN_GROUND,
+            RED_GROUND,
+            ORANGE_GROUND,
+            LARGE_GROUND,
+            GROUND_2,
+            #endregion
+
+            #region WALLS
             WALL,
-            LIGHT,
-            VENT_WITH_SMOKE,
-            PACK,
+            WALL_NO_COLOR,
+            X_WALL,
+            #endregion
+
+            WINDOW,
+
+            #region LIGHTS
+            DIRECTIONAL_LIGHT,
+            POINT_LIGHT,
+            CEILING_LIGHT,
+            #endregion
+
+            VENT_WITH_SMOKE_GREEN,
+            VENT_WITH_SMOKE_CYAN,
+            HEALTH_PACK,
+            AMMO_PACK,
             SAW,
+            SAW_WAYPOINT,
             SWITCH,
             PLAYER_SPAWN,
             CUBE,
@@ -50,29 +73,35 @@ namespace FS_LevelEditor
             TRIGGER
         }
 
-        public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
+        public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
         {
-            { "CYAN_GROUND", ObjectType.GROUND },
-            { "RED_GROUND", ObjectType.GROUND },
-            { "ORANGE_GROUND", ObjectType.GROUND },
-            { "LARGE_GROUND", ObjectType.GROUND },
-            { "GROUND_2", ObjectType.GROUND },
-
-            { "WALL_NO_COLOR", ObjectType.WALL },
-            { "X_WALL", ObjectType.WALL },
-            { "WINDOW", ObjectType.WALL },
-
-            { "DIRECTIONAL_LIGHT", ObjectType.LIGHT },
-            { "POINT_LIGHT", ObjectType.LIGHT },
-            { "CEILING_LIGHT", ObjectType.LIGHT },
-
-            { "VENT_WITH_SMOKE_GREEN", ObjectType.VENT_WITH_SMOKE },
-            { "VENT_WITH_SMOKE_CYAN", ObjectType.VENT_WITH_SMOKE },
-
-            { "HEALTH_PACK", ObjectType.PACK },
-            { "AMMO_PACK", ObjectType.PACK },
-
-            { "SAW_WAYPOINT", ObjectType.SAW }
+            { "GROUND", new List<ObjectType>(){
+                ObjectType.GROUND,
+                ObjectType.CYAN_GROUND,
+                ObjectType.RED_GROUND,
+                ObjectType.ORANGE_GROUND,
+                ObjectType.LARGE_GROUND,
+                ObjectType.GROUND_2
+                } },
+            { "WALL", new List<ObjectType>(){
+                ObjectType.WALL,
+                ObjectType.WALL_NO_COLOR,
+                ObjectType.X_WALL,
+                ObjectType.WINDOW
+                } },
+            { "LIGHT", new List<ObjectType>(){
+                ObjectType.DIRECTIONAL_LIGHT,
+                ObjectType.POINT_LIGHT,
+                ObjectType.CEILING_LIGHT
+                } },
+            { "VENT_WITH_SMOKE", new List<ObjectType>(){
+                ObjectType.VENT_WITH_SMOKE_GREEN,
+                ObjectType.VENT_WITH_SMOKE_CYAN
+                } },
+            { "PACK", new List<ObjectType>(){
+                ObjectType.HEALTH_PACK,
+                ObjectType.AMMO_PACK
+                } }
         };
 
         public static Dictionary<ObjectType, int> alreadyUsedObjectIDs = new Dictionary<ObjectType, int>();
@@ -272,24 +301,32 @@ namespace FS_LevelEditor
                 LE_CustomErrorPopups.MultipleObjectsWithSameID();
             }
         }
-        public static ObjectType? ConvertNameToObjectType(string objName)
+        public static ObjectType? ConvertNameToObjectType(string objName, bool isForSnapToGrid = false)
         {
-            try
+            string objTypeName = objName.ToUpper().Replace(' ', '_');
+            if (Enum.TryParse<ObjectType>(objTypeName, true, out ObjectType result))
             {
-                string objTypeName = objName.ToUpper().Replace(' ', '_');
-                if (objectVariants.ContainsKey(objTypeName))
-                {
-                    return objectVariants[objTypeName];
-                }
-                else
-                {
-                    return (ObjectType)Enum.Parse(typeof(ObjectType), objTypeName);
-                }
+                return result;
             }
-            catch
+            else
             {
+                Logger.Error($"Couldn't convert object name \"{objName}\" to a valid ObjectType, returning null.");
                 return null;
             }
+        }
+        public static List<ObjectType?> GetObjectTypesForSnapToGrid(string targetObjType)
+        {
+            if (classifiedObjectTypes.ContainsKey(targetObjType))
+            {
+                return classifiedObjectTypes[targetObjType].Cast<ObjectType?>().ToList();
+            }
+
+            if (Enum.TryParse<ObjectType>(targetObjType, true, out ObjectType result))
+            {
+                return new List<ObjectType?>() { result };
+            }
+
+            return new List<ObjectType?>();
         }
         static bool HasReachedObjectLimit(Type objectCompType)
         {
