@@ -43,9 +43,8 @@ namespace FS_LevelEditor
             WALL,
             WALL_NO_COLOR,
             X_WALL,
+            WINDOW, // Yeah, windows are just a structure, so, I'll mark them as a wall.
             #endregion
-
-            WINDOW,
 
             #region LIGHTS
             DIRECTIONAL_LIGHT,
