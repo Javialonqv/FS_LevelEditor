@@ -14,7 +14,7 @@ namespace FS_LevelEditor
         // Since there's only ONE player spawn obj per level, don't even put the id on it.
         public override string objectFullNameWithID
         {
-            get { return objectOriginalName; }
+            get { return objectType.ToString(); }
         }
 
         GameObject spawnSprite;

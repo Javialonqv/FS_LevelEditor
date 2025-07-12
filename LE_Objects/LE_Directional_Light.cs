@@ -13,7 +13,7 @@ namespace FS_LevelEditor
         // Since there's only ONE directional light per level, dont' even put the id on it.
         public override string objectFullNameWithID
         {
-            get { return objectOriginalName; }
+            get { return objectType.ToString(); }
         }
 
         Light light;

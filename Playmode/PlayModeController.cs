@@ -1,14 +1,15 @@
-﻿using MelonLoader;
+﻿using Harmony;
+using Il2Cpp;
+using MelonLoader;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using System.Reflection;
 using UnityEngine.SceneManagement;
-using Il2Cpp;
-using System.Collections;
 
 namespace FS_LevelEditor.Playmode
 {
@@ -23,8 +24,8 @@ namespace FS_LevelEditor.Playmode
 
         GameObject editorObjectsRootFromBundle;
         List<string> categories = new List<string>();
-        Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
-        List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
+        Dictionary<LE_Object.ObjectType, GameObject> allCategoriesObjects = new();
+        List<Dictionary<LE_Object.ObjectType, GameObject>> allCategoriesObjectsSorted = new();
         GameObject[] otherObjectsFromBundle;
         public GameObject levelObjectsParent;
 
@@ -132,22 +133,28 @@ namespace FS_LevelEditor.Playmode
             return null;
         }
 
-        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, Vector3 scale, bool setAsSelected = true)
+        public GameObject PlaceObject(LE_Object.ObjectType? objectType, Vector3 position, Vector3 eulerAngles, Vector3 scale, bool setAsSelected = true)
         {
-            GameObject template = allCategoriesObjects[objName];
+            if (objectType == null)
+            {
+                Logger.Error("objectType is null. Skipping object placement...");
+                return null;
+            }
+
+            GameObject template = allCategoriesObjects[objectType.Value];
             GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
             obj.transform.localPosition = position;
             obj.transform.localEulerAngles = eulerAngles;
             obj.transform.localScale = scale;
 
-            LE_Object addedComp = LE_Object.AddComponentToObject(obj, objName);
+            LE_Object addedComp = LE_Object.AddComponentToObject(obj, objectType.Value);
 
-            if (objName == "Screen")
+            if (objectType == LE_Object.ObjectType.SCREEN)
             {
                 screensOnTheLevel.Add((LE_Screen)addedComp);
             }
-            else if (objName == "Small Screen")
+            else if (objectType == LE_Object.ObjectType.SMALL_SCREEN)
             {
                 smallScreensOnTheLevel.Add((LE_Small_Screen)addedComp);
             }
@@ -206,12 +213,17 @@ namespace FS_LevelEditor.Playmode
 
             foreach (var categoryObj in editorObjectsRootFromBundle.GetChilds())
             {
-                Dictionary<string, GameObject> categoryObjects = new();
+                Dictionary<LE_Object.ObjectType, GameObject> categoryObjects = new();
 
                 foreach (var obj in categoryObj.GetChilds())
                 {
-                    categoryObjects.Add(obj.name, obj);
-                    allCategoriesObjects.Add(obj.name, obj);
+                    if (obj.name == "None") continue;
+
+                    var objectType = LE_Object.ConvertNameToObjectType(obj.name);
+                    if (objectType == null) continue; // JUST IN CASE.
+
+                    categoryObjects.Add(objectType.Value, obj);
+                    allCategoriesObjects.Add(objectType.Value, obj);
                 }
 
                 allCategoriesObjectsSorted.Add(categoryObjects);

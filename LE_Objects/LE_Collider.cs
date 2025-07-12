@@ -20,7 +20,7 @@ namespace FS_LevelEditor
             base.OnInstantiated(scene);
         }
 
-        public static new Color GetObjectColor(LEObjectContext context)
+        public static new Color GetDefaultObjectColor(LEObjectContext context)
         {
             return new Color(0f, 1f, 0.07843138f);
         }

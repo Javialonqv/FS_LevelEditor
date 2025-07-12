@@ -104,7 +104,7 @@ namespace FS_LevelEditor
             eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnExit"]);
         }
 
-        public static new Color GetObjectColor(LEObjectContext context)
+        public static new Color GetDefaultObjectColor(LEObjectContext context)
         {
             return new Color(1f, 1f, 0.07843138f);
         }

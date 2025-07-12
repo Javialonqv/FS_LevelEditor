@@ -699,10 +699,10 @@ namespace FS_LevelEditor.Editor.UI
             // The child's name is the name of the target obj, but if it contains a '|' then that panel may be compatible for multiple objects (Like ammo & health packs).
             foreach (var child in objectSpecificPanelsParent.gameObject.GetChilds())
             {
-                List<string> thisPanelIsForObjects = child.name.Split('|').ToList();
-                thisPanelIsForObjects = thisPanelIsForObjects.Select(x => x = x.Trim()).ToList();
+                List<LE_Object.ObjectType?> thisPanelIsForObjects = child.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim()))
+                    .ToList();
 
-                if (thisPanelIsForObjects.Contains(objComponent.objectOriginalName))
+                if (thisPanelIsForObjects.Contains(objComponent.objectType))
                 {
                     specificAttributesFound = true;
 

@@ -299,7 +299,7 @@ namespace FS_LevelEditor
             waypoint.transform.localEulerAngles = Vector3.zero;
             waypoint.transform.localScale = Vector3.one;
 
-            LE_Saw_Waypoint objComponent = (LE_Saw_Waypoint)LE_Object.AddComponentToObject(waypoint, "Saw Waypoint", true);
+            LE_Saw_Waypoint objComponent = (LE_Saw_Waypoint)LE_Object.AddComponentToObject(waypoint, LE_Object.ObjectType.SAW_WAYPOINT, true);
 
             if (nextWaypoint == null) // If null, then this waypoint will be the first one.
             {

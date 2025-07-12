@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
+using Harmony;
 using Il2Cpp;
 using MelonLoader;
 using System;
@@ -36,8 +37,8 @@ namespace FS_LevelEditor.Editor
 
         // Avaiable objects from all of the categories.
         GameObject editorObjectsRootFromBundle;
-        public List<Dictionary<string, GameObject>> allCategoriesObjectsSorted = new List<Dictionary<string, GameObject>>();
-        public Dictionary<string, GameObject> allCategoriesObjects = new Dictionary<string, GameObject>();
+        public List<Dictionary<LE_Object.ObjectType, GameObject>> allCategoriesObjectsSorted = new ();
+        public Dictionary<LE_Object.ObjectType, GameObject> allCategoriesObjects = new ();
         GameObject[] otherObjectsFromBundle;
 
         // Available categories related variables.
@@ -45,7 +46,7 @@ namespace FS_LevelEditor.Editor
         public string currentCategory = "";
         public int currentCategoryID = 0;
 
-        public string currentObjectToBuildName = "";
+        public LE_Object.ObjectType? currentObjectToBuildType = null;
         GameObject currentObjectToBuild;
         GameObject previewObjectToBuildObj = null;
 
@@ -700,7 +701,7 @@ namespace FS_LevelEditor.Editor
                 {
                     if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
                     {
-                        if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hits[0].collider.gameObject))
+                        if (CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hits[0].collider.gameObject))
                         {
                             snapWithTrigger = true;
                             rayToUseWithSnap = hits[0];
@@ -720,7 +721,7 @@ namespace FS_LevelEditor.Editor
                     {
                         if (hit.collider.gameObject.name.StartsWith("StaticPos") && Input.GetKey(KeyCode.LeftControl))
                         {
-                            if (CanUseThatSnapToGridTrigger(currentObjectToBuildName, hit.collider.gameObject))
+                            if (CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hit.collider.gameObject))
                             {
                                 snapWithTrigger = true;
                                 rayToUseWithSnap = hit;
@@ -776,16 +777,15 @@ namespace FS_LevelEditor.Editor
         void InstanceObjectInThePreviewObjectPos()
         {
             levelHasBeenModified = true;
-            PlaceObject(currentObjectToBuildName, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, Vector3.one, true);
+            PlaceObject(currentObjectToBuildType, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, Vector3.one, true);
 
             // About the scale being fixed to 1... you can't change the scale of the PREVIEW object, so...
         }
 
         // Optimized and cleaned version of CanUseThatSnapToGridTrigger
-        bool CanUseThatSnapToGridTrigger(string objToBuildName, GameObject triggerObj)
+        bool CanUseThatSnapToGridTrigger(LE_Object.ObjectType objToBuildType, GameObject triggerObj)
         {
             var triggerRootObj = triggerObj.transform.parent.parent.gameObject;
-            var objToBuildType = LE_Object.ConvertNameToObjectType(objToBuildName);
 
             // Check for ALL of the object-specific triggers for this object, and see if there's a specific trigger for this object to build.
             bool existsSpecificTriggerForThisObjToBuild = false;
@@ -1060,12 +1060,17 @@ namespace FS_LevelEditor.Editor
 
             foreach (var categoryObj in editorObjectsRootFromBundle.GetChilds())
             {
-                Dictionary<string, GameObject> categoryObjects = new();
+                Dictionary<LE_Object.ObjectType, GameObject> categoryObjects = new();
 
                 foreach (var obj in categoryObj.GetChilds())
                 {
-                    categoryObjects.Add(obj.name, obj);
-                    allCategoriesObjects.Add(obj.name, obj);
+                    if (obj.name == "None") continue;
+
+                    var objectType = LE_Object.ConvertNameToObjectType(obj.name);
+                    if (objectType == null) continue; // JUST IN CASE.
+
+                    categoryObjects.Add(objectType.Value, obj);
+                    allCategoriesObjects.Add(objectType.Value, obj);
                 }
 
                 allCategoriesObjectsSorted.Add(categoryObjects);
@@ -1318,28 +1323,33 @@ namespace FS_LevelEditor.Editor
             }
         }
 
-        public GameObject PlaceObject(string objName, Vector3 position, Vector3 eulerAngles, Vector3 scale, bool setAsSelected = true)
+        public GameObject PlaceObject(LE_Object.ObjectType? objectType, Vector3 position, Vector3 eulerAngles, Vector3 scale, bool setAsSelected = true)
         {
             if (setAsSelected)
             {
                 // if setAsSelect is false, that would probably mean it's placing objects from save.
-                Logger.Log($"Placing object of name \"{objName}\". This log only appears when setAsSelected is true.");
+                Logger.Log($"Placing object of name \"{objectType}\". This log only appears when setAsSelected is true.");
             }
 
-            if (!allCategoriesObjects.ContainsKey(objName))
+            if (objectType == null)
             {
-                Logger.Error($"Can't find object with name \"{objName}\". Skipping it...");
+                Logger.Error("objectType is null. Skipping object placement...");
+                return null;
+            }
+            if (!allCategoriesObjects.ContainsKey(objectType.Value))
+            {
+                Logger.Error($"Can't find object with name \"{objectType}\". Skipping it...");
                 return null;
             }
 
-            GameObject template = allCategoriesObjects[objName];
+            GameObject template = allCategoriesObjects[objectType.Value];
             GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
             obj.transform.localPosition = position;
             obj.transform.localEulerAngles = eulerAngles;
             obj.transform.localScale = scale;
 
-            LE_Object addedComp = LE_Object.AddComponentToObject(obj, objName);
+            LE_Object addedComp = LE_Object.AddComponentToObject(obj, objectType.Value);
 
             if (addedComp == null)
             {
@@ -1373,11 +1383,11 @@ namespace FS_LevelEditor.Editor
                 {
                     LE_Object objComponent = obj.GetComponent<LE_Object>();
 
-                    GameObject placedObj = PlaceObject(objComponent.objectOriginalName, objComponent.transform.position, objComponent.transform.eulerAngles,
+                    GameObject placedObj = PlaceObject(objComponent.objectType, objComponent.transform.position, objComponent.transform.eulerAngles,
                         objComponent.transform.localScale, false);
                     if (!placedObj)
                     {
-                        Logger.Log($"PlaceObject when duplicating \"{objComponent.objectOriginalName}\" returned null. It probably reached its max object limit.");
+                        Logger.Log($"PlaceObject when duplicating \"{objComponent.objectType}\" returned null. It probably reached its max object limit.");
                         continue;
                     }
                     LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
@@ -1399,11 +1409,11 @@ namespace FS_LevelEditor.Editor
 
                 isDuplicatingObj = true;
                 LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
-                GameObject placedObj = PlaceObject(objComponent.objectOriginalName, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
+                GameObject placedObj = PlaceObject(objComponent.objectType, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
                     objComponent.transform.localScale, false);
                 if (!placedObj)
                 {
-                    Logger.Log($"PlaceObject when duplicating \"{objComponent.objectOriginalName}\" returned null. It probably reached its max object limit.");
+                    Logger.Log($"PlaceObject when duplicating \"{objComponent.objectType}\" returned null. It probably reached its max object limit.");
                     return;
                 }
 
@@ -1528,7 +1538,7 @@ namespace FS_LevelEditor.Editor
                         // same type, so, use it to identify the available snap triggers (no matter if is selecting multiple objects or not).
                         if (currentSelectedObjComponent != null)
                         {
-                            if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectOriginalName, hit.collider.gameObject))
+                            if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectType.Value, hit.collider.gameObject))
                             {
                                 currentSelectedObj.transform.position = hit.collider.transform.position;
                                 currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
@@ -1621,21 +1631,21 @@ namespace FS_LevelEditor.Editor
             currentCategory = categoriesNames[currentCategoryID];
         }
 
-        public void SelectObjectToBuild(string objName)
+        public void SelectObjectToBuild(LE_Object.ObjectType objectType)
         {
             // Do nothing if trying to select the same object as the last selected one.
-            if (currentObjectToBuildName == objName) return;
+            if (currentObjectToBuildType == objectType) return;
 
-            if (objName == "None")
+            if (objectType == null)
             {
-                currentObjectToBuildName = "";
+                currentObjectToBuildType = null;
                 currentObjectToBuild = null;
                 Destroy(previewObjectToBuildObj);
                 return;
             }
 
-            currentObjectToBuildName = objName;
-            currentObjectToBuild = allCategoriesObjectsSorted[currentCategoryID][currentObjectToBuildName];
+            currentObjectToBuildType = objectType;
+            currentObjectToBuild = allCategoriesObjectsSorted[currentCategoryID][objectType];
 
             // Destroy the preview object and create another one with the mew selected model.
             Destroy(previewObjectToBuildObj);
@@ -1652,7 +1662,7 @@ namespace FS_LevelEditor.Editor
                 Destroy(rigidBody); // Destroy the RigidBody, fuck it.
             }
             // This is an static method used for cases like this, where there's no LE_Object at all, all we have is the preview object.
-            LE_Object.SetObjectColor(previewObjectToBuildObj, currentObjectToBuildName, LE_Object.LEObjectContext.PREVIEW);
+            LE_Object.SetObjectColor(previewObjectToBuildObj, objectType, LE_Object.LEObjectContext.PREVIEW);
         }
         #endregion
 

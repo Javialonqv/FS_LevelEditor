@@ -130,7 +130,7 @@ namespace FS_LevelEditor
             rangeSphere.SetActive(false);
         }
 
-        public static new Color GetObjectColor(LEObjectContext context)
+        public static new Color GetDefaultObjectColor(LEObjectContext context)
         {
             return new Color(0.7735849f, 0.7735849f, 0.1131185f, 0.03921569f);
         }

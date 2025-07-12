@@ -167,8 +167,8 @@ namespace FS_LevelEditor.Editor.UI
                 // Get the object.
                 var objectInfo = EditorController.Instance.allCategoriesObjectsSorted[categoryID].ToList()[i];
 
-                var button = NGUI_Utils.CreateColorButton(currentGrid, Vector3.zero, objectInfo.Key);
-                button.name = objectInfo.Key;
+                var button = NGUI_Utils.CreateColorButton(currentGrid, Vector3.zero, objectInfo.Key.ToString());
+                button.name = objectInfo.Key.ToString();
 
                 button.onClick += () => EditorController.Instance.SelectObjectToBuild(objectInfo.Key);
                 int index = i;
