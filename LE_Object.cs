@@ -107,10 +107,16 @@ namespace FS_LevelEditor
 
         public ObjectType? objectType;
         public int objectID;
-        //public string objectOriginalName;
+        public string objectLocalizatedName
+        {
+            get
+            {
+                return Loc.Get("object." + objectType.ToString());
+            }
+        }
         public virtual string objectFullNameWithID
         {
-            get { return objectType + " " + objectID; }
+            get { return objectLocalizatedName + " " + objectID; }
         }
         public bool setActiveAtStart = true;
         public bool collision = true;
