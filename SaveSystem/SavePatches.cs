@@ -38,9 +38,10 @@ namespace FS_LevelEditor.SaveSystem
                         new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
                         {
                             { "setActive", "spawn" }
-                        })
+                        }),
                         // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
                         // same type.
+                        new LevelObjectDataConverter()
                     }
                 };
             }

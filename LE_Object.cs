@@ -300,7 +300,7 @@ namespace FS_LevelEditor
                 LE_CustomErrorPopups.MultipleObjectsWithSameID();
             }
         }
-        public static ObjectType? ConvertNameToObjectType(string objName, bool isForSnapToGrid = false)
+        public static ObjectType? ConvertNameToObjectType(string objName)
         {
             string objTypeName = objName.ToUpper().Replace(' ', '_');
             if (Enum.TryParse<ObjectType>(objTypeName, true, out ObjectType result))
