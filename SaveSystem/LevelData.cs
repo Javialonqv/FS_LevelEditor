@@ -137,7 +137,9 @@ namespace FS_LevelEditor.SaveSystem
         static LevelData LoadLevelData(string levelFileNameWithoutExtension)
         {
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
+            LevelObjectDataConverter.RefreshCounters();
             LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), SavePatches.OnReadSaveFileOptions);
+            LevelObjectDataConverter.PrintLogs();
 
             SavePatches.ReevaluateOldProperties(ref data);
 

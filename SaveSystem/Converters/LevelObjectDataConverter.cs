@@ -10,6 +10,9 @@ namespace FS_LevelEditor.SaveSystem.Converters
 {
     public class LevelObjectDataConverter : JsonConverter<LE_ObjectData>
     {
+        static int totalConverted = 0;
+        static int failedToConvert = 0;
+
         public override void Write(Utf8JsonWriter writer, LE_ObjectData value, JsonSerializerOptions options)
         {
             Logger.Error("[SAVE FILE] LevelObjectDataConverter converter is for read only.");
@@ -29,16 +32,33 @@ namespace FS_LevelEditor.SaveSystem.Converters
                 if (convertedType != null)
                 {
                     result.objectType = convertedType;
-                    Logger.Log($"Succesfully converted \"{originalName}\" to {convertedType}!");
+                    totalConverted++;
                 }
                 else
                 {
                     Logger.Error($"Failed to convert \"{originalName}\" to an object type! This is probably a bug, report if you didn't modify the" +
                         $"save file.");
+                    failedToConvert++;
                 }
             }
 
             return result;
+        }
+        public static void RefreshCounters()
+        {
+            totalConverted = 0;
+            failedToConvert = 0;
+        }
+        public static void PrintLogs()
+        {
+            if (totalConverted != 0)
+            {
+                Logger.Log($"Successfully converted {totalConverted} object names to its corresponding ObjectType!");
+            }
+            if (failedToConvert != 0)
+            {
+                Logger.Error($"Failed to convert {failedToConvert} object names to its corresponding ObjectType!");
+            }
         }
     }
 }
