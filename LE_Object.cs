@@ -116,7 +116,18 @@ namespace FS_LevelEditor
         }
         public virtual string objectFullNameWithID
         {
-            get { return objectLocalizatedName + " " + objectID; }
+            get
+            {
+                if (GetMaxInstances(GetType()) == 1)
+                {
+                    // Since there can only be 1 instance of this object, we don't need to add the ID to the name.
+                    return objectLocalizatedName;
+                }
+                else
+                {
+                    return objectLocalizatedName + " " + objectID;
+                }
+            }
         }
         public bool setActiveAtStart = true;
         public bool collision = true;
@@ -336,6 +347,13 @@ namespace FS_LevelEditor
             int maxInstances = maxInstancesField != null ? (int)maxInstancesField.GetValue(null) : 99999;
 
             return currentInstances >= maxInstances;
+        }
+        static int GetMaxInstances(Type objectCompType)
+        {
+            FieldInfo maxInstancesField = objectCompType.GetField("maxInstances", BindingFlags.NonPublic | BindingFlags.Static);
+            int maxInstances = maxInstancesField != null ? (int)maxInstancesField.GetValue(null) : 99999;
+
+            return maxInstances;
         }
 
         #region Virtual Methods

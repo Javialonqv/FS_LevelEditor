@@ -10,12 +10,6 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Directional_Light : LE_Object
     {
-        // Since there's only ONE directional light per level, dont' even put the id on it.
-        public override string objectFullNameWithID
-        {
-            get { return objectType.ToString(); }
-        }
-
         Light light;
         GameObject lightSprite;
 
