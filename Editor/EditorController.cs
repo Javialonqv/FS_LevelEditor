@@ -1631,7 +1631,7 @@ namespace FS_LevelEditor.Editor
             currentCategory = categoriesNames[currentCategoryID];
         }
 
-        public void SelectObjectToBuild(LE_Object.ObjectType objectType)
+        public void SelectObjectToBuild(LE_Object.ObjectType? objectType)
         {
             // Do nothing if trying to select the same object as the last selected one.
             if (currentObjectToBuildType == objectType) return;
@@ -1645,7 +1645,7 @@ namespace FS_LevelEditor.Editor
             }
 
             currentObjectToBuildType = objectType;
-            currentObjectToBuild = allCategoriesObjectsSorted[currentCategoryID][objectType];
+            currentObjectToBuild = allCategoriesObjectsSorted[currentCategoryID][objectType.Value];
 
             // Destroy the preview object and create another one with the mew selected model.
             Destroy(previewObjectToBuildObj);
@@ -1662,7 +1662,7 @@ namespace FS_LevelEditor.Editor
                 Destroy(rigidBody); // Destroy the RigidBody, fuck it.
             }
             // This is an static method used for cases like this, where there's no LE_Object at all, all we have is the preview object.
-            LE_Object.SetObjectColor(previewObjectToBuildObj, objectType, LE_Object.LEObjectContext.PREVIEW);
+            LE_Object.SetObjectColor(previewObjectToBuildObj, objectType.Value, LE_Object.LEObjectContext.PREVIEW);
         }
         #endregion
 

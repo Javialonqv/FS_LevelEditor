@@ -144,10 +144,10 @@ namespace FS_LevelEditor.Editor.UI
             List<GameObject> grids = new();
             Transform currentGrid = null;
             UITable currentGridTable = null;
-            for (int i = 0; i < EditorController.Instance.allCategoriesObjectsSorted[categoryID].Count; i++)
+            for (int i = -1; i < EditorController.Instance.allCategoriesObjectsSorted[categoryID].Count; i++)
             {
                 // Create a new grid.
-                if (i % 12 == 0 || i == 0)
+                if ((i % 12 == 0 && i != 0) || i == -1)
                 {
                     currentGrid = new GameObject("Grid " + i).transform;
                     currentGrid.parent = categoryObjectsBtnParent.transform;
@@ -164,21 +164,32 @@ namespace FS_LevelEditor.Editor.UI
                     grids.Add(currentGrid.gameObject);
                 }
 
-                // Get the object.
-                var objectInfo = EditorController.Instance.allCategoriesObjectsSorted[categoryID].ToList()[i];
+                LE_Object.ObjectType? objectType = null;
+                string objectLocalizatedName = null;
 
-                var objectLocalizatedName = Loc.Get("object." + objectInfo.Key.ToString());
+                if (i == -1)
+                {
+                    objectType = null;
+                    objectLocalizatedName = Loc.Get("object.NONE");
+                }
+                else
+                {
+                    var objectInfo = EditorController.Instance.allCategoriesObjectsSorted[categoryID].ToList()[i];
+                    objectType = objectInfo.Key;
+                    objectLocalizatedName = Loc.Get("object." + objectType.ToString());
+                }
+
                 var button = NGUI_Utils.CreateColorButton(currentGrid, Vector3.zero, objectLocalizatedName);
-                button.name = objectInfo.Key.ToString();
+                button.name = objectType.ToString();
 
-                button.onClick += () => EditorController.Instance.SelectObjectToBuild(objectInfo.Key);
-                int index = i;
-                button.onClick += () => SelectObjToBuild(index % 12);
+                button.onClick += () => EditorController.Instance.SelectObjectToBuild(objectType);
+                int buttonChildID = i + 1;
+                button.onClick += () => SelectObjToBuild(buttonChildID % 12);
 
                 button.transform.localScale = Vector3.one * 0.8f;
                 button.GetComponent<UIButtonScale>().mScale = Vector3.one * 0.8f;
 
-                if (i % 12 == 0 || i == 0) currentGridTable.Reposition(); // Reposition if in this iteration we created a grid.
+                if ((i % 12 == 0 && i != 0) || i == -1) currentGridTable.Reposition(); // Reposition if in this iteration we created a grid.
             }
 
             objectsToBuildParentsByCategories.Add(categoryObjectsBtnParent);
