@@ -307,22 +307,7 @@ namespace FS_LevelEditor.SaveSystem
                 LevelData levelData = null;
                 try
                 {
-                    var jsonOptions = new JsonSerializerOptions
-                    {
-                        Converters =
-                        {
-                            //new LEPropertiesConverter(),
-                            new LEPropertiesConverterNew(),
-                            new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
-                            {
-                                { "setActive", "spawn" }
-                            })
-                            // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
-                            // same type.
-                        }
-                    };
-
-                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), jsonOptions);
+                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), SavePatches.OnReadSaveFileOptions);
                 }
                 catch { }
                 levels.Add(Path.GetFileNameWithoutExtension(levelPath), levelData);
