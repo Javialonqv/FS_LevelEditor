@@ -25,8 +25,11 @@ namespace FS_LevelEditor
         {
             this.originalEvent = originalEvent;
             this.originalObject = originalObject;
-            targetObj = EditorController.Instance.currentInstantiatedObjects.Find(x => string.Equals(x.objectFullNameWithID, @event.targetObjName,
-                StringComparison.OrdinalIgnoreCase));
+            if (originalEvent.targetObjType != null)
+            {
+                targetObj = EditorController.Instance.currentInstantiatedObjects.Find(x => x.objectType == originalEvent.targetObjType && x.objectID ==
+                    originalEvent.targetObjID);
+            }
             this.editorLinkRenderer = editorLinkRenderer;
         }
 
@@ -54,10 +57,15 @@ namespace FS_LevelEditor
         }
         public void OnInstantiated(LEScene scene)
         {
+            UpdateLEEventsToTheNewSystem();
             if (scene == LEScene.Editor)
             {
                 CreateInEditorLinksToTargetObjects();
             }
+        }
+        void Start()
+        {
+            ReValidateEditorLinks();
         }
         public void OnSelect()
         {
@@ -71,13 +79,36 @@ namespace FS_LevelEditor
             dontDisableLinksParentWhenCreating = false;
         }
 
+        // This method is used to update the LE_Event targetObjType and targetObjID properties in case it comes from a prevous version that used targetObjName.
+        void UpdateLEEventsToTheNewSystem()
+        {
+            foreach (string evenKey in originalObject.GetAvailableEventsIDs())
+            {
+                foreach (var @event in (List<LE_Event>)originalObject.properties[evenKey])
+                {
+                    bool isPlayer = string.Equals(@event.targetObjName, "Player", StringComparison.OrdinalIgnoreCase);
+                    if (@event.targetObjType == null && @event.isValid && !string.IsNullOrEmpty(@event.targetObjName) && !isPlayer)
+                    {
+                        var objData = Utilities.SplitTypeAndId(@event.targetObjName);
+                        var objType = LE_Object.ConvertNameToObjectType(objData.type);
+
+                        if (objType != null)
+                        {
+                            @event.targetObjType = objType;
+                            @event.targetObjID = objData.id;
+                            @event.targetObjName = ""; // Clear the name, since we are using the type and ID now.
+                        }
+                    }
+                }
+            }
+        }
+
         public void CreateEditorLinksParent()
         {
             editorLinksParent = new GameObject("EditorLinks");
             editorLinksParent.transform.parent = transform;
             editorLinksParent.transform.localPosition = Vector3.zero;
         }
-
         public void CreateInEditorLinksToTargetObjects()
         {
             if (EditorController.Instance == null) return;
@@ -92,19 +123,19 @@ namespace FS_LevelEditor
                 editorLinks.Clear();
             }
 
-            List<string> alreadyLinkedObjectsNames = new List<string>();
+            List<(LE_Object.ObjectType? objType, int objID)> alreadyLinkedObjects = new();
 
             foreach (string eventKey in originalObject.GetAvailableEventsIDs())
             {
                 foreach (var @event in (List<LE_Event>)originalObject.properties[eventKey])
                 {
-                    // [IGNORE] Not make a link if the target obj name in the event isn't valid, or it'll throw an error.
                     // For optimization purposes, also don't create a link to an already linked object in another event,
                     // doesn't matter the event type (On Activated, On Deactivated...).
                     // ALSO, don't create editor links for the player related events.
                     // UPDATE: CREATE links even for INVALID objects, what if the user adds an object and the event becomes valid?
-                    if (alreadyLinkedObjectsNames.Contains(@event.targetObjName) ||
-                        @event.targetObjName == "Player") continue;
+                    var objData = (@event.targetObjType, @event.targetObjID);
+                    if (alreadyLinkedObjects.Contains(objData) ||
+                        string.Equals(@event.targetObjName, "Player", StringComparison.OrdinalIgnoreCase)) continue;
 
                     GameObject linkObj = new GameObject("Link");
                     linkObj.transform.parent = editorLinksParent.transform;
@@ -119,7 +150,7 @@ namespace FS_LevelEditor
                     linkRender.startColor = Color.white;
                     linkRender.endColor = Color.white;
 
-                    alreadyLinkedObjectsNames.Add(@event.targetObjName);
+                    alreadyLinkedObjects.Add(objData);
                     editorLinks.Add(new EditorLink(@event, originalObject, @event, linkRender));
                 }
             }
@@ -147,15 +178,11 @@ namespace FS_LevelEditor
             {
                 // Check if the event is REALLY valid, the event may NOT be valid, but if the player already added an object that mades
                 // it valid, then, check that when the switch is selected, to show the links.
-                LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(x => string.Equals(x.objectFullNameWithID,
-                    editorLink.originalEvent.targetObjName, StringComparison.OrdinalIgnoreCase) && !x.isDeleted);
+                LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(x => x.objectType == editorLink.originalEvent.targetObjType
+                    && x.objectID == editorLink.originalEvent.targetObjID && !x.isDeleted);
                 bool isReallyValid = targetObj != null;
 
-                // If the event wasn't valid before, that means the target obj didn't exist, which menas it was null, assign it.
-                if (!editorLink.originalEvent.isValid)
-                {
-                    editorLink.targetObj = targetObj;
-                }
+                editorLink.targetObj = targetObj;
                 editorLink.originalEvent.isValid = isReallyValid;
             }
         }
@@ -177,7 +204,8 @@ namespace FS_LevelEditor
             {
                 if (!@event.isValid)
                 {
-                    Logger.Warning($"Event of name \"{@event.eventName}\" is NOT valid! Target obj \"{@event.targetObjName}\" doesn't exists!");
+                    Logger.Warning($"Event of name \"{@event.eventName}\" is NOT valid! Type: {@event.targetObjType}. ID: {@event.targetObjID}." +
+                        $"Text: \"{@event.targetObjName}\"");
                     continue;
                 }
 
@@ -195,8 +223,7 @@ namespace FS_LevelEditor
                     continue;
                 }
                 LE_Object targetObj =
-                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => string.Equals(x.objectFullNameWithID, @event.targetObjName,
-                    StringComparison.OrdinalIgnoreCase));
+                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.objectType == @event.targetObjType && x.objectID == @event.targetObjID);
 
                 switch (@event.spawn)
                 {

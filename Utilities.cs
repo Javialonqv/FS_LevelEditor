@@ -601,5 +601,22 @@ namespace FS_LevelEditor
 
             return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(withSpaces.ToLowerInvariant());
         }
+        public static (string type, int id) SplitTypeAndId(string input)
+        {
+            input = input.Trim();
+
+            int lastSpace = input.LastIndexOf(' ');
+            if (lastSpace != -1 && lastSpace < input.Length - 1)
+            {
+                string idPart = input.Substring(lastSpace + 1);
+                if (int.TryParse(idPart, out int id))
+                {
+                    string typePart = input.Substring(0, lastSpace);
+                    return (typePart, id);
+                }
+            }
+
+            return (input, 0);
+        }
     }
 }
