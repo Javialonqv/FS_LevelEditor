@@ -191,7 +191,8 @@ namespace FS_LevelEditor
         {
             if (editorLinksParent)
             {
-                if (editorLinksParent.activeSelf && !EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL))
+                if (editorLinksParent.activeSelf && !EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL) &&
+                    !EditorUIManager.IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ))
                 {
                     UpdateEditorLinksPositions();
                 }
