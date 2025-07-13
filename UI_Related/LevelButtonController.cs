@@ -17,8 +17,7 @@ namespace FS_LevelEditor
 
         public void OnClick()
         {
-            LE_MenuUIManager.Instance.SwitchBetweenMenuAndLEMenu(false);
-            LE_MenuUIManager.Instance.LoadLevel(levelFileNameWithoutExtension, levelName);
+            LE_MenuUIManager.Instance.EnterEditor(true, levelFileNameWithoutExtension, levelName);
         }
 
         public void OnHover(bool _isHovered)

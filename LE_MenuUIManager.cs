@@ -300,8 +300,8 @@ namespace FS_LevelEditor
             sprite.transform.localPosition = new Vector3(-45f, 3f, 0f);
 
             // Set OnClick action, which is creating a new level with a new name.
-            UIButton button = addButton.GetComponent<UIButton>();
-            button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.CreateNewLevel)));
+            UIButtonPatcher patcher = addButton.AddComponent<UIButtonPatcher>();
+            patcher.onClick += () => EnterEditor(false);
         }
 
         // Functions literally copied and pasted from the old taser mod LOL.
@@ -668,6 +668,58 @@ namespace FS_LevelEditor
             button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.NextLevelsList)));
         }
 
+
+        public void EnterEditor(bool isLoadingLevel = false, string levelFileNameWithoutExtension = "", string levelName = "")
+        {
+            if (levelButtonsWasClicked) return;
+            levelButtonsWasClicked = true;
+
+            MelonCoroutines.Start(EnterEditorRoutine(isLoadingLevel, levelFileNameWithoutExtension, levelName));
+        }
+        IEnumerator EnterEditorRoutine(bool isLoadingLevel = false, string levelFileNameWithoutExtension = "", string levelName = "")
+        {
+            SwitchBetweenMenuAndLEMenu(false);
+
+            if (isLoadingLevel && isGoingBackToLE)
+            {
+                // If it's going back to LE, start total fade out again to overwrite the official one so it looks like a smooth transition.
+                yield return new WaitForSecondsRealtime(0.1f);
+                InGameUIManager.Instance.StartTotalFadeOut(0.1f, true);
+                yield return new WaitForSecondsRealtime(0.2f);
+            }
+            else
+            {
+                // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
+                InGameUIManager.Instance.StartTotalFadeOut(3, true);
+                yield return new WaitForSecondsRealtime(1.5f);
+            }
+
+            // Remove menu music while in LE.
+            GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().Stop();
+
+            mainMenu.SetActive(true);
+            leMenuPanel.SetActive(false);
+
+            Melon<Core>.Instance.SetupTheWholeEditor(isLoadingLevel);
+
+            // Once SetupTheWholeEditor is done, there's a EditorController instance already.
+            if (isLoadingLevel)
+            {
+                EditorController.Instance.levelName = levelName;
+                EditorController.Instance.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
+                LevelData.LoadLevelDataInEditor(levelFileNameWithoutExtension);
+            }
+            else
+            {
+                string newLevelName = string.IsNullOrEmpty(levelName) ? LevelData.GetAvailableLevelName() : levelName;
+                EditorController.Instance.levelName = newLevelName;
+                EditorController.Instance.levelFileNameWithoutExtension = newLevelName;
+                LevelData.SaveLevelData(newLevelName, newLevelName);
+            }
+
+            yield return new WaitForSecondsRealtime(1.5f);
+            InGameUIManager.Instance.StartTotalFadeIn(3, true);
+        }
 
         void CreateNewLevel()
         {
