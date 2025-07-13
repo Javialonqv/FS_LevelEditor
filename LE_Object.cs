@@ -86,7 +86,8 @@ namespace FS_LevelEditor
                 ObjectType.WALL,
                 ObjectType.WALL_NO_COLOR,
                 ObjectType.X_WALL,
-                ObjectType.WINDOW
+                ObjectType.WINDOW,
+                ObjectType.BREAKABLE_WINDOW
                 } },
             { "LIGHT", new List<ObjectType>(){
                 ObjectType.DIRECTIONAL_LIGHT,
