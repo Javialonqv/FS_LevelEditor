@@ -35,6 +35,10 @@ namespace FS_LevelEditor.Editor.UI
             CreateDeathYLimitField();
             CreateLevelSkyboxDropdown();
         }
+        void Start()
+        {
+            RefreshGlobalPropertiesPanelValues();
+        }
 
         void CreatePanelBackground()
         {
