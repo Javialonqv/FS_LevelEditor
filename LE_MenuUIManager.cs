@@ -84,12 +84,11 @@ namespace FS_LevelEditor
             // To exit from the LE menu with the ESC key.
             if (Input.GetKeyDown(KeyCode.Escape) && inLEMenu && !isInMidTransition && !EditorController.Instance)
             {
-                // BUT, if the delete level popup is enabled, then hide it and do ABSOLUTELY NOTHNG.
                 if (deletePopupEnabled)
                 {
                     OnDeletePopupBackButton();
                 }
-                else // If not, then... exit from the menu :)
+                else
                 {
                     SwitchBetweenMenuAndLEMenu();
                 }
