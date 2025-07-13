@@ -328,7 +328,7 @@ namespace FS_LevelEditor.SaveSystem
         {
             LevelData toRename = GetLevelData(levelFileNameWithoutExtension);
 
-            toRename.levelName = newLevelName;
+            toRename.levelName = newLevelName.Trim();
 
             // Save the file with the new name.
             SaveLevelData(newLevelName, levelFileNameWithoutExtension, toRename);
