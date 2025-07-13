@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -617,6 +618,25 @@ namespace FS_LevelEditor
             }
 
             return (input, 0);
+        }
+
+        public static string SanitizeFileName(string fileName, string replacement = "_", bool collapse = true)
+        {
+            if (string.IsNullOrEmpty(fileName)) return string.Empty;
+
+            char[] invalidChars = Path.GetInvalidFileNameChars();
+            string invalidPattern = "[" + Regex.Escape(new string(invalidChars)) + "]";
+
+            string cleaned = Regex.Replace(fileName, invalidPattern, replacement);
+
+            if (collapse && !string.IsNullOrEmpty(replacement))
+            {
+                string repEscaped = Regex.Escape(replacement);
+                cleaned = Regex.Replace(cleaned, repEscaped + "+", replacement);
+            }
+
+            // Remove spaces and replacements at the start and end of the string.
+            return cleaned.Trim().Trim(replacement.ToCharArray()).Trim();
         }
     }
 }
