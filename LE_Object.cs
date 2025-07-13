@@ -130,11 +130,13 @@ namespace FS_LevelEditor
                 }
             }
         }
+
         public bool setActiveAtStart = true;
         public bool collision = true;
-        public Dictionary<string, object> properties = new Dictionary<string, object>();
-        public EventExecuter eventExecuter;
 
+        public Dictionary<string, object> properties = new Dictionary<string, object>();
+        
+        public EventExecuter eventExecuter;
         public virtual Transform objectParent
         {
             get
@@ -522,7 +524,6 @@ namespace FS_LevelEditor
         {
             return new List<string>();
         }
-        #endregion
 
         public virtual LE_Object[] GetReferenceObjectsToGetObjID()
         {
@@ -537,6 +538,7 @@ namespace FS_LevelEditor
 
             return null;
         }
+        #endregion
 
         public enum LEObjectContext { PREVIEW, SELECT, NORMAL }
         public static Color GetDefaultObjectColor(LEObjectContext context)
