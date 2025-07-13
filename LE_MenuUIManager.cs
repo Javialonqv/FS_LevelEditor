@@ -113,7 +113,8 @@ namespace FS_LevelEditor
 
                 if (isGoingBackToLE)
                 {
-                    LoadLevel(levelFileNameWithoutExtensionWhileGoingBackToLE, levelNameWhileGoingBackToLE);
+                    //LoadLevel(levelFileNameWithoutExtensionWhileGoingBackToLE, levelNameWhileGoingBackToLE);
+                    EnterEditor(true, levelFileNameWithoutExtensionWhileGoingBackToLE, levelNameWhileGoingBackToLE);
                 }
 
                 // For 0.606, it seems the menu music isn't played when returning to menu after being in LE, play it just in case.
@@ -678,7 +679,8 @@ namespace FS_LevelEditor
         }
         IEnumerator EnterEditorRoutine(bool isLoadingLevel = false, string levelFileNameWithoutExtension = "", string levelName = "")
         {
-            SwitchBetweenMenuAndLEMenu(false);
+            // We don't need to close any menu if we're going back to LE, since we aren't going to see the main menu.
+            if (!isGoingBackToLE) SwitchBetweenMenuAndLEMenu(false);
 
             if (isLoadingLevel && isGoingBackToLE)
             {
@@ -720,72 +722,6 @@ namespace FS_LevelEditor
             yield return new WaitForSecondsRealtime(1.5f);
             InGameUIManager.Instance.StartTotalFadeIn(3, true);
         }
-
-        void CreateNewLevel()
-        {
-            MelonCoroutines.Start(Init());
-
-            IEnumerator Init()
-            {
-                SwitchBetweenMenuAndLEMenu(false);
-
-                // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
-                InGameUIManager.Instance.StartTotalFadeOut(3, true);
-                yield return new WaitForSecondsRealtime(1.5f);
-
-                mainMenu.SetActive(true);
-                leMenuPanel.SetActive(false);
-                Melon<Core>.Instance.SetupTheWholeEditor();
-                EditorController.Instance.levelName = LevelData.GetAvailableLevelName();
-                EditorController.Instance.levelFileNameWithoutExtension = EditorController.Instance.levelName;
-                LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
-
-                yield return new WaitForSecondsRealtime(1.5f);
-                InGameUIManager.Instance.StartTotalFadeIn(3, true);
-            }
-        }
-        public void LoadLevel(string levelFileNameWithoutExtension, string levelName)
-        {
-            if (levelButtonsWasClicked) return;
-
-            MelonCoroutines.Start(Init());
-
-            levelButtonsWasClicked = true;
-
-            IEnumerator Init()
-            {
-                if (!isGoingBackToLE)
-                {
-                    // It seems even if you specify te fade to be 3 seconds long, the fade lasts less time, so I need to "split" the wait instruction.
-                    InGameUIManager.Instance.StartTotalFadeOut(3, true);
-                    yield return new WaitForSecondsRealtime(1.5f);
-                }
-                else // If it's going back to LE, start total fade out again so it looks like a smooth transition.
-                {
-                    yield return new WaitForSecondsRealtime(0.1f);
-                    InGameUIManager.Instance.StartTotalFadeOut(0.1f, true);
-                    yield return new WaitForSecondsRealtime(0.2f);
-
-                    // Reset this variables.
-                    isGoingBackToLE = false;
-                    levelFileNameWithoutExtensionWhileGoingBackToLE = "";
-                    levelNameWhileGoingBackToLE = "";
-                }
-
-                // Remove menu music while in LE.
-                GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().Stop();
-
-                mainMenu.SetActive(true);
-                leMenuPanel.SetActive(false);
-                Melon<Core>.Instance.SetupTheWholeEditor(true);
-
-                yield return new WaitForSecondsRealtime(1.5f);
-                InGameUIManager.Instance.StartTotalFadeIn(3, true);
-                EditorController.Instance.levelName = levelName;
-                EditorController.Instance.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
-                LevelData.LoadLevelDataInEditor(levelFileNameWithoutExtension);
-            }
-        }
         public void GoBackToLEWhileInPlayMode(string levelFileNameWithoutExtension, string levelName)
         {
             // If it's invoking that's probably because the player already reached an end trigger, cancel it.
@@ -798,6 +734,7 @@ namespace FS_LevelEditor
             levelFileNameWithoutExtensionWhileGoingBackToLE = levelFileNameWithoutExtension;
             levelNameWhileGoingBackToLE = levelName;
         }
+
         void ShowDeleteLevelPopup(string levelFileNameWithoutExtension)
         {
             popupTitle.GetComponent<UILabel>().text = "Warning";
