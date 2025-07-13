@@ -107,10 +107,27 @@ namespace FS_LevelEditor
 
         public ObjectType? objectType;
         public int objectID;
-        public string objectOriginalName;
+        public string objectLocalizatedName
+        {
+            get
+            {
+                return Loc.Get("object." + objectType.ToString());
+            }
+        }
         public virtual string objectFullNameWithID
         {
-            get { return objectOriginalName + " " + objectID; }
+            get
+            {
+                if (GetMaxInstances(GetType()) == 1)
+                {
+                    // Since there can only be 1 instance of this object, we don't need to add the ID to the name.
+                    return objectLocalizatedName;
+                }
+                else
+                {
+                    return objectLocalizatedName + " " + objectID;
+                }
+            }
         }
         public bool setActiveAtStart = true;
         public bool collision = true;
@@ -188,7 +205,7 @@ namespace FS_LevelEditor
                 }
             }
         }
-        void Init(string originalObjName, bool skipIDInitialization = false)
+        void Init(ObjectType objectType, bool skipIDInitialization = false)
         {
             if (EditorController.Instance != null && PlayModeController.Instance == null)
             {
@@ -199,7 +216,7 @@ namespace FS_LevelEditor
                 PlayModeController.Instance.currentInstantiatedObjects.Add(this);
             }
 
-            SetNameAndType(originalObjName, skipIDInitialization);
+            SetNameAndType(objectType, skipIDInitialization);
 
             if (PlayModeController.Instance != null)
             {
@@ -220,9 +237,9 @@ namespace FS_LevelEditor
         /// <param name="targetObj">The GameObject ot attach this component to.</param>
         /// <param name="originalObjName">THe "original" name of the desired object.</param>
         /// <returns>An instance of the created LE_Object component class.</returns>
-        public static LE_Object AddComponentToObject(GameObject targetObj, string originalObjName, bool skipIDInitialization = false)
+        public static LE_Object AddComponentToObject(GameObject targetObj, ObjectType objectType, bool skipIDInitialization = false)
         {
-            string className = "LE_" + originalObjName.Replace(' ', '_');
+            string className = "LE_" + Utilities.ObjectTypeToFormatedName(objectType).Replace(' ', '_');
             Type classType = Type.GetType("FS_LevelEditor." + className);
 
             if (classType != null)
@@ -233,7 +250,7 @@ namespace FS_LevelEditor
                     return null;
                 }
                 LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
-                instancedComponent.Init(originalObjName, skipIDInitialization);
+                instancedComponent.Init(objectType, skipIDInitialization);
                 instancedComponent.hasItsOwnClass = true;
                 return instancedComponent;
             }
@@ -241,31 +258,25 @@ namespace FS_LevelEditor
             {
                 if (LevelData.currentLevelObjsCount <= 100)
                 {
-                    Logger.DebugWarning($"Can't find class of name \"{className}\" for object: \"{originalObjName}\", using default LE_Object class.");
+                    Logger.DebugWarning($"Can't find class of name \"{className}\" for object: \"{objectType}\", using default LE_Object class.");
                 }
 
                 LE_Object instancedComponent = targetObj.AddComponent<LE_Object>();
-                instancedComponent.Init(originalObjName, skipIDInitialization);
+                instancedComponent.Init(objectType, skipIDInitialization);
                 return instancedComponent;
             }
         }
 
-        void SetNameAndType(string originalObjName, bool skipIDInitialization = false)
+        void SetNameAndType(ObjectType objectTypeToSet, bool skipIDInitialization = false)
         {
-            objectType = ConvertNameToObjectType(originalObjName);
-            objectOriginalName = originalObjName;
-            if (objectType == null)
-            {
-                Logger.Error($"Couldn't find a proper Object Type for object with name: \"{objectOriginalName}\".");
-                LE_CustomErrorPopups.ObjectWithoutObjectType();
-            }
+            objectType = objectTypeToSet;
 
             if (!skipIDInitialization)
             {
                 int id = 0;
                 LE_Object[] objects = GetReferenceObjectsToGetObjID();
 
-                while (objects.Any(x => x.objectID == id && x.objectOriginalName == objectOriginalName))
+                while (objects.Any(x => x.objectID == id && x.objectType == objectType))
                 {
                     id++;
                 }
@@ -286,7 +297,7 @@ namespace FS_LevelEditor
             int id = 0;
             LE_Object[] objects = GetReferenceObjectsToGetObjID();
 
-            while (objects.Any(x => x.objectID == id && x.objectOriginalName == objectOriginalName))
+            while (objects.Any(x => x.objectID == id && x.objectType == objectType))
             {
                 id++;
             }
@@ -300,7 +311,7 @@ namespace FS_LevelEditor
                 LE_CustomErrorPopups.MultipleObjectsWithSameID();
             }
         }
-        public static ObjectType? ConvertNameToObjectType(string objName, bool isForSnapToGrid = false)
+        public static ObjectType? ConvertNameToObjectType(string objName)
         {
             string objTypeName = objName.ToUpper().Replace(' ', '_');
             if (Enum.TryParse<ObjectType>(objTypeName, true, out ObjectType result))
@@ -336,6 +347,13 @@ namespace FS_LevelEditor
             int maxInstances = maxInstancesField != null ? (int)maxInstancesField.GetValue(null) : 99999;
 
             return currentInstances >= maxInstances;
+        }
+        static int GetMaxInstances(Type objectCompType)
+        {
+            FieldInfo maxInstancesField = objectCompType.GetField("maxInstances", BindingFlags.NonPublic | BindingFlags.Static);
+            int maxInstances = maxInstancesField != null ? (int)maxInstancesField.GetValue(null) : 99999;
+
+            return maxInstances;
         }
 
         #region Virtual Methods
@@ -520,7 +538,7 @@ namespace FS_LevelEditor
         }
 
         public enum LEObjectContext { PREVIEW, SELECT, NORMAL }
-        public static Color GetObjectColor(LEObjectContext context)
+        public static Color GetDefaultObjectColor(LEObjectContext context)
         {
             switch (context)
             {
@@ -536,9 +554,9 @@ namespace FS_LevelEditor
 
             return new Color(1f, 1f, 1f);
         }
-        public static Color GetObjectColorForObject(string objName, LEObjectContext context)
+        public static Color GetObjectColorForObject(ObjectType objectType, LEObjectContext context)
         {
-            string className = "LE_" + objName.Replace(' ', '_');
+            string className = "LE_" + Utilities.ObjectTypeToFormatedName(objectType).Replace(' ', '_');
             Type classType = Type.GetType("FS_LevelEditor." + className);
 
             if (classType != null)
@@ -548,19 +566,19 @@ namespace FS_LevelEditor
                     | BindingFlags.NonPublic
                     | BindingFlags.DeclaredOnly;
 
-                MethodInfo method = classType.GetMethod(nameof(GetObjectColor), flags);
+                MethodInfo method = classType.GetMethod(nameof(GetDefaultObjectColor), flags);
                 if (method != null)
                 {
                     return (Color)method.Invoke(null, new object[] { context });
                 }
                 else // If it's null is prolly 'cause the class doesn't have the method declared, so, just use the default implementation.
                 {
-                    return GetObjectColor(context);
+                    return GetDefaultObjectColor(context);
                 }
             }
             else
             {
-                return GetObjectColor(context);
+                return GetDefaultObjectColor(context);
             }
         }
         public virtual void SetObjectColor(LEObjectContext context)
@@ -571,13 +589,13 @@ namespace FS_LevelEditor
                 {
                     if (!material.HasProperty("_Color")) continue;
 
-                    Color toSet = LE_Object.GetObjectColorForObject(objectOriginalName, context);
+                    Color toSet = LE_Object.GetObjectColorForObject(objectType.Value, context);
                     toSet.a = material.color.a;
                     material.color = toSet;
                 }
             }
         }
-        public static void SetObjectColor(GameObject obj, string objInternalName, LEObjectContext context)
+        public static void SetObjectColor(GameObject obj, ObjectType objectType, LEObjectContext context)
         {
             foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
             {
@@ -585,7 +603,7 @@ namespace FS_LevelEditor
                 {
                     if (!material.HasProperty("_Color")) continue;
 
-                    Color toSet = LE_Object.GetObjectColorForObject(objInternalName, context);
+                    Color toSet = LE_Object.GetObjectColorForObject(objectType, context);
                     toSet.a = material.color.a;
                     material.color = toSet;
                 }
@@ -596,7 +614,7 @@ namespace FS_LevelEditor
         {
             if (!gameObject.ExistsChildWithName("Content"))
             {
-                Logger.Error($"\"{objectOriginalName}\" object doesn't contain a Content object for some reason???");
+                Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
                 return;
             }
 
@@ -613,7 +631,7 @@ namespace FS_LevelEditor
             }
             else
             {
-                Logger.Error($"\"{objectOriginalName}\" object doesn't contain an EditorCollider.");
+                Logger.Error($"\"{objectType}\" object doesn't contain an EditorCollider.");
             }
         }
 

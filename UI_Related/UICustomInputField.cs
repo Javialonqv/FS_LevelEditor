@@ -189,9 +189,9 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
-        public void SetText(string newText)
+        public void SetText(string newText, bool forceEvenIfSelected = false)
         {
-            if (input.selected) return;
+            if (input.selected && !forceEvenIfSelected) return;
 
             input.text = newText;
         }

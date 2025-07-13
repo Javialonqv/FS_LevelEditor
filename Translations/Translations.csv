@@ -1,4 +1,37 @@
-ID,ENGLISH
+﻿ID,ENGLISH
+object.NONE,None
+object.GROUND,Ground
+object.CYAN_GROUND,Cyan Ground
+object.RED_GROUND,Red Ground
+object.ORANGE_GROUND,Orange Ground
+object.LARGE_GROUND,Large Ground
+object.GROUND_2,Ground 2
+object.WALL,Wall
+object.WALL_NO_COLOR,Wall No Color
+object.X_WALL,X Wall
+object.WINDOW,Window
+object.DIRECTIONAL_LIGHT,Directional Light
+object.POINT_LIGHT,Point Light
+object.CEILING_LIGHT,Ceiling Light
+object.VENT_WITH_SMOKE_GREEN,Vent With Smoke Green
+object.VENT_WITH_SMOKE_CYAN,Vent With Smoke Cyan
+object.HEALTH_PACK,Health Pack
+object.AMMO_PACK,Ammo Pack
+object.SAW,Saw
+object.SAW_WAYPOINT,Saw Waypoint
+object.SWITCH,Switch
+object.PLAYER_SPAWN,Player Spawn
+object.CUBE,Cube
+object.LASER,Laser
+object.FLAME_TRAP,Flame Trap
+object.COLLIDER,Collider
+object.END_TRIGGER,End Trigger
+object.PRESSURE_PLATE,Pressure Plate
+object.SCREEN,Screen
+object.SMALL_SCREEN,Small Screen
+object.BREAKABLE_WINDOW,Breakable Window
+object.TRIGGER,Trigger
+,
 WhenActivatingEvents,When Activating
 WhenDeactivatingEvents,When Deactivating
 WhenInvertingEvents,When Inverting

@@ -11,12 +11,6 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Player_Spawn : LE_Object
     {
-        // Since there's only ONE player spawn obj per level, don't even put the id on it.
-        public override string objectFullNameWithID
-        {
-            get { return objectOriginalName; }
-        }
-
         GameObject spawnSprite;
 
         static int currentInstances = 0;

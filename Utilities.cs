@@ -8,6 +8,7 @@ using MelonLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -300,13 +301,13 @@ namespace FS_LevelEditor
 
             foreach (var obj in levelObjects)
             {
-                if (obj.objectOriginalName == "Saw Waypoint") continue;
+                if (obj.objectType == LE_Object.ObjectType.SAW_WAYPOINT) continue;
 
                 if (!seenIds.Add(obj.objectFullNameWithID))
                 {
                     if (printError)
                     {
-                        Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                        Logger.Error($"There's already an object of type \"{obj.objectType}\" with ID: {obj.objectID}.");
                     }
                     return true;
                 }
@@ -320,12 +321,12 @@ namespace FS_LevelEditor
 
             foreach (var obj in levelObjects)
             {
-                string toAdd = obj.objectOriginalName + " " + obj.objectID;
+                string toAdd = obj.objectType + " " + obj.objectID;
                 if (!seenIds.Add(toAdd))
                 {
                     if (printError)
                     {
-                        Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                        Logger.Error($"There's already an object of name \"{obj.objectType}\" with ID: {obj.objectID}.");
                     }
                     return true;
                 }
@@ -592,6 +593,30 @@ namespace FS_LevelEditor
             }
 
             return null;
+        }
+
+        public static string ObjectTypeToFormatedName(LE_Object.ObjectType objectType)
+        {
+            string withSpaces = objectType.ToString().Replace("_", " ");
+
+            return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(withSpaces.ToLowerInvariant());
+        }
+        public static (string type, int id) SplitTypeAndId(string input)
+        {
+            input = input.Trim();
+
+            int lastSpace = input.LastIndexOf(' ');
+            if (lastSpace != -1 && lastSpace < input.Length - 1)
+            {
+                string idPart = input.Substring(lastSpace + 1);
+                if (int.TryParse(idPart, out int id))
+                {
+                    string typePart = input.Substring(0, lastSpace);
+                    return (typePart, id);
+                }
+            }
+
+            return (input, 0);
         }
     }
 }

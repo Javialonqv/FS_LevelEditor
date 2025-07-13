@@ -959,7 +959,15 @@ namespace FS_LevelEditor.Editor.UI
 
         void ShowEventSettings()
         {
-            targetObjInputField.SetText(currentSelectedEvent.targetObjName);
+            if (currentSelectedEvent.targetObjType != null)
+            {
+                var nameToSet = Loc.Get("object." + currentSelectedEvent.targetObjType) + " " + currentSelectedEvent.targetObjID;
+                targetObjInputField.SetText(nameToSet, true);
+            }
+            else
+            {
+                targetObjInputField.SetText(currentSelectedEvent.targetObjName, true);
+            }
 
             spawnOptionsDropdown.SelectOption((int)currentSelectedEvent.spawn);
             sawStateButton.SelectOption((int)currentSelectedEvent.sawState);
@@ -1029,6 +1037,19 @@ namespace FS_LevelEditor.Editor.UI
                 eventOptionsParent.SetActive(true);
                 eventOptionsParent.DisableAllChildren();
 
+                if (string.Equals(inputText, "Player", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSelectedEvent.targetObjType = null;
+                    currentSelectedEvent.targetObjID = 0;
+                    currentSelectedEvent.targetObjName = inputText;
+                }
+                else
+                {
+                    currentSelectedEvent.targetObjType = targetObj.objectType;
+                    currentSelectedEvent.targetObjID = targetObj.objectID;
+                    currentSelectedEvent.targetObjName = ""; // While the object is valid, don't use the name, use the type and ID instead.
+                }
+
                 if (!string.Equals(inputText, "Player", StringComparison.OrdinalIgnoreCase)) defaultObjectsSettings.SetActive(true);
                 if (string.Equals(inputText, "Player", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1076,10 +1097,13 @@ namespace FS_LevelEditor.Editor.UI
                 fieldSprite.color = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
                 eventOptionsParent.SetActive(false);
                 eventOptionsParent.DisableAllChildren();
+
+                currentSelectedEvent.targetObjType = null;
+                currentSelectedEvent.targetObjID = 0;
+                currentSelectedEvent.targetObjName = inputText;
             }
 
             currentSelectedEvent.isValid = objIsValid;
-            currentSelectedEvent.targetObjName = inputText;
         }
         void OnSelectTargetObjectButtonClick()
         {
@@ -1955,7 +1979,10 @@ public class LE_Event
 
     // Yeah, why should I put a name to a freaking event? Dunno, may be useful :)
     public string eventName { get; set; } = "New Event";
+
     public string targetObjName { get; set; } = "";
+    public LE_Object.ObjectType? targetObjType { get; set; } = null;
+    public int targetObjID { get; set; } = 0;
 
     public enum SpawnState { Do_Nothing, Spawn, Despawn, Toggle }
     public SpawnState spawn { get; set; } = SpawnState.Toggle;

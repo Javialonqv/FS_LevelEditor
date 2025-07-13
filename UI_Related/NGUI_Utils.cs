@@ -443,6 +443,9 @@ namespace FS_LevelEditor.UI_Related
             toggle.GetChildWithName("ColorName").GetComponent<UILabel>().text = text;
             toggle.GetComponent<UIButton>().onClick.Clear();
 
+            GameObject.Destroy(toggle.GetComponent<ColorSwatch>());
+            GameObject.Destroy(toggle.GetComponent<CenterOnHover>());
+
             toggle.SetActive(true);
 
             UIButtonPatcher patcher = toggle.AddComponent<UIButtonPatcher>();

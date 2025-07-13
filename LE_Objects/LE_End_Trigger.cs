@@ -36,7 +36,7 @@ namespace FS_LevelEditor
             initialized = true;
         }
 
-        public static new Color GetObjectColor(LEObjectContext context)
+        public static new Color GetDefaultObjectColor(LEObjectContext context)
         {
             return new Color(1f, 0f, 0.07843138f);
         }

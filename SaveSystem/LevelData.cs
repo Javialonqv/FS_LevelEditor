@@ -137,7 +137,9 @@ namespace FS_LevelEditor.SaveSystem
         static LevelData LoadLevelData(string levelFileNameWithoutExtension)
         {
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
+            LevelObjectDataConverter.RefreshCounters();
             LevelData data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), SavePatches.OnReadSaveFileOptions);
+            LevelObjectDataConverter.PrintLogs();
 
             SavePatches.ReevaluateOldProperties(ref data);
 
@@ -171,7 +173,7 @@ namespace FS_LevelEditor.SaveSystem
 
             foreach (LE_ObjectData obj in data.objects)
             {
-                GameObject objInstance = EditorController.Instance.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, obj.objScale, false);
+                GameObject objInstance = EditorController.Instance.PlaceObject(obj.objectType, obj.objPosition, obj.objRotation, obj.objScale, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
 
                 objClassInstance.objectID = obj.objectID;
@@ -228,7 +230,7 @@ namespace FS_LevelEditor.SaveSystem
 
             foreach (LE_ObjectData obj in data.objects)
             {
-                GameObject objInstance = playModeCtrl.PlaceObject(obj.objectOriginalName, obj.objPosition, obj.objRotation, obj.objScale, false);
+                GameObject objInstance = playModeCtrl.PlaceObject(obj.objectType, obj.objPosition, obj.objRotation, obj.objScale, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
 
                 objClassInstance.objectID = obj.objectID;
@@ -307,22 +309,7 @@ namespace FS_LevelEditor.SaveSystem
                 LevelData levelData = null;
                 try
                 {
-                    var jsonOptions = new JsonSerializerOptions
-                    {
-                        Converters =
-                        {
-                            //new LEPropertiesConverter(),
-                            new LEPropertiesConverterNew(),
-                            new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
-                            {
-                                { "setActive", "spawn" }
-                            })
-                            // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
-                            // same type.
-                        }
-                    };
-
-                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), jsonOptions);
+                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), SavePatches.OnReadSaveFileOptions);
                 }
                 catch { }
                 levels.Add(Path.GetFileNameWithoutExtension(levelPath), levelData);
@@ -375,7 +362,7 @@ namespace FS_LevelEditor.SaveSystem
         static List<LE_ObjectData> FixMultipleObjectsWithSameID(List<LE_ObjectData> levelObjects)
         {
             // To know the used ids.
-            var idUsage = new Dictionary<string, HashSet<int>>();
+            var idUsage = new Dictionary<LE_Object.ObjectType, HashSet<int>>();
             var result = new List<LE_ObjectData>();
 
             // Find the max actual ID to generate new unique IDs.
@@ -383,25 +370,27 @@ namespace FS_LevelEditor.SaveSystem
 
             foreach (var item in levelObjects)
             {
-                string name = item.objectOriginalName;
+                if (item.objectType == null) continue; // Skip JUST IN CASE if the object type is null.
+
+                LE_Object.ObjectType type = item.objectType.Value;
                 int id = item.objectID;
 
                 // If the name isn't in the dictionary, init a HashSet
-                if (!idUsage.ContainsKey(name))
+                if (!idUsage.ContainsKey(type))
                 {
                     // I didn't even knew it was possible to create new dictionary elements without using the "Add" function LOOOOL.
-                    idUsage[name] = new HashSet<int>();
+                    idUsage[type] = new HashSet<int>();
                 }
 
                 // If the ID is already used for this name, assign a new unique ID.
-                if (idUsage[name].Contains(id))
+                if (idUsage[type].Contains(id))
                 {
                     maxId++;
                     item.objectID = maxId;
                 }
                 else
                 {
-                    idUsage[name].Add(id);
+                    idUsage[type].Add(id);
                 }
 
                 result.Add(item);
