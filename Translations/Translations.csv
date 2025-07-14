@@ -1,37 +1,38 @@
-﻿ID,ENGLISH
-object.NONE,None
-object.GROUND,Ground
-object.CYAN_GROUND,Cyan Ground
-object.RED_GROUND,Red Ground
-object.ORANGE_GROUND,Orange Ground
-object.LARGE_GROUND,Large Ground
-object.GROUND_2,Ground 2
-object.WALL,Wall
-object.WALL_NO_COLOR,Wall No Color
-object.X_WALL,X Wall
-object.WINDOW,Window
-object.DIRECTIONAL_LIGHT,Directional Light
-object.POINT_LIGHT,Point Light
-object.CEILING_LIGHT,Ceiling Light
-object.VENT_WITH_SMOKE_GREEN,Vent With Smoke Green
-object.VENT_WITH_SMOKE_CYAN,Vent With Smoke Cyan
-object.HEALTH_PACK,Health Pack
-object.AMMO_PACK,Ammo Pack
-object.SAW,Saw
-object.SAW_WAYPOINT,Saw Waypoint
-object.SWITCH,Switch
-object.PLAYER_SPAWN,Player Spawn
-object.CUBE,Cube
-object.LASER,Laser
-object.FLAME_TRAP,Flame Trap
-object.COLLIDER,Collider
-object.END_TRIGGER,End Trigger
-object.PRESSURE_PLATE,Pressure Plate
-object.SCREEN,Screen
-object.SMALL_SCREEN,Small Screen
-object.BREAKABLE_WINDOW,Breakable Window
-object.TRIGGER,Trigger
-,
-WhenActivatingEvents,When Activating
-WhenDeactivatingEvents,When Deactivating
-WhenInvertingEvents,When Inverting
+﻿ID,ENGLISH,SPANISH
+object.NONE,None,Ninguno
+object.GROUND,Ground,Suelo
+object.CYAN_GROUND,Cyan Ground,Suelo Cyan
+object.RED_GROUND,Red Ground,Suelo Rojo
+object.ORANGE_GROUND,Orange Ground,Suelo Naranja
+object.LARGE_GROUND,Large Ground,Suelo Grande
+object.GROUND_2,Ground 2,Suelo 2
+object.WALL,Wall,Pared
+object.WALL_NO_COLOR,Wall No Color,Pared Sin Color
+object.X_WALL,X Wall,Pared X
+object.WINDOW,Window,Ventana
+object.DIRECTIONAL_LIGHT,Directional Light,Luz Direccional
+object.POINT_LIGHT,Point Light,Luz Puntual
+object.CEILING_LIGHT,Ceiling Light,Lámpara
+object.VENT_WITH_SMOKE_GREEN,Vent With Smoke Green,Ventilación Verde
+object.VENT_WITH_SMOKE_CYAN,Vent With Smoke Cyan,Ventilación Cyan
+object.HEALTH_PACK,Health Pack,Paquete de Salud
+object.AMMO_PACK,Ammo Pack,Paquete de Munición
+object.SAW,Saw,Sierra
+object.SAW_WAYPOINT,Saw Waypoint,Waypoint de Sierra
+object.SWITCH,Switch,Interruptor
+object.PLAYER_SPAWN,Player Spawn,Spawn del Jugador
+object.CUBE,Cube,Cubo
+object.LASER,Laser,Laser
+object.FLAME_TRAP,Flame Trap,Trampa de Fuego
+object.COLLIDER,Collider,Colisión
+object.END_TRIGGER,End Trigger,Trigger Final
+object.PRESSURE_PLATE,Pressure Plate,Placa de Presión
+object.SCREEN,Screen,Pantalla
+object.SMALL_SCREEN,Small Screen,Pantalla Pequeña
+object.BREAKABLE_WINDOW,Breakable Window,Ventana Frágil
+object.TRIGGER,Trigger,Trigger
+player,Player,Jugador
+,,
+WhenActivatingEvents,When Activating,Cuando Se Activa
+WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva
+WhenInvertingEvents,When Inverting,Cuando Se Invierte

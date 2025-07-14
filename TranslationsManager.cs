@@ -55,7 +55,7 @@ namespace FS_LevelEditor
                 {
                     for (int j = 1; j < columns.Length; j++)
                     {
-                        languages.Add(columns[j]);
+                        languages.Add(columns[j].ToUpper());
                     }
                     continue;
                 }
@@ -86,7 +86,11 @@ namespace FS_LevelEditor
                 return key;
             }
 
-            int langIndex = languages.Contains(Localization.language) ? languages.IndexOf(Localization.language) : 0;
+#if TRANSLATIONS_ENABLED
+            int langIndex = languages.Contains(Localization.language.ToUpper()) ? languages.IndexOf(Localization.language.ToUpper()) : 0;
+#else
+            int langIndex = 0; // Default to English if translations are disabled.  
+#endif
             if (translations[key].Count >= langIndex)
             {
                 return translations[key][langIndex];

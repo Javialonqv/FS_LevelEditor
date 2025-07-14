@@ -966,7 +966,14 @@ namespace FS_LevelEditor.Editor.UI
             }
             else
             {
-                targetObjInputField.SetText(currentSelectedEvent.targetObjName, true);
+                if (currentSelectedEvent.isForPlayer)
+                {
+                    targetObjInputField.SetText(Loc.Get("player"), true);
+                }
+                else
+                {
+                    targetObjInputField.SetText(currentSelectedEvent.targetObjName, true);
+                }
             }
 
             spawnOptionsDropdown.SelectOption((int)currentSelectedEvent.spawn);
@@ -1012,7 +1019,7 @@ namespace FS_LevelEditor.Editor.UI
             bool objIsValid = false;
 
             #region Check if the object is valid
-            if (inputText.ToUpper() == "PLAYER")
+            if (string.Equals(inputText, Loc.Get("player"), StringComparison.OrdinalIgnoreCase))
             {
                 objIsValid = true;
             }
@@ -1037,21 +1044,23 @@ namespace FS_LevelEditor.Editor.UI
                 eventOptionsParent.SetActive(true);
                 eventOptionsParent.DisableAllChildren();
 
-                if (string.Equals(inputText, "Player", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(inputText, Loc.Get("player"), StringComparison.OrdinalIgnoreCase))
                 {
+                    currentSelectedEvent.isForPlayer = true;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
-                    currentSelectedEvent.targetObjName = inputText;
+                    currentSelectedEvent.targetObjName = "";
                 }
                 else
                 {
+                    currentSelectedEvent.isForPlayer = false;
                     currentSelectedEvent.targetObjType = targetObj.objectType;
                     currentSelectedEvent.targetObjID = targetObj.objectID;
                     currentSelectedEvent.targetObjName = ""; // While the object is valid, don't use the name, use the type and ID instead.
                 }
 
-                if (!string.Equals(inputText, "Player", StringComparison.OrdinalIgnoreCase)) defaultObjectsSettings.SetActive(true);
-                if (string.Equals(inputText, "Player", StringComparison.OrdinalIgnoreCase))
+                if (!currentSelectedEvent.isForPlayer) defaultObjectsSettings.SetActive(true);
+                if (currentSelectedEvent.isForPlayer)
                 {
                     playerSettings.SetActive(true);
                 }
@@ -1098,6 +1107,7 @@ namespace FS_LevelEditor.Editor.UI
                 eventOptionsParent.SetActive(false);
                 eventOptionsParent.DisableAllChildren();
 
+                currentSelectedEvent.isForPlayer = false;
                 currentSelectedEvent.targetObjType = null;
                 currentSelectedEvent.targetObjID = 0;
                 currentSelectedEvent.targetObjName = inputText;
@@ -1979,6 +1989,8 @@ public class LE_Event
 
     // Yeah, why should I put a name to a freaking event? Dunno, may be useful :)
     public string eventName { get; set; } = "New Event";
+
+    public bool isForPlayer { get; set; } = false;
 
     public string targetObjName { get; set; } = "";
     public LE_Object.ObjectType? targetObjType { get; set; } = null;

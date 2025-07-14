@@ -721,6 +721,7 @@ namespace FS_LevelEditor
             yield return new WaitForSecondsRealtime(1.5f);
             InGameUIManager.Instance.StartTotalFadeIn(3, true);
         }
+
         public void GoBackToLEWhileInPlayMode(string levelFileNameWithoutExtension, string levelName)
         {
             // If it's invoking that's probably because the player already reached an end trigger, cancel it.

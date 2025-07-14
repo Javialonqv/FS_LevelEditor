@@ -86,8 +86,15 @@ namespace FS_LevelEditor
             {
                 foreach (var @event in (List<LE_Event>)originalObject.properties[evenKey])
                 {
-                    bool isPlayer = string.Equals(@event.targetObjName, "Player", StringComparison.OrdinalIgnoreCase);
-                    if (@event.targetObjType == null && @event.isValid && !string.IsNullOrEmpty(@event.targetObjName) && !isPlayer)
+                    bool isPlayer = string.Equals(@event.targetObjName, Loc.Get("player"), StringComparison.OrdinalIgnoreCase);
+                    if (!@event.isForPlayer && isPlayer) // If the targetObjName is "Player" but the BOOL is false, it's using the old system.
+                    {
+                        @event.isForPlayer = true;
+                        @event.targetObjType = null;
+                        @event.targetObjID = 0;
+                        @event.targetObjName = "";
+                    }
+                    else if (@event.targetObjType == null && @event.isValid && !string.IsNullOrEmpty(@event.targetObjName) && !isPlayer)
                     {
                         var objData = Utilities.SplitTypeAndId(@event.targetObjName);
                         var objType = LE_Object.ConvertNameToObjectType(objData.type);
@@ -134,8 +141,7 @@ namespace FS_LevelEditor
                     // ALSO, don't create editor links for the player related events.
                     // UPDATE: CREATE links even for INVALID objects, what if the user adds an object and the event becomes valid?
                     var objData = (@event.targetObjType, @event.targetObjID);
-                    if (alreadyLinkedObjects.Contains(objData) ||
-                        string.Equals(@event.targetObjName, "Player", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer) continue;
 
                     GameObject linkObj = new GameObject("Link");
                     linkObj.transform.parent = editorLinksParent.transform;
@@ -210,7 +216,7 @@ namespace FS_LevelEditor
                     continue;
                 }
 
-                if (@event.targetObjName.ToUpper() == "PLAYER")
+                if (@event.isForPlayer)
                 {
                     if (@event.enableOrDisableZeroG)
                     {
