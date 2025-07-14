@@ -995,7 +995,20 @@ namespace FS_LevelEditor.Editor
                     if (!currentSelectedObjects.Contains(currentSelectedObj)) currentSelectedObjects.Add(currentSelectedObj);
                 }
                 // And add the most recent now, ofc lol (but only if it hasn't been selected yet).
-                if (!currentSelectedObjects.Contains(obj)) currentSelectedObjects.Add(obj);
+                if (!currentSelectedObjects.Contains(obj))
+                {
+                    currentSelectedObjects.Add(obj);
+                }
+                else // If the object is already in the list, DEselect it:
+                {
+                    currentSelectedObjects.Remove(obj);
+                    obj.transform.parent = obj.GetComponent<LE_Object>().objectParent; // Remove the object from the multipleSelectedObjsParent.
+                    if (currentSelectedObjects.Count == 1)
+                    {
+                        SetSelectedObj(currentSelectedObjects[0]); // If there's only one object left, set it as the selected object.
+                        return;
+                    }
+                }
 
                 // LE will only detect multiple objects as selected when the selected count is more than 1.
                 if (currentSelectedObjects.Count > 1)
