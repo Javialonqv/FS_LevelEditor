@@ -801,7 +801,7 @@ namespace FS_LevelEditor.Editor.UI
 
             if (EditorController.Instance.multipleObjectsSelected)
             {
-                gameObject.GetChildAt("SetActiveAtStartToggle/Background/Line").SetActive(false);
+                setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
                 foreach (var obj in EditorController.Instance.currentSelectedObjects)
                 {
                     LE_Object comp = obj.GetComponent<LE_Object>();
