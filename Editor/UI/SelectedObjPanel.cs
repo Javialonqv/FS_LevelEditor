@@ -645,6 +645,9 @@ namespace FS_LevelEditor.Editor.UI
             foreach (var obj in EditorController.Instance.currentSelectedObjects)
             {
                 LE_Object comp = obj.GetComponent<LE_Object>();
+                // Skip objects that can't be disabled at start.
+                if (!comp.canBeDisabledAtStart) continue;
+
                 if (setActiveStateInObjects == null)
                 {
                     setActiveStateInObjects = comp.setActiveAtStart;
@@ -805,7 +808,10 @@ namespace FS_LevelEditor.Editor.UI
                 foreach (var obj in EditorController.Instance.currentSelectedObjects)
                 {
                     LE_Object comp = obj.GetComponent<LE_Object>();
-                    comp.setActiveAtStart = setActiveAtStartToggle.isChecked;
+                    if (comp.canBeDisabledAtStart)
+                    {
+                        comp.setActiveAtStart = setActiveAtStartToggle.isChecked;
+                    }
                 }
             }
             else
