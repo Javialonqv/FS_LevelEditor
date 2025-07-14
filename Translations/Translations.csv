@@ -31,7 +31,7 @@ object.SCREEN,Screen,Pantalla
 object.SMALL_SCREEN,Small Screen,Pantalla Pequeña
 object.BREAKABLE_WINDOW,Breakable Window,Ventana Frágil
 object.TRIGGER,Trigger,Trigger
-player,Player,Jugador
+Player,Player,Jugador
 ,,
 WhenActivatingEvents,When Activating,Cuando Se Activa
 WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva

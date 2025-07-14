@@ -86,7 +86,7 @@ namespace FS_LevelEditor
             {
                 foreach (var @event in (List<LE_Event>)originalObject.properties[evenKey])
                 {
-                    bool isPlayer = string.Equals(@event.targetObjName, Loc.Get("player"), StringComparison.OrdinalIgnoreCase);
+                    bool isPlayer = string.Equals(@event.targetObjName, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase);
                     if (!@event.isForPlayer && isPlayer) // If the targetObjName is "Player" but the BOOL is false, it's using the old system.
                     {
                         @event.isForPlayer = true;

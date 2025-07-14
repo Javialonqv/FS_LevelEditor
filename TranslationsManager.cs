@@ -1,4 +1,6 @@
-﻿using Il2Cpp;
+﻿// #define TRANSLATIONS_ENABLED
+
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;

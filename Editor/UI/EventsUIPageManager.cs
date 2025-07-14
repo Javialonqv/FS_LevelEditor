@@ -968,7 +968,7 @@ namespace FS_LevelEditor.Editor.UI
             {
                 if (currentSelectedEvent.isForPlayer)
                 {
-                    targetObjInputField.SetText(Loc.Get("player"), true);
+                    targetObjInputField.SetText(Loc.Get("Player"), true);
                 }
                 else
                 {
@@ -1019,7 +1019,7 @@ namespace FS_LevelEditor.Editor.UI
             bool objIsValid = false;
 
             #region Check if the object is valid
-            if (string.Equals(inputText, Loc.Get("player"), StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(inputText, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase))
             {
                 objIsValid = true;
             }
@@ -1044,7 +1044,7 @@ namespace FS_LevelEditor.Editor.UI
                 eventOptionsParent.SetActive(true);
                 eventOptionsParent.DisableAllChildren();
 
-                if (string.Equals(inputText, Loc.Get("player"), StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(inputText, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase))
                 {
                     currentSelectedEvent.isForPlayer = true;
                     currentSelectedEvent.targetObjType = null;
