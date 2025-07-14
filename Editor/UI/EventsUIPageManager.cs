@@ -531,7 +531,7 @@ namespace FS_LevelEditor.Editor.UI
 
                         x += widthPerButton + padding;
 
-                        topButtonsParent.GetChild(i).gameObject.GetChildAt("Background/Label").GetComponent<UILabel>().text = Loc.Get(eventsListsNames[i]);
+                        topButtonsParent.GetChild(i).gameObject.GetChildAt("Background/Label").GetComponent<UILabel>().text = Loc.Get("events." + eventsListsNames[i]);
                     }
                 }
             }
@@ -540,7 +540,7 @@ namespace FS_LevelEditor.Editor.UI
                 topButtonsParent.gameObject.DisableAllChildren();
 
                 oneEventTypeLabel.gameObject.SetActive(true);
-                oneEventTypeLabel.text = Loc.Get(eventsListsNames[0]);
+                oneEventTypeLabel.text = Loc.Get("events." + eventsListsNames[0]);
             }
         }
         void FirstEventsListBtnClick(bool playSound = true)

@@ -33,6 +33,11 @@ object.BREAKABLE_WINDOW,Breakable Window,Ventana Frágil
 object.TRIGGER,Trigger,Trigger
 Player,Player,Jugador
 ,,
-WhenActivatingEvents,When Activating,Cuando Se Activa
-WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva
-WhenInvertingEvents,When Inverting,Cuando Se Invierte
+events.WhenActivatingEvents,When Activating,Cuando Se Activa
+events.WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva
+events.WhenInvertingEvents,When Inverting,Cuando Se Invierte
+events.OnDrop,On Drop,Cuando Se Suelta
+events.OnRemove,On Remove,Cuando Se Remueve
+events.OnBoth,On Both,Ambos Casos
+events.OnEnter,On Enter,Al Entrar
+events.OnExit,On Exit,Al Salir
