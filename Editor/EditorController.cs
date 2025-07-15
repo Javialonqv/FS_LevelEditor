@@ -952,7 +952,8 @@ namespace FS_LevelEditor.Editor
             return obj;
         }
 
-        public void SetSelectedObj(GameObject obj)
+        public enum SelectionType { Normal, ForceSingle, ForceMultiple }
+        public void SetSelectedObj(GameObject obj, SelectionType selectionType = SelectionType.Normal)
         {
             if (currentSelectedObj == obj) return;
 
@@ -987,7 +988,8 @@ namespace FS_LevelEditor.Editor
 
             // Get when the user is pressing Left Control, normally, that's for when the user wanna select multiple objects.
             // Also only execute this when the use is NOT duplicating objects, due to some interferences when then user is pressing Ctrl BUT to duplicate.
-            if (Input.GetKey(KeyCode.LeftControl) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj)
+            if ((Input.GetKey(KeyCode.LeftControl) || selectionType == SelectionType.ForceMultiple) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj &&
+                selectionType != SelectionType.ForceSingle)
             {
                 // If it's the first time pressing ctrl to select multiple objects, also add the previous selected object to the new selected objs list.
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
@@ -1149,7 +1151,6 @@ namespace FS_LevelEditor.Editor
         public void SetMultipleObjectsAsSelected(List<GameObject> objects)
         {
             // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
-            SetSelectedObj(null);
             currentSelectedObjects.ForEach(obj => obj.transform.parent = obj.GetComponent<LE_Object>().objectParent);
             currentSelectedObjects.Clear();
 
@@ -1160,16 +1161,12 @@ namespace FS_LevelEditor.Editor
                 {
                     currentSelectedObjects = new List<GameObject>(objects); // Replace the list with the new one with the copied objects.
                     currentSelectedObjects.ForEach(obj => obj.transform.parent = multipleSelectedObjsParent.transform);
-                    SetSelectedObj(multipleSelectedObjsParent); // Select the selected objects parent again.
                 }
             }
         }
 
         void DeleteObject(GameObject obj)
         {
-            // This function doesn't support multiple selected objects.
-            if (multipleObjectsSelected) return;
-
             // Get the current existing objects in the level objects parent.
             int existingObjects = levelObjectsParent.GetChilds(false).ToArray().Length;
 
@@ -1180,6 +1177,30 @@ namespace FS_LevelEditor.Editor
                 Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
                 return;
             }
+
+            if (multipleObjectsSelected && currentSelectedObjects.Contains(obj))
+            {
+                // Since the object is already selected, this SetSelectedObj is going to DESELECT it.
+                SetSelectedObj(obj, SelectionType.ForceMultiple);
+                if (currentSelectedObjects.Count > 1)
+                {
+                    SetMultipleObjectsAsSelected(new List<GameObject>(currentSelectedObjects));
+                }
+                else
+                {
+                    // Since it's only one object left, use the currentSelectedObj variable.
+                    // Afaik, calling SetSelectedObj now it's not needed, but I'm just doing it to be sure.
+                    SetSelectedObj(currentSelectedObj, SelectionType.ForceSingle);
+                }
+            }
+            else
+            {
+                if (currentSelectedObj == obj)
+                {
+                    SetSelectedObj(null); // Deselect the object if it was the current selected object.
+                }
+            }
+
             LE_Object objComp = obj.GetComponent<LE_Object>();
             objComp.OnDelete();
             if (objComp.canUndoDeletion)
