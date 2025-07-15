@@ -1119,6 +1119,8 @@ namespace FS_LevelEditor.Editor.UI
         {
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.SELECTING_TARGET_OBJ);
             EditorController.Instance.SetCurrentEditorState(EditorState.SELECTING_TARGET_OBJ);
+
+            targetObj.TriggerAction("OnSelectTargetObjWithClickBtnClick");
         }
         
         public void SetTargetObjectWithLE_Object(LE_Object obj)

@@ -481,9 +481,14 @@ namespace FS_LevelEditor
                 EventsUIPageManager.Instance.ShowEventsPage(this);
                 return true;
             }
-            else if (actionName == "OnEventsTabClose")
+            else if (actionName == "OnEventsTabClose" || actionName == "OnSelectTargetObjWithClickBtnClick")
             {
                 eventExecuter.CreateInEditorLinksToTargetObjects();
+                // Since we're on SELECTING_TARGET_OBJ state, editor links positions won't be updated automatically, updaate it ONE TIME ONLY, since you can't move objects in this state.
+                if (actionName == "OnSelectTargetObjWithClickBtnClick")
+                {
+                    eventExecuter.UpdateEditorLinksPositions();
+                }
                 return true;
             }
 
