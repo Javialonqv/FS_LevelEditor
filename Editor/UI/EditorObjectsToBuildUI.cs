@@ -165,21 +165,21 @@ namespace FS_LevelEditor.Editor.UI
                 }
 
                 LE_Object.ObjectType? objectType = null;
-                string objectLocalizatedName = null;
+                string objectLocKey = null;
 
                 if (i == -1)
                 {
                     objectType = null;
-                    objectLocalizatedName = Loc.Get("object.NONE");
+                    objectLocKey = "object.NONE";
                 }
                 else
                 {
                     var objectInfo = EditorController.Instance.allCategoriesObjectsSorted[categoryID].ToList()[i];
                     objectType = objectInfo.Key;
-                    objectLocalizatedName = Loc.Get("object." + objectType.ToString());
+                    objectLocKey = "object." + objectType.ToString();
                 }
 
-                var button = NGUI_Utils.CreateColorButton(currentGrid, Vector3.zero, objectLocalizatedName);
+                var button = NGUI_Utils.CreateColorButton(currentGrid, Vector3.zero, objectLocKey);
                 button.name = objectType.ToString();
 
                 button.onClick += () => EditorController.Instance.SelectObjectToBuild(objectType);

@@ -440,6 +440,10 @@ namespace FS_LevelEditor.UI_Related
             toggle.GetChildWithName("ColorSample").SetActive(false);
             toggle.SetActive(true);
 
+            if (Loc.Get(text, false) != text)
+            {
+                toggle.GetChildWithName("ColorName").AddComponent<UILocalize>().key = text;
+            }
             toggle.GetChildWithName("ColorName").GetComponent<UILabel>().text = text;
             toggle.GetComponent<UIButton>().onClick.Clear();
 
