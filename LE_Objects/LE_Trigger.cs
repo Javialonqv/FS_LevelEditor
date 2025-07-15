@@ -71,21 +71,6 @@ namespace FS_LevelEditor
 
             return base.SetProperty(name, value);
         }
-        public override bool TriggerAction(string actionName)
-        {
-            if (actionName == "ManageEvents")
-            {
-                EventsUIPageManager.Instance.ShowEventsPage(this);
-                return true;
-            }
-            else if (actionName == "OnEventsTabClose")
-            {
-                eventExecuter.CreateInEditorLinksToTargetObjects();
-                return true;
-            }
-
-            return base.TriggerAction(actionName);
-        }
 
         public override List<string> GetAvailableEventsIDs()
         {

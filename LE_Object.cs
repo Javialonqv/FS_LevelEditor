@@ -1,21 +1,22 @@
-﻿using FS_LevelEditor.UI_Related;
+﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.Playmode;
+using FS_LevelEditor.SaveSystem;
+using FS_LevelEditor.SaveSystem.Converters;
+using FS_LevelEditor.UI_Related;
 using Il2Cpp;
 using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using FS_LevelEditor.Editor;
-using System.Text.Json;
-using FS_LevelEditor.SaveSystem;
-using FS_LevelEditor.SaveSystem.Converters;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using FS_LevelEditor.Playmode;
 
 namespace FS_LevelEditor
 {
@@ -474,6 +475,16 @@ namespace FS_LevelEditor
             else if (actionName == "SetActive_False")
             {
                 gameObject.SetActive(false);
+            }
+            else if (actionName == "ManageEvents")
+            {
+                EventsUIPageManager.Instance.ShowEventsPage(this);
+                return true;
+            }
+            else if (actionName == "OnEventsTabClose")
+            {
+                eventExecuter.CreateInEditorLinksToTargetObjects();
+                return true;
             }
 
             return false;

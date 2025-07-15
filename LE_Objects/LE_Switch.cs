@@ -205,18 +205,7 @@ namespace FS_LevelEditor
         }
         public override bool TriggerAction(string actionName)
         {
-            if (actionName == "ManageEvents")
-            {
-                EventsUIPageManager.Instance.ShowEventsPage(this);
-                return true;
-            }
-            else if (actionName == "OnEventsTabClose")
-            {
-                eventExecuter.CreateInEditorLinksToTargetObjects();
-                return true;
-            }
-
-            else if (actionName == "Activate")
+            if (actionName == "Activate")
             {
                 UnityEvent onActivate = controller.m_onActivate;
                 controller.m_onActivate = new UnityEvent();
