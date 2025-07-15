@@ -81,11 +81,18 @@ namespace FS_LevelEditor.Editor.UI
             currentCategoryButtonYPos = 450f;
             for (int i = 0; i < EditorController.Instance.categoriesNames.Count; i++)
             {
-                string category = EditorController.Instance.categoriesNames[i];
+                string categoryName = EditorController.Instance.categoriesNames[i];
+                string categoryLocKey = "category." + categoryName;
+                string tabButtonTextToSet = categoryLocKey;
+                if (Loc.Get(categoryLocKey) == categoryLocKey) // In case the localization key doesn't exist, use the "original" category name instead.
+                {
+                    tabButtonTextToSet = categoryName;
+                }
+
                 Vector3 buttonPosition = new Vector3(currentCategoryButtonXPos, currentCategoryButtonYPos, 0f);
 
-                UITogglePatcher categoryButton = NGUI_Utils.CreateTabToggle(categoryButtonsParent.transform, buttonPosition, category);
-                categoryButton.name = $"{category}_Button";
+                UITogglePatcher categoryButton = NGUI_Utils.CreateTabToggle(categoryButtonsParent.transform, buttonPosition, tabButtonTextToSet);
+                categoryButton.name = $"{categoryName}_Button";
                 // The toggle is set to false by default.
 
                 // It seems it's a bug, I need to create a copy of 'i'. Otherwise ALL of the toggles will end using the same value.

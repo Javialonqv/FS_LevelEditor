@@ -417,7 +417,11 @@ namespace FS_LevelEditor.UI_Related
             toggle.transform.localPosition = position;
             toggle.transform.localScale = Vector3.one;
 
-            GameObject.Destroy(toggle.GetChildWithName("Label").GetComponent<UILocalize>());
+            // If there's not key for the text, then it'll return the key itself, otherwise, it'll return the translation.
+            if (Loc.Get(text, false) != text)
+            {
+                toggle.GetChildWithName("Label").AddComponent<UILocalize>().key = text;
+            }
             toggle.GetChildWithName("Label").GetComponent<UILabel>().text = text;
 
             UIToggle script = toggle.GetComponent<UIToggle>();
@@ -440,6 +444,7 @@ namespace FS_LevelEditor.UI_Related
             toggle.GetChildWithName("ColorSample").SetActive(false);
             toggle.SetActive(true);
 
+            // If there's not key for the text, then it'll return the key itself, otherwise, it'll return the translation.
             if (Loc.Get(text, false) != text)
             {
                 toggle.GetChildWithName("ColorName").AddComponent<UILocalize>().key = text;
