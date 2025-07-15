@@ -1,6 +1,4 @@
-﻿// #define TRANSLATIONS_ENABLED
-
-using Il2Cpp;
+﻿using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,20 +73,20 @@ namespace FS_LevelEditor
             }
         }
 
-        public static string GetTranslation(string key)
+        public static string GetTranslation(string key, bool throwErrorIfNotFound)
         {
             if (!initialized)
             {
-                Logger.Error("Translations Manager Script is NOT initialized yet!");
+                Init();
                 return null;
             }
             if (!translations.ContainsKey(key))
             {
-                Logger.Error($"\"{key}\" doesn't exists in the LE Translations!");
+                if (throwErrorIfNotFound) Logger.Error($"\"{key}\" doesn't exists in the LE Translations!");
                 return key;
             }
 
-#if TRANSLATIONS_ENABLED
+#if DEBUG
             int langIndex = languages.Contains(Localization.language.ToUpper()) ? languages.IndexOf(Localization.language.ToUpper()) : 0;
 #else
             int langIndex = 0; // Default to English if translations are disabled.  
@@ -107,9 +105,25 @@ namespace FS_LevelEditor
     // This class is only to avoid writing TranslationsManager.GetTranslation bla bla bla every time I wanna use it.
     public static class Loc
     {
-        public static string Get(string key)
+        public static string Get(string key, bool throwErrorIfNotFound = true)
         {
-            return TranslationsManager.GetTranslation(key);
+            return TranslationsManager.GetTranslation(key, throwErrorIfNotFound);
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(Localization), nameof(Localization.Get))]
+    public static class UILocalizePatch
+    {
+        public static bool Prefix(ref string __result, string key)
+        {
+            string LETranslation = Loc.Get(key, false);
+            if (LETranslation != key) // If the translation was succesfully.
+            {
+                __result = LETranslation;
+                return false;
+            }
+
+            return true;
         }
     }
 }

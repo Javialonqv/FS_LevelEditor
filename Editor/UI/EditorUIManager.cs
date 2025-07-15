@@ -70,8 +70,6 @@ namespace FS_LevelEditor.Editor.UI
         {
             Instance = this;
 
-            TranslationsManager.Init();
-
             MenuController.GetInstance().m_uiCamera.submitKey0 = KeyCode.Return;
         }
 
