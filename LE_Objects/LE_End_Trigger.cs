@@ -30,6 +30,7 @@ namespace FS_LevelEditor
         public override void InitComponent()
         {
             GameObject endTrigger = gameObject.GetChildAt("Content/End");
+            endTrigger.layer = LayerMask.NameToLayer("Ignore Raycast");
 
             CheckpointController checkpoint = endTrigger.AddComponent<CheckpointController>();
 
