@@ -692,9 +692,9 @@ namespace FS_LevelEditor.Editor
                         case LEAction.LEActionType.MoveObject:
                             if (toUndo.forMultipleObjects)
                             {
-                                SetMultipleObjectsAsSelected(null);
+                                SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
                                 multipleSelectedObjsParent.transform.localPosition = toUndo.newPos; // Set to the newest position.
-                                SetMultipleObjectsAsSelected(toUndo.targetObjs);
+                                SetMultipleObjectsAsSelected(toUndo.targetObjs, false);
                                 // Move the parent so the whole selection is moved too.
                                 multipleSelectedObjsParent.transform.localPosition = toUndo.oldPos;
 
@@ -718,9 +718,9 @@ namespace FS_LevelEditor.Editor
                         case LEAction.LEActionType.RotateObject:
                             if (toUndo.forMultipleObjects)
                             {
-                                SetMultipleObjectsAsSelected(null);
+                                SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
                                 multipleSelectedObjsParent.transform.localRotation = toUndo.newRot; // Set to the newest rotation.
-                                SetMultipleObjectsAsSelected(toUndo.targetObjs);
+                                SetMultipleObjectsAsSelected(toUndo.targetObjs, false);
                                 // Rotate the parent so the whole selection is rotated too.
                                 multipleSelectedObjsParent.transform.localRotation = toUndo.oldRot;
 
@@ -741,15 +741,13 @@ namespace FS_LevelEditor.Editor
                         case LEAction.LEActionType.DeleteObject:
                             if (toUndo.forMultipleObjects)
                             {
-                                SetMultipleObjectsAsSelected(null);
-                                //toUndo.targetObjs.ForEach(obj => currentInstantiatedObjects.Add(obj.GetComponent<LE_Object>())); // Add the objects to the instantiated list again.
+                                SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
                                 toUndo.targetObjs.ForEach(obj => obj.SetActive(true)); // Enable the objects again and then select them again.
                                 toUndo.targetObjs.ForEach(obj => obj.GetComponent<LE_Object>().isDeleted = false);
-                                SetMultipleObjectsAsSelected(toUndo.targetObjs);
+                                SetMultipleObjectsAsSelected(toUndo.targetObjs, false);
                             }
                             else
                             {
-                                //currentInstantiatedObjects.Add(toUndo.targetObj.GetComponent<LE_Object>());
                                 toUndo.targetObj.GetComponent<LE_Object>().isDeleted = false;
                                 toUndo.targetObj.SetActive(true);
                                 SetSelectedObj(toUndo.targetObj);
@@ -1148,19 +1146,29 @@ namespace FS_LevelEditor.Editor
                 SelectedObjPanel.Instance.SetSelectedObjPanelAsNone();
             }
         }
-        public void SetMultipleObjectsAsSelected(List<GameObject> objects)
+        public void SetMultipleObjectsAsSelected(List<GameObject> objects, bool adjustMultipleObjParentPosition = true)
         {
-            // Set the selected object as null so all of the "old" selected objects are deselected. Also remove them from the selected objects parent.
-            currentSelectedObjects.ForEach(obj => obj.transform.parent = obj.GetComponent<LE_Object>().objectParent);
-            currentSelectedObjects.Clear();
+            // Set the selected object as null so all of the "old" selected objects are deselected.
+            SetSelectedObj(null);
 
             if (objects != null)
             {
                 multipleSelectedObjsParent.transform.localScale = Vector3.one;
                 if (objects.Count > 0)
                 {
-                    currentSelectedObjects = new List<GameObject>(objects); // Replace the list with the new one with the copied objects.
-                    currentSelectedObjects.ForEach(obj => obj.transform.parent = multipleSelectedObjsParent.transform);
+                    if (adjustMultipleObjParentPosition) // Use this system, SetSelectObj will do whatever is needed correcty.
+                    {
+                        foreach (var obj in objects)
+                        {
+                            SetSelectedObj(obj, SelectionType.ForceMultiple);
+                        }
+                    }
+                    else // Use this old "awful" system that for some reason hasn't break anything yet, and it's needed for ManageUndo().
+                    {
+                        currentSelectedObjects = new List<GameObject>(objects); // Replace the list with the new one with the copied objects.
+                        currentSelectedObjects.ForEach(obj => obj.transform.parent = multipleSelectedObjsParent.transform);
+                        SetSelectedObj(multipleSelectedObjsParent);
+                    }
                 }
             }
         }
