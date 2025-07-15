@@ -764,6 +764,7 @@ namespace FS_LevelEditor.Editor
                     // Only set the level as modified if a undo action was executed.
                     if (undoActionExecuted)
                     {
+                        Logger.Log($"Undid {toUndo.actionType} action for " + (toUndo.forMultipleObjects ? $"{toUndo.targetObjs.Count} objects." : $"\"{toUndo.targetObj.name}\"."));
                         levelHasBeenModified = true;
                     }
 
@@ -1200,7 +1201,7 @@ namespace FS_LevelEditor.Editor
                 currentExecutingAction.actionType = LEAction.LEActionType.DeleteObject;
 
                 currentExecutingAction.forMultipleObjects = false;
-                currentExecutingAction.targetObj = currentSelectedObj;
+                currentExecutingAction.targetObj = obj;
 
                 actionsMade.Add(currentExecutingAction);
                 #endregion
