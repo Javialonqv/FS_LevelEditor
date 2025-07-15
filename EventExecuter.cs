@@ -79,7 +79,7 @@ namespace FS_LevelEditor
             dontDisableLinksParentWhenCreating = false;
         }
 
-        // This method is used to update the LE_Event targetObjType and targetObjID properties in case it comes from a prevous version that used targetObjName.
+        // This method is used to update the LE_Event targetObjType and targetObjID properties in case it comes from a previous version that used targetObjName.
         void UpdateLEEventsToTheNewSystem()
         {
             foreach (string evenKey in originalObject.GetAvailableEventsIDs())
