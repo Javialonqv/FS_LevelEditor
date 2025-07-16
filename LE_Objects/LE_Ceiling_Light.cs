@@ -110,7 +110,8 @@ namespace FS_LevelEditor
             gameObject.GetChildAt("Content/ActivateTrigger").tag = "ActivateTrigger";
             gameObject.GetChildAt("Content/ActivateTrigger").layer = LayerMask.NameToLayer("Ignore Raycast");
             gameObject.GetChildAt("Content/Mesh/Body/LightBase").tag = "RealtimeLight";
-            gameObject.GetChildAt("Content/Mesh/Body/LightBase").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
+            // This thing is actually meant to use "IgnorePlayerCollision" layer, but Chris wanted me to add collision to lamps, so, fuck it.
+            gameObject.GetChildAt("Content/Mesh/Body/LightBase").layer = LayerMask.NameToLayer("Default");
 
             foreach (var flareCollider in gameObject.GetChildAt("Content/Mesh/Body/LightBase").GetChilds()) flareCollider.layer = LayerMask.NameToLayer("AllExceptPlayer");
 
