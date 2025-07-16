@@ -377,7 +377,6 @@ namespace FS_LevelEditor
 
             List<string> keys = new List<string>(levels.Keys);
 
-            int counter = 0;
             GameObject currentGrid = null;
             for (int i = 0; i < levels.Count; i++)
             {
@@ -405,7 +404,7 @@ namespace FS_LevelEditor
 
 
                 // Create the level button parent.
-                GameObject lvlButtonParent = new GameObject($"Level {counter}");
+                GameObject lvlButtonParent = new GameObject($"Level {i}");
                 lvlButtonParent.transform.parent = currentGrid.transform;
                 lvlButtonParent.transform.localScale = Vector3.one;
 
@@ -499,8 +498,6 @@ namespace FS_LevelEditor
                     renameBtn.onClick += () => OnRenameLevelButtonClick(levelFileNameWithoutExtension, lvlButton.buttonLabel.gameObject);
                     #endregion
                 }
-
-                counter++;
             }
 
             // If there are more than 5 levels, create the buttons to travel between lists.
