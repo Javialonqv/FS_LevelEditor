@@ -59,6 +59,8 @@ namespace FS_LevelEditor.Playmode
             levelObjectsParent.transform.position = Vector3.zero;
 
             CreateBackToLEButton();
+
+            PlaymodePauseMenuPatcher.Create();
         }
 
         void Start()
@@ -76,6 +78,8 @@ namespace FS_LevelEditor.Playmode
             Destroy(backToLEButton);
 
             LE_Object.ResetStaticVariablesInObjects();
+
+            PlaymodePauseMenuPatcher.DestroyPatcher();
         }
 
         void TeleportPlayer()
