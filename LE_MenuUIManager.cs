@@ -475,6 +475,7 @@ namespace FS_LevelEditor
                 deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
                 deleteButtonColor.hover = new Color(1f, 0f, 0f, 1f);
                 deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
+                deleteButtonColor.SetState(UIButtonColor.State.Normal, true);
 
                 // Adjust what should the button execute when clicked.
                 deleteBtn.onClick += () => ShowDeleteLevelPopup(levelFileNameWithoutExtension);
@@ -492,6 +493,7 @@ namespace FS_LevelEditor
                     renameButtonColor.defaultColor = new Color(0f, 0f, 0.8f, 1f);
                     renameButtonColor.hover = new Color(0f, 0f, 1f, 1f);
                     renameButtonColor.pressed = new Color(0f, 0f, 0.5f, 1f);
+                    renameButtonColor.SetState(UIButtonColor.State.Normal, true);
 
                     // Adjust what should the button execute when clicked.
                     renameBtn.onClick += () => OnRenameLevelButtonClick(levelFileNameWithoutExtension, lvlButton.buttonLabel.gameObject);
