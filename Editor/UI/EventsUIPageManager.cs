@@ -346,7 +346,7 @@ namespace FS_LevelEditor.Editor.UI
                 int index = i;
                 ContextMenuOption targetOption = new ContextMenuOption()
                 {
-                    name = Loc.Get(eventsListsNames[index]),
+                    name = Loc.Get("events." + eventsListsNames[index]),
                     onClick = () => CopyEventToList(selectedEventIDForContextMenu, index)
                 };
                 copyToOption.subOptions.Add(targetOption);
@@ -363,7 +363,7 @@ namespace FS_LevelEditor.Editor.UI
                 int index = i;
                 ContextMenuOption targetOption = new ContextMenuOption()
                 {
-                    name = Loc.Get(eventsListsNames[index]),
+                    name = Loc.Get("events." + eventsListsNames[index]),
                     onClick = () => MoveEventToList(selectedEventIDForContextMenu, index)
                 };
                 moveToOption.subOptions.Add(targetOption);
