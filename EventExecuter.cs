@@ -253,6 +253,27 @@ namespace FS_LevelEditor
                         }
                         break;
                 }
+                switch (@event.colliderState)
+                {
+                    case LE_Event.ColliderState.Enable:
+                        targetObj.TriggerAction("SetColliderState_True");
+                        break;
+
+                    case LE_Event.ColliderState.Disable:
+                        targetObj.TriggerAction("SetColliderState_False");
+                        break;
+
+                    case LE_Event.ColliderState.Toggle:
+                        if (targetObj.currentCollisionState)
+                        {
+                            targetObj.TriggerAction("SetColliderState_False");
+                        }
+                        else
+                        {
+                            targetObj.TriggerAction("SetColliderState_True");
+                        }
+                        break;
+                }
 
                 if (targetObj is LE_Saw)
                 {

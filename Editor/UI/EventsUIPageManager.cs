@@ -45,6 +45,7 @@ namespace FS_LevelEditor.Editor.UI
         GameObject eventOptionsParent;
         GameObject defaultObjectsSettings;
         UIDropdownPatcher spawnOptionsDropdown;
+        UIDropdownPatcher colliderStateDropdown;
         //-----------------------------------
         GameObject sawObjectsSettings;
         UIButtonMultiple sawStateButton;
@@ -977,6 +978,7 @@ namespace FS_LevelEditor.Editor.UI
             }
 
             spawnOptionsDropdown.SelectOption((int)currentSelectedEvent.spawn);
+            colliderStateDropdown.SelectOption((int)currentSelectedEvent.colliderState);
             sawStateButton.SelectOption((int)currentSelectedEvent.sawState);
             zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
@@ -1139,28 +1141,37 @@ namespace FS_LevelEditor.Editor.UI
             defaultObjectsSettings.SetActive(false);
 
             CreateSpawnOptionsDropdown();
+            CreateColliderStateDropdown();
         }
         void CreateSpawnOptionsDropdown()
         {
-            GameObject spawnOptionsDropdownPanel = Instantiate(eventsPanel.GetChildAt("Game_Options/Buttons/LanguagePanel"), defaultObjectsSettings.transform);
-            spawnOptionsDropdownPanel.name = "SetActiveDropdownPanel";
-            spawnOptionsDropdownPanel.transform.localPosition = new Vector3(0f, 105f, 0f);
-            spawnOptionsDropdownPanel.transform.localScale = Vector3.one * 0.8f;
+            UIDropdownPatcher spawnOptionsDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(-190, 105), Vector3.one * 0.8f);
+            spawnOptionsDropdown.name = "SetActiveDropdownPanel";
+            spawnOptionsDropdown.SetTitle("Spawn Options");
+            spawnOptionsDropdown.AddOption("Do Nothing", true);
+            spawnOptionsDropdown.AddOption("Spawn", false);
+            spawnOptionsDropdown.AddOption("Despawn", false);
+            spawnOptionsDropdown.AddOption("Toggle", false);
 
-            UIDropdownPatcher patcher = spawnOptionsDropdownPanel.AddComponent<UIDropdownPatcher>();
-            patcher.Init();
-            patcher.SetTitle("Spawn Options");
-            patcher.ClearOptions();
-            patcher.AddOption("Do Nothing", true);
-            patcher.AddOption("Spawn", false);
-            patcher.AddOption("Despawn", false);
-            patcher.AddOption("Toggle", false);
+            spawnOptionsDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnSpawnOptionsDropdownChanged)));
 
-            patcher.ClearOnChangeOptions();
-            patcher.AddOnChangeOption(new EventDelegate(this, nameof(OnSpawnOptionsDropdownChanged)));
+            this.spawnOptionsDropdown = spawnOptionsDropdown;
+            spawnOptionsDropdown.gameObject.SetActive(true);
+        }
+        void CreateColliderStateDropdown()
+        {
+            var colliderStateDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(190, 105), Vector3.one * 0.8f);
+            colliderStateDropdown.name = "ColliderStateDropdown";
+            colliderStateDropdown.SetTitle("Collider State");
+            colliderStateDropdown.AddOption("Do Nothing", true);
+            colliderStateDropdown.AddOption("Enable", false);
+            colliderStateDropdown.AddOption("Disable", false);
+            colliderStateDropdown.AddOption("Toggle", false);
 
-            spawnOptionsDropdown = patcher;
-            spawnOptionsDropdownPanel.SetActive(true);
+            colliderStateDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnColliderStateDropdownChanged)));
+
+            this.colliderStateDropdown = colliderStateDropdown;
+            colliderStateDropdown.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateSawObjectSettings()
@@ -1778,6 +1789,10 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.spawn = (LE_Event.SpawnState)spawnOptionsDropdown.currentlySelectedID;
         }
+        void OnColliderStateDropdownChanged()
+        {
+            currentSelectedEvent.colliderState = (LE_Event.ColliderState)colliderStateDropdown.currentlySelectedID;
+        }
         // -----------------------------------------
         void OnSawStateDropdownChanged()
         {
@@ -2000,6 +2015,8 @@ public class LE_Event
 
     public enum SpawnState { Do_Nothing, Spawn, Despawn, Toggle }
     public SpawnState spawn { get; set; } = SpawnState.Toggle;
+    public enum ColliderState { Do_Nothing, Enable, Disable, Toggle }
+    public ColliderState colliderState { get; set; } = ColliderState.Do_Nothing;
 
     #region Saw Options
     public enum SawState { Do_Nothing, Activate, Deactivate, Toggle_State }

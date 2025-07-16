@@ -156,6 +156,8 @@ namespace FS_LevelEditor
         bool hasItsOwnClass = false;
         public bool isDeleted = false;
 
+        public bool currentCollisionState = true;
+
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
 
@@ -476,6 +478,14 @@ namespace FS_LevelEditor
             {
                 gameObject.SetActive(false);
             }
+            if (actionName == "SetColliderState_True")
+            {
+                SetCollidersState(true);
+            }
+            else if (actionName == "SetColliderState_False")
+            {
+                SetCollidersState(false);
+            }
             else if (actionName == "ManageEvents")
             {
                 EventsUIPageManager.Instance.ShowEventsPage(this);
@@ -641,6 +651,7 @@ namespace FS_LevelEditor
             {
                 collider.enabled = newEnabledState;
             }
+            currentCollisionState = newEnabledState;
         }
         public void SetEditorCollider(bool newEnabledState)
         {
