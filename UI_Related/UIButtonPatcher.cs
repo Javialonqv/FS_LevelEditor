@@ -35,6 +35,16 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
+        UILabel _buttonLabel;
+        public UILabel buttonLabel
+        {
+            get
+            {
+                if (!_buttonLabel) _buttonLabel = gameObject.GetChildAt("Background/Label").GetComponent<UILabel>();
+                return _buttonLabel;
+            }
+        }
+
         public Action onClick;
 
         public void OnClick()
