@@ -97,6 +97,7 @@ namespace FS_LevelEditor.Playmode
             Controls.Instance.gameCamera.transform.localPosition = new Vector3(0f, 0.907f, 0f);
             Controls.Instance.gameCamera.transform.eulerAngles = spawn.transform.eulerAngles;
             Controls.Instance.Angle = new Vector2(spawn.transform.eulerAngles.y, spawn.transform.eulerAngles.x);
+            Controls.Instance.transform.localScale = spawn.transform.localScale;
         }
 
         void DisableTheCurrentScene()
