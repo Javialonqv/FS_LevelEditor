@@ -20,7 +20,7 @@ namespace FS_LevelEditor.Editor.UI
         public GameObject eventsPanel;
         UILabel eventsWindowTitle;
         GameObject eventsButtonsParent;
-        GameObject previousEventPageButton, nextEventPageButton;
+        UIButtonPatcher previousEventPageButton, nextEventPageButton;
         GameObject currentEventPageLabel;
         GameObject noEventsLabel;
 
@@ -273,73 +273,17 @@ namespace FS_LevelEditor.Editor.UI
 
         void CreatePreviousEventsPageButton()
         {
-            // Create the button.
-            GameObject btnTemplate = NGUI_Utils.buttonTemplate;
-            previousEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
+            previousEventPageButton = NGUI_Utils.CreateButton(eventsListBg.transform, new Vector3(-430, 0), new Vector3Int(50, 50, 0), "<", 1, 40);
             previousEventPageButton.name = "PreviousEventsPageButton";
-            previousEventPageButton.transform.localPosition = new Vector3(-430f, 0f, 0f);
 
-            // Remove unnecesary components.
-            Destroy(previousEventPageButton.GetComponent<ButtonController>());
-            Destroy(previousEventPageButton.GetComponent<OptionsButton>());
-            Destroy(previousEventPageButton.GetComponent<FractalTooltip>());
-
-            // Adjust the sprite and the collider as well.
-            UISprite sprite = previousEventPageButton.GetComponent<UISprite>();
-            sprite.width = 50;
-            sprite.height = 50;
-            sprite.depth = 1;
-            BoxCollider collider = previousEventPageButton.GetComponent<BoxCollider>();
-            collider.size = new Vector3(50f, 50f);
-
-            // Adjust the label, removing the FUCKING UILocalize.
-            Destroy(previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            UILabel label = previousEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
-            label.depth = 2;
-            label.width = 60;
-            label.height = 60;
-            label.fontSize = 40;
-            label.text = "<";
-
-            // Set the button on click action.
-            UIButton button = previousEventPageButton.GetComponent<UIButton>();
-            button.onClick.Clear();
-            button.onClick.Add(new EventDelegate(this, nameof(PreviousEventsPage)));
+            previousEventPageButton.onClick += PreviousEventsPage;
         }
         void CreateNextEventsPageButton()
         {
-            // Create the button.
-            GameObject btnTemplate = NGUI_Utils.buttonTemplate;
-            nextEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
+            nextEventPageButton = NGUI_Utils.CreateButton(eventsListBg.transform, new Vector3(430, 0), new Vector3Int(50, 50, 0), ">", 1, 40);
             nextEventPageButton.name = "PreviousEventsPageButton";
-            nextEventPageButton.transform.localPosition = new Vector3(430f, 0f, 0f);
 
-            // Remove unnecesary components.
-            Destroy(nextEventPageButton.GetComponent<ButtonController>());
-            Destroy(nextEventPageButton.GetComponent<OptionsButton>());
-            Destroy(nextEventPageButton.GetComponent<FractalTooltip>());
-
-            // Adjust the sprite and the collider as well.
-            UISprite sprite = nextEventPageButton.GetComponent<UISprite>();
-            sprite.width = 50;
-            sprite.height = 50;
-            sprite.depth = 1;
-            BoxCollider collider = nextEventPageButton.GetComponent<BoxCollider>();
-            collider.size = new Vector3(50f, 50f);
-
-            // Adjust the label, removing the FUCKING UILocalize.
-            Destroy(nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            UILabel label = nextEventPageButton.GetChildAt("Background/Label").GetComponent<UILabel>();
-            label.depth = 2;
-            label.width = 60;
-            label.height = 60;
-            label.fontSize = 40;
-            label.text = ">";
-
-            // Set the button on click action.
-            UIButton button = nextEventPageButton.GetComponent<UIButton>();
-            button.onClick.Clear();
-            button.onClick.Add(new EventDelegate(this, nameof(NextEventsPage)));
+            nextEventPageButton.onClick += NextEventsPage;
         }
         void CreateCurrentEventsPageLabel()
         {
@@ -729,16 +673,16 @@ namespace FS_LevelEditor.Editor.UI
             }
 
             // Only enable the page buttons and the page label once they're are more than 1 grid (1 event page).
-            previousEventPageButton.SetActive(eventsGridList.Count > 1);
-            nextEventPageButton.SetActive(eventsGridList.Count > 1);
+            previousEventPageButton.gameObject.SetActive(eventsGridList.Count > 1);
+            nextEventPageButton.gameObject.SetActive(eventsGridList.Count > 1);
             currentEventPageLabel.SetActive(eventsGridList.Count > 1);
 
             // Enable the No Events Label in case there aren't any events...
             noEventsLabel.SetActive(eventsGridList.Count == 0);
 
             // Update the state of the page buttons and the page label in case now they're enabled.
-            previousEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid > 0;
-            nextEventPageButton.GetComponent<UIButton>().isEnabled = currentEventsGrid < eventsGridList.Count - 1;
+            previousEventPageButton.button.isEnabled = currentEventsGrid > 0;
+            nextEventPageButton.button.isEnabled = currentEventsGrid < eventsGridList.Count - 1;
             currentEventPageLabel.GetComponent<UILabel>().text = GetCurrentEventPageText();
         }
 

@@ -303,14 +303,17 @@ namespace FS_LevelEditor.UI_Related
             return toggle;
         }
 
-        public static UIButtonPatcher CreateButton(Transform parent, Vector3 position, Vector3Int size, string text = "")
+        public static UIButtonPatcher CreateButton(Transform parent, Vector3 position, Vector3Int size, string text = "", int? depth = null, int textSize = 30)
         {
+            // NOTE: The only reason why depth is nullable is because there are already parts of the code that use this method without a depth set, and I don't wanna break anything.
+
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
             button.transform.localScale = Vector3.one;
 
             button.GetComponent<UISprite>().width = size.x;
             button.GetComponent<UISprite>().height = size.y;
+            if (depth.HasValue) button.GetComponent<UISprite>().depth = depth.Value;
             button.GetComponent<BoxCollider>().size = size;
             GameObject.Destroy(button.GetComponent<ButtonController>());
 
@@ -319,6 +322,8 @@ namespace FS_LevelEditor.UI_Related
             UILabel buttonLabel = button.GetChildAt("Background/Label").GetComponent<UILabel>();
             GameObject.Destroy(buttonLabel.GetComponent<UILocalize>());
             buttonLabel.text = text;
+            buttonLabel.fontSize = textSize;
+            if (depth.HasValue) buttonLabel.depth = depth.Value + 1;
             buttonLabel.SetAnchor(button, 0, 0, 0, 0);
             // Just change the label anchor so its size is the same as the button size.
 
