@@ -274,7 +274,7 @@ namespace FS_LevelEditor.Editor.UI
         void CreatePreviousEventsPageButton()
         {
             // Create the button.
-            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            GameObject btnTemplate = NGUI_Utils.buttonTemplate;
             previousEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
             previousEventPageButton.name = "PreviousEventsPageButton";
             previousEventPageButton.transform.localPosition = new Vector3(-430f, 0f, 0f);
@@ -309,7 +309,7 @@ namespace FS_LevelEditor.Editor.UI
         void CreateNextEventsPageButton()
         {
             // Create the button.
-            GameObject btnTemplate = LE_MenuUIManager.Instance.leMenuPanel.GetChildAt("Controls_Options/Buttons/RemapControls");
+            GameObject btnTemplate = NGUI_Utils.buttonTemplate;
             nextEventPageButton = Instantiate(btnTemplate, eventsListBg.transform);
             nextEventPageButton.name = "PreviousEventsPageButton";
             nextEventPageButton.transform.localPosition = new Vector3(430f, 0f, 0f);

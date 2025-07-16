@@ -40,7 +40,6 @@ namespace FS_LevelEditor
         // Variables for objects/things related to LE menu.
         GameObject levelEditorUIButton;
         public GameObject leMenuPanel;
-        GameObject leMenuButtonsParent;
         GameObject backButton;
         GameObject addButton;
         GameObject lvlButtonsParent;
@@ -54,6 +53,7 @@ namespace FS_LevelEditor
         string levelNameWhileGoingBackToLE = "";
         public GameObject levelNameLabel;
         public GameObject levelObjectsLabel;
+        UIButtonPatcher previousPageButton, nextPageButton;
 
         void Awake()
         {
@@ -203,14 +203,12 @@ namespace FS_LevelEditor
             leMenuPanel.GetChildWithName("Window").GetComponent<UISprite>().depth = -1;
             leMenuPanel.GetChildWithName("Window").AddComponent<TweenAlpha>().duration = 0.2f;
             leMenuPanel.GetChildAt("Window/Window2").GetComponent<UISprite>().depth = -1;
-
-            leMenuButtonsParent = leMenuPanel;
         }
 
         public void CreateBackButton()
         {
             // Get the template, spawn the copy and set some parameters.
-            backButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuButtonsParent.transform);
+            backButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuPanel.transform);
             backButton.name = "BackButton";
             backButton.transform.localPosition = new Vector3(-690f, 290f, 0f);
 
@@ -259,7 +257,7 @@ namespace FS_LevelEditor
         public void CreateAddButton()
         {
             // Get the template, spawn the copy and set some parameters.
-            addButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuButtonsParent.transform);
+            addButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuPanel.transform);
             addButton.name = "AddButton";
             addButton.transform.localPosition = new Vector3(690f, 290f, 0f);
 
@@ -377,17 +375,21 @@ namespace FS_LevelEditor
         public void CreatePreviousListButton()
         {
             // Create the button.
-            UIButtonPatcher btnPrevious = NGUI_Utils.CreateButton(lvlButtonsParent.transform, new Vector3(-840, -70), new Vector3Int(30, 100, 0), "<");
+            UIButtonPatcher btnPrevious = NGUI_Utils.CreateButton(leMenuPanel.transform, new Vector3(-840, -70), new Vector3Int(30, 100, 0), "<");
             btnPrevious.name = "BtnPrevious";
 
             btnPrevious.onClick += PreviousLevelsList;
+
+            previousPageButton = btnPrevious;
         }
         public void CreateNextListButton()
         {
-            UIButtonPatcher btnNext = NGUI_Utils.CreateButton(lvlButtonsParent.transform, new Vector3(840, -70), new Vector3Int(30, 100, 0), ">");
+            UIButtonPatcher btnNext = NGUI_Utils.CreateButton(leMenuPanel.transform, new Vector3(840, -70), new Vector3Int(30, 100, 0), ">");
             btnNext.name = "BtnNext";
 
             btnNext.onClick += NextLevelsList;
+
+            nextPageButton = btnNext;
         }
 
         public void CreateLevelsList()
@@ -400,7 +402,7 @@ namespace FS_LevelEditor
             if (lvlButtonsParent == null)
             {
                 lvlButtonsParent = new GameObject("LevelButtons");
-                lvlButtonsParent.transform.parent = leMenuButtonsParent.transform;
+                lvlButtonsParent.transform.parent = leMenuPanel.transform;
                 lvlButtonsParent.transform.localScale = Vector3.one;
             }
             else
@@ -537,9 +539,14 @@ namespace FS_LevelEditor
             // If there are more than 5 levels, create the buttons to travel between lists.
             if (levels.Count > 5)
             {
-                CreatePreviousListButton();
-                CreateNextListButton();
+                if (!previousPageButton && !nextPageButton)
+                {
+                    CreatePreviousListButton();
+                    CreateNextListButton();
+                }
             }
+            // Doesn't matter if the buttons don't exit yet, in that case, the function won't do anything.
+            RefreshChangePageButtons();
         }
 
 
@@ -789,6 +796,8 @@ namespace FS_LevelEditor
             lvlButtonsGrids.ForEach(grid => grid.SetActive(false));
 
             lvlButtonsGrids[currentLevelsGridID].SetActive(true);
+
+            RefreshChangePageButtons();
         }
         public void NextLevelsList()
         {
@@ -798,6 +807,20 @@ namespace FS_LevelEditor
             lvlButtonsGrids.ForEach(grid => grid.SetActive(false));
 
             lvlButtonsGrids[currentLevelsGridID].SetActive(true);
+
+            RefreshChangePageButtons();
+        }
+        void RefreshChangePageButtons()
+        {
+            if (!previousPageButton || !nextPageButton) return;
+
+            // Only enable both of the buttons when we have more than one page.
+            previousPageButton.gameObject.SetActive(lvlButtonsGrids.Count > 1);
+            nextPageButton.gameObject.SetActive(lvlButtonsGrids.Count > 1);
+
+            // Enable or disable the buttons depending on the current page.
+            previousPageButton.button.isEnabled = currentLevelsGridID > 0;
+            nextPageButton.button.isEnabled = currentLevelsGridID < lvlButtonsGrids.Count - 1;
         }
     }
 }
