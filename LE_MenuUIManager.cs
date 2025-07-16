@@ -123,7 +123,6 @@ namespace FS_LevelEditor
                 }
             }
         }
-
         void GetSomeReferences()
         {
             mainMenu = GameObject.Find("MainMenu/Camera/Holder/Main");
@@ -170,11 +169,7 @@ namespace FS_LevelEditor
         // And yes, this whole function is directly copied from the OST mod (almost), DON'T JUDGE ME.
         public void CreateLEMenuPanel()
         {
-            // Get the Options menu and create a copy.
-            GameObject originalOptionsMenu = NGUI_Utils.optionsPanel;
-            leMenuPanel = GameObject.Instantiate(originalOptionsMenu, originalOptionsMenu.transform.parent);
-
-            // Change the name of the copy.
+            leMenuPanel = GameObject.Instantiate(NGUI_Utils.optionsPanel, NGUI_Utils.optionsPanel.transform.parent);
             leMenuPanel.name = "LE_Menu";
 
             // Remove the OptionsController and UILocalize components so I can change the title of the panel.
@@ -255,7 +250,6 @@ namespace FS_LevelEditor
             EventDelegate buttonEvent = NGUI_Utils.CreateEvenDelegate(this, nameof(SwitchBetweenMenuAndLEMenu), eventParm);
             button.onClick.Add(buttonEvent);
         }
-
         // The same shit as the CreateBackButton function.
         public void CreateAddButton()
         {
@@ -354,6 +348,41 @@ namespace FS_LevelEditor
             creditsLabel.transform.localScale = Vector3.one;
 
             creditsLabel.transform.localPosition = new Vector3(-830f, -368f, 0f);
+        }
+
+        public void CreateTopLevelInfo()
+        {
+            GameObject labelTemplate = leMenuPanel.GetChildWithName("Title");
+            levelNameLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
+            levelNameLabel.name = "LevelName";
+            levelNameLabel.SetActive(false);
+
+            levelNameLabel.transform.localPosition = new Vector3(0f, 330f, 0f);
+            levelNameLabel.GetComponent<UILabel>().text = "Name Test";
+
+            levelObjectsLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
+            levelObjectsLabel.name = "LevelObjectsCount";
+            levelObjectsLabel.SetActive(false);
+
+            levelObjectsLabel.transform.localPosition = new Vector3(0f, 280f, 0f);
+            levelObjectsLabel.GetComponent<UILabel>().text = "Objects: 0";
+            levelObjectsLabel.GetComponent<UILabel>().fontSize = 30;
+        }
+
+        public void CreatePreviousListButton()
+        {
+            // Create the button.
+            UIButtonPatcher btnPrevious = NGUI_Utils.CreateButton(lvlButtonsParent.transform, new Vector3(-840, -70), new Vector3Int(30, 100, 0), "<");
+            btnPrevious.name = "BtnPrevious";
+
+            btnPrevious.onClick += PreviousLevelsList;
+        }
+        public void CreateNextListButton()
+        {
+            UIButtonPatcher btnNext = NGUI_Utils.CreateButton(lvlButtonsParent.transform, new Vector3(840, -70), new Vector3Int(30, 100, 0), ">");
+            btnNext.name = "BtnNext";
+
+            btnNext.onClick += NextLevelsList;
         }
 
         public void CreateLevelsList()
@@ -501,84 +530,11 @@ namespace FS_LevelEditor
             }
 
             // If there are more than 5 levels, create the buttons to travel between lists.
-            if (levels.Count> 5)
+            if (levels.Count > 5)
             {
                 CreatePreviousListButton();
                 CreateNextListButton();
             }
-        }
-        public void CreateTopLevelInfo()
-        {
-            GameObject labelTemplate = leMenuPanel.GetChildWithName("Title");
-            levelNameLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
-            levelNameLabel.name = "LevelName";
-            levelNameLabel.SetActive(false);
-
-            levelNameLabel.transform.localPosition = new Vector3(0f, 330f, 0f);
-            levelNameLabel.GetComponent<UILabel>().text = "Name Test";
-
-            levelObjectsLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
-            levelObjectsLabel.name = "LevelObjectsCount";
-            levelObjectsLabel.SetActive(false);
-
-            levelObjectsLabel.transform.localPosition = new Vector3(0f, 280f, 0f);
-            levelObjectsLabel.GetComponent<UILabel>().text = "Objects: 0";
-            levelObjectsLabel.GetComponent<UILabel>().fontSize = 30;
-        }
-
-        public void CreatePreviousListButton()
-        {
-            // Create the button.
-            GameObject btnPrevious = Instantiate(NGUI_Utils.buttonTemplate, lvlButtonsParent.transform);
-            btnPrevious.name = "BtnPrevious";
-            btnPrevious.transform.localPosition = new Vector3(-840f, -70f, 0f);
-
-            // Remove unnecesary components.
-            GameObject.Destroy(btnPrevious.GetComponent<ButtonController>());
-            GameObject.Destroy(btnPrevious.GetComponent<OptionsButton>());
-
-            // Adjust the sprite and the collider as well.
-            UISprite sprite = btnPrevious.GetComponent<UISprite>();
-            sprite.width = 30;
-            sprite.height = 100;
-            BoxCollider collider = btnPrevious.GetComponent<BoxCollider>();
-            collider.size = new Vector3(30f, 100f);
-
-            // Adjust the label, removing the FUCKING UILocalize.
-            GameObject.Destroy(btnPrevious.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            UILabel label = btnPrevious.GetChildAt("Background/Label").GetComponent<UILabel>();
-            label.text = "<";
-
-            // Set the button on click action.
-            UIButton button = btnPrevious.GetComponent<UIButton>();
-            button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.PreviousLevelsList)));
-        }
-        public void CreateNextListButton()
-        {
-            // Create the button.
-            GameObject btnNext = Instantiate(NGUI_Utils.buttonTemplate, lvlButtonsParent.transform);
-            btnNext.name = "BtnNext";
-            btnNext.transform.localPosition = new Vector3(840f, -70f, 0f);
-
-            // Remove unnecesary components.
-            GameObject.Destroy(btnNext.GetComponent<ButtonController>());
-            GameObject.Destroy(btnNext.GetComponent<OptionsButton>());
-
-            // Adjust the sprite and the collider as well.
-            UISprite sprite = btnNext.GetComponent<UISprite>();
-            sprite.width = 30;
-            sprite.height = 100;
-            BoxCollider collider = btnNext.GetComponent<BoxCollider>();
-            collider.size = new Vector3(30f, 100f);
-
-            // Adjust the label, removing the FUCKING UILocalize.
-            GameObject.Destroy(btnNext.GetChildAt("Background/Label").GetComponent<UILocalize>());
-            UILabel label = btnNext.GetChildAt("Background/Label").GetComponent<UILabel>();
-            label.text = ">";
-
-            // Set the button on click action.
-            UIButton button = btnNext.GetComponent<UIButton>();
-            button.onClick.Add(new EventDelegate(this, nameof(LE_MenuUIManager.NextLevelsList)));
         }
 
 
