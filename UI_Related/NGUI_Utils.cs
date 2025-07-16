@@ -342,6 +342,11 @@ namespace FS_LevelEditor.UI_Related
             button.GetComponent<BoxCollider>().size = size;
             GameObject.Destroy(button.GetComponent<ButtonController>());
 
+            // Remove the SECOND UIButtonColor component, and then I ask, why did Charles add TWO UIButtonColor to the buttons
+            // if they target to the same object?
+            // UPDATE: It seems that if I don't remove this, some weird shit happens with the button color or something.
+            GameObject.Destroy(button.GetComponents<UIButtonColor>()[1]);
+
             GameObject labelObj = button.GetChildAt("Background/Label");
             GameObject.Destroy(labelObj.GetComponent<UILocalize>());
             GameObject.Destroy(labelObj.GetComponent<UILabel>());
