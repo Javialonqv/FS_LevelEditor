@@ -172,34 +172,39 @@ namespace FS_LevelEditor
             leMenuPanel = GameObject.Instantiate(NGUI_Utils.optionsPanel, NGUI_Utils.optionsPanel.transform.parent);
             leMenuPanel.name = "LE_Menu";
 
-            // Remove the OptionsController and UILocalize components so I can change the title of the panel.
-            GameObject.Destroy(leMenuPanel.GetComponent<OptionsController>());
-            GameObject.Destroy(leMenuPanel.transform.GetChild(2).GetComponent<UILocalize>());
+            // Destroy the unnecesary childs/objects.
+            foreach (var child in leMenuPanel.GetChilds())
+            {
+                string[] notDelete = { "Window", "Title" };
+                if (notDelete.Contains(child.name)) continue;
+
+                Destroy(child);
+            }
 
             // Change the title properties of the panel.
-            leMenuPanel.transform.GetChild(2).transform.localPosition = new Vector3(0, 417, 0);
-            leMenuPanel.transform.GetChild(2).GetComponent<UILabel>().width = 800;
-            leMenuPanel.transform.GetChild(2).GetComponent<UILabel>().height = 50;
-            leMenuPanel.transform.GetChild(2).GetComponent<UILabel>().text = "Level Editor";
+            UILabel title = leMenuPanel.GetChildWithName("Title").GetComponent<UILabel>();
+            title.gameObject.RemoveComponent<UILocalize>(); // I fucking hate UILocalize.
+            title.transform.localPosition = new Vector3(0, 417, 0);
+            title.width = 800;
+            title.height = 50;
+            title.text = "Level Editor";
 
-            // Destroy the tabs and disable everything inside of the Game_Options object.
-            GameObject.Destroy(leMenuPanel.GetChildWithName("Tabs"));
-            leMenuPanel.GetChildWithName("Game_Options").SetActive(true);
-            leMenuButtonsParent = leMenuPanel.GetChildAt("Game_Options/Buttons");
-            leMenuButtonsParent.DisableAllChildren();
-
-            // Disable the damn lines.
-            leMenuPanel.GetChildAt("Game_Options/HorizontalLine").SetActive(false);
-            leMenuPanel.GetChildAt("Game_Options/VerticalLine").SetActive(false);
+            // Probably removing this does nothing, but just in case.
+            leMenuPanel.RemoveComponent<OptionsController>();
 
             // Reset the scale of the new custom menu to one.
             leMenuPanel.transform.localScale = Vector3.one;
 
-            // Add a UIPanel so the TweenScale can work.
-            UIPanel panel = leMenuPanel.AddComponent<UIPanel>();
+            // Adjust the UIPanel of the TweenAlpha component.
+            UIPanel panel = leMenuPanel.GetComponent<UIPanel>();
             leMenuPanel.GetComponent<TweenAlpha>().mRect = panel;
 
+            // Do I even need to explain WHAT this does?
+            leMenuPanel.GetChildWithName("Window").GetComponent<UISprite>().depth = -1;
             leMenuPanel.GetChildWithName("Window").AddComponent<TweenAlpha>().duration = 0.2f;
+            leMenuPanel.GetChildAt("Window/Window2").GetComponent<UISprite>().depth = -1;
+
+            leMenuButtonsParent = leMenuPanel;
         }
 
         public void CreateBackButton()
