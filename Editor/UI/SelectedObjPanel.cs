@@ -97,6 +97,11 @@ namespace FS_LevelEditor.Editor.UI
             setActiveAtStartToggle.onChange.Add(new EventDelegate(this, nameof(SetSetActiveAtStart)));
             setActiveAtStartToggle.instantTween = true;
 
+            FractalTooltip tooltip = toggleObj.AddComponent<FractalTooltip>();
+            tooltip.toolTipLocKey = "tooltip.SetActiveAtStartToggle";
+            tooltip.staticTooltipPos = true;
+            tooltip.staticTooltipOffset = new Vector2(0.42f, 0.1f);
+
             toggleObj.SetActive(false);
 
             GameObject line = new GameObject("Line");

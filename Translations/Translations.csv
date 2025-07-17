@@ -45,3 +45,4 @@ events.OnRemove,On Remove,Cuando Se Remueve
 events.OnBoth,On Both,Ambos Casos
 events.OnEnter,On Enter,Al Entrar
 events.OnExit,On Exit,Al Salir
+tooltip.SetActiveAtStartToggle,Defines if the object will be [00FFFF]enabled[-] or [FF0000]not[-] at the beginning of the level.,Define si el objeto estará [00FFFF]activado[-] o [FF0000]no[-] al inicio del nivel.
