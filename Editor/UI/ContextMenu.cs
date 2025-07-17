@@ -168,6 +168,23 @@ namespace FS_LevelEditor.Editor.UI
 
             labelObj.transform.localPosition = new Vector3(10, -(optionsHeight / 2));
 
+            // ---------- CREATE TRIANGE ----------
+
+            if (option.subOptions.Count > 0)
+            {
+                GameObject triangeObj = new GameObject("Triangle");
+                triangeObj.transform.parent = optionGO.transform;
+                triangeObj.transform.localPosition = new Vector3(optionsWidth - ((optionsHeight - 15) / 2) - 5, -(optionsHeight / 2));
+                triangeObj.transform.localScale = Vector3.one;
+                triangeObj.transform.localEulerAngles = new Vector3(0, 0, -90);
+
+                UISprite triangle = triangeObj.AddComponent<UISprite>();
+                triangle.SetExternalSprite("Triangle");
+                triangle.height = optionsHeight - 35;
+                triangle.width = optionsHeight - 30;
+                triangle.depth = 1;
+            }
+
             // ---------- CREATE SUBOPTIONS ----------
             
             Transform subOptionsParent = null;
