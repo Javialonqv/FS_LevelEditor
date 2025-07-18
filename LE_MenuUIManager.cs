@@ -590,6 +590,13 @@ namespace FS_LevelEditor
                 EditorController.Instance.levelName = levelName;
                 EditorController.Instance.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
                 LevelData.LoadLevelDataInEditor(levelFileNameWithoutExtension);
+
+                if (isGoingBackToLE) // Reset the going to LE variables.
+                {
+                    isGoingBackToLE = false;
+                    levelFileNameWithoutExtensionWhileGoingBackToLE = "";
+                    levelNameWhileGoingBackToLE = "";
+                }
             }
             else
             {
