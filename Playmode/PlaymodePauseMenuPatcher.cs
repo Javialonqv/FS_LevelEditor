@@ -27,7 +27,6 @@ namespace FS_LevelEditor.Playmode
 
             GetReferences();
         }
-
         void GetReferences()
         {
             newGamePauseStats = MenuController.GetInstance().pausePlayerStats.transform.GetChild(0).gameObject;

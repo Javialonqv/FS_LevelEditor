@@ -20,19 +20,39 @@ namespace FS_LevelEditor.Editor
         public GameObject pauseMenu;
         bool isAboutToDestroyThisObj;
 
-        UIButtonPatcher resumeButton;
-        UIButtonPatcher exitButton;
-        UIButtonPatcher saveButton;
-        UIButtonPatcher playButton;
+        GameObject resumeBtn;
+        GameObject chaptersButton;
+        GameObject newGamePlusButton;
+        GameObject newGameButton;
+        GameObject LEButton;
+        GameObject returnToMenuButton;
+        GameObject exitButton;
+
+        GameObject resumeButtonLE;
+        GameObject playButtonLE;
+        GameObject saveButtonLE;
+        GameObject exitButtonLE;
 
         public static void Create(GameObject pauseMenu)
         {
             patcher = pauseMenu.AddComponent<EditorPauseMenuPatcher>();
             patcher.pauseMenu = pauseMenu;
+            patcher.GetReferences();
             patcher.CheckForExistingButtons();
             patcher.SetupPauseWhenInEditor();
         }
+        void GetReferences()
+        {
+            GameObject largeButtons = pauseMenu.GetChildWithName("LargeButtons");
 
+            resumeBtn = largeButtons.GetChildWithName("1_Resume");
+            chaptersButton = largeButtons.GetChildWithName("2_Chapters");
+            newGamePlusButton = largeButtons.GetChildWithName("3_NewGamePlus");
+            newGameButton = largeButtons.GetChildWithName("4_NewGame");
+            LEButton = largeButtons.GetChildWithName("6_Javi's LevelEditor");
+            returnToMenuButton = largeButtons.GetChildWithName("7_ReturnToMenu");
+            exitButton = largeButtons.GetChildWithName("8_ExitGame");
+        }
         // If for some reason the pause menu already has the buttons, destroy them, just in case something bad happens.
         void CheckForExistingButtons()
         {
@@ -46,58 +66,47 @@ namespace FS_LevelEditor.Editor
 
         void SetupPauseWhenInEditor()
         {
-            GameObject originalResumeBtn = pauseMenu.GetChildAt("LargeButtons/1_Resume");
-
             #region Resume Button
             // Setup the resume button, to actually resume the editor scene and not load another scene, which is the defualt behaviour of that button.
-            GameObject resumeBtnWhenInsideLE = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
-            resumeBtnWhenInsideLE.name = "1_ResumeWhenInEditor";
-            Destroy(resumeBtnWhenInsideLE.GetComponent<ButtonController>());
-            resumeBtnWhenInsideLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.Resume;
+            resumeButtonLE = Instantiate(resumeBtn, resumeBtn.transform.parent);
+            resumeButtonLE.name = "1_ResumeWhenInEditor";
+            Destroy(resumeButtonLE.GetComponent<ButtonController>());
+            resumeButtonLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.Resume;
             // This two more lines are used just in case the original resume button is disabled, that may happen when you didn't start a new game yet.
-            if (!resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled)
+            if (!resumeButtonLE.GetComponent<UIButton>().isEnabled)
             {
-                resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled = true;
-                resumeBtnWhenInsideLE.GetComponent<UIButton>().ResetDefaultColor();
+                resumeButtonLE.GetComponent<UIButton>().isEnabled = true;
+                resumeButtonLE.GetComponent<UIButton>().ResetDefaultColor();
             }
-            resumeBtnWhenInsideLE.SetActive(true);
-            resumeButton = resumeBtnWhenInsideLE.GetComponent<UIButtonPatcher>();
-            #endregion
-
-            #region Exit Button
-            // Same with exit button.
-            GameObject originalExitBtn = pauseMenu.GetChildAt("LargeButtons/8_ExitGame");
-            GameObject exitBtnWhenInsideLE = Instantiate(originalExitBtn, originalExitBtn.transform.parent);
-            exitBtnWhenInsideLE.name = "7_ExitWhenInEditor";
-            Destroy(exitBtnWhenInsideLE.GetComponent<ButtonController>());
-            exitBtnWhenInsideLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.ShowExitPopup;
-            exitBtnWhenInsideLE?.SetActive(true);
-            exitButton = exitBtnWhenInsideLE.GetComponent<UIButtonPatcher>();
-            #endregion
-
-            #region Save Button
-            // Create a save level button.
-            GameObject saveLevelButton = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
-            saveLevelButton.name = "3_SaveLevel";
-            Destroy(saveLevelButton.GetComponent<ButtonController>());
-            Destroy(saveLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            saveLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
-            saveLevelButton.AddComponent<UIButtonPatcher>().onClick += SaveLevelWithPauseMenuButton;
-            saveLevelButton.SetActive(true);
-            saveButton = saveLevelButton.GetComponent<UIButtonPatcher>();
+            resumeButtonLE.SetActive(true);
             #endregion
 
             #region Play Button
-            // Create a PLAY level button.
-            //GameObject playLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
-            GameObject playLevelButton = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
-            playLevelButton.name = "2_PlayLevel";
-            Destroy(playLevelButton.GetComponent<ButtonController>());
-            Destroy(playLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            playLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Play Level";
-            playLevelButton.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.PlayLevel;
-            playLevelButton.SetActive(true);
-            playButton = playLevelButton.GetComponent<UIButtonPatcher>();
+            playButtonLE = Instantiate(resumeBtn, resumeBtn.transform.parent);
+            playButtonLE.name = "2_PlayLevel";
+            Destroy(playButtonLE.GetComponent<ButtonController>());
+            Destroy(playButtonLE.GetChildWithName("Label").GetComponent<UILocalize>());
+            playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().text = "Play Level";
+            playButtonLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.PlayLevel;
+            playButtonLE.SetActive(true);
+            #endregion
+
+            #region Save Button
+            saveButtonLE = Instantiate(resumeBtn, resumeBtn.transform.parent);
+            saveButtonLE.name = "3_SaveLevel";
+            Destroy(saveButtonLE.GetComponent<ButtonController>());
+            Destroy(saveButtonLE.GetChildWithName("Label").GetComponent<UILocalize>());
+            saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
+            saveButtonLE.AddComponent<UIButtonPatcher>().onClick += SaveLevelWithPauseMenuButton;
+            saveButtonLE.SetActive(true);
+            #endregion
+
+            #region Exit Button
+            exitButtonLE = Instantiate(exitButton, exitButton.transform.parent);
+            exitButtonLE.name = "7_ExitWhenInEditor";
+            Destroy(exitButtonLE.GetComponent<ButtonController>());
+            exitButtonLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.ShowExitPopup;
+            exitButtonLE.SetActive(true);
             #endregion
         }
 
@@ -119,18 +128,18 @@ namespace FS_LevelEditor.Editor
             GameObject navigation = transform.parent.GetChildWithName("Navigation").gameObject;
 
             #region Large Buttons Stuff
-            pauseMenu.GetChildAt("LargeButtons/1_Resume").SetActive(false);
-            pauseMenu.GetChildAt("LargeButtons/1_ResumeWhenInEditor").SetActive(true);
-            pauseMenu.GetChildAt("LargeButtons/1_ResumeWhenInEditor/LevelToResumeLabel").GetComponent<UILabel>().text = "Level Editor";
+            resumeBtn.SetActive(false);
+            resumeButtonLE.SetActive(true);
+            resumeButtonLE.GetChildWithName("LevelToResumeLabel").GetComponent<UILabel>().text = "Level Editor";
 
-            pauseMenu.GetChildAt("LargeButtons/2_Chapters").SetActive(false);
-            pauseMenu.GetChildAt("LargeButtons/3_NewGamePlus").SetActive(false);
-            pauseMenu.GetChildAt("LargeButtons/4_NewGame").SetActive(false);
-            pauseMenu.GetChildAt("LargeButtons/6_Javi's LevelEditor").SetActive(false);
+            chaptersButton.SetActive(false);
+            newGamePlusButton.SetActive(false);
+            newGameButton.SetActive(false);
+            LEButton.SetActive(false);
 
-            pauseMenu.GetChildAt("LargeButtons/7_ReturnToMenu").SetActive(false);
-            pauseMenu.GetChildAt("LargeButtons/8_ExitGame").SetActive(false);
-            pauseMenu.GetChildAt("LargeButtons/7_ExitWhenInEditor").SetActive(true);
+            returnToMenuButton.SetActive(false);
+            exitButton.SetActive(false);
+            exitButtonLE.SetActive(true);
 
             PatchPlayLevelButton();
             PatchSaveLevelButton();
@@ -141,55 +150,50 @@ namespace FS_LevelEditor.Editor
             // The logic for changing the navigation bar buttons and their "on click" actions it's in Patches.cs ;)
             NavigationBarController.Instance.RefreshNavigationBarActions();
         }
-
         void PatchPlayLevelButton()
         {
-            GameObject playLevelBtn = gameObject.GetChildAt("LargeButtons/2_PlayLevel");
-
             if (EditorController.Instance.currentInstantiatedObjects.Any(x => x is LE_Player_Spawn && x.gameObject.activeSelf))
             {
-                playLevelBtn.GetComponent<UISprite>().height = 80;
-                playLevelBtn.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
-                playLevelBtn.GetComponent<UIButton>().isEnabled = true;
-                playLevelBtn.GetComponent<BoxCollider>().center = Vector3.zero;
-                playLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
-                playLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
-                playLevelBtn.GetChildWithName("LevelToResumeLabel").SetActive(false);
+                playButtonLE.GetComponent<UISprite>().height = 80;
+                playButtonLE.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
+                playButtonLE.GetComponent<UIButton>().isEnabled = true;
+                playButtonLE.GetComponent<BoxCollider>().center = Vector3.zero;
+                playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
+                playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
+                playButtonLE.GetChildWithName("LevelToResumeLabel").SetActive(false);
             }
             else
             {
-                playLevelBtn.GetComponent<UISprite>().height = 100;
-                playLevelBtn.GetComponent<UISprite>().pivot = UIWidget.Pivot.Top;
-                playLevelBtn.GetComponent<UIButton>().isEnabled = false;
-                playLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
-                playLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
-                playLevelBtn.GetChildWithName("LevelToResumeLabel").GetComponent<UILabel>().text = "There isn't any player spawn obj in the scene.";
-                playLevelBtn.GetChildWithName("LevelToResumeLabel").SetActive(true);
+                playButtonLE.GetComponent<UISprite>().height = 100;
+                playButtonLE.GetComponent<UISprite>().pivot = UIWidget.Pivot.Top;
+                playButtonLE.GetComponent<UIButton>().isEnabled = false;
+                playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
+                playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
+                playButtonLE.GetChildWithName("LevelToResumeLabel").GetComponent<UILabel>().text = "There isn't any player spawn obj in the scene.";
+                playButtonLE.GetChildWithName("LevelToResumeLabel").SetActive(true);
             }
         }
         void PatchSaveLevelButton()
         {
-            GameObject saveLevelBtn = gameObject.GetChildAt("LargeButtons/3_SaveLevel");
-
             if (EditorController.Instance.levelHasBeenModified)
             {
-                saveLevelBtn.GetComponent<UISprite>().height = 80;
-                saveLevelBtn.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
-                saveLevelBtn.GetComponent<UIButton>().isEnabled = true;
-                saveLevelBtn.GetComponent<BoxCollider>().center = Vector3.zero;
-                saveLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
-                saveLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
-                saveLevelBtn.GetChildWithName("LevelToResumeLabel").SetActive(false);
+                saveButtonLE.GetComponent<UISprite>().height = 80;
+                saveButtonLE.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
+                saveButtonLE.GetComponent<UIButton>().isEnabled = true;
+                saveButtonLE.GetComponent<BoxCollider>().center = Vector3.zero;
+                saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
+                saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
+                saveButtonLE.GetChildWithName("LevelToResumeLabel").SetActive(false);
             }
             else
             {
-                saveLevelBtn.GetComponent<UISprite>().height = 100;
-                saveLevelBtn.GetComponent<UISprite>().pivot = UIWidget.Pivot.Top;
-                saveLevelBtn.GetComponent<UIButton>().isEnabled = false;
-                saveLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
-                saveLevelBtn.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
-                saveLevelBtn.GetChildWithName("LevelToResumeLabel").GetComponent<UILabel>().text = "There are no changes to save.";
-                saveLevelBtn.GetChildWithName("LevelToResumeLabel").SetActive(true);
+                saveButtonLE.GetComponent<UISprite>().height = 100;
+                saveButtonLE.GetComponent<UISprite>().pivot = UIWidget.Pivot.Top;
+                saveButtonLE.GetComponent<UIButton>().isEnabled = false;
+                saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
+                saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
+                saveButtonLE.GetChildWithName("LevelToResumeLabel").GetComponent<UILabel>().text = "There are no changes to save.";
+                saveButtonLE.GetChildWithName("LevelToResumeLabel").SetActive(true);
             }
         }
 
@@ -198,8 +202,6 @@ namespace FS_LevelEditor.Editor
             if (isAboutToDestroyThisObj) return;
 
             Logger.DebugLog("LE pause menu disabled, patching!");
-
-            GameObject navigation = transform.parent.GetChildWithName("Navigation").gameObject;
         }
 
         public void BeforeDestroying()
@@ -207,10 +209,10 @@ namespace FS_LevelEditor.Editor
             Logger.DebugLog("About to destroy LE pause menu patcher!");
             isAboutToDestroyThisObj = true;
 
-            Destroy(gameObject.GetChildAt("LargeButtons/1_ResumeWhenInEditor"));
-            Destroy(gameObject.GetChildAt("LargeButtons/7_ExitWhenInEditor"));
-            Destroy(gameObject.GetChildAt("LargeButtons/3_SaveLevel"));
-            Destroy(gameObject.GetChildAt("LargeButtons/2_PlayLevel"));
+            Destroy(resumeButtonLE);
+            Destroy(playButtonLE);
+            Destroy(saveButtonLE);
+            Destroy(exitButtonLE);
         }
     }
 }
