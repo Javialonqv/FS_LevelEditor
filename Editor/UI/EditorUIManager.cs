@@ -76,6 +76,8 @@ namespace FS_LevelEditor.Editor.UI
         void Start()
         {
             SetupEditorUI();
+
+            EditorController.Instance.ChangeMode(EditorController.Mode.Selection);
         }
 
         void Update()

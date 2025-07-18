@@ -187,6 +187,8 @@ namespace FS_LevelEditor.Editor
         {
             // Disable occlusion culling.
             Camera.main.useOcclusionCulling = false;
+
+            // The code to change the Mode to Selection by default is in EditorUIManager.Start() since here, the UI script hasn't been initialized yet.
         }
         public void AfterFinishedLoadingLevel()
         {
@@ -772,7 +774,7 @@ namespace FS_LevelEditor.Editor
         }
 
         // For now, this method only disables and enables the "building" UI, with the objects available to build.
-        void ChangeMode(Mode mode)
+        public void ChangeMode(Mode mode)
         {
             currentMode = mode;
 
