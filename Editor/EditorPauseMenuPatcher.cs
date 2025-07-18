@@ -1,10 +1,13 @@
-﻿using System;
+﻿using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.SaveSystem;
+using FS_LevelEditor.UI_Related;
+using Il2Cpp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using Il2Cpp;
 using UnityEngine.UI;
 
 namespace FS_LevelEditor.Editor
@@ -14,11 +17,99 @@ namespace FS_LevelEditor.Editor
     {
         public static EditorPauseMenuPatcher patcher;
 
+        public GameObject pauseMenu;
         bool isAboutToDestroyThisObj;
 
-        void Awake()
+        UIButtonPatcher resumeButton;
+        UIButtonPatcher exitButton;
+        UIButtonPatcher saveButton;
+        UIButtonPatcher playButton;
+
+        public static void Create(GameObject pauseMenu)
         {
-            patcher = this;
+            patcher = pauseMenu.AddComponent<EditorPauseMenuPatcher>();
+            patcher.pauseMenu = pauseMenu;
+            patcher.CheckForExistingButtons();
+            patcher.SetupPauseWhenInEditor();
+        }
+
+        // If for some reason the pause menu already has the buttons, destroy them, just in case something bad happens.
+        void CheckForExistingButtons()
+        {
+            GameObject largeButtons = pauseMenu.GetChildWithName("LargeButtons");
+
+            if (largeButtons.ExistsChildWithName("1_ResumeWienInEditor")) Destroy(largeButtons.GetChildWithName("1_ResumeWhenInEditor"));
+            if (largeButtons.ExistsChildWithName("2_PlayLevel")) Destroy(largeButtons.GetChildWithName("2_PlayLevel"));
+            if (largeButtons.ExistsChildWithName("3_SaveLevel")) Destroy(largeButtons.GetChildWithName("3_SaveLevel"));
+            if (largeButtons.ExistsChildWithName("7_ExitWhenInEditor")) Destroy(largeButtons.GetChildWithName("7_ExitWhenInEditor"));
+        }
+
+        void SetupPauseWhenInEditor()
+        {
+            GameObject originalResumeBtn = pauseMenu.GetChildAt("LargeButtons/1_Resume");
+
+            #region Resume Button
+            // Setup the resume button, to actually resume the editor scene and not load another scene, which is the defualt behaviour of that button.
+            GameObject resumeBtnWhenInsideLE = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
+            resumeBtnWhenInsideLE.name = "1_ResumeWhenInEditor";
+            Destroy(resumeBtnWhenInsideLE.GetComponent<ButtonController>());
+            resumeBtnWhenInsideLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.Resume;
+            // This two more lines are used just in case the original resume button is disabled, that may happen when you didn't start a new game yet.
+            if (!resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled)
+            {
+                resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled = true;
+                resumeBtnWhenInsideLE.GetComponent<UIButton>().ResetDefaultColor();
+            }
+            resumeBtnWhenInsideLE.SetActive(true);
+            resumeButton = resumeBtnWhenInsideLE.GetComponent<UIButtonPatcher>();
+            #endregion
+
+            #region Exit Button
+            // Same with exit button.
+            GameObject originalExitBtn = pauseMenu.GetChildAt("LargeButtons/8_ExitGame");
+            GameObject exitBtnWhenInsideLE = Instantiate(originalExitBtn, originalExitBtn.transform.parent);
+            exitBtnWhenInsideLE.name = "7_ExitWhenInEditor";
+            Destroy(exitBtnWhenInsideLE.GetComponent<ButtonController>());
+            exitBtnWhenInsideLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.ShowExitPopup;
+            exitBtnWhenInsideLE?.SetActive(true);
+            exitButton = exitBtnWhenInsideLE.GetComponent<UIButtonPatcher>();
+            #endregion
+
+            #region Save Button
+            // Create a save level button.
+            GameObject saveLevelButton = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
+            saveLevelButton.name = "3_SaveLevel";
+            Destroy(saveLevelButton.GetComponent<ButtonController>());
+            Destroy(saveLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            saveLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
+            saveLevelButton.AddComponent<UIButtonPatcher>().onClick += SaveLevelWithPauseMenuButton;
+            saveLevelButton.SetActive(true);
+            saveButton = saveLevelButton.GetComponent<UIButtonPatcher>();
+            #endregion
+
+            #region Play Button
+            // Create a PLAY level button.
+            //GameObject playLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
+            GameObject playLevelButton = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
+            playLevelButton.name = "2_PlayLevel";
+            Destroy(playLevelButton.GetComponent<ButtonController>());
+            Destroy(playLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
+            playLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Play Level";
+            playLevelButton.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.PlayLevel;
+            playLevelButton.SetActive(true);
+            playButton = playLevelButton.GetComponent<UIButtonPatcher>();
+            #endregion
+        }
+
+        public void SaveLevelWithPauseMenuButton()
+        {
+            Logger.Log("Saving Level Data from pause menu...");
+            LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
+            EditorUIManager.Instance.PlaySavingLevelLabel();
+            EditorController.Instance.levelHasBeenModified = false;
+
+            // Refresh the pause menu patch after saving...
+            OnEnable();
         }
 
         public void OnEnable()
@@ -76,7 +167,6 @@ namespace FS_LevelEditor.Editor
                 playLevelBtn.GetChildWithName("LevelToResumeLabel").SetActive(true);
             }
         }
-
         void PatchSaveLevelButton()
         {
             GameObject saveLevelBtn = gameObject.GetChildAt("LargeButtons/3_SaveLevel");

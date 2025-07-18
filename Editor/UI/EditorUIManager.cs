@@ -101,7 +101,10 @@ namespace FS_LevelEditor.Editor.UI
             editorUIParent.transform.parent = GameObject.Find("MainMenu/Camera/Holder").transform;
             editorUIParent.transform.localScale = Vector3.one;
 
-            SetupPauseWhenInEditor();
+
+            // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.
+            // EDIT: Also to patch and do some stuff in the pause menu while in LE.
+            EditorPauseMenuPatcher.Create(pauseMenu);
 
             EditorObjectsToBuildUI.Create(editorUIParent.transform);
             SelectedObjPanel.Create(editorUIParent.transform);
@@ -313,53 +316,6 @@ namespace FS_LevelEditor.Editor.UI
         }
 
 
-        public void SetupPauseWhenInEditor()
-        {
-            // Setup the resume button, to actually resume the editor scene and not load another scene, which is the defualt behaviour of that button.
-            GameObject originalResumeBtn = pauseMenu.GetChildAt("LargeButtons/1_Resume");
-            GameObject resumeBtnWhenInsideLE = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
-            resumeBtnWhenInsideLE.name = "1_ResumeWhenInEditor";
-            Destroy(resumeBtnWhenInsideLE.GetComponent<ButtonController>());
-            resumeBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(Resume)));
-            // This two more lines are used just in case the original resume button is disabled, that may happen when you didn't start a new game yet.
-            if (!resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled)
-            {
-                resumeBtnWhenInsideLE.GetComponent<UIButton>().isEnabled = true;
-                resumeBtnWhenInsideLE.GetComponent<UIButton>().ResetDefaultColor();
-            }
-            resumeBtnWhenInsideLE.SetActive(true);
-
-            // Same with exit button.
-            GameObject originalExitBtn = pauseMenu.GetChildAt("LargeButtons/8_ExitGame");
-            GameObject exitBtnWhenInsideLE = Instantiate(originalExitBtn, originalExitBtn.transform.parent);
-            exitBtnWhenInsideLE.name = "7_ExitWhenInEditor";
-            Destroy(exitBtnWhenInsideLE.GetComponent<ButtonController>());
-            exitBtnWhenInsideLE.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(ShowExitPopup)));
-            exitBtnWhenInsideLE?.SetActive(true);
-
-            // Create a save level button.
-            GameObject saveLevelButton = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
-            saveLevelButton.name = "3_SaveLevel";
-            Destroy(saveLevelButton.GetComponent<ButtonController>());
-            Destroy(saveLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            saveLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
-            saveLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(SaveLevelWithPauseMenuButton)));
-            saveLevelButton.SetActive(true);
-
-            // Create a PLAY level button.
-            //GameObject playLevelButtonTemplate = pauseMenu.GetChildAt("LargeButtons/2_Chapters");
-            GameObject playLevelButton = Instantiate(originalResumeBtn, originalResumeBtn.transform.parent);
-            playLevelButton.name = "2_PlayLevel";
-            Destroy(playLevelButton.GetComponent<ButtonController>());
-            Destroy(playLevelButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            playLevelButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Play Level";
-            playLevelButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(PlayLevel)));
-            playLevelButton.SetActive(true);
-
-            // A custom script to make the damn large buttons be the correct ones, resume, options and exit, that's all.
-            // EDIT: Also to patch and do some stuff in the pause menu while in LE.
-            pauseMenu.AddComponent<EditorPauseMenuPatcher>();
-        }
         public void ShowPause()
         {
             // Disable the editor UI and enable the navigation bar.
@@ -503,17 +459,6 @@ namespace FS_LevelEditor.Editor.UI
         {
             OnExitPopupBackButton();
             ExitToMenu(false);
-        }
-
-        public void SaveLevelWithPauseMenuButton()
-        {
-            Logger.Log("Saving Level Data from pause menu...");
-            LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
-            PlaySavingLevelLabel();
-            EditorController.Instance.levelHasBeenModified = false;
-
-            // Refresh the pause menu patch after saving...
-            pauseMenu.GetComponent<EditorPauseMenuPatcher>().OnEnable();
         }
 
         public void ExitToMenu(bool saveDataBeforeExit = false)
