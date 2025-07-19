@@ -77,12 +77,11 @@ namespace FS_LevelEditor.Editor.UI
             BoxCollider collider = header.AddComponent<BoxCollider>();
             collider.size = new Vector3(520f, 60f, 1f);
 
-            headerTitle = NGUI_Utils.CreateLabel(header.transform, Vector3.zero, new Vector3Int(520, 60, 0), "No Object Selected", NGUIText.Alignment.Center,
+            headerTitle = NGUI_Utils.CreateLabel(header.transform, Vector3.zero, new Vector3Int(520, 60, 0), "selection.NoObjectSelected", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
             headerTitle.name = "Label";
             headerTitle.fontSize = 27;
             headerTitle.depth = 1;
-            headerTitle.gameObject.AddComponent<UILocalize>().key = "selection.NoObjectSelected";
 
             CreateSetActiveAtStartToggle();
             CreateGlobalObjectAttributesToggle();

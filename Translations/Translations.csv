@@ -57,4 +57,16 @@ pause.ExitPopup.SaveAndExit,Save And Exit,Salir Y Guardar
 pause.ExitPopup.ExitNoSave,Exit Without Saving,Salir Sin Guardar
 selection.NoObjectSelected,No Object Selected,Sin Objeto Seleccionado
 selection.MultipleObjectsSelected,Multiple Objects Selected,Multiples Objetos Seleccionados
+Position,Position,Posición
+Rotation,Rotation,Rotación
+Scale,Scale,Escala
+Collision,Collision,Colisión
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
 tooltip.SetActiveAtStartToggle,Defines if the object will be [00FFFF]enabled[-] or [FF0000]not[-] at the beginning of the level.,Define si el objeto estará [00FFFF]activado[-] o [FF0000]no[-] al inicio del nivel.

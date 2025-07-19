@@ -515,7 +515,14 @@ namespace FS_LevelEditor.UI_Related
         {
             GameObject labelObj = GameObject.Instantiate(labelTemplate, parent);
             labelObj.name = "Label";
-            labelObj.RemoveComponent<UILocalize>();
+            if (Loc.Get(text, false) != text)
+            {
+                labelObj.GetComponent<UILocalize>().key = text;
+            }
+            else
+            {
+                labelObj.RemoveComponent<UILocalize>();
+            }
 
             UILabel label = labelObj.GetComponent<UILabel>();
             label.width = size.x;
