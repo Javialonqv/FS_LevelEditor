@@ -82,6 +82,7 @@ namespace FS_LevelEditor.Editor.UI
             headerTitle.name = "Label";
             headerTitle.fontSize = 27;
             headerTitle.depth = 1;
+            headerTitle.gameObject.AddComponent<UILocalize>().key = "selection.NoObjectSelected";
 
             CreateSetActiveAtStartToggle();
             CreateGlobalObjectAttributesToggle();
@@ -631,7 +632,8 @@ namespace FS_LevelEditor.Editor.UI
 
         public void SetSelectedObjPanelAsNone()
         {
-            headerTitle.text = "No Object Selected";
+            headerTitle.SetLocKey("selection.NoObjectSelected");
+            headerTitle.width = 520;
             setActiveAtStartToggle.gameObject.SetActive(false);
             globalObjAttributesToggle.gameObject.SetActive(false);
             body.SetActive(false);
@@ -639,7 +641,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         public void SetMultipleObjectsSelected()
         {
-            headerTitle.text = "Multiple Objects Selected";
+            headerTitle.SetLocKey("selection.MultipleObjectsSelected");
+            headerTitle.width = 380; // So it doesn't overlap with the two toggles in the sides.
             body.SetActive(true);
             gameObject.transform.localPosition = new Vector3(-700f, -220f, 0f);
 
@@ -692,7 +695,9 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedObj = objComponent;
 
-            headerTitle.text = objComponent.objectFullNameWithID;
+            // The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.
+            headerTitle.SetLocKey(objComponent.objectFullNameWithID);
+            headerTitle.width = 380; // So it doesn't overlap with the two toggles in the sides.
             body.SetActive(true);
             gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
 

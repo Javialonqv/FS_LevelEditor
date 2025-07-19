@@ -638,5 +638,19 @@ namespace FS_LevelEditor
             // Remove spaces and replacements at the start and end of the string.
             return cleaned.Trim().Trim(replacement.ToCharArray()).Trim();
         }
+
+        public static void SetLocKey(this UILocalize localize, string key)
+        {
+            localize.key = key;
+            localize.OnLocalize();
+        }
+        public static void SetLocKey(this UILabel label, string key)
+        {
+            if (label.TryGetComponent<UILocalize>(out var localize))
+            {
+                localize.key = key;
+                localize.OnLocalize();
+            }
+        }
     }
 }

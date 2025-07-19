@@ -46,7 +46,6 @@ events.OnRemove,On Remove,Cuando Se Remueve
 events.OnBoth,On Both,Ambos Casos
 events.OnEnter,On Enter,Al Entrar
 events.OnExit,On Exit,Al Salir
-tooltip.SetActiveAtStartToggle,Defines if the object will be [00FFFF]enabled[-] or [FF0000]not[-] at the beginning of the level.,Define si el objeto estará [00FFFF]activado[-] o [FF0000]no[-] al inicio del nivel.
 pause.PlayLevel,Play Level,Jugar Nivel
 pause.NoSpawnObject,There isn't any player spawn obj in the scene.,No hay ningún spawn del jugador en la escena.
 pause.SaveLevel,Save Level,Guardar Nivel
@@ -56,3 +55,6 @@ pause.ExitPopup.Content,"Warning, exiting now will delete any changes you have m
 pause.ExitPopup.Back,No,No
 pause.ExitPopup.SaveAndExit,Save And Exit,Salir Y Guardar
 pause.ExitPopup.ExitNoSave,Exit Without Saving,Salir Sin Guardar
+selection.NoObjectSelected,No Object Selected,Sin Objeto Seleccionado
+selection.MultipleObjectsSelected,Multiple Objects Selected,Multiples Objetos Seleccionados
+tooltip.SetActiveAtStartToggle,Defines if the object will be [00FFFF]enabled[-] or [FF0000]not[-] at the beginning of the level.,Define si el objeto estará [00FFFF]activado[-] o [FF0000]no[-] al inicio del nivel.
