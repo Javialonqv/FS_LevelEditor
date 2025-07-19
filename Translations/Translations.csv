@@ -92,3 +92,11 @@ CurrentMode,[c][ffff00]Current Mode:[-][/c],[c][ffff00]Modo Actual:[-][/c]
 Building,Building,Construcción
 Selection,Selection,Selección
 Deletion,Deletion,Eliminación
+GlobalProperties,Global Properties,Propiedades Globales
+HasTaser,Has Taser,Con Taser
+HasJetpack,Has Jetpack,Con Jetpack
+DeathYLimit,Death Limit on the Y-axis,Limite de Muerte en el Eje Y
+Skybox,Skybox,Skybox
+Chapter 1,Chapter 1,Capítulo 1
+Chapter 2,Chapter 2,Capítulo 2
+Chapter 3 & 4,Chapter 3 & 4,Capítulo 3 Y 4

@@ -14,6 +14,13 @@ namespace FS_LevelEditor.Editor.UI
     {
         public static GlobalPropertiesPanel Instance;
 
+        UILabel titleLabel;
+        UIToggle hasTaserToggle;
+        UIToggle hasJetpackToggle;
+        UICustomInputField deathYLimitField;
+        UIButtonAsToggle visualizeDeathYLimitButton;
+        UIDropdownPatcher skyboxDropdown;
+
         public static void Create(Transform parent)
         {
             GameObject root = new GameObject("GlobalPropertiesPanel");
@@ -55,7 +62,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateTitle()
         {
-            UILabel titleLabel = NGUI_Utils.CreateLabel(transform, new Vector3(0, 460), new Vector3Int(600, 50, 0), "Global Properties",
+            titleLabel = NGUI_Utils.CreateLabel(transform, new Vector3(0, 460), new Vector3Int(600, 50, 0), "GlobalProperties",
                 NGUIText.Alignment.Center, UIWidget.Pivot.Center);
             titleLabel.name = "Title";
             titleLabel.depth = 1;
@@ -63,39 +70,40 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateHasTaserToggle()
         {
-            GameObject hasTaserToggle = NGUI_Utils.CreateToggle(transform,
-                new Vector3(-300f, 350f), new Vector3Int(200, 42, 1), "Has Taser");
+            GameObject hasTaserToggle = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 350f), new Vector3Int(200, 42, 1), "HasTaser");
             hasTaserToggle.name = "HasTaserToggle";
             EventDelegate hasTaserDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithToggle),
                 NGUI_Utils.CreateEventDelegateParamter(this, "name", "HasTaser"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "toggle", hasTaserToggle.GetComponent<UIToggle>()));
             hasTaserToggle.GetComponent<UIToggle>().onChange.Clear();
             hasTaserToggle.GetComponent<UIToggle>().onChange.Add(hasTaserDelegate);
+            this.hasTaserToggle = hasTaserToggle.GetComponent<UIToggle>();
         }
         void CreateHasJetpackToggle()
         {
             GameObject hasJetpackToggle = NGUI_Utils.CreateToggle(transform,
-                new Vector3(40f, 350f), new Vector3Int(200, 42, 1), "Has Jetpack");
+                new Vector3(40f, 350f), new Vector3Int(200, 42, 1), "HasJetpack");
             hasJetpackToggle.name = "HasJetpackToggle";
             EventDelegate hasJetpackDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithToggle),
                 NGUI_Utils.CreateEventDelegateParamter(this, "name", "HasJetpack"),
                 NGUI_Utils.CreateEventDelegateParamter(this, "toggle", hasJetpackToggle.GetComponent<UIToggle>()));
             hasJetpackToggle.GetComponent<UIToggle>().onChange.Clear();
             hasJetpackToggle.GetComponent<UIToggle>().onChange.Add(hasJetpackDelegate);
+            this.hasJetpackToggle = hasJetpackToggle.GetComponent<UIToggle>();
         }
         void CreateDeathYLimitField()
         {
-            UILabel deathYLimitLabel = NGUI_Utils.CreateLabel(transform, new Vector3(-300, 270), new Vector3Int(250, 50, 0), "Death Y Limit");
+            UILabel deathYLimitLabel = NGUI_Utils.CreateLabel(transform, new Vector3(-300, 270), new Vector3Int(350, 50, 0), "DeathYLimit");
             deathYLimitLabel.name = "DeathYLimitLabel";
             deathYLimitLabel.depth = 1;
             deathYLimitLabel.fontSize = 30;
 
-            UICustomInputField deathYLimitField = NGUI_Utils.CreateInputField(transform, new Vector3(100f, 270f, 0f),
-                new Vector3Int(300, 50, 0), 30, "100", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            deathYLimitField = NGUI_Utils.CreateInputField(transform, new Vector3(150f, 270f, 0f),
+                new Vector3Int(200, 50, 0), 30, "100", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             deathYLimitField.name = "DeathYLimit";
             deathYLimitField.onChange += () => SetGlobalPropertyWithInput("DeathYLimit", deathYLimitField);
 
-            UIButtonAsToggle visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(transform,
+            visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(transform,
                 new Vector3(285f, 270f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);
             visualizeDeathYLimitButton.name = "VisualizeDeathYLimitBtnToggle";
             visualizeDeathYLimitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
@@ -104,7 +112,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateLevelSkyboxDropdown()
         {
-            UIDropdownPatcher skyboxDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 160f), Vector3.one * 0.8f);
+            skyboxDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 160f), Vector3.one * 0.8f);
             skyboxDropdown.gameObject.name = "SkyboxDropdown";
             skyboxDropdown.SetTitle("Skybox");
             skyboxDropdown.AddOption("Chapter 1", true);
@@ -200,6 +208,11 @@ namespace FS_LevelEditor.Editor.UI
         void OnVisualizeDeathYLimitToggleClick(bool newState)
         {
             EditorController.Instance.deathYPlane.gameObject.SetActive(newState);
+        }
+
+        public void RefreshLocalization()
+        {
+            skyboxDropdown.RefreshLocalization();
         }
     }
 }

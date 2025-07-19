@@ -289,7 +289,14 @@ namespace FS_LevelEditor.UI_Related
             {
                 UILabel toggleLabel = toggle.GetChildWithName("Label").GetComponent<UILabel>();
                 GameObject.Destroy(toggleLabel.GetComponent<UILocalize>());
-                toggleLabel.text = text;
+                if (Loc.Get(text, false) != text)
+                {
+                    toggleLabel.gameObject.AddComponent<UILocalize>().key = text;
+                }
+                else
+                {
+                    toggleLabel.text = text;
+                }
                 toggleLabel.width = size.x;
                 Vector3 colliderCenter = toggleLabel.transform.localPosition;
                 colliderCenter.x += toggleLabel.width / 2 - (size.y / 2) - 6;

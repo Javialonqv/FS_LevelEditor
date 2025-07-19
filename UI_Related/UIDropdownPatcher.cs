@@ -5,12 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Il2CppMono.Security.X509.X520;
 
 namespace FS_LevelEditor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIDropdownPatcher : MonoBehaviour
     {
+        public string titleLocKey;
+        public List<string> optionsLocKeys = new List<string>();
+
         UIPopupList popupScript;
         Action<int> onClickAlt;
 
@@ -43,16 +47,21 @@ namespace FS_LevelEditor
 
         public void SetTitle(string title)
         {
-            popupScript.gameObject.GetChildWithName("LanguageTite").GetComponent<UILabel>().text = title;
+            titleLocKey = title;
+
+            // Doesn't matter if the title is not a valid key.
+            popupScript.gameObject.GetChildWithName("LanguageTite").GetComponent<UILabel>().text = Loc.Get(title, false);
         }
 
         public void ClearOptions()
         {
+            optionsLocKeys.Clear();
             popupScript.items.Clear();
             popupScript.selection = null;
         }
         public void AddOption(string option, bool setAsSelected)
         {
+            optionsLocKeys.Add(option);
             popupScript.items.Add(option);
 
             if (setAsSelected)
@@ -67,12 +76,14 @@ namespace FS_LevelEditor
             string optionName = popupScript.items[optionID];
 
             popupScript.selection = optionName;
-            popupScript.gameObject.GetChildAt("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text = optionName;
+            // Doesn't matter if the optionName is not a valid key.
+            popupScript.gameObject.GetChildAt("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text = Loc.Get(optionName, false);
         }
         public void SelectOption(string optionName)
         {
             popupScript.selection = optionName;
-            popupScript.gameObject.GetChildAt("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text = optionName;
+            // Doesn't matter if the optionName is not a valid key.
+            popupScript.gameObject.GetChildAt("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text = Loc.Get(optionName, false);
         }
 
         public void ClearOnChangeOptions()
@@ -97,6 +108,16 @@ namespace FS_LevelEditor
             {
                 onClickAlt.Invoke(currentlySelectedID);
             }
+        }
+
+        public void RefreshLocalization()
+        {
+            // Doesn't matter if the title is not a valid key.
+            popupScript.gameObject.GetChildWithName("LanguageTite").GetComponent<UILabel>().text = Loc.Get(titleLocKey, false);
+
+            // Doesn't matter if the optionName is not a valid key.
+            popupScript.gameObject.GetChildAt("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text =
+                Loc.Get(optionsLocKeys[currentlySelectedID], false);
         }
     }
 }

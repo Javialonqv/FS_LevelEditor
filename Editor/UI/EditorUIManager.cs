@@ -547,6 +547,7 @@ namespace FS_LevelEditor.Editor.UI
         public void OnLanguageChanged()
         {
             SetCurrentModeLabelText(EditorController.Instance.currentMode);
+            if (GlobalPropertiesPanel.Instance) GlobalPropertiesPanel.Instance.RefreshLocalization();
         }
 
         void OnDestroy()
