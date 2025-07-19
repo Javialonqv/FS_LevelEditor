@@ -102,6 +102,22 @@ namespace FS_LevelEditor
             script.onMesh = content.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>();
             script.m_collision = content.GetChildWithName("Collision").GetComponent<BoxCollider>();
             script.physicsCollider = content.GetChildWithName("Saw_PhysicsCollider").GetComponent<MeshCollider>();
+            script.m_damageCollider = content.GetChildWithName("Saw_DamageCollider").GetComponent<MeshCollider>();
+
+            ForwardTriggerCollision damageTrigger = script.m_damageCollider.gameObject.AddComponent<ForwardTriggerCollision>();
+            damageTrigger.target = script.gameObject;
+            damageTrigger.triggerEnter = true;
+            damageTrigger.triggerExit = true;
+
+            script.particlesHolder = content.GetChildWithName("SawParticlesHolder");
+            script.particles1 = content.GetChildAt("SawParticlesHolder/SawSparks_1").GetComponent<ParticleSystem>();
+            script.particles2 = content.GetChildAt("SawParticlesHolder/SawSparks_2").GetComponent<ParticleSystem>();
+            script.particles3 = content.GetChildAt("SawParticlesHolder/SawSparks_3").GetComponent<ParticleSystem>();
+            script.particles4 = content.GetChildAt("SawParticlesHolder/SawSparks_4").GetComponent<ParticleSystem>();
+            script.particles1.GetComponent<ParticleSystemRenderer>().sharedMaterial = t_saw.particles1.GetComponent<ParticleSystemRenderer>().sharedMaterial;
+            script.particles2.GetComponent<ParticleSystemRenderer>().sharedMaterial = t_saw.particles2.GetComponent<ParticleSystemRenderer>().sharedMaterial;
+            script.particles3.GetComponent<ParticleSystemRenderer>().sharedMaterial = t_saw.particles3.GetComponent<ParticleSystemRenderer>().sharedMaterial;
+            script.particles4.GetComponent<ParticleSystemRenderer>().sharedMaterial = t_saw.particles4.GetComponent<ParticleSystemRenderer>().sharedMaterial;
 
 
             if (setActiveAtStart) // Only do this if it's meant to be enabled at start, otherwise, the saw will be bugged.
@@ -117,6 +133,19 @@ namespace FS_LevelEditor
             }
 
             content.SetActive(true);
+
+            // --------- SETUP TAGS & LAYERS ---------
+
+            script.m_collision.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+            script.physicsCollider.gameObject.tag = "Saw_PhysicsCollider";
+            script.physicsCollider.gameObject.layer = LayerMask.NameToLayer("AllExceptPlayer");
+            script.m_damageCollider.gameObject.tag = "Scie";
+            script.m_damageCollider.gameObject.layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+
+            script.particles1.gameObject.layer = LayerMask.NameToLayer("TransparentFX");
+            script.particles2.gameObject.layer = LayerMask.NameToLayer("TransparentFX");
+            script.particles3.gameObject.layer = LayerMask.NameToLayer("TransparentFX");
+            script.particles4.gameObject.layer = LayerMask.NameToLayer("TransparentFX");
 
             initialized = true;
         }
