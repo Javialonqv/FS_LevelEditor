@@ -747,16 +747,8 @@ namespace FS_LevelEditor.Editor.UI
 
             targetList.Add(new LE_Event(toCopy));
 
-
-            switch (targetListID)
-            {
-                case 0: FirstEventsListBtnClick(); break;
-                case 1: SecondEventsListBtnClick(); break;
-                case 2: ThirdEventsListBtnClick(); break;
-            }
-
-            // The copied event will always be in the last element in the list.
-            OnEventSelect(targetList.Count - 1);
+            // Update the current list.
+            OnEventSelect(eventID);
         }
         void MoveEventToList(int eventID, int targetListID)
         {
@@ -767,15 +759,17 @@ namespace FS_LevelEditor.Editor.UI
             originList.Remove(toMove);
             targetList.Add(toMove);
 
-            switch (targetListID)
+            if (originList.Count > 0)
             {
-                case 0: FirstEventsListBtnClick(); break;
-                case 1: SecondEventsListBtnClick(); break;
-                case 2: ThirdEventsListBtnClick(); break;
+                // Select other event in the list.
+                OnEventSelect(eventID > 0 ? eventID - 1 : 0);
             }
-
-            // The copied event will always be in the last element in the list.
-            OnEventSelect(targetList.Count - 1);
+            else
+            {
+                // Just refresh the list and deselect the event.
+                HideEventSettings();
+                CreateEventsList(currentEventsGrid);
+            }
         }
         void DuplicateEvent(int eventID)
         {
