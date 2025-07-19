@@ -224,11 +224,10 @@ namespace FS_LevelEditor.Editor
             onExitPopupBackButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
             onExitPopupBackButton.name = "1_Back";
             onExitPopupBackButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
-            Destroy(onExitPopupBackButton.GetComponent<ButtonController>());
-            Destroy(onExitPopupBackButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            onExitPopupBackButton.GetChildWithName("Label").GetComponent<UILabel>().text = Loc.Get("pause.ExitPopup.Back");
-            onExitPopupBackButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.1f;
-            onExitPopupBackButton.GetComponent<UIButton>().onClick.Clear();
+            onExitPopupBackButton.RemoveComponent<ButtonController>();
+            onExitPopupBackButton.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.ExitPopup.Back";
+            onExitPopupBackButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            onExitPopupBackButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
             onExitPopupBackButton.AddComponent<UIButtonPatcher>().onClick += () => OnExitPopupButtonClicked(false, false);
             onExitPopupBackButton.SetActive(true);
             #endregion
@@ -237,11 +236,10 @@ namespace FS_LevelEditor.Editor
             onExitPopupSaveAndExitButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
             onExitPopupSaveAndExitButton.name = "2_SaveAndExit";
             onExitPopupSaveAndExitButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
-            Destroy(onExitPopupSaveAndExitButton.GetComponent<ButtonController>());
-            Destroy(onExitPopupSaveAndExitButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            onExitPopupSaveAndExitButton.GetChildWithName("Label").GetComponent<UILabel>().text = Loc.Get("pause.ExitPopup.SaveAndExit");
-            onExitPopupSaveAndExitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.1f;
-            onExitPopupSaveAndExitButton.GetComponent<UIButton>().onClick.Clear();
+            onExitPopupSaveAndExitButton.RemoveComponent<ButtonController>();
+            onExitPopupSaveAndExitButton.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.ExitPopup.SaveAndExit";
+            onExitPopupSaveAndExitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            onExitPopupSaveAndExitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
             onExitPopupSaveAndExitButton.AddComponent<UIButtonPatcher>().onClick += () => OnExitPopupButtonClicked(true, true);
             onExitPopupSaveAndExitButton.SetActive(true);
             #endregion
@@ -251,12 +249,11 @@ namespace FS_LevelEditor.Editor
             onExitPopupExitButton = Instantiate(popupSmallButtonsParent.GetChildAt("1_No"), popupSmallButtonsParent.transform);
             onExitPopupExitButton.name = "3_ExitWithoutSaving";
             onExitPopupExitButton.transform.localPosition = new Vector3(200f, 0f, 0f);
-            Destroy(onExitPopupExitButton.GetComponent<ButtonController>());
-            Destroy(onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILabel>().text = Loc.Get("pause.ExitPopup.ExitNoSave");
-            onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILabel>().fontSize = 35; // Since this label is a bit too much large (lol), reduce its font size so it fits.
-            onExitPopupExitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.1f;
-            onExitPopupExitButton.GetComponent<UIButton>().onClick.Clear();
+            onExitPopupExitButton.RemoveComponent<ButtonController>();
+            onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.ExitPopup.ExitNoSave";
+            onExitPopupExitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            onExitPopupExitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            onExitPopupExitButton.GetComponent<UIButton>().defaultColor = new Color(0.3897f, 0.212f, 0.212f, 1f);
             onExitPopupExitButton.AddComponent<UIButtonPatcher>().onClick += () => OnExitPopupButtonClicked(true, false);
             onExitPopupExitButton.SetActive(true);
             #endregion
