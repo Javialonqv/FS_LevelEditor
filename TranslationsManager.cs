@@ -49,7 +49,7 @@ namespace FS_LevelEditor
 
             for (int i = 0; i < lines.Length; i++)
             {
-                string[] columns = lines[i].Trim().Split(',');
+                string[] columns = SplitWithCommas(lines[i].Trim());
 
                 if (i == 0)
                 {
@@ -60,6 +60,7 @@ namespace FS_LevelEditor
                     continue;
                 }
 
+                if (columns.Length == 0) continue;
                 if (string.IsNullOrEmpty(columns[0])) continue;
 
                 string currentKey = columns[0];
@@ -71,6 +72,42 @@ namespace FS_LevelEditor
 
                 translations.Add(currentKey, currentKeyTranslations);
             }
+        }
+
+        static string[] SplitWithCommas(string line)
+        {
+            var fields = new List<string>();
+            var currentField = new StringBuilder();
+            bool inQuotes = false;
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (line[i] == '"')
+                {
+                    if (inQuotes && i + 1 < line.Length && line[i + 1] == '"') // Handle escaped quotes
+                    {
+                        currentField.Append('"');
+                        i++; // Skip the next quote
+                    }
+                    else
+                    {
+                        inQuotes = !inQuotes; // Toggle inQuotes state
+                    }
+                }
+                else if (line[i] == ',' && !inQuotes)
+                {
+                    fields.Add(currentField.ToString().Trim());
+                    currentField.Clear();
+                }
+                else
+                {
+                    currentField.Append(line[i]);
+                }
+            }
+            // Add the last field if it exists
+            if (currentField.Length > 0) fields.Add(currentField.ToString().Trim());
+
+            return fields.ToArray();
         }
 
         public static string GetTranslation(string key, bool throwErrorIfNotFound)

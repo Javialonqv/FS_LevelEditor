@@ -46,3 +46,8 @@ events.OnBoth,On Both,Ambos Casos
 events.OnEnter,On Enter,Al Entrar
 events.OnExit,On Exit,Al Salir
 tooltip.SetActiveAtStartToggle,Defines if the object will be [00FFFF]enabled[-] or [FF0000]not[-] at the beginning of the level.,Define si el objeto estará [00FFFF]activado[-] o [FF0000]no[-] al inicio del nivel.
+pause.ExitPopup.Title,Warning,Advertencia
+pause.ExitPopup.Content,"Warning, exiting will erase your last saved changes if you made any before saving, are you sure you want to continue?","Advertencia, al salir se van a elimiar los cambios que hayas hecho desde el último guardado, ¿estás seguro de que deseas continuar?"
+pause.ExitPopup.Back,No,No
+pause.ExitPopup.SaveAndExit,Save And Exit,Salir Y Guardar
+pause.ExitPopup.ExitNoSave,Exit Without Saving,Salir Sin Guardar
