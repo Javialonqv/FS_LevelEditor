@@ -44,11 +44,6 @@ namespace FS_LevelEditor.Editor.UI
 
         public UILabel currentModeLabel;
 
-        GameObject onExitPopupBackButton;
-        GameObject onExitPopupSaveAndExitButton;
-        GameObject onExitPopupExitButton;
-        bool exitPopupEnabled = false;
-
         public GameObject helpPanel;
 
         GameObject hittenTargetObjPanel;
@@ -58,11 +53,6 @@ namespace FS_LevelEditor.Editor.UI
         GameObject occluderForWhenPaused;
         public GameObject pauseMenu;
         public GameObject navigation;
-        GameObject popup;
-        PopupController popupController;
-        GameObject popupTitle;
-        GameObject popupContentLabel;
-        GameObject popupSmallButtonsParent;
 
         public EditorUIManager(IntPtr ptr) : base(ptr) { }
 
@@ -131,11 +121,6 @@ namespace FS_LevelEditor.Editor.UI
             occluderForWhenPaused = uiParentObj.GetChildWithName("Occluder");
             pauseMenu = uiParentObj.GetChildWithName("Main");
             navigation = uiParentObj.GetChildWithName("Navigation");
-            popup = uiParentObj.GetChildWithName("Popup");
-            popupController = popup.GetComponent<PopupController>();
-            popupTitle = popup.GetChildAt("PopupHolder/Title/Label");
-            popupContentLabel = popup.GetChildAt("PopupHolder/Content/Label");
-            popupSmallButtonsParent = popup.GetChildAt("PopupHolder/SmallButtons");
         }
 
         void CreateSavingLevelLabel()
@@ -349,9 +334,9 @@ namespace FS_LevelEditor.Editor.UI
             if (!pauseMenu.activeSelf) return;
 
             // If the user is in the exit confirmation popup, just hide it and do nothing.
-            if (exitPopupEnabled)
+            if (EditorPauseMenuPatcher.patcher.exitPopupEnabled)
             {
-                OnExitPopupBackButton();
+                EditorPauseMenuPatcher.patcher.OnExitPopupButtonClicked(false, false);
                 return;
             }
 
@@ -386,82 +371,7 @@ namespace FS_LevelEditor.Editor.UI
             Logger.Log("LE resumed!");
         }
 
-        public void ShowExitPopup()
-        {
-            if (!EditorController.Instance.levelHasBeenModified)
-            {
-                ExitToMenu(false);
-                return;
-            }
-
-            popupTitle.GetComponent<UILabel>().text = "Warning";
-            popupContentLabel.GetComponent<UILabel>().text = "Warning, exiting will erase your last saved changes if you made any before saving, are you sure you want to continue?";
-            popupSmallButtonsParent.DisableAllChildren();
-            popupSmallButtonsParent.transform.localPosition = new Vector3(-10f, -315f, 0f);
-            popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(10f, 0f);
-
-            // Make a copy of the yess button since for some reason the yes button is red as the no button should, that's doesn't make any sense lol.
-            onExitPopupBackButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
-            onExitPopupBackButton.name = "1_Back";
-            onExitPopupBackButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
-            Destroy(onExitPopupBackButton.GetComponent<ButtonController>());
-            Destroy(onExitPopupBackButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            onExitPopupBackButton.GetChildWithName("Label").GetComponent<UILabel>().text = "No";
-            onExitPopupBackButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.1f;
-            onExitPopupBackButton.GetComponent<UIButton>().onClick.Clear();
-            onExitPopupBackButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnExitPopupBackButton)));
-            onExitPopupBackButton.SetActive(true);
-
-            onExitPopupSaveAndExitButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
-            onExitPopupSaveAndExitButton.name = "2_SaveAndExit";
-            onExitPopupSaveAndExitButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
-            Destroy(onExitPopupSaveAndExitButton.GetComponent<ButtonController>());
-            Destroy(onExitPopupSaveAndExitButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            onExitPopupSaveAndExitButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Save and Exit";
-            onExitPopupSaveAndExitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.1f;
-            onExitPopupSaveAndExitButton.GetComponent<UIButton>().onClick.Clear();
-            onExitPopupSaveAndExitButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnExitPopupSaveAndExitButton)));
-            onExitPopupSaveAndExitButton.SetActive(true);
-
-            // Same with exit button.
-            onExitPopupExitButton = Instantiate(popupSmallButtonsParent.GetChildAt("1_No"), popupSmallButtonsParent.transform);
-            onExitPopupExitButton.name = "3_ExitWithoutSaving";
-            onExitPopupExitButton.transform.localPosition = new Vector3(200f, 0f, 0f);
-            Destroy(onExitPopupExitButton.GetComponent<ButtonController>());
-            Destroy(onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Exit without Saving";
-            onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILabel>().fontSize = 35; // Since this label is a bit too much large (lol), reduce its font size so it fits.
-            onExitPopupExitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.1f;
-            onExitPopupExitButton.GetComponent<UIButton>().onClick.Clear();
-            onExitPopupExitButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnExitPopupExitWithoutSavingButton)));
-            onExitPopupExitButton.SetActive(true);
-
-            popupController.Show();
-            exitPopupEnabled = true;
-            Logger.Log("Showed LE exit popup!");
-        }
-        public void OnExitPopupBackButton()
-        {
-            popupController.Hide();
-            exitPopupEnabled = false;
-
-            Destroy(onExitPopupBackButton);
-            Destroy(onExitPopupSaveAndExitButton);
-            Destroy(onExitPopupExitButton);
-
-            popupSmallButtonsParent.transform.localPosition = new Vector3(-130f, -315f, 0f);
-            popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(130f, 0f);
-        }
-        public void OnExitPopupSaveAndExitButton()
-        {
-            OnExitPopupBackButton();
-            ExitToMenu(true);
-        }
-        public void OnExitPopupExitWithoutSavingButton()
-        {
-            OnExitPopupBackButton();
-            ExitToMenu(false);
-        }
+        public void ShowExitPopup() => EditorPauseMenuPatcher.patcher.ShowExitPopup();
 
         public void ExitToMenu(bool saveDataBeforeExit = false)
         {
