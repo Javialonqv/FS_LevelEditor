@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor.UI;
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -161,6 +162,18 @@ namespace FS_LevelEditor
             }
 
             return true;
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(OptionsController), nameof(OptionsController.UpdateAllLocalizedLabels))]
+    public static class OnLanguageChangedPatch
+    {
+        public static void Postfix()
+        {
+            if (EditorUIManager.Instance)
+            {
+                EditorUIManager.Instance.OnLanguageChanged();
+            }
         }
     }
 }

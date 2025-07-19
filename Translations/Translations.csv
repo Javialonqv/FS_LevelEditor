@@ -88,3 +88,7 @@ RED,RED,ROJO
 InvisibleMesh,Invisible Mesh,Malla Invisible
 InvertTextWithGravity,Invert Text With Gravity,Invertir Texto Con La Gravedad
 EditText,Edit Text,Editar Texto
+CurrentMode,[c][ffff00]Current Mode:[-][/c],[c][ffff00]Modo Actual:[-][/c]
+Building,Building,Construcción
+Selection,Selection,Selección
+Deletion,Deletion,Eliminación

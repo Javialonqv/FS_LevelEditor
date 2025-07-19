@@ -170,6 +170,7 @@ namespace FS_LevelEditor.Editor.UI
 
         void CreateCurrentModeLabel()
         {
+            // DO NOT create UILocalize for this label, since its text is dynamic and changes depending on the current mode.
             currentModeLabel = NGUI_Utils.CreateLabel(editorUIParent.transform, new Vector3(0, -515), new Vector3Int(500, 50, 0), "Current Mode:", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
             currentModeLabel.fontSize = 35;
@@ -179,7 +180,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         public void SetCurrentModeLabelText(EditorController.Mode mode)
         {
-            currentModeLabel.text = $"[c][ffff00]Current mode:[-][/c] {mode.ToString()}";
+            string text = Loc.Get("CurrentMode") + " " + Loc.Get(mode.ToString());
+            currentModeLabel.text = text;
         }
 
         void CreateHittenTargetObjPanel()
@@ -540,6 +542,11 @@ namespace FS_LevelEditor.Editor.UI
             if (Instance == null) return false;
 
             return Instance.currentUIContext == context;
+        }
+
+        public void OnLanguageChanged()
+        {
+            SetCurrentModeLabelText(EditorController.Instance.currentMode);
         }
 
         void OnDestroy()
