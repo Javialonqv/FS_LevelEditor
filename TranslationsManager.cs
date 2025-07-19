@@ -134,11 +134,7 @@ namespace FS_LevelEditor
                 return key;
             }
 
-#if DEBUG
             int langIndex = languages.Contains(Localization.language.ToUpper()) ? languages.IndexOf(Localization.language.ToUpper()) : 0;
-#else
-            int langIndex = 0; // Default to English if translations are disabled.  
-#endif
             if (translations[key].Count >= langIndex)
             {
                 return translations[key][langIndex];
