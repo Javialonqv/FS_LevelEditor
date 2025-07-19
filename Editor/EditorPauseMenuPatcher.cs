@@ -88,6 +88,7 @@ namespace FS_LevelEditor.Editor
             resumeButtonLE = Instantiate(resumeBtn, resumeBtn.transform.parent);
             resumeButtonLE.name = "1_ResumeWhenInEditor";
             Destroy(resumeButtonLE.GetComponent<ButtonController>());
+            resumeButtonLE.GetChildWithName("LevelToResumeLabel").AddComponent<UILocalize>().key = "LevelEditor";
             resumeButtonLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.Resume;
             // This two more lines are used just in case the original resume button is disabled, that may happen when you didn't start a new game yet.
             if (!resumeButtonLE.GetComponent<UIButton>().isEnabled)
@@ -102,8 +103,8 @@ namespace FS_LevelEditor.Editor
             playButtonLE = Instantiate(resumeBtn, resumeBtn.transform.parent);
             playButtonLE.name = "2_PlayLevel";
             Destroy(playButtonLE.GetComponent<ButtonController>());
-            Destroy(playButtonLE.GetChildWithName("Label").GetComponent<UILocalize>());
-            playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().text = "Play Level";
+            playButtonLE.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.PlayLevel";
+            playButtonLE.GetChildWithName("LevelToResumeLabel").AddComponent<UILocalize>().key = "pause.NoSpawnObject";
             playButtonLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.PlayLevel;
             playButtonLE.SetActive(true);
             #endregion
@@ -112,8 +113,8 @@ namespace FS_LevelEditor.Editor
             saveButtonLE = Instantiate(resumeBtn, resumeBtn.transform.parent);
             saveButtonLE.name = "3_SaveLevel";
             Destroy(saveButtonLE.GetComponent<ButtonController>());
-            Destroy(saveButtonLE.GetChildWithName("Label").GetComponent<UILocalize>());
-            saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().text = "Save Level";
+            saveButtonLE.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.SaveLevel";
+            saveButtonLE.GetChildWithName("LevelToResumeLabel").AddComponent<UILocalize>().key = "pause.NoChanges";
             saveButtonLE.AddComponent<UIButtonPatcher>().onClick += SaveLevelWithPauseMenuButton;
             saveButtonLE.SetActive(true);
             #endregion
@@ -136,7 +137,7 @@ namespace FS_LevelEditor.Editor
             #region Large Buttons Stuff
             resumeBtn.SetActive(false);
             resumeButtonLE.SetActive(true);
-            resumeButtonLE.GetChildWithName("LevelToResumeLabel").GetComponent<UILabel>().text = "Level Editor";
+            // The label of the "secondary" label is already set to "Level Editor" in the UILocalize comp, not need to set it again.
 
             chaptersButton.SetActive(false);
             newGamePlusButton.SetActive(false);
@@ -175,7 +176,7 @@ namespace FS_LevelEditor.Editor
                 playButtonLE.GetComponent<UIButton>().isEnabled = false;
                 playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
                 playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
-                playButtonLE.GetChildWithName("LevelToResumeLabel").GetComponent<UILabel>().text = "There isn't any player spawn obj in the scene.";
+                // Don't set the secondary label text, since it's already in the UILocalize component.
                 playButtonLE.GetChildWithName("LevelToResumeLabel").SetActive(true);
             }
         }
@@ -198,7 +199,7 @@ namespace FS_LevelEditor.Editor
                 saveButtonLE.GetComponent<UIButton>().isEnabled = false;
                 saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
                 saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
-                saveButtonLE.GetChildWithName("LevelToResumeLabel").GetComponent<UILabel>().text = "There are no changes to save.";
+                // Don't set the secondary label text, since it's already in the UILocalize component.
                 saveButtonLE.GetChildWithName("LevelToResumeLabel").SetActive(true);
             }
         }
