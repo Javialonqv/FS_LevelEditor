@@ -56,6 +56,11 @@ namespace FS_LevelEditor
                 {
                     for (int j = 1; j < columns.Length; j++)
                     {
+                        if (languages.Contains(columns[j].ToUpper()))
+                        {
+                            Logger.Error($"Duplicate language found in translations file: \"{columns[j]}\" at line {j}. Skipping it...");
+                            continue;
+                        }
                         languages.Add(columns[j].ToUpper());
                     }
                     continue;
@@ -65,6 +70,11 @@ namespace FS_LevelEditor
                 if (string.IsNullOrEmpty(columns[0])) continue;
 
                 string currentKey = columns[0];
+                if (translations.ContainsKey(currentKey))
+                {
+                    Logger.Error($"Duplicate key found in translations file: \"{currentKey}\" at line {i + 1}. Skipping it...");
+                    continue;
+                }
                 List<string> currentKeyTranslations = new List<string>();
                 for (int j = 1; j < columns.Length; j++)
                 {
