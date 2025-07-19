@@ -346,7 +346,7 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(directionalLightAttributes);
 
-            CreateObjectAttribute("Color (Hex)", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+            CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
             CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
 
             directionalLightAttributes.SetActive(false);
@@ -361,7 +361,7 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(pointLightAttributes);
 
-            CreateObjectAttribute("Color (Hex)", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+            CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
             CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
             CreateObjectAttribute("Range", AttributeType.INPUT_FIELD, "10", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Range");
 
@@ -377,11 +377,11 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(sawAttributes);
 
-            CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+            CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
-            CreateObjectAttribute("Travel Back", AttributeType.TOGGLE, false, null, "TravelBack");
-            CreateObjectAttribute("+ Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
-            CreateObjectAttribute("Wait Time", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+            CreateObjectAttribute("TravelBack", AttributeType.TOGGLE, false, null, "TravelBack");
+            CreateObjectAttribute("AddWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
 
             sawAttributes.SetActive(false);
             attributesPanels.Add("Saw", sawAttributes);
@@ -395,8 +395,8 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(sawWaypointAttributes);
 
-            CreateObjectAttribute("Wait Time", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
-            CreateObjectAttribute("+ Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+            CreateObjectAttribute("AddWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
             sawWaypointAttributes.SetActive(false);
             attributesPanels.Add("Saw Waypoint", sawWaypointAttributes);
@@ -410,15 +410,15 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(switchAttributes);
 
-            CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
+            CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
             var initiaStateButton = switchAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
             initiaStateButton.AddOption("DEACTIVATED", new Color(0.8f, 0f, 0f));
             initiaStateButton.AddOption("ACTIVATED", Color.green);
             initiaStateButton.AddOption("UNUSABLE", Color.black);
 
-            CreateObjectAttribute("Usable Once", AttributeType.TOGGLE, false, null, "UsableOnce");
-            CreateObjectAttribute("Can be shot by Taser", AttributeType.TOGGLE, true, null, "CanUseTaser");
-            CreateObjectAttribute("Manage Events", AttributeType.BUTTON, null, null, "ManageEvents");
+            CreateObjectAttribute("UsableOnce", AttributeType.TOGGLE, false, null, "UsableOnce");
+            CreateObjectAttribute("CanBeShotByTaser", AttributeType.TOGGLE, true, null, "CanUseTaser");
+            CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
             switchAttributes.SetActive(false);
             attributesPanels.Add("Switch", switchAttributes);
@@ -432,7 +432,7 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(ammoHealthAttributes);
 
-            CreateObjectAttribute("Respawn Time", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RespawnTime");
+            CreateObjectAttribute("RespawnTime", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RespawnTime");
 
             ammoHealthAttributes.SetActive(false);
             attributesPanels.Add("Ammo Pack | Health Pack", ammoHealthAttributes);
@@ -446,8 +446,8 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(laserAttributes);
 
-            CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
-            CreateObjectAttribute("Instant Kill", AttributeType.TOGGLE, false, null, "InstaKill");
+            CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+            CreateObjectAttribute("InstantKill", AttributeType.TOGGLE, false, null, "InstaKill");
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Damage");
 
             laserAttributes.SetActive(false);
@@ -462,8 +462,8 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(ceilingLightAttributes);
 
-            CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
-            CreateObjectAttribute("Color (Hex)", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+            CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+            CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
             CreateObjectAttribute("Range", AttributeType.INPUT_FIELD, "6", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Range");
 
             ceilingLightAttributes.SetActive(false);
@@ -478,7 +478,7 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(flameTrapAttributes);
 
-            CreateObjectAttribute("Activate On Start", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+            CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Constant", AttributeType.TOGGLE, false, null, "Constant");
 
             flameTrapAttributes.SetActive(false);
@@ -493,8 +493,8 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(pressurePlateAttributes);
 
-            CreateObjectAttribute("Only Once", AttributeType.TOGGLE, false, null, "OnlyOnce");
-            CreateObjectAttribute("Manage Events", AttributeType.BUTTON, null, null, "ManageEvents");
+            CreateObjectAttribute("OnlyOnce", AttributeType.TOGGLE, false, null, "OnlyOnce");
+            CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
             pressurePlateAttributes.SetActive(false);
             attributesPanels.Add("Pressure Plate", pressurePlateAttributes);
@@ -508,15 +508,15 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(screenAttributes);
 
-            CreateObjectAttribute("Screen Color", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
+            CreateObjectAttribute("ScreenColor", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
             var screenColorButton = screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
             screenColorButton.AddOption("CYAN", null); // Use the default button color.
             screenColorButton.AddOption("GREEN", Color.green);
             screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
 
-            CreateObjectAttribute("Invisible Mesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
-            CreateObjectAttribute("Invert Text With Gravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
-            CreateObjectAttribute("Edit Text", AttributeType.BUTTON, null, null, "EditText");
+            CreateObjectAttribute("InvisibleMesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
+            CreateObjectAttribute("InvertTextWithGravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
+            CreateObjectAttribute("EditText", AttributeType.BUTTON, null, null, "EditText");
 
             screenAttributes.SetActive(false);
             attributesPanels.Add("Screen", screenAttributes);
@@ -530,15 +530,15 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(smallScreenAttributes);
 
-            CreateObjectAttribute("Screen Color", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
+            CreateObjectAttribute("ScreenColor", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
             var screenColorButton = smallScreenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
             screenColorButton.AddOption("CYAN", null); // Use the default button color.
             screenColorButton.AddOption("GREEN", Color.green);
             screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
 
-            CreateObjectAttribute("Invisible Mesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
-            CreateObjectAttribute("Invert Text With Gravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
-            CreateObjectAttribute("Edit Text", AttributeType.BUTTON, null, null, "EditText");
+            CreateObjectAttribute("InvisibleMesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
+            CreateObjectAttribute("InvertTextWithGravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
+            CreateObjectAttribute("EditText", AttributeType.BUTTON, null, null, "EditText");
 
             smallScreenAttributes.SetActive(false);
             attributesPanels.Add("Small Screen", smallScreenAttributes);
@@ -552,7 +552,7 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(triggerAttributes);
 
-            CreateObjectAttribute("Manage Events", AttributeType.BUTTON, null, null, "ManageEvents");
+            CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
             triggerAttributes.SetActive(false);
             attributesPanels.Add("Trigger", triggerAttributes);

@@ -56,7 +56,14 @@ namespace FS_LevelEditor.UI_Related
         {
             (string text, Color color) toSet = options[optionID];
 
-            buttonLabel.text = toSet.text;
+            if (Loc.Get(toSet.text, false) != toSet.text)
+            {
+                buttonLabel.text = Loc.Get(toSet.text, false);
+            }
+            else
+            {
+                buttonLabel.text = toSet.text;
+            }
             buttonColor.defaultColor = toSet.color;
         }
 

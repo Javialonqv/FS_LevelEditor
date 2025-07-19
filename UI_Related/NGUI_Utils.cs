@@ -320,8 +320,15 @@ namespace FS_LevelEditor.UI_Related
             // For some reason the buttons have two labels? One is disabled (Button/Label) and the other one is the one being used (Button/Background/Label).
             // UPDATE: We'll still be using that one, for SOME FUCKING REASON if you change the label the button colors start to behave weird... idk...
             UILabel buttonLabel = button.GetChildAt("Background/Label").GetComponent<UILabel>();
-            GameObject.Destroy(buttonLabel.GetComponent<UILocalize>());
-            buttonLabel.text = text;
+            if (Loc.Get(text, false) != text)
+            {
+                buttonLabel.GetComponent<UILocalize>().key = text;
+            }
+            else
+            {
+                GameObject.Destroy(buttonLabel.GetComponent<UILocalize>());
+                buttonLabel.text = text;
+            }
             buttonLabel.fontSize = textSize;
             if (depth.HasValue) buttonLabel.depth = depth.Value + 1;
             buttonLabel.SetAnchor(button, 0, 0, 0, 0);
