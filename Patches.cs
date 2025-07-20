@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using UnityEngine;
 using HarmonyLib;
 using MelonLoader;
+using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
 
 namespace FS_LevelEditor
 {
@@ -126,6 +128,17 @@ namespace FS_LevelEditor
             }
 
             return true;
+        }
+    }
+
+    // CustomInputCamera deselects the current object when you press enter, that breakes UIInputs with multi line support!
+    // Patch this while we're on LE!
+    [HarmonyPatch(typeof(CustomInputCamera), nameof(CustomInputCamera.CustomInput))]
+    public static class CustomInputCameraPatch
+    {
+        public static bool Prefix()
+        {
+            return EditorController.Instance == null;
         }
     }
 }

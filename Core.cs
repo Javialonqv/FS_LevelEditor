@@ -4,8 +4,12 @@ using MelonLoader;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.SaveSystem;
+using FS_LevelEditor.Playmode;
 
-[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.2.1", "Javialon_qv", null)]
+[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.2.2", "Javialon_qv", null)]
 [assembly: MelonGame("Haze Games", "Fractal Space")]
 
 namespace FS_LevelEditor
@@ -31,6 +35,7 @@ namespace FS_LevelEditor
                 cube.transform.parent = Camera.main.transform;
                 cube.transform.localPosition = Vector3.zero;
                 cube.transform.rotation = Quaternion.identity;
+                cube.GetComponent<MeshRenderer>().castShadows = false;
             }
 #endif
             if (sceneName.Contains("Menu"))
@@ -107,20 +112,20 @@ namespace FS_LevelEditor
                     position.x += width * 4f;
                     position.z += height * 4f;
 
-                    EditorController.Instance.PlaceObject("Ground", position, Vector3.zero, Vector3.one, false);
+                    EditorController.Instance.PlaceObject(LE_Object.ObjectType.GROUND, position, Vector3.zero, Vector3.one, false);
                 }
             }
         }
 
         public GameObject CreateDirectionalLight(Vector3 position, Vector3 rotation)
         {
-            GameObject lightObj = EditorController.Instance.PlaceObject("Directional Light", position, rotation, Vector3.one, false);
+            GameObject lightObj = EditorController.Instance.PlaceObject(LE_Object.ObjectType.DIRECTIONAL_LIGHT, position, rotation, Vector3.one, false);
             return lightObj;
         }
 
         public GameObject CreatePlayerSpawn(Vector3 position, Vector3 rotation)
         {
-            GameObject playerSpanw = EditorController.Instance.PlaceObject("Player Spawn", position, rotation, Vector3.one, false);
+            GameObject playerSpanw = EditorController.Instance.PlaceObject(LE_Object.ObjectType.PLAYER_SPAWN, position, rotation, Vector3.one, false);
             return playerSpanw;
         }
 

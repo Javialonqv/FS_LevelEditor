@@ -1,4 +1,6 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor.UI;
+using Il2Cpp;
+using Il2CppInControl.NativeDeviceProfiles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,6 +77,13 @@ namespace FS_LevelEditor.UI_Related
         {
             get { return new Color(0.2868f, 0.971f, 1f, 1f); }
         }
+        public static Color fsLabelDefaultColor
+        {
+            get
+            {
+                return new Color(0.4853f, 0.9787f, 1f, 1f);
+            }
+        }
 
         // GameObject
         static GameObject _labelTemplate;
@@ -111,6 +120,16 @@ namespace FS_LevelEditor.UI_Related
                 return _dropdownTemplate;
             }
         }
+        static GameObject _multipleButtonTemplate;
+        public static GameObject multipleButtonTemplate
+        {
+            get
+            {
+                if (!_multipleButtonTemplate) _multipleButtonTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/DifficulityLevel");
+
+                return _multipleButtonTemplate;
+            }
+        }
         static GameObject _optionsPanel;
         public static GameObject optionsPanel
         {
@@ -121,6 +140,26 @@ namespace FS_LevelEditor.UI_Related
                     _optionsPanel = GameObject.Find("MainMenu/Camera/Holder/Options");
                 }
                 return _optionsPanel;
+            }
+        }
+        static GameObject _tabToggleTemplate;
+        public static GameObject tabToggleTemplate
+        {
+            get
+            {
+                if (!_tabToggleTemplate) _tabToggleTemplate = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/Tabs/1_Taser");
+                return _tabToggleTemplate;
+            }
+        }
+        static GameObject _colorToggleTemplate;
+        public static GameObject colorToggleTemplate
+        {
+            get
+            {
+                if (!_colorToggleTemplate)
+                    _colorToggleTemplate = GameObject.Find("MainMenu/Camera/Holder/TaserCustomization/Holder/ColorSelection/ColorSwatch");
+
+                return _colorToggleTemplate;
             }
         }
 
@@ -158,8 +197,9 @@ namespace FS_LevelEditor.UI_Related
         }
         #endregion
 
-        public static GameObject CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize = 27, string defaultText = "",
-            bool hasOutline = false, NGUIText.Alignment alignment = NGUIText.Alignment.Left)
+        public static UICustomInputField CreateInputField(Transform parent, Vector3 position, Vector3Int size, int fontSize = 27, string defaultText = "",
+            bool hasOutline = false, NGUIText.Alignment alignment = NGUIText.Alignment.Left, UICustomInputField.UIInputType inputType = UICustomInputField.UIInputType.PLAIN_TEXT,
+            int maxDecimals = 0, int depth = 1)
         {
             GameObject inputField = new GameObject("InputField");
             inputField.transform.parent = parent;
@@ -172,7 +212,7 @@ namespace FS_LevelEditor.UI_Related
             bgSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
             bgSprite.width = size.x;
             bgSprite.height = size.y;
-            bgSprite.depth = 1;
+            bgSprite.depth = depth;
 
             // Create the outline AFTER the main sprite, so the main sprite is the default result when using GetComponent.
             if (hasOutline)
@@ -183,7 +223,7 @@ namespace FS_LevelEditor.UI_Related
                 outlineSprite.color = Color.black;
                 outlineSprite.width = size.x + 10;
                 outlineSprite.height = size.y + 10;
-                outlineSprite.depth = 0;
+                outlineSprite.depth = depth - 1;
             }
 
             GameObject labelObj = new GameObject("Text");
@@ -195,7 +235,7 @@ namespace FS_LevelEditor.UI_Related
             label.fontSize = fontSize;
             label.width = size.x - 5;
             label.height = size.y;
-            label.depth = 2;
+            label.depth = depth + 1;
             label.alignment = alignment;
             label.color = Color.gray;
 
@@ -209,7 +249,13 @@ namespace FS_LevelEditor.UI_Related
             input.activeTextColor = Color.white;
             input.onChange.Clear();
 
-            return inputField;
+            UICustomInputField script = inputField.AddComponent<UICustomInputField>();
+            script.Setup(inputType, defaultText, maxDecimals);
+
+            // GOD BLESS OLD ME FOR CREATING THIS FIX!!
+            inputField.AddComponent<UIInputSubmitFix>();
+
+            return script;
         }
 
         // Never ever ever dare to change ANYTHING inside of this method, it's literally the worst code in the whole mod.
@@ -243,7 +289,14 @@ namespace FS_LevelEditor.UI_Related
             {
                 UILabel toggleLabel = toggle.GetChildWithName("Label").GetComponent<UILabel>();
                 GameObject.Destroy(toggleLabel.GetComponent<UILocalize>());
-                toggleLabel.text = text;
+                if (Loc.Get(text, false) != text)
+                {
+                    toggleLabel.gameObject.AddComponent<UILocalize>().key = text;
+                }
+                else
+                {
+                    toggleLabel.text = text;
+                }
                 toggleLabel.width = size.x;
                 Vector3 colliderCenter = toggleLabel.transform.localPosition;
                 colliderCenter.x += toggleLabel.width / 2 - (size.y / 2) - 6;
@@ -257,24 +310,41 @@ namespace FS_LevelEditor.UI_Related
             return toggle;
         }
 
-        public static UIButtonPatcher CreateButton(Transform parent, Vector3 position, Vector3Int size, string text = "")
+        public static UIButtonPatcher CreateButton(Transform parent, Vector3 position, Vector3Int size, string text = "", int? depth = null, int textSize = 30)
         {
+            // NOTE: The only reason why depth is nullable is because there are already parts of the code that use this method without a depth set, and I don't wanna break anything.
+
             GameObject button = GameObject.Instantiate(buttonTemplate, parent);
             button.transform.localPosition = position;
             button.transform.localScale = Vector3.one;
 
             button.GetComponent<UISprite>().width = size.x;
             button.GetComponent<UISprite>().height = size.y;
+            if (depth.HasValue) button.GetComponent<UISprite>().depth = depth.Value;
             button.GetComponent<BoxCollider>().size = size;
             GameObject.Destroy(button.GetComponent<ButtonController>());
 
             // For some reason the buttons have two labels? One is disabled (Button/Label) and the other one is the one being used (Button/Background/Label).
             // UPDATE: We'll still be using that one, for SOME FUCKING REASON if you change the label the button colors start to behave weird... idk...
             UILabel buttonLabel = button.GetChildAt("Background/Label").GetComponent<UILabel>();
-            GameObject.Destroy(buttonLabel.GetComponent<UILocalize>());
-            buttonLabel.text = text;
+            if (Loc.Get(text, false) != text)
+            {
+                buttonLabel.GetComponent<UILocalize>().key = text;
+            }
+            else
+            {
+                GameObject.Destroy(buttonLabel.GetComponent<UILocalize>());
+                buttonLabel.text = text;
+            }
+            buttonLabel.fontSize = textSize;
+            if (depth.HasValue) buttonLabel.depth = depth.Value + 1;
             buttonLabel.SetAnchor(button, 0, 0, 0, 0);
             // Just change the label anchor so its size is the same as the button size.
+
+            // Remove the SECOND UIButtonColor component, and then I ask, why did Charles add TWO UIButtonColor to the buttons
+            // if they target to the same object?
+            // UPDATE: It seems that if I don't remove this, some weird shit happens with the button color or something.
+            GameObject.Destroy(button.GetComponents<UIButtonColor>()[1]);
 
             UIButtonPatcher patcher = button.AddComponent<UIButtonPatcher>();
 
@@ -290,6 +360,11 @@ namespace FS_LevelEditor.UI_Related
             button.GetComponent<UISprite>().height = size.y;
             button.GetComponent<BoxCollider>().size = size;
             GameObject.Destroy(button.GetComponent<ButtonController>());
+
+            // Remove the SECOND UIButtonColor component, and then I ask, why did Charles add TWO UIButtonColor to the buttons
+            // if they target to the same object?
+            // UPDATE: It seems that if I don't remove this, some weird shit happens with the button color or something.
+            GameObject.Destroy(button.GetComponents<UIButtonColor>()[1]);
 
             GameObject labelObj = button.GetChildAt("Background/Label");
             GameObject.Destroy(labelObj.GetComponent<UILocalize>());
@@ -359,12 +434,109 @@ namespace FS_LevelEditor.UI_Related
             return toggle;
         }
 
+        public static UITogglePatcher CreateTabToggle(Transform parent, Vector3 position, string text = "")
+        {
+            GameObject toggle = GameObject.Instantiate(tabToggleTemplate, parent);
+            toggle.name = "Toggle";
+            toggle.transform.localPosition = position;
+            toggle.transform.localScale = Vector3.one;
+
+            // If there's not key for the text, then it'll return the key itself, otherwise, it'll return the translation.
+            if (Loc.Get(text, false) != text)
+            {
+                toggle.GetChildWithName("Label").AddComponent<UILocalize>().key = text;
+            }
+            toggle.GetChildWithName("Label").GetComponent<UILabel>().text = text;
+
+            UIToggle script = toggle.GetComponent<UIToggle>();
+            script.onChange.Clear();
+            script.Set(false);
+
+            UITogglePatcher patcher = toggle.AddComponent<UITogglePatcher>();
+
+            toggle.SetActive(true);
+
+            return patcher;
+        }
+        public static UIButtonPatcher CreateColorButton(Transform parent, Vector3 position, string text = "")
+        {
+            GameObject toggle = GameObject.Instantiate(colorToggleTemplate, parent);
+            toggle.name = "Toggle";
+            toggle.transform.localPosition = position;
+            toggle.transform.localScale = Vector3.one * 0.8f;
+            toggle.GetChildWithName("ActiveSwatch").SetActive(false);
+            toggle.GetChildWithName("ColorSample").SetActive(false);
+            toggle.SetActive(true);
+
+            // If there's not key for the text, then it'll return the key itself, otherwise, it'll return the translation.
+            if (Loc.Get(text, false) != text)
+            {
+                toggle.GetChildWithName("ColorName").AddComponent<UILocalize>().key = text;
+            }
+            toggle.GetChildWithName("ColorName").GetComponent<UILabel>().text = text;
+            toggle.GetComponent<UIButton>().onClick.Clear();
+
+            GameObject.Destroy(toggle.GetComponent<ColorSwatch>());
+            GameObject.Destroy(toggle.GetComponent<CenterOnHover>());
+
+            toggle.SetActive(true);
+
+            UIButtonPatcher patcher = toggle.AddComponent<UIButtonPatcher>();
+            return patcher;
+        }
+
+        public static UISmallButtonMultiple CreateSmallButtonMultiple(Transform parent, Vector3 position, Vector3Int size, string text = "", int fontSize = 30)
+        {
+            GameObject button = GameObject.Instantiate(buttonTemplate, parent);
+            button.transform.localPosition = position;
+            button.transform.localScale = Vector3.one;
+
+            button.GetComponent<UISprite>().width = size.x;
+            button.GetComponent<UISprite>().height = size.y;
+            GameObject.Destroy(button.GetComponent<ButtonController>());
+
+            // For some reason the buttons have two labels? One is disabled (Button/Label) and the other one is the one being used (Button/Background/Label).
+            // UPDATE: We'll still be using that one, for SOME FUCKING REASON if you change the label the button colors start to behave weird... idk...
+            UILabel buttonLabel = button.GetChildAt("Background/Label").GetComponent<UILabel>();
+            GameObject.Destroy(buttonLabel.GetComponent<UILocalize>());
+            buttonLabel.text = text;
+            buttonLabel.fontSize = fontSize;
+            buttonLabel.SetAnchor(button, 0, 0, 0, 0);
+            // Just change the label anchor so its size is the same as the button size.
+
+            UISmallButtonMultiple script = button.AddComponent<UISmallButtonMultiple>();
+            script.Setup();
+
+            return script;
+        }
+        public static UIButtonMultiple CreateButtonMultiple(Transform parent, Vector3 position, Vector3 scale)
+        {
+            GameObject button = GameObject.Instantiate(multipleButtonTemplate, parent);
+            button.transform.localPosition = position;
+            button.transform.localScale = scale;
+
+            GameObject.Destroy(button.GetComponent<ButtonController>());
+            GameObject.Destroy(button.GetComponent<OptionsButton>());
+
+            UIButtonMultiple script = button.AddComponent<UIButtonMultiple>();
+            script.Init();
+
+            return script;
+        }
+
         public static UILabel CreateLabel(Transform parent, Vector3 position, Vector3Int size, string text = "", NGUIText.Alignment alignment = NGUIText.Alignment.Left,
             UIWidget.Pivot pivot = UIWidget.Pivot.Left)
         {
             GameObject labelObj = GameObject.Instantiate(labelTemplate, parent);
             labelObj.name = "Label";
-            labelObj.RemoveComponent<UILocalize>();
+            if (Loc.Get(text, false) != text)
+            {
+                labelObj.GetComponent<UILocalize>().key = text;
+            }
+            else
+            {
+                labelObj.RemoveComponent<UILocalize>();
+            }
 
             UILabel label = labelObj.GetComponent<UILabel>();
             label.width = size.x;

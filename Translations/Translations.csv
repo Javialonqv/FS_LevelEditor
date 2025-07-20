@@ -1,4 +1,102 @@
-ID,ENGLISH
-WhenActivatingEvents,When Activating
-WhenDeactivatingEvents,When Deactivating
-WhenInvertingEvents,When Inverting
+﻿ID,ENGLISH,SPANISH
+LevelEditor,Level Editor,Editor de Niveles
+category.Structures,Structures,Estructuras
+category.Decorations,Decorations,Decoraciones
+category.Activables,Activables,Accionables
+category.Traps,Traps,Trampas
+category.System,System,Sistema
+object.NONE,None,Ninguno
+object.GROUND,Ground,Suelo
+object.CYAN_GROUND,Cyan Ground,Suelo Cyan
+object.RED_GROUND,Red Ground,Suelo Rojo
+object.ORANGE_GROUND,Orange Ground,Suelo Naranja
+object.LARGE_GROUND,Large Ground,Suelo Grande
+object.GROUND_2,Ground 2,Suelo 2
+object.WALL,Wall,Pared
+object.WALL_NO_COLOR,Wall No Color,Pared Sin Color
+object.X_WALL,X Wall,Pared X
+object.WINDOW,Window,Ventana
+object.DIRECTIONAL_LIGHT,Directional Light,Luz Direccional
+object.POINT_LIGHT,Point Light,Luz Puntual
+object.CEILING_LIGHT,Ceiling Light,Lámpara
+object.VENT_WITH_SMOKE_GREEN,Vent With Smoke Green,Ventilación Verde
+object.VENT_WITH_SMOKE_CYAN,Vent With Smoke Cyan,Ventilación Cyan
+object.HEALTH_PACK,Health Pack,Paquete de Salud
+object.AMMO_PACK,Ammo Pack,Paquete de Munición
+object.SAW,Saw,Sierra
+object.SAW_WAYPOINT,Saw Waypoint,Waypoint de Sierra
+object.SWITCH,Switch,Interruptor
+object.PLAYER_SPAWN,Player Spawn,Spawn del Jugador
+object.CUBE,Cube,Cubo
+object.LASER,Laser,Laser
+object.FLAME_TRAP,Flame Trap,Trampa de Fuego
+object.COLLIDER,Collider,Colisión
+object.END_TRIGGER,End Trigger,Trigger Final
+object.PRESSURE_PLATE,Pressure Plate,Placa de Presión
+object.SCREEN,Screen,Pantalla
+object.SMALL_SCREEN,Small Screen,Pantalla Pequeña
+object.BREAKABLE_WINDOW,Breakable Window,Ventana Frágil
+object.TRIGGER,Trigger,Trigger
+Player,Player,Jugador
+events.WhenActivatingEvents,When Activating,Cuando Se Activa
+events.WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva
+events.WhenInvertingEvents,When Inverting,Cuando Se Invierte
+events.OnDrop,On Drop,Cuando Se Suelta
+events.OnRemove,On Remove,Cuando Se Remueve
+events.OnBoth,On Both,Ambos Casos
+events.OnEnter,On Enter,Al Entrar
+events.OnExit,On Exit,Al Salir
+pause.PlayLevel,Play Level,Jugar Nivel
+pause.NoSpawnObject,There isn't any player spawn obj in the scene.,No hay ningún spawn del jugador en la escena.
+pause.SaveLevel,Save Level,Guardar Nivel
+pause.NoChanges,There are no changes to save.,No hay cambios para guardar.
+pause.ExitPopup.Title,Warning,Advertencia
+pause.ExitPopup.Content,"Warning, exiting now will delete any changes you have made since the last save. Are you sure you want to continue?","Advertencia, al salir se van a elimiar los cambios que hayas hecho desde el último guardado, ¿estás seguro de que deseas continuar?"
+pause.ExitPopup.Back,No,No
+pause.ExitPopup.SaveAndExit,Save And Exit,Salir Y Guardar
+pause.ExitPopup.ExitNoSave,Exit Without Saving,Salir Sin Guardar
+selection.NoObjectSelected,No Object Selected,Sin Objeto Seleccionado
+selection.MultipleObjectsSelected,Multiple Objects Selected,Multiples Objetos Seleccionados
+Position,Position,Posición
+Rotation,Rotation,Rotación
+Scale,Scale,Escala
+Collision,Collision,Colisión
+tooltip.SetActiveAtStartToggle,Defines if the object will be [00FFFF]enabled[-] or [FF0000]not[-] at the beginning of the level.,Define si el objeto estará [00FFFF]activado[-] o [FF0000]no[-] al inicio del nivel.
+ColorHex,Color (Hex),Color (Hex)
+Intensity,Intensity,Intensidad
+Range,Range,Rango
+ActivateOnStart,Activate On Start,Activar Al Inicio
+Damage,Damage,Daño
+TravelBack,Travel Back,Regresarse
+AddWaypoint,+ Add Waypoint,+ Añadir Waypoint
+WaitTime,Wait Time,Tiempo de Espera
+InitialState,Initial State,Estado Inicial
+DEACTIVATED,DEACTIVATED,DESACTIVADO
+ACTIVATED,ACTIVATED,ACTIVADO
+UNUSABLE,UNUSABLE,UNUSABLE
+UsableOnce,Usable Once,Usable Una Vez
+CanBeShotByTaser,Can be shot by Taser,Puede ser activado por el Taser
+ManageEvents,Manage Events,Administrar Eventos
+RespawnTime,Respawn Time,Tiempo de Reaparición
+InstantKill,Instant Kill,Muerte Instantanea
+Constant,Constant,Constante
+OnlyOnce,Only Once,Una sola Vez
+ScreenColor,Screen Color,Color de la Pantalla
+CYAN,CYAN,CYAN
+GREEN,GREEN,VERDE
+RED,RED,ROJO
+InvisibleMesh,Invisible Mesh,Malla Invisible
+InvertTextWithGravity,Invert Text With Gravity,Invertir Texto Con La Gravedad
+EditText,Edit Text,Editar Texto
+CurrentMode,[c][ffff00]Current Mode:[-][/c],[c][ffff00]Modo Actual:[-][/c]
+Building,Building,Construcción
+Selection,Selection,Selección
+Deletion,Deletion,Eliminación
+GlobalProperties,Global Properties,Propiedades Globales
+HasTaser,Has Taser,Con Taser
+HasJetpack,Has Jetpack,Con Jetpack
+DeathYLimit,Death Limit on the Y-axis,Limite de Muerte en el Eje Y
+Skybox,Skybox,Skybox
+Chapter 1,Chapter 1,Capítulo 1
+Chapter 2,Chapter 2,Capítulo 2
+Chapter 3 & 4,Chapter 3 & 4,Capítulo 3 Y 4

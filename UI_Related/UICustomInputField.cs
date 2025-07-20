@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 
 namespace FS_LevelEditor.UI_Related
 {
@@ -18,12 +17,14 @@ namespace FS_LevelEditor.UI_Related
             NON_NEGATIVE_INT,
             NON_NEGATIVE_FLOAT,
             INT,
-            FLOAT
+            FLOAT,
+            PLAIN_TEXT
         }
 
         public UIInput input { get; private set; }
         public UIInputType inputType { get; private set; }
         public bool isValid { get; private set; }
+        bool initialized = false;
 
         UISprite fieldSprite;
         public Color validValueColor { get; private set; } = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
@@ -31,6 +32,8 @@ namespace FS_LevelEditor.UI_Related
         public bool setFieldColorAutomatically = true;
 
         public Action onChange;
+        public Action onSubmit;
+        bool executeOnChange = true;
 
         public UICustomInputField(IntPtr ptr) : base(ptr) { }
 
@@ -40,7 +43,7 @@ namespace FS_LevelEditor.UI_Related
             fieldSprite = GetComponent<UISprite>();
         }
 
-        public void Setup(UIInputType type, string? defaultText = null, int maxDecimals = 0)
+        public void Setup(UIInputType type, string defaultText = null, int maxDecimals = 0)
         {
             inputType = type;
 
@@ -86,10 +89,20 @@ namespace FS_LevelEditor.UI_Related
                         input.onValidate += (UIInput.OnValidate)((text, index, ch) => NGUI_Utils.ValidateFloatWithMaxDecimals(text, index, ch, maxDecimals));
                     }
                     break;
+
+                case UIInputType.PLAIN_TEXT:
+                    input.validation = UIInput.Validation.None;
+                    break;
             }
             if (defaultText != null) input.defaultText = defaultText;
 
-            EventDelegate.Add(input.onChange, new EventDelegate(this, nameof(OnChange)));
+            if (!initialized)
+            {
+                EventDelegate.Add(input.onChange, new EventDelegate(this, nameof(OnChange)));
+                EventDelegate.Add(input.onSubmit, new EventDelegate(this, nameof(OnSubmit)));
+            }
+
+            initialized = true;
         }
 
         void OnChange()
@@ -99,9 +112,16 @@ namespace FS_LevelEditor.UI_Related
                 Set(IsValueValid());
             }
 
-            if (onChange != null)
+            if (onChange != null && executeOnChange)
             {
                 onChange.Invoke();
+            }
+        }
+        void OnSubmit()
+        {
+            if (onSubmit != null)
+            {
+                onSubmit.Invoke();
             }
         }
 
@@ -145,6 +165,9 @@ namespace FS_LevelEditor.UI_Related
 
                 case UIInputType.FLOAT:
                     return Utilities.TryParseFloat(GetText(), out float floatResult2);
+
+                case UIInputType.PLAIN_TEXT:
+                    return true;
             }
 
             return false;
@@ -166,9 +189,9 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
-        public void SetText(string newText)
+        public void SetText(string newText, bool forceEvenIfSelected = false)
         {
-            if (input.selected) return;
+            if (input.selected && !forceEvenIfSelected) return;
 
             input.text = newText;
         }
@@ -178,7 +201,7 @@ namespace FS_LevelEditor.UI_Related
 
             input.text = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
-        public void SetText(float value, int maxDecimals)
+        public void SetText(float value, int maxDecimals, bool executeOnChange = true)
         {
             if (input.selected) return;
 
@@ -186,7 +209,9 @@ namespace FS_LevelEditor.UI_Related
             if (maxDecimals > 0)
                 format += "." + new string('#', maxDecimals);
 
+            this.executeOnChange = executeOnChange;
             input.text = value.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+            this.executeOnChange = true;
         }
     }
 }

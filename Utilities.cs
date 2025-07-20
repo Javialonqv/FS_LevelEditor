@@ -1,13 +1,18 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.SaveSystem;
+using Il2Cpp;
 using Il2CppI2.Loc;
 using Il2CppInControl.NativeDeviceProfiles;
+using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -297,11 +302,13 @@ namespace FS_LevelEditor
 
             foreach (var obj in levelObjects)
             {
+                if (obj.objectType == LE_Object.ObjectType.SAW_WAYPOINT) continue;
+
                 if (!seenIds.Add(obj.objectFullNameWithID))
                 {
                     if (printError)
                     {
-                        Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                        Logger.Error($"There's already an object of type \"{obj.objectType}\" with ID: {obj.objectID}.");
                     }
                     return true;
                 }
@@ -315,12 +322,12 @@ namespace FS_LevelEditor
 
             foreach (var obj in levelObjects)
             {
-                string toAdd = obj.objectOriginalName + " " + obj.objectID;
+                string toAdd = obj.objectType + " " + obj.objectID;
                 if (!seenIds.Add(toAdd))
                 {
                     if (printError)
                     {
-                        Logger.Error($"There's already an object of name \"{obj.objectOriginalName}\" with ID: {obj.objectID}.");
+                        Logger.Error($"There's already an object of name \"{obj.objectType}\" with ID: {obj.objectID}.");
                     }
                     return true;
                 }
@@ -356,20 +363,6 @@ namespace FS_LevelEditor
             int b = Mathf.RoundToInt(color.b * 255);
 
             return $"{r:X2}{g:X2}{b:X2}";
-        }
-
-        public static object ConvertFromSerializableValue(object value)
-        {
-            if (value is Vector3Serializable)
-            {
-                return (Vector3)(Vector3Serializable)value;
-            }
-            else if (value is ColorSerializable)
-            {
-                return (Color)(ColorSerializable)value;
-            }
-
-            return value;
         }
 
         public static void SetTransparentMaterials(this GameObject gameObject)
@@ -523,10 +516,141 @@ namespace FS_LevelEditor
 
             return type.GetMethod(methodName, flags) != null;
         }
+        public static void CallMethodIfOverrided(Type baseType, object instance, string methodName, params object[] parms)
+        {
+            var flags = BindingFlags.Instance
+                  | BindingFlags.Public
+                  | BindingFlags.NonPublic;
+
+            MethodInfo method = instance.GetType().GetMethod(methodName, flags);
+            if (method.DeclaringType != baseType)
+            {
+                method.Invoke(instance, parms);
+            }
+        }
 
         public static float HighestValueOfVector(Vector3 vector)
         {
             return Mathf.Max(vector.x, Mathf.Max(vector.y, vector.z));
+        }
+
+        public static object CreateCopyOf(object value)
+        {
+            switch (value)
+            {
+                case int i:
+                    return i;
+                case float f:
+                    return f;
+                case string s:
+                    return s;
+                case bool b:
+                    return b;
+
+                case IList list:
+                    var newList = (IList)Activator.CreateInstance(list.GetType());
+                    foreach (var item in list)
+                    {
+                        newList.Add(CreateCopyOf(item));
+                    }
+                    return newList;
+
+                case LE_SawWaypointSerializable waypoint:
+                    return new LE_SawWaypointSerializable(waypoint);
+
+                case LE_Event @event:
+                    return new LE_Event(@event);
+            }
+
+            if (value.GetType().IsValueType)
+            {
+                Logger.Warning($"Couldn't copy object of type \"{value.GetType().Name}\", but it's an struct so who cares, " +
+                    $"don't worry user, everything's fine :)");
+            }
+            else
+            {
+                Logger.Error($"Couldn't copy object of type \"{value.GetType().Name}\", returning the reference, but could case some trouble.");
+            }
+            return value;
+        }
+
+        public static T FindObjectOfType<T>(Func<T, bool> predicate = null) where T : Component
+        {
+            Il2CppReferenceArray<UnityEngine.Object> array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
+            if (predicate == null)
+            {
+                return array[0].Cast<T>();
+            }
+            else
+            {
+                foreach (var obj in array)
+                {
+                    T casted = obj.Cast<T>();
+                    if (predicate.Invoke(casted))
+                    {
+                        return casted;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public static string ObjectTypeToFormatedName(LE_Object.ObjectType objectType)
+        {
+            string withSpaces = objectType.ToString().Replace("_", " ");
+
+            return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(withSpaces.ToLowerInvariant());
+        }
+        public static (string type, int id) SplitTypeAndId(string input)
+        {
+            input = input.Trim();
+
+            int lastSpace = input.LastIndexOf(' ');
+            if (lastSpace != -1 && lastSpace < input.Length - 1)
+            {
+                string idPart = input.Substring(lastSpace + 1);
+                if (int.TryParse(idPart, out int id))
+                {
+                    string typePart = input.Substring(0, lastSpace);
+                    return (typePart, id);
+                }
+            }
+
+            return (input, 0);
+        }
+
+        public static string SanitizeFileName(string fileName, string replacement = "_", bool collapse = true)
+        {
+            if (string.IsNullOrEmpty(fileName)) return string.Empty;
+
+            char[] invalidChars = Path.GetInvalidFileNameChars();
+            string invalidPattern = "[" + Regex.Escape(new string(invalidChars)) + "]";
+
+            string cleaned = Regex.Replace(fileName, invalidPattern, replacement);
+
+            if (collapse && !string.IsNullOrEmpty(replacement))
+            {
+                string repEscaped = Regex.Escape(replacement);
+                cleaned = Regex.Replace(cleaned, repEscaped + "+", replacement);
+            }
+
+            // Remove spaces and replacements at the start and end of the string.
+            return cleaned.Trim().Trim(replacement.ToCharArray()).Trim();
+        }
+
+        public static void SetLocKey(this UILocalize localize, string key)
+        {
+            localize.key = key;
+            localize.OnLocalize();
+        }
+        public static void SetLocKey(this UILabel label, string key)
+        {
+            if (label.TryGetComponent<UILocalize>(out var localize))
+            {
+                localize.key = key;
+                localize.OnLocalize();
+            }
         }
     }
 }

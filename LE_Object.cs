@@ -1,12 +1,19 @@
-﻿using FS_LevelEditor.UI_Related;
+﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.Playmode;
+using FS_LevelEditor.SaveSystem;
+using FS_LevelEditor.SaveSystem.Converters;
+using FS_LevelEditor.UI_Related;
 using Il2Cpp;
 using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -24,12 +31,34 @@ namespace FS_LevelEditor
     {
         public enum ObjectType
         {
+            #region GROUNDS
             GROUND,
+            CYAN_GROUND,
+            RED_GROUND,
+            ORANGE_GROUND,
+            LARGE_GROUND,
+            GROUND_2,
+            #endregion
+
+            #region WALLS
             WALL,
-            LIGHT,
-            VENT_WITH_SMOKE,
-            PACK,
+            WALL_NO_COLOR,
+            X_WALL,
+            WINDOW, // Yeah, windows are just a structure, so, I'll mark them as a wall.
+            #endregion
+
+            #region LIGHTS
+            DIRECTIONAL_LIGHT,
+            POINT_LIGHT,
+            CEILING_LIGHT,
+            #endregion
+
+            VENT_WITH_SMOKE_GREEN,
+            VENT_WITH_SMOKE_CYAN,
+            HEALTH_PACK,
+            AMMO_PACK,
             SAW,
+            SAW_WAYPOINT,
             SWITCH,
             PLAYER_SPAWN,
             CUBE,
@@ -37,43 +66,78 @@ namespace FS_LevelEditor
             FLAME_TRAP,
             COLLIDER,
             END_TRIGGER,
+            PRESSURE_PLATE,
+            SCREEN,
+            SMALL_SCREEN,
+            BREAKABLE_WINDOW,
+            TRIGGER
         }
 
-        public static readonly Dictionary<string, ObjectType> objectVariants = new Dictionary<string, ObjectType>()
+        public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
         {
-            { "CYAN_GROUND", ObjectType.GROUND },
-            { "RED_GROUND", ObjectType.GROUND },
-            { "ORANGE_GROUND", ObjectType.GROUND },
-            { "LARGE_GROUND", ObjectType.GROUND },
-            { "GROUND_2", ObjectType.GROUND },
-
-            { "X_WALL", ObjectType.WALL },
-            { "WINDOW", ObjectType.WALL },
-
-            { "DIRECTIONAL_LIGHT", ObjectType.LIGHT },
-            { "POINT_LIGHT", ObjectType.LIGHT },
-            { "CEILING_LIGHT", ObjectType.LIGHT },
-
-            { "VENT_WITH_SMOKE_GREEN", ObjectType.VENT_WITH_SMOKE },
-            { "VENT_WITH_SMOKE_CYAN", ObjectType.VENT_WITH_SMOKE },
-
-            { "HEALTH_PACK", ObjectType.PACK },
-            { "AMMO_PACK", ObjectType.PACK },
-
-            { "SAW_WAYPOINT", ObjectType.SAW }
+            { "GROUND", new List<ObjectType>(){
+                ObjectType.GROUND,
+                ObjectType.CYAN_GROUND,
+                ObjectType.RED_GROUND,
+                ObjectType.ORANGE_GROUND,
+                ObjectType.LARGE_GROUND,
+                ObjectType.GROUND_2
+                } },
+            { "WALL", new List<ObjectType>(){
+                ObjectType.WALL,
+                ObjectType.WALL_NO_COLOR,
+                ObjectType.X_WALL,
+                ObjectType.WINDOW,
+                ObjectType.BREAKABLE_WINDOW
+                } },
+            { "LIGHT", new List<ObjectType>(){
+                ObjectType.DIRECTIONAL_LIGHT,
+                ObjectType.POINT_LIGHT,
+                ObjectType.CEILING_LIGHT
+                } },
+            { "VENT_WITH_SMOKE", new List<ObjectType>(){
+                ObjectType.VENT_WITH_SMOKE_GREEN,
+                ObjectType.VENT_WITH_SMOKE_CYAN
+                } },
+            { "PACK", new List<ObjectType>(){
+                ObjectType.HEALTH_PACK,
+                ObjectType.AMMO_PACK
+                } }
         };
+
+        public static Dictionary<ObjectType, int> alreadyUsedObjectIDs = new Dictionary<ObjectType, int>();
 
         public ObjectType? objectType;
         public int objectID;
-        public string objectOriginalName;
+        public string objectLocalizatedName
+        {
+            get
+            {
+                return Loc.Get("object." + objectType.ToString());
+            }
+        }
         public virtual string objectFullNameWithID
         {
-            get { return objectOriginalName + " " + objectID; }
+            get
+            {
+                if (GetMaxInstances(GetType()) == 1)
+                {
+                    // Since there can only be 1 instance of this object, we don't need to add the ID to the name.
+                    return objectLocalizatedName;
+                }
+                else
+                {
+                    return objectLocalizatedName + " " + objectID;
+                }
+            }
         }
-        public bool setActiveAtStart = true;
-        public Dictionary<string, object> properties = new Dictionary<string, object>();
-        public EventExecuter eventExecuter;
 
+        public bool setActiveAtStart = true;
+        public bool collision = true;
+
+        public Dictionary<string, object> properties = new Dictionary<string, object>();
+        
+        public EventExecuter eventExecuter;
         public virtual Transform objectParent
         {
             get
@@ -90,6 +154,9 @@ namespace FS_LevelEditor
 
         public bool initialized = false;
         bool hasItsOwnClass = false;
+        public bool isDeleted = false;
+
+        public bool currentCollisionState = true;
 
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
@@ -103,6 +170,9 @@ namespace FS_LevelEditor
         public static Laser_H_Controller t_laser;
         public static RealtimeCeilingLight t_ceilingLight;
         public static FlameTrapController t_flameTrap;
+        public static BlocSwitchScript t_pressurePlate;
+        public static ScreenController t_screen;
+        public static BreakableWindowController t_window;
 
         public static void GetTemplatesReferences()
         {
@@ -110,12 +180,13 @@ namespace FS_LevelEditor
             t_healthPack = FindObjectOfType<Health>();
             t_saw = FindObjectOfType<ScieScript>();
             t_switch = FindObjectOfType<InterrupteurController>();
-            t_cube = SceneManager.GetActiveScene().GetRootGameObjects()
-                .FirstOrDefault(x => x.name == "CameraRunRoom").GetChildAt("BeforeCamera/Activable/Bloc")
-                .GetComponent<BlocScript>();
+            t_cube = Utilities.FindObjectOfType<BlocScript>(x => x.IsCube());
             t_laser = FindObjectOfType<Laser_H_Controller>();
             t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
             t_flameTrap = FindObjectOfType<FlameTrapController>();
+            t_pressurePlate = Utilities.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer == null);
+            t_screen = FindObjectOfType<ScreenController>();
+            t_window = Utilities.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
         }
         #endregion
 
@@ -140,7 +211,7 @@ namespace FS_LevelEditor
                 }
             }
         }
-        void Init(string originalObjName)
+        void Init(ObjectType objectType, bool skipIDInitialization = false)
         {
             if (EditorController.Instance != null && PlayModeController.Instance == null)
             {
@@ -151,7 +222,7 @@ namespace FS_LevelEditor
                 PlayModeController.Instance.currentInstantiatedObjects.Add(this);
             }
 
-            SetNameAndType(originalObjName);
+            SetNameAndType(objectType, skipIDInitialization);
 
             if (PlayModeController.Instance != null)
             {
@@ -172,9 +243,9 @@ namespace FS_LevelEditor
         /// <param name="targetObj">The GameObject ot attach this component to.</param>
         /// <param name="originalObjName">THe "original" name of the desired object.</param>
         /// <returns>An instance of the created LE_Object component class.</returns>
-        public static LE_Object AddComponentToObject(GameObject targetObj, string originalObjName)
+        public static LE_Object AddComponentToObject(GameObject targetObj, ObjectType objectType, bool skipIDInitialization = false)
         {
-            string className = "LE_" + originalObjName.Replace(' ', '_');
+            string className = "LE_" + Utilities.ObjectTypeToFormatedName(objectType).Replace(' ', '_');
             Type classType = Type.GetType("FS_LevelEditor." + className);
 
             if (classType != null)
@@ -185,7 +256,7 @@ namespace FS_LevelEditor
                     return null;
                 }
                 LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
-                instancedComponent.Init(originalObjName);
+                instancedComponent.Init(objectType, skipIDInitialization);
                 instancedComponent.hasItsOwnClass = true;
                 return instancedComponent;
             }
@@ -193,29 +264,46 @@ namespace FS_LevelEditor
             {
                 if (LevelData.currentLevelObjsCount <= 100)
                 {
-                    Logger.DebugWarning($"Can't find class of name \"{className}\" for object: \"{originalObjName}\", using default LE_Object class.");
+                    Logger.DebugWarning($"Can't find class of name \"{className}\" for object: \"{objectType}\", using default LE_Object class.");
                 }
 
                 LE_Object instancedComponent = targetObj.AddComponent<LE_Object>();
-                instancedComponent.Init(originalObjName);
+                instancedComponent.Init(objectType, skipIDInitialization);
                 return instancedComponent;
             }
         }
 
-        void SetNameAndType(string originalObjName)
+        void SetNameAndType(ObjectType objectTypeToSet, bool skipIDInitialization = false)
         {
-            objectType = ConvertNameToObjectType(originalObjName);
-            objectOriginalName = originalObjName;
-            if (objectType == null)
-            {
-                Logger.Error($"Couldn't find a proper Object Type for object with name: \"{objectOriginalName}\".");
-                LE_CustomErrorPopups.ObjectWithoutObjectType();
-            }
+            objectType = objectTypeToSet;
 
+            if (!skipIDInitialization)
+            {
+                int id = 0;
+                LE_Object[] objects = GetReferenceObjectsToGetObjID();
+
+                while (objects.Any(x => x.objectID == id && x.objectType == objectType))
+                {
+                    id++;
+                }
+                objectID = id;
+
+                gameObject.name = objectFullNameWithID;
+
+                // If the objects list has more than 1 object of the same type AND with the same ID, well, that's not allowed, show an error popup.
+                if (!Utilities.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) &&  Utilities.ListHasMultipleObjectsWithSameID(objects.ToList()))
+                {
+                    LE_CustomErrorPopups.MultipleObjectsWithSameID();
+                }
+            }
+        }
+        // For now, this method is only used to setup the ID manually for Saw Waypoints, because the main Saw needs to setup the reference to it in the waypoint.
+        public void SetupObjectID()
+        {
             int id = 0;
             LE_Object[] objects = GetReferenceObjectsToGetObjID();
 
-            while (objects.Any(x => x.objectID == id && x.objectOriginalName == objectOriginalName))
+            while (objects.Any(x => x.objectID == id && x.objectType == objectType))
             {
                 id++;
             }
@@ -224,29 +312,37 @@ namespace FS_LevelEditor
             gameObject.name = objectFullNameWithID;
 
             // If the objects list has more than 1 object of the same type AND with the same ID, well, that's not allowed, show an error popup.
-            if (Utilities.ListHasMultipleObjectsWithSameID(objects.ToList()))
+            if (!Utilities.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) && Utilities.ListHasMultipleObjectsWithSameID(objects.ToList()))
             {
                 LE_CustomErrorPopups.MultipleObjectsWithSameID();
             }
         }
         public static ObjectType? ConvertNameToObjectType(string objName)
         {
-            try
+            string objTypeName = objName.ToUpper().Replace(' ', '_');
+            if (Enum.TryParse<ObjectType>(objTypeName, true, out ObjectType result))
             {
-                string objTypeName = objName.ToUpper().Replace(' ', '_');
-                if (objectVariants.ContainsKey(objTypeName))
-                {
-                    return objectVariants[objTypeName];
-                }
-                else
-                {
-                    return (ObjectType)Enum.Parse(typeof(ObjectType), objTypeName);
-                }
+                return result;
             }
-            catch
+            else
             {
+                Logger.Error($"Couldn't convert object name \"{objName}\" to a valid ObjectType, returning null.");
                 return null;
             }
+        }
+        public static List<ObjectType?> GetObjectTypesForSnapToGrid(string targetObjType)
+        {
+            if (classifiedObjectTypes.ContainsKey(targetObjType))
+            {
+                return classifiedObjectTypes[targetObjType].Cast<ObjectType?>().ToList();
+            }
+
+            if (Enum.TryParse<ObjectType>(targetObjType, true, out ObjectType result))
+            {
+                return new List<ObjectType?>() { result };
+            }
+
+            return new List<ObjectType?>();
         }
         static bool HasReachedObjectLimit(Type objectCompType)
         {
@@ -257,6 +353,13 @@ namespace FS_LevelEditor
             int maxInstances = maxInstancesField != null ? (int)maxInstancesField.GetValue(null) : 99999;
 
             return currentInstances >= maxInstances;
+        }
+        static int GetMaxInstances(Type objectCompType)
+        {
+            FieldInfo maxInstancesField = objectCompType.GetField("maxInstances", BindingFlags.NonPublic | BindingFlags.Static);
+            int maxInstances = maxInstancesField != null ? (int)maxInstancesField.GetValue(null) : 99999;
+
+            return maxInstances;
         }
 
         #region Virtual Methods
@@ -274,6 +377,12 @@ namespace FS_LevelEditor
                 SetEditorCollider(false);
 
                 if (!initialized) InitComponent();
+            }
+
+            // Colliders are enabled by default.
+            if (!collision && scene == LEScene.Playmode)
+            {
+                SetCollidersState(false);
             }
 
             if (eventExecuter) eventExecuter.OnInstantiated(scene);
@@ -295,6 +404,17 @@ namespace FS_LevelEditor
         /// <returns>True ff the property was setted correctly or false if there's some invalid value.</returns>
         public virtual bool SetProperty(string name, object value)
         {
+            if (properties.ContainsKey(name) && value is JsonElement)
+            {
+                Type toConvert = properties[name].GetType();
+                object converted = LEPropertiesConverterNew.NewDeserealize(toConvert, (JsonElement)value);
+                if (converted != null)
+                {
+                    // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
+                    Utilities.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatches.ConvertFromSerializableValue(converted));
+                }
+            }
+
             return false;
         }
         /// <summary>
@@ -334,6 +454,19 @@ namespace FS_LevelEditor
                 return default(T);
             }
         }
+        public bool TryGetProperty(string name, out object value)
+        {
+            if (properties.ContainsKey(name))
+            {
+                value = GetProperty(name);
+                return true;
+            }
+            else
+            {
+                value = null;
+                return false;
+            }
+        }
 
         public virtual bool TriggerAction(string actionName)
         {
@@ -344,6 +477,29 @@ namespace FS_LevelEditor
             else if (actionName == "SetActive_False")
             {
                 gameObject.SetActive(false);
+            }
+            if (actionName == "SetColliderState_True")
+            {
+                SetCollidersState(true);
+            }
+            else if (actionName == "SetColliderState_False")
+            {
+                SetCollidersState(false);
+            }
+            else if (actionName == "ManageEvents")
+            {
+                EventsUIPageManager.Instance.ShowEventsPage(this);
+                return true;
+            }
+            else if (actionName == "OnEventsTabClose" || actionName == "OnSelectTargetObjWithClickBtnClick")
+            {
+                eventExecuter.CreateInEditorLinksToTargetObjects();
+                // Since we're on SELECTING_TARGET_OBJ state, editor links positions won't be updated automatically, updaate it ONE TIME ONLY, since you can't move objects in this state.
+                if (actionName == "OnSelectTargetObjWithClickBtnClick")
+                {
+                    eventExecuter.UpdateEditorLinksPositions();
+                }
+                return true;
             }
 
             return false;
@@ -373,13 +529,20 @@ namespace FS_LevelEditor
         }
         public virtual void OnDelete()
         {
-            if (EditorController.Instance != null && PlayModeController.Instance == null)
+            if (canUndoDeletion)
             {
-                EditorController.Instance.currentInstantiatedObjects.Remove(this);
+                isDeleted = true;
             }
-            else if (EditorController.Instance == null && PlayModeController.Instance != null)
+            else
             {
-                PlayModeController.Instance.currentInstantiatedObjects.Remove(this);
+                if (EditorController.Instance != null && PlayModeController.Instance == null)
+                {
+                    EditorController.Instance.currentInstantiatedObjects.Remove(this);
+                }
+                else if (EditorController.Instance == null && PlayModeController.Instance != null)
+                {
+                    PlayModeController.Instance.currentInstantiatedObjects.Remove(this);
+                }
             }
         }
 
@@ -387,9 +550,8 @@ namespace FS_LevelEditor
         {
             return new List<string>();
         }
-        #endregion
 
-        LE_Object[] GetReferenceObjectsToGetObjID()
+        public virtual LE_Object[] GetReferenceObjectsToGetObjID()
         {
             if (EditorController.Instance != null && PlayModeController.Instance == null)
             {
@@ -402,9 +564,10 @@ namespace FS_LevelEditor
 
             return null;
         }
+        #endregion
 
         public enum LEObjectContext { PREVIEW, SELECT, NORMAL }
-        public static Color GetObjectColor(LEObjectContext context)
+        public static Color GetDefaultObjectColor(LEObjectContext context)
         {
             switch (context)
             {
@@ -420,9 +583,9 @@ namespace FS_LevelEditor
 
             return new Color(1f, 1f, 1f);
         }
-        public static Color GetObjectColorForObject(string objName, LEObjectContext context)
+        public static Color GetObjectColorForObject(ObjectType objectType, LEObjectContext context)
         {
-            string className = "LE_" + objName.Replace(' ', '_');
+            string className = "LE_" + Utilities.ObjectTypeToFormatedName(objectType).Replace(' ', '_');
             Type classType = Type.GetType("FS_LevelEditor." + className);
 
             if (classType != null)
@@ -432,22 +595,22 @@ namespace FS_LevelEditor
                     | BindingFlags.NonPublic
                     | BindingFlags.DeclaredOnly;
 
-                MethodInfo method = classType.GetMethod(nameof(GetObjectColor), flags);
+                MethodInfo method = classType.GetMethod(nameof(GetDefaultObjectColor), flags);
                 if (method != null)
                 {
                     return (Color)method.Invoke(null, new object[] { context });
                 }
                 else // If it's null is prolly 'cause the class doesn't have the method declared, so, just use the default implementation.
                 {
-                    return GetObjectColor(context);
+                    return GetDefaultObjectColor(context);
                 }
             }
             else
             {
-                return GetObjectColor(context);
+                return GetDefaultObjectColor(context);
             }
         }
-        public void SetObjectColor(LEObjectContext context)
+        public virtual void SetObjectColor(LEObjectContext context)
         {
             foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
             {
@@ -455,13 +618,13 @@ namespace FS_LevelEditor
                 {
                     if (!material.HasProperty("_Color")) continue;
 
-                    Color toSet = LE_Object.GetObjectColorForObject(objectOriginalName, context);
+                    Color toSet = LE_Object.GetObjectColorForObject(objectType.Value, context);
                     toSet.a = material.color.a;
                     material.color = toSet;
                 }
             }
         }
-        public static void SetObjectColor(GameObject obj, string objInternalName, LEObjectContext context)
+        public static void SetObjectColor(GameObject obj, ObjectType objectType, LEObjectContext context)
         {
             foreach (var renderer in obj.TryGetComponents<MeshRenderer>())
             {
@@ -469,7 +632,7 @@ namespace FS_LevelEditor
                 {
                     if (!material.HasProperty("_Color")) continue;
 
-                    Color toSet = LE_Object.GetObjectColorForObject(objInternalName, context);
+                    Color toSet = LE_Object.GetObjectColorForObject(objectType, context);
                     toSet.a = material.color.a;
                     material.color = toSet;
                 }
@@ -480,7 +643,7 @@ namespace FS_LevelEditor
         {
             if (!gameObject.ExistsChildWithName("Content"))
             {
-                Logger.Error($"\"{objectOriginalName}\" object doesn't contain a Content object for some reason???");
+                Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
                 return;
             }
 
@@ -488,6 +651,7 @@ namespace FS_LevelEditor
             {
                 collider.enabled = newEnabledState;
             }
+            currentCollisionState = newEnabledState;
         }
         public void SetEditorCollider(bool newEnabledState)
         {
@@ -497,8 +661,13 @@ namespace FS_LevelEditor
             }
             else
             {
-                Logger.Error($"\"{objectOriginalName}\" object doesn't contain an EditorCollider.");
+                Logger.Error($"\"{objectType}\" object doesn't contain an EditorCollider.");
             }
+        }
+
+        public static void ResetStaticVariablesInObjects()
+        {
+            LE_Breakable_Window.staticVariablesInitialized = false;
         }
     }
 }
