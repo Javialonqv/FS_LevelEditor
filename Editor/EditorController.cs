@@ -105,6 +105,7 @@ namespace FS_LevelEditor.Editor
         void Awake()
         {
             Instance = this;
+            MenuController.isInLevelEditor = true;
             LoadAssetBundle();
 
             levelObjectsParent = new GameObject("LevelObjects");
@@ -1645,6 +1646,11 @@ namespace FS_LevelEditor.Editor
 
                 Logger.Log("Entering playmode...");
             }
+        }
+
+        void OnDestroy()
+        {
+            MenuController.isInLevelEditor = false;
         }
 
         #region Current Editor State Methods
