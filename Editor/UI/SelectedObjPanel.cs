@@ -130,7 +130,6 @@ namespace FS_LevelEditor.Editor.UI
         {
             body = new GameObject("Body");
             body.transform.parent = gameObject.transform;
-            body.transform.localPosition = new Vector3(0f, -160f, 0f);
             body.transform.localScale = Vector3.one;
 
             UISprite sprite = body.AddComponent<UISprite>();
@@ -141,9 +140,13 @@ namespace FS_LevelEditor.Editor.UI
             sprite.depth = -1;
             sprite.width = 500;
             sprite.height = 300;
+            sprite.pivot = UIWidget.Pivot.Top;
 
             BoxCollider collider = body.AddComponent<BoxCollider>();
             collider.size = new Vector3(500f, 300f, 1f);
+            collider.center = new Vector3(0f, -150f);
+
+            body.transform.localPosition = new Vector3(0f, -10f, 0f);
 
             CreateGlobalObjectsOptionsParent();
             CreateGlobalObjectAttributesPanel();
@@ -158,7 +161,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             GameObject globalObjectOptionsParent = new GameObject("GlobalObjectOptions");
             globalObjectOptionsParent.transform.parent = body.transform;
-            globalObjectOptionsParent.transform.localPosition = Vector3.zero;
+            globalObjectOptionsParent.transform.localPosition = new Vector3(0f, -150f);
             globalObjectOptionsParent.transform.localScale = Vector3.one;
             globalObjectPanelsParent = globalObjectOptionsParent.transform;
         }
@@ -316,7 +319,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             GameObject objectSpecificOptionsParent = new GameObject("ObjectSpecificOptions");
             objectSpecificOptionsParent.transform.parent = body.transform;
-            objectSpecificOptionsParent.transform.localPosition = Vector3.zero;
+            objectSpecificOptionsParent.transform.localPosition = new Vector3(0f, -150f);
             objectSpecificOptionsParent.transform.localScale = Vector3.one;
             objectSpecificPanelsParent = objectSpecificOptionsParent.transform;
         }
@@ -629,21 +632,49 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
         #endregion
 
+        public void ShowPanel(bool show, string headerLocKey) => ShowPanel(show, false, headerLocKey);
+        public void ShowPanel(bool show, bool expand, string headerLocKey)
+        {
+            headerTitle.SetLocKey(headerLocKey);
+
+            if (show)
+            {
+                if (!expand) // Normal selection
+                {
+                    gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
+                    headerTitle.width = 300; // So it doesn't overlap with the two toggles in the sides.
+                    body.SetActive(true);
+                    body.GetComponent<UISprite>().height = 300;
+                    body.GetComponent<BoxCollider>().center = new Vector3(0, -150f);
+                    body.GetComponent<BoxCollider>().size = new Vector3(500, 300);
+                }
+                else
+                {
+                    gameObject.transform.localPosition = new Vector3(-700f, 500, 0f);
+                    headerTitle.width = 300; // So it doesn't overlap with the two toggles in the sides.
+                    body.SetActive(true);
+                    body.GetComponent<UISprite>().height = 300;
+                    body.GetComponent<BoxCollider>().center = new Vector3(0, -510f);
+                    body.GetComponent<BoxCollider>().size = new Vector3(500, 1020);
+                }
+            }
+            else
+            {
+                gameObject.transform.localPosition = new Vector3(-700f, -505f, 0f);
+                headerTitle.width = 520;
+                body.SetActive(false);
+                setActiveAtStartToggle.gameObject.SetActive(false);
+                globalObjAttributesToggle.gameObject.SetActive(false);
+            }
+        }
+
         public void SetSelectedObjPanelAsNone()
         {
-            headerTitle.SetLocKey("selection.NoObjectSelected");
-            headerTitle.width = 520;
-            setActiveAtStartToggle.gameObject.SetActive(false);
-            globalObjAttributesToggle.gameObject.SetActive(false);
-            body.SetActive(false);
-            gameObject.transform.localPosition = new Vector3(-700f, -505f, 0f);
+            ShowPanel(false, "selection.NoObjectSelected");
         }
         public void SetMultipleObjectsSelected()
         {
-            headerTitle.SetLocKey("selection.MultipleObjectsSelected");
-            headerTitle.width = 380; // So it doesn't overlap with the two toggles in the sides.
-            body.SetActive(true);
-            gameObject.transform.localPosition = new Vector3(-700f, -220f, 0f);
+            ShowPanel(true, "selection.MultipleObjectsSelected");
 
             setActiveAtStartToggle.gameObject.SetActive(true);
             // If this is null, that means the "Set Active At Start" in the current selected objects is different in at least one of them.
@@ -695,10 +726,7 @@ namespace FS_LevelEditor.Editor.UI
             currentSelectedObj = objComponent;
 
             // The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.
-            headerTitle.SetLocKey(objComponent.objectFullNameWithID);
-            headerTitle.width = 380; // So it doesn't overlap with the two toggles in the sides.
-            body.SetActive(true);
-            gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
+            ShowPanel(true, objComponent.objectFullNameWithID);
 
             // Disable all of the attributes panels.
             attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
