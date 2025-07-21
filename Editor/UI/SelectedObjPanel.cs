@@ -21,6 +21,8 @@ namespace FS_LevelEditor.Editor.UI
         GameObject header;
         UILabel headerTitle;
         public UIToggle setActiveAtStartToggle;
+        UIButtonPatcher expandPanelButton;
+        UISprite expandPanelButtonSprite;
         UIButtonAsToggle globalObjAttributesToggle;
 
         GameObject body;
@@ -29,6 +31,10 @@ namespace FS_LevelEditor.Editor.UI
         UICustomInputField rotXField, rotYField, rotZField;
         UICustomInputField scaleXField, scaleYField, scaleZField;
         UIToggle collisionToggle;
+        // ------------------------------
+        bool showingPanel = false;
+        bool panelIsExpanded = false;
+        string currentHeaderLocKey = "";
         // ------------------------------
         Transform objectSpecificPanelsParent;
         Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
@@ -84,6 +90,7 @@ namespace FS_LevelEditor.Editor.UI
             headerTitle.depth = 1;
 
             CreateSetActiveAtStartToggle();
+            CreateExpandPanelToggle();
             CreateGlobalObjectAttributesToggle();
         }
         void CreateSetActiveAtStartToggle()
@@ -116,6 +123,18 @@ namespace FS_LevelEditor.Editor.UI
             lineSprite.height = 6;
             lineSprite.depth = 8;
             line.SetActive(false);
+        }
+        void CreateExpandPanelToggle()
+        {
+            expandPanelButton = NGUI_Utils.CreateButtonWithSprite(header.transform, new Vector3(-160f, 0f, 0f), new Vector3Int(45, 45, 0), 2, "Triangle",
+                new Vector2Int(25, 15));
+            expandPanelButton.name = "ExpandPanelButton";
+            expandPanelButton.onClick += ExpandButtonClick;
+            expandPanelButton.GetComponent<UISprite>().depth = 1;
+
+            expandPanelButtonSprite = expandPanelButton.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>();
+
+            expandPanelButton.gameObject.SetActive(false);
         }
         void CreateGlobalObjectAttributesToggle()
         {
@@ -632,10 +651,11 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
         #endregion
 
-        public void ShowPanel(bool show, string headerLocKey) => ShowPanel(show, false, headerLocKey);
+        public void ShowPanel(bool show, string headerLocKey) => ShowPanel(show, panelIsExpanded, headerLocKey);
         public void ShowPanel(bool show, bool expand, string headerLocKey)
         {
             headerTitle.SetLocKey(headerLocKey);
+            currentHeaderLocKey = headerLocKey;
 
             if (show)
             {
@@ -647,15 +667,19 @@ namespace FS_LevelEditor.Editor.UI
                     body.GetComponent<UISprite>().height = 300;
                     body.GetComponent<BoxCollider>().center = new Vector3(0, -150f);
                     body.GetComponent<BoxCollider>().size = new Vector3(500, 300);
+
+                    panelIsExpanded = false;
                 }
-                else
+                else // EXPANDED PANEL
                 {
                     gameObject.transform.localPosition = new Vector3(-700f, 500, 0f);
                     headerTitle.width = 300; // So it doesn't overlap with the two toggles in the sides.
                     body.SetActive(true);
-                    body.GetComponent<UISprite>().height = 300;
+                    body.GetComponent<UISprite>().height = 1020;
                     body.GetComponent<BoxCollider>().center = new Vector3(0, -510f);
                     body.GetComponent<BoxCollider>().size = new Vector3(500, 1020);
+
+                    panelIsExpanded = true;
                 }
             }
             else
@@ -664,8 +688,17 @@ namespace FS_LevelEditor.Editor.UI
                 headerTitle.width = 520;
                 body.SetActive(false);
                 setActiveAtStartToggle.gameObject.SetActive(false);
+                expandPanelButton.gameObject.SetActive(false);
                 globalObjAttributesToggle.gameObject.SetActive(false);
             }
+
+            expandPanelButtonSprite.transform.localScale = new Vector3(1f, expand ? -1 : 1, 1);
+
+            showingPanel = show;
+        }
+        public void ExpandButtonClick()
+        {
+            ShowPanel(showingPanel, !panelIsExpanded, currentHeaderLocKey);
         }
 
         public void SetSelectedObjPanelAsNone()
@@ -677,6 +710,9 @@ namespace FS_LevelEditor.Editor.UI
             ShowPanel(true, "selection.MultipleObjectsSelected");
 
             setActiveAtStartToggle.gameObject.SetActive(true);
+            expandPanelButton.gameObject.SetActive(true);
+
+            #region Set Active At Start Toggle
             // If this is null, that means the "Set Active At Start" in the current selected objects is different in at least one of them.
             // If it's true or false, then ALL of them are true or false.
             bool? setActiveStateInObjects = null;
@@ -715,6 +751,7 @@ namespace FS_LevelEditor.Editor.UI
                 executeSetActiveAtStartToggleActions = true;
                 setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
             }
+            #endregion
 
             globalObjAttributesToggle.gameObject.SetActive(false);
             globalObjAttributesToggle.SetToggleState(true, true);
@@ -727,7 +764,9 @@ namespace FS_LevelEditor.Editor.UI
 
             // The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.
             ShowPanel(true, objComponent.objectFullNameWithID);
+            expandPanelButton.gameObject.SetActive(true);
 
+            #region Select Right Attributes Panel And Setup Global Attributes Toggle
             // Disable all of the attributes panels.
             attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
 
@@ -756,9 +795,11 @@ namespace FS_LevelEditor.Editor.UI
                 globalObjAttributesToggle.gameObject.SetActive(false);
                 globalObjAttributesToggle.SetToggleState(true, true);
             }
+            #endregion
 
             UpdateGlobalObjectAttributes(objComponent.transform);
 
+            #region Set At Start Toggle
             if (objComponent.canBeDisabledAtStart)
             {
                 setActiveAtStartToggle.gameObject.SetActive(true);
@@ -770,6 +811,7 @@ namespace FS_LevelEditor.Editor.UI
                 setActiveAtStartToggle.gameObject.SetActive(false);
                 objComponent.setActiveAtStart = true; // Just in case ;)
             }
+            #endregion
         }
         void UpdateObjectSpecificAttribute(LE_Object objComp, GameObject panelInUI)
         {
