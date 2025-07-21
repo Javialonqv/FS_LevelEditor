@@ -2,14 +2,6 @@
 using FS_LevelEditor.Playmode;
 using Il2Cpp;
 using Il2CppDiscord;
-using Il2CppSimpleJSON;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -47,6 +39,10 @@ namespace FS_LevelEditor
                 // Set the saw on or off.
                 SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
             }
+
+            // Load the waypoints NOW after all of the other attributes were fully loaded.
+            var waypoints = GetProperty<List<LE_SawWaypointSerializable>>("waypoints");
+            LoadWaypointsFromSave(waypoints);
 
             base.OnInstantiated(scene);
         }
@@ -173,9 +169,7 @@ namespace FS_LevelEditor
             {
                 if (value is List<LE_SawWaypointSerializable>)
                 {
-                    LoadWaypointsFromSave((List<LE_SawWaypointSerializable>)value);
-
-                    // Since the data in the list is not altered when adding new waypoints while loading data, set the list manually rn.
+                    // Set the list and AFTER all of the other attributes are set, THEN create the waypoints OnInstantiated().
                     properties["waypoints"] = value;
                 }
             }
