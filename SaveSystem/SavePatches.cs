@@ -125,6 +125,9 @@ namespace FS_LevelEditor.SaveSystem
         {
             foreach (var obj in data.objects)
             {
+                // Stupid protections just in case Chris fuck it up.
+                if (obj == null && obj.properties == null) continue;
+
                 Dictionary<string, object> newProperties = new();
 
                 foreach (var property in obj.properties)
