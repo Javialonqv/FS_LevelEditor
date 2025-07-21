@@ -189,22 +189,16 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
-        public void SetText(string newText, bool forceEvenIfSelected = false)
+        public void SetText(string newText)
         {
-            if (input.selected && !forceEvenIfSelected) return;
-
             input.text = newText;
         }
         public void SetText(float value)
         {
-            if (input.selected) return;
-
             input.text = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
         public void SetText(float value, int maxDecimals, bool executeOnChange = true)
         {
-            if (input.selected) return;
-
             string format = "0";
             if (maxDecimals > 0)
                 format += "." + new string('#', maxDecimals);

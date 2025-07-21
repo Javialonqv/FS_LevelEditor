@@ -901,17 +901,17 @@ namespace FS_LevelEditor.Editor.UI
             if (currentSelectedEvent.targetObjType != null)
             {
                 var nameToSet = Loc.Get("object." + currentSelectedEvent.targetObjType) + " " + currentSelectedEvent.targetObjID;
-                targetObjInputField.SetText(nameToSet, true);
+                targetObjInputField.SetText(nameToSet);
             }
             else
             {
                 if (currentSelectedEvent.isForPlayer)
                 {
-                    targetObjInputField.SetText(Loc.Get("Player"), true);
+                    targetObjInputField.SetText(Loc.Get("Player"));
                 }
                 else
                 {
-                    targetObjInputField.SetText(currentSelectedEvent.targetObjName, true);
+                    targetObjInputField.SetText(currentSelectedEvent.targetObjName);
                 }
             }
 
