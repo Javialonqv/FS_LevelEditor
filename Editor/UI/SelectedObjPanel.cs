@@ -150,6 +150,7 @@ namespace FS_LevelEditor.Editor.UI
             body = new GameObject("Body");
             body.transform.parent = gameObject.transform;
             body.transform.localScale = Vector3.one;
+            body.layer = LayerMask.NameToLayer("2D GUI"); // To avoid the object not showing once the UIPanel attached.
 
             UISprite sprite = body.AddComponent<UISprite>();
             sprite.atlas = NGUI_Utils.UITexturesAtlas;
@@ -164,6 +165,11 @@ namespace FS_LevelEditor.Editor.UI
             BoxCollider collider = body.AddComponent<BoxCollider>();
             collider.size = new Vector3(500f, 300f, 1f);
             collider.center = new Vector3(0f, -150f);
+
+            // Add a UIPanel just to hide the objects outside of the panel.
+            UIPanel panel = body.AddComponent<UIPanel>();
+            panel.clipRange = new Vector4(0f, -150f, 500f, 280f);
+            panel.clipping = UIDrawCall.Clipping.SoftClip;
 
             body.transform.localPosition = new Vector3(0f, -10f, 0f);
 
@@ -668,6 +674,8 @@ namespace FS_LevelEditor.Editor.UI
                     body.GetComponent<UISprite>().height = 300;
                     body.GetComponent<BoxCollider>().center = new Vector3(0, -150f);
                     body.GetComponent<BoxCollider>().size = new Vector3(500, 300);
+                    // Set the UIPanel clipping height a bit smaller just because NGUICRAP doesn't hide the objects until they're FULLY outside.
+                    body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -150f, 500, 280);
 
                     panelIsExpanded = false;
                 }
@@ -679,6 +687,8 @@ namespace FS_LevelEditor.Editor.UI
                     body.GetComponent<UISprite>().height = 1020;
                     body.GetComponent<BoxCollider>().center = new Vector3(0, -510f);
                     body.GetComponent<BoxCollider>().size = new Vector3(500, 1020);
+                    // Set the UIPanel clipping height a bit smaller just because NGUICRAP doesn't hide the objects until they're FULLY outside.
+                    body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -510f, 500, 1000);
 
                     panelIsExpanded = true;
                 }
