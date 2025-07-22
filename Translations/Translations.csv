@@ -95,8 +95,9 @@ Deletion,Deletion,Eliminación
 GlobalProperties,Global Properties,Propiedades Globales
 HasTaser,Has Taser,Con Taser
 HasJetpack,Has Jetpack,Con Jetpack
-DeathYLimit,Death Limit on the Y-axis,Limite de Muerte en el Eje Y
+DeathYLimit,Death Limit on the Y-axis,Límite de Muerte en el eje Y
 Skybox,Skybox,Skybox
 Chapter 1,Chapter 1,Capítulo 1
 Chapter 2,Chapter 2,Capítulo 2
 Chapter 3 & 4,Chapter 3 & 4,Capítulo 3 Y 4
+Loop,Loop,Bucle
