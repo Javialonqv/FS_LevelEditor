@@ -401,7 +401,8 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
-            CreateObjectAttribute("TravelBack", AttributeType.TOGGLE, false, null, "TravelBack");
+            CreateObjectAttribute("TravelBack", AttributeType.TOGGLE, true, null, "TravelBack");
+            CreateObjectAttribute("Loop", AttributeType.TOGGLE, false, null, "Loop");
             CreateObjectAttribute("AddWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
             CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
 
@@ -1047,6 +1048,13 @@ namespace FS_LevelEditor.Editor.UI
                 case "InstaKill":
                     OnLaserInstaKillChecked(toggle.isChecked);
                     break;
+
+                case "TravelBack":
+                    SetSawTravelBackORLoop(toggle.isChecked, false);
+                    break;
+                case "Loop":
+                    SetSawTravelBackORLoop(false, toggle.isChecked);
+                    break;
             }
 
             if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
@@ -1077,6 +1085,14 @@ namespace FS_LevelEditor.Editor.UI
         void ShowOrHideSawWaitTimeField(int waypointsCount)
         {
             attributesPanels["Saw"].GetChildWithName("WaitTime").SetActive(waypointsCount > 0);
+        }
+        void SetSawTravelBackORLoop(bool travelBack, bool loop)
+        {
+            // This is to always enable one or the other, but NEVER both of the toggles, only one or the other.
+            // To avoid bugs, only change the values when at least one of the bools is true.
+
+            if (travelBack && !loop) attributesPanels["Saw"].GetChildAt("TravelBack/Toggle").GetComponent<UIToggle>().Set(travelBack);
+            if (!travelBack && loop) attributesPanels["Saw"].GetChildAt("Loop/Toggle").GetComponent<UIToggle>().Set(loop);
         }
     }
 }

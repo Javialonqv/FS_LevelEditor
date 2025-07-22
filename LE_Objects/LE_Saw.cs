@@ -23,11 +23,13 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>()
             {
                 { "ActivateOnStart", true },
-                { "TravelBack", false },
+                { "TravelBack", true },
+                { "Loop", false },
                 { "waypoints", new List<LE_SawWaypointSerializable>() },
                 { "Damage", 50 },
                 { "WaitTime", 0f }
             };
+            
 
             waypointsParent = gameObject.GetChildWithName("Waypoints");
         }
@@ -165,6 +167,14 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "Loop")
+            {
+                if (value is bool)
+                {
+                    properties["Loop"] = (bool)value;
+                    return true;
+                }
+            }
             else if (name == "waypoints") // For now, this is only called when loading the level...
             {
                 if (value is List<LE_SawWaypointSerializable>)
@@ -266,15 +276,29 @@ namespace FS_LevelEditor
             {
                 var waypoint = waypoints[i];
                 bool isTheFirstWaypoint = i == 0;
+                bool isTheLastWaypoint = i == waypoints.Count - 1;
 
                 // Set the waypoint values, we don't need to worry about the waypoints list since when loading data, the data is not altered.
                 LE_Saw_Waypoint instance = AddWaypoint(true);
                 instance.transform.localPosition = waypoint.waypointPosition;
                 instance.transform.localEulerAngles = waypoint.waypointRotation;
 
-                // When it's the first waypoint, the wait time is in the SAW properties.
-                if (isTheFirstWaypoint) instance.SetProperty("WaitTime", this.GetProperty<float>("WaitTime"));
-                else instance.SetProperty("WaitTime", waypoint.waitTime);
+                if (isTheFirstWaypoint) // When it's the first waypoint, the wait time is in the SAW properties.
+                {
+                    instance.SetProperty("WaitTime", this.GetProperty<float>("WaitTime"));
+                }
+                else
+                {
+                    // The saw will loop by default, however, if loop is disabled, set wait time -1 for the last waypoint.
+                    if (isTheLastWaypoint && !GetProperty<bool>("Loop") && PlayModeController.Instance)
+                    {
+                        instance.SetProperty("WaitTime", -1f); // IMPORTANT: ALWAYS, ALWAYS put the damn value like a FLOAT.
+                    }
+                    else
+                    {
+                        instance.SetProperty("WaitTime", waypoint.waitTime);
+                    }
+                }
 
                 if (isTheFirstWaypoint) instance.isTheFirstWaypoint = true;
 
