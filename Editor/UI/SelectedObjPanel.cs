@@ -407,8 +407,8 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
-            CreateObjectAttribute("TravelBack", AttributeType.TOGGLE, true, null, "TravelBack");
-            CreateObjectAttribute("Loop", AttributeType.TOGGLE, false, null, "Loop");
+            CreateObjectAttribute("TravelBack", AttributeType.TOGGLE, true, null, "TravelBack", tooltip: "TravelBackTooltip");
+            CreateObjectAttribute("Loop", AttributeType.TOGGLE, false, null, "Loop", tooltip: "LoopTooltip");
             CreateObjectAttribute("AddWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
             CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
 
@@ -592,7 +592,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             whereToCreateObjAttributesParent = newParent.transform;
         }
-        void CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType? fieldType, string targetPropName, bool createHastag = false)
+        void CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType? fieldType, string targetPropName, bool createHastag = false, string tooltip = null)
         {
             GameObject attributeParent = new GameObject(targetPropName);
             attributeParent.transform.parent = whereToCreateObjAttributesParent;
@@ -636,6 +636,10 @@ namespace FS_LevelEditor.Editor.UI
                     NGUI_Utils.CreateEventDelegateParamter(this, "toggle", toggle.GetComponent<UIToggle>()));
                 toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
                 if ((bool)defaultValue) toggle.GetComponent<UIToggle>().Set(true);
+                if (tooltip != null)
+                {
+                    toggle.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
+                }
             }
             else if (attrType == AttributeType.BUTTON)
             {
@@ -644,6 +648,10 @@ namespace FS_LevelEditor.Editor.UI
                 button.onClick += () => TriggerAction(targetPropName);
                 button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
                 button.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+                if (tooltip != null)
+                {
+                    button.gameObject.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
+                }
             }
             else if (attrType == AttributeType.BUTTON_MULTIPLE)
             {
@@ -653,6 +661,10 @@ namespace FS_LevelEditor.Editor.UI
                 button.onChange += (id) => SetPropertyWithButtonMultiple(targetPropName, button);
                 button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
                 button.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+                if (tooltip != null)
+                {
+                    button.gameObject.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
+                }
             }
         }
         #endregion

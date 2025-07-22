@@ -135,9 +135,13 @@ namespace FS_LevelEditor
             }
 
             int langIndex = languages.Contains(Localization.language.ToUpper()) ? languages.IndexOf(Localization.language.ToUpper()) : 0;
-            if (translations[key].Count >= langIndex)
+            if (translations[key].Count - 1 >= langIndex)
             {
                 return translations[key][langIndex];
+            }
+            else if (translations[key].Count > 0)
+            {
+                return translations[key][0]; // Return the first translation (English).
             }
             else
             {

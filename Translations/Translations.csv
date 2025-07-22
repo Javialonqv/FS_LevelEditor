@@ -101,3 +101,5 @@ Chapter 1,Chapter 1,Capítulo 1
 Chapter 2,Chapter 2,Capítulo 2
 Chapter 3 & 4,Chapter 3 & 4,Capítulo 3 Y 4
 Loop,Loop,Bucle
+TravelBackTooltip,The saw [00FFFF]returns[-] to its original position by [FFFF00]passing through the waypoints.[-],La sierra [00FFFF]regresa[-] a su posición original al [FFFF00]pasar por todos sus waypoints.[-]
+LoopTooltip,The saw [00FFFF]returns[-] to its original position in a [FFFF00]straight line [b]ignoring[/b] the waypoints.[-],La sierra [00FFFF]regresa[-] a su posición original en una [FFFF00]linea recta [b]ignorando[/b] los waypoints.[-]
