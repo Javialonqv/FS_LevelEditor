@@ -289,7 +289,7 @@ namespace FS_LevelEditor.UI_Related
             {
                 UILabel toggleLabel = toggle.GetChildWithName("Label").GetComponent<UILabel>();
                 GameObject.Destroy(toggleLabel.GetComponent<UILocalize>());
-                if (Loc.Get(text, false) != text)
+                if (Loc.HasKey(text))
                 {
                     toggleLabel.gameObject.AddComponent<UILocalize>().key = text;
                 }
@@ -327,7 +327,7 @@ namespace FS_LevelEditor.UI_Related
             // For some reason the buttons have two labels? One is disabled (Button/Label) and the other one is the one being used (Button/Background/Label).
             // UPDATE: We'll still be using that one, for SOME FUCKING REASON if you change the label the button colors start to behave weird... idk...
             UILabel buttonLabel = button.GetChildAt("Background/Label").GetComponent<UILabel>();
-            if (Loc.Get(text, false) != text)
+            if (Loc.HasKey(text))
             {
                 buttonLabel.GetComponent<UILocalize>().key = text;
             }
@@ -442,7 +442,7 @@ namespace FS_LevelEditor.UI_Related
             toggle.transform.localScale = Vector3.one;
 
             // If there's not key for the text, then it'll return the key itself, otherwise, it'll return the translation.
-            if (Loc.Get(text, false) != text)
+            if (Loc.HasKey(text))
             {
                 toggle.GetChildWithName("Label").AddComponent<UILocalize>().key = text;
             }
@@ -469,7 +469,7 @@ namespace FS_LevelEditor.UI_Related
             toggle.SetActive(true);
 
             // If there's not key for the text, then it'll return the key itself, otherwise, it'll return the translation.
-            if (Loc.Get(text, false) != text)
+            if (Loc.HasKey(text))
             {
                 toggle.GetChildWithName("ColorName").AddComponent<UILocalize>().key = text;
             }
@@ -529,7 +529,7 @@ namespace FS_LevelEditor.UI_Related
         {
             GameObject labelObj = GameObject.Instantiate(labelTemplate, parent);
             labelObj.name = "Label";
-            if (Loc.Get(text, false) != text)
+            if (Loc.HasKey(text))
             {
                 labelObj.GetComponent<UILocalize>().key = text;
             }

@@ -56,7 +56,7 @@ namespace FS_LevelEditor.UI_Related
         {
             (string text, Color color) toSet = options[optionID];
 
-            if (Loc.Get(toSet.text, false) != toSet.text)
+            if (Loc.HasKey(toSet.text))
             {
                 buttonLabel.text = Loc.Get(toSet.text, false);
             }

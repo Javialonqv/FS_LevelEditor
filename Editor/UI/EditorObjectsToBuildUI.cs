@@ -84,7 +84,7 @@ namespace FS_LevelEditor.Editor.UI
                 string categoryName = EditorController.Instance.categoriesNames[i];
                 string categoryLocKey = "category." + categoryName;
                 string tabButtonTextToSet = categoryLocKey;
-                if (Loc.Get(categoryLocKey) == categoryLocKey) // In case the localization key doesn't exist, use the "original" category name instead.
+                if (!Loc.HasKey(categoryLocKey)) // In case the localization key doesn't exist, use the "original" category name instead.
                 {
                     tabButtonTextToSet = categoryName;
                 }

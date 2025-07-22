@@ -144,6 +144,20 @@ namespace FS_LevelEditor
                 return key;
             }
         }
+
+        public static bool ExistTranslation(string key, out string translation)
+        {
+            if (translations.ContainsKey(key))
+            {
+                translation = GetTranslation(key, false);
+                return true;
+            }
+            else
+            {
+                translation = null;
+                return false;
+            }
+        }
     }
 
     // This class is only to avoid writing TranslationsManager.GetTranslation bla bla bla every time I wanna use it.
@@ -152,6 +166,12 @@ namespace FS_LevelEditor
         public static string Get(string key, bool throwErrorIfNotFound = true)
         {
             return TranslationsManager.GetTranslation(key, throwErrorIfNotFound);
+        }
+
+        public static bool HasKey(string key) => HasKey(key, out var translation);
+        public static bool HasKey(string key, out string translation)
+        {
+            return TranslationsManager.ExistTranslation(key, out translation);
         }
     }
 
