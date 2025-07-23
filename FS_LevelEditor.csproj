@@ -395,7 +395,6 @@
 		<Compile Include="LE_Objects\LE_Switch.cs" />
 		<Compile Include="LE_Objects\LE_Vent_With_Smoke_Green.cs" />
 		<Compile Include="Playmode\PlaymodePauseMenuPatcher.cs" />
-		<Compile Include="SaveSystem\Converters\GlobalPropertiesConverter.cs" />
 		<Compile Include="SaveSystem\Converters\LEIgnoreDefaultValuesInLEEvents.cs" />
 		<Compile Include="SaveSystem\Converters\LEPropertiesConverterNew.cs" />
 		<Compile Include="SaveSystem\Converters\LevelObjectDataConverter.cs" />

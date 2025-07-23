@@ -122,6 +122,8 @@ namespace FS_LevelEditor.Playmode
             Controls.Instance.hasJetPack = (bool)GetGlobalProperty("HasJetpack");
 
             SetupLevelSkybox((int)GetGlobalProperty("Skybox"));
+
+            ApplyUpgrades((List<UpgradeSaveData>)GetGlobalProperty("Upgrades"));
         }
         object GetGlobalProperty(string name)
         {
@@ -170,6 +172,20 @@ namespace FS_LevelEditor.Playmode
             return obj;
         }
 
+        void ApplyUpgrades(List<UpgradeSaveData> upgrades)
+        {
+            foreach (var upgrade in upgrades)
+            {
+                switch (upgrade.type)
+                {
+                    case UpgradeType.DODGE:
+                        Controls.m_hasDodgeSkill = upgrade.active;
+                        Controls.m_currentDodgeLevel = upgrade.level;
+                        break;
+                }
+            }
+        }
+
         void CreateBackToLEButton()
         {
             GameObject template = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/2_Chapters");
@@ -183,7 +199,6 @@ namespace FS_LevelEditor.Playmode
 
             backToLEButton.SetActive(true);
         }
-
         void GoBackToLEWhileInPlayMode()
         {
             Invoke("DestroyBackToLEButton", 0.2f);
@@ -231,7 +246,6 @@ namespace FS_LevelEditor.Playmode
 
             otherObjectsFromBundle = LEBundle.Load<GameObject>("OtherObjects").GetChilds();
         }
-
         public GameObject LoadOtherObjectInBundle(string objectName)
         {
             return otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
