@@ -1,22 +1,75 @@
-﻿using System;
+﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Playmode;
+using FS_LevelEditor.SaveSystem.Converters;
+using FS_LevelEditor.SaveSystem.SerializableTypes;
+using Harmony;
+using Il2Cpp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.SceneManagement;
-using UnityEngine;
-using System.Text.Json.Serialization;
 using System.Text.Json;
-using FS_LevelEditor.Editor;
-using FS_LevelEditor.SaveSystem.Converters;
-using FS_LevelEditor.SaveSystem.SerializableTypes;
-using FS_LevelEditor.Playmode;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor.SaveSystem
 {
+    public struct UpgradeData
+    {
+        public UpgradeType upgradeType;
+        public string upgradeSaveKey;
+        public string upgradeLevelSaveKey;
+
+        public UpgradeData(UpgradeType _upgradeType, string _upgradeSaveKey, string _upgradeLevelSaveKey)
+        {
+            upgradeType = _upgradeType;
+            upgradeSaveKey = _upgradeSaveKey;
+            upgradeLevelSaveKey = _upgradeLevelSaveKey;
+        }
+
+        public static UpgradePageController.UpgradeType? ConvertTypeToFSType(UpgradeType type)
+        {
+            switch (type)
+            {
+                case UpgradeType.DODGE:
+                    return UpgradePageController.UpgradeType.DODGE;
+
+                default:
+                    return null;
+            }
+        }
+    }
+    public enum UpgradeType
+    {
+        DODGE,
+        SPRINT
+    }
+
+    public class UpgradeSaveData
+    {
+        public UpgradeType type { get; set; }
+        public bool active { get; set; }
+        public int level { get; set; }
+
+        public UpgradeSaveData() { }
+        public UpgradeSaveData(UpgradeType _type, bool _active, int _level)
+        {
+            type = _type;
+            active = _active;
+            level = _level;
+        }
+    }
+
     [Serializable]
     public class LevelData
     {
+        public static readonly List<UpgradeData> updates = new List<UpgradeData>()
+        {
+            new(UpgradeType.DODGE, "Has_Dodge", "Dodge_Upgrade_Level")
+        };
+
         public string levelName { get; set; }
         public Vector3Serializable cameraPosition { get; set; }
         public Vector3Serializable cameraRotation { get; set; }
@@ -256,7 +309,6 @@ namespace FS_LevelEditor.SaveSystem
         public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
         {
             LE_Object.GetTemplatesReferences();
-
             PlayModeController playModeCtrl = new GameObject("PlayModeController").AddComponent<PlayModeController>();
 
             GameObject objectsParent = playModeCtrl.levelObjectsParent;
@@ -384,6 +436,25 @@ namespace FS_LevelEditor.SaveSystem
             }
 
             return result;
+        }
+
+        public static Dictionary<string, object> GetDefaultGlobalProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "HasTaser", true },
+                { "HasJetpack", true },
+                { "DeathYLimit", 100f },
+                { "Skybox", 0 },
+                { "Upgrades", GetDefaultUpgradeSaveData() }
+            };
+        }
+        public static List<UpgradeSaveData> GetDefaultUpgradeSaveData()
+        {
+            return new List<UpgradeSaveData>()
+            {
+                new (UpgradeType.DODGE, true, Controls.m_dodgeUpgradeMaxLevel)
+            };
         }
     }
 }

@@ -38,9 +38,18 @@ namespace FS_LevelEditor.SaveSystem.Converters
                 }
                 else
                 {
-                    // It the json value isn't a primitive type (int, float, string, etc.) this will result in a JsonElement, but this is parsed later with SetProperty()
-                    // in LE_Object.
-                    value = JsonSerializer.Deserialize<object>(rawValue.GetRawText(), options);
+                    // If this is the Global Properties dictionary.
+                    if (LevelData.GetDefaultGlobalProperties().ContainsKey(prop.Name))
+                    {
+                        var valueType = LevelData.GetDefaultGlobalProperties()[prop.Name].GetType();
+                        value = JsonSerializer.Deserialize(rawValue.GetRawText(), valueType);
+                    }
+                    else // Default deserialization, take it as if it were a normal object properties entry.
+                    {
+                        // It the json value isn't a primitive type (int, float, string, etc.) this will result in a JsonElement, but this is parsed later with SetProperty()
+                        // in LE_Object.
+                        value = JsonSerializer.Deserialize<object>(rawValue.GetRawText(), options);
+                    }
                 }
 
                 deserialized.Add(prop.Name, value);

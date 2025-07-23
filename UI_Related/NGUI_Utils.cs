@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using Il2Cpp;
+using Il2CppI2.Loc;
 using Il2CppInControl.NativeDeviceProfiles;
 using System;
 using System.Collections.Generic;
@@ -289,7 +290,7 @@ namespace FS_LevelEditor.UI_Related
             {
                 UILabel toggleLabel = toggle.GetChildWithName("Label").GetComponent<UILabel>();
                 GameObject.Destroy(toggleLabel.GetComponent<UILocalize>());
-                if (Loc.HasKey(text))
+                if (Loc.HasKey(text) || LocalizationManager.Sources[0].ContainsTerm(text))
                 {
                     toggleLabel.gameObject.AddComponent<UILocalize>().key = text;
                 }
@@ -509,7 +510,7 @@ namespace FS_LevelEditor.UI_Related
 
             return script;
         }
-        public static UIButtonMultiple CreateButtonMultiple(Transform parent, Vector3 position, Vector3 scale)
+        public static UIButtonMultiple CreateButtonMultiple(Transform parent, Vector3 position, Vector3 scale, int depth = 0)
         {
             GameObject button = GameObject.Instantiate(multipleButtonTemplate, parent);
             button.transform.localPosition = position;
@@ -517,6 +518,8 @@ namespace FS_LevelEditor.UI_Related
 
             GameObject.Destroy(button.GetComponent<ButtonController>());
             GameObject.Destroy(button.GetComponent<OptionsButton>());
+
+            button.GetComponent<UISprite>().depth = depth;
 
             UIButtonMultiple script = button.AddComponent<UIButtonMultiple>();
             script.Init();

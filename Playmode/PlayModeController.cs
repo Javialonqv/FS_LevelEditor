@@ -1,4 +1,5 @@
-﻿using Harmony;
+﻿using FS_LevelEditor.SaveSystem;
+using Harmony;
 using Il2Cpp;
 using MelonLoader;
 using System;
@@ -31,13 +32,7 @@ namespace FS_LevelEditor.Playmode
 
         GameObject backToLEButton;
 
-        public Dictionary<string, object> globalProperties = new Dictionary<string, object>()
-        {
-            { "HasTaser", true },
-            { "HasJetpack", true },
-            { "DeathYLimit", 100f },
-            { "Skybox", 0 }
-        };
+        public Dictionary<string, object> globalProperties = LevelData.GetDefaultGlobalProperties();
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
         public int deathsInCurrentLevel = 0;
         public List<LE_Screen> screensOnTheLevel = new List<LE_Screen>();

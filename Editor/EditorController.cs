@@ -93,13 +93,7 @@ namespace FS_LevelEditor.Editor
         public bool enteringPlayMode = false;
 
         // ----------------------------
-        public Dictionary<string, object> globalProperties = new Dictionary<string, object>()
-        {
-            { "HasTaser", true },
-            { "HasJetpack", true },
-            { "DeathYLimit", 100f },
-            { "Skybox", 0 }
-        };
+        public Dictionary<string, object> globalProperties = LevelData.GetDefaultGlobalProperties();
         List<Material> skyboxes = new List<Material>();
 
         void Awake()
