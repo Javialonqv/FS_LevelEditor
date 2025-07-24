@@ -290,7 +290,7 @@ namespace FS_LevelEditor.UI_Related
             {
                 UILabel toggleLabel = toggle.GetChildWithName("Label").GetComponent<UILabel>();
                 GameObject.Destroy(toggleLabel.GetComponent<UILocalize>());
-                if (Loc.HasKey(text) || LocalizationManager.Sources[0].ContainsTerm(text))
+                if (Loc.HasKey(text))
                 {
                     toggleLabel.gameObject.AddComponent<UILocalize>().key = text;
                 }

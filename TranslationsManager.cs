@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using Il2Cpp;
+using Il2CppI2.Loc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -145,7 +146,16 @@ namespace FS_LevelEditor
             }
             else
             {
-                return key;
+                // If no translation is found in LE sheet, try to find it in the FS sheet.
+                // WARNING: Not to be confused with "shit".
+                if (LocalizationManager.Sources[0].ContainsTerm(key))
+                {
+                    return Localization.Get(key);
+                }
+                else // If nothing of this works, just return the key, fuck it.
+                {
+                    return key;
+                }
             }
         }
 
@@ -158,8 +168,17 @@ namespace FS_LevelEditor
             }
             else
             {
-                translation = null;
-                return false;
+                // Use FS sheet as a last resource.
+                if (LocalizationManager.Sources[0].ContainsTerm(key))
+                {
+                    translation = Localization.Get(key);
+                    return true;
+                }
+                else
+                {
+                    translation = null;
+                    return false;
+                }
             }
         }
     }
