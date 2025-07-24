@@ -163,7 +163,7 @@ namespace FS_LevelEditor.Editor.UI
             string locKey = "Upgrade_" + UpgradeSaveData.ConvertTypeToFSType(type) + "_Title";
             bool isAOneTimeSkill = Controls.IsSkill(UpgradeSaveData.ConvertTypeToFSType(type).Value);
 
-            Vector3 togglePos = isAOneTimeSkill ? Vector3.zero : new Vector3(-300, 0);
+            Vector3 togglePos = isAOneTimeSkill ? new Vector3(-100, 0) : new Vector3(-300, 0);
             GameObject toggle = NGUI_Utils.CreateToggle(parent.transform, togglePos, new Vector3Int(200, 48, 0), locKey);
             EventDelegate toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetUpgradeEnabledState),
                 NGUI_Utils.CreateEventDelegateParamter(this, "type", (int)type),
