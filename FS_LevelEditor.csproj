@@ -375,6 +375,7 @@
 		<Compile Include="Playmode\Patches\GamePausePatch.cs" />
 		<Compile Include="Playmode\Patches\PlayerDeathPatch.cs" />
 		<Compile Include="Playmode\Patches\PlaySavePatches.cs" />
+		<Compile Include="Playmode\Patches\UpgradesPatches.cs" />
 		<Compile Include="Playmode\PlayModeController.cs" />
 		<Compile Include="LE_Objects\LE_Ammo_Pack.cs" />
 		<Compile Include="LE_Objects\LE_Breakable_Window.cs" />

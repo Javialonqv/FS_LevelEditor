@@ -69,35 +69,6 @@ namespace FS_LevelEditor.Playmode.Patches
                     __result = PlayModeController.Instance.deathsInCurrentLevel;
                     return false;
                 }
-
-                // UPGRADES PATCHES
-                var upgrades = (List<UpgradeSaveData>)PlayModeController.Instance.globalProperties["Upgrades"];
-                switch (_key)
-                {
-                    case "Dodge_Upgrade_Level":
-                        __result = upgrades.Find(x => x.type == UpgradeType.DODGE).level;
-                        return false;
-                }
-            }
-
-            return true;
-        }
-    }
-    [HarmonyPatch(typeof(FractalSave), nameof(FractalSave.GetBool))]
-    public static class FractalSaveGetBoolPatches
-    {
-        public static bool Prefix(ref bool __result, string _key)
-        {
-            if (PlayModeController.Instance)
-            {
-                // UPGRADES PATCHES
-                var upgrades = (List<UpgradeSaveData>)PlayModeController.Instance.globalProperties["Upgrades"];
-                switch (_key)
-                {
-                    case "Dodge_Upgrade_Level":
-                        __result = upgrades.Find(x => x.type == UpgradeType.DODGE).active;
-                        return false;
-                }
             }
 
             return true;

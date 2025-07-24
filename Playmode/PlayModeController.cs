@@ -1,4 +1,5 @@
-﻿using FS_LevelEditor.SaveSystem;
+﻿using FS_LevelEditor.Playmode.Patches;
+using FS_LevelEditor.SaveSystem;
 using Harmony;
 using Il2Cpp;
 using MelonLoader;
@@ -75,6 +76,7 @@ namespace FS_LevelEditor.Playmode
             LE_Object.ResetStaticVariablesInObjects();
 
             PlaymodePauseMenuPatcher.DestroyPatcher();
+            UpgradePatches.Unpatch();
         }
 
         void TeleportPlayer()
@@ -184,6 +186,9 @@ namespace FS_LevelEditor.Playmode
                         break;
                 }
             }
+
+            // Not only appy the values to the player, but also just in case for the UI, etc.
+            UpgradePatches.Init();
         }
 
         void CreateBackToLEButton()
