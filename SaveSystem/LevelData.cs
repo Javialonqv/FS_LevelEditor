@@ -16,17 +16,23 @@ using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor.SaveSystem
 {
-    public struct UpgradeData
+    public enum UpgradeType
     {
-        public UpgradeType upgradeType;
-        public string upgradeSaveKey;
-        public string upgradeLevelSaveKey;
+        DODGE,
+        SPRINT
+    }
+    public class UpgradeSaveData
+    {
+        public UpgradeType type { get; set; }
+        public bool active { get; set; }
+        public int level { get; set; }
 
-        public UpgradeData(UpgradeType _upgradeType, string _upgradeSaveKey, string _upgradeLevelSaveKey)
+        public UpgradeSaveData() { }
+        public UpgradeSaveData(UpgradeType _type, bool _active, int _level)
         {
-            upgradeType = _upgradeType;
-            upgradeSaveKey = _upgradeSaveKey;
-            upgradeLevelSaveKey = _upgradeLevelSaveKey;
+            type = _type;
+            active = _active;
+            level = _level;
         }
 
         public static UpgradePageController.UpgradeType? ConvertTypeToFSType(UpgradeType type)
@@ -41,35 +47,10 @@ namespace FS_LevelEditor.SaveSystem
             }
         }
     }
-    public enum UpgradeType
-    {
-        DODGE,
-        SPRINT
-    }
-
-    public class UpgradeSaveData
-    {
-        public UpgradeType type { get; set; }
-        public bool active { get; set; }
-        public int level { get; set; }
-
-        public UpgradeSaveData() { }
-        public UpgradeSaveData(UpgradeType _type, bool _active, int _level)
-        {
-            type = _type;
-            active = _active;
-            level = _level;
-        }
-    }
 
     [Serializable]
     public class LevelData
     {
-        public static readonly List<UpgradeData> updates = new List<UpgradeData>()
-        {
-            new(UpgradeType.DODGE, "Has_Dodge", "Dodge_Upgrade_Level")
-        };
-
         public string levelName { get; set; }
         public Vector3Serializable cameraPosition { get; set; }
         public Vector3Serializable cameraRotation { get; set; }

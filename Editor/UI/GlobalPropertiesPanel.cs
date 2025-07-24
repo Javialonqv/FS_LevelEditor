@@ -159,8 +159,8 @@ namespace FS_LevelEditor.Editor.UI
             parent.transform.localPosition = new Vector3(0, 20 - (100 * createdUpgradesUICount));
             parent.transform.localScale = Vector3.one;
 
-            string locKey = "Upgrade_" + UpgradeData.ConvertTypeToFSType(type) + "_Title";
-            bool isAOneTimeSkill = Controls.IsSkill(UpgradeData.ConvertTypeToFSType(type).Value);
+            string locKey = "Upgrade_" + UpgradeSaveData.ConvertTypeToFSType(type) + "_Title";
+            bool isAOneTimeSkill = Controls.IsSkill(UpgradeSaveData.ConvertTypeToFSType(type).Value);
 
             Vector3 togglePos = isAOneTimeSkill ? Vector3.zero : new Vector3(-300, 0);
             GameObject toggle = NGUI_Utils.CreateToggle(parent.transform, togglePos, new Vector3Int(200, 48, 0), locKey);
@@ -174,7 +174,7 @@ namespace FS_LevelEditor.Editor.UI
                 UIButtonMultiple levelButton = NGUI_Utils.CreateButtonMultiple(parent.transform, new Vector3(160, 15), Vector3.one * 0.8f, 1);
                 levelButton.name = "LevelButton";
                 levelButton.SetTitle("Level");
-                for (int i = 0; i < Controls.GetMaxLevelFor(UpgradeData.ConvertTypeToFSType(type).Value); i++)
+                for (int i = 0; i < Controls.GetMaxLevelFor(UpgradeSaveData.ConvertTypeToFSType(type).Value); i++)
                 {
                     bool setAsSelected = i == 0;
                     levelButton.AddOption("Level " + (i + 1), setAsSelected);
