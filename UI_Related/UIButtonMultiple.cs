@@ -15,8 +15,10 @@ namespace FS_LevelEditor.UI_Related
         UILabel titleLabel;
         UILabel currentOptionLabel;
 
+        string titleLocKey;
         List<string> options;
         public Action<int> onClick;
+        public Func<int, string> onLocalize = (id) => { return null; };
 
         public int currentSelectedID { get; private set; }
         public string currentSelectedText
@@ -42,7 +44,10 @@ namespace FS_LevelEditor.UI_Related
 
         public void SetTitle(string newTitle)
         {
-            titleLabel.text = newTitle;
+            titleLocKey = newTitle;
+
+            // Doesn't matter if the title is not a valid key.
+            titleLabel.text = Loc.Get(newTitle);
         }
 
         public void ClearOptions()
@@ -64,7 +69,14 @@ namespace FS_LevelEditor.UI_Related
         {
             string optionText = options[optionID];
             currentSelectedID = optionID;
-            currentOptionLabel.text = optionText;
+            if (onLocalize(optionID) != null)
+            {
+                currentOptionLabel.text = onLocalize(optionID);
+            }
+            else
+            {
+                currentOptionLabel.text = optionText;
+            }
 
             if (onClick != null && executeOnChange)
             {
@@ -78,6 +90,13 @@ namespace FS_LevelEditor.UI_Related
             if (currentSelectedID > options.Count - 1) currentSelectedID = 0;
 
             SelectOption(currentSelectedID);
+        }
+
+        public void RefreshLocalization()
+        {
+            titleLabel.text = Loc.Get(titleLocKey);
+
+            currentOptionLabel.text = onLocalize(currentSelectedID);
         }
     }
 }

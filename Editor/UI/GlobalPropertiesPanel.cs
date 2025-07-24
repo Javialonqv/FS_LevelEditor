@@ -175,7 +175,7 @@ namespace FS_LevelEditor.Editor.UI
             {
                 UIButtonMultiple levelButton = NGUI_Utils.CreateButtonMultiple(parent.transform, new Vector3(160, 15), Vector3.one * 0.8f, 1);
                 levelButton.name = "LevelButton";
-                levelButton.SetTitle("Level");
+                levelButton.SetTitle("Level_Word"); // FS sheet key.
                 for (int i = 0; i < Controls.GetMaxLevelFor(UpgradeSaveData.ConvertTypeToFSType(type).Value); i++)
                 {
                     bool setAsSelected = i == 0;
@@ -183,6 +183,7 @@ namespace FS_LevelEditor.Editor.UI
                 }
 
                 levelButton.onClick += (id) => SetUpgradeLevel((int)type, levelButton);
+                levelButton.onLocalize = (id) => { return Loc.Get("Level_Word") + " " + (id + 1); };
             }
 
             createdUpgradesUICount++;
@@ -318,6 +319,23 @@ namespace FS_LevelEditor.Editor.UI
         public void RefreshLocalization()
         {
             skyboxDropdown.RefreshLocalization();
+            RefreshUpgradeLevelButtonsLocalization();
+        }
+        void RefreshUpgradeLevelButtonsLocalization()
+        {
+            var upgradesParent = gameObject.GetChildWithName("Upgrades");
+
+            // Start at 1 to skip the title.
+            for (int i = 1; i < upgradesParent.transform.childCount; i++)
+            {
+                var upgradeParent = upgradesParent.transform.GetChild(i);
+
+                // The object may not have a LevelButton obj because that upgrade doesn't have a level property.
+                if (upgradeParent.gameObject.ExistsChildWithName("LevelButton"))
+                {
+                    upgradeParent.gameObject.GetChildWithName("LevelButton").GetComponent<UIButtonMultiple>().RefreshLocalization();
+                }
+            }
         }
     }
 }

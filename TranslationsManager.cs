@@ -127,12 +127,21 @@ namespace FS_LevelEditor
             if (!initialized)
             {
                 Init();
-                return null;
             }
             if (!translations.ContainsKey(key))
             {
-                if (throwErrorIfNotFound) Logger.Error($"\"{key}\" doesn't exists in the LE Translations!");
-                return key;
+                // If no translation is found in LE sheet, try to find it in the FS sheet.
+                // WARNING: Not to be confused with "shit".
+                if (LocalizationManager.Sources[0].ContainsTerm(key))
+                {
+                    UILocalizePatch.DontPatchNextGet(); // Avoid StackOverFlow.
+                    return Localization.Get(key);
+                }
+                else // If nothing of this works, just return the key, fuck it.
+                {
+                    if (throwErrorIfNotFound) Logger.Error($"\"{key}\" doesn't exists in the LE Translations!");
+                    return key;
+                }
             }
 
             int langIndex = languages.Contains(Localization.language.ToUpper()) ? languages.IndexOf(Localization.language.ToUpper()) : 0;
@@ -144,23 +153,19 @@ namespace FS_LevelEditor
             {
                 return translations[key][0]; // Return the first translation (English).
             }
-            else
+            else // If nothing of this works, just return the key, fuck it.
             {
-                // If no translation is found in LE sheet, try to find it in the FS sheet.
-                // WARNING: Not to be confused with "shit".
-                if (LocalizationManager.Sources[0].ContainsTerm(key))
-                {
-                    return Localization.Get(key);
-                }
-                else // If nothing of this works, just return the key, fuck it.
-                {
-                    return key;
-                }
+                return key;
             }
         }
 
         public static bool ExistTranslation(string key, out string translation)
         {
+            if (!initialized)
+            {
+                Init();
+            }
+
             if (translations.ContainsKey(key))
             {
                 translation = GetTranslation(key, false);
@@ -169,8 +174,10 @@ namespace FS_LevelEditor
             else
             {
                 // Use FS sheet as a last resource.
+                if (LocalizationManager.Sources.Count == 0) LocalizationManager.UpdateSources();
                 if (LocalizationManager.Sources[0].ContainsTerm(key))
                 {
+                    UILocalizePatch.DontPatchNextGet(); // Avoid StackOverFlow.
                     translation = Localization.Get(key);
                     return true;
                 }
@@ -201,15 +208,21 @@ namespace FS_LevelEditor
     [HarmonyLib.HarmonyPatch(typeof(Localization), nameof(Localization.Get))]
     public static class UILocalizePatch
     {
+        public static bool patch = true;
+        public static void DontPatchNextGet()
+        {
+            patch = false;
+        }
+
         public static bool Prefix(ref string __result, string key)
         {
-            string LETranslation = Loc.Get(key, false);
-            if (LETranslation != key) // If the translation was succesfully.
+            if (patch && Loc.HasKey(key, out string translation)) // If the translation was succesfully.
             {
-                __result = LETranslation;
+                __result = translation;
                 return false;
             }
 
+            if (!patch) patch = true;
             return true;
         }
     }
