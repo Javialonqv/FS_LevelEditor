@@ -5,6 +5,7 @@ using FS_LevelEditor.SaveSystem.SerializableTypes;
 using Harmony;
 using Il2Cpp;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,6 +42,8 @@ namespace FS_LevelEditor.SaveSystem
             {
                 case UpgradeType.DODGE:
                     return UpgradePageController.UpgradeType.DODGE;
+                case UpgradeType.SPRINT:
+                    return UpgradePageController.UpgradeType.SPRINT;
 
                 default:
                     return null;
@@ -272,10 +275,17 @@ namespace FS_LevelEditor.SaveSystem
             {
                 if (EditorController.Instance.globalProperties.ContainsKey(keyPair.Key))
                 {
-                    if (keyPair.Value is JsonElement) // The expected behaviour.
+                    // Make sure we don't replace the whole list, only modify the existing elements with the saved ones, so we don't delete the elements that
+                    // are in the default list, but not in the saved list, to avoid bugs.
+                    if (keyPair.Value is List<UpgradeSaveData>)
                     {
-                        Type toConvert = EditorController.Instance.globalProperties[keyPair.Key].GetType();
-                        EditorController.Instance.globalProperties[keyPair.Key] = LEPropertiesConverterNew.NewDeserealize(toConvert, (JsonElement)keyPair.Value);
+                        var savedList = keyPair.Value as List<UpgradeSaveData>;
+                        foreach (var upgradeSaveData in savedList)
+                        {
+                            var defaultList = EditorController.Instance.globalProperties[keyPair.Key] as List<UpgradeSaveData>;
+                            var itemIndex = defaultList.FindIndex(x => x.type == upgradeSaveData.type);
+                            defaultList[itemIndex] = upgradeSaveData;
+                        }
                     }
                     else
                     {
@@ -434,7 +444,8 @@ namespace FS_LevelEditor.SaveSystem
         {
             return new List<UpgradeSaveData>()
             {
-                new (UpgradeType.DODGE, true, Controls.m_dodgeUpgradeMaxLevel)
+                new (UpgradeType.DODGE, true, Controls.m_dodgeUpgradeMaxLevel),
+                new (UpgradeType.SPRINT, true, 0)
             };
         }
     }

@@ -51,7 +51,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateUpgradesParent();
             CreateUpgradesTitle();
-            CreateDodgeUI();
+            CreateUpgradesUI();
         }
         void Start()
         {
@@ -148,7 +148,7 @@ namespace FS_LevelEditor.Editor.UI
             title.fontSize = 35;
             title.color = NGUI_Utils.fsLabelDefaultColor;
         }
-        void CreateDodgeUI()
+        void CreateUpgradesUI()
         {
             CreateUpgradeUI(UpgradeType.DODGE);
         }
@@ -221,7 +221,11 @@ namespace FS_LevelEditor.Editor.UI
                 var upgradeData = ((List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"]).Find(x => x.type == upgradeType);
 
                 upgradeParent.gameObject.GetChildWithName("Toggle").GetComponent<UIToggle>().Set(upgradeData.active);
-                upgradeParent.gameObject.GetChildWithName("LevelButton").GetComponent<UIButtonMultiple>().SelectOption(upgradeData.level - 1);
+                // The object may not have a LevelButton obj because that upgrade doesn't have a level property.
+                if (upgradeParent.gameObject.ExistsChildWithName("LevelButton"))
+                {
+                    upgradeParent.gameObject.GetChildWithName("LevelButton").GetComponent<UIButtonMultiple>().SelectOption(upgradeData.level - 1);
+                }
             }
         }
 
