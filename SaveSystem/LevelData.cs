@@ -20,7 +20,8 @@ namespace FS_LevelEditor.SaveSystem
     public enum UpgradeType
     {
         DODGE,
-        SPRINT
+        SPRINT,
+        HYPER_SPEED
     }
     public class UpgradeSaveData
     {
@@ -44,6 +45,8 @@ namespace FS_LevelEditor.SaveSystem
                     return UpgradePageController.UpgradeType.DODGE;
                 case UpgradeType.SPRINT:
                     return UpgradePageController.UpgradeType.SPRINT;
+                case UpgradeType.HYPER_SPEED:
+                    return UpgradePageController.UpgradeType.CONCENTRATION;
 
                 default:
                     return null;
@@ -445,7 +448,8 @@ namespace FS_LevelEditor.SaveSystem
             return new List<UpgradeSaveData>()
             {
                 new (UpgradeType.DODGE, true, Controls.m_dodgeUpgradeMaxLevel),
-                new (UpgradeType.SPRINT, true, 0)
+                new (UpgradeType.SPRINT, true, 0),
+                new (UpgradeType.HYPER_SPEED, true, 0)
             };
         }
     }

@@ -238,6 +238,7 @@ namespace FS_LevelEditor.Playmode
         }
         void ApplyUpgrades(List<UpgradeSaveData> upgrades)
         {
+            // We need to apply the upgrades manually, since when PlayModeController is created, Controls.Start() is already called :(
             foreach (var upgrade in upgrades)
             {
                 switch (upgrade.type)
@@ -249,6 +250,10 @@ namespace FS_LevelEditor.Playmode
 
                     case UpgradeType.SPRINT:
                         Controls.m_hasSprintSkill = upgrade.active;
+                        break;
+
+                    case UpgradeType.HYPER_SPEED:
+                        TimeManipulator.Instance.SetInPlayerPosession(upgrade.active);
                         break;
                 }
             }

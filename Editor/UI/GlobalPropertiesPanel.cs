@@ -152,6 +152,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             CreateUpgradeUI(UpgradeType.DODGE);
             CreateUpgradeUI(UpgradeType.SPRINT);
+            CreateUpgradeUI(UpgradeType.HYPER_SPEED);
         }
         void CreateUpgradeUI(UpgradeType type)
         {

@@ -82,6 +82,9 @@ namespace FS_LevelEditor.Playmode.Patches
                 case "Has_Sprint":
                     __result = upgrades.Find(x => x.type == UpgradeType.SPRINT).active;
                     return false;
+                case "Has_HS":
+                    __result = upgrades.Find(x => x.type == UpgradeType.HYPER_SPEED).active;
+                    return false;
             }
 
             return true;
