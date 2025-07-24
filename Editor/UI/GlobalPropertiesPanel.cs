@@ -151,6 +151,7 @@ namespace FS_LevelEditor.Editor.UI
         void CreateUpgradesUI()
         {
             CreateUpgradeUI(UpgradeType.DODGE);
+            CreateUpgradeUI(UpgradeType.SPRINT);
         }
         void CreateUpgradeUI(UpgradeType type)
         {

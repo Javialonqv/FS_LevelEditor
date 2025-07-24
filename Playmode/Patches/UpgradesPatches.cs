@@ -76,8 +76,11 @@ namespace FS_LevelEditor.Playmode.Patches
             var upgrades = (List<UpgradeSaveData>)PlayModeController.Instance.globalProperties["Upgrades"];
             switch (_key)
             {
-                case "Dodge_Upgrade_Level":
+                case "Has_Dodge":
                     __result = upgrades.Find(x => x.type == UpgradeType.DODGE).active;
+                    return false;
+                case "Has_Sprint":
+                    __result = upgrades.Find(x => x.type == UpgradeType.SPRINT).active;
                     return false;
             }
 

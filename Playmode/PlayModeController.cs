@@ -246,6 +246,10 @@ namespace FS_LevelEditor.Playmode
                         Controls.m_hasDodgeSkill = upgrade.active;
                         Controls.m_currentDodgeLevel = upgrade.level;
                         break;
+
+                    case UpgradeType.SPRINT:
+                        Controls.m_hasSprintSkill = upgrade.active;
+                        break;
                 }
             }
 
