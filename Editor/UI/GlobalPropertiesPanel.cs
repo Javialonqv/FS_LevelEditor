@@ -143,7 +143,7 @@ namespace FS_LevelEditor.Editor.UI
         void CreateUpgradesTitle()
         {
             UILabel title = NGUI_Utils.CreateLabel(upgradesParent.transform, new Vector3(0, 100), new Vector3Int(600, 48, 0),
-                "Upgrades", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+                "Upgrades_Word", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
             title.name = "Title";
             title.fontSize = 35;
             title.color = NGUI_Utils.fsLabelDefaultColor;
