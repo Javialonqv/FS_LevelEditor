@@ -12,6 +12,7 @@ namespace FS_LevelEditor
     public class LE_Door : LE_Object
     {
         public enum InitialState { CLOSED, OPEN };
+        public enum InitialStateAuto { LOCKED, UNLOCKED };
 
         public MeshRenderer leftPartRed, leftPartBlue;
         public MeshRenderer rightPartRed, rightPartBlue;
@@ -22,7 +23,9 @@ namespace FS_LevelEditor
         {
             properties = new Dictionary<string, object>()
             {
-                { "InitialState", InitialState.CLOSED }
+                { "IsAuto", false },
+                { "InitialState", InitialState.CLOSED },
+                { "InitialStateAuto", InitialStateAuto.LOCKED }
             };
 
             leftPartRed = gameObject.GetChildAt("Content/Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
@@ -35,7 +38,7 @@ namespace FS_LevelEditor
         {
             if (scene == LEScene.Editor)
             {
-                UpdateMeshInEditor(GetProperty<InitialState>("InitialState"));
+                UpdateMeshInEditorAutomatically();
             }
 
             base.OnInstantiated(scene);
@@ -44,9 +47,22 @@ namespace FS_LevelEditor
         {
             if (scene == LEScene.Playmode)
             {
-                if (GetProperty<InitialState>("InitialState") == InitialState.OPEN)
+                gameObject.GetChildAt("Content/ActivateTrigger").SetActive(GetProperty<bool>("IsAuto"));
+
+                if (GetProperty<bool>("IsAuto"))
                 {
-                    doorScript.Open();
+                    if (GetProperty<InitialStateAuto>("InitialStateAuto") == InitialStateAuto.LOCKED)
+                    {
+                        doorScript.SetAllowOpen(false);
+                        doorScript.Invoke("SetToRedColor", 0.1f);
+                    }
+                }
+                else
+                {
+                    if (GetProperty<InitialState>("InitialState") == InitialState.OPEN)
+                    {
+                        doorScript.Open();
+                    }
                 }
             }
         }
@@ -61,7 +77,7 @@ namespace FS_LevelEditor
             doorScript.activationTrigger = content.GetChildWithName("ActivateTrigger").transform;
             doorScript.activationTriggerCollider = content.GetChildWithName("ActivateTrigger").GetComponent<BoxCollider>();
             doorScript.allCollidersExceptInstant = new Collider[0];
-            doorScript.allowOpen = GetProperty<InitialState>("InitialState") == InitialState.OPEN;
+            doorScript.allowOpen = true;
             doorScript.animationSpeed = 1;
             doorScript.BlocSwitchs = new GameObject[0];
             doorScript.closeSound = t_door.closeSound;
@@ -128,7 +144,7 @@ namespace FS_LevelEditor
 
             // ---------- SETUP TAGS & LAYERS ----------
 
-            content.tag = "Porte";
+            content.tag = GetProperty<bool>("IsAuto") ? "PorteAuto" : "Porte";
             teleport.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
             doorScript.activationTrigger.tag = "ActivateTrigger";
             doorScript.activationTrigger.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
@@ -140,18 +156,41 @@ namespace FS_LevelEditor
 
         public override bool SetProperty(string name, object value)
         {
-            if (name == "InitialState")
+            if (name == "IsAuto")
+            {
+                if (value is bool)
+                {
+                    properties["IsAuto"] = (bool)value;
+                    UpdateMeshInEditorAutomatically();
+                }
+            }
+            else if (name == "InitialState")
             {
                 if (value is int)
                 {
                     properties["InitialState"] = (InitialState)value;
-                    UpdateMeshInEditor((InitialState)value);
+                    UpdateMeshInEditorAutomatically();
                     return true;
                 }
                 else if (value is InitialState)
                 {
                     properties["InitialState"] = value;
-                    UpdateMeshInEditor((InitialState)value);
+                    UpdateMeshInEditorAutomatically();
+                    return true;
+                }
+            }
+            else if (name == "InitialStateAuto")
+            {
+                if (value is int)
+                {
+                    properties["InitialStateAuto"] = (InitialStateAuto)value;
+                    UpdateMeshInEditorAutomatically();
+                    return true;
+                }
+                else if (value is InitialStateAuto)
+                {
+                    properties["InitialStateAuto"] = value;
+                    UpdateMeshInEditorAutomatically();
                     return true;
                 }
             }
@@ -159,6 +198,17 @@ namespace FS_LevelEditor
             return base.SetProperty(name, value);
         }
 
+        void UpdateMeshInEditorAutomatically()
+        {
+            if (GetProperty<bool>("IsAuto"))
+            {
+                UpdateMeshInEditor(GetProperty<InitialStateAuto>("InitialStateAuto"));
+            }
+            else
+            {
+                UpdateMeshInEditor(GetProperty<InitialState>("InitialState"));
+            }
+        }
         void UpdateMeshInEditor(InitialState newState)
         {
             leftPartRed.enabled = newState == InitialState.CLOSED;
@@ -166,6 +216,14 @@ namespace FS_LevelEditor
 
             rightPartRed.enabled = newState == InitialState.CLOSED;
             rightPartBlue.enabled = newState == InitialState.OPEN;
+        }
+        void UpdateMeshInEditor(InitialStateAuto newState)
+        {
+            leftPartRed.enabled = newState == InitialStateAuto.LOCKED;
+            leftPartBlue.enabled = newState == InitialStateAuto.UNLOCKED;
+
+            rightPartRed.enabled = newState == InitialStateAuto.LOCKED;
+            rightPartBlue.enabled = newState == InitialStateAuto.UNLOCKED;
         }
     }
 }

@@ -596,10 +596,17 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(doorAttributes);
 
+            CreateObjectAttribute("Is Automatic?", AttributeType.TOGGLE, false, null, "IsAuto");
+
             CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
             var initialStateButton = doorAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
             initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
             initialStateButton.AddOption("OPEN", Color.green);
+
+            CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialStateAuto", dontChangeYPos: true);
+            var initialStateAutoButton = doorAttributes.GetChildAt("InitialStateAuto/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+            initialStateAutoButton.AddOption("LOCKED", new Color(0.8f, 0f, 0f));
+            initialStateAutoButton.AddOption("UNLOCKED", Color.green);
 
             doorAttributes.SetActive(false);
             attributesPanels.Add("Door", doorAttributes);
@@ -610,14 +617,16 @@ namespace FS_LevelEditor.Editor.UI
         {
             whereToCreateObjAttributesParent = newParent.transform;
         }
-        void CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType? fieldType, string targetPropName, bool createHastag = false, string tooltip = null)
+        void CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType? fieldType, string targetPropName,
+            bool createHastag = false, string tooltip = null, bool dontChangeYPos = false)
         {
             GameObject attributeParent = new GameObject(targetPropName);
             attributeParent.transform.parent = whereToCreateObjAttributesParent;
             attributeParent.transform.localPosition = Vector3.zero;
             attributeParent.transform.localScale = Vector3.one;
 
-            float yPos = 90 - (50 * (whereToCreateObjAttributesParent.childCount - 1));
+            float yPos = 90 - (50 * (whereToCreateObjAttributesParent.gameObject.GetChilds().Where(x => !x.ExistsChildWithName("IgnoreYPos")).ToArray().Length - 1));
+            if (dontChangeYPos) yPos += 50;
 
             if (attrType != AttributeType.BUTTON)
             {
@@ -683,6 +692,14 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     button.gameObject.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
                 }
+            }
+
+            if (dontChangeYPos)
+            {
+                GameObject ignoreYPosObj = new GameObject("IgnoreYPos");
+                ignoreYPosObj.transform.parent = attributeParent.transform;
+                ignoreYPosObj.transform.localPosition = Vector3.zero;
+                ignoreYPosObj.transform.localScale = Vector3.one;
             }
         }
         #endregion
@@ -1095,6 +1112,10 @@ namespace FS_LevelEditor.Editor.UI
                 case "Loop":
                     SetSawTravelBackORLoop(false, toggle.isChecked);
                     break;
+
+                case "IsAuto":
+                    OnDoorAutoChecked(toggle.isChecked);
+                    break;
             }
 
             if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
@@ -1133,6 +1154,11 @@ namespace FS_LevelEditor.Editor.UI
 
             if (travelBack && !loop) attributesPanels["Saw"].GetChildAt("TravelBack/Toggle").GetComponent<UIToggle>().Set(travelBack);
             if (!travelBack && loop) attributesPanels["Saw"].GetChildAt("Loop/Toggle").GetComponent<UIToggle>().Set(loop);
+        }
+        void OnDoorAutoChecked(bool newState)
+        {
+            attributesPanels["Door"].GetChildWithName("InitialState").SetActive(!newState);
+            attributesPanels["Door"].GetChildWithName("InitialStateAuto").SetActive(newState);
         }
     }
 }
