@@ -106,6 +106,7 @@ namespace FS_LevelEditor.Editor
             playButtonLE.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.PlayLevel";
             playButtonLE.GetChildWithName("LevelToResumeLabel").AddComponent<UILocalize>().key = "pause.NoSpawnObject";
             playButtonLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.PlayLevel;
+            playButtonLE.GetComponent<UIButton>().defaultColor = NGUI_Utils.fsButtonsDefaultColor;
             playButtonLE.SetActive(true);
             #endregion
 
@@ -116,6 +117,7 @@ namespace FS_LevelEditor.Editor
             saveButtonLE.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.SaveLevel";
             saveButtonLE.GetChildWithName("LevelToResumeLabel").AddComponent<UILocalize>().key = "pause.NoChanges";
             saveButtonLE.AddComponent<UIButtonPatcher>().onClick += SaveLevelWithPauseMenuButton;
+            saveButtonLE.GetComponent<UIButton>().defaultColor = NGUI_Utils.fsButtonsDefaultColor;
             saveButtonLE.SetActive(true);
             #endregion
 

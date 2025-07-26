@@ -66,6 +66,10 @@ namespace FS_LevelEditor.UI_Related
         }
 
         // Color
+        public static Color fsPauseButtonsDefaultColor
+        {
+            get { return new Color(0f, 0.3603f, 0.3603f, 1f); }
+        }
         public static Color fsButtonsDefaultColor
         {
             get { return new Color(0.218f, 0.6464f, 0.6509f, 1f); }
