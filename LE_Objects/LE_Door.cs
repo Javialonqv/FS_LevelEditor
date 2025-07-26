@@ -244,6 +244,19 @@ namespace FS_LevelEditor
                 }
                 return true;
             }
+            else if (actionName == "CloseFast")
+            {
+                if (GetProperty<bool>("IsAuto"))
+                {
+                    doorScript.SetAllowOpen(false);
+                    doorScript.SetToRedColor();
+                    doorScript.CloseFast();
+                }
+                else
+                {
+                    doorScript.CloseFast();
+                }
+            }
 
             return base.TriggerAction(actionName);
         }

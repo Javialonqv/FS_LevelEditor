@@ -428,6 +428,9 @@ namespace FS_LevelEditor
                         case LE_Event.DoorState.Closed:
                             targetObj.TriggerAction("Deactivate");
                             break;
+                        case LE_Event.DoorState.ClosedFast:
+                            targetObj.TriggerAction("CloseFast");
+                            break;
                         case LE_Event.DoorState.Open:
                             targetObj.TriggerAction("Activate");
                             break;
