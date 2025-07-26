@@ -70,7 +70,8 @@ namespace FS_LevelEditor
             SCREEN,
             SMALL_SCREEN,
             BREAKABLE_WINDOW,
-            TRIGGER
+            TRIGGER,
+            DOOR
         }
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -173,6 +174,7 @@ namespace FS_LevelEditor
         public static BlocSwitchScript t_pressurePlate;
         public static ScreenController t_screen;
         public static BreakableWindowController t_window;
+        public static PorteScript t_door;
 
         public static void GetTemplatesReferences()
         {
@@ -187,6 +189,7 @@ namespace FS_LevelEditor
             t_pressurePlate = Utilities.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer == null);
             t_screen = FindObjectOfType<ScreenController>();
             t_window = Utilities.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
+            t_door = Utilities.FindObjectOfType<PorteScript>(x => !x.isSkinV2);
         }
         #endregion
 
