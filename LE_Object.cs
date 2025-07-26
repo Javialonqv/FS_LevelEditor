@@ -366,6 +366,10 @@ namespace FS_LevelEditor
         }
 
         #region Virtual Methods
+        /// <summary>
+        /// Called at the start of the level, even if the object is disabled. Properties are already loaded when called. DON'T USE AS THE Awake() METHOD.
+        /// </summary>
+        /// <param name="scene">The scene type is being loaded.</param>
         public virtual void OnInstantiated(LEScene scene)
         {
             if (scene == LEScene.Editor)
@@ -390,10 +394,17 @@ namespace FS_LevelEditor
 
             if (eventExecuter) eventExecuter.OnInstantiated(scene);
         }
+        /// <summary>
+        /// Use this to initialize the components/data of the object.
+        /// </summary>
         public virtual void InitComponent()
         {
             initialized = true;
         }
+        /// <summary>
+        /// Called at the start of the level if the level is enabled at start, if disabled, called until the object is enabled for the first time. USE THIS AS THE Start() METHOD.
+        /// </summary>
+        /// <param name="scene">The scene type is being loaded.</param>
         public virtual void ObjectStart(LEScene scene)
         {
 
