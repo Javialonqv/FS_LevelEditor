@@ -290,7 +290,7 @@ namespace FS_LevelEditor
                 else
                 {
                     // The saw will loop by default, however, if loop is disabled, set wait time -1 for the last waypoint.
-                    if (isTheLastWaypoint && !GetProperty<bool>("Loop") && PlayModeController.Instance)
+                    if (isTheLastWaypoint && !GetProperty<bool>("Loop") && !GetProperty<bool>("TravelBack") && PlayModeController.Instance)
                     {
                         instance.SetProperty("WaitTime", -1f); // IMPORTANT: ALWAYS, ALWAYS put the damn value like a FLOAT.
                     }
