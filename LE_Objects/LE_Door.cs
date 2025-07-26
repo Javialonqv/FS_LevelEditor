@@ -201,6 +201,52 @@ namespace FS_LevelEditor
 
             return base.SetProperty(name, value);
         }
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "Activate")
+            {
+                if (GetProperty<bool>("IsAuto"))
+                {
+                    doorScript.SetAllowOpen(true);
+                    doorScript.SetToGreenColor();
+                }
+                else
+                {
+                    doorScript.Open();
+                }
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                if (GetProperty<bool>("IsAuto"))
+                {
+                    doorScript.SetAllowOpen(false);
+                    doorScript.SetToRedColor();
+                    if (doorScript.open) doorScript.Close(); // Force close in case is open.
+                }
+                else
+                {
+                    doorScript.Close();
+                }
+                return true;
+            }
+            else if (actionName == "InvertState")
+            {
+                // Depends if is auto or not, use one or another variable to check if should deactivate or activate the door.
+                bool isActive = GetProperty<bool>("IsAuto") ? doorScript.allowOpen : doorScript.open;
+                if (isActive)
+                {
+                    TriggerAction("Deactivate");
+                }
+                else
+                {
+                    TriggerAction("Activate");
+                }
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
+        }
 
         void UpdateMeshInEditorAutomatically()
         {

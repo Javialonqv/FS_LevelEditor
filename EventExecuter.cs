@@ -421,6 +421,21 @@ namespace FS_LevelEditor
                         targetObj.SetProperty("Text", @event.screenNewText);
                     }
                 }
+                else if (targetObj is LE_Door)
+                {
+                    switch (@event.doorState)
+                    {
+                        case LE_Event.DoorState.Closed:
+                            targetObj.TriggerAction("Deactivate");
+                            break;
+                        case LE_Event.DoorState.Open:
+                            targetObj.TriggerAction("Activate");
+                            break;
+                        case LE_Event.DoorState.Toggle:
+                            targetObj.TriggerAction("InvertState");
+                            break;
+                    }
+                }
             }
         }
     }

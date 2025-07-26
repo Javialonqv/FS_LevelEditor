@@ -89,6 +89,9 @@ namespace FS_LevelEditor.Editor.UI
         UISmallButtonMultiple screenColorTypeButton;
         UIToggle changeScreenTextToggle;
         UICustomInputField screenNewTextField;
+        //-----------------------------------
+        GameObject doorObjectsSettings;
+        UIButtonMultiple setDoorStateButton;
 
 
         List<string> eventsListsNames = new List<string>();
@@ -130,6 +133,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateSwitchObjectSettings();
                 Instance.CreateFlameTrapObjectSettings();
                 Instance.CreateScreenObjectSettings();
+                Instance.CreateDoorObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -942,6 +946,7 @@ namespace FS_LevelEditor.Editor.UI
             screenColorTypeButton.SetOption((int)currentSelectedEvent.screenColorType, true);
             changeScreenTextToggle.Set(currentSelectedEvent.changeScreenText);
             screenNewTextField.SetText(currentSelectedEvent.screenNewText);
+            setDoorStateButton.SelectOption((int)currentSelectedEvent.doorState);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -1039,6 +1044,10 @@ namespace FS_LevelEditor.Editor.UI
                 else if (targetObj is LE_Screen || targetObj is LE_Small_Screen)
                 {
                     screenObjectsSettings.SetActive(true);
+                }
+                else if (targetObj is LE_Door)
+                {
+                    doorObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -1719,6 +1728,42 @@ namespace FS_LevelEditor.Editor.UI
 
             screenNewTextField.onChange += OnNewScreenTextFieldChanged;
         }
+        // -----------------------------------------
+        void CreateDoorObjectSettings()
+        {
+            doorObjectsSettings = new GameObject("Door");
+            doorObjectsSettings.transform.parent = eventOptionsParent.transform;
+            doorObjectsSettings.transform.localPosition = Vector3.zero;
+            doorObjectsSettings.transform.localScale = Vector3.one;
+            doorObjectsSettings.SetActive(false);
+
+            CreateDoorObjectsTitleLabel();
+            CreateDoorStateButton();
+        }
+        void CreateDoorObjectsTitleLabel()
+        {
+            UILabel titleLabel = NGUI_Utils.CreateLabel(doorObjectsSettings.transform, Vector3.up * 40, new Vector3Int(700, 40, 0), "DOOR OPTIONS",
+                NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "TitleLabel";
+            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            titleLabel.fontSize = 35;
+        }
+        void CreateDoorStateButton()
+        {
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(doorObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+            button.name = "DoorStateButton";
+            button.Init();
+            button.SetTitle("Set Door State");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Closed", false);
+            button.AddOption("Open", false);
+            button.AddOption("Toggle", false);
+            button.onClick += (option) => OnDoorStateButtonChanged();
+
+            setDoorStateButton = button;
+            button.gameObject.SetActive(true);
+        }
         #endregion
 
 
@@ -1871,6 +1916,11 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.screenNewText = screenNewTextField.GetText();
         }
+        // -----------------------------------------
+        void OnDoorStateButtonChanged()
+        {
+            currentSelectedEvent.doorState = (LE_Event.DoorState)setDoorStateButton.currentSelectedID;
+        }
         #endregion
 
         public void ShowEventsPage(LE_Object targetObj)
@@ -2011,5 +2061,10 @@ public class LE_Event
     public ScreenColorType screenColorType { get; set; } = ScreenColorType.CYAN;
     public bool changeScreenText { get; set; } = false;
     public string screenNewText { get; set; } = "";
+    #endregion
+
+    #region Door Options
+    public enum DoorState { Do_Nothing, Closed, Open, Toggle }
+    public DoorState doorState { get; set; }
     #endregion
 }
