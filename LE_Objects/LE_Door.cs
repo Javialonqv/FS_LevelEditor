@@ -11,67 +11,107 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Door : LE_Object
     {
+        public enum InitialState { CLOSED, OPEN };
+
+        public MeshRenderer leftPartRed, leftPartBlue;
+        public MeshRenderer rightPartRed, rightPartBlue;
+
+        PorteScript doorScript;
+
+        void Awake()
+        {
+            properties = new Dictionary<string, object>()
+            {
+                { "InitialState", InitialState.CLOSED }
+            };
+
+            leftPartRed = gameObject.GetChildAt("Content/Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
+            leftPartBlue = gameObject.GetChildAt("Content/Mesh/porte1/gauche").GetComponent<MeshRenderer>();
+            rightPartRed = gameObject.GetChildAt("Content/Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
+            rightPartBlue = gameObject.GetChildAt("Content/Mesh/porte1/droite").GetComponent<MeshRenderer>();
+        }
+
+        public override void OnInstantiated(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                UpdateMeshInEditor(GetProperty<InitialState>("InitialState"));
+            }
+
+            base.OnInstantiated(scene);
+        }
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Playmode)
+            {
+                if (GetProperty<InitialState>("InitialState") == InitialState.OPEN)
+                {
+                    doorScript.Open();
+                }
+            }
+        }
+
         public override void InitComponent()
         {
             GameObject content = gameObject.GetChildWithName("Content");
 
             content.SetActive(false);
 
-            PorteScript script = content.AddComponent<PorteScript>();
-            script.activationTrigger = content.GetChildWithName("ActivateTrigger").transform;
-            script.activationTriggerCollider = content.GetChildWithName("ActivateTrigger").GetComponent<BoxCollider>();
-            script.allCollidersExceptInstant = new Collider[0];
-            script.allowOpen = true;
-            script.animationSpeed = 1;
-            script.BlocSwitchs = new GameObject[0];
-            script.closeSound = t_door.closeSound;
-            script.defaultIsRed = false;
-            script.defaultTriggerState = true;
-            script.doorEditorState = false;
-            script.doorEditorVisibleState = false;
-            script.doorMesh = content.GetChildWithName("Mesh").transform;
+            doorScript = content.AddComponent<PorteScript>();
+            doorScript.activationTrigger = content.GetChildWithName("ActivateTrigger").transform;
+            doorScript.activationTriggerCollider = content.GetChildWithName("ActivateTrigger").GetComponent<BoxCollider>();
+            doorScript.allCollidersExceptInstant = new Collider[0];
+            doorScript.allowOpen = GetProperty<InitialState>("InitialState") == InitialState.OPEN;
+            doorScript.animationSpeed = 1;
+            doorScript.BlocSwitchs = new GameObject[0];
+            doorScript.closeSound = t_door.closeSound;
+            doorScript.defaultIsRed = false;
+            doorScript.defaultTriggerState = true;
+            doorScript.doorEditorState = false;
+            doorScript.doorEditorVisibleState = false;
+            doorScript.doorMesh = content.GetChildWithName("Mesh").transform;
             //script.doorMeshV2 = content.GetChildWithName("Mesh_V2").transform;
-            script.forceTeleportGO = content.GetChildAt("Mesh/porte1/ForceTeleport_Holder/ForceTeleport_Vent");
+            doorScript.forceTeleportGO = content.GetChildAt("Mesh/porte1/ForceTeleport_Holder/ForceTeleport_Vent");
             //script.forceTeleportGO_MeshV2 = content.GetChildAt("Mesh_V2/portev2/ForceTeleport_Holder/ForceTeleport_Vent");
-            script.instantCollider = content.GetChildWithName("InstantCollider").GetComponent<BoxCollider>();
-            script.isRed = true;
-            script.isSkinV2 = false;
-            script.lockingBarsMeshes = new Il2CppSystem.Collections.Generic.List<MeshFilter>();
-            script.lockingDeviceIsLocked = true;
-            script.m_animation_V1 = script.doorMesh.GetComponent<Animation>();
-            //script.m_animation_v2 = t_door.m_animation_v2;
-            script.m_animationToUse = script.doorMesh.GetComponent<Animation>();
-            script.m_audioSource = content.GetComponent<AudioSource>();
+            doorScript.instantCollider = content.GetChildWithName("InstantCollider").GetComponent<BoxCollider>();
+            doorScript.isRed = true;
+            doorScript.isSkinV2 = false;
+            doorScript.lockingBarsMeshes = new Il2CppSystem.Collections.Generic.List<MeshFilter>();
+            doorScript.lockingDeviceIsLocked = true;
+            doorScript.m_animation_V1 = doorScript.doorMesh.GetComponent<Animation>();
+            //script.m_animation_v2 = script.doorMeshV2.GetComponent<Animation>();
+            doorScript.m_animationToUse = doorScript.doorMesh.GetComponent<Animation>();
+            doorScript.m_audioSource = content.GetComponent<AudioSource>();
             //script.m_greenPillars = content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan");
             //script.m_greenRenderers = new Il2CppSystem.Collections.Generic.List<GameObject>();
             //script.m_greenRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Cyan"));
             //script.m_greenRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Cyan"));
-            script.m_leftDoorRedRenderer = content.GetChildAt("Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
-            script.m_leftDoorRenderer = content.GetChildAt("Mesh/porte1/gauche").GetComponent<MeshRenderer>();
-            script.m_onClose = new UnityEngine.Events.UnityEvent();
-            script.m_onLock = new UnityEngine.Events.UnityEvent();
-            script.m_onOpen = new UnityEngine.Events.UnityEvent();
-            script.m_onUnlock = new UnityEngine.Events.UnityEvent();
+            doorScript.m_leftDoorRedRenderer = content.GetChildAt("Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
+            doorScript.m_leftDoorRenderer = content.GetChildAt("Mesh/porte1/gauche").GetComponent<MeshRenderer>();
+            doorScript.m_onClose = new UnityEngine.Events.UnityEvent();
+            doorScript.m_onLock = new UnityEngine.Events.UnityEvent();
+            doorScript.m_onOpen = new UnityEngine.Events.UnityEvent();
+            doorScript.m_onUnlock = new UnityEngine.Events.UnityEvent();
             //script.m_redPillars = content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red");
             //script.m_redRenderers = new Il2CppSystem.Collections.Generic.List<GameObject>();
             //script.m_redRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Red"));
             //script.m_redRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Red"));
-            script.m_rightDoorRedRenderer = content.GetChildAt("Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
-            script.m_rightDoorRenderer = content.GetChildAt("Mesh/porte1/droite").GetComponent<MeshRenderer>();
-            script.m_switchList = new InterrupteurController[0];
-            script.openSound = t_door.openSound;
-            script.open = false;
-            script.openAtStart = false;
-            script.portal = content.GetChildWithName("DoorOcclusionPortal").GetComponent<OcclusionPortal>();
+            doorScript.m_rightDoorRedRenderer = content.GetChildAt("Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
+            doorScript.m_rightDoorRenderer = content.GetChildAt("Mesh/porte1/droite").GetComponent<MeshRenderer>();
+            doorScript.m_switchList = new InterrupteurController[0];
+            doorScript.openSound = t_door.openSound;
+            doorScript.open = false;
+            doorScript.openAtStart = false;
+            doorScript.portal = content.GetChildWithName("DoorOcclusionPortal").GetComponent<OcclusionPortal>();
 
             foreach (var state in t_door.doorMesh.GetComponent<Animation>())
             {
                 var animState = state.Cast<AnimationState>();
-                script.doorMesh.GetComponent<Animation>().AddClip(animState.clip, animState.name);
+                doorScript.doorMesh.GetComponent<Animation>().AddClip(animState.clip, animState.name);
             }
-            script.doorMesh.GetComponent<Animation>().clip = t_door.doorMesh.GetComponent<Animation>().clip;
+            doorScript.doorMesh.GetComponent<Animation>().clip = t_door.doorMesh.GetComponent<Animation>().clip;
 
-            ForceTeleport teleport = script.forceTeleportGO.AddComponent<ForceTeleport>();
+            ForceTeleport teleport = doorScript.forceTeleportGO.AddComponent<ForceTeleport>();
             teleport.considerBooks = true;
             teleport.considerEncKeys = true;
             teleport.considerPowerCores = true;
@@ -79,8 +119,8 @@ namespace FS_LevelEditor
             teleport.LocalXAxisOnly = true;
             teleport.takeClosest = true;
             teleport.teleportPoints = new Il2CppSystem.Collections.Generic.List<Transform>();
-            teleport.teleportPoints.Add(script.doorMesh.Find("porte1/TeleportPoint1_Inside"));
-            teleport.teleportPoints.Add(script.doorMesh.Find("porte1/TeleportPoint2_Outside"));
+            teleport.teleportPoints.Add(doorScript.doorMesh.Find("porte1/TeleportPoint1_Inside"));
+            teleport.teleportPoints.Add(doorScript.doorMesh.Find("porte1/TeleportPoint2_Outside"));
             teleport.teleportX = true;
             teleport.teleportY = true;
             teleport.teleportZ = true;
@@ -88,14 +128,44 @@ namespace FS_LevelEditor
 
             // ---------- SETUP TAGS & LAYERS ----------
 
-            content.tag = "PorteAuto";
+            content.tag = "Porte";
             teleport.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
-            script.activationTrigger.tag = "ActivateTrigger";
-            script.activationTrigger.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
-            script.instantCollider.gameObject.layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+            doorScript.activationTrigger.tag = "ActivateTrigger";
+            doorScript.activationTrigger.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+            doorScript.instantCollider.gameObject.layer = LayerMask.NameToLayer("PlayerCollisionOnly");
 
             content.SetActive(true);
             initialized = true;
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "InitialState")
+            {
+                if (value is int)
+                {
+                    properties["InitialState"] = (InitialState)value;
+                    UpdateMeshInEditor((InitialState)value);
+                    return true;
+                }
+                else if (value is InitialState)
+                {
+                    properties["InitialState"] = value;
+                    UpdateMeshInEditor((InitialState)value);
+                    return true;
+                }
+            }
+
+            return base.SetProperty(name, value);
+        }
+
+        void UpdateMeshInEditor(InitialState newState)
+        {
+            leftPartRed.enabled = newState == InitialState.CLOSED;
+            leftPartBlue.enabled = newState == InitialState.OPEN;
+
+            rightPartRed.enabled = newState == InitialState.CLOSED;
+            rightPartBlue.enabled = newState == InitialState.OPEN;
         }
     }
 }

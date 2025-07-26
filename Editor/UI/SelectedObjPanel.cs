@@ -363,6 +363,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateScreenAttributesPanel();
             CreateSmallScreenAttributesPanel();
             CreateTriggerAttributesPanel();
+            CreateDoorAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -585,6 +586,23 @@ namespace FS_LevelEditor.Editor.UI
 
             triggerAttributes.SetActive(false);
             attributesPanels.Add("Trigger", triggerAttributes);
+        }
+        void CreateDoorAttributesPanel()
+        {
+            GameObject doorAttributes = new GameObject("Door");
+            doorAttributes.transform.parent = objectSpecificPanelsParent;
+            doorAttributes.transform.localPosition = Vector3.zero;
+            doorAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(doorAttributes);
+
+            CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
+            var initialStateButton = doorAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+            initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
+            initialStateButton.AddOption("OPEN", Color.green);
+
+            doorAttributes.SetActive(false);
+            attributesPanels.Add("Door", doorAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
