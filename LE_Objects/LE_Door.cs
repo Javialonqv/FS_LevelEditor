@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor;
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,10 +48,12 @@ namespace FS_LevelEditor
         {
             if (scene == LEScene.Playmode)
             {
+                // To avoid bugs, the trigger is disabled if it's NOT auto.
                 gameObject.GetChildAt("Content/ActivateTrigger").SetActive(GetProperty<bool>("IsAuto"));
 
                 if (GetProperty<bool>("IsAuto"))
                 {
+                    // If set as auto, the Door will be blue blue and allowed to open by default, force it so it doesn't.
                     if (GetProperty<InitialStateAuto>("InitialStateAuto") == InitialStateAuto.LOCKED)
                     {
                         doorScript.SetAllowOpen(false);
@@ -59,6 +62,7 @@ namespace FS_LevelEditor
                 }
                 else
                 {
+                    // Door is locked by default, only open it if the attribute says so.
                     if (GetProperty<InitialState>("InitialState") == InitialState.OPEN)
                     {
                         doorScript.Open();
@@ -200,6 +204,9 @@ namespace FS_LevelEditor
 
         void UpdateMeshInEditorAutomatically()
         {
+            // This method is only to force it to update in the EDITOR, not in playmode.
+            if (!EditorController.Instance) return;
+
             if (GetProperty<bool>("IsAuto"))
             {
                 UpdateMeshInEditor(GetProperty<InitialStateAuto>("InitialStateAuto"));
