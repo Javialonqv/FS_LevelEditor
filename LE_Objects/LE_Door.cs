@@ -102,6 +102,7 @@ namespace FS_LevelEditor
             //script.m_animation_v2 = script.doorMeshV2.GetComponent<Animation>();
             doorScript.m_animationToUse = doorScript.doorMesh.GetComponent<Animation>();
             doorScript.m_audioSource = content.GetComponent<AudioSource>();
+            doorScript.m_audioSource.outputAudioMixerGroup = t_door.m_audioSource.outputAudioMixerGroup;
             //script.m_greenPillars = content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan");
             //script.m_greenRenderers = new Il2CppSystem.Collections.Generic.List<GameObject>();
             //script.m_greenRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Cyan"));
