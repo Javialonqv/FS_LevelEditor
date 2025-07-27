@@ -376,6 +376,7 @@
 		<Compile Include="Playmode\Patches\ChapterTextPatches.cs" />
 		<Compile Include="Playmode\Patches\DeathLimitPatch.cs" />
 		<Compile Include="Playmode\Patches\GamePausePatch.cs" />
+		<Compile Include="Playmode\Patches\LoadBGImagePatch.cs" />
 		<Compile Include="Playmode\Patches\PlayerDeathPatch.cs" />
 		<Compile Include="Playmode\Patches\PlaySavePatches.cs" />
 		<Compile Include="Playmode\Patches\UpgradesPatches.cs" />

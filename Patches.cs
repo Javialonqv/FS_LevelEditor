@@ -50,18 +50,6 @@ namespace FS_LevelEditor
         }
     }
 
-    [HarmonyPatch(typeof(MenuController), nameof(MenuController.ShowMenuBG))]
-    public static class PlaymodeLoadBGImagePatch
-    {
-        public static void Postfix(MenuController __instance)
-        {
-            if (Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
-            {
-                __instance.menuBGTexture.mainTexture = null;
-            }
-        }
-    }
-
     [HarmonyPatch(typeof(NavigationBarController), nameof(NavigationBarController.GetActionsList))]
     public static class NavigationBarControllerPatch
     {
@@ -97,7 +85,7 @@ namespace FS_LevelEditor
         }
     }
     [HarmonyPatch(typeof(NavigationBarController), nameof(NavigationBarController.ManualButtonPressed))]
-    public static class NavigabtionButtonPressedPatch
+    public static class NavigationButtonPressedPatch
     {
         public static bool Prefix(NavigationBarController.ActionType _type)
         {
