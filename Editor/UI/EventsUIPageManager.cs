@@ -1045,7 +1045,7 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     screenObjectsSettings.SetActive(true);
                 }
-                else if (targetObj is LE_Door)
+                else if (targetObj is LE_Door || targetObj is LE_Door_V2)
                 {
                     doorObjectsSettings.SetActive(true);
                 }

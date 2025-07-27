@@ -421,7 +421,7 @@ namespace FS_LevelEditor
                         targetObj.SetProperty("Text", @event.screenNewText);
                     }
                 }
-                else if (targetObj is LE_Door)
+                else if (targetObj is LE_Door || targetObj is LE_Door_V2)
                 {
                     switch (@event.doorState)
                     {
