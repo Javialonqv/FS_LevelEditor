@@ -72,7 +72,8 @@ namespace FS_LevelEditor
             BREAKABLE_WINDOW,
             TRIGGER,
             DOOR,
-            LASER_FIELD
+            LASER_FIELD,
+            DOOR_V2
         }
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -176,6 +177,7 @@ namespace FS_LevelEditor
         public static ScreenController t_screen;
         public static BreakableWindowController t_window;
         public static PorteScript t_door;
+        public static PorteScript t_doorV2;
 
         public static void GetTemplatesReferences()
         {
@@ -191,6 +193,7 @@ namespace FS_LevelEditor
             t_screen = FindObjectOfType<ScreenController>();
             t_window = Utilities.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
             t_door = Utilities.FindObjectOfType<PorteScript>(x => !x.isSkinV2);
+            t_doorV2 = Utilities.FindObjectOfType<PorteScript>(x => x.isSkinV2);
         }
         #endregion
 
