@@ -364,6 +364,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateSmallScreenAttributesPanel();
             CreateTriggerAttributesPanel();
             CreateDoorAttributesPanel();
+            CreateDoorV2AttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -610,6 +611,30 @@ namespace FS_LevelEditor.Editor.UI
 
             doorAttributes.SetActive(false);
             attributesPanels.Add("Door", doorAttributes);
+        }
+        void CreateDoorV2AttributesPanel()
+        {
+            GameObject doorV2Attributes = new GameObject("Door V2");
+            doorV2Attributes.transform.parent = objectSpecificPanelsParent;
+            doorV2Attributes.transform.localPosition = Vector3.zero;
+            doorV2Attributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(doorV2Attributes);
+
+            CreateObjectAttribute("Is Automatic?", AttributeType.TOGGLE, false, null, "IsAuto");
+
+            CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
+            var initialStateButton = doorV2Attributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+            initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
+            initialStateButton.AddOption("OPEN", Color.green);
+
+            CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialStateAuto", dontChangeYPos: true);
+            var initialStateAutoButton = doorV2Attributes.GetChildAt("InitialStateAuto/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+            initialStateAutoButton.AddOption("LOCKED", new Color(0.8f, 0f, 0f));
+            initialStateAutoButton.AddOption("UNLOCKED", Color.green);
+
+            doorV2Attributes.SetActive(false);
+            attributesPanels.Add("Door V2", doorV2Attributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
@@ -1115,6 +1140,7 @@ namespace FS_LevelEditor.Editor.UI
 
                 case "IsAuto":
                     OnDoorAutoChecked(toggle.isChecked);
+                    OnDoorV2AutoChecked(toggle.isChecked);
                     break;
             }
 
@@ -1159,6 +1185,11 @@ namespace FS_LevelEditor.Editor.UI
         {
             attributesPanels["Door"].GetChildWithName("InitialState").SetActive(!newState);
             attributesPanels["Door"].GetChildWithName("InitialStateAuto").SetActive(newState);
+        }
+        void OnDoorV2AutoChecked(bool newState)
+        {
+            attributesPanels["Door V2"].GetChildWithName("InitialState").SetActive(!newState);
+            attributesPanels["Door V2"].GetChildWithName("InitialStateAuto").SetActive(newState);
         }
     }
 }

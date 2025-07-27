@@ -1,23 +1,75 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor;
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using InitialState = FS_LevelEditor.LE_Door.InitialState;
+using InitialStateAuto = FS_LevelEditor.LE_Door.InitialStateAuto;
 
 namespace FS_LevelEditor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     internal class LE_Door_V2 : LE_Object
     {
+        GameObject cyanPillars, redPillars;
+        GameObject topPartCyan, bottomPartCyan;
+        GameObject topPartRed, bottomPartRed;
+
         PorteScript doorScript;
 
+        void Awake()
+        {
+            properties = new Dictionary<string, object>()
+            {
+                { "IsAuto", false },
+                { "InitialState", InitialState.CLOSED },
+                { "InitialStateAuto", InitialStateAuto.LOCKED }
+            };
+
+            cyanPillars = gameObject.GetChildAt("Content/Mesh_V2/portev2/DoorPillars/Cyan");
+            redPillars = gameObject.GetChildAt("Content/Mesh_V2/portev2/DoorPillars/Red");
+            topPartCyan = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Cyan");
+            bottomPartCyan = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Cyan");
+            topPartRed = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Red");
+            bottomPartRed = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Red");
+        }
+
+        public override void OnInstantiated(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                UpdateMeshInEditorAutomatically();
+            }
+
+            base.OnInstantiated(scene);
+        }
         public override void ObjectStart(LEScene scene)
         {
             if (scene == LEScene.Playmode)
             {
-                doorScript.SetToGreenColor();
+                // To avoid bugs, the trigger is disabled if it's NOT auto.
+                gameObject.GetChildAt("Content/ActivateTrigger").SetActive(GetProperty<bool>("IsAuto"));
+
+                if (GetProperty<bool>("IsAuto"))
+                {
+                    // If set as auto, the Door will be blue and allowed to open by default, force it so it doesn't.
+                    if (GetProperty<InitialStateAuto>("InitialStateAuto") == InitialStateAuto.LOCKED)
+                    {
+                        doorScript.SetAllowOpen(false);
+                        doorScript.Invoke("SetToRedColor", 0.1f);
+                    }
+                }
+                else
+                {
+                    // Door is locked by default, only open it if the attribute says so.
+                    if (GetProperty<InitialState>("InitialState") == InitialState.OPEN)
+                    {
+                        doorScript.Open();
+                    }
+                }
             }
         }
 
@@ -99,7 +151,7 @@ namespace FS_LevelEditor
 
             // ---------- SETUP TAGS & LAYERS ----------
 
-            content.tag = "PorteAuto";
+            content.tag = GetProperty<bool>("IsAuto") ? "PorteAuto" : "Porte";
             content.GetChildAt("Mesh_V2/portev2/cadre_v2/CadreColliders/Bottom_IgnorePlayer").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
             #region Door Pillars Tags & Layers
             // --------------------------------------------------
@@ -130,6 +182,146 @@ namespace FS_LevelEditor
             content.SetActive(true);
 
             initialized = true;
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "IsAuto")
+            {
+                if (value is bool)
+                {
+                    properties["IsAuto"] = (bool)value;
+                    UpdateMeshInEditorAutomatically();
+                }
+            }
+            else if (name == "InitialState")
+            {
+                if (value is int)
+                {
+                    properties["InitialState"] = (InitialState)value;
+                    UpdateMeshInEditorAutomatically();
+                    return true;
+                }
+                else if (value is InitialState)
+                {
+                    properties["InitialState"] = value;
+                    UpdateMeshInEditorAutomatically();
+                    return true;
+                }
+            }
+            else if (name == "InitialStateAuto")
+            {
+                if (value is int)
+                {
+                    properties["InitialStateAuto"] = (InitialStateAuto)value;
+                    UpdateMeshInEditorAutomatically();
+                    return true;
+                }
+                else if (value is InitialStateAuto)
+                {
+                    properties["InitialStateAuto"] = value;
+                    UpdateMeshInEditorAutomatically();
+                    return true;
+                }
+            }
+
+            return base.SetProperty(name, value);
+        }
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "Activate")
+            {
+                if (GetProperty<bool>("IsAuto"))
+                {
+                    doorScript.SetAllowOpen(true);
+                    doorScript.SetToGreenColor();
+                }
+                else
+                {
+                    doorScript.Open();
+                }
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                if (GetProperty<bool>("IsAuto"))
+                {
+                    doorScript.SetAllowOpen(false);
+                    doorScript.SetToRedColor();
+                    if (doorScript.open) doorScript.Close(); // Force close in case is open.
+                }
+                else
+                {
+                    doorScript.Close();
+                }
+                return true;
+            }
+            else if (actionName == "InvertState")
+            {
+                // Depends if is auto or not, use one or another variable to check if should deactivate or activate the door.
+                bool isActive = GetProperty<bool>("IsAuto") ? doorScript.allowOpen : doorScript.open;
+                if (isActive)
+                {
+                    TriggerAction("Deactivate");
+                }
+                else
+                {
+                    TriggerAction("Activate");
+                }
+                return true;
+            }
+            else if (actionName == "CloseFast")
+            {
+                if (GetProperty<bool>("IsAuto"))
+                {
+                    doorScript.SetAllowOpen(false);
+                    doorScript.SetToRedColor();
+                    doorScript.CloseFast();
+                }
+                else
+                {
+                    doorScript.CloseFast();
+                }
+            }
+
+            return base.TriggerAction(actionName);
+        }
+
+        void UpdateMeshInEditorAutomatically()
+        {
+            // This method is only to force it to update in the EDITOR, not in playmode.
+            if (!EditorController.Instance) return;
+
+            if (GetProperty<bool>("IsAuto"))
+            {
+                UpdateMeshInEditor(GetProperty<InitialStateAuto>("InitialStateAuto"));
+            }
+            else
+            {
+                UpdateMeshInEditor(GetProperty<InitialState>("InitialState"));
+            }
+        }
+        void UpdateMeshInEditor(InitialState newState)
+        {
+            cyanPillars.SetActive(newState == InitialState.OPEN);
+            redPillars.SetActive(newState == InitialState.CLOSED);
+
+            topPartCyan.SetActive(newState == InitialState.OPEN);
+            bottomPartCyan.SetActive(newState == InitialState.OPEN);
+
+            topPartRed.SetActive(newState == InitialState.CLOSED);
+            bottomPartRed.SetActive(newState == InitialState.CLOSED);
+        }
+        void UpdateMeshInEditor(InitialStateAuto newState)
+        {
+            cyanPillars.SetActive(newState == InitialStateAuto.UNLOCKED);
+            redPillars.SetActive(newState == InitialStateAuto.LOCKED);
+
+            topPartCyan.SetActive(newState == InitialStateAuto.UNLOCKED);
+            bottomPartCyan.SetActive(newState == InitialStateAuto.UNLOCKED);
+
+            topPartRed.SetActive(newState == InitialStateAuto.LOCKED);
+            bottomPartRed.SetActive(newState == InitialStateAuto.LOCKED);
         }
     }
 }
