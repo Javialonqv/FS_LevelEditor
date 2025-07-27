@@ -71,7 +71,8 @@ namespace FS_LevelEditor
             SMALL_SCREEN,
             BREAKABLE_WINDOW,
             TRIGGER,
-            DOOR
+            DOOR,
+            LASER_FIELD
         }
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()

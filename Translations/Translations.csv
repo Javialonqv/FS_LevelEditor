@@ -38,6 +38,7 @@ object.SMALL_SCREEN,Small Screen,Pantalla Pequeña
 object.BREAKABLE_WINDOW,Breakable Window,Ventana Frágil
 object.TRIGGER,Trigger,Trigger
 object.DOOR,Door,Puerta
+object.LASER_FIELD,Laser Field,Campo Laser
 Player,Player,Jugador
 events.WhenActivatingEvents,When Activating,Cuando Se Activa
 events.WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva
