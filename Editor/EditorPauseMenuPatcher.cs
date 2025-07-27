@@ -53,18 +53,18 @@ namespace FS_LevelEditor.Editor
         }
         void GetReferences()
         {
-            GameObject largeButtons = pauseMenu.GetChildWithName("LargeButtons");
+            GameObject largeButtons = pauseMenu.GetChild("LargeButtons");
             GameObject uiParentObj = GameObject.Find("MainMenu/Camera/Holder/");
 
-            resumeBtn = largeButtons.GetChildWithName("1_Resume");
-            chaptersButton = largeButtons.GetChildWithName("2_Chapters");
-            newGamePlusButton = largeButtons.GetChildWithName("3_NewGamePlus");
-            newGameButton = largeButtons.GetChildWithName("4_NewGame");
-            LEButton = largeButtons.GetChildWithName("6_Javi's LevelEditor");
-            returnToMenuButton = largeButtons.GetChildWithName("7_ReturnToMenu");
-            exitButton = largeButtons.GetChildWithName("8_ExitGame");
+            resumeBtn = largeButtons.GetChild("1_Resume");
+            chaptersButton = largeButtons.GetChild("2_Chapters");
+            newGamePlusButton = largeButtons.GetChild("3_NewGamePlus");
+            newGameButton = largeButtons.GetChild("4_NewGame");
+            LEButton = largeButtons.GetChild("6_Javi's LevelEditor");
+            returnToMenuButton = largeButtons.GetChild("7_ReturnToMenu");
+            exitButton = largeButtons.GetChild("8_ExitGame");
 
-            popup = uiParentObj.GetChildWithName("Popup");
+            popup = uiParentObj.GetChild("Popup");
             popupController = popup.GetComponent<PopupController>();
             popupTitle = popup.GetChildAt("PopupHolder/Title/Label");
             popupContentLabel = popup.GetChildAt("PopupHolder/Content/Label");
@@ -73,12 +73,12 @@ namespace FS_LevelEditor.Editor
         // If for some reason the pause menu already has the buttons, destroy them, just in case something bad happens.
         void CheckForExistingButtons()
         {
-            GameObject largeButtons = pauseMenu.GetChildWithName("LargeButtons");
+            GameObject largeButtons = pauseMenu.GetChild("LargeButtons");
 
-            if (largeButtons.ExistsChildWithName("1_ResumeWienInEditor")) Destroy(largeButtons.GetChildWithName("1_ResumeWhenInEditor"));
-            if (largeButtons.ExistsChildWithName("2_PlayLevel")) Destroy(largeButtons.GetChildWithName("2_PlayLevel"));
-            if (largeButtons.ExistsChildWithName("3_SaveLevel")) Destroy(largeButtons.GetChildWithName("3_SaveLevel"));
-            if (largeButtons.ExistsChildWithName("7_ExitWhenInEditor")) Destroy(largeButtons.GetChildWithName("7_ExitWhenInEditor"));
+            if (largeButtons.ExistsChild("1_ResumeWienInEditor")) Destroy(largeButtons.GetChild("1_ResumeWhenInEditor"));
+            if (largeButtons.ExistsChild("2_PlayLevel")) Destroy(largeButtons.GetChild("2_PlayLevel"));
+            if (largeButtons.ExistsChild("3_SaveLevel")) Destroy(largeButtons.GetChild("3_SaveLevel"));
+            if (largeButtons.ExistsChild("7_ExitWhenInEditor")) Destroy(largeButtons.GetChild("7_ExitWhenInEditor"));
         }
 
         void SetupPauseWhenInEditor()
@@ -88,7 +88,7 @@ namespace FS_LevelEditor.Editor
             resumeButtonLE = Instantiate(resumeBtn, resumeBtn.transform.parent);
             resumeButtonLE.name = "1_ResumeWhenInEditor";
             Destroy(resumeButtonLE.GetComponent<ButtonController>());
-            resumeButtonLE.GetChildWithName("LevelToResumeLabel").AddComponent<UILocalize>().key = "LevelEditor";
+            resumeButtonLE.GetChild("LevelToResumeLabel").AddComponent<UILocalize>().key = "LevelEditor";
             resumeButtonLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.Resume;
             // This two more lines are used just in case the original resume button is disabled, that may happen when you didn't start a new game yet.
             if (!resumeButtonLE.GetComponent<UIButton>().isEnabled)
@@ -103,8 +103,8 @@ namespace FS_LevelEditor.Editor
             playButtonLE = Instantiate(resumeBtn, resumeBtn.transform.parent);
             playButtonLE.name = "2_PlayLevel";
             Destroy(playButtonLE.GetComponent<ButtonController>());
-            playButtonLE.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.PlayLevel";
-            playButtonLE.GetChildWithName("LevelToResumeLabel").AddComponent<UILocalize>().key = "pause.NoSpawnObject";
+            playButtonLE.GetChild("Label").GetComponent<UILocalize>().key = "pause.PlayLevel";
+            playButtonLE.GetChild("LevelToResumeLabel").AddComponent<UILocalize>().key = "pause.NoSpawnObject";
             playButtonLE.AddComponent<UIButtonPatcher>().onClick += EditorUIManager.Instance.PlayLevel;
             playButtonLE.GetComponent<UIButton>().defaultColor = NGUI_Utils.fsPauseButtonsDefaultColor;
             playButtonLE.SetActive(true);
@@ -114,8 +114,8 @@ namespace FS_LevelEditor.Editor
             saveButtonLE = Instantiate(resumeBtn, resumeBtn.transform.parent);
             saveButtonLE.name = "3_SaveLevel";
             Destroy(saveButtonLE.GetComponent<ButtonController>());
-            saveButtonLE.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.SaveLevel";
-            saveButtonLE.GetChildWithName("LevelToResumeLabel").AddComponent<UILocalize>().key = "pause.NoChanges";
+            saveButtonLE.GetChild("Label").GetComponent<UILocalize>().key = "pause.SaveLevel";
+            saveButtonLE.GetChild("LevelToResumeLabel").AddComponent<UILocalize>().key = "pause.NoChanges";
             saveButtonLE.AddComponent<UIButtonPatcher>().onClick += SaveLevelWithPauseMenuButton;
             saveButtonLE.GetComponent<UIButton>().defaultColor = NGUI_Utils.fsPauseButtonsDefaultColor;
             saveButtonLE.SetActive(true);
@@ -134,7 +134,7 @@ namespace FS_LevelEditor.Editor
         {
             Logger.DebugLog("LE pause menu enabled, patching!");
             GameObject pauseMenu = gameObject;
-            GameObject navigation = transform.parent.GetChildWithName("Navigation").gameObject;
+            GameObject navigation = transform.parent.GetChild("Navigation").gameObject;
 
             #region Large Buttons Stuff
             resumeBtn.SetActive(false);
@@ -167,19 +167,19 @@ namespace FS_LevelEditor.Editor
                 playButtonLE.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
                 playButtonLE.GetComponent<UIButton>().isEnabled = true;
                 playButtonLE.GetComponent<BoxCollider>().center = Vector3.zero;
-                playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
-                playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
-                playButtonLE.GetChildWithName("LevelToResumeLabel").SetActive(false);
+                playButtonLE.GetChild("Label").GetComponent<UILabel>().height = 50;
+                playButtonLE.GetChild("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
+                playButtonLE.GetChild("LevelToResumeLabel").SetActive(false);
             }
             else
             {
                 playButtonLE.GetComponent<UISprite>().height = 100;
                 playButtonLE.GetComponent<UISprite>().pivot = UIWidget.Pivot.Top;
                 playButtonLE.GetComponent<UIButton>().isEnabled = false;
-                playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
-                playButtonLE.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
+                playButtonLE.GetChild("Label").GetComponent<UILabel>().height = 50;
+                playButtonLE.GetChild("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
                 // Don't set the secondary label text, since it's already in the UILocalize component.
-                playButtonLE.GetChildWithName("LevelToResumeLabel").SetActive(true);
+                playButtonLE.GetChild("LevelToResumeLabel").SetActive(true);
             }
         }
         void PatchSaveLevelButton()
@@ -190,19 +190,19 @@ namespace FS_LevelEditor.Editor
                 saveButtonLE.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
                 saveButtonLE.GetComponent<UIButton>().isEnabled = true;
                 saveButtonLE.GetComponent<BoxCollider>().center = Vector3.zero;
-                saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
-                saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
-                saveButtonLE.GetChildWithName("LevelToResumeLabel").SetActive(false);
+                saveButtonLE.GetChild("Label").GetComponent<UILabel>().height = 50;
+                saveButtonLE.GetChild("Label").GetComponent<UILabel>().transform.localPosition = Vector3.zero;
+                saveButtonLE.GetChild("LevelToResumeLabel").SetActive(false);
             }
             else
             {
                 saveButtonLE.GetComponent<UISprite>().height = 100;
                 saveButtonLE.GetComponent<UISprite>().pivot = UIWidget.Pivot.Top;
                 saveButtonLE.GetComponent<UIButton>().isEnabled = false;
-                saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().height = 50;
-                saveButtonLE.GetChildWithName("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
+                saveButtonLE.GetChild("Label").GetComponent<UILabel>().height = 50;
+                saveButtonLE.GetChild("Label").GetComponent<UILabel>().transform.localPosition = new Vector3(0f, -32.5f, 0f);
                 // Don't set the secondary label text, since it's already in the UILocalize component.
-                saveButtonLE.GetChildWithName("LevelToResumeLabel").SetActive(true);
+                saveButtonLE.GetChild("LevelToResumeLabel").SetActive(true);
             }
         }
 
@@ -228,7 +228,7 @@ namespace FS_LevelEditor.Editor
             onExitPopupBackButton.name = "1_Back";
             onExitPopupBackButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
             onExitPopupBackButton.RemoveComponent<ButtonController>();
-            onExitPopupBackButton.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.ExitPopup.Back";
+            onExitPopupBackButton.GetChild("Label").GetComponent<UILocalize>().key = "pause.ExitPopup.Back";
             onExitPopupBackButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             onExitPopupBackButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
             onExitPopupBackButton.AddComponent<UIButtonPatcher>().onClick += () => OnExitPopupButtonClicked(false, false);
@@ -240,7 +240,7 @@ namespace FS_LevelEditor.Editor
             onExitPopupSaveAndExitButton.name = "2_SaveAndExit";
             onExitPopupSaveAndExitButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
             onExitPopupSaveAndExitButton.RemoveComponent<ButtonController>();
-            onExitPopupSaveAndExitButton.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.ExitPopup.SaveAndExit";
+            onExitPopupSaveAndExitButton.GetChild("Label").GetComponent<UILocalize>().key = "pause.ExitPopup.SaveAndExit";
             onExitPopupSaveAndExitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             onExitPopupSaveAndExitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
             onExitPopupSaveAndExitButton.AddComponent<UIButtonPatcher>().onClick += () => OnExitPopupButtonClicked(true, true);
@@ -253,7 +253,7 @@ namespace FS_LevelEditor.Editor
             onExitPopupExitButton.name = "3_ExitWithoutSaving";
             onExitPopupExitButton.transform.localPosition = new Vector3(200f, 0f, 0f);
             onExitPopupExitButton.RemoveComponent<ButtonController>();
-            onExitPopupExitButton.GetChildWithName("Label").GetComponent<UILocalize>().key = "pause.ExitPopup.ExitNoSave";
+            onExitPopupExitButton.GetChild("Label").GetComponent<UILocalize>().key = "pause.ExitPopup.ExitNoSave";
             onExitPopupExitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             onExitPopupExitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
             onExitPopupExitButton.GetComponent<UIButton>().defaultColor = new Color(0.3897f, 0.212f, 0.212f, 1f);

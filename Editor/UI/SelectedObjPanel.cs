@@ -112,7 +112,7 @@ namespace FS_LevelEditor.Editor.UI
             toggleObj.SetActive(false);
 
             GameObject line = new GameObject("Line");
-            line.transform.parent = toggleObj.GetChildWithName("Background").transform;
+            line.transform.parent = toggleObj.GetChild("Background").transform;
             line.transform.localPosition = Vector3.zero;
             line.transform.localScale = Vector3.one;
 
@@ -327,7 +327,7 @@ namespace FS_LevelEditor.Editor.UI
             collisionToggle.instantTween = true;
 
             GameObject line = new GameObject("Line");
-            line.transform.parent = toggle.GetChildWithName("Background").transform;
+            line.transform.parent = toggle.GetChild("Background").transform;
             line.transform.localPosition = Vector3.zero;
             line.transform.localScale = Vector3.one;
 
@@ -650,7 +650,7 @@ namespace FS_LevelEditor.Editor.UI
             attributeParent.transform.localPosition = Vector3.zero;
             attributeParent.transform.localScale = Vector3.one;
 
-            float yPos = 90 - (50 * (whereToCreateObjAttributesParent.gameObject.GetChilds().Where(x => !x.ExistsChildWithName("IgnoreYPos")).ToArray().Length - 1));
+            float yPos = 90 - (50 * (whereToCreateObjAttributesParent.gameObject.GetChilds().Where(x => !x.ExistsChild("IgnoreYPos")).ToArray().Length - 1));
             if (dontChangeYPos) yPos += 50;
 
             if (attrType != AttributeType.BUTTON)
@@ -904,7 +904,7 @@ namespace FS_LevelEditor.Editor.UI
                 string attributeName = attribute.name; // Assuming the name of the childs in the UI is the same as the REAL attribute name.
                 if (objComp.TryGetProperty(attributeName, out object value))
                 {
-                    if (attribute.ExistsChildWithName("Field"))
+                    if (attribute.ExistsChild("Field"))
                     {
                         switch (value)
                         {
@@ -914,7 +914,7 @@ namespace FS_LevelEditor.Editor.UI
                                 break;
 
                             case Color:
-                                value = Utilities.ColorToHex((Color)value);
+                                value = Utils.ColorToHex((Color)value);
                                 break;
 
                             case string:
@@ -926,9 +926,9 @@ namespace FS_LevelEditor.Editor.UI
                                 continue;
                         }
 
-                        attribute.GetChildWithName("Field").GetComponent<UIInput>().text = (string)value;
+                        attribute.GetChild("Field").GetComponent<UIInput>().text = (string)value;
                     }
-                    else if (attribute.ExistsChildWithName("Toggle"))
+                    else if (attribute.ExistsChild("Toggle"))
                     {
                         // Values for toggles can ONLY be bools, nothing else LOL.
                         if (value is not bool)
@@ -937,9 +937,9 @@ namespace FS_LevelEditor.Editor.UI
                             continue;
                         }
 
-                        attribute.GetChildWithName("Toggle").GetComponent<UIToggle>().Set((bool)value);
+                        attribute.GetChild("Toggle").GetComponent<UIToggle>().Set((bool)value);
                     }
-                    else if (attribute.ExistsChildWithName("ButtonMultiple"))
+                    else if (attribute.ExistsChild("ButtonMultiple"))
                     {
                         // Values for multiple option buttons can be, int or maybe an enum
                         if (value is not int && value is not Enum)
@@ -948,7 +948,7 @@ namespace FS_LevelEditor.Editor.UI
                             continue;
                         }
 
-                        attribute.GetChildWithName("ButtonMultiple").GetComponent<UISmallButtonMultiple>().SetOption((int)value);
+                        attribute.GetChild("ButtonMultiple").GetComponent<UISmallButtonMultiple>().SetOption((int)value);
                     }
                 }
             }
@@ -1072,7 +1072,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             // Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
             if ((propertyName.Contains("Position") || propertyName.Contains("Rotation") || propertyName.Contains("Scale")) &&
-                Utilities.TryParseFloat(inputField.GetText(), out float floatValue))
+                Utils.TryParseFloat(inputField.GetText(), out float floatValue))
             {
                 switch (propertyName)
                 {
@@ -1167,11 +1167,11 @@ namespace FS_LevelEditor.Editor.UI
         // Extra functions for specific things for specific attributes for specific objects LOL.
         void OnLaserInstaKillChecked(bool newState)
         {
-            attributesPanels["Laser"].GetChildWithName("Damage").SetActive(!newState);
+            attributesPanels["Laser"].GetChild("Damage").SetActive(!newState);
         }
         void ShowOrHideSawWaitTimeField(int waypointsCount)
         {
-            attributesPanels["Saw"].GetChildWithName("WaitTime").SetActive(waypointsCount > 0);
+            attributesPanels["Saw"].GetChild("WaitTime").SetActive(waypointsCount > 0);
         }
         void SetSawTravelBackORLoop(bool travelBack, bool loop)
         {
@@ -1183,13 +1183,13 @@ namespace FS_LevelEditor.Editor.UI
         }
         void OnDoorAutoChecked(bool newState)
         {
-            attributesPanels["Door"].GetChildWithName("InitialState").SetActive(!newState);
-            attributesPanels["Door"].GetChildWithName("InitialStateAuto").SetActive(newState);
+            attributesPanels["Door"].GetChild("InitialState").SetActive(!newState);
+            attributesPanels["Door"].GetChild("InitialStateAuto").SetActive(newState);
         }
         void OnDoorV2AutoChecked(bool newState)
         {
-            attributesPanels["Door V2"].GetChildWithName("InitialState").SetActive(!newState);
-            attributesPanels["Door V2"].GetChildWithName("InitialStateAuto").SetActive(newState);
+            attributesPanels["Door V2"].GetChild("InitialState").SetActive(!newState);
+            attributesPanels["Door V2"].GetChild("InitialStateAuto").SetActive(newState);
         }
     }
 }

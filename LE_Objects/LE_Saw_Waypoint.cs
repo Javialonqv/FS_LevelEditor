@@ -39,7 +39,7 @@ namespace FS_LevelEditor
             canBeUsedInEventsTab = false;
             canBeDisabledAtStart = false;
 
-            editorWaypointLine = gameObject.GetChildWithName("EditorWaypointLine").GetComponent<LineRenderer>();
+            editorWaypointLine = gameObject.GetChild("EditorWaypointLine").GetComponent<LineRenderer>();
             if (EditorController.Instance)
             {
                 // For some reason the shader is broken when the game's running, assign it manually.
@@ -59,20 +59,20 @@ namespace FS_LevelEditor
                 if (!initialized) InitComponent();
 
                 // Disable the transparent saw mesh ingame.
-                gameObject.GetChildWithName("Mesh").SetActive(false);
+                gameObject.GetChild("Mesh").SetActive(false);
 
                 // Disable the collider in playmode.
-                gameObject.GetChildWithName("Collider").SetActive(false);
+                gameObject.GetChild("Collider").SetActive(false);
             }
             // The "first waypoint" is just supposed to be internal, the user can't interact with it and it's in the same pos as the original saw.
             else if (isTheFirstWaypoint)
             {
-                gameObject.GetChildWithName("Collider").SetActive(false);
+                gameObject.GetChild("Collider").SetActive(false);
             }
 
             if (isTheFirstWaypoint)
             {
-                gameObject.GetChildWithName("Mesh").SetActive(false);
+                gameObject.GetChild("Mesh").SetActive(false);
             }
         }
 
@@ -155,7 +155,7 @@ namespace FS_LevelEditor
             {
                 if (value is string)
                 {
-                    if (Utilities.TryParseFloat((string)value, out float result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
                         properties["WaitTime"] = result;
                         return true;
@@ -208,8 +208,8 @@ namespace FS_LevelEditor
             // Force the damn waypoint to be transparent, for the love of god...
             if (show)
             {
-                gameObject.GetChildWithName("Mesh").SetTransparentMaterials();
-                gameObject.GetChildWithName("Mesh").GetComponent<MeshRenderer>().material.color = new Color(1f, 1f, 1f, 0.3921f);
+                gameObject.GetChild("Mesh").SetTransparentMaterials();
+                gameObject.GetChild("Mesh").GetComponent<MeshRenderer>().material.color = new Color(1f, 1f, 1f, 0.3921f);
             }
 
             // Follow the loop.

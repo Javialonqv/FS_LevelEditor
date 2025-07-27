@@ -64,14 +64,14 @@ namespace FS_LevelEditor
 
         public override void InitComponent()
         {
-            GameObject content = gameObject.GetChildWithName("Content");
+            GameObject content = gameObject.GetChild("Content");
 
             content.SetActive(false);
 
             screen = content.AddComponent<ScreenController>();
-            screen.m_content = content.GetChildWithName("Content").transform;
-            screen.m_contentAnim = content.GetChildWithName("Content").GetComponent<Animation>();
-            screen.m_screenRenderer = content.GetChildWithName("Mesh").GetComponent<MeshRenderer>();
+            screen.m_content = content.GetChild("Content").transform;
+            screen.m_contentAnim = content.GetChild("Content").GetComponent<Animation>();
+            screen.m_screenRenderer = content.GetChild("Mesh").GetComponent<MeshRenderer>();
             screen.redColorPlane = content.GetChildAt("Mesh/RedPlane");
             screen.greenColorPlane = content.GetChildAt("Mesh/GreenPlane");
             screen.m_mainLabelTMP = content.GetChildAt("Content/Label/MainLabel").GetComponent<TextMeshPro>();
@@ -158,7 +158,7 @@ namespace FS_LevelEditor
             {
                 if (value is string)
                 {
-                    if (Utilities.TryParseFloat((string)value, out float result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
                         properties["FontSize"] = result;
                         return true;
@@ -174,7 +174,7 @@ namespace FS_LevelEditor
             {
                 if (value is string)
                 {
-                    if (Utilities.TryParseFloat((string)value, out float result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
                         properties["MinFontSize"] = result;
                         return true;
@@ -190,7 +190,7 @@ namespace FS_LevelEditor
             {
                 if (value is string)
                 {
-                    if (Utilities.TryParseFloat((string)value, out float result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
                         properties["MaxFontSize"] = result;
                         return true;

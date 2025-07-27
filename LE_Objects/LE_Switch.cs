@@ -48,31 +48,31 @@ namespace FS_LevelEditor
 
         public override void InitComponent()
         {
-            GameObject button = gameObject.GetChildWithName("Content");
+            GameObject button = gameObject.GetChild("Content");
 
             #region Setup tags and layers
             button.tag = "Interrupteur";
-            button.GetChildWithName("ActivateTrigger").tag = "ActivateTrigger";
-            button.GetChildWithName("ActivateTrigger").layer = LayerMask.NameToLayer("Ignore Raycast");
+            button.GetChild("ActivateTrigger").tag = "ActivateTrigger";
+            button.GetChild("ActivateTrigger").layer = LayerMask.NameToLayer("Ignore Raycast");
 
-            button.GetChildWithName("AdditionalInteractionCollider_Sides").tag = "InteractionCollider";
-            button.GetChildWithName("AdditionalInteractionCollider_Sides").layer = LayerMask.NameToLayer("ActivableCheck");
-            button.GetChildWithName("AdditionalInteractionCollider_Radial").tag = "InteractionCollider";
-            button.GetChildWithName("AdditionalInteractionCollider_Radial").layer = LayerMask.NameToLayer("ActivableCheck");
-            button.GetChildWithName("AdditionalInteractionCollider_Vertical").tag = "InteractionCollider";
-            button.GetChildWithName("AdditionalInteractionCollider_Vertical").layer = LayerMask.NameToLayer("ActivableCheck");
+            button.GetChild("AdditionalInteractionCollider_Sides").tag = "InteractionCollider";
+            button.GetChild("AdditionalInteractionCollider_Sides").layer = LayerMask.NameToLayer("ActivableCheck");
+            button.GetChild("AdditionalInteractionCollider_Radial").tag = "InteractionCollider";
+            button.GetChild("AdditionalInteractionCollider_Radial").layer = LayerMask.NameToLayer("ActivableCheck");
+            button.GetChild("AdditionalInteractionCollider_Vertical").tag = "InteractionCollider";
+            button.GetChild("AdditionalInteractionCollider_Vertical").layer = LayerMask.NameToLayer("ActivableCheck");
 
-            button.GetChildWithName("InteractionOccluder").tag = "InteractionOccluder";
-            button.GetChildWithName("InteractionOccluder").layer = LayerMask.NameToLayer("ActivableCheck");
+            button.GetChild("InteractionOccluder").tag = "InteractionOccluder";
+            button.GetChild("InteractionOccluder").layer = LayerMask.NameToLayer("ActivableCheck");
 
-            button.GetChildWithName("AutoAimCollider").tag = "AutoAim";
-            button.GetChildWithName("AutoAimCollider").layer = LayerMask.NameToLayer("Water");
+            button.GetChild("AutoAimCollider").tag = "AutoAim";
+            button.GetChild("AutoAimCollider").layer = LayerMask.NameToLayer("Water");
             #endregion
 
             controller = button.AddComponent<InterrupteurController>();
 
             controller.ActivateButtonSound = t_switch.ActivateButtonSound;
-            controller.additionalInteractionGO = button.GetChildWithName("AdditionalInteractionCollider_Sides");
+            controller.additionalInteractionGO = button.GetChild("AdditionalInteractionCollider_Sides");
             controller.allowManualInteractAnim = true;
             controller.allowWhenSwitchingUIContext = true;
             controller.canBeUsed = true;
@@ -91,8 +91,8 @@ namespace FS_LevelEditor
             controller.lockboxAnimTrigger = "IGC_Open";
             controller.m_audioSource = button.GetComponent<AudioSource>();
             controller.m_audioSource.outputAudioMixerGroup = t_switch.m_audioSource.outputAudioMixerGroup;
-            controller.m_meshRenderer = button.GetChildWithName("ButtonMesh").GetComponent<MeshRenderer>();
-            controller.m_meshTransform = button.GetChildWithName("ButtonMesh").transform;
+            controller.m_meshRenderer = button.GetChild("ButtonMesh").GetComponent<MeshRenderer>();
+            controller.m_meshTransform = button.GetChild("ButtonMesh").transform;
             controller.offColor = InterrupteurController.ColorType.RED;
             controller.offMaterials = t_switch.offMaterials;
             controller.onColor = InterrupteurController.ColorType.GREEN;

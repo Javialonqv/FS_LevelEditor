@@ -18,7 +18,7 @@ using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    public static class Utilities
+    public static class Utils
     {
         static Coroutine customNotificationCoroutine;
 
@@ -67,7 +67,7 @@ namespace FS_LevelEditor
             return children.ToArray();
         }
 
-        public static Transform GetChildWithName(this Transform tr, string name)
+        public static Transform GetChild(this Transform tr, string name)
         {
             foreach (GameObject child in GetChilds(tr.gameObject))
             {
@@ -76,7 +76,7 @@ namespace FS_LevelEditor
 
             return null;
         }
-        public static GameObject GetChildWithName(this GameObject obj, string name)
+        public static GameObject GetChild(this GameObject obj, string name)
         {
             foreach (GameObject child in GetChilds(obj))
             {
@@ -85,7 +85,7 @@ namespace FS_LevelEditor
 
             return null;
         }
-        public static bool ExistsChildWithName(this GameObject obj, string name)
+        public static bool ExistsChild(this GameObject obj, string name)
         {
             foreach (GameObject child in GetChilds(obj))
             {
@@ -108,7 +108,7 @@ namespace FS_LevelEditor
                 }
                 else
                 {
-                    currentChild = GetChildWithName(currentChild, name);
+                    currentChild = GetChild(currentChild, name);
                 }
             }
 
@@ -224,7 +224,7 @@ namespace FS_LevelEditor
             if (reversed) tween.PlayReverse(); else tween.PlayForward();
         }
 
-        public static void CangeChildIndex(this GameObject child, int newIndex)
+        public static void ChangeChildIndex(this GameObject child, int newIndex)
         {
             if (child.transform.parent == null)
             {

@@ -220,7 +220,7 @@ namespace FS_LevelEditor.SaveSystem
             SavePatches.ReevaluateOldProperties(ref data);
 
             List<LE_ObjectData> toCheck = data.objects;
-            if (Utilities.ListHasMultipleObjectsWithSameID(toCheck, false))
+            if (Utils.ListHasMultipleObjectsWithSameID(toCheck, false))
             {
                 Logger.Warning("Multiple objects with same ID detected, trying to fix...");
                 toCheck = FixMultipleObjectsWithSameID(toCheck);
@@ -380,7 +380,7 @@ namespace FS_LevelEditor.SaveSystem
             SaveLevelData(newLevelName, levelFileNameWithoutExtension, toRename);
 
             string oldPath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-            string newPath = Path.Combine(levelsDirectory, Utilities.SanitizeFileName(newLevelName) + ".lvl");
+            string newPath = Path.Combine(levelsDirectory, Utils.SanitizeFileName(newLevelName) + ".lvl");
 
             if (File.Exists(newPath))
             {

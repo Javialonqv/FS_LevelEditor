@@ -205,16 +205,16 @@ namespace FS_LevelEditor.Editor.UI
         {
             GameObject panel = gameObject;
 
-            panel.GetChildWithName("HasTaserToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasTaser"));
-            panel.GetChildWithName("HasJetpackToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasJetpack"));
-            panel.GetChildWithName("DeathYLimit").GetComponent<UIInput>().text = (float)GetGlobalProperty("DeathYLimit") + "";
-            panel.GetChildWithName("SkyboxDropdown").GetComponent<UIDropdownPatcher>().SelectOption((int)GetGlobalProperty("Skybox"));
+            panel.GetChild("HasTaserToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasTaser"));
+            panel.GetChild("HasJetpackToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasJetpack"));
+            panel.GetChild("DeathYLimit").GetComponent<UIInput>().text = (float)GetGlobalProperty("DeathYLimit") + "";
+            panel.GetChild("SkyboxDropdown").GetComponent<UIDropdownPatcher>().SelectOption((int)GetGlobalProperty("Skybox"));
 
             UpdateUpgradesUI();
         }
         void UpdateUpgradesUI()
         {
-            var upgradesParent = gameObject.GetChildWithName("Upgrades");
+            var upgradesParent = gameObject.GetChild("Upgrades");
 
             // Start at 1 to skip the title.
             for (int i = 1; i < upgradesParent.transform.childCount; i++)
@@ -223,11 +223,11 @@ namespace FS_LevelEditor.Editor.UI
                 var upgradeType = Enum.Parse<UpgradeType>(upgradeParent.name);
                 var upgradeData = ((List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"]).Find(x => x.type == upgradeType);
 
-                upgradeParent.gameObject.GetChildWithName("Toggle").GetComponent<UIToggle>().Set(upgradeData.active);
+                upgradeParent.gameObject.GetChild("Toggle").GetComponent<UIToggle>().Set(upgradeData.active);
                 // The object may not have a LevelButton obj because that upgrade doesn't have a level property.
-                if (upgradeParent.gameObject.ExistsChildWithName("LevelButton"))
+                if (upgradeParent.gameObject.ExistsChild("LevelButton"))
                 {
-                    upgradeParent.gameObject.GetChildWithName("LevelButton").GetComponent<UIButtonMultiple>().SelectOption(upgradeData.level - 1);
+                    upgradeParent.gameObject.GetChild("LevelButton").GetComponent<UIButtonMultiple>().SelectOption(upgradeData.level - 1);
                 }
             }
         }
@@ -255,7 +255,7 @@ namespace FS_LevelEditor.Editor.UI
             switch (inputFieldName)
             {
                 case "DeathYLimit":
-                    bool toReturn = Utilities.TryParseFloat(fieldText, out float result);
+                    bool toReturn = Utils.TryParseFloat(fieldText, out float result);
                     parsedData = result;
                     return toReturn;
             }
@@ -323,7 +323,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void RefreshUpgradeLevelButtonsLocalization()
         {
-            var upgradesParent = gameObject.GetChildWithName("Upgrades");
+            var upgradesParent = gameObject.GetChild("Upgrades");
 
             // Start at 1 to skip the title.
             for (int i = 1; i < upgradesParent.transform.childCount; i++)
@@ -331,9 +331,9 @@ namespace FS_LevelEditor.Editor.UI
                 var upgradeParent = upgradesParent.transform.GetChild(i);
 
                 // The object may not have a LevelButton obj because that upgrade doesn't have a level property.
-                if (upgradeParent.gameObject.ExistsChildWithName("LevelButton"))
+                if (upgradeParent.gameObject.ExistsChild("LevelButton"))
                 {
-                    upgradeParent.gameObject.GetChildWithName("LevelButton").GetComponent<UIButtonMultiple>().RefreshLocalization();
+                    upgradeParent.gameObject.GetChild("LevelButton").GetComponent<UIButtonMultiple>().RefreshLocalization();
                 }
             }
         }

@@ -118,9 +118,9 @@ namespace FS_LevelEditor.Editor.UI
         {
             GameObject uiParentObj = GameObject.Find("MainMenu/Camera/Holder/");
 
-            occluderForWhenPaused = uiParentObj.GetChildWithName("Occluder");
-            pauseMenu = uiParentObj.GetChildWithName("Main");
-            navigation = uiParentObj.GetChildWithName("Navigation");
+            occluderForWhenPaused = uiParentObj.GetChild("Occluder");
+            pauseMenu = uiParentObj.GetChild("Main");
+            navigation = uiParentObj.GetChild("Navigation");
         }
 
         void CreateSavingLevelLabel()
@@ -311,7 +311,7 @@ namespace FS_LevelEditor.Editor.UI
             editorUIParent.SetActive(false);
             navigation.SetActive(true);
 
-            Utilities.PlayFSUISound(Utilities.FS_UISound.SHOW_NEW_PAGE_SOUND);
+            Utils.PlayFSUISound(Utils.FS_UISound.SHOW_NEW_PAGE_SOUND);
 
             // Set the occluder color, it's opaque by defualt for some reason (Anyways, Charles and his weird systems...).
             occluderForWhenPaused.GetComponent<UISprite>().color = new Color(0f, 0f, 0f, 0.9f);
@@ -419,7 +419,7 @@ namespace FS_LevelEditor.Editor.UI
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 10;
 
             Destroy(editorUIParent);
-            Destroy(pauseMenu.GetChildWithName("SavingLevelInPauseMenu"));
+            Destroy(pauseMenu.GetChild("SavingLevelInPauseMenu"));
 
             Logger.Log("LE UI deleted!");
         }
@@ -458,14 +458,14 @@ namespace FS_LevelEditor.Editor.UI
             {
                 EventsUIPageManager.Instance.eventsPanel.SetActive(true);
                 EventsUIPageManager.Instance.eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
-                Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
+                Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
             }
 
             if (context == EditorUIContext.TEXT_EDITOR && currentUIContext == EditorUIContext.NORMAL)
             {
                 TextEditorUI.Instance.editorPanel.SetActive(true);
                 TextEditorUI.Instance.editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
-                Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_SHOW);
+                Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
             }
 
             if (context == EditorUIContext.GLOBAL_PROPERTIES)
@@ -493,12 +493,12 @@ namespace FS_LevelEditor.Editor.UI
 
                     case EditorUIContext.EVENTS_PANEL:
                         EventsUIPageManager.Instance.eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
-                        Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_HIDE);
+                        Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
                         break;
 
                     case EditorUIContext.TEXT_EDITOR:
                         TextEditorUI.Instance.editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
-                        Utilities.PlayFSUISound(Utilities.FS_UISound.POPUP_UI_HIDE);
+                        Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
                         break;
                 }
 

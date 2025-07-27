@@ -96,7 +96,7 @@ namespace FS_LevelEditor
                     }
                     else if (@event.targetObjType == null && @event.isValid && !string.IsNullOrEmpty(@event.targetObjName) && !isPlayer)
                     {
-                        var objData = Utilities.SplitTypeAndId(@event.targetObjName);
+                        var objData = Utils.SplitTypeAndId(@event.targetObjName);
                         var objType = LE_Object.ConvertNameToObjectType(objData.type);
 
                         if (objType != null)
@@ -320,7 +320,7 @@ namespace FS_LevelEditor
                 {
                     if (@event.changeLightColor)
                     {
-                        targetObj.SetProperty("Color", Utilities.HexToColor(@event.newLightColor, false, null));
+                        targetObj.SetProperty("Color", Utils.HexToColor(@event.newLightColor, false, null));
                     }
                 }
                 else if (targetObj is LE_Ceiling_Light)
@@ -342,7 +342,7 @@ namespace FS_LevelEditor
 
                     if (@event.changeCeilingLightColor)
                     {
-                        targetObj.SetProperty("Color", Utilities.HexToColor(@event.newCeilingLightColor, false, null));
+                        targetObj.SetProperty("Color", Utils.HexToColor(@event.newCeilingLightColor, false, null));
                     }
                 }
                 else if (targetObj is LE_Health_Pack || targetObj is LE_Ammo_Pack)

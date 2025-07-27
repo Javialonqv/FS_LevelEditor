@@ -160,7 +160,7 @@ namespace FS_LevelEditor.Editor
 
             otherObjectsFromBundle = bundle.Load<GameObject>("OtherObjects").GetChilds();
 
-            Utilities.LoadMaterials(bundle);
+            Utils.LoadMaterials(bundle);
 
             foreach (var material in bundle.LoadAll<Material>())
             {
@@ -234,7 +234,7 @@ namespace FS_LevelEditor.Editor
             #region Preview Object and Build
             // For previewing the current selected object...
             // !Input.GetMouseButton(1) is to detect when LE camera isn't rotating.
-            if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == GizmosArrow.None && previewObjectToBuildObj != null && !Utilities.IsMouseOverUIElement())
+            if (!Input.GetMouseButton(1) && currentMode == Mode.Building && collidingArrow == GizmosArrow.None && previewObjectToBuildObj != null && !Utils.IsMouseOverUIElement())
             {
                 PreviewObject();
 
@@ -253,7 +253,7 @@ namespace FS_LevelEditor.Editor
 
             #region Align Instantiated Object to Grid
             // For snap already instantiated object to grid again.
-            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null && currentMode == Mode.Selection && !Utilities.theresAnInputFieldSelected)
+            if (Input.GetKey(KeyCode.F) && currentSelectedObj != null && currentMode == Mode.Selection && !Utils.theresAnInputFieldSelected)
             {
                 snapToGridCube.SetActive(true);
                 gizmosArrows.SetActive(false);
@@ -326,7 +326,7 @@ namespace FS_LevelEditor.Editor
 
             #region Select Object
             // For object selection...
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement() && !IsCurrentState(EditorState.SNAPPING_TO_GRID))
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utils.IsMouseOverUIElement() && !IsCurrentState(EditorState.SNAPPING_TO_GRID))
             {
                 // If it's selecting an object, well, set it as the selected one.
                 if (CanSelectObjectWithRay(out GameObject obj))
@@ -344,7 +344,7 @@ namespace FS_LevelEditor.Editor
 
             #region Delete With Click
             // If click and it's on deletion and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element..
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Deletion && collidingArrow == GizmosArrow.None && !Utilities.IsMouseOverUIElement())
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Deletion && collidingArrow == GizmosArrow.None && !Utils.IsMouseOverUIElement())
             {
                 // If it's clicking an object.
                 if (CanSelectObjectWithRay(out GameObject obj))
@@ -378,7 +378,7 @@ namespace FS_LevelEditor.Editor
             #region Delete Object With Delete
             // If press the Delete key and there's a selected object, delete it.
             // Also, only delete when the user is NOT typing in an input field.
-            if ((Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.KeypadPeriod)) && currentSelectedObj != null && !Utilities.theresAnInputFieldSelected)
+            if ((Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.KeypadPeriod)) && currentSelectedObj != null && !Utils.theresAnInputFieldSelected)
             {
                 DeleteSelectedObj();
             }
@@ -405,7 +405,7 @@ namespace FS_LevelEditor.Editor
 
             // If the user's typing and then he uses an arrow key to navigate to another character of the field... well... the arrow also moves the object LOL.
             // We need to avoid that.
-            if (!Utilities.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
+            if (!Utils.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
         }
         void LateUpdate()
         {
@@ -472,7 +472,7 @@ namespace FS_LevelEditor.Editor
         void ManageSomeShortcuts()
         {
             // Ignore shortcuts when the user is typing.
-            if (Utilities.theresAnInputFieldSelected)
+            if (Utils.theresAnInputFieldSelected)
             {
                 return;
             }
@@ -1179,7 +1179,7 @@ namespace FS_LevelEditor.Editor
             {
                 Logger.Warning("Attemped to delete one single object but IS THE LAST OBJECT IN THE SCENE!");
 
-                Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+                Utils.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
                 return;
             }
 
@@ -1245,7 +1245,7 @@ namespace FS_LevelEditor.Editor
 
                 if (existingObjects - currentSelectedObjects.Count <= 0)
                 {
-                    Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+                    Utils.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
                     return;
                 }
 
@@ -1272,7 +1272,7 @@ namespace FS_LevelEditor.Editor
                 {
                     Logger.Warning("Attemped to delete one single object but IS THE LAST OBJECT IN THE SCENE!");
 
-                    Utilities.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+                    Utils.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
                     return;
                 }
                 currentSelectedObjComponent.OnDelete();
@@ -1473,7 +1473,7 @@ namespace FS_LevelEditor.Editor
 
                     foreach (var property in objComponent.properties)
                     {
-                        newPlacedObjComp.SetProperty(property.Key, Utilities.CreateCopyOf(property.Value));
+                        newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
                     }
 
                     newSelectedObjectsList.Add(placedObj);
@@ -1499,7 +1499,7 @@ namespace FS_LevelEditor.Editor
                 LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
                 foreach (var property in objComponent.properties)
                 {
-                    newPlacedObjComp.SetProperty(property.Key, Utilities.CreateCopyOf(property.Value));
+                    newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
                 }
 
                 SetSelectedObj(placedObj);
@@ -1591,7 +1591,7 @@ namespace FS_LevelEditor.Editor
         // This method is called when the scale of the object is changed, this is to adjust the gizmos scale in case the current selected object's scale is smaller than 1.
         public void ApplyGizmosArrowsScale()
         {
-            float highestAxis = Utilities.HighestValueOfVector(currentSelectedObj.transform.localScale);
+            float highestAxis = Utils.HighestValueOfVector(currentSelectedObj.transform.localScale);
             
             if (highestAxis >= 1f)
             {
@@ -1612,7 +1612,7 @@ namespace FS_LevelEditor.Editor
             {
                 Logger.Warning("Attemped to enter playmode but THERE'S NO PLAYER SPAWN OBJECT!");
 
-                Utilities.ShowCustomNotificationRed("There's no a Player Spawn object in the level.", 2f);
+                Utils.ShowCustomNotificationRed("There's no a Player Spawn object in the level.", 2f);
                 return;
             }
 

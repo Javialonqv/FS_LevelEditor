@@ -39,7 +39,7 @@ namespace FS_LevelEditor
         {
             Laser_H_Controller template = t_laser;
 
-            laser = gameObject.GetChildWithName("Content").AddComponent<Laser_H_Controller>();
+            laser = gameObject.GetChild("Content").AddComponent<Laser_H_Controller>();
             laser.laserOriginPoint = gameObject.GetChildAt("Content/LaserOriginPoint").transform;
             laser.laserHitDamage = (int)GetProperty("Damage");
             laser.onTurnOn = new UnityEngine.Events.UnityEvent();
@@ -109,18 +109,18 @@ namespace FS_LevelEditor
             laser.safetyCollider.GetComponent<MeshCollider>().sharedMesh = template.safetyCollider.GetComponent<MeshCollider>().sharedMesh;
 
             OnlyForPC pcOnly = laser.m_currentLaserImpact.AddComponent<OnlyForPC>();
-            pcOnly.PC_ExclusiveChild = pcOnly.gameObject.GetChildWithName("PC_FX");
+            pcOnly.PC_ExclusiveChild = pcOnly.gameObject.GetChild("PC_FX");
 
             LaserPoint point = laser.m_currentLaserImpact.AddComponent<LaserPoint>();
             point.particles = point.gameObject.GetChildAt("PC_FX/Laser_Impact_PC_VFX/Sparks").GetComponent<ParticleSystem>();
             point.particlesGO = point.particles.gameObject;
-            point.hitTexture = point.gameObject.GetChildWithName("LaserPointTexture");
-            point.pcVFXHolder = point.gameObject.GetChildWithName("PC_FX");
+            point.hitTexture = point.gameObject.GetChild("LaserPointTexture");
+            point.pcVFXHolder = point.gameObject.GetChild("PC_FX");
             point.VFXParent = point.gameObject.GetChildAt("PC_FX/Laser_Impact_PC_VFX");
             point.pointLight = point.gameObject.GetChildAt("PC_FX/Laser_Impact_PC_VFX/LaserImpactRedLight");
-            point.flare = point.gameObject.GetChildWithName("LensFlare");
-            point.flareComponent = point.gameObject.GetChildWithName("LensFlare").GetComponent<LensFlare>();
-            point.flareGO = point.gameObject.GetChildWithName("LensFlare");
+            point.flare = point.gameObject.GetChild("LensFlare");
+            point.flareComponent = point.gameObject.GetChild("LensFlare").GetComponent<LensFlare>();
+            point.flareGO = point.gameObject.GetChild("LensFlare");
             point.m_audioSource = point.GetComponent<AudioSource>();
             point.hasParticleComp = true;
 
@@ -135,8 +135,8 @@ namespace FS_LevelEditor
 
             point.flare.GetComponent<LensFlare>().flare = template.m_currentLaserImpactScript.flareComponent.flare;
 
-            sync.objectGO.GetChildWithName("LaserRail").GetComponent<MeshRenderer>().material = template.GetComponent<ObjectStateSync>().objectGO.GetChildWithName("LaserRail").GetComponent<MeshRenderer>().material;
-            sync.objectGO.GetChildWithName("LaserRail").GetComponent<MeshFilter>().mesh = template.GetComponent<ObjectStateSync>().objectGO.GetChildWithName("LaserRail").GetComponent<MeshFilter>().mesh;
+            sync.objectGO.GetChild("LaserRail").GetComponent<MeshRenderer>().material = template.GetComponent<ObjectStateSync>().objectGO.GetChild("LaserRail").GetComponent<MeshRenderer>().material;
+            sync.objectGO.GetChild("LaserRail").GetComponent<MeshFilter>().mesh = template.GetComponent<ObjectStateSync>().objectGO.GetChild("LaserRail").GetComponent<MeshFilter>().mesh;
 
             laser.m_currentLaserImpactScript = point;
 

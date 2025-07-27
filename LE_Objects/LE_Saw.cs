@@ -31,7 +31,7 @@ namespace FS_LevelEditor
             };
             
 
-            waypointsParent = gameObject.GetChildWithName("Waypoints");
+            waypointsParent = gameObject.GetChild("Waypoints");
         }
 
         public override void OnInstantiated(LEScene scene)
@@ -69,14 +69,14 @@ namespace FS_LevelEditor
 
         public override void InitComponent()
         {
-            GameObject content = gameObject.GetChildWithName("Content");
+            GameObject content = gameObject.GetChild("Content");
 
             content.SetActive(false);
             content.tag = "Scie";
 
             content.GetComponent<AudioSource>().outputAudioMixerGroup = t_saw.GetComponent<AudioSource>().outputAudioMixerGroup;
 
-            RotationScie rotationScie = content.GetChildWithName("Scie_OFF").AddComponent<RotationScie>();
+            RotationScie rotationScie = content.GetChild("Scie_OFF").AddComponent<RotationScie>();
             rotationScie.vitesseRotation = 500;
 
             script = content.AddComponent<ScieScript>();
@@ -96,18 +96,18 @@ namespace FS_LevelEditor
                 script.sideSpeedMultiplier = 5;
             }
             script.scieSound = t_saw.scieSound;
-            script.offMesh = content.GetChildWithName("Scie_OFF").GetComponent<MeshRenderer>();
+            script.offMesh = content.GetChild("Scie_OFF").GetComponent<MeshRenderer>();
             script.onMesh = content.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>();
-            script.m_collision = content.GetChildWithName("Collision").GetComponent<BoxCollider>();
-            script.physicsCollider = content.GetChildWithName("Saw_PhysicsCollider").GetComponent<MeshCollider>();
-            script.m_damageCollider = content.GetChildWithName("Saw_DamageCollider").GetComponent<MeshCollider>();
+            script.m_collision = content.GetChild("Collision").GetComponent<BoxCollider>();
+            script.physicsCollider = content.GetChild("Saw_PhysicsCollider").GetComponent<MeshCollider>();
+            script.m_damageCollider = content.GetChild("Saw_DamageCollider").GetComponent<MeshCollider>();
 
             ForwardTriggerCollision damageTrigger = script.m_damageCollider.gameObject.AddComponent<ForwardTriggerCollision>();
             damageTrigger.target = script.gameObject;
             damageTrigger.triggerEnter = true;
             damageTrigger.triggerExit = true;
 
-            script.particlesHolder = content.GetChildWithName("SawParticlesHolder");
+            script.particlesHolder = content.GetChild("SawParticlesHolder");
             script.particles1 = content.GetChildAt("SawParticlesHolder/SawSparks_1").GetComponent<ParticleSystem>();
             script.particles2 = content.GetChildAt("SawParticlesHolder/SawSparks_2").GetComponent<ParticleSystem>();
             script.particles3 = content.GetChildAt("SawParticlesHolder/SawSparks_3").GetComponent<ParticleSystem>();
@@ -203,7 +203,7 @@ namespace FS_LevelEditor
             {
                 if (value is string)
                 {
-                    if (Utilities.TryParseFloat((string)value, out float result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
                         properties["WaitTime"] = result;
                         return true;

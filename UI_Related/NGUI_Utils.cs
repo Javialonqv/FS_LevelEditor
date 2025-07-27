@@ -277,7 +277,7 @@ namespace FS_LevelEditor.UI_Related
             UIToggle toggleScript = toggle.GetComponent<UIToggle>();
             toggleScript.onChange.Clear();
 
-            UISprite toggleBg = toggle.GetChildWithName("Background").GetComponent<UISprite>();
+            UISprite toggleBg = toggle.GetChild("Background").GetComponent<UISprite>();
             toggleBg.width = string.IsNullOrEmpty(text) ? size.x : size.y;
             toggleBg.height = size.y;
 
@@ -285,14 +285,14 @@ namespace FS_LevelEditor.UI_Related
 
             if (string.IsNullOrEmpty(text))
             {
-                GameObject.Destroy(toggle.GetChildWithName("Label"));
+                GameObject.Destroy(toggle.GetChild("Label"));
                 toggleBg.transform.localPosition = Vector3.zero;
                 toggle.GetComponent<BoxCollider>().center = Vector3.zero;
                 toggle.GetComponent<BoxCollider>().size = size;
             }
             else
             {
-                UILabel toggleLabel = toggle.GetChildWithName("Label").GetComponent<UILabel>();
+                UILabel toggleLabel = toggle.GetChild("Label").GetComponent<UILabel>();
                 GameObject.Destroy(toggleLabel.GetComponent<UILocalize>());
                 if (Loc.HasKey(text))
                 {
@@ -449,9 +449,9 @@ namespace FS_LevelEditor.UI_Related
             // If there's not key for the text, then it'll return the key itself, otherwise, it'll return the translation.
             if (Loc.HasKey(text))
             {
-                toggle.GetChildWithName("Label").AddComponent<UILocalize>().key = text;
+                toggle.GetChild("Label").AddComponent<UILocalize>().key = text;
             }
-            toggle.GetChildWithName("Label").GetComponent<UILabel>().text = text;
+            toggle.GetChild("Label").GetComponent<UILabel>().text = text;
 
             UIToggle script = toggle.GetComponent<UIToggle>();
             script.onChange.Clear();
@@ -469,16 +469,16 @@ namespace FS_LevelEditor.UI_Related
             toggle.name = "Toggle";
             toggle.transform.localPosition = position;
             toggle.transform.localScale = Vector3.one * 0.8f;
-            toggle.GetChildWithName("ActiveSwatch").SetActive(false);
-            toggle.GetChildWithName("ColorSample").SetActive(false);
+            toggle.GetChild("ActiveSwatch").SetActive(false);
+            toggle.GetChild("ColorSample").SetActive(false);
             toggle.SetActive(true);
 
             // If there's not key for the text, then it'll return the key itself, otherwise, it'll return the translation.
             if (Loc.HasKey(text))
             {
-                toggle.GetChildWithName("ColorName").AddComponent<UILocalize>().key = text;
+                toggle.GetChild("ColorName").AddComponent<UILocalize>().key = text;
             }
-            toggle.GetChildWithName("ColorName").GetComponent<UILabel>().text = text;
+            toggle.GetChild("ColorName").GetComponent<UILabel>().text = text;
             toggle.GetComponent<UIButton>().onClick.Clear();
 
             GameObject.Destroy(toggle.GetComponent<ColorSwatch>());

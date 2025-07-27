@@ -55,9 +55,9 @@ namespace FS_LevelEditor
         {
             RealtimeCeilingLight template = t_ceilingLight;
 
-            gameObject.GetChildWithName("Content").SetActive(false);
+            gameObject.GetChild("Content").SetActive(false);
 
-            lightComp = gameObject.GetChildWithName("Content").AddComponent<RealtimeCeilingLight>();
+            lightComp = gameObject.GetChild("Content").AddComponent<RealtimeCeilingLight>();
             lightComp.m_light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
             lightComp.active = false;
             lightComp.activeEditorState = false;
@@ -65,7 +65,7 @@ namespace FS_LevelEditor
             lightComp.allLightConePlanesRenderers.Add(gameObject.GetChildAt("Content/LightConePlanes/LightConePlane").GetComponent<MeshRenderer>());
             lightComp.allLightConePlanesRenderers.Add(gameObject.GetChildAt("Content/LightConePlanes/LightConePlane (1)").GetComponent<MeshRenderer>());
             lightComp.animStateBeforeShot = true;
-            lightComp.audioSource = gameObject.GetChildWithName("Content").GetComponent<AudioSource>();
+            lightComp.audioSource = gameObject.GetChild("Content").GetComponent<AudioSource>();
             lightComp.canBeDestroyedByHS = true;
             lightComp.currentColor = RealtimeCeilingLight.LightColor.DEFAULT;
             lightComp.editorIntensity = 2;
@@ -80,7 +80,7 @@ namespace FS_LevelEditor
             lightComp.lightConePlane_greenColor = template.lightConePlane_greenColor;
             lightComp.lightConePlane_redColor = template.lightConePlane_redColor;
             lightComp.lightConePlanes = gameObject.GetChildAt("Content/LightConePlanes");
-            lightComp.m_animationComp = gameObject.GetChildWithName("Content").GetComponent<Animation>();
+            lightComp.m_animationComp = gameObject.GetChild("Content").GetComponent<Animation>();
             lightComp.m_defaultColor = (Color)GetProperty("Color");
             lightComp.m_defaultColorNeonMesh = template.m_defaultColorNeonMesh;
             lightComp.m_flareMultiplier = 7;
@@ -127,7 +127,7 @@ namespace FS_LevelEditor
                 lightComp.GetComponent<Animation>().AddClip(animState.clip, animState.name);
             }
 
-            gameObject.GetChildWithName("Content").SetActive(true);
+            gameObject.GetChild("Content").SetActive(true);
 
             initialized = true;
         }
@@ -154,7 +154,7 @@ namespace FS_LevelEditor
                 }
                 else if (value is string)
                 {
-                    Color? color = Utilities.HexToColor((string)value, false, null);
+                    Color? color = Utils.HexToColor((string)value, false, null);
                     if (color != null)
                     {
                         properties["Color"] = color;
@@ -175,7 +175,7 @@ namespace FS_LevelEditor
                 }
                 else if (value is string)
                 {
-                    if (Utilities.TryParseFloat((string)value, out float result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
                         light.range = result;
                         SetRangeSphereScale(result);

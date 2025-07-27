@@ -40,7 +40,7 @@ namespace FS_LevelEditor
             popupScript = transform.GetChild(0).GetComponent<UIPopupList>();
 
             // Destroy UILocalize of the dropdown title.
-            GameObject.Destroy(popupScript.gameObject.GetChildWithName("LanguageTite").GetComponent<UILocalize>());
+            GameObject.Destroy(popupScript.gameObject.GetChild("LanguageTite").GetComponent<UILocalize>());
 
             popupScript.onChange.Add(new EventDelegate(this, nameof(OnDropdownChange)));
         }
@@ -50,7 +50,7 @@ namespace FS_LevelEditor
             titleLocKey = title;
 
             // Doesn't matter if the title is not a valid key.
-            popupScript.gameObject.GetChildWithName("LanguageTite").GetComponent<UILabel>().text = Loc.Get(title, false);
+            popupScript.gameObject.GetChild("LanguageTite").GetComponent<UILabel>().text = Loc.Get(title, false);
         }
 
         public void ClearOptions()
@@ -113,7 +113,7 @@ namespace FS_LevelEditor
         public void RefreshLocalization()
         {
             // Doesn't matter if the title is not a valid key.
-            popupScript.gameObject.GetChildWithName("LanguageTite").GetComponent<UILabel>().text = Loc.Get(titleLocKey, false);
+            popupScript.gameObject.GetChild("LanguageTite").GetComponent<UILabel>().text = Loc.Get(titleLocKey, false);
 
             // Doesn't matter if the optionName is not a valid key.
             popupScript.gameObject.GetChildAt("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text =

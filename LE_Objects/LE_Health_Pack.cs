@@ -24,10 +24,10 @@ namespace FS_LevelEditor
 
         public override void InitComponent()
         {
-            gameObject.GetChildWithName("Content").SetActive(false);
-            gameObject.GetChildWithName("Content").tag = "Health";
+            gameObject.GetChild("Content").SetActive(false);
+            gameObject.GetChild("Content").tag = "Health";
 
-            DisolveOnEnable disolve = gameObject.GetChildWithName("Content").AddComponent<DisolveOnEnable>();
+            DisolveOnEnable disolve = gameObject.GetChild("Content").AddComponent<DisolveOnEnable>();
 
             disolve.onEnable = true;
             disolve.m_renderer = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
@@ -39,14 +39,14 @@ namespace FS_LevelEditor
             disolve.endOffset = 3;
             disolve.ignoreTimeScale = true;
 
-            health = gameObject.GetChildWithName("Content").AddComponent<Health>();
+            health = gameObject.GetChild("Content").AddComponent<Health>();
 
             health.preciseCollider = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<MeshCollider>();
             Invoke("SetRespawnTime", 0.1f);
             health.timerBeforeRespawn = -1;
             health.generalGrowSpeed = 3;
-            health.m_animComp = gameObject.GetChildWithName("Content").GetComponent<Animation>();
-            health.m_boxCollider = gameObject.GetChildWithName("Content").GetComponent<BoxCollider>();
+            health.m_animComp = gameObject.GetChild("Content").GetComponent<Animation>();
+            health.m_boxCollider = gameObject.GetChild("Content").GetComponent<BoxCollider>();
             health.mesh = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
             health.m_light = gameObject.GetChildAt("Content/Mesh/PC_Only").GetComponent<Light>();
             health.m_lightBreathAnimComp = gameObject.GetChildAt("Content/Mesh/PC_Only").GetComponent<Animation>();
@@ -56,7 +56,7 @@ namespace FS_LevelEditor
             health.zScaleSpeed = 1;
             health.m_dissolve = disolve;
 
-            gameObject.GetChildWithName("Content").SetActive(true);
+            gameObject.GetChild("Content").SetActive(true);
 
             initialized = true;
         }
@@ -73,7 +73,7 @@ namespace FS_LevelEditor
             {
                 if (value is string)
                 {
-                    if (Utilities.TryParseFloat((string)value, out float result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
                         properties["RespawnTime"] = result;
                         return true;

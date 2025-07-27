@@ -240,13 +240,13 @@ namespace FS_LevelEditor.Editor.UI
             {
                 foreach (var button in grid.GetChilds())
                 {
-                    button.GetChildWithName("ActiveSwatch").SetActive(false);
+                    button.GetChild("ActiveSwatch").SetActive(false);
                 }
             }
 
             GameObject currentGrid = objectsToBuildGrids[currentCategoryID][currentGridID];
             GameObject newSelectedButton = currentGrid.transform.GetChild(buttonID).gameObject;
-            newSelectedButton.GetChildWithName("ActiveSwatch").SetActive(true);
+            newSelectedButton.GetChild("ActiveSwatch").SetActive(true);
         }
 
         void PreviousGridPage()

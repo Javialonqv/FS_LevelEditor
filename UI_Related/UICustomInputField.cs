@@ -144,7 +144,7 @@ namespace FS_LevelEditor.UI_Related
             switch (inputType)
             {
                 case UIInputType.HEX_COLOR:
-                    return Utilities.HexToColor(GetText(), false, null) != null;
+                    return Utils.HexToColor(GetText(), false, null) != null;
 
                 case UIInputType.NON_NEGATIVE_INT:
                     if (int.TryParse(GetText(), out int intResult))
@@ -154,7 +154,7 @@ namespace FS_LevelEditor.UI_Related
                     return false;
 
                 case UIInputType.NON_NEGATIVE_FLOAT:
-                    if (Utilities.TryParseFloat(GetText(), out float floatResult))
+                    if (Utils.TryParseFloat(GetText(), out float floatResult))
                     {
                         return floatResult >= 0;
                     }
@@ -164,7 +164,7 @@ namespace FS_LevelEditor.UI_Related
                     return int.TryParse(GetText(), out int intResult2);
 
                 case UIInputType.FLOAT:
-                    return Utilities.TryParseFloat(GetText(), out float floatResult2);
+                    return Utils.TryParseFloat(GetText(), out float floatResult2);
 
                 case UIInputType.PLAIN_TEXT:
                     return true;

@@ -73,13 +73,13 @@ namespace FS_LevelEditor
 
         public override void InitComponent()
         {
-            GameObject content = gameObject.GetChildWithName("Content");
+            GameObject content = gameObject.GetChild("Content");
 
             content.SetActive(false);
 
             doorScript = content.AddComponent<PorteScript>();
-            doorScript.activationTrigger = content.GetChildWithName("ActivateTrigger").transform;
-            doorScript.activationTriggerCollider = content.GetChildWithName("ActivateTrigger").GetComponent<BoxCollider>();
+            doorScript.activationTrigger = content.GetChild("ActivateTrigger").transform;
+            doorScript.activationTriggerCollider = content.GetChild("ActivateTrigger").GetComponent<BoxCollider>();
             doorScript.allCollidersExceptInstant = new Collider[0];
             doorScript.allowOpen = true;
             doorScript.animationSpeed = 1;
@@ -89,11 +89,11 @@ namespace FS_LevelEditor
             doorScript.defaultTriggerState = true;
             doorScript.doorEditorState = false;
             doorScript.doorEditorVisibleState = false;
-            doorScript.doorMesh = content.GetChildWithName("Mesh").transform;
+            doorScript.doorMesh = content.GetChild("Mesh").transform;
             //script.doorMeshV2 = content.GetChildWithName("Mesh_V2").transform;
             doorScript.forceTeleportGO = content.GetChildAt("Mesh/porte1/ForceTeleport_Holder/ForceTeleport_Vent");
             //script.forceTeleportGO_MeshV2 = content.GetChildAt("Mesh_V2/portev2/ForceTeleport_Holder/ForceTeleport_Vent");
-            doorScript.instantCollider = content.GetChildWithName("InstantCollider").GetComponent<BoxCollider>();
+            doorScript.instantCollider = content.GetChild("InstantCollider").GetComponent<BoxCollider>();
             doorScript.isRed = true;
             doorScript.isSkinV2 = false;
             doorScript.lockingBarsMeshes = new Il2CppSystem.Collections.Generic.List<MeshFilter>();
@@ -123,7 +123,7 @@ namespace FS_LevelEditor
             doorScript.openSound = t_door.openSound;
             doorScript.open = false;
             doorScript.openAtStart = false;
-            doorScript.portal = content.GetChildWithName("DoorOcclusionPortal").GetComponent<OcclusionPortal>();
+            doorScript.portal = content.GetChild("DoorOcclusionPortal").GetComponent<OcclusionPortal>();
 
             foreach (var state in t_door.doorMesh.GetComponent<Animation>())
             {

@@ -24,13 +24,13 @@ namespace FS_LevelEditor
 
         public override void InitComponent()
         {
-            GameObject content = gameObject.GetChildWithName("Content");
+            GameObject content = gameObject.GetChild("Content");
 
             content.SetActive(false);
 
             trap = content.AddComponent<FlameTrapController>();
             trap.flameLight = content.GetChildAt("VFX/FlameLight").GetComponent<Light>();
-            trap.loopAudioSource = content.GetChildWithName("LoopAudioSource").GetComponent<AudioSource>();
+            trap.loopAudioSource = content.GetChild("LoopAudioSource").GetComponent<AudioSource>();
             trap.startClip = t_flameTrap.startClip;
             trap.loopClip = t_flameTrap.loopClip;
             trap.stopClip = t_flameTrap.stopClip;
@@ -44,20 +44,20 @@ namespace FS_LevelEditor
             trap.firstOnAddition = 0;
             trap.offMaterials = t_flameTrap.offMaterials;
             trap.onMaterials = t_flameTrap.onMaterials;
-            trap.particles = content.GetChildWithName("VFX").GetComponent<ParticleSystem>();
+            trap.particles = content.GetChild("VFX").GetComponent<ParticleSystem>();
             trap.m_meshRenderer = content.GetChildAt("VFX/Mesh").GetComponent<MeshRenderer>();
             trap.noDeactivation = false;
-            trap.activationTrigger = content.GetChildWithName("ActivateTrigger").GetComponent<BoxCollider>();
+            trap.activationTrigger = content.GetChild("ActivateTrigger").GetComponent<BoxCollider>();
             trap.reducedColliderSizeMultipliers = Vector3.one;
             trap.reducedFlameLengthMultiplier = 0.5f;
 
-            DOT dot = content.GetChildWithName("DOT_Trigger").AddComponent<DOT>();
+            DOT dot = content.GetChild("DOT_Trigger").AddComponent<DOT>();
             dot.pushCubes = true;
             dot.pushForce = 8;
             dot.DPS = 80;
             dot.useDmgCollisionDetection = false;
-            dot.collisionCheckPoint = content.GetChildWithName("DamageObstructionPoint").transform;
-            dot.damageColLayer = t_flameTrap.gameObject.GetChildWithName("DOT_Trigger").GetComponent<DOT>().damageColLayer;
+            dot.collisionCheckPoint = content.GetChild("DamageObstructionPoint").transform;
+            dot.damageColLayer = t_flameTrap.gameObject.GetChild("DOT_Trigger").GetComponent<DOT>().damageColLayer;
 
             trap.dot = dot;
 

@@ -117,8 +117,8 @@ namespace FS_LevelEditor.Playmode
             backToLEButton = Instantiate(template, template.transform.parent);
             backToLEButton.name = "4_BackToLE";
             Destroy(backToLEButton.GetComponent<ButtonController>());
-            Destroy(backToLEButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            backToLEButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Back to Level Editor";
+            Destroy(backToLEButton.GetChild("Label").GetComponent<UILocalize>());
+            backToLEButton.GetChild("Label").GetComponent<UILabel>().text = "Back to Level Editor";
 
             backToLEButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(GoBackToLEWhileInPlayMode)));
 

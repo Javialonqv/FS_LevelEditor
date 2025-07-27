@@ -54,7 +54,7 @@ namespace FS_LevelEditor.Editor.UI
             editorPanel = Instantiate(NGUI_Utils.optionsPanel, EditorUIManager.Instance.editorUIParent.transform);
             editorPanel.name = "TextEditorPanel";
 
-            windowTitle = editorPanel.GetChildWithName("Title").GetComponent<UILabel>();
+            windowTitle = editorPanel.GetChild("Title").GetComponent<UILabel>();
             windowTitle.gameObject.RemoveComponent<UILocalize>();
 
             foreach (var child in editorPanel.GetChilds())
@@ -65,7 +65,7 @@ namespace FS_LevelEditor.Editor.UI
                 Destroy(child);
             }
 
-            editorPanel.transform.GetChildWithName("Window").transform.localPosition = Vector3.zero;
+            editorPanel.transform.GetChild("Window").transform.localPosition = Vector3.zero;
             windowTitle.transform.localPosition = new Vector3(0f, 386.4f, 0f);
 
             // Remove the OptionsController and UILocalize components so I can change the title of the panel. Also the TweenAlpha since it won't be needed.
@@ -93,7 +93,7 @@ namespace FS_LevelEditor.Editor.UI
             editorPanel.GetComponent<TweenScale>().to = Vector3.one;
 
             // For some reason sometimes the window sprite can be transparent, force it to be opaque.
-            editorPanel.GetChildWithName("Window").GetComponent<UISprite>().alpha = 1f;
+            editorPanel.GetChild("Window").GetComponent<UISprite>().alpha = 1f;
 
             // Add a collider so the user can't interact with the other objects.
             editorPanel.AddComponent<BoxCollider>().size = new Vector3(100000f, 100000f, 1f);

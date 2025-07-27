@@ -25,12 +25,12 @@ namespace FS_LevelEditor
 
         public override void InitComponent()
         {
-            GameObject content = gameObject.GetChildWithName("Content");
+            GameObject content = gameObject.GetChild("Content");
 
             BreakableWindowController window = content.AddComponent<BreakableWindowController>();
             window.isFirstWindow = true;
-            window.partsHolder = content.GetChildWithName("BreakableWindow_Shattered").transform;
-            window.m_meshRenderer = content.GetChildWithName("Window_OriginalMesh").GetComponent<MeshRenderer>();
+            window.partsHolder = content.GetChild("BreakableWindow_Shattered").transform;
+            window.m_meshRenderer = content.GetChild("Window_OriginalMesh").GetComponent<MeshRenderer>();
             window.m_audioSource = content.GetComponent<AudioSource>();
             window.m_generalBreakSounds = t_window.m_generalBreakSounds;
             if (!staticVariablesInitialized)
@@ -120,7 +120,7 @@ namespace FS_LevelEditor
                 part.gameObject.tag = "Destructible";
                 part.gameObject.layer = LayerMask.NameToLayer("Glass");
             }
-            content.GetChildWithName("ConstantPlayerBlockingCollider").layer = LayerMask.NameToLayer("Player");
+            content.GetChild("ConstantPlayerBlockingCollider").layer = LayerMask.NameToLayer("Player");
 
             staticVariablesInitialized = true;
             initialized = true;

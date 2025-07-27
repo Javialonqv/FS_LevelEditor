@@ -145,7 +145,7 @@ namespace FS_LevelEditor.Editor.UI
             eventsPanel = Instantiate(NGUI_Utils.optionsPanel, EditorUIManager.Instance.editorUIParent.transform);
             eventsPanel.name = "EventsPanel";
 
-            eventsWindowTitle = eventsPanel.GetChildWithName("Title").GetComponent<UILabel>();
+            eventsWindowTitle = eventsPanel.GetChild("Title").GetComponent<UILabel>();
             eventsWindowTitle.gameObject.RemoveComponent<UILocalize>();
 
             foreach (var child in eventsPanel.GetChilds())
@@ -156,7 +156,7 @@ namespace FS_LevelEditor.Editor.UI
                 Destroy(child);
             }
 
-            eventsPanel.transform.GetChildWithName("Window").transform.localPosition = Vector3.zero;
+            eventsPanel.transform.GetChild("Window").transform.localPosition = Vector3.zero;
             eventsWindowTitle.transform.localPosition = new Vector3(0f, 386.4f, 0f);
 
             // Remove the OptionsController and UILocalize components so I can change the title of the panel. Also the TweenAlpha since it won't be needed.
@@ -184,7 +184,7 @@ namespace FS_LevelEditor.Editor.UI
             eventsPanel.GetComponent<TweenScale>().to = Vector3.one;
 
             // For some reason sometimes the window sprite can be transparent, force it to be opaque.
-            eventsPanel.GetChildWithName("Window").GetComponent<UISprite>().alpha = 1f;
+            eventsPanel.GetChild("Window").GetComponent<UISprite>().alpha = 1f;
 
             // Add a collider so the user can't interact with the other objects.
             eventsPanel.AddComponent<BoxCollider>().size = new Vector3(100000f, 100000f, 1f);
@@ -496,7 +496,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             // This method is the only one with the playSound parm because it's the only one I wanna call when
             // opening the events windows with NO sound at all.
-            if (playSound) Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+            if (playSound) Utils.PlayFSUISound(Utils.FS_UISound.INTERACTION_AVAILABLE);
 
             firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
             secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
@@ -509,7 +509,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void SecondEventsListBtnClick()
         {
-            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+            Utils.PlayFSUISound(Utils.FS_UISound.INTERACTION_AVAILABLE);
 
             firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
@@ -522,7 +522,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void ThirdEventsListBtnClick()
         {
-            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_AVAILABLE);
+            Utils.PlayFSUISound(Utils.FS_UISound.INTERACTION_AVAILABLE);
 
             firstEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
@@ -637,7 +637,7 @@ namespace FS_LevelEditor.Editor.UI
                 deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
 
                 // Create another sprite "inside" of the button one.
-                UISprite trashSprite = deleteBtn.gameObject.GetChildWithName("Background").GetComponent<UISprite>();
+                UISprite trashSprite = deleteBtn.gameObject.GetChild("Background").GetComponent<UISprite>();
                 trashSprite.name = "Trash";
                 trashSprite.SetExternalSprite("Trash");
                 trashSprite.width = 30;
@@ -692,7 +692,7 @@ namespace FS_LevelEditor.Editor.UI
 
         void AddNewEvent()
         {
-            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_UNAVAILABLE);
+            Utils.PlayFSUISound(Utils.FS_UISound.INTERACTION_UNAVAILABLE);
 
             ((List<LE_Event>)targetObj.properties[currentEventsListName]).Add(new LE_Event());
 
@@ -733,7 +733,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         internal void OnEventSelect(int selectedID)
         {
-            Utilities.PlayFSUISound(Utilities.FS_UISound.INTERACTION_UNAVAILABLE);
+            Utils.PlayFSUISound(Utils.FS_UISound.INTERACTION_UNAVAILABLE);
 
             // GetEventsList should return the same events list that when creating the events list, it should be fine :)
             // *Comment copied from RenameEvent() LOL.
@@ -1823,7 +1823,7 @@ namespace FS_LevelEditor.Editor.UI
         void OnNewLightColorInputFieldChanged()
         {
             // Set the input field color:
-            Color? outputColor = Utilities.HexToColor(newLightColorInputField.text, false, null);
+            Color? outputColor = Utils.HexToColor(newLightColorInputField.text, false, null);
             if (outputColor != null)
             {
                 newLightColorInputField.GetComponent<UISprite>().color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
@@ -1848,7 +1848,7 @@ namespace FS_LevelEditor.Editor.UI
         void OnNewCeilingLightColorInputFieldChanged()
         {
             // Set the input field color:
-            Color? outputColor = Utilities.HexToColor(newCeilingLightColorInputField.text, false, null);
+            Color? outputColor = Utils.HexToColor(newCeilingLightColorInputField.text, false, null);
             if (outputColor != null)
             {
                 newCeilingLightColorInputField.GetComponent<UISprite>().color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
@@ -1871,7 +1871,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             if (newPackRespawnTimeInputField.isValid)
             {
-                currentSelectedEvent.packRespawnTime = Utilities.ParseFloat(newPackRespawnTimeInputField.GetText());
+                currentSelectedEvent.packRespawnTime = Utils.ParseFloat(newPackRespawnTimeInputField.GetText());
             }
         }
         void OnSpawnPackNowToggleChanged()

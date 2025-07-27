@@ -60,7 +60,7 @@ namespace FS_LevelEditor
                 }
                 else if (value is string)
                 {
-                    Color? color = Utilities.HexToColor((string)value, false, null);
+                    Color? color = Utils.HexToColor((string)value, false, null);
                     if (color != null)
                     {
                         light.color = (Color)color;
@@ -79,7 +79,7 @@ namespace FS_LevelEditor
                 }
                 else if (value is string)
                 {
-                    if (Utilities.TryParseFloat((string)value, out float result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
                         light.intensity = result;
                         properties["Intensity"] = result;
@@ -98,7 +98,7 @@ namespace FS_LevelEditor
                 }
                 else if (value is string)
                 {
-                    if (Utilities.TryParseFloat((string)value, out float result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
                         light.range = result;
                         SetRangeSphereScale(result);

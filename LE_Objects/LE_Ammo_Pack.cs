@@ -25,8 +25,8 @@ namespace FS_LevelEditor
 
         public override void InitComponent()
         {
-            gameObject.GetChildWithName("Content").SetActive(false);
-            gameObject.GetChildWithName("Content").tag = "AmmoPack";
+            gameObject.GetChild("Content").SetActive(false);
+            gameObject.GetChild("Content").tag = "AmmoPack";
 
             DisolveOnEnable disolve = gameObject.GetChildAt("Content/Mesh/PC_Only").AddComponent<DisolveOnEnable>();
 
@@ -38,12 +38,12 @@ namespace FS_LevelEditor
             disolve.endOffset = 0.8f;
             disolve.ignoreTimeScale = true;
 
-            ammo = gameObject.GetChildWithName("Content").AddComponent<Ammo>();
+            ammo = gameObject.GetChild("Content").AddComponent<Ammo>();
 
             ammo.preciseCollider = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<MeshCollider>();
             ammo.preciseCollider2 = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<CapsuleCollider>();
-            ammo.m_animComp = gameObject.GetChildWithName("Content").GetComponent<Animation>();
-            ammo.m_boxCollider = gameObject.GetChildWithName("Content").GetComponent<BoxCollider>();
+            ammo.m_animComp = gameObject.GetChild("Content").GetComponent<Animation>();
+            ammo.m_boxCollider = gameObject.GetChild("Content").GetComponent<BoxCollider>();
             ammo.mesh = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
             ammo.timerBeforeRespawn = -1;
             Invoke("SetRespawnTime", 0.1f);
@@ -55,7 +55,7 @@ namespace FS_LevelEditor
             ammo.m_flare = gameObject.GetChildAt("Content/Mesh/AmmoFlare").GetComponent<LensFlare>();
             ammo.m_dissolve = disolve;
 
-            gameObject.GetChildWithName("Content").SetActive(true);
+            gameObject.GetChild("Content").SetActive(true);
 
             initialized = true;
         }
@@ -72,7 +72,7 @@ namespace FS_LevelEditor
             {
                 if (value is string)
                 {
-                    if (Utilities.TryParseFloat((string)value, out float result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
                         properties["RespawnTime"] = result;
                         return true;

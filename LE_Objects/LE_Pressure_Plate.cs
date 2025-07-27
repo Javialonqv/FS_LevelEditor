@@ -35,7 +35,7 @@ namespace FS_LevelEditor
 
         public override void InitComponent()
         {
-            GameObject content = gameObject.GetChildWithName("Content");
+            GameObject content = gameObject.GetChild("Content");
 
             BlocSwitchScript script = content.AddComponent<BlocSwitchScript>();
             script.boxCollider = content.GetComponent<BoxCollider>();
@@ -49,11 +49,11 @@ namespace FS_LevelEditor
             script.onDrop = new Messenger();
             script.onDropElements = new Messenger[0];
             script.onRemoveElements = new Messenger[0];
-            script.m_meshRenderer = content.GetChildWithName("MeshDynamic").GetComponent<MeshRenderer>();
-            script.m_animation = content.GetChildWithName("MeshDynamic").GetComponent<Animation>();
+            script.m_meshRenderer = content.GetChild("MeshDynamic").GetComponent<MeshRenderer>();
+            script.m_animation = content.GetChild("MeshDynamic").GetComponent<Animation>();
             script.meshOff = content.GetChildAt("MeshDynamic/MeshOffStatic").GetComponent<MeshRenderer>();
             script.meshOn = content.GetChildAt("MeshDynamic/MeshOnStatic").GetComponent<MeshRenderer>();
-            script.meshDynamic = content.GetChildWithName("MeshDynamic").GetComponent<MeshRenderer>();
+            script.meshDynamic = content.GetChild("MeshDynamic").GetComponent<MeshRenderer>();
             script.onRemove = new Messenger();
             script.canBeCancelled = true;
             script.worksWithCubes = true;
@@ -74,8 +74,8 @@ namespace FS_LevelEditor
                 AnimationState state = clip.Cast<AnimationState>();
                 script.m_animation.AddClip(state.clip, state.name);
             }
-            content.GetChildWithName("MeshDynamic").GetComponent<BoxCollider>().material =
-            t_pressurePlate.gameObject.GetChildWithName("MeshDynamic").GetComponent<BoxCollider>().material;
+            content.GetChild("MeshDynamic").GetComponent<BoxCollider>().material =
+            t_pressurePlate.gameObject.GetChild("MeshDynamic").GetComponent<BoxCollider>().material;
 
             ConfigureEvents(script);
 
@@ -84,7 +84,7 @@ namespace FS_LevelEditor
             content.tag = "BlocSwitch";
             content.layer = LayerMask.NameToLayer("Ignore Raycast");
 
-            content.GetChildWithName("MeshDynamic").layer = LayerMask.NameToLayer("AllExceptPlayer");
+            content.GetChild("MeshDynamic").layer = LayerMask.NameToLayer("AllExceptPlayer");
             content.GetChildAt("MeshDynamic/CompoundColliders").layer = LayerMask.NameToLayer("AllExceptPlayer");
             content.GetChildAt("MeshDynamic/CompoundColliders/Edge1").layer = LayerMask.NameToLayer("AllExceptPlayer");
             content.GetChildAt("MeshDynamic/CompoundColliders/Edge2").layer = LayerMask.NameToLayer("AllExceptPlayer");

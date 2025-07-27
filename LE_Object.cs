@@ -185,15 +185,15 @@ namespace FS_LevelEditor
             t_healthPack = FindObjectOfType<Health>();
             t_saw = FindObjectOfType<ScieScript>();
             t_switch = FindObjectOfType<InterrupteurController>();
-            t_cube = Utilities.FindObjectOfType<BlocScript>(x => x.IsCube());
+            t_cube = Utils.FindObjectOfType<BlocScript>(x => x.IsCube());
             t_laser = FindObjectOfType<Laser_H_Controller>();
             t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
             t_flameTrap = FindObjectOfType<FlameTrapController>();
-            t_pressurePlate = Utilities.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer == null);
+            t_pressurePlate = Utils.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer == null);
             t_screen = FindObjectOfType<ScreenController>();
-            t_window = Utilities.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
-            t_door = Utilities.FindObjectOfType<PorteScript>(x => !x.isSkinV2);
-            t_doorV2 = Utilities.FindObjectOfType<PorteScript>(x => x.isSkinV2);
+            t_window = Utils.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
+            t_door = Utils.FindObjectOfType<PorteScript>(x => !x.isSkinV2);
+            t_doorV2 = Utils.FindObjectOfType<PorteScript>(x => x.isSkinV2);
         }
         #endregion
 
@@ -204,7 +204,7 @@ namespace FS_LevelEditor
 
             if (hasItsOwnClass)
             {
-                if (Utilities.IsOverridingMethod(this.GetType(), "Start"))
+                if (Utils.IsOverridingMethod(this.GetType(), "Start"))
                 {
                     Logger.Error($"\"{GetType().Name}\" is overriding Start() method, this is not allowed, please use ObjectStart() instead.");
                 }
@@ -234,7 +234,7 @@ namespace FS_LevelEditor
             if (PlayModeController.Instance != null)
             {
                 // Destroy the snap triggers of this object.
-                Destroy(gameObject.GetChildWithName("SnapTriggers"));
+                Destroy(gameObject.GetChild("SnapTriggers"));
             }
 
             // If greater than 0 that means this object DOES support events.
@@ -252,14 +252,14 @@ namespace FS_LevelEditor
         /// <returns>An instance of the created LE_Object component class.</returns>
         public static LE_Object AddComponentToObject(GameObject targetObj, ObjectType objectType, bool skipIDInitialization = false)
         {
-            string className = "LE_" + Utilities.ObjectTypeToFormatedName(objectType).Replace(' ', '_');
+            string className = "LE_" + Utils.ObjectTypeToFormatedName(objectType).Replace(' ', '_');
             Type classType = Type.GetType("FS_LevelEditor." + className);
 
             if (classType != null)
             {
                 if (HasReachedObjectLimit(classType))
                 {
-                    Utilities.ShowCustomNotificationRed("Object limit reached for this object.", 2f);
+                    Utils.ShowCustomNotificationRed("Object limit reached for this object.", 2f);
                     return null;
                 }
                 LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(Il2CppType.From(classType));
@@ -298,7 +298,7 @@ namespace FS_LevelEditor
                 gameObject.name = objectFullNameWithID;
 
                 // If the objects list has more than 1 object of the same type AND with the same ID, well, that's not allowed, show an error popup.
-                if (!Utilities.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) &&  Utilities.ListHasMultipleObjectsWithSameID(objects.ToList()))
+                if (!Utils.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) &&  Utils.ListHasMultipleObjectsWithSameID(objects.ToList()))
                 {
                     LE_CustomErrorPopups.MultipleObjectsWithSameID();
                 }
@@ -319,7 +319,7 @@ namespace FS_LevelEditor
             gameObject.name = objectFullNameWithID;
 
             // If the objects list has more than 1 object of the same type AND with the same ID, well, that's not allowed, show an error popup.
-            if (!Utilities.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) && Utilities.ListHasMultipleObjectsWithSameID(objects.ToList()))
+            if (!Utils.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) && Utils.ListHasMultipleObjectsWithSameID(objects.ToList()))
             {
                 LE_CustomErrorPopups.MultipleObjectsWithSameID();
             }
@@ -429,7 +429,7 @@ namespace FS_LevelEditor
                 if (converted != null)
                 {
                     // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
-                    Utilities.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatches.ConvertFromSerializableValue(converted));
+                    Utils.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatches.ConvertFromSerializableValue(converted));
                 }
             }
 
@@ -603,7 +603,7 @@ namespace FS_LevelEditor
         }
         public static Color GetObjectColorForObject(ObjectType objectType, LEObjectContext context)
         {
-            string className = "LE_" + Utilities.ObjectTypeToFormatedName(objectType).Replace(' ', '_');
+            string className = "LE_" + Utils.ObjectTypeToFormatedName(objectType).Replace(' ', '_');
             Type classType = Type.GetType("FS_LevelEditor." + className);
 
             if (classType != null)
@@ -659,13 +659,13 @@ namespace FS_LevelEditor
 
         public void SetCollidersState(bool newEnabledState)
         {
-            if (!gameObject.ExistsChildWithName("Content"))
+            if (!gameObject.ExistsChild("Content"))
             {
                 Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
                 return;
             }
 
-            foreach (var collider in gameObject.GetChildWithName("Content").TryGetComponents<Collider>())
+            foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>())
             {
                 collider.enabled = newEnabledState;
             }
@@ -673,9 +673,9 @@ namespace FS_LevelEditor
         }
         public void SetEditorCollider(bool newEnabledState)
         {
-            if (gameObject.ExistsChildWithName("EditorCollider"))
+            if (gameObject.ExistsChild("EditorCollider"))
             {
-                gameObject.GetChildWithName("EditorCollider").SetActive(newEnabledState);
+                gameObject.GetChild("EditorCollider").SetActive(newEnabledState);
             }
             else
             {

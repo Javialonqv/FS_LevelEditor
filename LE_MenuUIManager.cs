@@ -152,8 +152,8 @@ namespace FS_LevelEditor
             GameObject.Destroy(defaultLEButton);
 
             // Change the button's label text.
-            GameObject.Destroy(levelEditorUIButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            levelEditorUIButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Level Editor";
+            GameObject.Destroy(levelEditorUIButton.GetChild("Label").GetComponent<UILocalize>());
+            levelEditorUIButton.GetChild("Label").GetComponent<UILabel>().text = "Level Editor";
 
             // Change the button's on click action.
             GameObject.Destroy(levelEditorUIButton.GetComponent<ButtonController>());
@@ -182,7 +182,7 @@ namespace FS_LevelEditor
             }
 
             // Change the title properties of the panel.
-            UILabel title = leMenuPanel.GetChildWithName("Title").GetComponent<UILabel>();
+            UILabel title = leMenuPanel.GetChild("Title").GetComponent<UILabel>();
             title.gameObject.RemoveComponent<UILocalize>(); // I fucking hate UILocalize.
             title.transform.localPosition = new Vector3(0, 417, 0);
             title.width = 800;
@@ -200,8 +200,8 @@ namespace FS_LevelEditor
             leMenuPanel.GetComponent<TweenAlpha>().mRect = panel;
 
             // Do I even need to explain WHAT this does?
-            leMenuPanel.GetChildWithName("Window").GetComponent<UISprite>().depth = -1;
-            leMenuPanel.GetChildWithName("Window").AddComponent<TweenAlpha>().duration = 0.2f;
+            leMenuPanel.GetChild("Window").GetComponent<UISprite>().depth = -1;
+            leMenuPanel.GetChild("Window").AddComponent<TweenAlpha>().duration = 0.2f;
             leMenuPanel.GetChildAt("Window/Window2").GetComponent<UISprite>().depth = -1;
         }
 
@@ -238,7 +238,7 @@ namespace FS_LevelEditor
 
             // Set the in-button sprite data.
             UISprite sprite = new GameObject("Image").AddComponent<UISprite>();
-            sprite.transform.parent = backButton.GetChildWithName("Background").transform;
+            sprite.transform.parent = backButton.GetChild("Background").transform;
             sprite.transform.localScale = Vector3.one;
             sprite.SetExternalSprite("BackArrow");
             sprite.color = new Color(0.6235f, 1f, 0.9843f, 1f);
@@ -287,7 +287,7 @@ namespace FS_LevelEditor
 
             // Set the in-button sprite data.
             UISprite sprite = new GameObject("Image").AddComponent<UISprite>();
-            sprite.transform.parent = addButton.GetChildWithName("Background").transform;
+            sprite.transform.parent = addButton.GetChild("Background").transform;
             sprite.transform.localScale = Vector3.one;
             sprite.SetExternalSprite("Plus");
             sprite.color = new Color(0.6235f, 1f, 0.9843f, 1f);
@@ -305,7 +305,7 @@ namespace FS_LevelEditor
         void CreateCurrentModVersionLabel()
         {
             // Create a copy of the menu title and change its partent to the options' parent.
-            GameObject version = GameObject.Instantiate(leMenuPanel.GetChildWithName("Title"));
+            GameObject version = GameObject.Instantiate(leMenuPanel.GetChild("Title"));
             version.transform.parent = leMenuPanel.transform;
             version.name = "CurrentModVersion";
 
@@ -334,7 +334,7 @@ namespace FS_LevelEditor
         }
         void CreateCreditsLabel()
         {
-            GameObject credits = GameObject.Instantiate(leMenuPanel.GetChildWithName("Title"));
+            GameObject credits = GameObject.Instantiate(leMenuPanel.GetChild("Title"));
             credits.transform.parent = leMenuPanel.transform;
             credits.name = "Credits";
 
@@ -355,7 +355,7 @@ namespace FS_LevelEditor
 
         public void CreateTopLevelInfo()
         {
-            GameObject labelTemplate = leMenuPanel.GetChildWithName("Title");
+            GameObject labelTemplate = leMenuPanel.GetChild("Title");
             levelNameLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
             levelNameLabel.name = "LevelName";
             levelNameLabel.SetActive(false);
@@ -636,8 +636,8 @@ namespace FS_LevelEditor
             onDeletePopupBackButton.name = "1_Back";
             onDeletePopupBackButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
             Destroy(onDeletePopupBackButton.GetComponent<ButtonController>());
-            Destroy(onDeletePopupBackButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            onDeletePopupBackButton.GetChildWithName("Label").GetComponent<UILabel>().text = "No";
+            Destroy(onDeletePopupBackButton.GetChild("Label").GetComponent<UILocalize>());
+            onDeletePopupBackButton.GetChild("Label").GetComponent<UILabel>().text = "No";
             onDeletePopupBackButton.GetComponent<UIButton>().onClick.Clear();
             onDeletePopupBackButton.GetComponent<UIButton>().onClick.Add(new EventDelegate(this, nameof(OnDeletePopupBackButton)));
             onDeletePopupBackButton.SetActive(true);
@@ -647,8 +647,8 @@ namespace FS_LevelEditor
             onDeletePopupDeleteButton.name = "2_Delete";
             onDeletePopupDeleteButton.transform.localPosition = new Vector3(200f, 0f, 0f);
             Destroy(onDeletePopupDeleteButton.GetComponent<ButtonController>());
-            Destroy(onDeletePopupDeleteButton.GetChildWithName("Label").GetComponent<UILocalize>());
-            onDeletePopupDeleteButton.GetChildWithName("Label").GetComponent<UILabel>().text = "Delete";
+            Destroy(onDeletePopupDeleteButton.GetChild("Label").GetComponent<UILocalize>());
+            onDeletePopupDeleteButton.GetChild("Label").GetComponent<UILabel>().text = "Delete";
             onDeletePopupDeleteButton.GetComponent<UIButton>().onClick.Clear();
 
             UIButton deleteButton = onDeletePopupDeleteButton.GetComponent<UIButton>();

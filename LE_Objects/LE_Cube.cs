@@ -21,19 +21,19 @@ namespace FS_LevelEditor
             if (EditorController.Instance)
             {
                 // COME ON, STUPID CUBE PHYSICS, I HATE YOU!!!!
-                Destroy(gameObject.GetChildWithName("Content").GetComponent<Rigidbody>());
+                Destroy(gameObject.GetChild("Content").GetComponent<Rigidbody>());
             }
         }
 
         public override void InitComponent()
         {
-            gameObject.GetChildWithName("Content").SetActive(false);
-            gameObject.GetChildWithName("Content").tag = "Bloc";
+            gameObject.GetChild("Content").SetActive(false);
+            gameObject.GetChild("Content").tag = "Bloc";
 
             //BlocScript template = FindObjectsOfType<BlocScript>().Where(x => x.IsCube()).ToArray()[0];
             BlocScript template = t_cube;
 
-            blocScript = gameObject.GetChildWithName("Content").AddComponent<BlocScript>();
+            blocScript = gameObject.GetChild("Content").AddComponent<BlocScript>();
             blocScript.allCompoundColliders = new Il2CppSystem.Collections.Generic.List<Collider>();
             blocScript.transparentMeshFilter = gameObject.GetChildAt("Content/Bloc_TransparentMesh").GetComponent<MeshFilter>();
             blocScript.normalMesh = template.normalMesh;
@@ -94,7 +94,7 @@ namespace FS_LevelEditor
 
             blocScript.m_audioSource.outputAudioMixerGroup = template.m_audioSource.outputAudioMixerGroup;
 
-            DisolveOnEnable disolve = gameObject.GetChildWithName("Content").AddComponent<DisolveOnEnable>();
+            DisolveOnEnable disolve = gameObject.GetChild("Content").AddComponent<DisolveOnEnable>();
             disolve.m_renderer = gameObject.GetChildAt("Content/Bloc_DefaultMesh").GetComponent<MeshRenderer>();
             disolve.dissolveMaterials = template.m_dissolve.dissolveMaterials;
             disolve.finalMaterials = template.m_dissolve.finalMaterials;
@@ -106,7 +106,7 @@ namespace FS_LevelEditor
             disolve.onEnable = false;
             disolve.useGlobal = false;
 
-            OnlyForPC pcOnly = gameObject.GetChildWithName("Content").AddComponent<OnlyForPC>();
+            OnlyForPC pcOnly = gameObject.GetChild("Content").AddComponent<OnlyForPC>();
             pcOnly.PC_ExclusiveChild = gameObject.GetChildAt("Content/OnlyForPC");
             pcOnly.allowOnHDEdition = true;
             pcOnly.allowOniOS = true;
@@ -114,7 +114,7 @@ namespace FS_LevelEditor
             pcOnly.lightForImportance = gameObject.GetChildAt("Content/OnlyForPC/Light").GetComponent<Light>();
             pcOnly.forceLightMode = true;
 
-            MovingPlatformProxy platformProxy = gameObject.GetChildWithName("Content").AddComponent<MovingPlatformProxy>();
+            MovingPlatformProxy platformProxy = gameObject.GetChild("Content").AddComponent<MovingPlatformProxy>();
             platformProxy.dynamicProxy = true;
 
             blocScript.m_dissolve = disolve;
@@ -123,7 +123,7 @@ namespace FS_LevelEditor
             blocScript.m_collisionAudioSource.outputAudioMixerGroup = template.m_collisionAudioSource.outputAudioMixerGroup;
             blocScript.m_collisionAudioSource2.outputAudioMixerGroup = template.m_collisionAudioSource2.outputAudioMixerGroup;
 
-            gameObject.GetChildWithName("Content").SetActive(true);
+            gameObject.GetChild("Content").SetActive(true);
 
             // This is one of the worst bugfixes you'll ever see in game development, but HEY!! IT WORKS LOL.
             // This forces the CheckForRespawn method to be called, just like it does in the BlocScript class.
