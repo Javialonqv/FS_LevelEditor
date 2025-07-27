@@ -106,3 +106,4 @@ Chapter 3 & 4,Chapter 3 & 4,Capítulo 3 Y 4
 Loop,Loop,Bucle
 TravelBackTooltip,The saw [00FFFF]returns[-] to its original position by [FFFF00]passing through the waypoints.[-],La sierra [00FFFF]regresa[-] a su posición original al [FFFF00]pasar por todos sus waypoints.[-]
 LoopTooltip,The saw [00FFFF]returns[-] to its original position in a [FFFF00]straight line [b]ignoring[/b] the waypoints.[-],La sierra [00FFFF]regresa[-] a su posición original en una [FFFF00]linea recta [b]ignorando[/b] los waypoints.[-]
+EventsDoorStateTooltip,"[b][FFFF00]NOTE:[-][/b] If the door is set as [00FFFF]automatic[-], trying to open it will only [b]allow it to open[/b], but it won't really open until a [b]player gets closer to it.[/b]","[b][FFFF00]NOTA:[-][/b] Si la puerta está puesta como [00FFFF]automática[-], tratar de abrirla solo le [b]permitirá abrirse[/b], pero no se abrirá realmente hasta que [b]el jugador se acerque a ella.[/b]"

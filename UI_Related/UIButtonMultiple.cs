@@ -84,6 +84,14 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
+        public void SetTooltip(string tooltipKey)
+        {
+            FractalTooltip tooltip = GetComponent<FractalTooltip>();
+            if (!tooltip) tooltip = gameObject.AddComponent<FractalTooltip>();
+
+            tooltip.toolTipLocKey = tooltipKey;
+        }
+
         void OnClick()
         {
             currentSelectedID++;

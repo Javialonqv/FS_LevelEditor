@@ -1761,6 +1761,7 @@ namespace FS_LevelEditor.Editor.UI
             button.AddOption("Open", false);
             button.AddOption("Toggle", false);
             button.onClick += (option) => OnDoorStateButtonChanged();
+            button.SetTooltip("EventsDoorStateTooltip");
 
             setDoorStateButton = button;
             button.gameObject.SetActive(true);
