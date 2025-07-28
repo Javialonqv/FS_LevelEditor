@@ -25,6 +25,12 @@ namespace FS_LevelEditor
         Editor,
         Playmode
     }
+    public enum ActivableBehavior
+    {
+        ONE_OR_MORE,
+        ALL,
+        ONLY_ONE
+    }
 
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Object : MonoBehaviour
@@ -137,6 +143,7 @@ namespace FS_LevelEditor
 
         public bool setActiveAtStart = true;
         public bool collision = true;
+        public ActivableBehavior activableBehavior;
 
         public Dictionary<string, object> properties = new Dictionary<string, object>();
         

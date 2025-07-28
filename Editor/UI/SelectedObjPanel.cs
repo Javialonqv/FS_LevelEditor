@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -31,6 +32,7 @@ namespace FS_LevelEditor.Editor.UI
         UICustomInputField rotXField, rotYField, rotZField;
         UICustomInputField scaleXField, scaleYField, scaleZField;
         UIToggle collisionToggle;
+        UISmallButtonMultiple activableBehaviorButton;
         // ------------------------------
         bool showingPanel = false;
         bool panelIsExpanded = false;
@@ -45,6 +47,7 @@ namespace FS_LevelEditor.Editor.UI
         LE_Object currentSelectedObj;
         bool executeSetActiveAtStartToggleActions = true;
         bool executeCollisionToggleActions = true;
+        // There's no bool for the activable behavior button since we CAN set its title without executing any actions by default.
 
         public static void Create(Transform editorUIParent)
         {
@@ -196,6 +199,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectRotationUIElements();
             CreateObjectScaleUIElements();
             CreateCollisionToggle();
+            CreateActivableBehaviorButton();
         }
         void CreateObjectPositionUIElements()
         {
@@ -338,6 +342,24 @@ namespace FS_LevelEditor.Editor.UI
             lineSprite.height = 6;
             lineSprite.depth = 8;
             line.SetActive(false);
+        }
+        void CreateActivableBehaviorButton()
+        {
+            Transform buttonParent = new GameObject("ActivableBehavior").transform;
+            buttonParent.parent = globalObjectPanelsParent;
+            buttonParent.localPosition = Vector3.zero;
+            buttonParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(buttonParent, new Vector3(-230, -110), new Vector3Int(260, 38, 0), "Activable Behavior");
+            title.name = "Title";
+
+            UISmallButtonMultiple button = NGUI_Utils.CreateSmallButtonMultiple(buttonParent, new Vector3(140, -110), new Vector3Int(200, 38, 1), "ONE OR MORE", 25);
+            button.AddOption("ONE OR MORE");
+            button.AddOption("ALL");
+            button.AddOption("ONLY ONE");
+            button.onChange += (selection) => SetActivableBehaviorButton();
+
+            activableBehaviorButton = button;
         }
         // ------------------------------
         void CreateObjectSpecificOptionsParent()
@@ -1001,6 +1023,23 @@ namespace FS_LevelEditor.Editor.UI
             }
             EditorController.Instance.levelHasBeenModified = true;
         }
+        public void SetActivableBehaviorButton()
+        {
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                foreach (var obj in EditorController.Instance.currentSelectedObjects)
+                {
+                    LE_Object comp = obj.GetComponent<LE_Object>();
+                    comp.activableBehavior = (ActivableBehavior)activableBehaviorButton.currentOption;
+                }
+            }
+            else
+            {
+                EditorController.Instance.currentSelectedObjComponent.activableBehavior = (ActivableBehavior)activableBehaviorButton.currentOption;
+            }
+            EditorController.Instance.levelHasBeenModified = true;
+        }
+        // --------------------------------------------------
         public void ShowGlobalObjectAttributes(bool show)
         {
             objectSpecificPanelsParent.gameObject.SetActive(!show);
@@ -1025,27 +1064,34 @@ namespace FS_LevelEditor.Editor.UI
 
             if (EditorController.Instance.multipleObjectsSelected)
             {
-                // If this is null, that means the "Collision" in the current selected objects is different in at least one of them.
-                // If it's true or false, then ALL of them are true or false.
+                // If the variable is null, that means that value in the current selected objects is different in at least one of them.
+                // If it's NOT null (a valid value), then ALL of them are like that.
                 bool? collisionStateInObjects = null;
+                ActivableBehavior? activableBehaviorInObjects = null;
                 foreach (var @object in EditorController.Instance.currentSelectedObjects)
                 {
                     LE_Object comp = @object.GetComponent<LE_Object>();
+
                     if (collisionStateInObjects == null)
                     {
                         collisionStateInObjects = comp.collision;
-                        continue;
                     }
-
-                    if (collisionStateInObjects == comp.collision)
-                    {
-                        continue;
-                    }
-                    else
+                    else if (collisionStateInObjects != comp.collision)
                     {
                         collisionStateInObjects = null;
-                        break;
                     }
+
+                    if (activableBehaviorInObjects == null)
+                    {
+                        activableBehaviorInObjects = comp.activableBehavior;
+                    }
+                    else if (activableBehaviorInObjects != comp.activableBehavior)
+                    {
+                        activableBehaviorInObjects = null;
+                    }
+
+                    // In case all of the values we're checking are null, we don't need to iterate the rest of the objects.
+                    if (collisionStateInObjects == null && activableBehaviorInObjects == null) break;
                 }
 
                 if (collisionStateInObjects != null)
@@ -1060,11 +1106,25 @@ namespace FS_LevelEditor.Editor.UI
                     executeCollisionToggleActions = true;
                     collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
                 }
+
+                if (activableBehaviorInObjects != null)
+                {
+                    activableBehaviorButton.SetOption((int)activableBehaviorInObjects, true);
+                }
+                else
+                {
+                    activableBehaviorButton.SetTitle("..."); // This won't execute any actions at all.
+                    activableBehaviorButton.currentOption = -1; // So the next click will start from the beginning of the "list".
+                }
             }
             else
             {
-                collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
+                LE_Object comp = obj.GetComponent<LE_Object>();
+
+                collisionToggle.Set(comp.collision);
                 collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+
+                activableBehaviorButton.SetOption((int)comp.activableBehavior);
             }
         }
 
