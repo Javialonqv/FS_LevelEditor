@@ -573,6 +573,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateObjectAttribute("InvisibleMesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
             CreateObjectAttribute("InvertTextWithGravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
+            CreateObjectAttribute("Scaled Text", AttributeType.TOGGLE, true, null, "ScaledText");
             CreateObjectAttribute("EditText", AttributeType.BUTTON, null, null, "EditText");
 
             smallScreenAttributes.SetActive(false);

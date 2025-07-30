@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.Misc;
 using FS_LevelEditor.Playmode;
 using Il2Cpp;
 using Il2CppTMPro;
@@ -33,6 +34,7 @@ namespace FS_LevelEditor
                 { "ColorType", ScreenColorType.CYAN },
                 { "InvisibleMesh", false },
                 { "InvertWithGravity", true },
+                { "ScaledText", true },
                 { "AutoFontSize", true },
                 { "FontSize", 170f },
                 { "MinFontSize", 60f },
@@ -44,6 +46,9 @@ namespace FS_LevelEditor
             greenMesh = gameObject.GetChildAt("Content/Mesh/GreenPlane");
             redMesh = gameObject.GetChildAt("Content/Mesh/RedPlane");
             screenText = gameObject.GetChildAt("Content/Content/Label/MainLabel").GetComponent<TextMeshPro>();
+
+            screenText.gameObject.AddComponent<ScaleScreenText>().relativeTo = transform;
+            screenText.gameObject.GetComponent<ScaleScreenText>().enabled = false; // Disabled by default.
         }
 
         public override void ObjectStart(LEScene scene)
@@ -136,6 +141,15 @@ namespace FS_LevelEditor
                 if (value is bool)
                 {
                     properties["InvertWithGravity"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "ScaledText")
+            {
+                if (value is bool)
+                {
+                    properties["ScaledText"] = (bool)value;
+                    screenText.GetComponent<ScaleScreenText>().enabled = !(bool)value;
                     return true;
                 }
             }
