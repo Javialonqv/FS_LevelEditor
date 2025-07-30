@@ -480,6 +480,9 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("InstantKill", AttributeType.TOGGLE, false, null, "InstaKill");
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Damage");
+            CreateObjectAttribute("Blinking", AttributeType.TOGGLE, false, null, "Blinking");
+            CreateObjectAttribute("OFFDuration", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "OffDuration");
+            CreateObjectAttribute("ONDuration", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "OnDuration");
 
             laserAttributes.SetActive(false);
             attributesPanels.Add("Laser", laserAttributes);
@@ -1130,6 +1133,9 @@ namespace FS_LevelEditor.Editor.UI
                 case "InstaKill":
                     OnLaserInstaKillChecked(toggle.isChecked);
                     break;
+                case "Blinking":
+                    OnLaserBlinkingChecked(toggle.isChecked);
+                    break;
 
                 case "TravelBack":
                     SetSawTravelBackORLoop(toggle.isChecked, false);
@@ -1168,6 +1174,11 @@ namespace FS_LevelEditor.Editor.UI
         void OnLaserInstaKillChecked(bool newState)
         {
             attributesPanels["Laser"].GetChild("Damage").SetActive(!newState);
+        }
+        void OnLaserBlinkingChecked(bool newState)
+        {
+            attributesPanels["Laser"].GetChild("OffDuration").SetActive(newState);
+            attributesPanels["Laser"].GetChild("OnDuration").SetActive(newState);
         }
         void ShowOrHideSawWaitTimeField(int waypointsCount)
         {

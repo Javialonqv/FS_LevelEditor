@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using FS_LevelEditor.Editor;
+using Il2CppAmazingAssets.TerrainToMesh;
 
 namespace FS_LevelEditor
 {
@@ -21,7 +22,10 @@ namespace FS_LevelEditor
             {
                 { "ActivateOnStart", true },
                 { "InstaKill", false },
-                { "Damage", 34 }
+                { "Damage", 34 },
+                { "Blinking", false },
+                { "OffDuration", 0f },
+                { "OnDuration", 0f }
             };
         }
 
@@ -75,7 +79,9 @@ namespace FS_LevelEditor
             laser.transparentMat = template.transparentMat;
             laser.cutoutMat = template.cutoutMat;
             laser.layer = template.layer;
-            laser.constant = true;
+            laser.constant = !GetProperty<bool>("Blinking");
+            laser.offDuration = GetProperty<float>("OffDuration");
+            laser.onDuration = GetProperty<float>("OnDuration");
             laser.loopAudioSource = laser.GetComponent<AudioSource>();
             laser.onOffAudioSource = gameObject.GetChildAt("Content/Audio2").GetComponent<AudioSource>();
             laser.m_onMesh = gameObject.GetChildAt("Content/MeshOn");
@@ -187,6 +193,46 @@ namespace FS_LevelEditor
                 else if (value is int)
                 {
                     properties["Damage"] = (int)value;
+                    return true;
+                }
+            }
+            else if (name == "Blinking")
+            {
+                if (value is bool)
+                {
+                    properties["Blinking"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "OffDuration")
+            {
+                if (value is string)
+                {
+                    if (Utils.TryParseFloat((string)value, out float result))
+                    {
+                        properties["OffDuration"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["OffDuration"] = (float)value;
+                    return true;
+                }
+            }
+            else if (name == "OnDuration")
+            {
+                if (value is string)
+                {
+                    if (Utils.TryParseFloat((string)value, out float result))
+                    {
+                        properties["OnDuration"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["OnDuration"] = (float)value;
                     return true;
                 }
             }

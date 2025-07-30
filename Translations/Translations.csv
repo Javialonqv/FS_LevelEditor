@@ -82,6 +82,9 @@ CanBeShotByTaser,Can be shot by Taser,Puede ser activado por el Taser
 ManageEvents,Manage Events,Administrar Eventos
 RespawnTime,Respawn Time,Tiempo de Reaparición
 InstantKill,Instant Kill,Muerte Instantanea
+Blinking,Blinking,Parpadeante
+OFFDuration,Off Duration,Duración Apagado
+ONDuration,On Duration,Duración Prendido
 Constant,Constant,Constante
 OnlyOnce,Only Once,Una sola Vez
 ScreenColor,Screen Color,Color de la Pantalla
