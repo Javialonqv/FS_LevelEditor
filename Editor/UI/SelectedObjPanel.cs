@@ -45,6 +45,7 @@ namespace FS_LevelEditor.Editor.UI
         bool executeCollisionToggleActions = true;
 
         Vector3 objPositionWhenSelectedField;
+        Quaternion objRotationWhenSelectedField;
 
         public static void Create(Transform editorUIParent)
         {
@@ -257,7 +258,9 @@ namespace FS_LevelEditor.Editor.UI
             rotXField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(10f, 40f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
                 maxDecimals: 2);
             rotXField.name = "XField";
+            rotXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
             rotXField.onChange += (() => SetPropertyWithInput("XRotation", rotXField));
+            rotXField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Rotation));
 
             UILabel yTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(60f, 40f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
@@ -266,7 +269,9 @@ namespace FS_LevelEditor.Editor.UI
             rotYField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(110f, 40f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
                 maxDecimals: 2);
             rotYField.name = "YField";
+            rotYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
             rotYField.onChange += (() => SetPropertyWithInput("YRotation", rotYField));
+            rotYField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Rotation));
 
             UILabel zTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(160f, 40f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
@@ -275,7 +280,9 @@ namespace FS_LevelEditor.Editor.UI
             rotZField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(210f, 40f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
                 maxDecimals: 2);
             rotZField.name = "ZField";
+            rotZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
             rotZField.onChange += (() => SetPropertyWithInput("ZRotation", rotZField));
+            rotZField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Rotation));
         }
         void CreateObjectScaleUIElements()
         {
@@ -979,16 +986,26 @@ namespace FS_LevelEditor.Editor.UI
                 case GlobalFieldType.Position:
                     objPositionWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localPosition;
                     break;
+
+                case GlobalFieldType.Rotation:
+                    objRotationWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localRotation;
+                    break;
             }
         }
         void OnGlobalAttributesFieldSubmit(GlobalFieldType fieldType)
         {
+            EditorController editor = EditorController.Instance;
+
             switch (fieldType)
             {
                 case GlobalFieldType.Position:
-                    EditorController.Instance.RegisterLEAction(LEAction.LEActionType.MoveObject, EditorController.Instance.currentSelectedObj,
-                        EditorController.Instance.multipleObjectsSelected, objPositionWhenSelectedField, EditorController.Instance.currentSelectedObj.transform.
-                        localPosition, null, null);
+                    editor.RegisterLEAction(LEAction.LEActionType.MoveObject, editor.currentSelectedObj, editor.multipleObjectsSelected,
+                        objPositionWhenSelectedField, editor.currentSelectedObj.transform.localPosition, null, null);
+                    break;
+
+                case GlobalFieldType.Rotation:
+                    editor.RegisterLEAction(LEAction.LEActionType.RotateObject, editor.currentSelectedObj, editor.multipleObjectsSelected, null, null,
+                        objRotationWhenSelectedField, editor.currentSelectedObj.transform.localRotation);
                     break;
             }
 
