@@ -46,6 +46,7 @@ namespace FS_LevelEditor.Editor.UI
 
         Vector3 objPositionWhenSelectedField;
         Quaternion objRotationWhenSelectedField;
+        Vector3 objScaleWhenSelectedField;
 
         public static void Create(Transform editorUIParent)
         {
@@ -217,7 +218,7 @@ namespace FS_LevelEditor.Editor.UI
             posXField.name = "XField";
             posXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
             posXField.onChange += (() => SetPropertyWithInput("XPosition", posXField));
-            posXField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Position));
+            posXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
 
             UILabel yTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(60f, 90f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
@@ -228,7 +229,7 @@ namespace FS_LevelEditor.Editor.UI
             posYField.name = "YField";
             posYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
             posYField.onChange += (() => SetPropertyWithInput("YPosition", posYField));
-            posYField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Position));
+            posYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
 
             UILabel zTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(160f, 90f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
@@ -239,7 +240,7 @@ namespace FS_LevelEditor.Editor.UI
             posZField.name = "ZField";
             posZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
             posZField.onChange += (() => SetPropertyWithInput("ZPosition", posZField));
-            posZField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Position));
+            posZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
         }
         void CreateObjectRotationUIElements()
         {
@@ -260,7 +261,7 @@ namespace FS_LevelEditor.Editor.UI
             rotXField.name = "XField";
             rotXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
             rotXField.onChange += (() => SetPropertyWithInput("XRotation", rotXField));
-            rotXField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Rotation));
+            rotXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
 
             UILabel yTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(60f, 40f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
@@ -271,7 +272,7 @@ namespace FS_LevelEditor.Editor.UI
             rotYField.name = "YField";
             rotYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
             rotYField.onChange += (() => SetPropertyWithInput("YRotation", rotYField));
-            rotYField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Rotation));
+            rotYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
 
             UILabel zTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(160f, 40f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
@@ -282,7 +283,7 @@ namespace FS_LevelEditor.Editor.UI
             rotZField.name = "ZField";
             rotZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
             rotZField.onChange += (() => SetPropertyWithInput("ZRotation", rotZField));
-            rotZField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Rotation));
+            rotZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
         }
         void CreateObjectScaleUIElements()
         {
@@ -301,7 +302,9 @@ namespace FS_LevelEditor.Editor.UI
             scaleXField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(10f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
                 maxDecimals: 2);
             scaleXField.name = "XField";
+            scaleXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
             scaleXField.onChange += (() => SetPropertyWithInput("XScale", scaleXField));
+            scaleXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
 
             UILabel yTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(60f, -10f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
@@ -310,7 +313,9 @@ namespace FS_LevelEditor.Editor.UI
             scaleYField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(110f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
                 maxDecimals: 2);
             scaleYField.name = "YField";
+            scaleYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
             scaleYField.onChange += (() => SetPropertyWithInput("YScale", scaleYField));
+            scaleYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
 
             UILabel zTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(160f, -10f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
@@ -319,7 +324,9 @@ namespace FS_LevelEditor.Editor.UI
             scaleZField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(210f, -10f, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
                 maxDecimals: 2);
             scaleZField.name = "ZField";
+            scaleZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
             scaleZField.onChange += (() => SetPropertyWithInput("ZScale", scaleZField));
+            scaleZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
         }
         void CreateCollisionToggle()
         {
@@ -990,9 +997,13 @@ namespace FS_LevelEditor.Editor.UI
                 case GlobalFieldType.Rotation:
                     objRotationWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localRotation;
                     break;
+
+                case GlobalFieldType.Scale:
+                    objScaleWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localScale;
+                    break;
             }
         }
-        void OnGlobalAttributesFieldSubmit(GlobalFieldType fieldType)
+        void OnGlobalAttributeFieldDeselected(GlobalFieldType fieldType)
         {
             EditorController editor = EditorController.Instance;
 
@@ -1006,6 +1017,11 @@ namespace FS_LevelEditor.Editor.UI
                 case GlobalFieldType.Rotation:
                     editor.RegisterLEAction(LEAction.LEActionType.RotateObject, editor.currentSelectedObj, editor.multipleObjectsSelected, null, null,
                         objRotationWhenSelectedField, editor.currentSelectedObj.transform.localRotation);
+                    break;
+
+                case GlobalFieldType.Scale:
+                    editor.RegisterLEAction(LEAction.LEActionType.ScaleObject, editor.currentSelectedObj, editor.multipleObjectsSelected, null, null, null, null,
+                        objScaleWhenSelectedField, editor.currentSelectedObj.transform.localScale);
                     break;
             }
 

@@ -1032,17 +1032,18 @@ namespace FS_LevelEditor.Editor
                 SelectedObjPanel.Instance.SetSelectedObjPanelAsNone();
             }
         }
-        public void SetMultipleObjectsAsSelected(List<GameObject> objects, bool adjustMultipleObjParentPosition = true)
+        public void SetMultipleObjectsAsSelected(List<GameObject> objects, bool isForUndo = false)
         {
             // Set the selected object as null so all of the "old" selected objects are deselected.
             SetSelectedObj(null);
 
             if (objects != null)
             {
-                multipleSelectedObjsParent.transform.localScale = Vector3.one;
+                if (!isForUndo) multipleSelectedObjsParent.transform.localScale = Vector3.one;
+
                 if (objects.Count > 0)
                 {
-                    if (adjustMultipleObjParentPosition) // Use this system, SetSelectObj will do whatever is needed correcty.
+                    if (isForUndo) // Use this system, SetSelectObj will do whatever is needed correcty.
                     {
                         foreach (var obj in objects)
                         {
@@ -1444,8 +1445,8 @@ namespace FS_LevelEditor.Editor
             }
         }
 
-        public void RegisterLEAction(LEAction.LEActionType type, GameObject targetObj, bool forMultipleObjs, Vector3? oldPos, Vector3? newPos, Quaternion? oldRot,
-            Quaternion? newRot)
+        public void RegisterLEAction(LEAction.LEActionType type, GameObject targetObj, bool forMultipleObjs, Vector3? oldPos = null, Vector3? newPos = null,
+            Quaternion? oldRot = null, Quaternion? newRot = null, Vector3? oldScale = null, Vector3? newScale = null)
         {
             if (!targetObj) return;
 
@@ -1464,6 +1465,11 @@ namespace FS_LevelEditor.Editor
                 case LEAction.LEActionType.RotateObject:
                     currentExecutingAction.oldRot = oldRot.Value;
                     currentExecutingAction.newRot = newRot.Value;
+                    break;
+
+                case LEAction.LEActionType.ScaleObject:
+                    currentExecutingAction.oldScale = oldScale.Value;
+                    currentExecutingAction.newScale = newScale.Value;
                     break;
             }
 
@@ -1728,6 +1734,7 @@ namespace FS_LevelEditor.Editor
         {
             MoveObject,
             RotateObject,
+            ScaleObject,
             DeleteObject
         }
 
@@ -1744,6 +1751,9 @@ namespace FS_LevelEditor.Editor
         public Quaternion oldRot;
         public Quaternion newRot;
 
+        public Vector3 oldScale;
+        public Vector3 newScale;
+
         public void Undo(EditorController editor)
         {
             switch (actionType)
@@ -1753,6 +1763,9 @@ namespace FS_LevelEditor.Editor
                     break;
                 case LEActionType.RotateObject:
                     UndoRotateObject(editor);
+                    break;
+                case LEActionType.ScaleObject:
+                    UndoScaleObject(editor);
                     break;
                 case LEActionType.DeleteObject:
                     UndoDeleteObject(editor);
@@ -1765,7 +1778,7 @@ namespace FS_LevelEditor.Editor
             {
                 editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
                 editor.multipleSelectedObjsParent.transform.localPosition = newPos; // Set to the newest position.
-                editor.SetMultipleObjectsAsSelected(targetObjs, false);
+                editor.SetMultipleObjectsAsSelected(targetObjs, true);
                 // Move the parent so the whole selection is moved too.
                 editor.multipleSelectedObjsParent.transform.localPosition = oldPos;
 
@@ -1791,7 +1804,7 @@ namespace FS_LevelEditor.Editor
             {
                 editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
                 editor.multipleSelectedObjsParent.transform.localRotation = newRot; // Set to the newest rotation.
-                editor.SetMultipleObjectsAsSelected(targetObjs, false);
+                editor.SetMultipleObjectsAsSelected(targetObjs, true);
                 // Rotate the parent so the whole selection is rotated too.
                 editor.multipleSelectedObjsParent.transform.localRotation = oldRot;
 
@@ -1808,6 +1821,32 @@ namespace FS_LevelEditor.Editor
                 editor.SetSelectedObj(targetObj);
             }
         }
+        void UndoScaleObject(EditorController editor)
+        {
+            if (forMultipleObjects)
+            {
+                editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
+                editor.multipleSelectedObjsParent.transform.localScale = newScale; // Set to the newest position.
+                editor.SetMultipleObjectsAsSelected(targetObjs, true);
+                // Move the parent so the whole selection is moved too.
+                editor.multipleSelectedObjsParent.transform.localScale = oldScale;
+
+                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(editor.multipleSelectedObjsParent.transform);
+            }
+            else
+            {
+                // Since we use local coordinates, set the selected obj to null to avoid breaking the object position lol.
+                if (editor.multipleObjectsSelected && editor.currentSelectedObjects.Contains(targetObj)) editor.SetSelectedObj(null);
+
+                targetObj.transform.localScale = oldScale;
+                // In case the selected object is already the object to undo, update its global attributes manually:
+                if (editor.currentSelectedObj == targetObj)
+                {
+                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(targetObj.transform);
+                }
+                editor.SetSelectedObj(targetObj);
+            }
+        }
         void UndoDeleteObject(EditorController editor)
         {
             if (forMultipleObjects)
@@ -1815,7 +1854,7 @@ namespace FS_LevelEditor.Editor
                 editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
                 targetObjs.ForEach(obj => obj.SetActive(true)); // Enable the objects again and then select them again.
                 targetObjs.ForEach(obj => obj.GetComponent<LE_Object>().isDeleted = false);
-                editor.SetMultipleObjectsAsSelected(targetObjs, false);
+                editor.SetMultipleObjectsAsSelected(targetObjs, true);
             }
             else
             {
