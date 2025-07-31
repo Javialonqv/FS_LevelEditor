@@ -115,11 +115,12 @@ namespace FS_LevelEditor
             return currentChild;
         }
 
-        public static void DeleteAllChildren(this GameObject obj)
+        public static void DeleteAllChildren(this GameObject obj, bool immediate = false)
         {
             foreach (GameObject child in GetChilds(obj))
             {
-                GameObject.Destroy(child);
+                if (immediate) GameObject.DestroyImmediate(child);
+                else GameObject.Destroy(child);
             }
         }
         public static void DisableAllChildren(this GameObject obj)
