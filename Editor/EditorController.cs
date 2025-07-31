@@ -1043,7 +1043,7 @@ namespace FS_LevelEditor.Editor
 
                 if (objects.Count > 0)
                 {
-                    if (isForUndo) // Use this system, SetSelectObj will do whatever is needed correcty.
+                    if (!isForUndo) // Use this system, SetSelectObj will do whatever is needed correcty.
                     {
                         foreach (var obj in objects)
                         {
