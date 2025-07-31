@@ -637,7 +637,6 @@ namespace FS_LevelEditor.Editor
             {
                 if (actionsMade.Count > 0)
                 {
-                    bool undoActionExecuted = true;
                     LEAction toUndo = actionsMade.Last();
 
                     // Remove the whole LEActions that make reference to an unexisting object and get the last one.
@@ -648,84 +647,10 @@ namespace FS_LevelEditor.Editor
                         toUndo = actionsMade.Last();
                     }
 
-                    switch (toUndo.actionType)
-                    {
-                        case LEAction.LEActionType.MoveObject:
-                            if (toUndo.forMultipleObjects)
-                            {
-                                SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
-                                multipleSelectedObjsParent.transform.localPosition = toUndo.newPos; // Set to the newest position.
-                                SetMultipleObjectsAsSelected(toUndo.targetObjs, false);
-                                // Move the parent so the whole selection is moved too.
-                                multipleSelectedObjsParent.transform.localPosition = toUndo.oldPos;
+                    toUndo.Undo(this);
 
-                                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
-                            }
-                            else
-                            {
-                                // Since we use local coordinates, set the selected obj to null to avoid breaking the object position lol.
-                                if (multipleObjectsSelected && currentSelectedObjects.Contains(toUndo.targetObj)) SetSelectedObj(null);
-
-                                toUndo.targetObj.transform.localPosition = toUndo.oldPos;
-                                // In case the selected object is already the object to undo, update its global attributes manually:
-                                if (currentSelectedObj == toUndo.targetObj)
-                                {
-                                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.transform);
-                                }
-                                SetSelectedObj(toUndo.targetObj);
-                            }
-                            break;
-
-                        case LEAction.LEActionType.RotateObject:
-                            if (toUndo.forMultipleObjects)
-                            {
-                                SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
-                                multipleSelectedObjsParent.transform.localRotation = toUndo.newRot; // Set to the newest rotation.
-                                SetMultipleObjectsAsSelected(toUndo.targetObjs, false);
-                                // Rotate the parent so the whole selection is rotated too.
-                                multipleSelectedObjsParent.transform.localRotation = toUndo.oldRot;
-
-                                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
-                            }
-                            else
-                            {
-                                toUndo.targetObj.transform.localRotation = toUndo.oldRot;
-                                // In case the selected object is already the object to undo, update its global attributes manually:
-                                if (currentSelectedObj == toUndo.targetObj)
-                                {
-                                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(toUndo.targetObj.transform);
-                                }
-                                SetSelectedObj(toUndo.targetObj);
-                            }
-                            break;
-
-                        case LEAction.LEActionType.DeleteObject:
-                            if (toUndo.forMultipleObjects)
-                            {
-                                SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
-                                toUndo.targetObjs.ForEach(obj => obj.SetActive(true)); // Enable the objects again and then select them again.
-                                toUndo.targetObjs.ForEach(obj => obj.GetComponent<LE_Object>().isDeleted = false);
-                                SetMultipleObjectsAsSelected(toUndo.targetObjs, false);
-                            }
-                            else
-                            {
-                                toUndo.targetObj.GetComponent<LE_Object>().isDeleted = false;
-                                toUndo.targetObj.SetActive(true);
-                                SetSelectedObj(toUndo.targetObj);
-                            }
-                            break;
-
-                        default:
-                            undoActionExecuted = false;
-                            break;
-                    }
-
-                    // Only set the level as modified if a undo action was executed.
-                    if (undoActionExecuted)
-                    {
-                        Logger.Log($"Undid {toUndo.actionType} action for " + (toUndo.forMultipleObjects ? $"{toUndo.targetObjs.Count} objects." : $"\"{toUndo.targetObj.name}\"."));
-                        levelHasBeenModified = true;
-                    }
+                    Logger.Log($"Undid {toUndo.actionType} action for " + (toUndo.forMultipleObjects ? $"{toUndo.targetObjs.Count} objects." : $"\"{toUndo.targetObj.name}\"."));
+                    levelHasBeenModified = true;
 
                     actionsMade.Remove(toUndo);
                 }
@@ -1796,27 +1721,108 @@ namespace FS_LevelEditor.Editor
             RenderSettings.skybox = skyboxes[skyboxID];
         }
     }
-}
 
-public struct LEAction
-{
-    public enum LEActionType
+    public struct LEAction
     {
-        MoveObject,
-        RotateObject,
-        DeleteObject
+        public enum LEActionType
+        {
+            MoveObject,
+            RotateObject,
+            DeleteObject
+        }
+
+        public bool forMultipleObjects;
+
+        public GameObject targetObj;
+        public List<GameObject> targetObjs;
+
+        public LEActionType actionType;
+
+        public Vector3 oldPos;
+        public Vector3 newPos;
+
+        public Quaternion oldRot;
+        public Quaternion newRot;
+
+        public void Undo(EditorController editor)
+        {
+            switch (actionType)
+            {
+                case LEActionType.MoveObject:
+                    UndoMoveObject(editor);
+                    break;
+                case LEActionType.RotateObject:
+                    UndoRotateObject(editor);
+                    break;
+                case LEActionType.DeleteObject:
+                    UndoDeleteObject(editor);
+                    break;
+            }
+        }
+        void UndoMoveObject(EditorController editor)
+        {
+            if (forMultipleObjects)
+            {
+                editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
+                editor.multipleSelectedObjsParent.transform.localPosition = newPos; // Set to the newest position.
+                editor.SetMultipleObjectsAsSelected(targetObjs, false);
+                // Move the parent so the whole selection is moved too.
+                editor.multipleSelectedObjsParent.transform.localPosition = oldPos;
+
+                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(editor.multipleSelectedObjsParent.transform);
+            }
+            else
+            {
+                // Since we use local coordinates, set the selected obj to null to avoid breaking the object position lol.
+                if (editor.multipleObjectsSelected && editor.currentSelectedObjects.Contains(targetObj)) editor.SetSelectedObj(null);
+
+                targetObj.transform.localPosition = oldPos;
+                // In case the selected object is already the object to undo, update its global attributes manually:
+                if (editor.currentSelectedObj == targetObj)
+                {
+                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(targetObj.transform);
+                }
+                editor.SetSelectedObj(targetObj);
+            }
+        }
+        void UndoRotateObject(EditorController editor)
+        {
+            if (forMultipleObjects)
+            {
+                editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
+                editor.multipleSelectedObjsParent.transform.localRotation = newRot; // Set to the newest rotation.
+                editor.SetMultipleObjectsAsSelected(targetObjs, false);
+                // Rotate the parent so the whole selection is rotated too.
+                editor.multipleSelectedObjsParent.transform.localRotation = oldRot;
+
+                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(editor.multipleSelectedObjsParent.transform);
+            }
+            else
+            {
+                targetObj.transform.localRotation = oldRot;
+                // In case the selected object is already the object to undo, update its global attributes manually:
+                if (editor.currentSelectedObj == targetObj)
+                {
+                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(targetObj.transform);
+                }
+                editor.SetSelectedObj(targetObj);
+            }
+        }
+        void UndoDeleteObject(EditorController editor)
+        {
+            if (forMultipleObjects)
+            {
+                editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
+                targetObjs.ForEach(obj => obj.SetActive(true)); // Enable the objects again and then select them again.
+                targetObjs.ForEach(obj => obj.GetComponent<LE_Object>().isDeleted = false);
+                editor.SetMultipleObjectsAsSelected(targetObjs, false);
+            }
+            else
+            {
+                targetObj.GetComponent<LE_Object>().isDeleted = false;
+                targetObj.SetActive(true);
+                editor.SetSelectedObj(targetObj);
+            }
+        }
     }
-
-    public bool forMultipleObjects;
-
-    public GameObject targetObj;
-    public List<GameObject> targetObjs;
-
-    public LEActionType actionType;
-
-    public Vector3 oldPos;
-    public Vector3 newPos;
-
-    public Quaternion oldRot;
-    public Quaternion newRot;
 }
