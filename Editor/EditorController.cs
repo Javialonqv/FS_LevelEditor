@@ -75,6 +75,7 @@ namespace FS_LevelEditor.Editor
         enum GizmosArrow { None, X, Y, Z }
         GizmosArrow collidingArrow;
         Vector3 objPositionWhenArrowClick;
+        Vector3 objLocalPositionWhenStartedMoving;
         Vector3 offsetObjPositionAndMosueWhenClick;
         Plane movementPlane;
         bool globalGizmosArrowsEnabled = false;
@@ -82,9 +83,10 @@ namespace FS_LevelEditor.Editor
         // SNAP
         GameObject snapToGridCube;
         Vector3 objPositionWhenStartToSnap;
+        Vector3 objLocalPositionWhenStartToSnap;
 
-        List<LEAction> actionsMade = new List<LEAction>();
-        LEAction currentExecutingAction;
+        public List<LEAction> actionsMade = new List<LEAction>();
+        public LEAction currentExecutingAction;
         public bool levelHasBeenModified = false;
 
         // Misc?
@@ -263,6 +265,8 @@ namespace FS_LevelEditor.Editor
                     if (IsHittingObject("SnapToGridCube"))
                     {
                         objPositionWhenStartToSnap = currentSelectedObj.transform.position;
+                        objLocalPositionWhenStartToSnap = currentSelectedObj.transform.localPosition;
+
                         SetCurrentEditorState(EditorState.SNAPPING_TO_GRID);
 
                         #region Register LEAction
@@ -297,8 +301,8 @@ namespace FS_LevelEditor.Editor
 
                     if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
                     {
-                        currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
-                        actionsMade.Add(currentExecutingAction);
+                        RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, objLocalPositionWhenStartToSnap,
+                            currentSelectedObj.transform.localPosition, null, null);
                     }
                 }
             }
@@ -317,8 +321,8 @@ namespace FS_LevelEditor.Editor
 
                     if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
                     {
-                        currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
-                        actionsMade.Add(currentExecutingAction);
+                        RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, objLocalPositionWhenStartToSnap,
+                            currentSelectedObj.transform.localPosition, null, null);
                     }
                 }
             }
@@ -368,8 +372,8 @@ namespace FS_LevelEditor.Editor
                 collidingArrow = GizmosArrow.None;
                 SetCurrentEditorState(EditorState.NORMAL);
 
-                currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
-                actionsMade.Add(currentExecutingAction);
+                RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, objLocalPositionWhenStartedMoving,
+                    currentSelectedObj.transform.localPosition, null, null);
 
                 levelHasBeenModified = true;
             }
@@ -578,29 +582,8 @@ namespace FS_LevelEditor.Editor
 
                 if (currentSelectedObj) // If the target obj is the current selected object, to check if it's NOT the preview object.
                 {
-                    #region Register LE Action
-                    currentExecutingAction = new LEAction();
-                    currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
-
-                    currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
-                    if (multipleObjectsSelected)
-                    {
-                        currentExecutingAction.targetObjs = new List<GameObject>();
-                        foreach (var obj in currentSelectedObj.GetChilds())
-                        {
-                            currentExecutingAction.targetObjs.Add(obj);
-                        }
-                    }
-                    else
-                    {
-                        currentExecutingAction.targetObj = currentSelectedObj;
-                    }
-
-                    currentExecutingAction.oldPos = oldPos;
-                    currentExecutingAction.newPos = currentSelectedObj.transform.localPosition;
-
-                    actionsMade.Add(currentExecutingAction);
-                    #endregion
+                    RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition,
+                        null, null);
 
                     SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
                 }
@@ -640,27 +623,8 @@ namespace FS_LevelEditor.Editor
                 // Update global attributes.
                 SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
 
-                // Save it to editor history.
-                #region Register LEAction
-                currentExecutingAction = new LEAction();
-                currentExecutingAction.actionType = LEAction.LEActionType.RotateObject;
-
-                currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
-                if (multipleObjectsSelected)
-                {
-                    currentExecutingAction.targetObjs = new List<GameObject>();
-                    currentExecutingAction.targetObjs.AddRange(currentSelectedObj.GetChilds());
-                }
-                else
-                {
-                    currentExecutingAction.targetObj = currentSelectedObj;
-                }
-
-                currentExecutingAction.oldRot = rotation;
-                currentExecutingAction.newRot = currentSelectedObj.transform.localRotation;
-
-                actionsMade.Add(currentExecutingAction);
-                #endregion
+                RegisterLEAction(LEAction.LEActionType.RotateObject, currentSelectedObj, multipleObjectsSelected, null, null, rotation,
+                    currentSelectedObj.transform.localRotation);
 
                 // Also set the level as modified:
                 levelHasBeenModified = true;
@@ -1222,15 +1186,8 @@ namespace FS_LevelEditor.Editor
 
             if (objComp.canUndoDeletion)
             {
-                #region Register LEAction
-                currentExecutingAction = new LEAction();
-                currentExecutingAction.actionType = LEAction.LEActionType.DeleteObject;
-
-                currentExecutingAction.forMultipleObjects = false;
-                currentExecutingAction.targetObj = obj;
-
-                actionsMade.Add(currentExecutingAction);
-                #endregion
+                // Register the LEAction before deselecting the object, so I can set the target obj with the reference to the current selected object.
+                RegisterLEAction(LEAction.LEActionType.DeleteObject, obj, false, null, null, null, null);
             }
         }
         void DeleteSelectedObj()
@@ -1292,34 +1249,12 @@ namespace FS_LevelEditor.Editor
             if ((!multipleObjectsSelected && currentSelectedObjComponent.canUndoDeletion) || multipleObjectsSelected)
             {
                 // Register the LEAction before deselecting the object, so I can set the target obj with the reference to the current selected object.
-                #region Register LEAction
-                currentExecutingAction = new LEAction();
-                currentExecutingAction.actionType = LEAction.LEActionType.DeleteObject;
-
-                currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
-                if (multipleObjectsSelected)
-                {
-                    currentExecutingAction.targetObjs = new List<GameObject>();
-                    foreach (var obj in currentSelectedObj.GetChilds())
-                    {
-                        if (!obj.GetComponent<LE_Object>().canUndoDeletion) continue;
-
-                        currentExecutingAction.targetObjs.Add(obj);
-                    }
-                }
-                else
-                {
-                    currentExecutingAction.targetObj = currentSelectedObj;
-                }
-
-                actionsMade.Add(currentExecutingAction);
-                #endregion
+                RegisterLEAction(LEAction.LEActionType.DeleteObject, currentSelectedObj, multipleObjectsSelected, null, null, null, null);
             }
 
             SetSelectedObj(null);
         }
 
-        // Optimized and cleaned version of CanUseThatSnapToGridTrigger
         bool CanUseThatSnapToGridTrigger(LE_Object.ObjectType objToBuildType, GameObject triggerObj)
         {
             var triggerRootObj = triggerObj.transform.parent.parent.gameObject;
@@ -1359,26 +1294,7 @@ namespace FS_LevelEditor.Editor
             // Save the position of the object from the first time we clicked.
             objPositionWhenArrowClick = currentSelectedObj.transform.position;
 
-            #region Register LEAction
-            currentExecutingAction = new LEAction();
-            currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
-
-            currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
-
-            if (multipleObjectsSelected)
-            {
-                currentExecutingAction.targetObjs = new List<GameObject>();
-                foreach (var obj in currentSelectedObj.GetChilds())
-                {
-                    currentExecutingAction.targetObjs.Add(obj);
-                }
-            }
-            else
-            {
-                currentExecutingAction.targetObj = currentSelectedObj;
-            }
-            currentExecutingAction.oldPos = currentSelectedObj.transform.localPosition;
-            #endregion
+            objLocalPositionWhenStartedMoving = currentSelectedObj.transform.localPosition;
 
             // Create the panel with the rigt normals.
             if (arrowColliderName == "X" || arrowColliderName == "Z")
@@ -1601,6 +1517,48 @@ namespace FS_LevelEditor.Editor
             {
                 gizmosArrows.transform.localScale = Vector3.one * 2f * highestAxis;
             }
+        }
+
+        public void RegisterLEAction(LEAction.LEActionType type, GameObject targetObj, bool forMultipleObjs, Vector3? oldPos, Vector3? newPos, Quaternion? oldRot,
+            Quaternion? newRot)
+        {
+            if (!targetObj) return;
+
+            currentExecutingAction = new LEAction();
+            currentExecutingAction.forMultipleObjects = forMultipleObjs;
+
+            currentExecutingAction.actionType = type;
+
+            switch (type)
+            {
+                case LEAction.LEActionType.MoveObject:
+                    currentExecutingAction.oldPos = oldPos.Value;
+                    currentExecutingAction.newPos = newPos.Value;
+                    break;
+
+                case LEAction.LEActionType.RotateObject:
+                    currentExecutingAction.oldRot = oldRot.Value;
+                    currentExecutingAction.newRot = newRot.Value;
+                    break;
+            }
+
+            if (forMultipleObjs)
+            {
+                currentExecutingAction.targetObjs = new List<GameObject>();
+                foreach (var obj in targetObj.GetChilds())
+                {
+                    // If the type is Deletion, only add those objects that CAN be actually un-deleted.
+                    if (type == LEAction.LEActionType.DeleteObject && !obj.GetComponent<LE_Object>().canUndoDeletion) continue;
+
+                    currentExecutingAction.targetObjs.Add(obj);
+                }
+            }
+            else
+            {
+                currentExecutingAction.targetObj = targetObj;
+            }
+
+            actionsMade.Add(currentExecutingAction);
         }
 
 
