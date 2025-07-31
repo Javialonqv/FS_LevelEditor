@@ -38,13 +38,13 @@ namespace FS_LevelEditor.Editor.UI
         // ------------------------------
         Transform objectSpecificPanelsParent;
         Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
-
-
         Transform whereToCreateObjAttributesParent;
 
         LE_Object currentSelectedObj;
         bool executeSetActiveAtStartToggleActions = true;
         bool executeCollisionToggleActions = true;
+
+        Vector3 objPositionWhenSelectedField;
 
         public static void Create(Transform editorUIParent)
         {
@@ -214,7 +214,9 @@ namespace FS_LevelEditor.Editor.UI
             posXField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(10f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
                 maxDecimals: 2);
             posXField.name = "XField";
+            posXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
             posXField.onChange += (() => SetPropertyWithInput("XPosition", posXField));
+            posXField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Position));
 
             UILabel yTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(60f, 90f, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
@@ -223,7 +225,9 @@ namespace FS_LevelEditor.Editor.UI
             posYField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(110f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
                 maxDecimals: 2);
             posYField.name = "YField";
+            posYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
             posYField.onChange += (() => SetPropertyWithInput("YPosition", posYField));
+            posYField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Position));
 
             UILabel zTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(160f, 90f, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
                 UIWidget.Pivot.Center);
@@ -232,7 +236,9 @@ namespace FS_LevelEditor.Editor.UI
             posZField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(210f, 90f, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
                 maxDecimals: 2);
             posZField.name = "ZField";
+            posZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
             posZField.onChange += (() => SetPropertyWithInput("ZPosition", posZField));
+            posZField.onDeselected += (() => OnGlobalAttributesFieldSubmit(GlobalFieldType.Position));
         }
         void CreateObjectRotationUIElements()
         {
@@ -963,6 +969,30 @@ namespace FS_LevelEditor.Editor.UI
                 var waypoints = objComp.GetProperty<List<LE_SawWaypointSerializable>>("waypoints");
                 ShowOrHideSawWaitTimeField(waypoints.Count);
             }
+        }
+
+        enum GlobalFieldType { Position, Rotation, Scale }
+        void OnGlobalAttributeFieldSelected(GlobalFieldType fieldType)
+        {
+            switch (fieldType)
+            {
+                case GlobalFieldType.Position:
+                    objPositionWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localPosition;
+                    break;
+            }
+        }
+        void OnGlobalAttributesFieldSubmit(GlobalFieldType fieldType)
+        {
+            switch (fieldType)
+            {
+                case GlobalFieldType.Position:
+                    EditorController.Instance.RegisterLEAction(LEAction.LEActionType.MoveObject, EditorController.Instance.currentSelectedObj,
+                        EditorController.Instance.multipleObjectsSelected, objPositionWhenSelectedField, EditorController.Instance.currentSelectedObj.transform.
+                        localPosition, null, null);
+                    break;
+            }
+
+            Logger.DebugLog("test");
         }
 
         public void SetSetActiveAtStart()
