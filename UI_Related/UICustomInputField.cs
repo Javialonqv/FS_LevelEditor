@@ -31,8 +31,10 @@ namespace FS_LevelEditor.UI_Related
         public Color invalidValueColor { get; private set; } = new Color(0.3215f, 0.2156f, 0.0588f, 0.9415f);
         public bool setFieldColorAutomatically = true;
 
+        public Action onSelected;
         public Action onChange;
         public Action onSubmit;
+        public Action onDeselected;
         bool executeOnChange = true;
 
         public UICustomInputField(IntPtr ptr) : base(ptr) { }
@@ -98,6 +100,9 @@ namespace FS_LevelEditor.UI_Related
 
             if (!initialized)
             {
+                UIEventListener listener = UIEventListener.Get(input.gameObject);
+                listener.onSelect = (UIEventListener.BoolDelegate)new Action<GameObject, bool>((go, selected) => OnFieldSelected(selected));
+
                 EventDelegate.Add(input.onChange, new EventDelegate(this, nameof(OnChange)));
                 EventDelegate.Add(input.onSubmit, new EventDelegate(this, nameof(OnSubmit)));
             }
@@ -105,6 +110,17 @@ namespace FS_LevelEditor.UI_Related
             initialized = true;
         }
 
+        public void OnFieldSelected(bool selected)
+        {
+            if (selected && onSelected != null)
+            {
+                onSelected.Invoke();
+            }
+            else if (onDeselected != null)
+            {
+                onDeselected.Invoke();
+            }
+        }
         void OnChange()
         {
             if (setFieldColorAutomatically)
