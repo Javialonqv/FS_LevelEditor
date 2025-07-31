@@ -1826,18 +1826,15 @@ namespace FS_LevelEditor.Editor
             if (forMultipleObjects)
             {
                 editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
-                editor.multipleSelectedObjsParent.transform.localScale = newScale; // Set to the newest position.
+                editor.multipleSelectedObjsParent.transform.localScale = newScale; // Set to the newest scale.
                 editor.SetMultipleObjectsAsSelected(targetObjs, true);
-                // Move the parent so the whole selection is moved too.
+                // Move the parent so the whole selection is scaled too.
                 editor.multipleSelectedObjsParent.transform.localScale = oldScale;
 
                 SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(editor.multipleSelectedObjsParent.transform);
             }
             else
             {
-                // Since we use local coordinates, set the selected obj to null to avoid breaking the object position lol.
-                if (editor.multipleObjectsSelected && editor.currentSelectedObjects.Contains(targetObj)) editor.SetSelectedObj(null);
-
                 targetObj.transform.localScale = oldScale;
                 // In case the selected object is already the object to undo, update its global attributes manually:
                 if (editor.currentSelectedObj == targetObj)
