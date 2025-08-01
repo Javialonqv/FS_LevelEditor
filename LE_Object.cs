@@ -73,7 +73,8 @@ namespace FS_LevelEditor
             TRIGGER,
             DOOR,
             LASER_FIELD,
-            DOOR_V2
+            DOOR_V2,
+            DEATH_TRIGGER
         }
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()

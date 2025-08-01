@@ -385,6 +385,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateTriggerAttributesPanel();
             CreateDoorAttributesPanel();
             CreateDoorV2AttributesPanel();
+            CreateDeathTriggerAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -660,6 +661,25 @@ namespace FS_LevelEditor.Editor.UI
 
             doorV2Attributes.SetActive(false);
             attributesPanels.Add("Door V2", doorV2Attributes);
+        }
+        void CreateDeathTriggerAttributesPanel()
+        {
+            GameObject deathTriggerAttributes = new GameObject("Death Trigger");
+            deathTriggerAttributes.transform.parent = objectSpecificPanelsParent;
+            deathTriggerAttributes.transform.localPosition = Vector3.zero;
+            deathTriggerAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(deathTriggerAttributes);
+
+            CreateObjectAttribute("DeathTriggerType", AttributeType.BUTTON_MULTIPLE, null, null, "Type");
+            var typeButton = deathTriggerAttributes.GetChildAt("Type/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+            typeButton.AddOption("DeathRelocation", new Color(0.8f, 0f, 0f));
+            typeButton.AddOption("DeathImminent", Color.black);
+
+            CreateObjectAttribute("Delay", AttributeType.INPUT_FIELD, "2", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Delay");
+
+            deathTriggerAttributes.SetActive(false);
+            attributesPanels.Add("Death Trigger", deathTriggerAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
