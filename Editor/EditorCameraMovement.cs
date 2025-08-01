@@ -129,13 +129,14 @@ namespace FS_LevelEditor.Editor
             float mouseX = InControlSingleton.Instance.playerActions.MouseOnly.X;
             float mouseY = InControlSingleton.Instance.playerActions.MouseOnly.Y;
 
-            xRotation -= mouseY;
+            xRotation -= mouseY * mouseSensivility;
+            Logger.Log(xRotation);
             xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-            yRotation += mouseX;
+            yRotation += mouseX * mouseSensivility;
 
             Vector3 toRotate = new Vector3(xRotation, yRotation, 0f);
-            transform.localRotation = Quaternion.Euler(toRotate * mouseSensivility);
+            transform.localRotation = Quaternion.Euler(toRotate);
         }
 
         public void SetRotation(Vector3 eulerAngles)
