@@ -99,6 +99,7 @@ namespace FS_LevelEditor.Editor.UI
         List<string> eventsListsNames = new List<string>();
         int currentEventsListID;
         string currentEventsListName;
+        bool eventSelected;
         int currentSelectedEventID;
         LE_Event currentSelectedEvent;
         UIButton currentSelectedEventButton;
@@ -529,7 +530,7 @@ namespace FS_LevelEditor.Editor.UI
             secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 
-            HideEventSettings();
+            OnEventSelect(null);
             CreateAllEventsPagesForList(0);
         }
         void SecondEventsListBtnClick()
@@ -540,7 +541,7 @@ namespace FS_LevelEditor.Editor.UI
             secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
             thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 
-            HideEventSettings();
+            OnEventSelect(null);
             CreateAllEventsPagesForList(1);
         }
         void ThirdEventsListBtnClick()
@@ -551,7 +552,7 @@ namespace FS_LevelEditor.Editor.UI
             secondEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
 
-            HideEventSettings();
+            OnEventSelect(null);
             CreateAllEventsPagesForList(2);
         }
 
@@ -577,7 +578,7 @@ namespace FS_LevelEditor.Editor.UI
             // Refresh the pages buttons state, the "No Events" label, etc.
             RefreshStateOfEventsListUIElements();
         }
-        void CreateEventsPage(int gridID)
+        void CreateEventsPage(int gridID, bool showPage = true)
         {
             #region Get Or Create Page
             GameObject pageObj;
@@ -621,7 +622,7 @@ namespace FS_LevelEditor.Editor.UI
 
             for (int i = 0; i < events.Count; i++)
             {
-                int index = i;
+                int realEventID = (gridID * 6) + i;
 
                 // Create the event button PARENT, since inside of it are the button, the name label, and delete btn.
                 GameObject eventButtonParent = new GameObject($"Event {i}");
@@ -649,7 +650,7 @@ namespace FS_LevelEditor.Editor.UI
                 EventButton eventScript = eventButton.AddComponent<EventButton>();
                 eventScript.eventsManager = this;
                 eventScript.eventTypeID = currentEventsListID;
-                eventScript.eventID = index;
+                eventScript.eventID = realEventID;
 
                 #region Delete Button
                 // Create the button and set its name and positon.
@@ -678,7 +679,7 @@ namespace FS_LevelEditor.Editor.UI
                 trashSprite.transform.localPosition = Vector3.zero;
                 trashSprite.enabled = true;
 
-                deleteBtn.onClick += () => DeleteEvent(index);
+                deleteBtn.onClick += () => DeleteEvent(realEventID);
                 #endregion
 
                 #region Name Input Field
@@ -689,14 +690,25 @@ namespace FS_LevelEditor.Editor.UI
                 outlineSprite.height = 55;
 
                 nameInput.SetText(events[i].eventName);
-                nameInput.onSubmit += () => RenameEvent(index, nameInput);
+                nameInput.onSubmit += () => RenameEvent(realEventID, nameInput);
 
                 nameInput.GetComponents<UISprite>()[0].Invoke("MarkAsChanged", 0.01f);
                 #endregion
             }
             pageObj.GetComponent<UIGrid>().Invoke("Reposition", 0.01f);
 
-            ShowEventPage(gridID);
+            if (showPage) ShowEventPage(gridID);
+        }
+        void CreateEventsPageForEventOfID(int eventID, bool showPage = true)
+        {
+            if ((eventID / eventsPerPage) != currentEventsPage)
+            {
+                CreateEventsPage((eventID / eventsPerPage), showPage);
+            }
+            else
+            {
+                CreateEventsPage(currentEventsPage, showPage);
+            }
         }
 
         void AddNewEvent()
@@ -706,15 +718,9 @@ namespace FS_LevelEditor.Editor.UI
             ((List<LE_Event>)targetObj.properties[currentEventsListName]).Add(new LE_Event());
 
             List<LE_Event> events = GetEventsList();
+            int newEventID = events.Count - 1; // The added event will be always in the last index, duh.
 
-            if (events.Count % 6 == 1 && events.Count > 6)
-            {
-                CreateEventsPage(currentEventsPage + 1);
-            }
-            else
-            {
-                CreateEventsPage(currentEventsPage);
-            }
+            CreateEventsPageForEventOfID(newEventID);
 
             OnEventSelect(events.Count - 1);
         }
@@ -732,6 +738,7 @@ namespace FS_LevelEditor.Editor.UI
             eventsPagesList.ForEach(x => x.SetActive(false));
             eventsPagesList[currentEventsPage].SetActive(true);
 
+            OnEventSelect(null);
             RefreshStateOfEventsListUIElements();
         }
         void PreviousEventsPage()
@@ -765,9 +772,9 @@ namespace FS_LevelEditor.Editor.UI
         {
             return currentEventsPage + 1 + "/" + eventsPagesList.Count;
         }
-        internal void OnEventSelect(int selectedID)
+        internal void OnEventSelect(int? selectedID)
         {
-            Utils.PlayFSUISound(Utils.FS_UISound.INTERACTION_UNAVAILABLE);
+            if (selectedID.HasValue) Utils.PlayFSUISound(Utils.FS_UISound.INTERACTION_UNAVAILABLE);
 
             // Reset the color of the previous selected button.
             if (currentSelectedEventButton)
@@ -777,20 +784,33 @@ namespace FS_LevelEditor.Editor.UI
                 currentSelectedEventButton.UpdateColor(true);
             }
 
-            // GetEventsList should return the same events list that when creating the events list, it should be fine :)
-            // *Comment copied from RenameEvent() LOL.
-            currentSelectedEventID = selectedID;
-            currentSelectedEvent = GetEventsList()[selectedID];
-            ShowEventSettings();
+            if (selectedID != null)
+            {
+                eventSelected = true;
 
-            // Set the color of the NEW selected button.
-            Transform test = eventsPagesList[currentSelectedEventID / eventsPerPage].transform.GetChild(currentSelectedEventID % eventsPerPage);
-            GameObject[] test2 = eventsPagesList[0].GetChilds();
-            currentSelectedEventButton = eventsPagesList[currentSelectedEventID / eventsPerPage].transform.GetChild(currentSelectedEventID % eventsPerPage).
-                GetChild(0).GetComponent<UIButton>();
-            currentSelectedEventButton.defaultColor = new Color(0f, 0.6f, 0f, 1f);
-            currentSelectedEventButton.hover = new Color(0.016f, 0.831f, 0f, 1f);
-            currentSelectedEventButton.UpdateColor(true);
+                // GetEventsList should return the same events list that when creating the events list, it should be fine :)
+                // *Comment copied from RenameEvent() LOL.
+                currentSelectedEventID = selectedID.Value;
+                currentSelectedEvent = GetEventsList()[selectedID.Value];
+                ShowEventSettings();
+
+                // Set the color of the NEW selected button.
+                //GameObject[] test2 = eventsPagesList[currentSelectedEventID / eventsPerPage].GetChilds();
+                //Transform test = eventsPagesList[currentSelectedEventID / eventsPerPage].transform.GetChild(currentSelectedEventID % eventsPerPage);
+                currentSelectedEventButton = eventsPagesList[currentSelectedEventID / eventsPerPage].transform.GetChild(currentSelectedEventID % eventsPerPage).
+                    GetChild(0).GetComponent<UIButton>();
+                currentSelectedEventButton.defaultColor = new Color(0f, 0.6f, 0f, 1f);
+                currentSelectedEventButton.hover = new Color(0.016f, 0.831f, 0f, 1f);
+                currentSelectedEventButton.UpdateColor(true);
+            }
+            else
+            {
+                eventSelected = false;
+
+                currentSelectedEventID = 0;
+                currentSelectedEvent = null;
+                HideEventSettings();
+            }
         }
 
         void CopyEventToList(int eventID, int targetListID)
@@ -800,8 +820,16 @@ namespace FS_LevelEditor.Editor.UI
 
             targetList.Add(new LE_Event(toCopy));
 
-            // Update the current list.
-            OnEventSelect(eventID);
+            if (targetListID == currentEventsListID)
+            {
+                CreateEventsPageForEventOfID(targetList.Count - 1, false); // Just update the page where the event is going to be copied.
+                if (eventSelected)
+                {
+                    // In case the updated page is the current one, select the even again so the button is green LOL.
+                    // And yeah, I'm not checking if the updated page is the current one cause I'm lazy.
+                    OnEventSelect(currentSelectedEventID);
+                }
+            }
         }
         void MoveEventToList(int eventID, int targetListID)
         {
@@ -812,16 +840,23 @@ namespace FS_LevelEditor.Editor.UI
             originList.Remove(toMove);
             targetList.Add(toMove);
 
-            if (originList.Count > 0)
+            if (originList.Count > 0) // Update the current page we're on.
             {
-                // Select other event in the list.
-                OnEventSelect(eventID > 0 ? eventID - 1 : 0);
+                // Update the target list in case is the current one.
+                if (targetListID == currentEventsListID) CreateEventsPageForEventOfID(targetList.Count - 1, false);
+
+                for (int i = currentEventsPage; i < eventsPagesList.Count; i++)
+                {
+                    CreateEventsPage(i, false); // Update the whole pages after the current one.
+                }
+                if (eventSelected) OnEventSelect(eventID > 0 ? eventID - 1 : 0);
             }
-            else
+            else // Hide everything, fuck it.
             {
-                // Just refresh the list and deselect the event.
-                HideEventSettings();
-                CreateEventsPage(currentEventsPage);
+                // If there are no events on this list, 100% the target list wasn't the current one, no update shit.
+
+                CreateAllEventsPagesForList(currentEventsListID);
+                OnEventSelect(null);
             }
         }
         void DuplicateEvent(int eventID)
@@ -831,8 +866,8 @@ namespace FS_LevelEditor.Editor.UI
 
             list.Add(new LE_Event(toCopy));
 
-            // The duplicated event is in the last element in the list.
-            OnEventSelect(list.Count - 1);
+            // The duplicated event is in the last element in the list, only update the page, don't go there.
+            CreateEventsPageForEventOfID(list.Count - 1, false);
         }
         void MoveEventUp(int eventID)
         {
@@ -888,10 +923,18 @@ namespace FS_LevelEditor.Editor.UI
         }
         void DeleteEvent(int eventID)
         {
-            HideEventSettings();
+            OnEventSelect(null);
             GetEventsList().RemoveAt(eventID);
-            // And what if now the grid count is less than currentEventGrid? This comprobation is already inside of CreateEventsList() :)
-            CreateEventsPage(currentEventsPage);
+            if (GetEventsList().Count > 0)
+            {
+                // And what if now the grid count is less than currentEventGrid? This comprobation is already inside of CreateEventsList() :)
+                CreateEventsPage(currentEventsPage);
+            }
+            else
+            {
+                // This won't do shit, besides deleting the last remaining button and refresh the UI elements.
+                CreateAllEventsPagesForList(currentEventsListID);
+            }
         }
         #endregion
 
@@ -2001,7 +2044,7 @@ namespace FS_LevelEditor.Editor.UI
             EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 
-            HideEventSettings();
+            OnEventSelect(null);
         }
 
         List<LE_Event> GetEventsList()
