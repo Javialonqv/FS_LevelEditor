@@ -579,30 +579,30 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateEventsPage(int gridID)
         {
-            #region Get Or Create Grid
-            GameObject gridObj;
-            if (eventsPagesList.Count > gridID) // Grid already exists, just delete its childs.
+            #region Get Or Create Page
+            GameObject pageObj;
+            if (eventsPagesList.Count > gridID) // Page already exists, just delete its childs.
             {
-                gridObj = eventsPagesList[gridID];
-                gridObj.DeleteAllChildren(true);
+                pageObj = eventsPagesList[gridID];
+                pageObj.DeleteAllChildren(true);
             }
-            else // Grid doesn't exist yet, create it.
+            else // Page doesn't exist yet, create it.
             {
-                // Create a grid.
-                gridObj = new GameObject($"Grid {gridID}");
-                gridObj.transform.parent = eventsListsParent.transform;
-                gridObj.transform.localPosition = new Vector3(0f, 220f, 0f);
-                gridObj.transform.localScale = Vector3.one;
+                // Create a page.
+                pageObj = new GameObject($"Grid {gridID}");
+                pageObj.transform.parent = eventsListsParent.transform;
+                pageObj.transform.localPosition = new Vector3(0f, 220f, 0f);
+                pageObj.transform.localScale = Vector3.one;
 
                 // Add the UIGrid component, ofc.
-                UIGrid grid = gridObj.AddComponent<UIGrid>();
+                UIGrid grid = pageObj.AddComponent<UIGrid>();
                 grid.arrangement = UIGrid.Arrangement.Vertical;
                 grid.cellWidth = 780f;
                 grid.cellHeight = 80f;
 
-                gridObj.SetActive(false);
+                pageObj.SetActive(false);
 
-                eventsPagesList.Add(gridObj);
+                eventsPagesList.Add(pageObj);
             }
             #endregion
 
@@ -611,13 +611,21 @@ namespace FS_LevelEditor.Editor.UI
             int eventsCount = Mathf.Clamp(events.Count - (gridID * eventsPerPage), 0, 6);
             events = events.GetRange(startIndex, eventsCount);
 
+            if (events.Count == 0) // In case the page is empty... destroy it and create the page BEFORE it :)
+            {
+                eventsPagesList.Remove(pageObj);
+                Destroy(pageObj);
+                CreateEventsPage(gridID - 1);
+                return;
+            }
+
             for (int i = 0; i < events.Count; i++)
             {
                 int index = i;
 
                 // Create the event button PARENT, since inside of it are the button, the name label, and delete btn.
                 GameObject eventButtonParent = new GameObject($"Event {i}");
-                eventButtonParent.transform.parent = gridObj.transform;
+                eventButtonParent.transform.parent = pageObj.transform;
                 eventButtonParent.transform.localPosition = Vector3.zero;
                 eventButtonParent.transform.localScale = Vector3.one;
 
@@ -686,7 +694,7 @@ namespace FS_LevelEditor.Editor.UI
                 nameInput.GetComponents<UISprite>()[0].Invoke("MarkAsChanged", 0.01f);
                 #endregion
             }
-            gridObj.GetComponent<UIGrid>().Invoke("Reposition", 0.01f);
+            pageObj.GetComponent<UIGrid>().Invoke("Reposition", 0.01f);
 
             ShowEventPage(gridID);
         }
