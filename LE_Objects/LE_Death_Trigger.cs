@@ -53,6 +53,8 @@ namespace FS_LevelEditor
             script.considerPlayer = true;
             script.m_collider = script.GetComponent<BoxCollider>();
 
+            script.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+
             content.SetActive(true);
 
             initialized = true;
