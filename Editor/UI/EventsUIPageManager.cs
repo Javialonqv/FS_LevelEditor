@@ -825,7 +825,7 @@ namespace FS_LevelEditor.Editor.UI
                 CreateEventsPageForEventOfID(targetList.Count - 1, false); // Just update the page where the event is going to be copied.
                 if (eventSelected)
                 {
-                    // In case the updated page is the current one, select the even again so the button is green LOL.
+                    // In case the updated page is the current one, select the event again so the button is green LOL.
                     // And yeah, I'm not checking if the updated page is the current one cause I'm lazy.
                     OnEventSelect(currentSelectedEventID);
                 }
@@ -868,6 +868,12 @@ namespace FS_LevelEditor.Editor.UI
 
             // The duplicated event is in the last element in the list, only update the page, don't go there.
             CreateEventsPageForEventOfID(list.Count - 1, false);
+            if (eventSelected)
+            {
+                // In case the updated page is the current one, select the event again so the button is green LOL.
+                // And yeah, I'm not checking if the updated page is the current one cause I'm lazy.
+                OnEventSelect(currentSelectedEventID);
+            }
         }
         void MoveEventUp(int eventID)
         {
