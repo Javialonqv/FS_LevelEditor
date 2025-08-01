@@ -84,6 +84,7 @@ namespace FS_LevelEditor.Editor
         GameObject snapToGridCube;
         Vector3 objPositionWhenStartToSnap;
         Vector3 objLocalPositionWhenStartToSnap;
+        Quaternion objLocalRotationWhenStartToSnap;
 
         public List<LEAction> actionsMade = new List<LEAction>();
         public LEAction currentExecutingAction;
@@ -266,29 +267,9 @@ namespace FS_LevelEditor.Editor
                     {
                         objPositionWhenStartToSnap = currentSelectedObj.transform.position;
                         objLocalPositionWhenStartToSnap = currentSelectedObj.transform.localPosition;
+                        objLocalRotationWhenStartToSnap = currentSelectedObj.transform.localRotation;
 
                         SetCurrentEditorState(EditorState.SNAPPING_TO_GRID);
-
-                        #region Register LEAction
-                        currentExecutingAction = new LEAction();
-                        currentExecutingAction.forMultipleObjects = multipleObjectsSelected;
-
-                        currentExecutingAction.actionType = LEAction.LEActionType.MoveObject;
-
-                        if (multipleObjectsSelected)
-                        {
-                            currentExecutingAction.targetObjs = new List<GameObject>();
-                            foreach (var obj in currentSelectedObj.GetChilds())
-                            {
-                                currentExecutingAction.targetObjs.Add(obj);
-                            }
-                        }
-                        else
-                        {
-                            currentExecutingAction.targetObj = currentSelectedObj;
-                        }
-                        currentExecutingAction.oldPos = currentSelectedObj.transform.localPosition;
-                        #endregion
                     }
                 }
                 if (Input.GetMouseButton(0) && IsCurrentState(EditorState.SNAPPING_TO_GRID))
@@ -301,8 +282,8 @@ namespace FS_LevelEditor.Editor
 
                     if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
                     {
-                        RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, objLocalPositionWhenStartToSnap,
-                            currentSelectedObj.transform.localPosition, null, null);
+                        RegisterLEAction(LEAction.LEActionType.SnapObject, currentSelectedObj, multipleObjectsSelected, objLocalPositionWhenStartToSnap,
+                            currentSelectedObj.transform.localPosition, objLocalRotationWhenStartToSnap, currentSelectedObj.transform.localRotation);
                     }
                 }
             }
@@ -321,8 +302,8 @@ namespace FS_LevelEditor.Editor
 
                     if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
                     {
-                        RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, objLocalPositionWhenStartToSnap,
-                            currentSelectedObj.transform.localPosition, null, null);
+                        RegisterLEAction(LEAction.LEActionType.SnapObject, currentSelectedObj, multipleObjectsSelected, objLocalPositionWhenStartToSnap,
+                            currentSelectedObj.transform.localPosition, objLocalRotationWhenStartToSnap, currentSelectedObj.transform.localRotation);
                     }
                 }
             }
@@ -1471,6 +1452,13 @@ namespace FS_LevelEditor.Editor
                     currentExecutingAction.oldScale = oldScale.Value;
                     currentExecutingAction.newScale = newScale.Value;
                     break;
+
+                case LEAction.LEActionType.SnapObject:
+                    currentExecutingAction.oldPos = oldPos.Value;
+                    currentExecutingAction.newPos = newPos.Value;
+                    currentExecutingAction.oldRot = oldRot.Value;
+                    currentExecutingAction.newRot = newRot.Value;
+                    break;
             }
 
             if (forMultipleObjs)
@@ -1735,6 +1723,7 @@ namespace FS_LevelEditor.Editor
             MoveObject,
             RotateObject,
             ScaleObject,
+            SnapObject,
             DeleteObject
         }
 
@@ -1766,6 +1755,10 @@ namespace FS_LevelEditor.Editor
                     break;
                 case LEActionType.ScaleObject:
                     UndoScaleObject(editor);
+                    break;
+                case LEActionType.SnapObject:
+                    UndoMoveObject(editor);
+                    UndoRotateObject(editor);
                     break;
                 case LEActionType.DeleteObject:
                     UndoDeleteObject(editor);
