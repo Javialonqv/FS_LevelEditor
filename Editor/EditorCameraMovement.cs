@@ -130,7 +130,6 @@ namespace FS_LevelEditor.Editor
             float mouseY = InControlSingleton.Instance.playerActions.MouseOnly.Y;
 
             xRotation -= mouseY * mouseSensivility;
-            Logger.Log(xRotation);
             xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
             yRotation += mouseX * mouseSensivility;
