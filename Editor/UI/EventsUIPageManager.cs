@@ -578,7 +578,7 @@ namespace FS_LevelEditor.Editor.UI
             // Refresh the pages buttons state, the "No Events" label, etc.
             RefreshStateOfEventsListUIElements();
         }
-        void CreateEventsPage(int gridID, bool showPage = true)
+        void CreateEventsPage(int gridID, bool showPage = true, bool deselectCurrentSelectedEvent = true)
         {
             #region Get Or Create Page
             GameObject pageObj;
@@ -697,7 +697,7 @@ namespace FS_LevelEditor.Editor.UI
             }
             pageObj.GetComponent<UIGrid>().Invoke("Reposition", 0.01f);
 
-            if (showPage) ShowEventPage(gridID);
+            if (showPage) ShowEventPage(gridID, deselectCurrentSelectedEvent);
         }
         void CreateEventsPageForEventOfID(int eventID, bool showPage = true)
         {
@@ -724,7 +724,7 @@ namespace FS_LevelEditor.Editor.UI
 
             OnEventSelect(events.Count - 1);
         }
-        void ShowEventPage(int pageID)
+        void ShowEventPage(int pageID, bool deselectCurrentSelectedEvent = true)
         {
             if (pageID < 0 || (pageID >= eventsPagesList.Count && pageID != int.MaxValue)) return;
 
@@ -738,7 +738,7 @@ namespace FS_LevelEditor.Editor.UI
             eventsPagesList.ForEach(x => x.SetActive(false));
             eventsPagesList[currentEventsPage].SetActive(true);
 
-            OnEventSelect(null);
+            if (deselectCurrentSelectedEvent) OnEventSelect(null);
             RefreshStateOfEventsListUIElements();
         }
         void PreviousEventsPage()
@@ -890,16 +890,39 @@ namespace FS_LevelEditor.Editor.UI
             list[eventID - 1] = toMoveUp;
             list[eventID] = upEvent;
 
-            if (eventID % 6 == 0)
+            if (GetPageIDForEvent(eventID - 1) < currentEventsPage) // The event was moved to another page (a previous one).
             {
-                PreviousEventsPage();
-                OnEventSelect(eventID - 1);
+                if (eventSelected && currentSelectedEvent == toMoveUp)
+                {
+                    // If the user was currently selecting the event that was moved, switch the page so the user is still selecting it.
+                    CreateEventsPage(currentEventsPage, false, false);
+                    CreateEventsPage(currentEventsPage - 1, true, false);
+                    OnEventSelect(eventID - 1);
+                }
+                else
+                {
+                    // If wasn't select, just update both of the affected pages.
+                    CreateEventsPage(currentEventsPage - 1, false);
+                    CreateEventsPage(currentEventsPage, true);
+                }
             }
-            else
+            else // The event still in the current page.
             {
-                CreateEventsPage(currentEventsPage);
-                OnEventSelect(eventID - 1);
+                // Update the current page and select the event only if it was selected before.
+                CreateEventsPage(currentEventsPage, deselectCurrentSelectedEvent: !(eventSelected && currentSelectedEvent == toMoveUp));
+                if (eventSelected && currentSelectedEvent == toMoveUp) OnEventSelect(eventID - 1);
             }
+
+            //if (eventID % 6 == 0)
+            //{
+            //    PreviousEventsPage();
+            //    OnEventSelect(eventID - 1);
+            //}
+            //else
+            //{
+            //    CreateEventsPage(currentEventsPage);
+            //    OnEventSelect(eventID - 1);
+            //}
         }
         void MoveEventDown(int eventID)
         {
@@ -916,16 +939,39 @@ namespace FS_LevelEditor.Editor.UI
             list[eventID + 1] = toMoveDown;
             list[eventID] = downEvent;
 
-            if ((eventID + 7) % 6 == 0)
+            if (GetPageIDForEvent(eventID + 1) > currentEventsPage) // The event was moved to another page (a next one).
             {
-                NextEventsPage();
-                OnEventSelect(eventID + 1);
+                if (eventSelected && currentSelectedEvent == toMoveDown)
+                {
+                    // If the user was currently selecting the event that was moved, switch the page so the user is still selecting it.
+                    CreateEventsPage(currentEventsPage, false, false);
+                    CreateEventsPage(currentEventsPage + 1, true, false);
+                    OnEventSelect(eventID + 1);
+                }
+                else
+                {
+                    // If wasn't select, just update both of the affected pages.
+                    CreateEventsPage(currentEventsPage + 1, false);
+                    CreateEventsPage(currentEventsPage, true);
+                }
             }
-            else
+            else // The event still in the current page.
             {
-                CreateEventsPage(currentEventsPage);
-                OnEventSelect(eventID + 1);
+                // Update the current page and select the event only if it was selected before.
+                CreateEventsPage(currentEventsPage, deselectCurrentSelectedEvent: !(eventSelected && currentSelectedEvent == toMoveDown));
+                if (eventSelected && currentSelectedEvent == toMoveDown) OnEventSelect(eventID + 1);
             }
+
+            //if ((eventID + 7) % 6 == 0)
+            //{
+            //    NextEventsPage();
+            //    OnEventSelect(eventID + 1);
+            //}
+            //else
+            //{
+            //    CreateEventsPage(currentEventsPage);
+            //    OnEventSelect(eventID + 1);
+            //}
         }
         void DeleteEvent(int eventID)
         {
@@ -941,6 +987,11 @@ namespace FS_LevelEditor.Editor.UI
                 // This won't do shit, besides deleting the last remaining button and refresh the UI elements.
                 CreateAllEventsPagesForList(currentEventsListID);
             }
+        }
+
+        int GetPageIDForEvent(int eventID)
+        {
+            return eventID / eventsPerPage;
         }
         #endregion
 
