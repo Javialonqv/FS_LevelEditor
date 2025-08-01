@@ -252,6 +252,17 @@ namespace FS_LevelEditor.Editor.UI
             eventsBgSprite.color = new Color(0.0509f, 0.3333f, 0.3764f);
             eventsBgSprite.width = 800;
             eventsBgSprite.height = 540;
+
+            UIButton button = eventsListBg.AddComponent<UIButton>();
+            button.defaultColor = new Color(0.0509f, 0.3333f, 0.3764f);
+            button.hover = new Color(0.0509f, 0.3333f, 0.3764f);
+            button.pressed = new Color(0.0509f, 0.3333f, 0.3764f);
+            BoxCollider collider = eventsListBg.AddComponent<BoxCollider>();
+            collider.center = Vector3.zero;
+            collider.size = new Vector3(800, 540, 0);
+
+            UIButtonPatcher patcher = eventsListBg.AddComponent<UIButtonPatcher>();
+            patcher.onClick += () => OnEventSelect(null);
         }
         void CreateDetails()
         {
