@@ -407,6 +407,7 @@ namespace FS_LevelEditor
             }
 
             if (eventExecuter) eventExecuter.OnInstantiated(scene);
+            if (waypointSupport) waypointSupport.OnInstantiated(scene);
         }
         /// <summary>
         /// Use this to initialize the components/data of the object.
@@ -574,6 +575,10 @@ namespace FS_LevelEditor
                     PlayModeController.Instance.currentInstantiatedObjects.Remove(this);
                 }
             }
+        }
+        public virtual void BeforeSave()
+        {
+            if (waypointSupport) waypointSupport.BeforeSave();
         }
 
         public virtual List<string> GetAvailableEventsIDs()

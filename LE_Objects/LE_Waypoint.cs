@@ -13,9 +13,10 @@ namespace FS_LevelEditor
         public WaypointSupport mainSupport;
         public MonoBehaviour previousWaypoint;
         public LE_Waypoint nextWaypoint;
+        public WaypointData attachedData;
         public LineRenderer editorLine;
 
-        public override Transform objectParent => transform.parent.parent;
+        public override Transform objectParent => mainSupport.waypointsParent;
 
         void Awake()
         {
@@ -63,6 +64,12 @@ namespace FS_LevelEditor
         {
             base.OnDelete();
             mainSupport.spawnedWaypoints.Remove(nextWaypoint);
+        }
+        public override void BeforeSave()
+        {
+            // Refresh the WaypointData... data...
+
+            attachedData.position = transform.localPosition;
         }
 
         public override LE_Object[] GetReferenceObjectsToGetObjID()

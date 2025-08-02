@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.SaveSystem.SerializableTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace FS_LevelEditor
 {
     public class WaypointData
     {
-
+        public Vector3Serializable position { get; set; }
     }
 
     [MelonLoader.RegisterTypeInIl2Cpp]
@@ -18,7 +19,7 @@ namespace FS_LevelEditor
     {
         LE_Object targetObject;
 
-        Transform waypointsParent;
+        public Transform waypointsParent;
         public List<LE_Waypoint> spawnedWaypoints = new List<LE_Waypoint>();
         public LE_Waypoint firstWaypoint;
         public LineRenderer editorLine;
@@ -35,6 +36,7 @@ namespace FS_LevelEditor
             waypointsParent.parent = targetObject.transform;
             waypointsParent.localPosition = Vector3.zero;
             waypointsParent.localScale = Vector3.one;
+            waypointsParent.gameObject.SetActive(false); // Disabled by default, until the user selects it.
         }
         void CreateEditorLine()
         {
@@ -47,13 +49,20 @@ namespace FS_LevelEditor
             }
         }
 
+        public void OnInstantiated(LEScene scene)
+        {
+            if (targetObject.waypoints.Count > 0) LoadWaypointsFromSave();
+        }
         public void LoadWaypointsFromSave()
         {
             List<WaypointData> waypoints = targetObject.waypoints;
 
             for (int i = 0; i < waypoints.Count; i++)
             {
-                var waypoint = waypoints[i];
+                var waypointData = waypoints[i];
+                LE_Waypoint createdWaypoint = AddWaypoint(true);
+
+                createdWaypoint.transform.localPosition = waypointData.position;
             }
         }
 
@@ -75,6 +84,11 @@ namespace FS_LevelEditor
         {
             ShowWaypoints(false);
         }
+        public void BeforeSave()
+        {
+            // Since the waypoints aren't saved automatically, call the method manually in them.
+            spawnedWaypoints.ForEach(x => x.BeforeSave());
+        }
 
         public void ShowWaypoints(bool show)
         {
@@ -89,7 +103,7 @@ namespace FS_LevelEditor
                 }
             }
         }
-        public void AddWaypoint()
+        public LE_Waypoint AddWaypoint(bool fromSave = false)
         {
             GameObject waypoint = Instantiate(EditorController.Instance.allCategoriesObjects[targetObject.objectType.Value], waypointsParent);
             waypoint.transform.localPosition = Vector3.zero;
@@ -112,12 +126,25 @@ namespace FS_LevelEditor
 
             spawnedWaypoints.Add(waypointComp);
 
-            if (EditorController.Instance)
+            if (!fromSave) // Create a new WaypointData, link it and everything.
             {
-                EditorController.Instance.SetSelectedObj(waypoint);
+                WaypointData data = new WaypointData();
+                waypointComp.attachedData = data;
+                targetObject.waypoints.Add(data);
+
+                if (EditorController.Instance)
+                {
+                    EditorController.Instance.SetSelectedObj(waypoint);
+                }
+            }
+            else // Just link the ALREADY EXISTING data to the created waypoint.
+            {
+                waypointComp.attachedData = targetObject.waypoints[spawnedWaypoints.Count - 1];
             }
 
             Logger.DebugLog($"Created waypoint! ID: {waypointComp.objectID}.");
+
+            return waypointComp;
         }
     }
 }

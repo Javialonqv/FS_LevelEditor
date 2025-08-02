@@ -92,6 +92,7 @@ namespace FS_LevelEditor.SaveSystem
                 // Only if the object has the LE_Object component.
                 if (obj.TryGetComponent(out LE_Object component))
                 {
+                    component.BeforeSave();
                     LE_ObjectData objData = new LE_ObjectData(component);
                     data.objects.Add(objData);
                 }
@@ -256,6 +257,7 @@ namespace FS_LevelEditor.SaveSystem
                 objInstance.name = objClassInstance.objectFullNameWithID;
                 objClassInstance.setActiveAtStart = obj.setActiveAtStart;
                 objClassInstance.collision = obj.collision;
+                objClassInstance.waypoints = obj.waypoints;
 
                 if (obj.properties != null)
                 {
