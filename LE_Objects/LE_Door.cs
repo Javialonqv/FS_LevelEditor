@@ -133,6 +133,7 @@ namespace FS_LevelEditor
             doorScript.doorMesh.GetComponent<Animation>().clip = t_door.doorMesh.GetComponent<Animation>().clip;
 
             ForceTeleport teleport = doorScript.forceTeleportGO.AddComponent<ForceTeleport>();
+            teleport.considerPlayer = true;
             teleport.considerBooks = true;
             teleport.considerEncKeys = true;
             teleport.considerPowerCores = true;
@@ -142,6 +143,7 @@ namespace FS_LevelEditor
             teleport.teleportPoints = new Il2CppSystem.Collections.Generic.List<Transform>();
             teleport.teleportPoints.Add(doorScript.doorMesh.Find("porte1/TeleportPoint1_Inside"));
             teleport.teleportPoints.Add(doorScript.doorMesh.Find("porte1/TeleportPoint2_Outside"));
+            teleport.forceTPPoint_Player = teleport.teleportPoints[0];
             teleport.teleportX = true;
             teleport.teleportY = true;
             teleport.teleportZ = true;
