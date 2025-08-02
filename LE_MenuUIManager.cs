@@ -419,19 +419,19 @@ namespace FS_LevelEditor
                 string levelFileNameWithoutExtension = keys[i];
                 LevelData data = levels[levelFileNameWithoutExtension];
 
-                if (i % 5 == 0 || i == 0) // Idk bro, this is literally copied from the OST mod LOL.
+                if (i % 7 == 0 || i == 0) // Idk bro, this is literally copied from the OST mod LOL.
                 {
                     // Create a grid.
                     currentGrid = new GameObject($"Grid {(int)(i / 5)}");
                     currentGrid.transform.parent = lvlButtonsParent.transform;
-                    currentGrid.transform.localPosition = new Vector3(0f, 150f, 0f);
+                    currentGrid.transform.localPosition = new Vector3(0f, 170f, 0f);
                     currentGrid.transform.localScale = Vector3.one;
 
                     // Add the UIGrid component, ofc.
                     UIGrid grid = currentGrid.AddComponent<UIGrid>();
                     grid.arrangement = UIGrid.Arrangement.Vertical;
                     grid.cellWidth = 1640f;
-                    grid.cellHeight = 110f;
+                    grid.cellHeight = 80f;
 
                     if (i != 0) currentGrid.SetActive(false);
 
@@ -445,7 +445,7 @@ namespace FS_LevelEditor
                 lvlButtonParent.transform.localScale = Vector3.one;
 
                 #region Create Level Button
-                UIButtonPatcher lvlButton = NGUI_Utils.CreateButton(lvlButtonParent.transform, new Vector3(-110, 0), new Vector3Int(1420, 100, 0), "");
+                UIButtonPatcher lvlButton = NGUI_Utils.CreateButton(lvlButtonParent.transform, new Vector3(-170, 0), new Vector3Int(1300, 70, 0), "");
                 lvlButton.name = "Button";
 
                 // If the data is null that means this .lvl file isn't a valid level file, put the sprite color red.
@@ -464,7 +464,7 @@ namespace FS_LevelEditor
                 // If the data is null put a warning in the beginning of the text, followed by the name of the file without extension, otherwise, put the real level name as usually.
                 lvlButton.buttonLabel.text = data != null ? data.levelName : $"[c][ffff00][INVALID LEVEL FILE][-][/c] {levelFileNameWithoutExtension}";
                 lvlButton.buttonLabel.fontSize = 40;
-                lvlButton.buttonLabel.transform.localPosition = new Vector3(-680f, 0f, 0f);
+                lvlButton.buttonLabel.transform.localPosition = new Vector3(-620f, 0f, 0f);
 
                 // Only setup UIButtonScale and UIButton when is a valid level file, otherwise destroy the UIButton, UIButtonScale and UIButtonColor.
                 if (data != null)
@@ -532,6 +532,35 @@ namespace FS_LevelEditor
 
                     // Adjust what should the button execute when clicked.
                     renameBtn.onClick += () => OnRenameLevelButtonClick(levelFileNameWithoutExtension, lvlButton.buttonLabel.gameObject);
+                    #endregion
+                    #region Create Play Button
+                    // --- Create Play Button (Green, First) ---
+                    UIButtonPatcher playBtn = NGUI_Utils.CreateButtonWithSprite(
+                        lvlButtonParent.transform,
+                        new Vector3(550, 0), // leftmost, adjust as needed
+                        new Vector3Int(70, 70, 0),
+                        1,
+                        "Triangle", // Use your play icon sprite name
+                        new Vector2Int(40, 50)
+                    );
+                    playBtn.name = "PlayBtn";
+
+                    playBtn.buttonSprite.transform.localEulerAngles = new Vector3(0, 0, -90);
+
+                    // Set green color
+                    UIButtonColor playButtonColor = playBtn.GetComponent<UIButtonColor>();
+                    playButtonColor.defaultColor = new Color(0f, 0.8f, 0f, 1f);
+                    playButtonColor.hover = new Color(0f, 1f, 0f, 1f);
+                    playButtonColor.pressed = new Color(0f, 0.5f, 0f, 1f);
+                    playButtonColor.SetState(UIButtonColor.State.Normal, true);
+
+                    // Wire up the click event to play the level directly
+                    playBtn.onClick += () =>
+                    {
+                        PlayFromMenuHelper.PlayImmediatelyOnEditorLoad = true;
+                        PlayFromMenuHelper.LevelToPlay = levelFileNameWithoutExtension;
+                        EnterEditor(true, levelFileNameWithoutExtension, data.levelName);
+                    };
                     #endregion
                 }
             }
@@ -829,5 +858,10 @@ namespace FS_LevelEditor
             previousPageButton.button.isEnabled = currentLevelsGridID > 0;
             nextPageButton.button.isEnabled = currentLevelsGridID < lvlButtonsGrids.Count - 1;
         }
+    }
+    public static class PlayFromMenuHelper
+    {
+        public static bool PlayImmediatelyOnEditorLoad = false;
+        public static string LevelToPlay = null;
     }
 }

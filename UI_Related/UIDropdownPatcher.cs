@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static Il2CppMono.Security.X509.X520;
 
 namespace FS_LevelEditor
 {
