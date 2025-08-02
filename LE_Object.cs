@@ -74,7 +74,8 @@ namespace FS_LevelEditor
             DOOR,
             LASER_FIELD,
             DOOR_V2,
-            DEATH_TRIGGER
+            DEATH_TRIGGER,
+            WAYPOINT
         }
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -140,8 +141,10 @@ namespace FS_LevelEditor
         public bool collision = true;
 
         public Dictionary<string, object> properties = new Dictionary<string, object>();
+        public List<WaypointData> waypoints = new List<WaypointData>();
         
         public EventExecuter eventExecuter;
+        public WaypointSupport waypointSupport;
         public virtual Transform objectParent
         {
             get
@@ -155,6 +158,7 @@ namespace FS_LevelEditor
         public bool canUndoDeletion { get; protected set; }  = true;
         public bool canBeUsedInEventsTab { get; protected set; } = true;
         public bool canBeDisabledAtStart { get; protected set; } = true;
+        public bool canHaveWaypoints { get; protected set; } = true;
 
         public bool initialized = false;
         bool hasItsOwnClass = false;
@@ -242,6 +246,11 @@ namespace FS_LevelEditor
             if (GetAvailableEventsIDs().Count > 0)
             {
                 eventExecuter = gameObject.AddComponent<EventExecuter>();
+            }
+
+            if (canHaveWaypoints)
+            {
+                waypointSupport = gameObject.AddComponent<WaypointSupport>();
             }
         }
 
@@ -529,6 +538,7 @@ namespace FS_LevelEditor
             if (canBeDisabledAtStart) gameObject.SetOpaqueMaterials();
 
             if (eventExecuter) eventExecuter.OnSelect();
+            if (waypointSupport) waypointSupport.OnSelect();
         }
         public virtual void OnDeselect(GameObject nextSelectedObj)
         {
@@ -545,6 +555,7 @@ namespace FS_LevelEditor
             }
 
             if (eventExecuter) eventExecuter.OnDeselect();
+            if (waypointSupport) waypointSupport.OnDeselect();
         }
         public virtual void OnDelete()
         {
