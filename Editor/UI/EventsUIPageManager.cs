@@ -1,6 +1,7 @@
 ﻿using FS_LevelEditor;
 using FS_LevelEditor.UI_Related;
 using Il2Cpp;
+using Il2CppSystem.Runtime.Remoting.Messaging;
 using MelonLoader;
 using System;
 using System.Collections;
@@ -709,6 +710,7 @@ namespace FS_LevelEditor.Editor.UI
             pageObj.GetComponent<UIGrid>().Invoke("Reposition", 0.01f);
 
             if (showPage) ShowEventPage(gridID, deselectCurrentSelectedEvent);
+            else RefreshStateOfEventsListUIElements(); // If we don't show it, at least refresh the UI.
         }
         void CreateEventsPageForEventOfID(int eventID, bool showPage = true)
         {
@@ -844,6 +846,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void MoveEventToList(int eventID, int targetListID)
         {
+            int pagesInCurrentListBeforeMove = GetEventsPagesCountForCurrentListID();
+
             List<LE_Event> originList = GetEventsList();
             LE_Event toMove = originList[eventID];
             List<LE_Event> targetList = GetEventsList(targetListID);
@@ -856,10 +860,11 @@ namespace FS_LevelEditor.Editor.UI
                 // Update the target list in case is the current one.
                 if (targetListID == currentEventsListID) CreateEventsPageForEventOfID(targetList.Count - 1, false);
 
-                for (int i = currentEventsPage; i < eventsPagesList.Count; i++)
+                for (int i = currentEventsPage; i < GetEventsPagesCountForCurrentListID(); i++)
                 {
                     CreateEventsPage(i, false); // Update the whole pages after the current one.
                 }
+                if (pagesInCurrentListBeforeMove > GetEventsPagesCountForCurrentListID()) CreateEventsPage(GetEventsPagesCountForCurrentListID(), false);
                 if (eventSelected) OnEventSelect(eventID > 0 ? eventID - 1 : 0);
             }
             else // Hide everything, fuck it.
@@ -986,12 +991,25 @@ namespace FS_LevelEditor.Editor.UI
         }
         void DeleteEvent(int eventID)
         {
+            int pagesBeforeRemove = GetEventsPagesCountForCurrentListID();
+
             OnEventSelect(null);
             GetEventsList().RemoveAt(eventID);
             if (GetEventsList().Count > 0)
             {
-                // And what if now the grid count is less than currentEventGrid? This comprobation is already inside of CreateEventsList() :)
-                CreateEventsPage(currentEventsPage);
+                // Is the current page the last one? Since the event was already removed, don't substract -1 to the GetEventsPagesCountForCurrentListID() result.
+                if (currentEventsPage == GetEventsPagesCountForCurrentListID())
+                {
+                    CreateEventsPage(GetEventsPagesCountForCurrentListID());
+                }
+                else
+                {
+                    for (int i = currentEventsPage; i < GetEventsPagesCountForCurrentListID(); i++)
+                    {
+                        CreateEventsPage(i, i == currentEventsPage);
+                    }
+                    if (pagesBeforeRemove > GetEventsPagesCountForCurrentListID()) CreateEventsPage(GetEventsPagesCountForCurrentListID(), false);
+                }
             }
             else
             {
@@ -1003,6 +1021,17 @@ namespace FS_LevelEditor.Editor.UI
         int GetPageIDForEvent(int eventID)
         {
             return eventID / eventsPerPage;
+        }
+        int GetEventsPagesCountForCurrentListID()
+        {
+            List<LE_Event> events = GetEventsList();
+            return Mathf.CeilToInt((float)events.Count / eventsPerPage);
+        }
+        int GetEventsCountForPage(int pageID)
+        {
+            List<LE_Event> events = GetEventsList();
+            int eventsCount = Mathf.Clamp(events.Count - (pageID * eventsPerPage), 0, 6);
+            return eventsCount;
         }
         #endregion
 
