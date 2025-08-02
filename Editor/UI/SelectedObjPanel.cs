@@ -31,6 +31,7 @@ namespace FS_LevelEditor.Editor.UI
         UICustomInputField rotXField, rotYField, rotZField;
         UICustomInputField scaleXField, scaleYField, scaleZField;
         UIToggle collisionToggle;
+        UIButtonPatcher addWaypointButton;
         // ------------------------------
         bool showingPanel = false;
         bool panelIsExpanded = false;
@@ -198,6 +199,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectRotationUIElements();
             CreateObjectScaleUIElements();
             CreateCollisionToggle();
+            CreateAddWaypointButton();
         }
         void CreateObjectPositionUIElements()
         {
@@ -358,6 +360,12 @@ namespace FS_LevelEditor.Editor.UI
             lineSprite.height = 6;
             lineSprite.depth = 8;
             line.SetActive(false);
+        }
+        void CreateAddWaypointButton()
+        {
+            addWaypointButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, -115), new Vector3Int(480, 50, 0), "AddWaypoint");
+            addWaypointButton.name = "AddWaypointButton";
+            addWaypointButton.onClick += AddWaypointForObject;
         }
         // ------------------------------
         void CreateObjectSpecificOptionsParent()
@@ -1089,6 +1097,13 @@ namespace FS_LevelEditor.Editor.UI
             }
             EditorController.Instance.levelHasBeenModified = true;
         }
+        public void AddWaypointForObject()
+        {
+            if (!EditorController.Instance.multipleObjectsSelected)
+            {
+                EditorController.Instance.currentSelectedObjComponent.GetComponent<WaypointSupport>().AddWaypoint();
+            }
+        }
         public void ShowGlobalObjectAttributes(bool show)
         {
             objectSpecificPanelsParent.gameObject.SetActive(!show);
@@ -1153,6 +1168,15 @@ namespace FS_LevelEditor.Editor.UI
             {
                 collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
                 collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+            }
+
+            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.canHaveWaypoints)
+            {
+                addWaypointButton.gameObject.SetActive(true);
+            }
+            else
+            {
+                addWaypointButton.gameObject.SetActive(false);
             }
         }
 
