@@ -93,7 +93,7 @@ namespace FS_LevelEditor
         public void ShowWaypoints(bool show)
         {
             waypointsParent.gameObject.SetActive(show);
-            editorLine.gameObject.SetActive(show);
+            if (editorLine) editorLine.gameObject.SetActive(show); // Technically this can only be called when we're on the editor, but just in case.
 
             if (show)
             {
@@ -121,7 +121,7 @@ namespace FS_LevelEditor
             else
             {
                 waypointComp.previousWaypoint = spawnedWaypoints.Last();
-                spawnedWaypoints.Last().previousWaypoint = waypointComp;
+                spawnedWaypoints.Last().nextWaypoint = waypointComp;
             }
 
             spawnedWaypoints.Add(waypointComp);
