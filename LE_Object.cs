@@ -222,6 +222,16 @@ namespace FS_LevelEditor
                     else if (PlayModeController.Instance) ObjectStart(LEScene.Playmode);
                 }
             }
+            else
+            {
+                // ObjectStart is only called when the object is ACTUALLY being spawned, since Start() is also called when loading the
+                // level in playmode to init the component.
+                if (gameObject.activeSelf || EditorController.Instance)
+                {
+                    if (EditorController.Instance) ObjectStart(LEScene.Editor);
+                    else if (PlayModeController.Instance) ObjectStart(LEScene.Playmode);
+                }
+            }
         }
         void Init(ObjectType objectType, bool skipIDInitialization = false)
         {
@@ -422,7 +432,7 @@ namespace FS_LevelEditor
         /// <param name="scene">The scene type is being loaded.</param>
         public virtual void ObjectStart(LEScene scene)
         {
-
+            if (waypointSupport) waypointSupport.ObjectStart(scene);
         }
 
         /// <summary>

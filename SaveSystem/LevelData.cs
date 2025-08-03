@@ -321,6 +321,7 @@ namespace FS_LevelEditor.SaveSystem
                 objInstance.name = objClassInstance.objectFullNameWithID;
                 objClassInstance.setActiveAtStart = obj.setActiveAtStart;
                 objClassInstance.collision = obj.collision;
+                objClassInstance.waypoints = obj.waypoints;
 
                 if (obj.properties != null)
                 {

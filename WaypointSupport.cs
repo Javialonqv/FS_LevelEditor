@@ -1,7 +1,9 @@
 ﻿using FS_LevelEditor.Editor;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
+using Il2Cpp;
+using MelonLoader;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +25,9 @@ namespace FS_LevelEditor
         public List<LE_Waypoint> spawnedWaypoints = new List<LE_Waypoint>();
         public LE_Waypoint firstWaypoint;
         public LineRenderer editorLine;
+
+        int currentWaypointID;
+        LE_Waypoint currentWaypoint;
 
         void Awake()
         {
@@ -63,6 +68,35 @@ namespace FS_LevelEditor
                 LE_Waypoint createdWaypoint = AddWaypoint(true);
 
                 createdWaypoint.transform.localPosition = waypointData.position;
+            }
+        }
+
+        public void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Playmode && spawnedWaypoints != null && spawnedWaypoints.Count > 0)
+            {
+                MelonCoroutines.Start(MoveObject());
+            }
+        }
+        IEnumerator MoveObject()
+        {
+            float speed = 5f;
+            Vector3[] cachedWaypointPositions = spawnedWaypoints.Select(x => x.transform.position).ToArray();
+
+            yield return new WaitForSeconds(2f);
+
+            for (int i = 0; i < spawnedWaypoints.Count; i++)
+            {
+                currentWaypointID = i;
+                currentWaypoint = spawnedWaypoints[i];
+
+                Vector3 distance = cachedWaypointPositions[i] - transform.position;
+                float duration = distance.magnitude / speed;
+
+                TweenPosition.Begin(gameObject, duration, cachedWaypointPositions[i]);
+                yield return new WaitForSeconds(duration);
+
+                yield return new WaitForSeconds(2f);
             }
         }
 
@@ -109,7 +143,7 @@ namespace FS_LevelEditor
             waypoint.transform.localPosition = Vector3.zero;
             waypoint.transform.localEulerAngles = Vector3.zero;
             waypoint.transform.localScale = Vector3.one;
-            waypoint.SetTransparentMaterials();
+            if (EditorController.Instance) waypoint.SetTransparentMaterials();
 
             LE_Waypoint waypointComp = (LE_Waypoint)LE_Object.AddComponentToObject(waypoint, LE_Object.ObjectType.WAYPOINT);
 
