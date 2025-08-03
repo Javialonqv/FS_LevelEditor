@@ -303,7 +303,7 @@ namespace FS_LevelEditor
 
             foreach (var obj in levelObjects)
             {
-                if (obj.objectType == LE_Object.ObjectType.SAW_WAYPOINT) continue;
+                if (obj.objectType == LE_Object.ObjectType.SAW_WAYPOINT || obj.objectType == LE_Object.ObjectType.WAYPOINT) continue;
 
                 if (!seenIds.Add(obj.objectFullNameWithID))
                 {
