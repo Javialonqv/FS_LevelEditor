@@ -587,6 +587,7 @@ namespace FS_LevelEditor
                     // Adjust what should the button execute when clicked.
                     renameBtn.onClick += () => OnRenameLevelButtonClick(levelFileNameWithoutExtension, lvlButton.buttonLabel.gameObject);
                     #endregion
+
                     #region Create Play Button
                     // --- Create Play Button (Green, First) ---
                     UIButtonPatcher playBtn = NGUI_Utils.CreateButtonWithSprite(
@@ -595,7 +596,7 @@ namespace FS_LevelEditor
                         new Vector3Int(70, 70, 0),
                         1,
                         "Triangle", // Use your play icon sprite name
-                        new Vector2Int(40, 50)
+                        new Vector2Int(40, 40)
                     );
                     playBtn.name = "PlayBtn";
 
