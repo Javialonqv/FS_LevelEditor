@@ -37,7 +37,7 @@ namespace FS_LevelEditor
             GameObject triggerObj = gameObject.GetChildAt("Content/LE_Trigger");
             triggerObj.tag = "Trigger";
             triggerObj.layer = LayerMask.NameToLayer("Ignore Raycast");
-
+            
             TriggerScript trigger = triggerObj.AddComponent<TriggerScript>();
             trigger.onEnter = new UnityEvent();
             trigger.onEnter.AddListener((UnityAction)ExecuteOnEnterEvents);
