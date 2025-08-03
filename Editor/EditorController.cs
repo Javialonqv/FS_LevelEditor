@@ -70,6 +70,14 @@ namespace FS_LevelEditor.Editor
         public enum Mode { Building, Selection, Deletion }
         public Mode currentMode = Mode.Building;
 
+        //Bulk selection.
+        private bool isSelecting = false;
+        private Vector2 selectionStartScreen;
+        private Vector2 selectionEndScreen;
+        private float selectionStartTime;
+        private const float multiSelectDelay = 0.3f; // seconds
+        private const float minDragDistance = 5f; // pixels
+
         // Gizmos arrows to move objects.
         GameObject gizmosArrows;
         enum GizmosArrow { None, X, Y, Z }
@@ -330,21 +338,33 @@ namespace FS_LevelEditor.Editor
 
             #region Select Object
             // For object selection...
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection && collidingArrow == GizmosArrow.None && !Utils.IsMouseOverUIElement() && !IsCurrentState(EditorState.SNAPPING_TO_GRID))
+            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection &&
+                !Utils.IsMouseOverUIElement() && !IsCurrentState(EditorState.SNAPPING_TO_GRID))
             {
-                // If it's selecting an object, well, set it as the selected one.
-                if (CanSelectObjectWithRay(out GameObject obj))
+                // Don't handle selection if we're starting to use gizmo
+                if (GetCollidingWithAnArrow() == GizmosArrow.None)
                 {
-                    SetSelectedObj(obj);
-                }
-                // Otherwise, deselect the last selected object if there's one ONLY if it's not holding Ctrl, since it may be selecting multiple objects.
-                // We don't want the user to lost his whole selection by just one simple mistake, do we?
-                else if (!Input.GetKey(KeyCode.LeftControl))
-                {
-                    SetSelectedObj(null);
+                    // If it's selecting an object, well, set it as the selected one.
+                    if (CanSelectObjectWithRay(out GameObject obj))
+                    {
+                        if (Input.GetKey(KeyCode.LeftControl))
+                        {
+                            SetSelectedObj(obj, SelectionType.ForceMultiple);
+                        }
+                        else
+                        {
+                            SetSelectedObj(obj);
+                        }
+                    }
+                    // Otherwise, deselect the last selected object if there's one ONLY if it's not holding Ctrl
+                    else if (!Input.GetKey(KeyCode.LeftControl))
+                    {
+                        SetSelectedObj(null);
+                    }
                 }
             }
             #endregion
+
 
             #region Delete With Click
             // If click and it's on deletion and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element..
@@ -367,15 +387,15 @@ namespace FS_LevelEditor.Editor
                 // Move the object.
                 MoveObject(collidingArrow);
             }
-            else if (IsCurrentState(EditorState.MOVING_OBJECT)) // This SHOULD be executed only when the user stopped moving an object.
+            else if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.MOVING_OBJECT))
             {
-                collidingArrow = GizmosArrow.None;
-                SetCurrentEditorState(EditorState.NORMAL);
-
-                RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, objLocalPositionWhenStartedMoving,
-                    currentSelectedObj.transform.localPosition, null, null);
+                // Only reset state after fully handling the movement
+                RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected,
+                    objLocalPositionWhenStartedMoving, currentSelectedObj.transform.localPosition, null, null);
 
                 levelHasBeenModified = true;
+                SetCurrentEditorState(EditorState.NORMAL);
+                collidingArrow = GizmosArrow.None;
             }
             #endregion
 
@@ -385,6 +405,48 @@ namespace FS_LevelEditor.Editor
             if ((Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.KeypadPeriod)) && currentSelectedObj != null && !Utils.theresAnInputFieldSelected)
             {
                 DeleteSelectedObj();
+            }
+            #endregion
+
+            #region Bulk selection
+            if (Input.GetMouseButtonDown(0) && !Utils.IsMouseOverUIElement())
+            {
+                // Only start selection if we're not using gizmo
+                if (GetCollidingWithAnArrow() == GizmosArrow.None)
+                {
+                    isSelecting = true;
+                    selectionStartScreen = Input.mousePosition;
+                    selectionEndScreen = selectionStartScreen;
+                    selectionStartTime = Time.unscaledTime;
+                }
+            }
+
+            // Update selection rectangle
+            if (isSelecting && Input.GetMouseButton(0))
+            {
+                selectionEndScreen = Input.mousePosition;
+            }
+
+            // End selection
+            if (isSelecting && Input.GetMouseButtonUp(0))
+            {
+                isSelecting = false;
+                float dragDistance = (selectionEndScreen - selectionStartScreen).magnitude;
+                float heldTime = Time.unscaledTime - selectionStartTime;
+
+                // Don't run selection logic if we were moving with gizmo arrows
+                if (!IsCurrentState(EditorState.MOVING_OBJECT))
+                {
+                    if (dragDistance < minDragDistance && heldTime < multiSelectDelay)
+                    {
+                        // Short click already handled in Select Object region
+                    }
+                    else if (currentMode == Mode.Selection)
+                    {
+                        // Rectangle selection
+                        SelectObjectsInRectangle(selectionStartScreen, selectionEndScreen);
+                    }
+                }
             }
             #endregion
 
@@ -587,6 +649,41 @@ namespace FS_LevelEditor.Editor
 
                     SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
                 }
+            }
+        }
+
+        private void SelectObjectsInRectangle(Vector2 start, Vector2 end)
+        {
+            // Convert to min/max
+            float minX = Mathf.Min(start.x, end.x);
+            float maxX = Mathf.Max(start.x, end.x);
+            float minY = Mathf.Min(start.y, end.y);
+            float maxY = Mathf.Max(start.y, end.y);
+
+            List<GameObject> selectedObjects = new List<GameObject>();
+            foreach (var obj in currentInstantiatedObjects)
+            {
+                if (obj == null || obj.isDeleted) continue;
+                Vector3 screenPos = Camera.main.WorldToScreenPoint(obj.transform.position);
+                if (screenPos.z < 0) continue; // Behind camera
+
+                if (screenPos.x >= minX && screenPos.x <= maxX && screenPos.y >= minY && screenPos.y <= maxY)
+                {
+                    selectedObjects.Add(obj.gameObject);
+                }
+            }
+
+            if (selectedObjects.Count == 0)
+            {
+                SetSelectedObj(null);
+            }
+            else if (selectedObjects.Count == 1)
+            {
+                SetSelectedObj(selectedObjects[0]);
+            }
+            else
+            {
+                SetMultipleObjectsAsSelected(selectedObjects);
             }
         }
         void ManageObjectRotationShortcuts()
