@@ -542,22 +542,26 @@ namespace FS_LevelEditor.Editor
             float minY = Mathf.Min(start.y, end.y);
             float maxY = Mathf.Max(start.y, end.y);
 
-            // NGUI scaling
-            UIRoot root = NGUITools.FindInParents<UIRoot>(EditorUIManager.Instance.editorUIParent);
-            if (root == null) return;
-            float scaleFactor = root.activeHeight / Screen.height;
+            // Convert screen coordinates to NGUI world space
+            Vector3 topLeftScreen = new Vector3(minX, maxY, 0f);
+            Vector3 bottomRightScreen = new Vector3(maxX, minY, 0f);
 
-            // Top-left in screen space (X: minX, Y: maxY)
-            Vector3 topLeftScreen = new Vector3(minX, maxY, 0);
+            // Use the main menu camera for NGUI
+            Camera uiCamera = NGUI_Utils.mainMenuCamera;
+            Transform uiParent = EditorUIManager.Instance.editorUIParent.transform;
 
-            // Convert to NGUI local position
-            Vector3 topLeftWorld = NGUI_Utils.mainMenuCamera.ScreenToWorldPoint(topLeftScreen * scaleFactor);
-            Vector3 topLeftLocal = EditorUIManager.Instance.editorUIParent.transform.InverseTransformPoint(topLeftWorld);
+            Vector3 topLeftWorld = uiCamera.ScreenToWorldPoint(topLeftScreen);
+            Vector3 bottomRightWorld = uiCamera.ScreenToWorldPoint(bottomRightScreen);
 
-            // Set position and size
+            Vector3 topLeftLocal = uiParent.InverseTransformPoint(topLeftWorld);
+            Vector3 bottomRightLocal = uiParent.InverseTransformPoint(bottomRightWorld);
+
+            // Set position (top-left corner)
             selectionBox.transform.localPosition = topLeftLocal;
-            selectionBoxSprite.width = Mathf.RoundToInt((maxX - minX) * scaleFactor);
-            selectionBoxSprite.height = Mathf.RoundToInt((maxY - minY) * scaleFactor);
+
+            // Calculate and set size (do NOT apply any scale factor)
+            selectionBoxSprite.width = Mathf.RoundToInt(Mathf.Abs(bottomRightLocal.x - topLeftLocal.x));
+            selectionBoxSprite.height = Mathf.RoundToInt(Mathf.Abs(bottomRightLocal.y - topLeftLocal.y));
         }
 
         void LateUpdate()
