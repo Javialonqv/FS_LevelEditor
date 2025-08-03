@@ -80,7 +80,6 @@ namespace FS_LevelEditor
         }
         IEnumerator MoveObject()
         {
-            float speed = 5f;
             Vector3[] cachedWaypointPositions = spawnedWaypoints.Select(x => x.transform.position).ToArray();
 
             yield return new WaitForSeconds(2f);
@@ -91,7 +90,7 @@ namespace FS_LevelEditor
                 currentWaypoint = spawnedWaypoints[i];
 
                 Vector3 distance = cachedWaypointPositions[i] - transform.position;
-                float duration = distance.magnitude / speed;
+                float duration = distance.magnitude / targetObject.movingSpeed;
 
                 TweenPosition.Begin(gameObject, duration, cachedWaypointPositions[i]);
                 yield return new WaitForSeconds(duration);

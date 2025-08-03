@@ -258,6 +258,7 @@ namespace FS_LevelEditor.SaveSystem
                 objClassInstance.setActiveAtStart = obj.setActiveAtStart;
                 objClassInstance.collision = obj.collision;
                 objClassInstance.waypoints = obj.waypoints;
+                objClassInstance.movingSpeed = obj.movingSpeed;
 
                 if (obj.properties != null)
                 {
@@ -322,6 +323,7 @@ namespace FS_LevelEditor.SaveSystem
                 objClassInstance.setActiveAtStart = obj.setActiveAtStart;
                 objClassInstance.collision = obj.collision;
                 objClassInstance.waypoints = obj.waypoints;
+                objClassInstance.movingSpeed = obj.movingSpeed;
 
                 if (obj.properties != null)
                 {

@@ -5,6 +5,7 @@ using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.UI_Related;
 using Il2Cpp;
+using Il2CppAmazingAssets.TerrainToMesh;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
@@ -139,6 +140,7 @@ namespace FS_LevelEditor
 
         public bool setActiveAtStart = true;
         public bool collision = true;
+        public float movingSpeed = 5f;
 
         public Dictionary<string, object> properties = new Dictionary<string, object>();
         public List<WaypointData> waypoints = new List<WaypointData>();
@@ -452,6 +454,12 @@ namespace FS_LevelEditor
                     // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
                     Utils.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatches.ConvertFromSerializableValue(converted));
                 }
+            }
+
+            if (name == "MovingSpeed")
+            {
+                movingSpeed = Utils.ParseFloat((string)value);
+                return true;
             }
 
             return false;
