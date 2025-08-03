@@ -114,7 +114,7 @@ namespace FS_LevelEditor.Playmode
         {
             TeleportPlayer();
             ConfigureGlobalProperties();
-
+            MelonCoroutines.Start(SetupEnvCam()); 
             UnloadBundle();
         }
 
@@ -295,6 +295,20 @@ namespace FS_LevelEditor.Playmode
 
                 screen.TriggerAction("InvertText");
             }
+        }
+        IEnumerator SetupEnvCam()
+        {
+            Transform envCam = null;
+            while (envCam == null)
+            {
+                envCam = GameObject.Find("EnvCam").transform;
+                yield return null;
+            }
+
+            // Now EnvCam exists, configure it
+            var camera = envCam.GetComponent<Camera>();
+            camera.useOcclusionCulling = false;
+            camera.farClipPlane = 1000f;
         }
 
         void OnDestroy()
