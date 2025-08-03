@@ -529,6 +529,15 @@ namespace FS_LevelEditor
                 method.Invoke(instance, parms);
             }
         }
+        public static void CallMethod(this object instance, string methodName, params object[] parms)
+        {
+            var flags = BindingFlags.Instance
+                  | BindingFlags.Public
+                  | BindingFlags.NonPublic;
+
+            MethodInfo method = instance.GetType().GetMethod(methodName, flags);
+            if (method != null) method.Invoke(instance, parms);
+        }
 
         public static float HighestValueOfVector(Vector3 vector)
         {

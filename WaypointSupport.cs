@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
 using Il2Cpp;
 using MelonLoader;
@@ -6,14 +7,18 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace FS_LevelEditor
 {
+    [Serializable]
     public class WaypointData
     {
         public Vector3Serializable position { get; set; }
+        [JsonConverter(typeof(LEPropertiesConverterNew))]
+        public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
     }
 
     [MelonLoader.RegisterTypeInIl2Cpp]
@@ -68,6 +73,10 @@ namespace FS_LevelEditor
                 LE_Waypoint createdWaypoint = AddWaypoint(true);
 
                 createdWaypoint.transform.localPosition = waypointData.position;
+                foreach (var property in waypointData.properties)
+                {
+                    createdWaypoint.SetProperty(property.Key, property.Value);
+                }
             }
         }
 
@@ -95,7 +104,7 @@ namespace FS_LevelEditor
                 TweenPosition.Begin(gameObject, duration, cachedWaypointPositions[i]);
                 yield return new WaitForSeconds(duration);
 
-                yield return new WaitForSeconds(2f);
+                yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
             }
         }
 
@@ -173,6 +182,9 @@ namespace FS_LevelEditor
             else // Just link the ALREADY EXISTING data to the created waypoint.
             {
                 waypointComp.attachedData = targetObject.waypoints[spawnedWaypoints.Count - 1];
+
+                // Force the Awake() call when loading from save since it won't be called until the user selects the main object and the waypoints are enabled for the first time.
+                waypointComp.CallMethod("Awake");
             }
 
             Logger.DebugLog($"Created waypoint! ID: {waypointComp.objectID}.");

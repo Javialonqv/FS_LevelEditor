@@ -18,14 +18,24 @@ namespace FS_LevelEditor
 
         public override Transform objectParent => mainSupport.waypointsParent;
 
+        bool alreadyCalledAwake = false;
         void Awake()
         {
+            if (alreadyCalledAwake) return;
+
             canBeUsedInEventsTab = false;
             canBeDisabledAtStart = false;
             canUndoDeletion = false;
             canHaveWaypoints = false;
 
+            properties = new Dictionary<string, object>()
+            {
+                { "WaitTime", 0.3f }
+            };
+
             CreateEditorLine();
+
+            alreadyCalledAwake = true;
         }
         void CreateEditorLine()
         {
@@ -70,6 +80,29 @@ namespace FS_LevelEditor
             // Refresh the WaypointData... data...
 
             attachedData.position = transform.localPosition;
+            attachedData.properties = properties;
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "WaitTime")
+            {
+                if (value is string)
+                {
+                    if (Utils.TryParseFloat((string)value, out float result))
+                    {
+                        properties["WaitTime"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["WaitTime"] = (float)value;
+                    return true;
+                }
+            }
+
+            return base.SetProperty(name, value);
         }
 
         public override LE_Object[] GetReferenceObjectsToGetObjID()

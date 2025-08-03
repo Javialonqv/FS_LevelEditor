@@ -412,6 +412,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateDoorAttributesPanel();
             CreateDoorV2AttributesPanel();
             CreateDeathTriggerAttributesPanel();
+            CreateWaypointAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -706,6 +707,19 @@ namespace FS_LevelEditor.Editor.UI
 
             deathTriggerAttributes.SetActive(false);
             attributesPanels.Add("Death Trigger", deathTriggerAttributes);
+        }
+        void CreateWaypointAttributesPanel()
+        {
+            GameObject waypointAttributes = new GameObject("Waypoint");
+            waypointAttributes.transform.parent = objectSpecificPanelsParent;
+            waypointAttributes.transform.localPosition = Vector3.zero;
+            waypointAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(waypointAttributes);
+
+            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+
+            attributesPanels.Add("Waypoint", waypointAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
