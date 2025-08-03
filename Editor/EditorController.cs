@@ -92,6 +92,7 @@ namespace FS_LevelEditor.Editor
 
         // Misc?
         public DeathYPlaneCtrl deathYPlane;
+        Camera MainCam;
 
         public bool enteringPlayMode = false;
 
@@ -112,7 +113,10 @@ namespace FS_LevelEditor.Editor
             multipleSelectedObjsParent.transform.position = Vector3.zero;
 
             deathYPlane = Instantiate(LoadOtherObjectInBundle("DeathYPlane")).AddComponent<DeathYPlaneCtrl>();
-            GameObject.Find("Main Camera").GetComponent<Camera>().fieldOfView = 90f; // Set FOV to 90 by default, fuck you.
+            MainCam = GameObject.Find("Main Camera").GetComponent<Camera>();
+            MainCam.fieldOfView = 90f; // Set FOV to 90 by default.
+            MainCam.nearClipPlane = .001f; //to prevent disappearing when near objects.
+            
         }
 
         void LoadAssetBundle()

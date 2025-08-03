@@ -332,16 +332,16 @@ namespace FS_LevelEditor
             label.text = "Open levels folder";
             label.fontSize = 35;
 
-            // Set the in-button sprite data
+            // Set the in-button sprite data.
             UISprite sprite = new GameObject("Image").AddComponent<UISprite>();
             sprite.transform.parent = folderButton.GetChild("Background").transform;
             sprite.transform.localScale = Vector3.one;
-            sprite.SetExternalSprite("Folder"); // Make sure you have a folder icon sprite available
+            sprite.SetExternalSprite("Global");
             sprite.color = new Color(0.6235f, 1f, 0.9843f, 1f);
-            sprite.width = 30;
-            sprite.height = 30;
+            sprite.width = 40;
+            sprite.height = 40;
             sprite.depth = 1;
-            sprite.transform.localPosition = new Vector3(-45f, 3f, 0f);
+            sprite.transform.localPosition = new Vector3(-65f, 3f, 0f);
 
             // Set OnClick action to open levels folder
             UIButtonPatcher patcher = folderButton.AddComponent<UIButtonPatcher>();
