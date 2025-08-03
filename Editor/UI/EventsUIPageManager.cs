@@ -47,6 +47,7 @@ namespace FS_LevelEditor.Editor.UI
         /// </summary>
         GameObject eventOptionsParent;
         GameObject defaultObjectsSettings;
+        bool defaultSettingsExpanded = false;
         UIDropdownPatcher spawnOptionsDropdown;
         UIDropdownPatcher colliderStateDropdown;
         //-----------------------------------
@@ -1275,12 +1276,20 @@ namespace FS_LevelEditor.Editor.UI
             defaultObjectsSettings.transform.localScale = Vector3.one;
             defaultObjectsSettings.SetActive(false);
 
+            UIPanel panel = defaultObjectsSettings.AddComponent<UIPanel>();
+            panel.clipping = UIDrawCall.Clipping.SoftClip;
+            panel.baseClipRegion = new Vector4(0, 120, 800, 120);
+            panel.depth = 3;
+
+            defaultObjectsSettings.layer = LayerMask.NameToLayer("2D GUI");
+
             CreateSpawnOptionsDropdown();
             CreateColliderStateDropdown();
+            CreateExpandDefaultOptionsButton();
         }
         void CreateSpawnOptionsDropdown()
         {
-            UIDropdownPatcher spawnOptionsDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(-190, 105), Vector3.one * 0.8f);
+            UIDropdownPatcher spawnOptionsDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(-210, 105), Vector3.one * 0.8f);
             spawnOptionsDropdown.name = "SetActiveDropdownPanel";
             spawnOptionsDropdown.SetTitle("Spawn Options");
             spawnOptionsDropdown.AddOption("Do Nothing", true);
@@ -1295,7 +1304,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateColliderStateDropdown()
         {
-            var colliderStateDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(190, 105), Vector3.one * 0.8f);
+            var colliderStateDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(150, 105), Vector3.one * 0.8f);
             colliderStateDropdown.name = "ColliderStateDropdown";
             colliderStateDropdown.SetTitle("Collider State");
             colliderStateDropdown.AddOption("Do Nothing", true);
@@ -1307,6 +1316,14 @@ namespace FS_LevelEditor.Editor.UI
 
             this.colliderStateDropdown = colliderStateDropdown;
             colliderStateDropdown.gameObject.SetActive(true);
+        }
+        void CreateExpandDefaultOptionsButton()
+        {
+            var button = NGUI_Utils.CreateButton(defaultObjectsSettings.transform, new Vector3(360, 120), Vector3Int.one * 55, "Hi");
+            button.onClick += OnExpandDefaultOptionsButtonClicked;
+
+            var testLabel = NGUI_Utils.CreateLabel(defaultObjectsSettings.transform, new Vector3(-200, -100), new Vector3Int(500, 120, 0), "SPAAAAAAAAACE");
+            testLabel.fontSize = 48;
         }
         // -----------------------------------------
         void CreateSawObjectSettings()
@@ -1965,6 +1982,21 @@ namespace FS_LevelEditor.Editor.UI
         void OnColliderStateDropdownChanged()
         {
             currentSelectedEvent.colliderState = (LE_Event.ColliderState)colliderStateDropdown.currentlySelectedID;
+        }
+        void OnExpandDefaultOptionsButtonClicked()
+        {
+            defaultSettingsExpanded = !defaultSettingsExpanded;
+
+            if (defaultSettingsExpanded)
+            {
+                defaultObjectsSettings.GetComponent<UIPanel>().baseClipRegion = new Vector4(0, -80, 800, 500);
+                ceilingLightObjectsSettings.SetActive(false);
+            }
+            else
+            {
+                defaultObjectsSettings.GetComponent<UIPanel>().baseClipRegion = new Vector4(0, 120, 800, 120);
+                ceilingLightObjectsSettings.SetActive(true);
+            }
         }
         // -----------------------------------------
         void OnSawStateDropdownChanged()
