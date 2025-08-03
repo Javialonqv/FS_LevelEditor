@@ -703,7 +703,7 @@ namespace FS_LevelEditor
                 return;
             }
 
-            foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>())
+            foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>(true))
             {
                 collider.enabled = newEnabledState;
             }

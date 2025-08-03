@@ -138,7 +138,7 @@ namespace FS_LevelEditor
             }
         }
 
-        public static T[] TryGetComponents<T>(this GameObject obj) where T : Component
+        public static T[] TryGetComponents<T>(this GameObject obj, bool includeInactive = false) where T : Component
         {
             List<T> components = new List<T>();
 
@@ -146,7 +146,7 @@ namespace FS_LevelEditor
             {
                 components.AddRange(obj.GetComponents<T>());
             }
-            components.AddRange(obj.GetComponentsInChildren<T>());
+            components.AddRange(obj.GetComponentsInChildren<T>(includeInactive));
 
             return components.ToArray();
         }

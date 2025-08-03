@@ -1084,8 +1084,6 @@ namespace FS_LevelEditor.Editor.UI
                         objScaleWhenSelectedField, editor.currentSelectedObj.transform.localScale);
                     break;
             }
-
-            Logger.DebugLog("test");
         }
 
         public void SetSetActiveAtStart()

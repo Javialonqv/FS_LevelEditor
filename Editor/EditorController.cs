@@ -840,6 +840,13 @@ namespace FS_LevelEditor.Editor
             if (obj) Logger.DebugLog($"SetSelectedObj called for object with name: \"{obj.name}\".");
             else Logger.DebugLog($"SetSelectedObj called with NO NEW TARGET OBJECT (To deselect).");
 
+            if (obj && obj != multipleSelectedObjsParent && obj.GetComponent<LE_Object>() == null)
+            {
+                Logger.Error($"No no, wait wait, how did you select an object called \"{obj.name}\"!? ARE YOU INSANE!? HOW!?!?!?");
+                // Idk either mate.
+                return;
+            }
+
             gizmosArrows.SetActive(false);
 
             // SnapToGrid cube is adjusted in Late Update.
