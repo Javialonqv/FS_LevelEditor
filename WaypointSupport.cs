@@ -38,6 +38,7 @@ namespace FS_LevelEditor
         public LE_Waypoint firstWaypoint;
         public LineRenderer editorLine;
 
+        Coroutine moveObjectCoroutine;
         int currentWaypointID;
         LE_Waypoint currentWaypoint;
 
@@ -108,7 +109,8 @@ namespace FS_LevelEditor
         {
             if (scene == LEScene.Playmode && spawnedWaypoints != null && spawnedWaypoints.Count > 0)
             {
-                MelonCoroutines.Start(MoveObject());
+                moveObjectCoroutine = (Coroutine)MelonCoroutines.Start(MoveObject());
+                Logger.Log("Started waypoint movement for object object: " + gameObject.name);
             }
         }
         IEnumerator MoveObject()
@@ -135,6 +137,11 @@ namespace FS_LevelEditor
                     i = -1; // for loop will automatically add 1 in the next iteration, converting 'i' to 0.
                 }
             }
+        }
+        public void StopObjectMovement()
+        {
+            MelonCoroutines.Stop(moveObjectCoroutine);
+            Logger.Log("Waypoint movement stopped for object: " + gameObject.name);
         }
 
         void Update()
@@ -254,6 +261,11 @@ namespace FS_LevelEditor
                     waypoint.previousWaypoint = spawnedWaypoints[i - 1];
                 }
             }
+        }
+
+        void OnDestroy()
+        {
+            if (PlayModeController.Instance && moveObjectCoroutine != null) StopObjectMovement();
         }
     }
 }
