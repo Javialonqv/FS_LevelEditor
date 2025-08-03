@@ -17,6 +17,7 @@ namespace FS_LevelEditor.SaveSystem
         public bool setActiveAtStart { get; set; } = true;
         public bool collision { get; set; } = true;
         public float movingSpeed { get; set; } = 5f;
+        public float startDelay { get; set; } = 1f;
         public WaypointMode wayMode { get; set; } = WaypointMode.NONE;
 
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
@@ -37,6 +38,7 @@ namespace FS_LevelEditor.SaveSystem
             setActiveAtStart = originalObj.setActiveAtStart;
             collision = originalObj.collision;
             movingSpeed = originalObj.movingSpeed;
+            startDelay = originalObj.startDelay;
             wayMode = originalObj.waypointMode;
 
             SavePatches.AddPropertiesToObjectToSave(this, originalObj);

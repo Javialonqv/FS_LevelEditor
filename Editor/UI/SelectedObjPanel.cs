@@ -35,6 +35,7 @@ namespace FS_LevelEditor.Editor.UI
         UIToggle collisionToggle;
         UIButtonPatcher addWaypointButton;
         UICustomInputField movingSpeedField;
+        UICustomInputField startDelayField;
         UISmallButtonMultiple waypointModeButton;
         // ------------------------------
         bool showingPanel = false;
@@ -205,6 +206,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateCollisionToggle();
             CreateAddWaypointButton();
             CreateMovingSpeedField();
+            CreateStartDelayField();
             CreateWaypointModeButton();
         }
         void CreateObjectPositionUIElements()
@@ -388,6 +390,21 @@ namespace FS_LevelEditor.Editor.UI
             movingSpeedField.name = "Field";
             movingSpeedField.onChange += () => SetPropertyWithInput("MovingSpeed", movingSpeedField);
         }
+        void CreateStartDelayField()
+        {
+            Transform fieldParent = new GameObject("StartDelay").transform;
+            fieldParent.parent = globalObjectPanelsParent;
+            fieldParent.localPosition = Vector3.zero;
+            fieldParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, -210f, 0f), new Vector3Int(260, 38, 0), "Start Delay");
+            title.name = "Title";
+
+            startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, -210), new Vector3Int(200, 38, 0), 27, "1", false,
+                inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            startDelayField.name = "Field";
+            startDelayField.onChange += () => SetPropertyWithInput("StartDelay", startDelayField);
+        }
         void CreateWaypointModeButton()
         {
             var optionParent = new GameObject("WaypointMode").transform;
@@ -395,10 +412,10 @@ namespace FS_LevelEditor.Editor.UI
             optionParent.localPosition = Vector3.zero;
             optionParent.localScale = Vector3.one;
 
-            UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, -215f, 0f), new Vector3Int(260, 38, 0), "Moving Speed");
+            UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, -255f, 0f), new Vector3Int(260, 38, 0), "Moving Speed");
             title.name = "Title";
 
-            waypointModeButton = NGUI_Utils.CreateSmallButtonMultiple(optionParent, new Vector3(140, -215),
+            waypointModeButton = NGUI_Utils.CreateSmallButtonMultiple(optionParent, new Vector3(140, -255),
                 new Vector3Int(200, 38, 0), "NONE", 25);
             waypointModeButton.name = "ButtonMultiple";
             waypointModeButton.onChange += (id) => SetPropertyWithButtonMultiple("WaypointMode", waypointModeButton);
@@ -1247,6 +1264,18 @@ namespace FS_LevelEditor.Editor.UI
             else
             {
                 movingSpeedField.transform.parent.gameObject.SetActive(false);
+            }
+            #endregion
+
+            #region Start Delay Field
+            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
+            {
+                startDelayField.transform.parent.gameObject.SetActive(true);
+                startDelayField.SetText(EditorController.Instance.currentSelectedObjComponent.startDelay);
+            }
+            else
+            {
+                startDelayField.transform.parent.gameObject.SetActive(false);
             }
             #endregion
 

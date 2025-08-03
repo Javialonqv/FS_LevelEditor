@@ -134,7 +134,7 @@ namespace FS_LevelEditor
         {
             Vector3[] cachedWaypointPositions = spawnedWaypoints.Select(x => x.transform.position).ToArray();
 
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(targetObject.startDelay);
 
             for (int i = 0; i < spawnedWaypoints.Count; i++)
             {
@@ -282,7 +282,7 @@ namespace FS_LevelEditor
 
         void OnDestroy()
         {
-            if (PlayModeController.Instance && moveObjectCoroutine != null) StopObjectMovement();
+            if (moveObjectCoroutine != null) StopObjectMovement();
         }
     }
 }
