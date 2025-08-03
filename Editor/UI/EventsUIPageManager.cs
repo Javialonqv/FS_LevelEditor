@@ -195,7 +195,7 @@ namespace FS_LevelEditor.Editor.UI
             eventsPanel.GetComponent<TweenScale>().to = Vector3.one;
 
             // For some reason sometimes the window sprite can be transparent, force it to be opaque.
-            eventsPanel.GetChild("Window").GetComponent<UISprite>().alpha = .5f;
+            eventsPanel.GetChild("Window").GetComponent<UISprite>().alpha = .3f;
 
             // Add a collider so the user can't interact with the other objects.
             eventsPanel.AddComponent<BoxCollider>().size = new Vector3(100000f, 100000f, 1f);
@@ -247,16 +247,14 @@ namespace FS_LevelEditor.Editor.UI
 
             UISprite eventsBgSprite = eventsListBg.AddComponent<UISprite>();
             eventsBgSprite.transform.localPosition = new Vector3(-400f, -90f, 0f);
-            eventsBgSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
-            eventsBgSprite.spriteName = "Square";
             eventsBgSprite.depth = 1;
-            eventsBgSprite.color = new Color(0.0509f, 0.3333f, 0.3764f);
+            eventsBgSprite.color = new Color(0.0509f, 0.3333f, 0.3764f, 0f);
             eventsBgSprite.width = 800;
             eventsBgSprite.height = 540;
 
             UIButton button = eventsListBg.AddComponent<UIButton>();
             button.defaultColor = new Color(0.0509f, 0.3333f, 0.3764f);
-            button.hover = new Color(0.0509f, 0.3333f, 0.3764f);
+            button.hover = new Color(0.0509f, 0.3333f, 0.3764f);        
             button.pressed = new Color(0.0509f, 0.3333f, 0.3764f);
             BoxCollider collider = eventsListBg.AddComponent<BoxCollider>();
             collider.center = Vector3.zero;
