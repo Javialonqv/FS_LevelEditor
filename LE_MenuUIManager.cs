@@ -857,8 +857,13 @@ namespace FS_LevelEditor
             // Enable or disable the buttons depending on the current page.
             previousPageButton.button.isEnabled = currentLevelsGridID > 0;
             nextPageButton.button.isEnabled = currentLevelsGridID < lvlButtonsGrids.Count - 1;
+
+            //Why leave them on the screen if you're on the first or last page?
+            previousPageButton.gameObject.SetActive(previousPageButton.button.isEnabled);
+            nextPageButton.gameObject.SetActive(nextPageButton.button.isEnabled);
         }
     }
+    //It's in the name, go figure.
     public static class PlayFromMenuHelper
     {
         public static bool PlayImmediatelyOnEditorLoad = false;

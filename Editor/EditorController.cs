@@ -112,6 +112,7 @@ namespace FS_LevelEditor.Editor
             multipleSelectedObjsParent.transform.position = Vector3.zero;
 
             deathYPlane = Instantiate(LoadOtherObjectInBundle("DeathYPlane")).AddComponent<DeathYPlaneCtrl>();
+            GameObject.Find("Main Camera").GetComponent<Camera>().fieldOfView = 90f; // Set FOV to 90 by default, fuck you.
         }
 
         void LoadAssetBundle()
