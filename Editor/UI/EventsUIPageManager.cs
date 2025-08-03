@@ -194,8 +194,8 @@ namespace FS_LevelEditor.Editor.UI
             eventsPanel.GetComponent<TweenScale>().from = Vector3.zero;
             eventsPanel.GetComponent<TweenScale>().to = Vector3.one;
 
-            // For some reason sometimes the window sprite can be transparent, force it to be opaque.
-            eventsPanel.GetChild("Window").GetComponent<UISprite>().alpha = .3f;
+            // Make the window transparent because Gray wants it like that, fuck it.
+            eventsPanel.GetChild("Window").GetComponent<UISprite>().alpha = 0.3f;
 
             // Add a collider so the user can't interact with the other objects.
             eventsPanel.AddComponent<BoxCollider>().size = new Vector3(100000f, 100000f, 1f);
