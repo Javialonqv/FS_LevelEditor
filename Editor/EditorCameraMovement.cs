@@ -15,12 +15,17 @@ namespace FS_LevelEditor.Editor
     {
         enum CameraMove { NONE, NORMAL, MOUSE_DRAG }
         CameraMove currentCameraMove;
+        private float previousMoveSpeed = 10f;
         public float moveSpeed = 10f;
         public float mouseSensivility = 10f;
         public float downAndUpSpeed = 10f;
 
         public float xRotation = 0f;
         public float yRotation = 0f;
+
+        private const float MIN_MOVE_SPEED = 5f;
+        private const float MAX_MOVE_SPEED = 60f;
+        private const float SPEED_CHANGE_RATE = 5f;
 
         Vector3 dragOrigin;
         float dragSpeed = 0.1f;
@@ -45,7 +50,6 @@ namespace FS_LevelEditor.Editor
             {
                 currentCameraMove = CameraMove.MOUSE_DRAG;
             }
-
             if (Input.GetMouseButtonUp(1) && currentCameraMove == CameraMove.NORMAL) currentCameraMove = CameraMove.NONE;
             if (Input.GetMouseButtonUp(2) && currentCameraMove == CameraMove.MOUSE_DRAG) currentCameraMove = CameraMove.NONE;
 
@@ -72,19 +76,23 @@ namespace FS_LevelEditor.Editor
                 ManageDownAndUp();
             }
         }
-
         void ManageMoveSpeed()
         {
+            bool isholdingCtrl = Input.GetKey(KeyCode.LeftControl);
+            float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
+            if (isholdingCtrl && scrollDelta != 0)
+            {
+                previousMoveSpeed = moveSpeed;
+                moveSpeed += scrollDelta * SPEED_CHANGE_RATE;
+                moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
+            }
+
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                moveSpeed = 20f;
+                moveSpeed = previousMoveSpeed * 2;
             }
-            else
-            {
-                moveSpeed = 10f;
-            }
+            Debug.Log($"Current move speed: {moveSpeed}");
         }
-
         void MoveCamera()
         {
             float inputX = InControlSingleton.Instance.playerActions.Move.X;
