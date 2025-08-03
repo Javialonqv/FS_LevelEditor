@@ -147,11 +147,21 @@ namespace FS_LevelEditor
         }
         public LE_Waypoint AddWaypoint(bool fromSave = false)
         {
-            GameObject waypoint = Instantiate(EditorController.Instance.allCategoriesObjects[targetObject.objectType.Value], waypointsParent);
+            GameObject waypoint = null;
+            if (EditorController.Instance)
+            {
+                waypoint = Instantiate(EditorController.Instance.allCategoriesObjects[targetObject.objectType.Value], waypointsParent);
+                waypoint.SetTransparentMaterials();
+            }
+            else // We don't need any meshes or shit in playmode, just create an empty object.
+            {
+                waypoint = new GameObject("Waypoint"); // AddComponentToObject will overwrite the name, so fuck it.
+                waypoint.transform.parent = waypointsParent;
+            }
+
             waypoint.transform.localPosition = Vector3.zero;
             waypoint.transform.localEulerAngles = Vector3.zero;
             waypoint.transform.localScale = Vector3.one;
-            if (EditorController.Instance) waypoint.SetTransparentMaterials();
 
             LE_Waypoint waypointComp = (LE_Waypoint)LE_Object.AddComponentToObject(waypoint, LE_Object.ObjectType.WAYPOINT);
 
