@@ -80,6 +80,7 @@ namespace FS_LevelEditor
                 switch (targetObject.waypointMode)
                 {
                     case WaypointMode.LOOP: CreateLoopWaypoint(waypoints); break;
+                    case WaypointMode.TRAVEL_BACK: CreateTravelBackWaypoints(waypoints); break;
                 }
             }
 
@@ -103,6 +104,22 @@ namespace FS_LevelEditor
             finalWaypoint.position = Vector3.zero;
 
             originalList.Add(finalWaypoint);
+        }
+        void CreateTravelBackWaypoints(List<WaypointData> originalList)
+        {
+            for (int i = originalList.Count - 1; i >= 0; i--)
+            {
+                WaypointData data = new WaypointData();
+                data.position = originalList[i].position;
+                foreach (var property in originalList[i].properties) data.properties[property.Key] = property.Value;
+
+                originalList.Add(data);
+            }
+
+            // Create the last waypoint so the object goes to its original position.
+            WaypointData lastWaypoint = new WaypointData();
+            lastWaypoint.position = Vector3.zero;
+            originalList.Add(lastWaypoint);
         }
 
         public void ObjectStart(LEScene scene)
@@ -132,9 +149,9 @@ namespace FS_LevelEditor
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
 
-                if (i == spawnedWaypoints.Count - 1 && targetObject.waypointMode == WaypointMode.LOOP)
+                if (i == spawnedWaypoints.Count - 1 && (targetObject.waypointMode == WaypointMode.LOOP || targetObject.waypointMode == WaypointMode.TRAVEL_BACK))
                 {
-                    i = -1; // for loop will automatically add 1 in the next iteration, converting 'i' to 0.
+                    i = -1; // the 'for' loop will automatically add 1 in the next iteration, converting 'i' to 0.
                 }
             }
         }
