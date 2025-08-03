@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="LocalPaths.props" Condition="Exists('LocalPaths.props')" />
+
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -124,431 +126,431 @@
 
 	<ItemGroup>
 	  <Reference Include="0Harmony">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\0Harmony.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\0Harmony.dll</HintPath>
 	  </Reference>
 	  <Reference Include="AsmResolver">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\AsmResolver.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\AsmResolver.dll</HintPath>
 	  </Reference>
 	  <Reference Include="AsmResolver.DotNet">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\AsmResolver.DotNet.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\AsmResolver.DotNet.dll</HintPath>
 	  </Reference>
 	  <Reference Include="AsmResolver.PE">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\AsmResolver.PE.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\AsmResolver.PE.dll</HintPath>
 	  </Reference>
 	  <Reference Include="AsmResolver.PE.File">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\AsmResolver.PE.File.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\AsmResolver.PE.File.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Assembly-CSharp">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Assembly-CSharp-firstpass">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Assembly-CSharp-firstpass.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Assembly-CSharp-firstpass.dll</HintPath>
 	  </Reference>
 	  <Reference Include="AssetRipper.Primitives">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\AssetRipper.Primitives.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\AssetRipper.Primitives.dll</HintPath>
 	  </Reference>
 	  <Reference Include="AssetsTools.NET">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\AssetsTools.NET.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\AssetsTools.NET.dll</HintPath>
 	  </Reference>
 	  <Reference Include="bHapticsLib">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\bHapticsLib.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\bHapticsLib.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Iced">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Iced.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Iced.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppAmazingAssets.TerrainToMesh">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppAmazingAssets.TerrainToMesh.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppAmazingAssets.TerrainToMesh.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2Cppcom.rlabrecque.steamworks.net">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2Cppcom.rlabrecque.steamworks.net.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2Cppcom.rlabrecque.steamworks.net.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppInControl">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppInControl.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppInControl.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppInterop.Common">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppInterop.Generator">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Il2CppInterop.Generator.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Il2CppInterop.Generator.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppInterop.HarmonySupport">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Il2CppInterop.HarmonySupport.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Il2CppInterop.HarmonySupport.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppInterop.Runtime">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2Cppmscorlib">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppNewtonsoft.Json">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppNewtonsoft.Json.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppNewtonsoft.Json.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppReformSim.RaindropEffect">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppReformSim.RaindropEffect.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppReformSim.RaindropEffect.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppScreenSpaceReflections">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppScreenSpaceReflections.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppScreenSpaceReflections.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppSystem">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppSystem.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppSystem.Configuration">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppSystem.Configuration.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Configuration.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppSystem.Core">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppSystem.Core.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Core.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppSystem.Data">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppSystem.Data.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Data.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppSystem.Drawing">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppSystem.Drawing.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Drawing.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppSystem.Numerics">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppSystem.Numerics.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Numerics.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppSystem.Runtime.Serialization">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppSystem.Runtime.Serialization.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Runtime.Serialization.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppSystem.Xml">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppSystem.Xml.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Xml.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Il2CppSystem.Xml.Linq">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Il2CppSystem.Xml.Linq.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Xml.Linq.dll</HintPath>
 	  </Reference>
 	  <Reference Include="IndexRange">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\IndexRange.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\IndexRange.dll</HintPath>
 	  </Reference>
 	  <Reference Include="MelonLoader">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\MelonLoader.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\MelonLoader.dll</HintPath>
 	  </Reference>
 	  <Reference Include="MelonLoader.NativeHost">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\MelonLoader.NativeHost.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\MelonLoader.NativeHost.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Bcl.AsyncInterfaces">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Diagnostics.NETCore.Client">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Diagnostics.NETCore.Client.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Diagnostics.NETCore.Client.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Diagnostics.Runtime">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Diagnostics.Runtime.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Diagnostics.Runtime.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Extensions.Configuration">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Extensions.Configuration.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Configuration.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Extensions.Configuration.Abstractions">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Extensions.Configuration.Binder">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Extensions.Logging">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Extensions.Logging.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Logging.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Extensions.Logging.Abstractions">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Extensions.Options">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Extensions.Options.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Options.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Microsoft.Extensions.Primitives">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Microsoft.Extensions.Primitives.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Primitives.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Mono.Cecil">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Mono.Cecil.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Mono.Cecil.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Mono.Cecil.Mdb">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Mono.Cecil.Mdb.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Mono.Cecil.Mdb.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Mono.Cecil.Pdb">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Mono.Cecil.Pdb.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Mono.Cecil.Pdb.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Mono.Cecil.Rocks">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Mono.Cecil.Rocks.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Mono.Cecil.Rocks.dll</HintPath>
 	  </Reference>
 	  <Reference Include="MonoMod">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\MonoMod.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\MonoMod.dll</HintPath>
 	  </Reference>
 	  <Reference Include="MonoMod.Backports">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\MonoMod.Backports.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\MonoMod.Backports.dll</HintPath>
 	  </Reference>
 	  <Reference Include="MonoMod.ILHelpers">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\MonoMod.ILHelpers.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\MonoMod.ILHelpers.dll</HintPath>
 	  </Reference>
 	  <Reference Include="MonoMod.RuntimeDetour">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\MonoMod.RuntimeDetour.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\MonoMod.RuntimeDetour.dll</HintPath>
 	  </Reference>
 	  <Reference Include="MonoMod.Utils">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\MonoMod.Utils.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\MonoMod.Utils.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Newtonsoft.Json">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Newtonsoft.Json.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Newtonsoft.Json.dll</HintPath>
 	  </Reference>
 	  <Reference Include="System.Configuration.ConfigurationManager">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\System.Configuration.ConfigurationManager.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\System.Configuration.ConfigurationManager.dll</HintPath>
 	  </Reference>
 	  <Reference Include="System.Security.Cryptography.ProtectedData">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\System.Security.Cryptography.ProtectedData.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\System.Security.Cryptography.ProtectedData.dll</HintPath>
 	  </Reference>
 	  <Reference Include="System.Security.Permissions">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\System.Security.Permissions.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\System.Security.Permissions.dll</HintPath>
 	  </Reference>
 	  <Reference Include="System.Windows.Extensions">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\System.Windows.Extensions.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\System.Windows.Extensions.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Tomlet">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\Tomlet.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\Tomlet.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Postprocessing.Runtime">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Postprocessing.Runtime.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Postprocessing.Runtime.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Analytics">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Analytics.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Analytics.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Core">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Core.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Core.Configuration">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Configuration.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Configuration.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Core.Device">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Device.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Device.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Core.Environments">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Environments.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Environments.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Core.Environments.Internal">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Environments.Internal.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Environments.Internal.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Core.Internal">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Internal.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Internal.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Core.Registration">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Registration.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Registration.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Core.Scheduler">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Scheduler.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Scheduler.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Core.Telemetry">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Telemetry.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Telemetry.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.Services.Core.Threading">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Threading.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Threading.dll</HintPath>
 	  </Reference>
 	  <Reference Include="Unity.TextMeshPro">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\Unity.TextMeshPro.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.TextMeshPro.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.AccessibilityModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.AccessibilityModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AccessibilityModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.AIModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.AIModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AIModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.AndroidJNIModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.AndroidJNIModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AndroidJNIModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.AnimationModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.AnimationModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AnimationModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.ARModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.ARModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ARModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.AssetBundleModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.AssetBundleModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AssetBundleModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.AudioModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.AudioModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AudioModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.ClothModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.ClothModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ClothModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.ContentLoadModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.ContentLoadModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ContentLoadModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.CoreModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.CrashReportingModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.CrashReportingModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.CrashReportingModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.DirectorModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.DirectorModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.DirectorModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.DSPGraphModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.DSPGraphModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.DSPGraphModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.GameCenterModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.GameCenterModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.GameCenterModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.GIModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.GIModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.GIModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.GridModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.GridModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.GridModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.HotReloadModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.HotReloadModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.HotReloadModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.Il2CppAssetBundleManager">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\UnityEngine.Il2CppAssetBundleManager.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\UnityEngine.Il2CppAssetBundleManager.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.Il2CppImageConversionManager">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\UnityEngine.Il2CppImageConversionManager.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\UnityEngine.Il2CppImageConversionManager.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.ImageConversionModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.ImageConversionModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ImageConversionModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.IMGUIModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.IMGUIModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.IMGUIModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.InputLegacyModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.InputLegacyModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.InputLegacyModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.InputModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.InputModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.InputModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.JSONSerializeModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.JSONSerializeModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.JSONSerializeModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.LocalizationModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.LocalizationModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.LocalizationModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.ParticleSystemModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.ParticleSystemModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ParticleSystemModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.PerformanceReportingModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.PerformanceReportingModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.PerformanceReportingModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.Physics2DModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.Physics2DModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.Physics2DModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.PhysicsModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.PhysicsModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.PhysicsModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.ProfilerModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.ProfilerModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ProfilerModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.PropertiesModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.PropertiesModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.PropertiesModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.ScreenCaptureModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.ScreenCaptureModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ScreenCaptureModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.SharedInternalsModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.SharedInternalsModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.SharedInternalsModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.SpriteMaskModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.SpriteMaskModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.SpriteMaskModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.SpriteShapeModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.SpriteShapeModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.SpriteShapeModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.StreamingModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.StreamingModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.StreamingModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.SubstanceModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.SubstanceModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.SubstanceModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.SubsystemsModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.SubsystemsModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.SubsystemsModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.TerrainModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.TerrainModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TerrainModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.TerrainPhysicsModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.TerrainPhysicsModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TerrainPhysicsModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.TextCoreFontEngineModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.TextCoreFontEngineModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextCoreFontEngineModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.TextCoreTextEngineModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.TextCoreTextEngineModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextCoreTextEngineModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.TextRenderingModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.TilemapModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.TilemapModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TilemapModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.TLSModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.TLSModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TLSModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UI">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UI.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UI.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UIElementsModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UIElementsModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UIElementsModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UIModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UIModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UIModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UmbraModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UmbraModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UmbraModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UnityAnalyticsCommonModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UnityAnalyticsCommonModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityAnalyticsCommonModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UnityAnalyticsModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UnityAnalyticsModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityAnalyticsModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UnityConnectModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UnityConnectModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityConnectModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UnityCurlModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UnityCurlModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityCurlModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UnityTestProtocolModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UnityTestProtocolModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityTestProtocolModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UnityWebRequestAssetBundleModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UnityWebRequestAudioModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UnityWebRequestModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UnityWebRequestTextureModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.UnityWebRequestWWWModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.VehiclesModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.VehiclesModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.VehiclesModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.VFXModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.VFXModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.VFXModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.VideoModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.VideoModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.VideoModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.VRModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.VRModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.VRModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.WindModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.WindModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.WindModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.XRModule">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\Il2CppAssemblies\UnityEngine.XRModule.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.XRModule.dll</HintPath>
 	  </Reference>
 	  <Reference Include="WebSocketDotNet">
-	    <HintPath>..\..\..\Steam Games\Fractal Space\MelonLoader\net6\WebSocketDotNet.dll</HintPath>
+	    <HintPath>$(FSPath)\MelonLoader\net6\WebSocketDotNet.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="copy &quot;$(TargetPath)&quot; &quot;E:\Steam Games\Fractal Space\Mods&quot;" />
+		<Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(FSPath)\Mods&quot;" />
 	</Target>
 </Project>
