@@ -74,6 +74,8 @@ namespace FS_LevelEditor
             {
                 gameObject.GetChild("Mesh").SetActive(false);
             }
+
+            base.ObjectStart(scene);
         }
 
         void Update()

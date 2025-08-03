@@ -44,6 +44,8 @@ namespace FS_LevelEditor
         public override void ObjectStart(LEScene scene)
         {
             SetMeshInEditor(GetProperty<SwitchState>("InitialState"));
+
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()

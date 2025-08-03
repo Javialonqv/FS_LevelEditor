@@ -88,6 +88,7 @@ namespace FS_LevelEditor.Editor.UI
             // Disable Menu UI elements.
             pauseMenu.SetActive(false);
             navigation.SetActive(false);
+            Invoke("DisableFuckingPauseMenu", 0.1f); // FUCKING PAUSE MENU, DISABLE!!
 
             editorUIParent = new GameObject("LevelEditor");
             editorUIParent.transform.parent = GameObject.Find("MainMenu/Camera/Holder").transform;
@@ -113,6 +114,7 @@ namespace FS_LevelEditor.Editor.UI
             // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
         }
+        void DisableFuckingPauseMenu() => pauseMenu.SetActive(false);
 
         void GetReferences()
         {
@@ -529,7 +531,7 @@ namespace FS_LevelEditor.Editor.UI
                 EditorObjectsToBuildUI.Instance.root.SetActive(true);
             }
             // Only when normal.
-            SelectedObjPanel.Instance.gameObject.SetActive(context == EditorUIContext.NORMAL);
+            SelectedObjPanel.Instance.gameObject.SetActive(context == EditorUIContext.NORMAL && EditorController.Instance.currentMode != EditorController.Mode.Building);
             currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
 
             previousUIContext = currentUIContext;

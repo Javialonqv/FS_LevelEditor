@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.UI_Related;
 using Il2Cpp;
+using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,6 +32,8 @@ namespace FS_LevelEditor.Editor.UI
         UICustomInputField rotXField, rotYField, rotZField;
         UICustomInputField scaleXField, scaleYField, scaleZField;
         UIToggle collisionToggle;
+        UIButtonPatcher addWaypointButton;
+        UICustomInputField movingSpeedField;
         // ------------------------------
         bool showingPanel = false;
         bool panelIsExpanded = false;
@@ -198,6 +201,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectRotationUIElements();
             CreateObjectScaleUIElements();
             CreateCollisionToggle();
+            CreateAddWaypointButton();
+            CreateMovingSpeedField();
         }
         void CreateObjectPositionUIElements()
         {
@@ -359,6 +364,27 @@ namespace FS_LevelEditor.Editor.UI
             lineSprite.depth = 8;
             line.SetActive(false);
         }
+        void CreateAddWaypointButton()
+        {
+            addWaypointButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, -115), new Vector3Int(480, 50, 0), "AddWaypoint");
+            addWaypointButton.name = "AddWaypointButton";
+            addWaypointButton.onClick += AddWaypointForObject;
+        }
+        void CreateMovingSpeedField()
+        {
+            Transform fieldParent = new GameObject("MovingSpeed").transform;
+            fieldParent.parent = globalObjectPanelsParent;
+            fieldParent.localPosition = Vector3.zero;
+            fieldParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, -165f, 0f), new Vector3Int(260, 38, 0), "Moving Speed");
+            title.name = "Title";
+
+            movingSpeedField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, -165), new Vector3Int(200, 38, 0), 27, "5", false,
+                inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            movingSpeedField.name = "Field";
+            movingSpeedField.onChange += () => SetPropertyWithInput("MovingSpeed", movingSpeedField);
+        }
         // ------------------------------
         void CreateObjectSpecificOptionsParent()
         {
@@ -386,6 +412,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateDoorAttributesPanel();
             CreateDoorV2AttributesPanel();
             CreateDeathTriggerAttributesPanel();
+            CreateWaypointAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -680,6 +707,19 @@ namespace FS_LevelEditor.Editor.UI
 
             deathTriggerAttributes.SetActive(false);
             attributesPanels.Add("Death Trigger", deathTriggerAttributes);
+        }
+        void CreateWaypointAttributesPanel()
+        {
+            GameObject waypointAttributes = new GameObject("Waypoint");
+            waypointAttributes.transform.parent = objectSpecificPanelsParent;
+            waypointAttributes.transform.localPosition = Vector3.zero;
+            waypointAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(waypointAttributes);
+
+            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+
+            attributesPanels.Add("Waypoint", waypointAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
@@ -1044,8 +1084,6 @@ namespace FS_LevelEditor.Editor.UI
                         objScaleWhenSelectedField, editor.currentSelectedObj.transform.localScale);
                     break;
             }
-
-            Logger.DebugLog("test");
         }
 
         public void SetSetActiveAtStart()
@@ -1089,6 +1127,13 @@ namespace FS_LevelEditor.Editor.UI
             }
             EditorController.Instance.levelHasBeenModified = true;
         }
+        public void AddWaypointForObject()
+        {
+            if (!EditorController.Instance.multipleObjectsSelected)
+            {
+                EditorController.Instance.currentSelectedObjComponent.GetComponent<WaypointSupport>().AddWaypoint();
+            }
+        }
         public void ShowGlobalObjectAttributes(bool show)
         {
             objectSpecificPanelsParent.gameObject.SetActive(!show);
@@ -1099,6 +1144,7 @@ namespace FS_LevelEditor.Editor.UI
             // UICustomInput already verifies if the user is typing on the field, if so, SetText does nothing, we don't need to worry about that.
 
             // Set Global Attributes...
+            #region Position/Rotation/Scale Fields
             posXField.SetText(obj.position.x, 2, false);
             posYField.SetText(obj.position.y, 2, false);
             posZField.SetText(obj.position.z, 2, false);
@@ -1110,7 +1156,9 @@ namespace FS_LevelEditor.Editor.UI
             scaleXField.SetText(obj.localScale.x, 2, false);
             scaleYField.SetText(obj.localScale.y, 2, false);
             scaleZField.SetText(obj.localScale.z, 2, false);
+            #endregion
 
+            #region Collision Toggle
             if (EditorController.Instance.multipleObjectsSelected)
             {
                 // If this is null, that means the "Collision" in the current selected objects is different in at least one of them.
@@ -1154,6 +1202,30 @@ namespace FS_LevelEditor.Editor.UI
                 collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
                 collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
             }
+            #endregion
+
+            #region Add Waypoint Button
+            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.canHaveWaypoints)
+            {
+                addWaypointButton.gameObject.SetActive(true);
+            }
+            else
+            {
+                addWaypointButton.gameObject.SetActive(false);
+            }
+            #endregion
+
+            #region Moving Speed Field
+            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
+            {
+                movingSpeedField.transform.parent.gameObject.SetActive(true);
+                movingSpeedField.SetText(EditorController.Instance.currentSelectedObjComponent.movingSpeed);
+            }
+            else
+            {
+                movingSpeedField.transform.parent.gameObject.SetActive(false);
+            }
+            #endregion
         }
 
         public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)

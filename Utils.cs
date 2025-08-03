@@ -138,7 +138,7 @@ namespace FS_LevelEditor
             }
         }
 
-        public static T[] TryGetComponents<T>(this GameObject obj) where T : Component
+        public static T[] TryGetComponents<T>(this GameObject obj, bool includeInactive = false) where T : Component
         {
             List<T> components = new List<T>();
 
@@ -146,7 +146,7 @@ namespace FS_LevelEditor
             {
                 components.AddRange(obj.GetComponents<T>());
             }
-            components.AddRange(obj.GetComponentsInChildren<T>());
+            components.AddRange(obj.GetComponentsInChildren<T>(includeInactive));
 
             return components.ToArray();
         }
@@ -303,7 +303,7 @@ namespace FS_LevelEditor
 
             foreach (var obj in levelObjects)
             {
-                if (obj.objectType == LE_Object.ObjectType.SAW_WAYPOINT) continue;
+                if (obj.objectType == LE_Object.ObjectType.SAW_WAYPOINT || obj.objectType == LE_Object.ObjectType.WAYPOINT) continue;
 
                 if (!seenIds.Add(obj.objectFullNameWithID))
                 {
@@ -528,6 +528,15 @@ namespace FS_LevelEditor
             {
                 method.Invoke(instance, parms);
             }
+        }
+        public static void CallMethod(this object instance, string methodName, params object[] parms)
+        {
+            var flags = BindingFlags.Instance
+                  | BindingFlags.Public
+                  | BindingFlags.NonPublic;
+
+            MethodInfo method = instance.GetType().GetMethod(methodName, flags);
+            if (method != null) method.Invoke(instance, parms);
         }
 
         public static float HighestValueOfVector(Vector3 vector)

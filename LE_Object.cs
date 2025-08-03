@@ -5,6 +5,7 @@ using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.UI_Related;
 using Il2Cpp;
+using Il2CppAmazingAssets.TerrainToMesh;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
@@ -74,7 +75,8 @@ namespace FS_LevelEditor
             DOOR,
             LASER_FIELD,
             DOOR_V2,
-            DEATH_TRIGGER
+            DEATH_TRIGGER,
+            WAYPOINT
         }
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -138,10 +140,13 @@ namespace FS_LevelEditor
 
         public bool setActiveAtStart = true;
         public bool collision = true;
+        public float movingSpeed = 5f;
 
         public Dictionary<string, object> properties = new Dictionary<string, object>();
+        public List<WaypointData> waypoints = new List<WaypointData>();
         
         public EventExecuter eventExecuter;
+        public WaypointSupport waypointSupport;
         public virtual Transform objectParent
         {
             get
@@ -155,9 +160,11 @@ namespace FS_LevelEditor
         public bool canUndoDeletion { get; protected set; }  = true;
         public bool canBeUsedInEventsTab { get; protected set; } = true;
         public bool canBeDisabledAtStart { get; protected set; } = true;
+        public bool canHaveWaypoints { get; protected set; } = true;
 
         public bool initialized = false;
         bool hasItsOwnClass = false;
+        bool onInstantiatedCalled = false;
         public bool isDeleted = false;
 
         public bool currentCollisionState = true;
@@ -200,8 +207,8 @@ namespace FS_LevelEditor
 
         public virtual void Start()
         {
-            if (EditorController.Instance) OnInstantiated(LEScene.Editor);
-            else if (PlayModeController.Instance) OnInstantiated(LEScene.Playmode);
+            if (EditorController.Instance && !onInstantiatedCalled) OnInstantiated(LEScene.Editor);
+            else if (PlayModeController.Instance && !onInstantiatedCalled) OnInstantiated(LEScene.Playmode);
 
             if (hasItsOwnClass)
             {
@@ -210,6 +217,16 @@ namespace FS_LevelEditor
                     Logger.Error($"\"{GetType().Name}\" is overriding Start() method, this is not allowed, please use ObjectStart() instead.");
                 }
 
+                // ObjectStart is only called when the object is ACTUALLY being spawned, since Start() is also called when loading the
+                // level in playmode to init the component.
+                if (gameObject.activeSelf || EditorController.Instance)
+                {
+                    if (EditorController.Instance) ObjectStart(LEScene.Editor);
+                    else if (PlayModeController.Instance) ObjectStart(LEScene.Playmode);
+                }
+            }
+            else
+            {
                 // ObjectStart is only called when the object is ACTUALLY being spawned, since Start() is also called when loading the
                 // level in playmode to init the component.
                 if (gameObject.activeSelf || EditorController.Instance)
@@ -242,6 +259,11 @@ namespace FS_LevelEditor
             if (GetAvailableEventsIDs().Count > 0)
             {
                 eventExecuter = gameObject.AddComponent<EventExecuter>();
+            }
+
+            if (canHaveWaypoints)
+            {
+                waypointSupport = gameObject.AddComponent<WaypointSupport>();
             }
         }
 
@@ -398,6 +420,9 @@ namespace FS_LevelEditor
             }
 
             if (eventExecuter) eventExecuter.OnInstantiated(scene);
+            if (waypointSupport) waypointSupport.OnInstantiated(scene);
+
+            onInstantiatedCalled = true;
         }
         /// <summary>
         /// Use this to initialize the components/data of the object.
@@ -412,7 +437,7 @@ namespace FS_LevelEditor
         /// <param name="scene">The scene type is being loaded.</param>
         public virtual void ObjectStart(LEScene scene)
         {
-
+            if (waypointSupport) waypointSupport.ObjectStart(scene);
         }
 
         /// <summary>
@@ -432,6 +457,12 @@ namespace FS_LevelEditor
                     // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
                     Utils.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatches.ConvertFromSerializableValue(converted));
                 }
+            }
+
+            if (name == "MovingSpeed")
+            {
+                movingSpeed = Utils.ParseFloat((string)value);
+                return true;
             }
 
             return false;
@@ -529,6 +560,7 @@ namespace FS_LevelEditor
             if (canBeDisabledAtStart) gameObject.SetOpaqueMaterials();
 
             if (eventExecuter) eventExecuter.OnSelect();
+            if (waypointSupport) waypointSupport.OnSelect();
         }
         public virtual void OnDeselect(GameObject nextSelectedObj)
         {
@@ -545,6 +577,7 @@ namespace FS_LevelEditor
             }
 
             if (eventExecuter) eventExecuter.OnDeselect();
+            if (waypointSupport) waypointSupport.OnDeselect();
         }
         public virtual void OnDelete()
         {
@@ -563,6 +596,10 @@ namespace FS_LevelEditor
                     PlayModeController.Instance.currentInstantiatedObjects.Remove(this);
                 }
             }
+        }
+        public virtual void BeforeSave()
+        {
+            if (waypointSupport) waypointSupport.BeforeSave();
         }
 
         public virtual List<string> GetAvailableEventsIDs()
@@ -666,7 +703,7 @@ namespace FS_LevelEditor
                 return;
             }
 
-            foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>())
+            foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>(true))
             {
                 collider.enabled = newEnabledState;
             }

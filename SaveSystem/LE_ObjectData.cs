@@ -16,8 +16,10 @@ namespace FS_LevelEditor.SaveSystem
         public int objectID { get; set; }
         public bool setActiveAtStart { get; set; } = true;
         public bool collision { get; set; } = true;
+        public float movingSpeed { get; set; } = 5f;
 
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
+        public List<WaypointData> waypoints { get; set; } = new List<WaypointData>();
 
         public Vector3Serializable objPosition { get; set; }
         public Vector3Serializable objRotation { get; set; }
@@ -33,8 +35,10 @@ namespace FS_LevelEditor.SaveSystem
             objectID = originalObj.objectID;
             setActiveAtStart = originalObj.setActiveAtStart;
             collision = originalObj.collision;
+            movingSpeed = originalObj.movingSpeed;
 
             SavePatches.AddPropertiesToObjectToSave(this, originalObj);
+            waypoints = new (originalObj.waypoints);
 
             objPosition = originalObj.transform.localPosition;
             objRotation = originalObj.transform.localEulerAngles;

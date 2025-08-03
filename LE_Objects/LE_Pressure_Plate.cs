@@ -31,6 +31,8 @@ namespace FS_LevelEditor
                 // The on mesh is disabled by default, enable it when playmode starts.
                 gameObject.GetChildAt("Content/MeshDynamic/MeshOnStatic").SetActive(true);
             }
+
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()

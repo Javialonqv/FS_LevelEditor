@@ -48,6 +48,7 @@
 		<Compile Include="LE_Objects\LE_Laser_Field.cs" />
 		<Compile Include="LE_Objects\LE_Small_Screen.cs" />
 		<Compile Include="LE_Objects\LE_Trigger.cs" />
+		<Compile Include="LE_Objects\LE_Waypoint.cs" />
 		<Compile Include="Logger.cs" />
 		<Compile Include="Misc\ScaleScreenText.cs" />
 		<Compile Include="Patches.cs" />
@@ -107,6 +108,7 @@
 		<Compile Include="UI_Related\UIToggleCheckedFix.cs" />
 		<Compile Include="UI_Related\UITogglePatcher.cs" />
 		<Compile Include="Utils.cs" />
+		<Compile Include="WaypointSupport.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

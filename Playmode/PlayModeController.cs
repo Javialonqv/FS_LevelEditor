@@ -96,7 +96,14 @@ namespace FS_LevelEditor.Playmode
         }
         public GameObject LoadOtherObjectInBundle(string objectName)
         {
-            return otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
+            GameObject toReturn = otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
+
+            if (objectName == "EditorLine")
+            {
+                toReturn.GetComponent<LineRenderer>().material.shader = Shader.Find("Sprites/Default");
+            }
+
+            return toReturn;
         }
         public void UnloadBundle()
         {

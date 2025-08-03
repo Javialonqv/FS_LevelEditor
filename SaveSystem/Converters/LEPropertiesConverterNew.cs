@@ -12,6 +12,10 @@ namespace FS_LevelEditor.SaveSystem.Converters
     {
         public override void Write(Utf8JsonWriter writer, Dictionary<string, object> value, JsonSerializerOptions options)
         {
+            // Fuck it, I need to do this because I needed to use a fucking attribute for the properties in WaypointData, and now I NEED to implement Write().
+            JsonSerializer.Serialize(writer, value, options);
+            return;
+
             Logger.Error("[SAVE FILE] LEPRopertiesConverterNew converter is for read only.");
             throw new NotSupportedException("[SAVE FILE] LEPRopertiesConverterNew converter is for read only.");
         }

@@ -65,6 +65,8 @@ namespace FS_LevelEditor
                     }
                 }
             }
+
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()

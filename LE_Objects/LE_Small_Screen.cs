@@ -58,6 +58,8 @@ namespace FS_LevelEditor
             SetScreenColor(GetProperty<ScreenColorType>("ColorType"));
             SetScreenText(GetProperty<string>("Text"));
             UpdateScreenTextFont();
+
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()

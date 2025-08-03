@@ -143,18 +143,10 @@ namespace FS_LevelEditor
                     var objData = (@event.targetObjType, @event.targetObjID);
                     if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer) continue;
 
-                    GameObject linkObj = new GameObject("Link");
-                    linkObj.transform.parent = editorLinksParent.transform;
-                    linkObj.transform.localPosition = Vector3.zero;
-
-                    LineRenderer linkRender = linkObj.AddComponent<LineRenderer>();
-                    linkRender.startWidth = 0.1f;
-                    linkRender.endWidth = 0.1f;
-                    linkRender.positionCount = 2;
-
-                    linkRender.material = new Material(Shader.Find("Sprites/Default"));
-                    linkRender.startColor = Color.white;
-                    linkRender.endColor = Color.white;
+                    GameObject linkObj = Instantiate(Core.LoadOtherObjectInBundle("EditorLine"), editorLinksParent.transform);
+                    LineRenderer linkRender = linkObj.GetComponent<LineRenderer>();
+                    linkRender.startColor = Color.cyan;
+                    linkRender.endColor = Color.cyan;
 
                     alreadyLinkedObjects.Add(objData);
                     editorLinks.Add(new EditorLink(@event, originalObject, @event, linkRender));
