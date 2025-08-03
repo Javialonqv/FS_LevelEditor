@@ -657,12 +657,14 @@ namespace FS_LevelEditor.Editor
                     if (EditorUIManager.IsCurrentUIContext(EditorUIContext.NORMAL))
                     {
                         EditorObjectsToBuildUI.Instance.root.SetActive(true);
+                        SelectedObjPanel.Instance.gameObject.SetActive(false);
                     }
                     break;
 
                 case Mode.Selection:
                 case Mode.Deletion:
                     EditorObjectsToBuildUI.Instance.root.SetActive(false);
+                        SelectedObjPanel.Instance.gameObject.SetActive(EditorUIManager.IsCurrentUIContext(EditorUIContext.NORMAL)); // Only when normal.
                     break;
             }
 

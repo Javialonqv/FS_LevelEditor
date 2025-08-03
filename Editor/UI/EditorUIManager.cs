@@ -531,7 +531,7 @@ namespace FS_LevelEditor.Editor.UI
                 EditorObjectsToBuildUI.Instance.root.SetActive(true);
             }
             // Only when normal.
-            SelectedObjPanel.Instance.gameObject.SetActive(context == EditorUIContext.NORMAL);
+            SelectedObjPanel.Instance.gameObject.SetActive(context == EditorUIContext.NORMAL && EditorController.Instance.currentMode != EditorController.Mode.Building);
             currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
 
             previousUIContext = currentUIContext;
