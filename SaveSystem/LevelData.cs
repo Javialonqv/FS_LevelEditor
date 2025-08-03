@@ -253,21 +253,7 @@ namespace FS_LevelEditor.SaveSystem
                 GameObject objInstance = EditorController.Instance.PlaceObject(obj.objectType, obj.objPosition, obj.objRotation, obj.objScale, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
 
-                objClassInstance.objectID = obj.objectID;
-                objInstance.name = objClassInstance.objectFullNameWithID;
-                objClassInstance.setActiveAtStart = obj.setActiveAtStart;
-                objClassInstance.collision = obj.collision;
-                objClassInstance.waypoints = obj.waypoints;
-                objClassInstance.movingSpeed = obj.movingSpeed;
-                objClassInstance.waypointMode = obj.wayMode;
-
-                if (obj.properties != null)
-                {
-                    foreach (var property in obj.properties)
-                    {
-                        objClassInstance.SetProperty(property.Key, SavePatches.ConvertFromSerializableValue(property.Value));
-                    }
-                }
+                SetInstantiatedObjectProperties(objClassInstance, obj);
 
                 // In case the object is defined to be disabled at start, change its materials to transparent.
                 if (!objClassInstance.setActiveAtStart)
@@ -319,21 +305,7 @@ namespace FS_LevelEditor.SaveSystem
                 GameObject objInstance = playModeCtrl.PlaceObject(obj.objectType, obj.objPosition, obj.objRotation, obj.objScale, false);
                 LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
 
-                objClassInstance.objectID = obj.objectID;
-                objInstance.name = objClassInstance.objectFullNameWithID;
-                objClassInstance.setActiveAtStart = obj.setActiveAtStart;
-                objClassInstance.collision = obj.collision;
-                objClassInstance.waypoints = obj.waypoints;
-                objClassInstance.movingSpeed = obj.movingSpeed;
-                objClassInstance.waypointMode = obj.wayMode;
-
-                if (obj.properties != null)
-                {
-                    foreach (var property in obj.properties)
-                    {
-                        objClassInstance.SetProperty(property.Key, SavePatches.ConvertFromSerializableValue(property.Value));
-                    }
-                }
+                SetInstantiatedObjectProperties(objClassInstance, obj);
 
                 if (!obj.setActiveAtStart)
                 {
@@ -366,6 +338,24 @@ namespace FS_LevelEditor.SaveSystem
             }
 
             Logger.Log($"\"{data.levelName}\" level loaded in playmode!");
+        }
+        static void SetInstantiatedObjectProperties(LE_Object spawnedObject, LE_ObjectData objectData)
+        {
+            spawnedObject.objectID = objectData.objectID;
+            spawnedObject.gameObject.name = spawnedObject.objectFullNameWithID;
+            spawnedObject.setActiveAtStart = objectData.setActiveAtStart;
+            spawnedObject.collision = objectData.collision;
+            spawnedObject.waypoints = objectData.waypoints;
+            spawnedObject.movingSpeed = objectData.movingSpeed;
+            spawnedObject.waypointMode = objectData.wayMode;
+
+            if (objectData.properties != null)
+            {
+                foreach (var property in objectData.properties)
+                {
+                    spawnedObject.SetProperty(property.Key, SavePatches.ConvertFromSerializableValue(property.Value));
+                }
+            }
         }
 
         public static void DeleteLevel(string levelFileNameWithoutExtension)
