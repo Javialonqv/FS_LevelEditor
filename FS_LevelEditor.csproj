@@ -60,6 +60,7 @@
 		<Compile Include="Playmode\Patches\LoadBGImagePatch.cs" />
 		<Compile Include="Playmode\Patches\PlayerDeathPatch.cs" />
 		<Compile Include="Playmode\Patches\PlaySavePatches.cs" />
+		<Compile Include="Playmode\Patches\SpeedrunTimerPatch.cs" />
 		<Compile Include="Playmode\Patches\UpgradesPatches.cs" />
 		<Compile Include="Playmode\PlayModeController.cs" />
 		<Compile Include="LE_Objects\LE_Ammo_Pack.cs" />

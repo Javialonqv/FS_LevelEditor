@@ -18,12 +18,22 @@ namespace FS_LevelEditor.Playmode.Patches
             // Don't save when the user is ending the level in playmode.
             if (PlayModeController.Instance && PlayModeController.Instance.endTriggerReached)
             {
+                // Allow saving time even when ending level
+                if (_key.EndsWith("_Time"))
+                {
+                    return true;
+                }
                 return false;
             }
 
             // Don't save the current level when you're loading playmode (which will be Chapter 4).
             if (PlayModeController.Instance || Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
             {
+                // Allow saving time even when ending level
+                if (_key.EndsWith("_Time"))
+                {
+                    return true;
+                }
                 if (_key == "Current_Level")
                 {
                     return false;
