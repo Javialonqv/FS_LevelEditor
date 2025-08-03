@@ -24,6 +24,7 @@ namespace FS_LevelEditor.Editor.UI
         public GameObject objectsToBuildMainParent;
         List<GameObject> objectsToBuildParentsByCategories = new();
         List<List<GameObject>> objectsToBuildGrids = new();
+        static readonly Dictionary<LE_Object.ObjectType, Texture> iconCache = new();
 
         UIButtonPatcher previousGridButton, nextGridButton;
 
@@ -179,6 +180,17 @@ namespace FS_LevelEditor.Editor.UI
                 var button = NGUI_Utils.CreateColorButton(currentGrid, Vector3.zero, objectLocKey);
                 button.name = objectType.ToString();
 
+                //create icons
+                var iconTex = GetObjectIcon(objectType.Value);
+                if (iconTex != null)
+                {
+                    var iconSprite = button.gameObject.AddComponent<UITexture>();
+                    iconSprite.mainTexture = iconTex;
+                    iconSprite.shader = Shader.Find("Unlit/Transparent Colored");
+                    iconSprite.type = UIBasicSprite.Type.Simple;
+                    iconSprite.depth = 11;
+                }
+
                 button.onClick += () => EditorController.Instance.SelectObjectToBuild(objectType);
                 int buttonChildID = i;
                 button.onClick += () => SelectObjToBuild(buttonChildID % 12);
@@ -309,6 +321,15 @@ namespace FS_LevelEditor.Editor.UI
                 TweenPosition.Begin(objectsToBuildMainParent, 0.2f, new Vector3(0f, 330f, 0f));
                 InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.showHUDSound);
             }
+        }
+        static Texture GetObjectIcon(LE_Object.ObjectType objectType)
+        {
+            if (!iconCache.TryGetValue(objectType, out var tex) || tex == null)
+            {
+                tex = Utils.LoadAsset<Texture>(objectType.ToString(), "leveleditoricons");
+                iconCache[objectType] = tex;
+            }
+            return tex;
         }
     }
 }

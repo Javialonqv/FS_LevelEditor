@@ -16,6 +16,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="KeybindsList.txt" />
+	  <None Remove="leveleditoricons" />
 	  <None Remove="level_editor" />
 	  <None Remove="level_editor_sprites" />
 	  <None Remove="Translations\Translations.csv" />
@@ -115,6 +116,7 @@
 	<ItemGroup>
 	  <EmbeddedResource Include="KeybindsList2.txt" />
 	  <EmbeddedResource Include="KeybindsList.txt" />
+	  <EmbeddedResource Include="leveleditoricons" />
 	  <EmbeddedResource Include="level_editor" />
 	  <EmbeddedResource Include="level_editor_sprites" />
 	  <EmbeddedResource Include="Translations\Translations.csv" />

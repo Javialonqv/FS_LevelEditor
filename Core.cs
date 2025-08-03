@@ -142,5 +142,11 @@ namespace FS_LevelEditor
 
             return null;
         }
+
+        public override void OnEarlyInitializeMelon()
+        {
+            Utils.PreloadEmbeddedBundle("leveleditoricons");
+        }
+
     }
 }
