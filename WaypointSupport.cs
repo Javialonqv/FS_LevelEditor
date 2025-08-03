@@ -24,7 +24,7 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class WaypointSupport : MonoBehaviour
     {
-        LE_Object targetObject;
+        public LE_Object targetObject;
 
         public Transform waypointsParent;
         public List<LE_Waypoint> spawnedWaypoints = new List<LE_Waypoint>();
@@ -190,6 +190,26 @@ namespace FS_LevelEditor
             Logger.DebugLog($"Created waypoint! ID: {waypointComp.objectID}.");
 
             return waypointComp;
+        }
+
+        public void RecalculateWaypoints()
+        {
+            for (int i = 0; i < targetObject.waypoints.Count; i++)
+            {
+                var waypointData = targetObject.waypoints[i];
+                var waypoint = spawnedWaypoints[i];
+
+                if (i == 0)
+                {
+                    firstWaypoint = waypoint;
+                    waypoint.previousWaypoint = this;
+                }
+                else
+                {
+                    spawnedWaypoints[i - 1].nextWaypoint = waypoint;
+                    waypoint.previousWaypoint = spawnedWaypoints[i - 1];
+                }
+            }
         }
     }
 }

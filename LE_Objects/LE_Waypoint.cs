@@ -73,7 +73,9 @@ namespace FS_LevelEditor
         public override void OnDelete()
         {
             base.OnDelete();
-            mainSupport.spawnedWaypoints.Remove(nextWaypoint);
+            mainSupport.targetObject.waypoints.Remove(attachedData);
+            mainSupport.spawnedWaypoints.Remove(this);
+            mainSupport.RecalculateWaypoints();
         }
         public override void BeforeSave()
         {
