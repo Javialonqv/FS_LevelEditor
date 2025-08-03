@@ -259,6 +259,7 @@ namespace FS_LevelEditor.SaveSystem
                 objClassInstance.collision = obj.collision;
                 objClassInstance.waypoints = obj.waypoints;
                 objClassInstance.movingSpeed = obj.movingSpeed;
+                objClassInstance.waypointMode = obj.wayMode;
 
                 if (obj.properties != null)
                 {
@@ -324,6 +325,7 @@ namespace FS_LevelEditor.SaveSystem
                 objClassInstance.collision = obj.collision;
                 objClassInstance.waypoints = obj.waypoints;
                 objClassInstance.movingSpeed = obj.movingSpeed;
+                objClassInstance.waypointMode = obj.wayMode;
 
                 if (obj.properties != null)
                 {

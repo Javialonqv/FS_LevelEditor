@@ -20,6 +20,12 @@ namespace FS_LevelEditor
         [JsonConverter(typeof(LEPropertiesConverterNew))]
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
     }
+    public enum WaypointMode
+    {
+        NONE,
+        TRAVEL_BACK,
+        LOOP
+    }
 
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class WaypointSupport : MonoBehaviour

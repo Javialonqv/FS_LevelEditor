@@ -141,6 +141,7 @@ namespace FS_LevelEditor
         public bool setActiveAtStart = true;
         public bool collision = true;
         public float movingSpeed = 5f;
+        public WaypointMode waypointMode;
 
         public Dictionary<string, object> properties = new Dictionary<string, object>();
         public List<WaypointData> waypoints = new List<WaypointData>();
@@ -462,6 +463,11 @@ namespace FS_LevelEditor
             if (name == "MovingSpeed")
             {
                 movingSpeed = Utils.ParseFloat((string)value);
+                return true;
+            }
+            else if (name == "WaypointMode")
+            {
+                waypointMode = (WaypointMode)value;
                 return true;
             }
 

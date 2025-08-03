@@ -11,6 +11,7 @@ using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace FS_LevelEditor.Editor.UI
 {
@@ -34,6 +35,7 @@ namespace FS_LevelEditor.Editor.UI
         UIToggle collisionToggle;
         UIButtonPatcher addWaypointButton;
         UICustomInputField movingSpeedField;
+        UISmallButtonMultiple waypointModeButton;
         // ------------------------------
         bool showingPanel = false;
         bool panelIsExpanded = false;
@@ -203,6 +205,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateCollisionToggle();
             CreateAddWaypointButton();
             CreateMovingSpeedField();
+            CreateWaypointModeButton();
         }
         void CreateObjectPositionUIElements()
         {
@@ -384,6 +387,26 @@ namespace FS_LevelEditor.Editor.UI
                 inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             movingSpeedField.name = "Field";
             movingSpeedField.onChange += () => SetPropertyWithInput("MovingSpeed", movingSpeedField);
+        }
+        void CreateWaypointModeButton()
+        {
+            var optionParent = new GameObject("WaypointMode").transform;
+            optionParent.parent = globalObjectPanelsParent;
+            optionParent.localPosition = Vector3.zero;
+            optionParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, -215f, 0f), new Vector3Int(260, 38, 0), "Moving Speed");
+            title.name = "Title";
+
+            waypointModeButton = NGUI_Utils.CreateSmallButtonMultiple(optionParent, new Vector3(140, -215),
+                new Vector3Int(200, 38, 0), "NONE", 25);
+            waypointModeButton.name = "ButtonMultiple";
+            waypointModeButton.onChange += (id) => SetPropertyWithButtonMultiple("WaypointMode", waypointModeButton);
+            waypointModeButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            waypointModeButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+            waypointModeButton.AddOption("NONE", Color.black);
+            waypointModeButton.AddOption("TRAVEL BACK", Color.red);
+            waypointModeButton.AddOption("LOOP", Color.blue);
         }
         // ------------------------------
         void CreateObjectSpecificOptionsParent()
@@ -1224,6 +1247,18 @@ namespace FS_LevelEditor.Editor.UI
             else
             {
                 movingSpeedField.transform.parent.gameObject.SetActive(false);
+            }
+            #endregion
+
+            #region Waypoint Mode Button
+            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
+            {
+                waypointModeButton.transform.parent.gameObject.SetActive(true);
+                waypointModeButton.SetOption((int)EditorController.Instance.currentSelectedObjComponent.waypointMode);
+            }
+            else
+            {
+                waypointModeButton.transform.parent.gameObject.SetActive(false);
             }
             #endregion
         }
