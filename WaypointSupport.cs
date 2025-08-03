@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
 using Il2Cpp;
@@ -73,6 +74,14 @@ namespace FS_LevelEditor
         {
             List<WaypointData> waypoints = targetObject.waypoints;
 
+            if (PlayModeController.Instance)
+            {
+                switch (targetObject.waypointMode)
+                {
+                    case WaypointMode.LOOP: CreateLoopWaypoint(waypoints); break;
+                }
+            }
+
             for (int i = 0; i < waypoints.Count; i++)
             {
                 var waypointData = waypoints[i];
@@ -84,6 +93,15 @@ namespace FS_LevelEditor
                     createdWaypoint.SetProperty(property.Key, property.Value);
                 }
             }
+        }
+        // --------------------------------------------------
+        void CreateLoopWaypoint(List<WaypointData> originalList)
+        {
+            WaypointData finalWaypoint = new WaypointData();
+            // Waypoints positions are relative to the main object position, Vector3.zero means the waypoint will be in the same positions as the main object.
+            finalWaypoint.position = Vector3.zero;
+
+            originalList.Add(finalWaypoint);
         }
 
         public void ObjectStart(LEScene scene)
@@ -111,6 +129,11 @@ namespace FS_LevelEditor
                 yield return new WaitForSeconds(duration);
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
+
+                if (i == spawnedWaypoints.Count - 1 && targetObject.waypointMode == WaypointMode.LOOP)
+                {
+                    i = -1; // for loop will automatically add 1 in the next iteration, converting 'i' to 0.
+                }
             }
         }
 
@@ -197,6 +220,11 @@ namespace FS_LevelEditor
             }
             else // Just link the ALREADY EXISTING data to the created waypoint.
             {
+                if (EditorController.Instance)
+                {
+                    // Only in editor, in playmode it may be using travel back or loop modes which can break this, attachedData is for editor only.
+                    
+                }
                 waypointComp.attachedData = targetObject.waypoints[spawnedWaypoints.Count - 1];
 
                 // Force the Awake() call when loading from save since it won't be called until the user selects the main object and the waypoints are enabled for the first time.
