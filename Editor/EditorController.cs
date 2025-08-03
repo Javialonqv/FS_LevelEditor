@@ -129,7 +129,7 @@ namespace FS_LevelEditor.Editor
             {
                 categoriesNames.Add(child.name);
             }
-
+            
             currentCategory = categoriesNames[0];
             currentCategoryID = 0;
 
