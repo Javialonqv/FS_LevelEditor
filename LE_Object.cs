@@ -164,6 +164,7 @@ namespace FS_LevelEditor
 
         public bool initialized = false;
         bool hasItsOwnClass = false;
+        bool onInstantiatedCalled = false;
         public bool isDeleted = false;
 
         public bool currentCollisionState = true;
@@ -206,8 +207,8 @@ namespace FS_LevelEditor
 
         public virtual void Start()
         {
-            if (EditorController.Instance) OnInstantiated(LEScene.Editor);
-            else if (PlayModeController.Instance) OnInstantiated(LEScene.Playmode);
+            if (EditorController.Instance && !onInstantiatedCalled) OnInstantiated(LEScene.Editor);
+            else if (PlayModeController.Instance && !onInstantiatedCalled) OnInstantiated(LEScene.Playmode);
 
             if (hasItsOwnClass)
             {
@@ -420,6 +421,8 @@ namespace FS_LevelEditor
 
             if (eventExecuter) eventExecuter.OnInstantiated(scene);
             if (waypointSupport) waypointSupport.OnInstantiated(scene);
+
+            onInstantiatedCalled = true;
         }
         /// <summary>
         /// Use this to initialize the components/data of the object.
