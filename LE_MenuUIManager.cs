@@ -69,6 +69,7 @@ namespace FS_LevelEditor
             CreateLEMenuPanel();
             CreateBackButton();
             CreateAddButton();
+            CreateOpenFolderButton();
             CreateTopLevelInfo();
             CreateCurrentModVersionLabel();
             CreateCreditsLabel();
@@ -300,7 +301,52 @@ namespace FS_LevelEditor
             UIButtonPatcher patcher = addButton.AddComponent<UIButtonPatcher>();
             patcher.onClick += () => EnterEditor(false);
         }
+        public void CreateOpenFolderButton()
+        {
+            // Get the template, spawn the copy and set some parameters.
+            GameObject folderButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuPanel.transform);
+            folderButton.name = "OpenFolderButton";
+            folderButton.transform.localPosition = new Vector3(420f, 290f, 0f); // Position it 200 units left of the Add button (690f)
 
+            // Remove unnecessary components
+            GameObject.Destroy(folderButton.GetComponent<ButtonController>());
+            GameObject.Destroy(folderButton.GetComponent<OptionsButton>());
+
+            // Set the sprite width and height, and in the box collider as well
+            folderButton.GetComponent<UISprite>().width = 250;
+            folderButton.GetComponent<UISprite>().height = 80;
+            folderButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
+
+            // Remove UILocalize component
+            GameObject.Destroy(folderButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+
+            // Set the label data.
+            UILabel label = folderButton.GetChildAt("Background/Label").GetComponent<UILabel>();
+            label.SetAnchor((Transform)null);
+            label.CheckAnchors();
+            label.pivot = UIWidget.Pivot.Left;
+            label.alignment = NGUIText.Alignment.Left;
+            label.transform.localPosition = new Vector3(-25f, 0f, 0f);
+            label.width = 150;
+            label.height = 50;
+            label.text = "Open levels folder";
+            label.fontSize = 35;
+
+            // Set the in-button sprite data
+            UISprite sprite = new GameObject("Image").AddComponent<UISprite>();
+            sprite.transform.parent = folderButton.GetChild("Background").transform;
+            sprite.transform.localScale = Vector3.one;
+            sprite.SetExternalSprite("Folder"); // Make sure you have a folder icon sprite available
+            sprite.color = new Color(0.6235f, 1f, 0.9843f, 1f);
+            sprite.width = 30;
+            sprite.height = 30;
+            sprite.depth = 1;
+            sprite.transform.localPosition = new Vector3(-45f, 3f, 0f);
+
+            // Set OnClick action to open levels folder
+            UIButtonPatcher patcher = folderButton.AddComponent<UIButtonPatcher>();
+            patcher.onClick += OpenLevelsFolder;
+        }
         // Functions literally copied and pasted from the old taser mod LOL.
         void CreateCurrentModVersionLabel()
         {
@@ -341,7 +387,7 @@ namespace FS_LevelEditor
             GameObject.Destroy(credits.GetComponent<UILocalize>());
 
             UILabel creditsLabel = credits.GetComponent<UILabel>();
-            creditsLabel.text = "Created by Javialon_qv";
+            creditsLabel.text = "Created by Javialon_qv and Gray";
             creditsLabel.fontSize = 25;
             creditsLabel.alignment = NGUIText.Alignment.Left;
             creditsLabel.pivot = UIWidget.Pivot.Left;
@@ -391,7 +437,15 @@ namespace FS_LevelEditor
 
             nextPageButton = btnNext;
         }
-
+        //Opens the folder with all of the fun stuff
+        private void OpenLevelsFolder()
+        {
+            string levelsPath = Path.Combine(Application.persistentDataPath, "Custom Levels").Replace('/', '\\');
+            if (Directory.Exists(levelsPath))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"/root,\"{levelsPath}\"");
+            }
+        }
         public void CreateLevelsList()
         {
             Dictionary<string, LevelData> levels = LevelData.GetLevelsList();
