@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
+using FS_LevelEditor.UI_Related;
 using Harmony;
 using Il2Cpp;
 using MelonLoader;
@@ -77,6 +78,9 @@ namespace FS_LevelEditor.Editor
         private float selectionStartTime;
         private const float multiSelectDelay = 0.3f; // seconds
         private const float minDragDistance = 5f; // pixels
+        private GameObject selectionBox;
+        private UISprite selectionBoxSprite;
+
 
         // Gizmos arrows to move objects.
         GameObject gizmosArrows;
@@ -126,7 +130,34 @@ namespace FS_LevelEditor.Editor
             MainCam.nearClipPlane = .001f; //to prevent disappearing when near objects.
             
         }
+        void CreateSelectionBox()
+        {
+            if (selectionBox != null) return;
 
+            selectionBox = new GameObject("SelectionBox");
+            selectionBox.transform.parent = EditorUIManager.Instance.editorUIParent.transform;
+            selectionBox.transform.localPosition = Vector3.zero;
+            selectionBox.transform.localScale = Vector3.one;
+
+            selectionBoxSprite = selectionBox.AddComponent<UISprite>();
+
+            selectionBoxSprite.atlas = NGUI_Utils.UITexturesAtlas;
+            selectionBoxSprite.spriteName = "Square_Border_HighOpacity";
+            selectionBoxSprite.type = UIBasicSprite.Type.Sliced;
+            selectionBoxSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 0.5f);
+            selectionBoxSprite.depth = 9999;
+            selectionBoxSprite.pivot = UIWidget.Pivot.TopLeft;
+            selectionBoxSprite.width = 100;
+            selectionBoxSprite.height = 100;
+
+            UICamera uiCam = UICamera.list[0];
+            if (uiCam != null)
+            {
+                selectionBox.layer = uiCam.gameObject.layer;
+            }
+
+            selectionBox.SetActive(false);
+        }
         void LoadAssetBundle()
         {
             Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FS_LevelEditor.level_editor");
@@ -384,6 +415,8 @@ namespace FS_LevelEditor.Editor
             // If it's clicking a gizmos arrow.
             if (Input.GetMouseButton(0) && collidingArrow != GizmosArrow.None)
             {
+                if (selectionBox != null && selectionBox.activeSelf)
+                    selectionBox.SetActive(false); //hide the box in case
                 // Move the object.
                 MoveObject(collidingArrow);
             }
@@ -409,43 +442,64 @@ namespace FS_LevelEditor.Editor
             #endregion
 
             #region Bulk selection
-            if (Input.GetMouseButtonDown(0) && !Utils.IsMouseOverUIElement())
+            if (Input.GetMouseButtonDown(0) && !Utils.IsMouseOverUIElement() && !Input.GetKey(KeyCode.F))
             {
                 // Only start selection if we're not using gizmo
-                if (GetCollidingWithAnArrow() == GizmosArrow.None)
+                if (GetCollidingWithAnArrow() == GizmosArrow.None && currentMode == Mode.Selection)
                 {
                     isSelecting = true;
                     selectionStartScreen = Input.mousePosition;
                     selectionEndScreen = selectionStartScreen;
                     selectionStartTime = Time.unscaledTime;
+                    // Do NOT show the selection box yet
                 }
             }
 
             // Update selection rectangle
-            if (isSelecting && Input.GetMouseButton(0))
+            if (isSelecting && Input.GetMouseButton(0) && !Input.GetKey(KeyCode.F))
             {
                 selectionEndScreen = Input.mousePosition;
+                float dragDistance = (selectionEndScreen - selectionStartScreen).magnitude;
+
+                if (dragDistance > minDragDistance)
+                {
+                    if (selectionBox == null)
+                        CreateSelectionBox();
+                    if (!selectionBox.activeSelf)
+                        selectionBox.SetActive(true);
+                    UpdateSelectionBox();
+                }
+                else
+                {
+                    if (selectionBox != null && selectionBox.activeSelf)
+                        selectionBox.SetActive(false);
+                }
+            }
+            else if (isSelecting && Input.GetKey(KeyCode.F))
+            {
+                // If F is pressed during selection, hide the box
+                if (selectionBox != null && selectionBox.activeSelf)
+                    selectionBox.SetActive(false);
             }
 
             // End selection
             if (isSelecting && Input.GetMouseButtonUp(0))
             {
                 isSelecting = false;
+                if (selectionBox != null)
+                    selectionBox.SetActive(false);
+
                 float dragDistance = (selectionEndScreen - selectionStartScreen).magnitude;
                 float heldTime = Time.unscaledTime - selectionStartTime;
 
-                // Don't run selection logic if we were moving with gizmo arrows
-                if (!IsCurrentState(EditorState.MOVING_OBJECT))
+                // Only perform rectangle selection if it was a drag and not snapping
+                if (!IsCurrentState(EditorState.MOVING_OBJECT) && !Input.GetKey(KeyCode.F))
                 {
-                    if (dragDistance < minDragDistance && heldTime < multiSelectDelay)
+                    if (dragDistance >= minDragDistance && currentMode == Mode.Selection)
                     {
-                        // Short click already handled in Select Object region
-                    }
-                    else if (currentMode == Mode.Selection)
-                    {
-                        // Rectangle selection
                         SelectObjectsInRectangle(selectionStartScreen, selectionEndScreen);
                     }
+                    // else: short click already handled in Select Object region
                 }
             }
             #endregion
@@ -473,6 +527,39 @@ namespace FS_LevelEditor.Editor
             // We need to avoid that.
             if (!Utils.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
         }
+
+        private void UpdateSelectionBox()
+        {
+            if (selectionBox == null) return;
+
+            // Get screen positions
+            Vector2 start = selectionStartScreen;
+            Vector2 end = selectionEndScreen;
+
+            // Calculate min/max for width/height
+            float minX = Mathf.Min(start.x, end.x);
+            float maxX = Mathf.Max(start.x, end.x);
+            float minY = Mathf.Min(start.y, end.y);
+            float maxY = Mathf.Max(start.y, end.y);
+
+            // NGUI scaling
+            UIRoot root = NGUITools.FindInParents<UIRoot>(EditorUIManager.Instance.editorUIParent);
+            if (root == null) return;
+            float scaleFactor = root.activeHeight / Screen.height;
+
+            // Top-left in screen space (X: minX, Y: maxY)
+            Vector3 topLeftScreen = new Vector3(minX, maxY, 0);
+
+            // Convert to NGUI local position
+            Vector3 topLeftWorld = NGUI_Utils.mainMenuCamera.ScreenToWorldPoint(topLeftScreen * scaleFactor);
+            Vector3 topLeftLocal = EditorUIManager.Instance.editorUIParent.transform.InverseTransformPoint(topLeftWorld);
+
+            // Set position and size
+            selectionBox.transform.localPosition = topLeftLocal;
+            selectionBoxSprite.width = Mathf.RoundToInt((maxX - minX) * scaleFactor);
+            selectionBoxSprite.height = Mathf.RoundToInt((maxY - minY) * scaleFactor);
+        }
+
         void LateUpdate()
         {
             if (gizmosArrows.activeSelf && currentSelectedObj)
@@ -1654,6 +1741,10 @@ namespace FS_LevelEditor.Editor
         {
             previousEditorState = currentEditorState;
             currentEditorState = newState;
+
+            //same, just in case.
+            if (newState == EditorState.MOVING_OBJECT && selectionBox != null)
+                selectionBox.SetActive(false);
         }
         public static bool IsCurrentState(EditorState state)
         {
