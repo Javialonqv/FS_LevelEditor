@@ -46,10 +46,16 @@ namespace FS_LevelEditor.Editor.UI
         /// Contains all of the options of an event, EXCEPT the target object name field.
         /// </summary>
         GameObject eventOptionsParent;
+
+        GameObject currentActiveObjectPanel;
+
+        #region Object Panels Related
         GameObject defaultObjectsSettings;
         bool defaultSettingsExpanded = false;
         UIDropdownPatcher spawnOptionsDropdown;
         UIDropdownPatcher colliderStateDropdown;
+        UIButtonPatcher expandDefaultOptionsButton;
+        UISprite expandDefaultOptionsButtonSprite;
         //-----------------------------------
         GameObject sawObjectsSettings;
         UIButtonMultiple sawStateButton;
@@ -96,6 +102,7 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject doorObjectsSettings;
         UIButtonMultiple setDoorStateButton;
+        #endregion
 
 
         List<string> eventsListsNames = new List<string>();
@@ -1177,6 +1184,7 @@ namespace FS_LevelEditor.Editor.UI
                 fieldSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
                 eventOptionsParent.SetActive(true);
                 eventOptionsParent.DisableAllChildren();
+                currentActiveObjectPanel = null;
 
                 if (string.Equals(inputText, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase))
                 {
@@ -1196,48 +1204,50 @@ namespace FS_LevelEditor.Editor.UI
                 if (!currentSelectedEvent.isForPlayer) defaultObjectsSettings.SetActive(true);
                 if (currentSelectedEvent.isForPlayer)
                 {
-                    playerSettings.SetActive(true);
+                    currentActiveObjectPanel = playerSettings;
                 }
                 else if (targetObj is LE_Saw)
                 {
-                    sawObjectsSettings.SetActive(true);
+                    currentActiveObjectPanel = sawObjectsSettings;
                 }
                 else if (targetObj is LE_Cube)
                 {
-                    cubeObjectsSettings.SetActive(true);
+                    currentActiveObjectPanel = cubeObjectsSettings;
                 }
                 else if (targetObj is LE_Laser)
                 {
-                    laserObjectsSettings.SetActive(true);
+                    currentActiveObjectPanel = laserObjectsSettings;
                 }
                 else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
                 {
-                    lightObjectsSettings.SetActive(true);
+                    currentActiveObjectPanel = lightObjectsSettings;
                 }
                 else if (targetObj is LE_Ceiling_Light)
                 {
-                    ceilingLightObjectsSettings.SetActive(true);
+                    currentActiveObjectPanel = ceilingLightObjectsSettings;
                 }
                 else if (targetObj is LE_Health_Pack || targetObj is LE_Ammo_Pack)
                 {
-                    healthAmmoPacksObjectsSettings.SetActive(true);
+                    currentActiveObjectPanel = healthAmmoPacksObjectsSettings;
                 }
                 else if (targetObj is LE_Switch)
                 {
-                    switchObjectsSettings.SetActive(true);
+                    currentActiveObjectPanel = switchObjectsSettings;
                 }
                 else if (targetObj is LE_Flame_Trap)
                 {
-                    flameTrapObjectsSettings.SetActive(true);
+                    currentActiveObjectPanel = flameTrapObjectsSettings;
                 }
                 else if (targetObj is LE_Screen || targetObj is LE_Small_Screen)
                 {
-                    screenObjectsSettings.SetActive(true);
+                    currentActiveObjectPanel = screenObjectsSettings;
                 }
                 else if (targetObj is LE_Door || targetObj is LE_Door_V2)
                 {
-                    doorObjectsSettings.SetActive(true);
+                    currentActiveObjectPanel = doorObjectsSettings;
                 }
+
+                if (currentActiveObjectPanel && !defaultSettingsExpanded) currentActiveObjectPanel.SetActive(true);
             }
             else
             {
@@ -1319,11 +1329,12 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateExpandDefaultOptionsButton()
         {
-            var button = NGUI_Utils.CreateButton(defaultObjectsSettings.transform, new Vector3(360, 120), Vector3Int.one * 55, "Hi");
-            button.onClick += OnExpandDefaultOptionsButtonClicked;
+            expandDefaultOptionsButton = NGUI_Utils.CreateButtonWithSprite(defaultObjectsSettings.transform, new Vector3(360, 120), Vector3Int.one * 55, 2,
+                "Triangle", new Vector2Int(35, 25));
+            expandDefaultOptionsButton.onClick += OnExpandDefaultOptionsButtonClicked;
+            expandDefaultOptionsButtonSprite = expandDefaultOptionsButton.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>();
 
-            var testLabel = NGUI_Utils.CreateLabel(defaultObjectsSettings.transform, new Vector3(-200, -100), new Vector3Int(500, 120, 0), "SPAAAAAAAAACE");
-            testLabel.fontSize = 48;
+            expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, -1, 1); // Default.
         }
         // -----------------------------------------
         void CreateSawObjectSettings()
@@ -1990,13 +2001,16 @@ namespace FS_LevelEditor.Editor.UI
             if (defaultSettingsExpanded)
             {
                 defaultObjectsSettings.GetComponent<UIPanel>().baseClipRegion = new Vector4(0, -80, 800, 500);
-                ceilingLightObjectsSettings.SetActive(false);
+                if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(false);
             }
             else
             {
                 defaultObjectsSettings.GetComponent<UIPanel>().baseClipRegion = new Vector4(0, 120, 800, 120);
-                ceilingLightObjectsSettings.SetActive(true);
+                if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(true);
             }
+
+            // Change the scale of the button sprite so it seems inverted or no.
+            expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, defaultSettingsExpanded ? 1 : -1, 1);
         }
         // -----------------------------------------
         void OnSawStateDropdownChanged()
