@@ -127,7 +127,7 @@ namespace FS_LevelEditor.Editor
             deathYPlane = Instantiate(LoadOtherObjectInBundle("DeathYPlane")).AddComponent<DeathYPlaneCtrl>();
             MainCam = GameObject.Find("Main Camera").GetComponent<Camera>();
             MainCam.fieldOfView = 90f; // Set FOV to 90 by default.
-            MainCam.nearClipPlane = .001f; //to prevent disappearing when near objects.
+            MainCam.nearClipPlane = 0.1f; //to prevent disappearing when near objects.
             
         }
         void CreateSelectionBox()
