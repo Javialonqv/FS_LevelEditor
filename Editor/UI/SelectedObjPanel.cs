@@ -1115,7 +1115,7 @@ namespace FS_LevelEditor.Editor.UI
 
             if (objComp is LE_Saw)
             {
-                var waypoints = objComp.GetProperty<List<LE_SawWaypointSerializable>>("waypoints");
+                var waypoints = objComp.GetProperty<List<WaypointData>>("waypoints");
                 ShowOrHideSawWaitTimeField(waypoints.Count);
 
                 if (objComp.TryGetProperty("Rotate", out object rotateValue) && rotateValue is bool rotate)

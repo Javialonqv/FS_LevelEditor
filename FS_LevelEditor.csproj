@@ -113,6 +113,7 @@
 		<Compile Include="UI_Related\UITogglePatcher.cs" />
 		<Compile Include="Utils.cs" />
 		<Compile Include="WaypointSupport.cs" />
+		<Compile Include="WaypointSupports\SawWaypointSupport.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

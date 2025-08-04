@@ -42,6 +42,13 @@ namespace FS_LevelEditor
         int currentWaypointID;
         LE_Waypoint currentWaypoint;
 
+        public virtual List<WaypointData> targetWaypointsData => targetObject.waypoints;
+        public virtual LE_Object.ObjectType waypointTypeToUse => LE_Object.ObjectType.WAYPOINT;
+        public virtual bool needsEmptyWaypointAtStart => false;
+        public virtual bool usesCustomMoveSystem => false;
+        public virtual Color editorLineColor => Color.white;
+        public virtual GameObject waypointTemplate => null; // If null (by default), it'll create a copy of the main object.
+
         void Awake()
         {
             targetObject = GetComponent<LE_Object>();
@@ -54,7 +61,15 @@ namespace FS_LevelEditor
             waypointsParent.parent = targetObject.transform;
             waypointsParent.localPosition = Vector3.zero;
             waypointsParent.localScale = Vector3.one;
-            waypointsParent.gameObject.SetActive(false); // Disabled by default, until the user selects it.
+            if (EditorController.Instance)
+            {
+                waypointsParent.gameObject.SetActive(false); // Disabled by default, until the user selects it.
+            }
+            else if (PlayModeController.Instance)
+            {
+                // They're empty in playmode, no problem with that.
+                waypointsParent.gameObject.SetActive(true);
+            }
         }
         void CreateEditorLine()
         {
@@ -63,20 +78,24 @@ namespace FS_LevelEditor
                 editorLine = Instantiate(Core.LoadOtherObjectInBundle("EditorLine"), transform).GetComponent<LineRenderer>();
                 editorLine.transform.localPosition = Vector3.zero;
                 editorLine.transform.localScale = Vector3.one;
+                editorLine.startColor = editorLineColor;
+                editorLine.endColor = editorLineColor;
                 editorLine.gameObject.SetActive(false);
             }
         }
 
         public void OnInstantiated(LEScene scene)
         {
-            if (targetObject.waypoints.Count > 0) LoadWaypointsFromSave();
+            if (targetWaypointsData.Count > 0) LoadWaypointsFromSave();
         }
         public void LoadWaypointsFromSave()
         {
-            List<WaypointData> waypoints = targetObject.waypoints;
+            List<WaypointData> waypoints = targetWaypointsData;
 
             if (PlayModeController.Instance)
             {
+                if (needsEmptyWaypointAtStart) CreateFirstWaypointEver(waypoints);
+
                 switch (targetObject.waypointMode)
                 {
                     case WaypointMode.LOOP: CreateLoopWaypoint(waypoints); break;
@@ -95,8 +114,18 @@ namespace FS_LevelEditor
                     createdWaypoint.SetProperty(property.Key, property.Value);
                 }
             }
+            // Init the components NOW before SetupForCustomSystem() is called.
+            if (PlayModeController.Instance) spawnedWaypoints.ForEach(x => x.InitComponent());
         }
         // --------------------------------------------------
+        void CreateFirstWaypointEver(List<WaypointData> originalList)
+        {
+            WaypointData firstWaypoint = new WaypointData();
+            // Waypoints positions are relative to the main object position, Vector3.zero means the waypoint will be in the same positions as the main object.
+            firstWaypoint.position = Vector3.zero;
+
+            originalList.Insert(0, firstWaypoint);
+        }
         void CreateLoopWaypoint(List<WaypointData> originalList)
         {
             WaypointData finalWaypoint = new WaypointData();
@@ -116,21 +145,32 @@ namespace FS_LevelEditor
                 originalList.Add(data);
             }
 
-            // Create the last waypoint so the object goes to its original position.
-            WaypointData lastWaypoint = new WaypointData();
-            lastWaypoint.position = Vector3.zero;
-            originalList.Add(lastWaypoint);
+            if (!needsEmptyWaypointAtStart)
+            {
+                // Create the last waypoint so the object goes to its original position.
+                WaypointData lastWaypoint = new WaypointData();
+                lastWaypoint.position = Vector3.zero;
+                originalList.Add(lastWaypoint);
+            }
         }
 
         public void ObjectStart(LEScene scene)
         {
             if (targetObject.startMovingAtStart && scene == LEScene.Playmode && spawnedWaypoints != null && spawnedWaypoints.Count > 0)
             {
-                StartObjectMovement();
+                if (usesCustomMoveSystem)
+                {
+                    SetupForCustomSystem();
+                }
+                else // Default system for global waypoints.
+                {
+                    StartObjectMovement();
+                }
             }
         }
         public void StartObjectMovement()
         {
+            if (usesCustomMoveSystem) return;
             if (moveObjectCoroutine != null) return; // There's already a coroutine running, don't do shit.
 
             moveObjectCoroutine = (Coroutine)MelonCoroutines.Start(MoveObject());
@@ -163,8 +203,15 @@ namespace FS_LevelEditor
         }
         public void StopObjectMovement()
         {
+            if (moveObjectCoroutine == null) return; // Just in case trying to stop a null coroutine throws an error.
+
             MelonCoroutines.Stop(moveObjectCoroutine);
             Logger.Log("Waypoint movement stopped for object: " + gameObject.name);
+        }
+        // --------------------------------------------------
+        public virtual void SetupForCustomSystem()
+        {
+
         }
 
         void Update()
@@ -209,7 +256,9 @@ namespace FS_LevelEditor
             GameObject waypoint = null;
             if (EditorController.Instance)
             {
-                waypoint = Instantiate(EditorController.Instance.allCategoriesObjects[targetObject.objectType.Value], waypointsParent);
+                GameObject template = waypointTemplate ? waypointTemplate : EditorController.Instance.allCategoriesObjects[targetObject.objectType.Value];
+
+                waypoint = Instantiate(template, waypointsParent);
                 waypoint.SetTransparentMaterials();
                 // DESTROY EVERY FUCKING RIGIDBODY WE FIND.
                 foreach (var rigidBody in waypoint.TryGetComponents<Rigidbody>(true))
@@ -227,7 +276,8 @@ namespace FS_LevelEditor
             waypoint.transform.localEulerAngles = Vector3.zero;
             waypoint.transform.localScale = Vector3.one;
 
-            LE_Waypoint waypointComp = (LE_Waypoint)LE_Object.AddComponentToObject(waypoint, LE_Object.ObjectType.WAYPOINT);
+            LE_Waypoint waypointComp = (LE_Waypoint)LE_Object.AddComponentToObject(waypoint, waypointTypeToUse);
+            waypointComp.waypointIndex = spawnedWaypoints.Count;
 
             if (!firstWaypoint)
             {
@@ -246,7 +296,7 @@ namespace FS_LevelEditor
             {
                 WaypointData data = new WaypointData();
                 waypointComp.attachedData = data;
-                targetObject.waypoints.Add(data);
+                targetWaypointsData.Add(data);
 
                 if (EditorController.Instance)
                 {
@@ -260,7 +310,7 @@ namespace FS_LevelEditor
                     // Only in editor, in playmode it may be using travel back or loop modes which can break this, attachedData is for editor only.
                     
                 }
-                waypointComp.attachedData = targetObject.waypoints[spawnedWaypoints.Count - 1];
+                waypointComp.attachedData = targetWaypointsData[spawnedWaypoints.Count - 1];
 
                 // Force the Awake() call when loading from save since it won't be called until the user selects the main object and the waypoints are enabled for the first time.
                 waypointComp.CallMethod("Awake");
@@ -273,9 +323,9 @@ namespace FS_LevelEditor
 
         public void RecalculateWaypoints()
         {
-            for (int i = 0; i < targetObject.waypoints.Count; i++)
+            for (int i = 0; i < targetWaypointsData.Count; i++)
             {
-                var waypointData = targetObject.waypoints[i];
+                var waypointData = targetWaypointsData[i];
                 var waypoint = spawnedWaypoints[i];
 
                 if (i == 0)

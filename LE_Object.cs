@@ -4,6 +4,7 @@ using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.UI_Related;
+using FS_LevelEditor.WaypointSupports;
 using Il2Cpp;
 using Il2CppAmazingAssets.TerrainToMesh;
 using Il2CppInterop.Runtime;
@@ -111,6 +112,11 @@ namespace FS_LevelEditor
                 } }
         };
 
+        public readonly Dictionary<ObjectType, Type> customWaypointSupports = new Dictionary<ObjectType, Type>()
+        {
+            { ObjectType.SAW, typeof(SawWaypointSupport) }
+        };
+
         public static Dictionary<ObjectType, int> alreadyUsedObjectIDs = new Dictionary<ObjectType, int>();
 
         public ObjectType? objectType;
@@ -150,6 +156,7 @@ namespace FS_LevelEditor
         
         public EventExecuter eventExecuter;
         public WaypointSupport waypointSupport;
+        public WaypointSupport customWaypointSupport;
         public virtual Transform objectParent
         {
             get
@@ -267,6 +274,10 @@ namespace FS_LevelEditor
             if (canHaveWaypoints)
             {
                 waypointSupport = gameObject.AddComponent<WaypointSupport>();
+                if (customWaypointSupports.ContainsKey(objectType))
+                {
+                    customWaypointSupport = (WaypointSupport)gameObject.AddComponent(Il2CppType.From(customWaypointSupports[objectType]));
+                }
             }
         }
 
@@ -424,6 +435,7 @@ namespace FS_LevelEditor
 
             if (eventExecuter) eventExecuter.OnInstantiated(scene);
             if (waypointSupport) waypointSupport.OnInstantiated(scene);
+            if (customWaypointSupport) customWaypointSupport.OnInstantiated(scene);
 
             onInstantiatedCalled = true;
         }
@@ -441,6 +453,7 @@ namespace FS_LevelEditor
         public virtual void ObjectStart(LEScene scene)
         {
             if (waypointSupport) waypointSupport.ObjectStart(scene);
+            if (customWaypointSupport) customWaypointSupport.ObjectStart(scene);
         }
 
         /// <summary>
@@ -579,6 +592,7 @@ namespace FS_LevelEditor
 
             if (eventExecuter) eventExecuter.OnSelect();
             if (waypointSupport) waypointSupport.OnSelect();
+            if (customWaypointSupport) customWaypointSupport.OnSelect();
         }
         public virtual void OnDeselect(GameObject nextSelectedObj)
         {
@@ -596,6 +610,7 @@ namespace FS_LevelEditor
 
             if (eventExecuter) eventExecuter.OnDeselect();
             if (waypointSupport) waypointSupport.OnDeselect();
+            if (customWaypointSupport) customWaypointSupport.OnDeselect();
         }
         public virtual void OnDelete()
         {
@@ -618,6 +633,7 @@ namespace FS_LevelEditor
         public virtual void BeforeSave()
         {
             if (waypointSupport) waypointSupport.BeforeSave();
+            if (customWaypointSupport) customWaypointSupport.BeforeSave();
         }
 
         public virtual List<string> GetAvailableEventsIDs()

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FS_LevelEditor.Editor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,9 @@ namespace FS_LevelEditor
 
         public override Transform objectParent => mainSupport.waypointsParent;
 
+        public int waypointIndex;
+        public bool isFirstWayponint => waypointIndex == 0;
+
         bool alreadyCalledAwake = false;
         void Awake()
         {
@@ -33,7 +37,9 @@ namespace FS_LevelEditor
                 { "WaitTime", 0.3f }
             };
 
-            CreateEditorLine();
+            mainSupport = GetMainSupport();
+
+            if (EditorController.Instance) CreateEditorLine();
 
             alreadyCalledAwake = true;
         }
@@ -44,21 +50,26 @@ namespace FS_LevelEditor
                 editorLine = Instantiate(Core.LoadOtherObjectInBundle("EditorLine"), transform).GetComponent<LineRenderer>();
                 editorLine.transform.localPosition = Vector3.zero;
                 editorLine.transform.localScale = Vector3.one;
+                editorLine.startColor = mainSupport.editorLineColor;
+                editorLine.endColor = mainSupport.editorLineColor;
                 editorLine.gameObject.SetActive(false);
             }
         }
 
         void Update()
         {
-            if (nextWaypoint)
+            if (editorLine)
             {
-                editorLine.gameObject.SetActive(true);
-                editorLine.SetPosition(0, transform.position);
-                editorLine.SetPosition(1, nextWaypoint.transform.position);
-            }
-            else
-            {
-                editorLine.gameObject.SetActive(false);
+                if (nextWaypoint)
+                {
+                    editorLine.gameObject.SetActive(true);
+                    editorLine.SetPosition(0, transform.position);
+                    editorLine.SetPosition(1, nextWaypoint.transform.position);
+                }
+                else
+                {
+                    editorLine.gameObject.SetActive(false);
+                }
             }
         }
 
@@ -73,7 +84,7 @@ namespace FS_LevelEditor
         public override void OnDelete()
         {
             base.OnDelete();
-            mainSupport.targetObject.waypoints.Remove(attachedData);
+            mainSupport.targetWaypointsData.Remove(attachedData);
             mainSupport.spawnedWaypoints.Remove(this);
             mainSupport.RecalculateWaypoints();
         }
@@ -109,9 +120,14 @@ namespace FS_LevelEditor
 
         public override LE_Object[] GetReferenceObjectsToGetObjID()
         {
-            if (!mainSupport) mainSupport = transform.parent.parent.GetComponent<WaypointSupport>();
+            if (!mainSupport) mainSupport = GetMainSupport();
 
             return mainSupport.spawnedWaypoints.ToArray();
+        }
+
+        public virtual WaypointSupport GetMainSupport()
+        {
+            return transform.parent.parent.GetComponent<WaypointSupport>();
         }
     }
 }
