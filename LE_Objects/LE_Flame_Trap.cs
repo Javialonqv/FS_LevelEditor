@@ -53,7 +53,7 @@ namespace FS_LevelEditor
 
             DOT dot = content.GetChild("DOT_Trigger").AddComponent<DOT>();
             dot.pushCubes = true;
-            dot.pushForce = 8;
+            dot.pushForce = 18;
             dot.DPS = 80;
             dot.useDmgCollisionDetection = false;
             dot.collisionCheckPoint = content.GetChild("DamageObstructionPoint").transform;

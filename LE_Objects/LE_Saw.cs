@@ -27,7 +27,9 @@ namespace FS_LevelEditor
                 { "Loop", false },
                 { "waypoints", new List<LE_SawWaypointSerializable>() },
                 { "Damage", 50 },
-                { "WaitTime", 0f }
+                { "WaitTime", 0f },
+                { "Rotate", false },
+                { "RotateSpeed", 1 }
             };
             
 
@@ -89,13 +91,19 @@ namespace FS_LevelEditor
             script.m_audioSource = content.GetComponent<AudioSource>();
             script.movingSaw = false;
             script.movingSpeed = 10;
+            script.forcedHeading = true;
+            script.allowSideRotation = false;
+            script.sideSpeedMultiplier = 5;
+            if(GetProperty<bool>("Rotate"))
+            {
+                script.allowSideRotation = true;
+                script.forcedHeading = true;
+                script.sideSpeedMultiplier = GetProperty<int>("RotateSpeed");
+            }
             if (waypointsGOs.Count > 0)
             {
                 script.currentWaypoint = waypointsGOs[0];
                 script.movingSaw = true;
-                script.forcedHeading = true;
-                script.allowSideRotation = false;
-                script.sideSpeedMultiplier = 5;
             }
             script.scieSound = t_saw.scieSound;
             script.offMesh = content.GetChild("Scie_OFF").GetComponent<MeshRenderer>();
@@ -217,7 +225,30 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-
+            else if (name == "Rotate")
+            {
+                if (value is bool)
+                {
+                    properties["Rotate"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "RotateSpeed")
+            {
+                if (value is string)
+                {
+                    if (int.TryParse((string)value, out int result))
+                    {
+                        properties["RotateSpeed"] = result;
+                        return true;
+                    }
+                }
+                else if (value is int)
+                {
+                    properties["RotateSpeed"] = (int)value;
+                    return true;
+                }
+            }
             return base.SetProperty(name, value);
         }
         public override bool TriggerAction(string actionName)

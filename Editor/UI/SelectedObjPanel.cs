@@ -521,6 +521,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Loop", AttributeType.TOGGLE, false, null, "Loop", tooltip: "LoopTooltip");
             CreateObjectAttribute("AddWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
             CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+            CreateObjectAttribute("Rotate", AttributeType.TOGGLE, false, null, "Rotate");
+            CreateObjectAttribute("RotateSpeed", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "RotateSpeed");
 
             sawAttributes.SetActive(false);
             attributesPanels.Add("Saw", sawAttributes);
@@ -1115,6 +1117,11 @@ namespace FS_LevelEditor.Editor.UI
             {
                 var waypoints = objComp.GetProperty<List<LE_SawWaypointSerializable>>("waypoints");
                 ShowOrHideSawWaitTimeField(waypoints.Count);
+
+                if (objComp.TryGetProperty("Rotate", out object rotateValue) && rotateValue is bool rotate)
+                {
+                    OnSawRotateChecked(rotate);
+                }
             }
         }
 
@@ -1418,6 +1425,9 @@ namespace FS_LevelEditor.Editor.UI
                     OnDoorAutoChecked(toggle.isChecked);
                     OnDoorV2AutoChecked(toggle.isChecked);
                     break;
+                case "Rotate":
+                    OnSawRotateChecked(toggle.isChecked);
+                    break;
             }
 
             if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
@@ -1441,6 +1451,27 @@ namespace FS_LevelEditor.Editor.UI
         }
 
         // Extra functions for specific things for specific attributes for specific objects LOL.
+        void OnSawRotateChecked(bool isEnabled)
+        {
+            if (attributesPanels.TryGetValue("Saw", out var sawPanel))
+            {
+                var rotateSpeedAttr = sawPanel.GetChild("RotateSpeed");
+                if (rotateSpeedAttr != null)
+                {
+                    rotateSpeedAttr.SetActive(isEnabled);
+
+                    // Update the rotate speed value when showing the field
+                    if (isEnabled)
+                    {
+                        var field = rotateSpeedAttr.GetChild("Field").GetComponent<UIInput>();
+                        if (EditorController.Instance.currentSelectedObjComponent.TryGetProperty("RotateSpeed", out object value))
+                        {
+                            field.text = value.ToString();
+                        }
+                    }
+                }
+            }
+        }
         void OnLaserInstaKillChecked(bool newState)
         {
             attributesPanels["Laser"].GetChild("Damage").SetActive(!newState);

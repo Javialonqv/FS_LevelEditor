@@ -1004,7 +1004,19 @@ namespace FS_LevelEditor.Editor
 
             obj.transform.localPosition = position;
             obj.transform.localEulerAngles = eulerAngles;
-            obj.transform.localScale = scale;
+            //Now hold your horses, we WILL start doing custom scaling
+            if (objectType == LE_Object.ObjectType.TRIGGER)
+            {
+                obj.transform.localScale = new Vector3(3.8f, 3.8f, .01f);
+            }
+            else if (objectType == LE_Object.ObjectType.DOOR)
+            {
+                obj.transform.localScale = new Vector3(1, 1.05f, 1);
+            }
+            else
+            {
+                obj.transform.localScale = scale;
+            }
 
             LE_Object addedComp = LE_Object.AddComponentToObject(obj, objectType.Value);
 
