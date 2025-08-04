@@ -107,6 +107,7 @@ namespace FS_LevelEditor.Editor
                 moveSpeed = moveSpeedWhenShiftPressed;
                 moveSpeedWhenShiftPressed = 0;
             }
+            downAndUpSpeed = moveSpeed;
         }
 
         void MoveCameraWithMouseDrag()
