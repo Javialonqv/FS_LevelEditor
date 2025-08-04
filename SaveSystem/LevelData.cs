@@ -346,6 +346,7 @@ namespace FS_LevelEditor.SaveSystem
             spawnedObject.setActiveAtStart = objectData.setActiveAtStart;
             spawnedObject.collision = objectData.collision;
             spawnedObject.waypoints = objectData.waypoints;
+            spawnedObject.startMovingAtStart = objectData.moveStart;
             spawnedObject.movingSpeed = objectData.movingSpeed;
             spawnedObject.startDelay = objectData.startDelay;
             spawnedObject.waypointMode = objectData.wayMode;

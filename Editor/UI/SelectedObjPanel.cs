@@ -34,6 +34,7 @@ namespace FS_LevelEditor.Editor.UI
         UICustomInputField scaleXField, scaleYField, scaleZField;
         UIToggle collisionToggle;
         UIButtonPatcher addWaypointButton;
+        UIToggle startMovingAtStartToggle;
         UICustomInputField movingSpeedField;
         UICustomInputField startDelayField;
         UISmallButtonMultiple waypointModeButton;
@@ -205,6 +206,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectScaleUIElements();
             CreateCollisionToggle();
             CreateAddWaypointButton();
+            CreateStartMovingAtStartToggle();
             CreateMovingSpeedField();
             CreateStartDelayField();
             CreateWaypointModeButton();
@@ -375,6 +377,23 @@ namespace FS_LevelEditor.Editor.UI
             addWaypointButton.name = "AddWaypointButton";
             addWaypointButton.onClick += AddWaypointForObject;
         }
+        void CreateStartMovingAtStartToggle()
+        {
+            Transform toggleParent = new GameObject("StartMovingAtStart").transform;
+            toggleParent.parent = globalObjectPanelsParent;
+            toggleParent.localPosition = Vector3.zero;
+            toggleParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(toggleParent, new Vector3(-230, -165), new Vector3Int(395, 38, 0), "Start Moving At Start");
+            title.name = "Title";
+
+            GameObject toggle = NGUI_Utils.CreateToggle(toggleParent, new Vector3(200, -165), Vector3Int.one * 48);
+            toggle.name = "Toggle";
+            toggle.GetComponent<UIToggle>().onChange.Clear();
+            toggle.GetComponent<UIToggle>().onChange.Add(new EventDelegate(this, nameof(SetStartMovingAtStart)));
+            startMovingAtStartToggle = toggle.GetComponent<UIToggle>();
+            startMovingAtStartToggle.instantTween = true;
+        }
         void CreateMovingSpeedField()
         {
             Transform fieldParent = new GameObject("MovingSpeed").transform;
@@ -382,10 +401,10 @@ namespace FS_LevelEditor.Editor.UI
             fieldParent.localPosition = Vector3.zero;
             fieldParent.localScale = Vector3.one;
 
-            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, -165f, 0f), new Vector3Int(260, 38, 0), "Moving Speed");
+            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, -215f, 0f), new Vector3Int(260, 38, 0), "Moving Speed");
             title.name = "Title";
 
-            movingSpeedField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, -165), new Vector3Int(200, 38, 0), 27, "5", false,
+            movingSpeedField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, -215), new Vector3Int(200, 38, 0), 27, "5", false,
                 inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             movingSpeedField.name = "Field";
             movingSpeedField.onChange += () => SetPropertyWithInput("MovingSpeed", movingSpeedField);
@@ -397,10 +416,10 @@ namespace FS_LevelEditor.Editor.UI
             fieldParent.localPosition = Vector3.zero;
             fieldParent.localScale = Vector3.one;
 
-            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, -210f, 0f), new Vector3Int(260, 38, 0), "Start Delay");
+            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, -260f, 0f), new Vector3Int(260, 38, 0), "Start Delay");
             title.name = "Title";
 
-            startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, -210), new Vector3Int(200, 38, 0), 27, "1", false,
+            startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, -260), new Vector3Int(200, 38, 0), 27, "1", false,
                 inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             startDelayField.name = "Field";
             startDelayField.onChange += () => SetPropertyWithInput("StartDelay", startDelayField);
@@ -412,10 +431,10 @@ namespace FS_LevelEditor.Editor.UI
             optionParent.localPosition = Vector3.zero;
             optionParent.localScale = Vector3.one;
 
-            UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, -255f, 0f), new Vector3Int(260, 38, 0), "Moving Speed");
+            UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, -315f, 0f), new Vector3Int(260, 38, 0), "Moving Speed");
             title.name = "Title";
 
-            waypointModeButton = NGUI_Utils.CreateSmallButtonMultiple(optionParent, new Vector3(140, -255),
+            waypointModeButton = NGUI_Utils.CreateSmallButtonMultiple(optionParent, new Vector3(140, -315),
                 new Vector3Int(200, 38, 0), "NONE", 25);
             waypointModeButton.name = "ButtonMultiple";
             waypointModeButton.onChange += (id) => SetPropertyWithButtonMultiple("WaypointMode", waypointModeButton);
@@ -1174,6 +1193,10 @@ namespace FS_LevelEditor.Editor.UI
                 EditorController.Instance.currentSelectedObjComponent.GetComponent<WaypointSupport>().AddWaypoint();
             }
         }
+        public void SetStartMovingAtStart()
+        {
+            SetPropertyWithToggle("StartMovingAtStart", startMovingAtStartToggle);
+        }
         public void ShowGlobalObjectAttributes(bool show)
         {
             objectSpecificPanelsParent.gameObject.SetActive(!show);
@@ -1252,6 +1275,18 @@ namespace FS_LevelEditor.Editor.UI
             else
             {
                 addWaypointButton.gameObject.SetActive(false);
+            }
+            #endregion
+
+            #region Start Moving At Start Toggle
+            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
+            {
+                startMovingAtStartToggle.transform.parent.gameObject.SetActive(true);
+                startMovingAtStartToggle.Set(EditorController.Instance.currentSelectedObjComponent.startMovingAtStart);
+            }
+            else
+            {
+                startMovingAtStartToggle.transform.parent.gameObject.SetActive(false);
             }
             #endregion
 

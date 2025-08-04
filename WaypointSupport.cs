@@ -124,7 +124,7 @@ namespace FS_LevelEditor
 
         public void ObjectStart(LEScene scene)
         {
-            if (scene == LEScene.Playmode && spawnedWaypoints != null && spawnedWaypoints.Count > 0)
+            if (targetObject.startMovingAtStart && scene == LEScene.Playmode && spawnedWaypoints != null && spawnedWaypoints.Count > 0)
             {
                 moveObjectCoroutine = (Coroutine)MelonCoroutines.Start(MoveObject());
                 Logger.Log("Started waypoint movement for object object: " + gameObject.name);

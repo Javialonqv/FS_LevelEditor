@@ -140,6 +140,7 @@ namespace FS_LevelEditor
 
         public bool setActiveAtStart = true;
         public bool collision = true;
+        public bool startMovingAtStart = true;
         public float movingSpeed = 5f;
         public float startDelay = 1f;
         public WaypointMode waypointMode;
@@ -461,7 +462,12 @@ namespace FS_LevelEditor
                 }
             }
 
-            if (name == "MovingSpeed")
+            if (name == "StartMovingAtStart")
+            {
+                startMovingAtStart = (bool)value;
+                return true;
+            }
+            else if (name == "MovingSpeed")
             {
                 movingSpeed = Utils.ParseFloat((string)value);
                 return true;
