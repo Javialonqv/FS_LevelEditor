@@ -589,6 +589,16 @@ namespace FS_LevelEditor.Editor
                 {
                     gizmosArrows.transform.rotation = currentSelectedObj.transform.rotation;
                 }
+
+                //Scale them based on camera distance
+                float distance = Vector3.Distance(MainCam.transform.position, currentSelectedObj.transform.position);
+                float baseScale = 2f;
+                float scaleFactor = Mathf.Max(0.1f, distance * 0.15f); // 0.15f is a tweakable factor
+                float highestAxis = Utils.HighestValueOfVector(currentSelectedObj.transform.localScale);
+                if (highestAxis < 1f)
+                    scaleFactor *= highestAxis;
+
+                gizmosArrows.transform.localScale = Vector3.one * baseScale * scaleFactor;
             }
 
             if (snapToGridCube.activeSelf && currentSelectedObj)

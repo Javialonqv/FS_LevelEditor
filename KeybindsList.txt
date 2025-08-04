@@ -4,7 +4,7 @@
 
 /Keyboard_W\ /Keyboard_A\ /Keyboard_S\ /Keyboard_D\ while pressing /Keyboard_Right Click\ to MOVE around the level scene.
 /Keyboard_Left Shift\ (Hold) while moving editor camera to move faster.
-/Keyboard_Left Control\ + /Keyboard_Black_PositiveScrollWheel\ or /Keyboard_Black_NegativeScrollWheel\ to control the camera speed.
+/Keyboard_Left Control\ + /Keyboard_Black_PositiveScrollWheel\ or /Keyboard_Black_NegativeScrollWheel\ while /Keyboard_Right Click\ (Hold) to control the camera speed.
 /Keyboard_Q\ to move the editor camera up.
 /Keyboard_E\ to move the editor camera down.
 
