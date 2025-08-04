@@ -30,7 +30,7 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Object : MonoBehaviour
     {
-        public enum ObjectType
+        public enum ObjectType // NEVER MODIFY THE ORDER OF ANY OF THE ELEMENTS HERE.
         {
             #region GROUNDS
             GROUND,
