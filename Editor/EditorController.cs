@@ -128,7 +128,17 @@ namespace FS_LevelEditor.Editor
             MainCam = GameObject.Find("Main Camera").GetComponent<Camera>();
             MainCam.fieldOfView = 90f; // Set FOV to 90 by default.
             MainCam.nearClipPlane = 0.1f; //to prevent disappearing when near objects.
-            
+
+            //To ensure nothing is left in our scene
+            InGameUIManager ui = InGameUIManager.Instance;
+            ui.HideHealthBarRoutine();
+            ui.HideDodgeCooldown(true);
+            ui.HideHoverGauge(true);
+            ui.ShowSprintFeedback(false);
+            ui.ShowFuelBar(false, 0, 0);
+            ui.ForceHideFuelBar();
+            ui.HideFuelBarRoutine(0);
+
         }
         void CreateSelectionBox()
         {

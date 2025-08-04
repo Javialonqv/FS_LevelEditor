@@ -43,6 +43,7 @@ namespace FS_LevelEditor
             script.useSeparateDelays = false;
             script.warnDistance = 9;
             script.currentRespawnIndex = 0;
+            content.GetChild("Spawn").transform.position = content.transform.position;
             script.m_resetTransform = content.GetChild("Spawn").transform;
             script.playDialogs = false;
             script.selectivePlayDialogs = false;

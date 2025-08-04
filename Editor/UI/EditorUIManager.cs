@@ -173,8 +173,8 @@ namespace FS_LevelEditor.Editor.UI
         void CreateCurrentModeLabel()
         {
             // DO NOT create UILocalize for this label, since its text is dynamic and changes depending on the current mode.
-            currentModeLabel = NGUI_Utils.CreateLabel(editorUIParent.transform, new Vector3(0, -515), new Vector3Int(500, 50, 0), "Current Mode:", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
+            currentModeLabel = NGUI_Utils.CreateLabel(editorUIParent.transform, new Vector3(925, -515), new Vector3Int(500, 50, 0), "Current Mode:", NGUIText.Alignment.Right,
+                UIWidget.Pivot.BottomRight);
             currentModeLabel.fontSize = 35;
             SetCurrentModeLabelText(EditorController.Mode.Building);
 

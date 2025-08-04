@@ -1,4 +1,5 @@
-﻿using FS_LevelEditor.Playmode;
+﻿using FS_LevelEditor;
+using FS_LevelEditor.Playmode;
 using Il2Cpp;
 using System;
 using System.Collections.Generic;
@@ -53,6 +54,10 @@ public static class EndCheckpointReachedPatch
         {
             _objectCollided.SetActive(false);
             PlayModeController.Instance.endTriggerReached = true;
+            LE_MenuUIManager.Instance.GoBackToLEWhileInPlayMode(
+                PlayModeController.Instance.levelFileNameWithoutExtension, 
+                PlayModeController.Instance.levelName
+            );
         }
     }
 }
