@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor;
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,26 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Laser_Field : LE_Object
     {
+        GameObject edgesParent;
+
+        void Awake()
+        {
+            properties = new Dictionary<string, object>()
+            {
+                { "InvisibleEdges", false }
+            };
+
+            edgesParent = gameObject.GetChildAt("Content/Edges");
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            // Execute on editor and on playmode.
+            EnableEdges(!GetProperty<bool>("InvisibleEdges"));
+
+            base.ObjectStart(scene);
+        }
+
         public override void InitComponent()
         {
             GameObject content = gameObject.GetChild("Content");
@@ -42,6 +63,26 @@ namespace FS_LevelEditor
             content.SetActive(true);
 
             initialized = true;
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "InvisibleEdges")
+            {
+                if (value is bool)
+                {
+                    properties["InvisibleEdges"] = (bool)value;
+                    if (EditorController.Instance != null) EnableEdges(!(bool)value);
+                    return true;
+                }
+            }
+
+            return base.SetProperty(name, value);
+        }
+
+        void EnableEdges(bool enable)
+        {
+            edgesParent.SetActive(enable);
         }
     }
 }

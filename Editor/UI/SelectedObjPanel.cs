@@ -472,6 +472,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateDoorV2AttributesPanel();
             CreateDeathTriggerAttributesPanel();
             CreateWaypointAttributesPanel();
+            CreateLaserFieldAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -779,6 +780,19 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
 
             attributesPanels.Add("Waypoint", waypointAttributes);
+        }
+        void CreateLaserFieldAttributesPanel()
+        {
+            GameObject laserFieldAttributes = new GameObject("Laser Field");
+            laserFieldAttributes.transform.parent = objectSpecificPanelsParent;
+            laserFieldAttributes.transform.localPosition = Vector3.zero;
+            laserFieldAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(laserFieldAttributes);
+
+            CreateObjectAttribute("Invisible Edges", AttributeType.TOGGLE, false, null, "InvisibleEdges");
+
+            attributesPanels.Add("Laser Field", laserFieldAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
