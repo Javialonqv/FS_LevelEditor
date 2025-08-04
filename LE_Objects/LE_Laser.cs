@@ -24,8 +24,8 @@ namespace FS_LevelEditor
                 { "InstaKill", false },
                 { "Damage", 34 },
                 { "Blinking", false },
-                { "OffDuration", 0f },
-                { "OnDuration", 0f }
+                { "OffDuration", 1f },
+                { "OnDuration", 1f }
             };
         }
 

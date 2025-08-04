@@ -419,7 +419,7 @@ namespace FS_LevelEditor.Editor.UI
             UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, -260f, 0f), new Vector3Int(260, 38, 0), "Start Delay");
             title.name = "Title";
 
-            startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, -260), new Vector3Int(200, 38, 0), 27, "1", false,
+            startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, -260), new Vector3Int(200, 38, 0), 27, "0", false,
                 inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             startDelayField.name = "Field";
             startDelayField.onChange += () => SetPropertyWithInput("StartDelay", startDelayField);
@@ -591,8 +591,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("InstantKill", AttributeType.TOGGLE, false, null, "InstaKill");
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Damage");
             CreateObjectAttribute("Blinking", AttributeType.TOGGLE, false, null, "Blinking");
-            CreateObjectAttribute("OFFDuration", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "OffDuration");
-            CreateObjectAttribute("ONDuration", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "OnDuration");
+            CreateObjectAttribute("OFFDuration", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "OffDuration");
+            CreateObjectAttribute("ONDuration", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "OnDuration");
 
             laserAttributes.SetActive(false);
             attributesPanels.Add("Laser", laserAttributes);
