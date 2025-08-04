@@ -211,6 +211,11 @@ namespace FS_LevelEditor
             {
                 waypoint = Instantiate(EditorController.Instance.allCategoriesObjects[targetObject.objectType.Value], waypointsParent);
                 waypoint.SetTransparentMaterials();
+                // DESTROY EVERY FUCKING RIGIDBODY WE FIND.
+                foreach (var rigidBody in waypoint.TryGetComponents<Rigidbody>(true))
+                {
+                    Destroy(rigidBody);
+                }
             }
             else // We don't need any meshes or shit in playmode, just create an empty object.
             {
