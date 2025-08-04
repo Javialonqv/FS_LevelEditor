@@ -302,6 +302,9 @@ namespace FS_LevelEditor
                 {
                     EditorController.Instance.SetSelectedObj(waypoint);
                 }
+
+                // Force the Awake() call when loading from save since it won't be called until the user selects the main object and the waypoints are enabled for the first time.
+                waypointComp.CallMethod("Awake");
             }
             else // Just link the ALREADY EXISTING data to the created waypoint.
             {

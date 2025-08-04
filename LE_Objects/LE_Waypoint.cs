@@ -23,7 +23,7 @@ namespace FS_LevelEditor
         public bool isFirstWayponint => waypointIndex == 0;
 
         bool alreadyCalledAwake = false;
-        void Awake()
+        internal void Awake()
         {
             if (alreadyCalledAwake) return;
 
