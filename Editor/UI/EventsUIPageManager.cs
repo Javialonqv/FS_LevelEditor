@@ -1288,7 +1288,7 @@ namespace FS_LevelEditor.Editor.UI
 
             UIPanel panel = defaultObjectsSettings.AddComponent<UIPanel>();
             panel.clipping = UIDrawCall.Clipping.SoftClip;
-            panel.baseClipRegion = new Vector4(0, 120, 800, 120);
+            panel.baseClipRegion = new Vector4(0, 120, 800, 100);
             panel.depth = 3;
 
             defaultObjectsSettings.layer = LayerMask.NameToLayer("2D GUI");
@@ -1296,6 +1296,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateSpawnOptionsDropdown();
             CreateColliderStateDropdown();
             CreateExpandDefaultOptionsButton();
+            CreateDefaultObjectsTitleLabel();
         }
         void CreateSpawnOptionsDropdown()
         {
@@ -1335,6 +1336,27 @@ namespace FS_LevelEditor.Editor.UI
             expandDefaultOptionsButtonSprite = expandDefaultOptionsButton.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>();
 
             expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, -1, 1); // Default.
+        }
+        void CreateDefaultObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, defaultObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "MORE GLOBAL OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
         }
         // -----------------------------------------
         void CreateSawObjectSettings()
@@ -2005,7 +2027,7 @@ namespace FS_LevelEditor.Editor.UI
             }
             else
             {
-                defaultObjectsSettings.GetComponent<UIPanel>().baseClipRegion = new Vector4(0, 120, 800, 120);
+                defaultObjectsSettings.GetComponent<UIPanel>().baseClipRegion = new Vector4(0, 120, 800, 100);
                 if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(true);
             }
 
