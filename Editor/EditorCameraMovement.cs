@@ -15,7 +15,7 @@ namespace FS_LevelEditor.Editor
     {
         enum CameraMove { NONE, NORMAL, MOUSE_DRAG }
         CameraMove currentCameraMove;
-        private float previousMoveSpeed = 10f;
+        private float moveSpeedWhenShiftPressed = 10f;
         public float moveSpeed = 10f;
         public float mouseSensivility = 10f;
         public float downAndUpSpeed = 10f;
@@ -42,6 +42,7 @@ namespace FS_LevelEditor.Editor
         {
             if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ)) return;
 
+            #region Define Camera Mode To Use
             if (!Input.GetMouseButton(0) && Input.GetMouseButton(1) && currentCameraMove == CameraMove.NONE)
             {
                 currentCameraMove = CameraMove.NORMAL;
@@ -52,14 +53,15 @@ namespace FS_LevelEditor.Editor
             }
             if (Input.GetMouseButtonUp(1) && currentCameraMove == CameraMove.NORMAL) currentCameraMove = CameraMove.NONE;
             if (Input.GetMouseButtonUp(2) && currentCameraMove == CameraMove.MOUSE_DRAG) currentCameraMove = CameraMove.NONE;
+            #endregion
 
             if (currentCameraMove == CameraMove.NORMAL)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
                 RotateCamera();
-                ManageMoveSpeed();
                 MoveCamera();
+                ManageMoveSpeed();
             }
             else if (currentCameraMove == CameraMove.MOUSE_DRAG)
             {
@@ -76,23 +78,6 @@ namespace FS_LevelEditor.Editor
                 ManageDownAndUp();
             }
         }
-        void ManageMoveSpeed()
-        {
-            bool isholdingCtrl = Input.GetKey(KeyCode.LeftControl);
-            float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
-            if (isholdingCtrl && scrollDelta != 0)
-            {
-                previousMoveSpeed = moveSpeed;
-                moveSpeed += scrollDelta * SPEED_CHANGE_RATE;
-                moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
-            }
-
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                moveSpeed = previousMoveSpeed * 2;
-            }
-            Debug.Log($"Current move speed: {moveSpeed}");
-        }
         void MoveCamera()
         {
             float inputX = InControlSingleton.Instance.playerActions.Move.X;
@@ -101,6 +86,27 @@ namespace FS_LevelEditor.Editor
                 transform.forward * inputZ * moveSpeed * Time.deltaTime;
 
             transform.position += toMove;
+        }
+        void ManageMoveSpeed()
+        {
+            float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
+            if (Input.GetKey(KeyCode.LeftControl) && scrollDelta != 0 && !Input.GetKey(KeyCode.LeftShift))
+            {
+                moveSpeed += scrollDelta * SPEED_CHANGE_RATE;
+                moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
+                Logger.DebugLog("New move speed: " + moveSpeed);
+            }
+
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                moveSpeedWhenShiftPressed = moveSpeed;
+                moveSpeed = moveSpeedWhenShiftPressed * 2;
+            }
+            if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                moveSpeed = moveSpeedWhenShiftPressed;
+                moveSpeedWhenShiftPressed = 0;
+            }
         }
 
         void MoveCameraWithMouseDrag()
@@ -111,14 +117,15 @@ namespace FS_LevelEditor.Editor
                 return;
             }
 
-            if (Input.GetAxis("Mouse ScrollWhell") > 0)
+            float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
+            if (scrollDelta > 0)
             {
-                dragSpeed++;
+                dragSpeed += 0.05f;
                 Logger.DebugLog("New drag speed: " + dragSpeed);
             }
-            else if (Input.GetAxis("Mouse ScrollWhell") < 0)
+            else if (scrollDelta < 0)
             {
-                dragSpeed--;
+                dragSpeed -= 0.05f;
                 Logger.DebugLog("New drag speed: " + dragSpeed);
             }
 
