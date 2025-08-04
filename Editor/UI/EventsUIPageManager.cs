@@ -49,13 +49,16 @@ namespace FS_LevelEditor.Editor.UI
 
         GameObject currentActiveObjectPanel;
 
-        #region Object Panels Related
-        GameObject defaultObjectsSettings;
-        bool defaultSettingsExpanded = false;
-        UIDropdownPatcher spawnOptionsDropdown;
-        UIDropdownPatcher colliderStateDropdown;
         UIButtonPatcher expandDefaultOptionsButton;
         UISprite expandDefaultOptionsButtonSprite;
+
+        #region Object Panels Related
+        GameObject defaultObjectsSettings;
+        UIDropdownPatcher spawnOptionsDropdown;
+        UIDropdownPatcher colliderStateDropdown;
+        //-----------------------------------
+        GameObject globalObjectsSettings;
+        bool globalOptionsExpanded = false;
         UIToggle startMovingObjectToggle;
         //-----------------------------------
         GameObject sawObjectsSettings;
@@ -142,6 +145,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateSelectTargetObjectButton();
 
                 Instance.CreateDefaultObjectSettings();
+                Instance.CreateGlobalObjectsSettings();
                 Instance.CreateSawObjectSettings();
                 Instance.CreatePlayerSettings();
                 Instance.CreateCubeObjectSettings();
@@ -1249,7 +1253,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentActiveObjectPanel = doorObjectsSettings;
                 }
 
-                if (currentActiveObjectPanel && !defaultSettingsExpanded) currentActiveObjectPanel.SetActive(true);
+                if (currentActiveObjectPanel && !globalOptionsExpanded) currentActiveObjectPanel.SetActive(true);
             }
             else
             {
@@ -1288,18 +1292,9 @@ namespace FS_LevelEditor.Editor.UI
             defaultObjectsSettings.transform.localScale = Vector3.one;
             defaultObjectsSettings.SetActive(false);
 
-            UIPanel panel = defaultObjectsSettings.AddComponent<UIPanel>();
-            panel.clipping = UIDrawCall.Clipping.SoftClip;
-            panel.baseClipRegion = new Vector4(0, 120, 800, 100);
-            panel.depth = 3;
-
-            defaultObjectsSettings.layer = LayerMask.NameToLayer("2D GUI");
-
             CreateSpawnOptionsDropdown();
             CreateColliderStateDropdown();
             CreateExpandDefaultOptionsButton();
-            CreateDefaultObjectsTitleLabel();
-            CreateStartMovingObjectToggle();
         }
         void CreateSpawnOptionsDropdown()
         {
@@ -1340,11 +1335,23 @@ namespace FS_LevelEditor.Editor.UI
 
             expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, -1, 1); // Default.
         }
-        void CreateDefaultObjectsTitleLabel()
+        // -----------------------------------------
+        void CreateGlobalObjectsSettings()
+        {
+            globalObjectsSettings = new GameObject("Global");
+            globalObjectsSettings.transform.parent = eventOptionsParent.transform;
+            globalObjectsSettings.transform.localPosition = Vector3.zero;
+            globalObjectsSettings.transform.localScale = Vector3.one;
+            globalObjectsSettings.SetActive(false);
+
+            CreateGlobalObjectsTitleLabel();
+            CreateStartMovingObjectToggle();
+        }
+        void CreateGlobalObjectsTitleLabel()
         {
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
-            GameObject titleLabel = Instantiate(labelTemplate, defaultObjectsSettings.transform);
+            GameObject titleLabel = Instantiate(labelTemplate, globalObjectsSettings.transform);
             titleLabel.name = "TitleLabel";
             titleLabel.transform.localScale = Vector3.one;
 
@@ -1356,14 +1363,14 @@ namespace FS_LevelEditor.Editor.UI
             label.height = 40;
             label.width = 700;
             label.fontSize = 35;
-            label.text = "MORE GLOBAL OPTIONS";
+            label.text = "GLOBAL OPTIONS";
 
             // Change the label position AFTER changing the pivot.
             titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
         }
         void CreateStartMovingObjectToggle()
         {
-            GameObject toggle = NGUI_Utils.CreateToggle(defaultObjectsSettings.transform, new Vector3(-150f, -50f, 0f),
+            GameObject toggle = NGUI_Utils.CreateToggle(globalObjectsSettings.transform, new Vector3(-150f, -50f, 0f),
                 new Vector3Int(250, 48, 1), "Start Moving Object");
             toggle.name = "StartMovingObjectToggle";
             startMovingObjectToggle = toggle.GetComponent<UIToggle>();
@@ -2030,22 +2037,23 @@ namespace FS_LevelEditor.Editor.UI
         }
         void OnExpandDefaultOptionsButtonClicked()
         {
-            defaultSettingsExpanded = !defaultSettingsExpanded;
+            globalOptionsExpanded = !globalOptionsExpanded;
 
-            if (defaultSettingsExpanded)
+            if (globalOptionsExpanded)
             {
-                defaultObjectsSettings.GetComponent<UIPanel>().baseClipRegion = new Vector4(0, -80, 800, 500);
+                globalObjectsSettings.SetActive(true);
                 if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(false);
             }
             else
             {
-                defaultObjectsSettings.GetComponent<UIPanel>().baseClipRegion = new Vector4(0, 120, 800, 100);
+                globalObjectsSettings.SetActive(false);
                 if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(true);
             }
 
             // Change the scale of the button sprite so it seems inverted or no.
-            expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, defaultSettingsExpanded ? 1 : -1, 1);
+            expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, globalOptionsExpanded ? 1 : -1, 1);
         }
+        // -----------------------------------------
         void OnStartMovingObjectToggleChanged()
         {
             currentSelectedEvent.moveObject = startMovingObjectToggle.isChecked;
