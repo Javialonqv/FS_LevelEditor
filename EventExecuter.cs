@@ -266,6 +266,10 @@ namespace FS_LevelEditor
                         }
                         break;
                 }
+                if (@event.moveObject && targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))
+                {
+                    waypointSupport.StartObjectMovement();
+                }
 
                 if (targetObj is LE_Saw)
                 {

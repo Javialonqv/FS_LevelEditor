@@ -56,6 +56,7 @@ namespace FS_LevelEditor.Editor.UI
         UIDropdownPatcher colliderStateDropdown;
         UIButtonPatcher expandDefaultOptionsButton;
         UISprite expandDefaultOptionsButtonSprite;
+        UIToggle startMovingObjectToggle;
         //-----------------------------------
         GameObject sawObjectsSettings;
         UIButtonMultiple sawStateButton;
@@ -1117,6 +1118,7 @@ namespace FS_LevelEditor.Editor.UI
 
             spawnOptionsDropdown.SelectOption((int)currentSelectedEvent.spawn);
             colliderStateDropdown.SelectOption((int)currentSelectedEvent.colliderState);
+            startMovingObjectToggle.Set(currentSelectedEvent.moveObject);
             sawStateButton.SelectOption((int)currentSelectedEvent.sawState);
             zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
@@ -1297,6 +1299,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateColliderStateDropdown();
             CreateExpandDefaultOptionsButton();
             CreateDefaultObjectsTitleLabel();
+            CreateStartMovingObjectToggle();
         }
         void CreateSpawnOptionsDropdown()
         {
@@ -1357,6 +1360,15 @@ namespace FS_LevelEditor.Editor.UI
 
             // Change the label position AFTER changing the pivot.
             titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+        void CreateStartMovingObjectToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(defaultObjectsSettings.transform, new Vector3(-150f, -50f, 0f),
+                new Vector3Int(250, 48, 1), "Start Moving Object");
+            toggle.name = "StartMovingObjectToggle";
+            startMovingObjectToggle = toggle.GetComponent<UIToggle>();
+            startMovingObjectToggle.onChange.Clear();
+            startMovingObjectToggle.onChange.Add(new EventDelegate(this, nameof(OnStartMovingObjectToggleChanged)));
         }
         // -----------------------------------------
         void CreateSawObjectSettings()
@@ -2034,6 +2046,10 @@ namespace FS_LevelEditor.Editor.UI
             // Change the scale of the button sprite so it seems inverted or no.
             expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, defaultSettingsExpanded ? 1 : -1, 1);
         }
+        void OnStartMovingObjectToggleChanged()
+        {
+            currentSelectedEvent.moveObject = startMovingObjectToggle.isChecked;
+        }
         // -----------------------------------------
         void OnSawStateDropdownChanged()
         {
@@ -2263,6 +2279,7 @@ public class LE_Event
     public SpawnState spawn { get; set; } = SpawnState.Toggle;
     public enum ColliderState { Do_Nothing, Enable, Disable, Toggle }
     public ColliderState colliderState { get; set; } = ColliderState.Do_Nothing;
+    public bool moveObject { get; set; } = false;
 
     #region Saw Options
     public enum SawState { Do_Nothing, Activate, Deactivate, Toggle_State }
