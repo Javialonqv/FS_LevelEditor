@@ -172,7 +172,6 @@ namespace FS_LevelEditor
             {
                 if (value is List<WaypointData>)
                 {
-                    // Set the list and AFTER all of the other attributes are set, THEN create the waypoints OnInstantiated().
                     properties["waypoints"] = value;
                 }
             }

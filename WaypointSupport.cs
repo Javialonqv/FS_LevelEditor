@@ -18,6 +18,8 @@ namespace FS_LevelEditor
     public class WaypointData
     {
         public Vector3Serializable position { get; set; }
+        public Vector3Serializable rotation { get; set; }
+
         [JsonConverter(typeof(LEPropertiesConverterNew))]
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
     }
@@ -109,6 +111,7 @@ namespace FS_LevelEditor
                 LE_Waypoint createdWaypoint = AddWaypoint(true);
 
                 createdWaypoint.transform.localPosition = waypointData.position;
+                createdWaypoint.transform.localEulerAngles = waypointData.rotation;
                 foreach (var property in waypointData.properties)
                 {
                     createdWaypoint.SetProperty(property.Key, property.Value);
@@ -123,6 +126,7 @@ namespace FS_LevelEditor
             WaypointData firstWaypoint = new WaypointData();
             // Waypoints positions are relative to the main object position, Vector3.zero means the waypoint will be in the same positions as the main object.
             firstWaypoint.position = Vector3.zero;
+            firstWaypoint.rotation = Vector3.zero;
 
             originalList.Insert(0, firstWaypoint);
         }
@@ -131,6 +135,7 @@ namespace FS_LevelEditor
             WaypointData finalWaypoint = new WaypointData();
             // Waypoints positions are relative to the main object position, Vector3.zero means the waypoint will be in the same positions as the main object.
             finalWaypoint.position = Vector3.zero;
+            finalWaypoint.rotation = Vector3.zero;
 
             originalList.Add(finalWaypoint);
         }
@@ -140,6 +145,7 @@ namespace FS_LevelEditor
             {
                 WaypointData data = new WaypointData();
                 data.position = originalList[i].position;
+                data.rotation = originalList[i].rotation;
                 foreach (var property in originalList[i].properties) data.properties[property.Key] = property.Value;
 
                 originalList.Add(data);
@@ -150,6 +156,7 @@ namespace FS_LevelEditor
                 // Create the last waypoint so the object goes to its original position.
                 WaypointData lastWaypoint = new WaypointData();
                 lastWaypoint.position = Vector3.zero;
+                lastWaypoint.rotation = Vector3.zero;
                 originalList.Add(lastWaypoint);
             }
         }

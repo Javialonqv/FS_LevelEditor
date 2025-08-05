@@ -94,6 +94,7 @@ namespace FS_LevelEditor
             // Refresh the WaypointData... data...
 
             attachedData.position = transform.localPosition;
+            attachedData.rotation = transform.localEulerAngles;
             attachedData.properties = properties;
         }
 
