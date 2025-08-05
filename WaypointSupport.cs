@@ -200,7 +200,8 @@ namespace FS_LevelEditor
                 Vector3 distance = cachedWaypointPositions[i] - transform.position;
                 float duration = distance.magnitude / targetObject.movingSpeed;
 
-                TweenPosition.Begin(gameObject, duration, cachedWaypointPositions[i]);
+                TweenPosition tween = TweenPosition.Begin(gameObject, duration, cachedWaypointPositions[i]);
+                tween.ignoreTimeScale = false; // Avoid object moving while the game's paused.
                 yield return new WaitForSeconds(duration);
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
