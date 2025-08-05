@@ -996,7 +996,11 @@ namespace FS_LevelEditor.Editor
         void InstanceObjectInThePreviewObjectPos()
         {
             levelHasBeenModified = true;
-            PlaceObject(currentObjectToBuildType, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, Vector3.one, true);
+
+            // ONly set the "default object scale" when placing it.
+            Vector3 objScale = LE_Object.defaultScalesForObjects.ContainsKey(currentObjectToBuildType) ?
+                LE_Object.defaultScalesForObjects[currentObjectToBuildType] : Vector3.one;
+            PlaceObject(currentObjectToBuildType, previewObjectToBuildObj.transform.localPosition, previewObjectToBuildObj.transform.localEulerAngles, objScale, true);
 
             // About the scale being fixed to 1... you can't change the scale of the PREVIEW object, so...
         }

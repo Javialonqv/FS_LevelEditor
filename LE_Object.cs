@@ -112,9 +112,14 @@ namespace FS_LevelEditor
                 } }
         };
 
-        public readonly Dictionary<ObjectType, Type> customWaypointSupports = new Dictionary<ObjectType, Type>()
+        public readonly static Dictionary<ObjectType, Type> customWaypointSupports = new Dictionary<ObjectType, Type>()
         {
             { ObjectType.SAW, typeof(SawWaypointSupport) }
+        };
+        public readonly static Dictionary<ObjectType?, Vector3> defaultScalesForObjects = new Dictionary<ObjectType?, Vector3>()
+        {
+            { ObjectType.TRIGGER, new Vector3(3.8f, 3.8f, 0.01f) },
+            { ObjectType.DOOR, new Vector3(1f, 1.05f, 1f) }
         };
 
         public static Dictionary<ObjectType, int> alreadyUsedObjectIDs = new Dictionary<ObjectType, int>();
