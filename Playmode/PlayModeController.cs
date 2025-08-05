@@ -114,7 +114,7 @@ namespace FS_LevelEditor.Playmode
         {
             TeleportPlayer();
             ConfigureGlobalProperties();
-            MelonCoroutines.Start(SetupEnvCam()); 
+            MelonCoroutines.Start(SetupEnvCam());
             UnloadBundle();
         }
 
@@ -308,7 +308,7 @@ namespace FS_LevelEditor.Playmode
             // Now EnvCam exists, configure it
             var camera = envCam.GetComponent<Camera>();
             camera.useOcclusionCulling = false;
-            camera.farClipPlane = 1000f;
+            camera.farClipPlane = 200f;
         }
 
         void OnDestroy()
