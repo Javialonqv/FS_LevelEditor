@@ -96,7 +96,7 @@ namespace FS_LevelEditor
             {
                 if (needsEmptyWaypointAtStart) CreateFirstWaypointEver(waypoints);
 
-                switch (targetObject.waypointMode)
+                switch (GetWaypointMode())
                 {
                     case WaypointMode.LOOP: CreateLoopWaypoint(waypoints); break;
                     case WaypointMode.TRAVEL_BACK: CreateTravelBackWaypoints(waypoints); break;
@@ -212,6 +212,10 @@ namespace FS_LevelEditor
         public virtual void SetupForCustomSystem()
         {
 
+        }
+        public virtual WaypointMode GetWaypointMode()
+        {
+            return targetObject.waypointMode;
         }
 
         void Update()

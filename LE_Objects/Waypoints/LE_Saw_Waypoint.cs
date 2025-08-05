@@ -26,7 +26,15 @@ namespace FS_LevelEditor
             Waypoint script = gameObject.AddComponent<Waypoint>();
 
             script.speedMultiplier = 1f;
-            script.waitHere = isFirstWayponint ? mainSupport.targetObject.GetProperty<float>("WaitTime") : GetProperty<float>("WaitTime");
+            if (isLastWaypoint && mainSupport.GetWaypointMode() == WaypointMode.NONE)
+            {
+                script.waitHere = -1;
+            }
+            else
+            {
+                script.waitHere = isFirstWaypoint ? mainSupport.targetObject.GetProperty<float>("WaitTime") : GetProperty<float>("WaitTime");
+            }
+
             if (nextWaypoint)
             {
                 script.nextWaypoint = nextWaypoint.gameObject;

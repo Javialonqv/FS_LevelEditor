@@ -80,7 +80,7 @@
 		<Compile Include="LE_Objects\LE_Directional_Light.cs" />
 		<Compile Include="LE_Objects\LE_Pressure_Plate.cs" />
 		<Compile Include="LE_Objects\LE_Saw.cs" />
-		<Compile Include="LE_Objects\LE_Saw_Waypoint.cs" />
+		<Compile Include="LE_Objects\Waypoints\LE_Saw_Waypoint.cs" />
 		<Compile Include="LE_Objects\LE_Screen.cs" />
 		<Compile Include="LE_Objects\LE_Switch.cs" />
 		<Compile Include="LE_Objects\LE_Vent_With_Smoke_Green.cs" />

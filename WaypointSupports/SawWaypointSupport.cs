@@ -26,5 +26,21 @@ namespace FS_LevelEditor.WaypointSupports
             sawScript.currentWaypointScript = spawnedWaypoints[0].GetComponent<Waypoint>();
             sawScript.movingSaw = true;
         }
+
+        public override WaypointMode GetWaypointMode()
+        {
+            LE_Saw saw = GetComponent<LE_Saw>();
+
+            if (saw.GetProperty<bool>("TravelBack") && !saw.GetProperty<bool>("Loop"))
+            {
+                return WaypointMode.TRAVEL_BACK;
+            }
+            else if (!saw.GetProperty<bool>("TravelBack") && saw.GetProperty<bool>("Loop"))
+            {
+                return WaypointMode.LOOP;
+            }
+
+            return WaypointMode.NONE;
+        }
     }
 }

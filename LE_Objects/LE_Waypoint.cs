@@ -20,7 +20,8 @@ namespace FS_LevelEditor
         public override Transform objectParent => mainSupport.waypointsParent;
 
         public int waypointIndex;
-        public bool isFirstWayponint => waypointIndex == 0;
+        public bool isFirstWaypoint => waypointIndex == 0;
+        public bool isLastWaypoint => waypointIndex == mainSupport.targetWaypointsData.Count - 1;
 
         bool alreadyCalledAwake = false;
         internal void Awake()
