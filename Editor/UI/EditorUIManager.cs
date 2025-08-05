@@ -43,6 +43,8 @@ namespace FS_LevelEditor.Editor.UI
         Coroutine savingLevelLabelRoutine;
 
         public UILabel currentModeLabel;
+        GameObject modeNavigationPanel;
+        UIButtonPatcher previousButtonObj, nextButtonObj;
 
         public GameObject helpPanel;
 
@@ -103,7 +105,7 @@ namespace FS_LevelEditor.Editor.UI
             SelectedObjPanel.Create(editorUIParent.transform);
             GlobalPropertiesPanel.Create(editorUIParent.transform);
             CreateSavingLevelLabel();
-            CreateCurrentModeLabel();
+            CreateModeNavigationPanel();
             CreateHelpPanel();
 
             EventsUIPageManager.Create();
@@ -170,19 +172,62 @@ namespace FS_LevelEditor.Editor.UI
             }
         }
 
-        void CreateCurrentModeLabel()
+
+        void CreateModeNavigationPanel()
         {
-            // DO NOT create UILocalize for this label, since its text is dynamic and changes depending on the current mode.
-            currentModeLabel = NGUI_Utils.CreateLabel(editorUIParent.transform, new Vector3(925, -500), new Vector3Int(500, 50, 0), "Current Mode:", NGUIText.Alignment.Right,
-                UIWidget.Pivot.Right);
+            // Create the main panel container at the original label position
+            modeNavigationPanel = new GameObject("ModeNavigationPanel");
+            modeNavigationPanel.transform.parent = editorUIParent.transform;
+            modeNavigationPanel.transform.localPosition = new Vector3(800, -500, 0); // Moved left to accommodate buttons
+            modeNavigationPanel.transform.localScale = Vector3.one;
+
+            previousButtonObj = NGUI_Utils.CreateButton(modeNavigationPanel.transform, new Vector3(-160, 0), new Vector3Int(50, 50, 1), "<");
+            previousButtonObj.gameObject.RemoveComponent<UIButtonScale>();
+            previousButtonObj.buttonSprite.depth = 1;
+            previousButtonObj.onClick += SwitchToPreviousMode;
+
+            // Create the current mode label (center) - using original alignment and pivot
+            currentModeLabel = NGUI_Utils.CreateLabel(modeNavigationPanel.transform, new Vector3(-35, 0, 0), new Vector3Int(400, 50, 0), "", NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center);
             currentModeLabel.fontSize = 35;
             SetCurrentModeLabelText(EditorController.Mode.Building);
 
-            currentModeLabel.gameObject.SetActive(true);
+            nextButtonObj = NGUI_Utils.CreateButton(modeNavigationPanel.transform, new Vector3(90, 0), new Vector3Int(50, 50, 1), ">");
+            nextButtonObj.gameObject.RemoveComponent<UIButtonScale>();
+            nextButtonObj.buttonSprite.depth = 1;
+            nextButtonObj.onClick += SwitchToNextMode;
+
+            modeNavigationPanel.SetActive(true);
+        }
+
+        void SwitchToPreviousMode()
+        {
+            EditorController.Mode currentMode = EditorController.Instance.currentMode;
+            EditorController.Mode[] modes = (EditorController.Mode[])Enum.GetValues(typeof(EditorController.Mode));
+
+            int currentIndex = Array.IndexOf(modes, currentMode);
+            int previousIndex = (currentIndex - 1 + modes.Length) % modes.Length;
+
+            EditorController.Instance.ChangeMode(modes[previousIndex]);
+            SetCurrentModeLabelText(modes[previousIndex]);
+
+        }
+
+        void SwitchToNextMode()
+        {
+            UnityEngine.Debug.Log("Switching next");
+            EditorController.Mode currentMode = EditorController.Instance.currentMode;
+            EditorController.Mode[] modes = (EditorController.Mode[])Enum.GetValues(typeof(EditorController.Mode));
+
+            int currentIndex = Array.IndexOf(modes, currentMode);
+            int nextIndex = (currentIndex + 1) % modes.Length;
+
+            EditorController.Instance.ChangeMode(modes[nextIndex]);
+            SetCurrentModeLabelText(modes[nextIndex]);
         }
         public void SetCurrentModeLabelText(EditorController.Mode mode)
         {
-            string text = Loc.Get("CurrentMode") + " " + Loc.Get(mode.ToString());
+            string text = Loc.Get(mode.ToString());
             currentModeLabel.text = text;
         }
 
@@ -533,6 +578,8 @@ namespace FS_LevelEditor.Editor.UI
             // Only when normal.
             SelectedObjPanel.Instance.gameObject.SetActive(context == EditorUIContext.NORMAL && EditorController.Instance.currentMode != EditorController.Mode.Building);
             currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
+            nextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
+            previousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
 
             previousUIContext = currentUIContext;
             currentUIContext = context;
