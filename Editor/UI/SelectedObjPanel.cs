@@ -1490,8 +1490,25 @@ namespace FS_LevelEditor.Editor.UI
             // This is to always enable one or the other, but NEVER both of the toggles, only one or the other.
             // To avoid bugs, only change the values when at least one of the bools is true.
 
-            if (travelBack && !loop) attributesPanels["Saw"].GetChildAt("TravelBack/Toggle").GetComponent<UIToggle>().Set(travelBack);
-            if (!travelBack && loop) attributesPanels["Saw"].GetChildAt("Loop/Toggle").GetComponent<UIToggle>().Set(loop);
+            var travelBackToggle = attributesPanels["Saw"].GetChildAt("TravelBack/Toggle").GetComponent<UIToggle>();
+            var loopToggle = attributesPanels["Saw"].GetChildAt("Loop/Toggle").GetComponent<UIToggle>();
+
+            if (travelBack && !loop)
+            {
+                travelBackToggle.Set(true);
+                if (loopToggle.isChecked) loopToggle.Set(false);
+
+                EditorController.Instance.currentSelectedObjComponent.SetProperty("TravelBack", true);
+                EditorController.Instance.currentSelectedObjComponent.SetProperty("Loop", false);
+            }
+            if (!travelBack && loop)
+            {
+                if (travelBackToggle.isChecked) travelBackToggle.Set(false);
+                loopToggle.Set(true);
+
+                EditorController.Instance.currentSelectedObjComponent.SetProperty("TravelBack", false);
+                EditorController.Instance.currentSelectedObjComponent.SetProperty("Loop", true);
+            }
         }
         void OnDoorAutoChecked(bool newState)
         {
