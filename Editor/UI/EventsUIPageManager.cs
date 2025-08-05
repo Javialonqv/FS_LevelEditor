@@ -2348,6 +2348,6 @@ public class LE_Event
 
     #region Door Options
     public enum DoorState { Do_Nothing, Closed, ClosedFast, Open, Toggle }
-    public DoorState doorState { get; set; }
+    public DoorState doorState { get; set; } = DoorState.Toggle;
     #endregion
 }
