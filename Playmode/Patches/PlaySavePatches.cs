@@ -15,29 +15,19 @@ namespace FS_LevelEditor.Playmode.Patches
     {
         public static bool Prefix(string _key)
         {
-            // Don't save when the user is ending the level in playmode.
-            if (PlayModeController.Instance && PlayModeController.Instance.endTriggerReached)
+            if (PlayModeController.Instance)
             {
-                // Allow saving time even when ending level
-                if (_key.EndsWith("_Time"))
+                // Don't save when the user is ending the level in playmode.
+                if (PlayModeController.Instance.endTriggerReached)
                 {
-                    return true;
+                    // Allow saving time even when ending level
+                    if (_key.EndsWith("_Time"))
+                    {
+                        return true;
+                    }
                 }
-                return false;
-            }
 
-            // Don't save the current level when you're loading playmode (which will be Chapter 4).
-            if (PlayModeController.Instance || Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
-            {
-                // Allow saving time even when ending level
-                if (_key.EndsWith("_Time"))
-                {
-                    return true;
-                }
-                if (_key == "Current_Level")
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
@@ -90,39 +80,10 @@ namespace FS_LevelEditor.Playmode.Patches
     {
         public static void Postfix(FractalSave __instance, string _new)
         {
-            bool isForQuickSave = _new.Contains("QuickSave");
-            if (PlayModeController.Instance && isForQuickSave)
-            {
-                __instance.m_saveFileName = "CustomLevel_QuickSave.dat";
-            }
-        }
-    }
-    [HarmonyPatch(typeof(FractalSave), nameof(FractalSave.HasQuickSaveFile))]
-    public static class QuickSaveFileExistsPath
-    {
-        public static bool Prefix(ref bool __result)
-        {
             if (PlayModeController.Instance)
             {
-                string customLevelQuickSaveFilePath = Path.Combine(FractalSave.saveFileFolderPath, "CustomLevel_QuickSave.dat");
-                __result = File.Exists(customLevelQuickSaveFilePath);
-                return false;
+                __instance.m_saveFileName = $"{PlayModeController.Instance.levelName}.dat";
             }
-            return true;
-        }
-    }
-    [HarmonyPatch(typeof(FractalSave), nameof(FractalSave.QuickSaveFileHasLevelInformation))]
-    public static class QuickSaveFileExistsPath2
-    {
-        public static bool Prefix(ref bool __result)
-        {
-            if (PlayModeController.Instance)
-            {
-                string customLevelQuickSaveFilePath = Path.Combine(FractalSave.saveFileFolderPath, "CustomLevel_QuickSave.dat");
-                __result = File.Exists(customLevelQuickSaveFilePath);
-                return false;
-            }
-            return true;
         }
     }
 }
