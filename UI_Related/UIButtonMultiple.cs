@@ -47,7 +47,7 @@ namespace FS_LevelEditor.UI_Related
             titleLocKey = newTitle;
 
             // Doesn't matter if the title is not a valid key.
-            titleLabel.text = Loc.Get(newTitle);
+            titleLabel.text = Loc.Get(newTitle, false);
         }
 
         public void ClearOptions()
@@ -102,7 +102,7 @@ namespace FS_LevelEditor.UI_Related
 
         public void RefreshLocalization()
         {
-            titleLabel.text = Loc.Get(titleLocKey);
+            titleLabel.text = Loc.Get(titleLocKey, false);
 
             currentOptionLabel.text = onLocalize(currentSelectedID);
         }
