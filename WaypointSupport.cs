@@ -62,6 +62,7 @@ namespace FS_LevelEditor
             waypointsParent = new GameObject("Waypoints").transform;
             waypointsParent.parent = targetObject.transform;
             waypointsParent.localPosition = Vector3.zero;
+            waypointsParent.localEulerAngles = Vector3.zero;
             waypointsParent.localScale = Vector3.one;
             if (EditorController.Instance)
             {
