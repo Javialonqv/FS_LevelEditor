@@ -31,7 +31,7 @@ namespace FS_LevelEditor.Editor.UI
         UIButtonPatcher thirdEventsListButton;
         UILabel oneEventTypeLabel;
 
-        const int eventsPerPage = 6;
+        const int EVENTS_PER_PAGE = 6;
         GameObject eventsListBg;
         GameObject eventsListsParent;
         List<GameObject> eventsPagesList = new List<GameObject>();
@@ -588,7 +588,7 @@ namespace FS_LevelEditor.Editor.UI
             eventsPagesList.Clear();
 
             List<LE_Event> events = GetEventsList(listID);
-            int eventsGridCount = Mathf.CeilToInt((float)events.Count / eventsPerPage);
+            int eventsGridCount = Mathf.CeilToInt((float)events.Count / EVENTS_PER_PAGE);
 
             for (int i = 0; i < eventsGridCount; i++)
             {
@@ -631,8 +631,8 @@ namespace FS_LevelEditor.Editor.UI
             #endregion
 
             List<LE_Event> events = GetEventsList();
-            int startIndex = gridID * eventsPerPage;
-            int eventsCount = Mathf.Clamp(events.Count - (gridID * eventsPerPage), 0, 6);
+            int startIndex = gridID * EVENTS_PER_PAGE;
+            int eventsCount = Mathf.Clamp(events.Count - (gridID * EVENTS_PER_PAGE), 0, 6);
             events = events.GetRange(startIndex, eventsCount);
 
             if (events.Count == 0) // In case the page is empty... destroy it and create the page BEFORE it :)
@@ -725,9 +725,9 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateEventsPageForEventOfID(int eventID, bool showPage = true)
         {
-            if ((eventID / eventsPerPage) != currentEventsPage)
+            if ((eventID / EVENTS_PER_PAGE) != currentEventsPage)
             {
-                CreateEventsPage((eventID / eventsPerPage), showPage);
+                CreateEventsPage((eventID / EVENTS_PER_PAGE), showPage);
             }
             else
             {
@@ -821,7 +821,7 @@ namespace FS_LevelEditor.Editor.UI
                 // Set the color of the NEW selected button.
                 //GameObject[] test2 = eventsPagesList[currentSelectedEventID / eventsPerPage].GetChilds();
                 //Transform test = eventsPagesList[currentSelectedEventID / eventsPerPage].transform.GetChild(currentSelectedEventID % eventsPerPage);
-                currentSelectedEventButton = eventsPagesList[currentSelectedEventID / eventsPerPage].transform.GetChild(currentSelectedEventID % eventsPerPage).
+                currentSelectedEventButton = eventsPagesList[currentSelectedEventID / EVENTS_PER_PAGE].transform.GetChild(currentSelectedEventID % EVENTS_PER_PAGE).
                     GetChild(0).GetComponent<UIButton>();
                 currentSelectedEventButton.defaultColor = new Color(0f, 0.6f, 0f, 1f);
                 currentSelectedEventButton.hover = new Color(0.016f, 0.831f, 0f, 1f);
@@ -1031,17 +1031,17 @@ namespace FS_LevelEditor.Editor.UI
 
         int GetPageIDForEvent(int eventID)
         {
-            return eventID / eventsPerPage;
+            return eventID / EVENTS_PER_PAGE;
         }
         int GetEventsPagesCountForCurrentListID()
         {
             List<LE_Event> events = GetEventsList();
-            return Mathf.CeilToInt((float)events.Count / eventsPerPage);
+            return Mathf.CeilToInt((float)events.Count / EVENTS_PER_PAGE);
         }
         int GetEventsCountForPage(int pageID)
         {
             List<LE_Event> events = GetEventsList();
-            int eventsCount = Mathf.Clamp(events.Count - (pageID * eventsPerPage), 0, 6);
+            int eventsCount = Mathf.Clamp(events.Count - (pageID * EVENTS_PER_PAGE), 0, 6);
             return eventsCount;
         }
         #endregion
