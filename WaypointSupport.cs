@@ -137,6 +137,7 @@ namespace FS_LevelEditor
             // Waypoints positions are relative to the main object position, Vector3.zero means the waypoint will be in the same positions as the main object.
             finalWaypoint.position = Vector3.zero;
             finalWaypoint.rotation = Vector3.zero;
+            finalWaypoint.properties["WaitTime"] = targetObject.startDelay;
 
             originalList.Add(finalWaypoint);
         }
@@ -158,6 +159,7 @@ namespace FS_LevelEditor
                 WaypointData lastWaypoint = new WaypointData();
                 lastWaypoint.position = Vector3.zero;
                 lastWaypoint.rotation = Vector3.zero;
+                lastWaypoint.properties["WaitTime"] = targetObject.startDelay;
                 originalList.Add(lastWaypoint);
             }
         }
