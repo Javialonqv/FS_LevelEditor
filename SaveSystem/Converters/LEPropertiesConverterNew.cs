@@ -83,6 +83,11 @@ namespace FS_LevelEditor.SaveSystem.Converters
         {
             try
             {
+                if (SavePatches.IsOldSawWaypointsSave(rawValue, out var convertedWaypoints))
+                {
+                    return convertedWaypoints;
+                }
+
                 // The properties only contain the ORIGINAL type, but what if the save data contains info about an object with a custom serialization type?
                 Type typeToDeserealize = SavePatches.ConvertTypeToSerializedObjectType(type);
                 return JsonSerializer.Deserialize(rawValue.GetRawText(), typeToDeserealize);

@@ -153,5 +153,37 @@ namespace FS_LevelEditor.SaveSystem
                 obj.properties = newProperties;
             }
         }
+
+        public static bool IsOldSawWaypointsSave(JsonElement element, out List<WaypointData> converted)
+        {
+            converted = null;
+
+            if (element.ValueKind == JsonValueKind.Array)
+            {
+                if (!element[0].TryGetProperty("waypointPosition", out var test)) return false;
+
+                converted = new List<WaypointData>();
+
+                // In the old system, there was an empty waypoint at the start, in the new one, there isn't, so skip the first one since it's useless.
+                for (int i = 1; i < element.EnumerateArray().Count(); i++)
+                {
+                    var item = element[i];
+                    WaypointData data = new WaypointData();
+
+                    if (item.TryGetProperty("waypointPosition", out JsonElement pos))
+                    {
+                        data.position = pos.Deserialize<Vector3Serializable>();
+                    }
+                    else if (item.TryGetProperty("waypointRotation", out JsonElement rot))
+                    {
+                        data.position = rot.Deserialize<Vector3Serializable>();
+                    }
+
+                    converted.Add(data);
+                }
+            }
+
+            return converted != null;
+        }
     }
 }
