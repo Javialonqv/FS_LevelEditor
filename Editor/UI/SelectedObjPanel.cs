@@ -373,7 +373,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateAddWaypointButton()
         {
-            addWaypointButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, -115), new Vector3Int(480, 50, 0), "AddWaypoint");
+            addWaypointButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, -115), new Vector3Int(480, 50, 0), "AddGlobalWaypoint");
             addWaypointButton.name = "AddWaypointButton";
             addWaypointButton.onClick += AddWaypointForObject;
         }
@@ -519,7 +519,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
             CreateObjectAttribute("TravelBack", AttributeType.TOGGLE, true, null, "TravelBack", tooltip: "TravelBackTooltip");
             CreateObjectAttribute("Loop", AttributeType.TOGGLE, false, null, "Loop", tooltip: "LoopTooltip");
-            CreateObjectAttribute("AddWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+            CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
             CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
             CreateObjectAttribute("Rotate", AttributeType.TOGGLE, false, null, "Rotate");
             CreateObjectAttribute("RotateSpeed", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "RotateSpeed");
@@ -537,7 +537,7 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentParentToCreateAttributes(sawWaypointAttributes);
 
             CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
-            CreateObjectAttribute("AddWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+            CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
             sawWaypointAttributes.SetActive(false);
             attributesPanels.Add("Saw Waypoint", sawWaypointAttributes);

@@ -72,7 +72,8 @@ Range,Range,Rango,Діапазон
 ActivateOnStart,Activate On Start,Activar Al Inicio,Активувати на старті
 Damage,Damage,Daño,Шкода
 TravelBack,Travel Back,Regresarse,Повернутись назад
-AddWaypoint,+ Add Waypoint,+ Añadir Waypoint,+ додати проміжну точку
+AddGlobalWaypoint,+ Add Global Waypoint,+ Añadir Waypoint Global,
+AddSawWaypoint,+ Add Saw Waypoint,+ Añadir Waypoint de Sierra,
 WaitTime,Wait Time,Tiempo de Espera,Час очікування
 InitialState,Initial State,Estado Inicial,Початковий стан
 DEACTIVATED,DEACTIVATED,DESACTIVADO,ДЕАКТИВОВАНИЙ
