@@ -446,18 +446,18 @@ namespace FS_LevelEditor
                 System.Diagnostics.Process.Start("explorer.exe", $"/root,\"{levelsPath}\"");
             }
         }
-        public void CreateLevelsList()
+        public void CreateLevelsList(int? desiredGridID = null)
         {
             Dictionary<string, LevelData> levels = LevelData.GetLevelsList();
             GameObject btnTemplate = NGUI_Utils.buttonTemplate;
-            currentLevelsGridID = 0;
 
-            // Manage correctly when the parent already exists or no, since the whole UI is on DontDestroyOnLoad :').
+            // Manage correctly when the parent already exists or not
             if (lvlButtonsParent == null)
             {
                 lvlButtonsParent = new GameObject("LevelButtons");
                 lvlButtonsParent.transform.parent = leMenuPanel.transform;
                 lvlButtonsParent.transform.localScale = Vector3.one;
+                currentLevelsGridID = 0; // Initialize only on first creation
             }
             else
             {
@@ -467,28 +467,33 @@ namespace FS_LevelEditor
 
             List<string> keys = new List<string>(levels.Keys);
 
+            // Adjust current grid ID based on desiredGridID or clamp existing value
+            if (desiredGridID.HasValue)
+            {
+                currentLevelsGridID = desiredGridID.Value;
+            }
+            currentLevelsGridID = Mathf.Clamp(currentLevelsGridID, 0, Mathf.Max(0, (keys.Count - 1) / 7)); // 7 levels per grid
+
             GameObject currentGrid = null;
-            for (int i = 0; i < levels.Count; i++)
+            for (int i = 0; i < keys.Count; i++)
             {
                 string levelFileNameWithoutExtension = keys[i];
                 LevelData data = levels[levelFileNameWithoutExtension];
 
-                if (i % 7 == 0 || i == 0) // Idk bro, this is literally copied from the OST mod LOL.
+                if (i % 7 == 0 || i == 0)
                 {
-                    // Create a grid.
-                    currentGrid = new GameObject($"Grid {(int)(i / 5)}");
+                    currentGrid = new GameObject($"Grid {(int)(i / 7)}");
                     currentGrid.transform.parent = lvlButtonsParent.transform;
                     currentGrid.transform.localPosition = new Vector3(0f, 170f, 0f);
                     currentGrid.transform.localScale = Vector3.one;
 
-                    // Add the UIGrid component, ofc.
                     UIGrid grid = currentGrid.AddComponent<UIGrid>();
                     grid.arrangement = UIGrid.Arrangement.Vertical;
                     grid.cellWidth = 1640f;
                     grid.cellHeight = 80f;
 
-                    if (i != 0) currentGrid.SetActive(false);
-
+                    // Initially set all grids inactive
+                    currentGrid.SetActive(false);
                     lvlButtonsGrids.Add(currentGrid);
                 }
 
@@ -628,6 +633,19 @@ namespace FS_LevelEditor
                     CreateNextListButton();
                 }
             }
+
+            // Activate the current grid if it exists
+            if (lvlButtonsGrids.Count > 0)
+            {
+                // If current grid is beyond available grids, go to last grid
+                if (currentLevelsGridID >= lvlButtonsGrids.Count)
+                {
+                    currentLevelsGridID = lvlButtonsGrids.Count - 1;
+                }
+                lvlButtonsGrids[currentLevelsGridID].SetActive(true);
+            }
+
+
             // Doesn't matter if the buttons don't exit yet, in that case, the function won't do anything.
             RefreshChangePageButtons();
         }
@@ -761,8 +779,11 @@ namespace FS_LevelEditor
         {
             OnDeletePopupBackButton();
 
+            int currentGridBeforeDelete = currentLevelsGridID;
             LevelData.DeleteLevel(levelFileNameWithoutExtension);
-            CreateLevelsList();
+
+            // Rebuild list staying on current page unless it's empty
+            CreateLevelsList(currentGridBeforeDelete);
         }
         void OnRenameLevelButtonClick(string levelFileNameWithoutExtension, GameObject lvlButtonLabelObj)
         {
