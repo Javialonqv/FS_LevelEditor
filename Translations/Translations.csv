@@ -41,6 +41,7 @@ object.DOOR,Door,Puerta,Двері
 object.LASER_FIELD,Laser Field,Campo Laser,Лазерне поле
 object.DOOR_V2,Door V2,Puerta V2,Двері V2
 object.DEATH_TRIGGER,Death Trigger,Trigger de Muerte,Трігер смерті
+object.WAYPOINT,Waypoint,Waypoint,
 Player,Player,Jugador,Гравець
 events.WhenActivatingEvents,When Activating,Cuando Se Activa,Коли активне
 events.WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva,Коли неактивне
