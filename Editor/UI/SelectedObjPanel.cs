@@ -385,6 +385,8 @@ namespace FS_LevelEditor.Editor.UI
             addWaypointButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "AddGlobalWaypoint");
             addWaypointButton.name = "AddWaypointButton";
             addWaypointButton.onClick += AddWaypointForObject;
+            addWaypointButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            addWaypointButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
 
             yPosForGlobalProps -= 50;
         }
