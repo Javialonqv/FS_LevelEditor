@@ -48,6 +48,8 @@
 		<Compile Include="LE_Objects\LE_Death_Trigger.cs" />
 		<Compile Include="LE_Objects\LE_Door.cs" />
 		<Compile Include="LE_Objects\LE_Door_V2.cs" />
+		<Compile Include="LE_Objects\LE_Gun.cs" />
+		<Compile Include="LE_Objects\LE_Jetpack.cs" />
 		<Compile Include="LE_Objects\LE_Laser_Field.cs" />
 		<Compile Include="LE_Objects\LE_Small_Screen.cs" />
 		<Compile Include="LE_Objects\LE_Trigger.cs" />

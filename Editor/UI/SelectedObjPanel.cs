@@ -473,6 +473,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateDeathTriggerAttributesPanel();
             CreateWaypointAttributesPanel();
             CreateLaserFieldAttributesPanel();
+            CreateTaserAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -795,6 +796,21 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("Invisible Edges", AttributeType.TOGGLE, false, null, "InvisibleEdges");
 
             attributesPanels.Add("Laser Field", laserFieldAttributes);
+        }
+        void CreateTaserAttributesPanel()
+        {
+            GameObject gun = new GameObject("Gun");
+            gun.transform.parent = objectSpecificPanelsParent;
+            gun.transform.localPosition = Vector3.zero;
+            gun.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(gun);
+
+            CreateObjectAttribute("InfiniteTaser", AttributeType.TOGGLE, false, null, "InfiniteTaser");
+            CreateObjectAttribute("Ammo", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Ammo");
+            CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
+
+            attributesPanels.Add("Gun", gun);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
