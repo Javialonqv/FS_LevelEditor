@@ -2092,12 +2092,12 @@ namespace FS_LevelEditor.Editor
             {
                 editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
                 targetObjs.ForEach(obj => obj.SetActive(true)); // Enable the objects again and then select them again.
-                targetObjs.ForEach(obj => obj.GetComponent<LE_Object>().isDeleted = false);
+                targetObjs.ForEach(obj => obj.GetComponent<LE_Object>().OnUndoDeletion());
                 editor.SetMultipleObjectsAsSelected(targetObjs, true);
             }
             else
             {
-                targetObj.GetComponent<LE_Object>().isDeleted = false;
+                targetObj.GetComponent<LE_Object>().OnUndoDeletion();
                 targetObj.SetActive(true);
                 editor.SetSelectedObj(targetObj);
             }

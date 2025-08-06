@@ -642,6 +642,16 @@ namespace FS_LevelEditor
                 }
             }
         }
+        public virtual void OnUndoDeletion()
+        {
+            if (!canUndoDeletion)
+            {
+                Logger.Error("Dunno how you were able to undo deletion for an object of name " + name + ", but please report it.");
+                return;
+            }
+
+            isDeleted = false;
+        }
         public virtual void BeforeSave()
         {
             if (waypointSupport) waypointSupport.BeforeSave();
