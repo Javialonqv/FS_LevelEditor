@@ -1270,6 +1270,16 @@ namespace FS_LevelEditor.Editor.UI
             {
                 EditorController.Instance.currentSelectedObjComponent.GetComponent<WaypointSupport>().AddWaypoint();
             }
+            else
+            {
+                List<GameObject> cachedSelectedObjects = new List<GameObject>(EditorController.Instance.currentSelectedObjects);
+                EditorController.Instance.SetMultipleObjectsAsSelected(null);
+
+                List<LE_Waypoint> createdWaypoints = new List<LE_Waypoint>();
+                cachedSelectedObjects.ForEach(obj => createdWaypoints.Add(obj.GetComponent<WaypointSupport>().AddWaypoint()));
+
+                EditorController.Instance.SetMultipleObjectsAsSelected(createdWaypoints.Select(waypoint => waypoint.gameObject).ToList());
+            }
         }
         public void SetStartMovingAtStart()
         {
@@ -1346,13 +1356,14 @@ namespace FS_LevelEditor.Editor.UI
             #endregion
 
             #region Add Waypoint Button
-            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.canHaveWaypoints)
+            if (EditorController.Instance.multipleObjectsSelected)
             {
-                addWaypointButton.gameObject.SetActive(true);
+                // Only enable the button when ALL of the selected objects allow waypoints.
+                addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjects.All(x => x.GetComponent<LE_Object>().canHaveWaypoints));
             }
             else
             {
-                addWaypointButton.gameObject.SetActive(false);
+                addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjComponent.canHaveWaypoints);
             }
             #endregion
 
