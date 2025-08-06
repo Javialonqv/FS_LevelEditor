@@ -339,15 +339,16 @@ namespace FS_LevelEditor
             }
             else // Just link the ALREADY EXISTING data to the created waypoint.
             {
-                if (EditorController.Instance)
-                {
-                    // Only in editor, in playmode it may be using travel back or loop modes which can break this, attachedData is for editor only.
-                    
-                }
                 waypointComp.attachedData = targetWaypointsData[spawnedWaypoints.Count - 1];
 
                 // Force the Awake() call when loading from save since it won't be called until the user selects the main object and the waypoints are enabled for the first time.
                 waypointComp.CallMethod("Awake");
+            }
+
+            if (EditorController.Instance)
+            {
+                // In the editor, the waypoints have a mesh, disable the colliders on the content object, so only EditorCollider works.
+                waypointComp.SetCollidersState(false);
             }
 
             Logger.DebugLog($"Created waypoint! ID: {waypointComp.objectID}.");

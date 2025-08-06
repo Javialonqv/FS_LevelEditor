@@ -756,11 +756,9 @@ namespace FS_LevelEditor
 
         public void SetCollidersState(bool newEnabledState)
         {
-            if (IsWaypoint(objectType.Value)) return;
-
             if (!gameObject.ExistsChild("Content"))
             {
-                Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
+                if (!IsWaypoint(objectType.Value)) Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
                 return;
             }
 
