@@ -105,6 +105,7 @@ namespace FS_LevelEditor.Editor
         // Misc?
         public DeathYPlaneCtrl deathYPlane;
         Camera MainCam;
+        public bool showAllWaypoints = false;
 
         public bool enteringPlayMode = false;
 
@@ -646,6 +647,38 @@ namespace FS_LevelEditor.Editor
             else if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 ChangeMode(Mode.Selection);
+            }
+
+            // Shortcut to show all waypoints.
+            if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                showAllWaypoints = !showAllWaypoints;
+                if (multipleObjectsSelected)
+                {
+                    foreach (var obj in currentInstantiatedObjects)
+                    {
+                        if (!obj.canHaveWaypoints || !obj.gameObject.active) continue;
+                        if (currentSelectedObjects.Contains(obj.gameObject)) continue;
+
+                        foreach (var support in obj.GetComponents<WaypointSupport>())
+                        {
+                            support.ShowWaypoints(showAllWaypoints);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var obj in currentInstantiatedObjects)
+                    {
+                        if (!obj.canHaveWaypoints || !obj.gameObject.active) continue;
+                        if (currentSelectedObj == obj.gameObject) continue;
+
+                        foreach (var support in obj.GetComponents<WaypointSupport>())
+                        {
+                            support.ShowWaypoints(showAllWaypoints);
+                        }
+                    }
+                }
             }
 
             // Shortcut for saving level data.

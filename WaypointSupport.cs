@@ -259,6 +259,8 @@ namespace FS_LevelEditor
         }
         public void OnDeselect()
         {
+            if (EditorController.Instance && EditorController.Instance.showAllWaypoints) return;
+
             ShowWaypoints(false);
         }
         public void BeforeSave()
