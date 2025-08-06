@@ -14,6 +14,7 @@ namespace FS_LevelEditor
         Gun gun;
         public static bool infTaser;
         public static int ammo;
+
         void Awake()
         {
             properties = new Dictionary<string, object>
@@ -23,15 +24,13 @@ namespace FS_LevelEditor
                 { "Ammo", 1 }
             };
         }
-        public override void OnInstantiated(LEScene scene)
-        {
-            base.OnInstantiated(scene);
-        }
+
         public override void InitComponent()
         {
             GameObject content = gameObject.GetChild("Content");
 
             content.SetActive(false);
+
             content.tag = "Gun";
             gun = content.AddComponent<Gun>();
             gun.aimStabilizerModule = new GameObject();
@@ -42,15 +41,17 @@ namespace FS_LevelEditor
             gun.battery1 = content.GetChildAt("Taser_PC/Battery/Battery1");
             gun.battery2 = new GameObject();
             gun.battery3 = new GameObject();
-            ConfigureEvents(gun);
             infTaser = (bool)properties["InfiniteTaser"];
             ammo = (int)properties["Ammo"];
+            ConfigureEvents(gun);
 
-            //setuo layers
+            // --------- SETUP TAGS & LAYERS ---------
+
             content.GetChildAt("Taser_PC/PhysicsCollider").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
             content.GetChildAt("Taser_PC/PhysicsCollider/PhysicsCollider_Box").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
 
             content.SetActive(true);
+
             initialized = true;
         }
         public override bool SetProperty(string name, object value)
@@ -95,12 +96,10 @@ namespace FS_LevelEditor
             script.onPickup = new UnityEngine.Events.UnityEvent();
             script.onPickup.AddListener((UnityAction)ExecuteOnPickUpEvents);
         }
-
         void ExecuteOnPickUpEvents()
         {
             eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnPickup"]);
         }
-
         public override List<string> GetAvailableEventsIDs()
         {
             return new List<string>()
@@ -123,7 +122,8 @@ public static class TazerTutModeFix
             {
                 if (gameObject.CompareTag("Gun"))
                 {
-                    Debug.Log("fix");
+                    FS_LevelEditor.Logger.Log("Player just picked up Taser, patching the hell out!");
+
                     Controls.m_currentJetpackUpgradeLevel = 1;
                     Controls.m_currentHealthUpgradeLevel = 1;
                     Controls.m_currentTaserCapacityUpgradeLevel = 1;
