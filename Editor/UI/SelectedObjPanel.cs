@@ -378,7 +378,7 @@ namespace FS_LevelEditor.Editor.UI
             lineSprite.depth = 8;
             line.SetActive(false);
 
-            yPosForGlobalProps -= 50;
+            yPosForGlobalProps -= 55;
         }
         void CreateAddWaypointButton()
         {
@@ -388,7 +388,7 @@ namespace FS_LevelEditor.Editor.UI
             addWaypointButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             addWaypointButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
 
-            yPosForGlobalProps -= 50;
+            yPosForGlobalProps -= 55;
         }
         void CreateStartMovingAtStartToggle()
         {
