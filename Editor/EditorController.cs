@@ -1856,6 +1856,13 @@ namespace FS_LevelEditor.Editor
 
             if (Physics.Raycast(ray, out hit, Mathf.Infinity, -1, QueryTriggerInteraction.Ignore))
             {
+                if (hit.collider.transform.parent == null)
+                {
+                    Logger.Warning($"For some reason, the object you just tried to select ({hit.collider.name}) doesn't have a parent.");
+                    obj = null;
+                    return false;
+                }
+
                 obj = hit.collider.transform.parent.gameObject;
                 return true;
             }
