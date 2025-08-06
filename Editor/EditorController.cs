@@ -774,7 +774,7 @@ namespace FS_LevelEditor.Editor
             List<GameObject> selectedObjects = new List<GameObject>();
             foreach (var obj in currentInstantiatedObjects)
             {
-                if (obj == null || obj.isDeleted) continue;
+                if (obj == null || obj.isDeleted || obj.gameObject.active) continue;
                 Vector3 screenPos = Camera.main.WorldToScreenPoint(obj.transform.position);
                 if (screenPos.z < 0) continue; // Behind camera
 
@@ -1619,7 +1619,12 @@ namespace FS_LevelEditor.Editor
                         // same type, so, use it to identify the available snap triggers (no matter if is selecting multiple objects or not).
                         if (currentSelectedObjComponent != null)
                         {
-                            if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectType.Value, hit.collider.gameObject))
+                            LE_Object.ObjectType objectTypeToUse = currentSelectedObjComponent.objectType.Value;
+                            if (currentSelectedObjComponent is LE_Waypoint waypoint)
+                            {
+                                objectTypeToUse = waypoint.mainObjectType.Value;
+                            }
+                            if (CanUseThatSnapToGridTrigger(objectTypeToUse, hit.collider.gameObject))
                             {
                                 currentSelectedObj.transform.position = hit.collider.transform.position;
                                 currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
@@ -2087,12 +2092,12 @@ namespace FS_LevelEditor.Editor
             {
                 editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
                 targetObjs.ForEach(obj => obj.SetActive(true)); // Enable the objects again and then select them again.
-                targetObjs.ForEach(obj => obj.GetComponent<LE_Object>().isDeleted = false);
+                targetObjs.ForEach(obj => obj.GetComponent<LE_Object>().OnUndoDeletion());
                 editor.SetMultipleObjectsAsSelected(targetObjs, true);
             }
             else
             {
-                targetObj.GetComponent<LE_Object>().isDeleted = false;
+                targetObj.GetComponent<LE_Object>().OnUndoDeletion();
                 targetObj.SetActive(true);
                 editor.SetSelectedObj(targetObj);
             }

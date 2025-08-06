@@ -173,6 +173,7 @@ namespace FS_LevelEditor.Editor.UI
         }
 
 
+        #region Current Mode Label / Buttons
         void CreateModeNavigationPanel()
         {
             // Create the main panel container at the original label position
@@ -199,7 +200,6 @@ namespace FS_LevelEditor.Editor.UI
 
             modeNavigationPanel.SetActive(true);
         }
-
         void SwitchToPreviousMode()
         {
             EditorController.Mode currentMode = EditorController.Instance.currentMode;
@@ -212,7 +212,6 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentModeLabelText(modes[previousIndex]);
 
         }
-
         void SwitchToNextMode()
         {
             UnityEngine.Debug.Log("Switching next");
@@ -228,8 +227,9 @@ namespace FS_LevelEditor.Editor.UI
         public void SetCurrentModeLabelText(EditorController.Mode mode)
         {
             string text = Loc.Get(mode.ToString());
-            currentModeLabel.text = text;
+            currentModeLabel.text = "[ffff00]" + text + "[-]";
         }
+        #endregion
 
         void CreateHittenTargetObjPanel()
         {
@@ -421,7 +421,6 @@ namespace FS_LevelEditor.Editor.UI
         }
 
         public void ShowExitPopup() => EditorPauseMenuPatcher.patcher.ShowExitPopup();
-
         public void ExitToMenu(bool saveDataBeforeExit = false)
         {
             MelonCoroutines.Start(Coroutine());

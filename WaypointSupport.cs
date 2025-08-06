@@ -128,6 +128,14 @@ namespace FS_LevelEditor
             // Waypoints positions are relative to the main object position, Vector3.zero means the waypoint will be in the same positions as the main object.
             firstWaypoint.position = Vector3.zero;
             firstWaypoint.rotation = Vector3.zero;
+            if (targetObject.waypointMode == WaypointMode.TRAVEL_BACK)
+            {
+                firstWaypoint.properties["WaitTime"] = targetObject.waitTime;
+            }
+            else
+            {
+                firstWaypoint.properties["WaitTime"] = 0f;
+            }
 
             originalList.Insert(0, firstWaypoint);
         }
@@ -137,7 +145,8 @@ namespace FS_LevelEditor
             // Waypoints positions are relative to the main object position, Vector3.zero means the waypoint will be in the same positions as the main object.
             finalWaypoint.position = Vector3.zero;
             finalWaypoint.rotation = Vector3.zero;
-            finalWaypoint.properties["WaitTime"] = targetObject.startDelay;
+            // Use the original object's "Wait Time" attribute since the user won't be able to select/change this final waypoint.
+            finalWaypoint.properties["WaitTime"] = targetObject.waitTime;
 
             originalList.Add(finalWaypoint);
         }
@@ -159,7 +168,8 @@ namespace FS_LevelEditor
                 WaypointData lastWaypoint = new WaypointData();
                 lastWaypoint.position = Vector3.zero;
                 lastWaypoint.rotation = Vector3.zero;
-                lastWaypoint.properties["WaitTime"] = targetObject.startDelay;
+                // Use the original object's "Wait Time" attribute since the user won't be able to select/change this last waypoint.
+                lastWaypoint.properties["WaitTime"] = targetObject.waitTime;
                 originalList.Add(lastWaypoint);
             }
         }
@@ -189,6 +199,7 @@ namespace FS_LevelEditor
         IEnumerator MoveObject()
         {
             Vector3[] cachedWaypointPositions = spawnedWaypoints.Select(x => x.transform.position).ToArray();
+            Vector3[] cachedWaypointRotations = spawnedWaypoints.Select(x => x.transform.eulerAngles).ToArray();
 
             yield return new WaitForSeconds(targetObject.startDelay);
 
@@ -200,7 +211,11 @@ namespace FS_LevelEditor
                 Vector3 distance = cachedWaypointPositions[i] - transform.position;
                 float duration = distance.magnitude / targetObject.movingSpeed;
 
-                TweenPosition.Begin(gameObject, duration, cachedWaypointPositions[i]);
+                TweenPosition tween = TweenPosition.Begin(gameObject, duration, cachedWaypointPositions[i]);
+                tween.ignoreTimeScale = false; // Avoid object moving while the game's paused.
+
+                RotationTweener tweenRotation = RotationTweener.RotateTo(gameObject, cachedWaypointRotations[i], duration, RotationPath.Shortest);
+
                 yield return new WaitForSeconds(duration);
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
