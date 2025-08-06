@@ -79,7 +79,8 @@ namespace FS_LevelEditor
             DEATH_TRIGGER,
             WAYPOINT,
             JETPACK,
-            GUN
+            GUN,
+            ARROW
         }
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
