@@ -756,6 +756,8 @@ namespace FS_LevelEditor
 
         public void SetCollidersState(bool newEnabledState)
         {
+            if (IsWaypoint(objectType.Value)) return;
+
             if (!gameObject.ExistsChild("Content"))
             {
                 Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
@@ -770,6 +772,8 @@ namespace FS_LevelEditor
         }
         public void SetEditorCollider(bool newEnabledState)
         {
+            if (IsWaypoint(objectType.Value)) return;
+
             if (gameObject.ExistsChild("EditorCollider"))
             {
                 gameObject.GetChild("EditorCollider").SetActive(newEnabledState);
@@ -783,6 +787,11 @@ namespace FS_LevelEditor
         public static void ResetStaticVariablesInObjects()
         {
             LE_Breakable_Window.staticVariablesInitialized = false;
+        }
+
+        static bool IsWaypoint(ObjectType type)
+        {
+            return type.ToString().Contains("Waypoint", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

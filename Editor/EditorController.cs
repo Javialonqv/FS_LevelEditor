@@ -256,8 +256,7 @@ namespace FS_LevelEditor.Editor
 
         void Update()
         {
-            if (PlayFromMenuHelper.PlayImmediatelyOnEditorLoad &&
-    PlayFromMenuHelper.LevelToPlay == levelFileNameWithoutExtension)
+            if (PlayFromMenuHelper.PlayImmediatelyOnEditorLoad && PlayFromMenuHelper.LevelToPlay == levelFileNameWithoutExtension)
             {
                 PlayFromMenuHelper.PlayImmediatelyOnEditorLoad = false;
                 PlayFromMenuHelper.LevelToPlay = null;
