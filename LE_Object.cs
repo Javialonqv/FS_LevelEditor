@@ -154,6 +154,7 @@ namespace FS_LevelEditor
         public bool startMovingAtStart = true;
         public float movingSpeed = 5f;
         public float startDelay = 0f;
+        public float waitTime = 0f;
         public WaypointMode waypointMode;
 
         public Dictionary<string, object> properties = new Dictionary<string, object>();
@@ -477,6 +478,7 @@ namespace FS_LevelEditor
                 {
                     // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
                     Utils.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatches.ConvertFromSerializableValue(converted));
+                    return true;
                 }
             }
 
@@ -493,6 +495,11 @@ namespace FS_LevelEditor
             else if (name == "StartDelay")
             {
                 startDelay = Utils.ParseFloat((string)value);
+                return true;
+            }
+            else if (name == "WaitTime")
+            {
+                waitTime = Utils.ParseFloat((string)value);
                 return true;
             }
             else if (name == "WaypointMode")

@@ -37,6 +37,7 @@ namespace FS_LevelEditor.Editor.UI
         UIToggle startMovingAtStartToggle;
         UICustomInputField movingSpeedField;
         UICustomInputField startDelayField;
+        UICustomInputField waitTimeField;
         UISmallButtonMultiple waypointModeButton;
         // ------------------------------
         bool showingPanel = false;
@@ -210,6 +211,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateStartMovingAtStartToggle();
             CreateMovingSpeedField();
             CreateStartDelayField();
+            CreateWaitTimeField();
             CreateWaypointModeButton();
         }
         void CreateObjectPositionUIElements()
@@ -440,6 +442,23 @@ namespace FS_LevelEditor.Editor.UI
                 inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             startDelayField.name = "Field";
             startDelayField.onChange += () => SetPropertyWithInput("StartDelay", startDelayField);
+
+            yPosForGlobalProps -= 50;
+        }
+        void CreateWaitTimeField()
+        {
+            Transform fieldParent = new GameObject("WaitTime").transform;
+            fieldParent.parent = globalObjectPanelsParent;
+            fieldParent.localPosition = Vector3.zero;
+            fieldParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "WaitTime");
+            title.name = "Title";
+
+            waitTimeField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "0", false,
+                inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            waitTimeField.name = "Field";
+            waitTimeField.onChange += () => SetPropertyWithInput("WaitTime", waitTimeField);
 
             yPosForGlobalProps -= 50;
         }
@@ -1353,6 +1372,18 @@ namespace FS_LevelEditor.Editor.UI
             else
             {
                 startDelayField.transform.parent.gameObject.SetActive(false);
+            }
+            #endregion
+
+            #region Wait Time Field
+            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
+            {
+                waitTimeField.transform.parent.gameObject.SetActive(true);
+                waitTimeField.SetText(EditorController.Instance.currentSelectedObjComponent.waitTime);
+            }
+            else
+            {
+                waitTimeField.transform.parent.gameObject.SetActive(false);
             }
             #endregion
 

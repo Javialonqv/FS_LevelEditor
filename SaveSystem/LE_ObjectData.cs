@@ -19,6 +19,7 @@ namespace FS_LevelEditor.SaveSystem
         public bool moveStart { get; set; } = true;
         public float movingSpeed { get; set; } = 5f;
         public float startDelay { get; set; } = 1f;
+        public float waitTime { get; set; } = 0f;
         public WaypointMode wayMode { get; set; } = WaypointMode.NONE;
 
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
@@ -41,6 +42,7 @@ namespace FS_LevelEditor.SaveSystem
             moveStart = originalObj.startMovingAtStart;
             movingSpeed = originalObj.movingSpeed;
             startDelay = originalObj.startDelay;
+            waitTime = originalObj.waitTime;
             wayMode = originalObj.waypointMode;
 
             SavePatches.AddPropertiesToObjectToSave(this, originalObj);
