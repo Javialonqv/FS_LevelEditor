@@ -16,6 +16,7 @@ namespace FS_LevelEditor
         public LE_Waypoint nextWaypoint;
         public WaypointData attachedData;
         public LineRenderer editorLine;
+        public ObjectType? mainObjectType => mainSupport.targetObject.objectType;
 
         public override Transform objectParent => mainSupport.waypointsParent;
 

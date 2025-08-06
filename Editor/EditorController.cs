@@ -1619,7 +1619,12 @@ namespace FS_LevelEditor.Editor
                         // same type, so, use it to identify the available snap triggers (no matter if is selecting multiple objects or not).
                         if (currentSelectedObjComponent != null)
                         {
-                            if (CanUseThatSnapToGridTrigger(currentSelectedObjComponent.objectType.Value, hit.collider.gameObject))
+                            LE_Object.ObjectType objectTypeToUse = currentSelectedObjComponent.objectType.Value;
+                            if (currentSelectedObjComponent is LE_Waypoint waypoint)
+                            {
+                                objectTypeToUse = waypoint.mainObjectType.Value;
+                            }
+                            if (CanUseThatSnapToGridTrigger(objectTypeToUse, hit.collider.gameObject))
                             {
                                 currentSelectedObj.transform.position = hit.collider.transform.position;
                                 currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
