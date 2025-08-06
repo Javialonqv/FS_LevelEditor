@@ -774,7 +774,7 @@ namespace FS_LevelEditor.Editor
             List<GameObject> selectedObjects = new List<GameObject>();
             foreach (var obj in currentInstantiatedObjects)
             {
-                if (obj == null || obj.isDeleted) continue;
+                if (obj == null || obj.isDeleted || obj.gameObject.active) continue;
                 Vector3 screenPos = Camera.main.WorldToScreenPoint(obj.transform.position);
                 if (screenPos.z < 0) continue; // Behind camera
 
