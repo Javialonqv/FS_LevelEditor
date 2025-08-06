@@ -189,6 +189,7 @@ namespace FS_LevelEditor
         IEnumerator MoveObject()
         {
             Vector3[] cachedWaypointPositions = spawnedWaypoints.Select(x => x.transform.position).ToArray();
+            Vector3[] cachedWaypointRotations = spawnedWaypoints.Select(x => x.transform.eulerAngles).ToArray();
 
             yield return new WaitForSeconds(targetObject.startDelay);
 
@@ -202,6 +203,9 @@ namespace FS_LevelEditor
 
                 TweenPosition tween = TweenPosition.Begin(gameObject, duration, cachedWaypointPositions[i]);
                 tween.ignoreTimeScale = false; // Avoid object moving while the game's paused.
+
+                RotationTweener tweenRotation = RotationTweener.RotateTo(gameObject, cachedWaypointRotations[i], duration, RotationPath.Shortest);
+
                 yield return new WaitForSeconds(duration);
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
