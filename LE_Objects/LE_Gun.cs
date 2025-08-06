@@ -110,38 +110,43 @@ namespace FS_LevelEditor
         }
     }
 }
-[HarmonyLib.HarmonyPatch(typeof(GunController), nameof(GunController.SetTutorialMode))]
+[HarmonyLib.HarmonyPatch(typeof(Controls), nameof(Controls.OnTriggerEnter))]
 public static class TazerTutModeFix
 {
-    static bool result = true;
-    public static bool Prefix(GunController __instance, bool state)
+    public static bool Prefix(Collider collider, Controls __instance)
     {
         if (PlayModeController.Instance)
         {
-            Controls.m_currentJetpackUpgradeLevel = 1;
-            Controls.m_currentHealthUpgradeLevel = 1;
-            Controls.m_currentTaserCapacityUpgradeLevel = 1;
-            Controls.m_currentHealthBackpackLevel = 0;
-            Controls.m_currentTaserBackpackLevel = 0;
-            Controls.m_currentTaserPowerUpgradeLevel = 0;
-            Controls.m_currentStealthUpgradeLevel = 0;
-            Controls.m_currentHoverUpgradeLevel = 0;
-            Controls.m_currentScopeLevel = 0;
-            Controls.m_currentSafeLandingLevel = 0;
-            Controls.m_currentUVFlashlightLevel = 0;
-            Controls.m_currentScannerLevel = 0;
-            if (LE_Gun.infTaser)
+            GameObject gameObject;
+            gameObject = collider ? collider.gameObject : null;
+            if(__instance.alive && gameObject)
             {
-                result = true;
-            } else
-            {
-                __instance.currentAmmo = LE_Gun.ammo;
-                __instance.SetAmmos(LE_Gun.ammo);
-                result = false;
+                if (gameObject.CompareTag("Gun"))
+                {
+                    Debug.Log("fix");
+                    Controls.m_currentJetpackUpgradeLevel = 1;
+                    Controls.m_currentHealthUpgradeLevel = 1;
+                    Controls.m_currentTaserCapacityUpgradeLevel = 1;
+                    Controls.m_currentHealthBackpackLevel = 0;
+                    Controls.m_currentTaserBackpackLevel = 0;
+                    Controls.m_currentTaserPowerUpgradeLevel = 0;
+                    Controls.m_currentStealthUpgradeLevel = 0;
+                    Controls.m_currentHoverUpgradeLevel = 0;
+                    Controls.m_currentScopeLevel = 0;
+                    Controls.m_currentSafeLandingLevel = 0;
+                    Controls.m_currentUVFlashlightLevel = 0;
+                    Controls.m_currentScannerLevel = 0;
+                    __instance.gunController.RefreshTaserModules();
+                    gameObject.SendMessage("Pickup", SendMessageOptions.DontRequireReceiver);
+                    Controls.inGameUI.ShowNotification(InGameUIManager.NotificationType.GunPickup, InGameUIManager.NotificationColor.Blue, 0f, 1.7f, false, true);
+                    __instance.SetTazerInTutorialMode(LE_Gun.infTaser);
+                    __instance.gunController.SetAmmos(LE_Gun.ammo);
+                    return false;
+                }
             }
 
         }
-        return result;
-        
+        return true;
+
     }
 }
