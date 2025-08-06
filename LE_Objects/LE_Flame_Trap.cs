@@ -18,7 +18,8 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>
             {
                 { "ActivateOnStart", true },
-                { "Constant", false }
+                { "Constant", false },
+                { "DPS", 80 }
             };
         }
 
@@ -54,7 +55,7 @@ namespace FS_LevelEditor
             DOT dot = content.GetChild("DOT_Trigger").AddComponent<DOT>();
             dot.pushCubes = true;
             dot.pushForce = 18;
-            dot.DPS = 80;
+            dot.DPS = GetProperty<int>("DPS");
             dot.useDmgCollisionDetection = false;
             dot.collisionCheckPoint = content.GetChild("DamageObstructionPoint").transform;
             dot.damageColLayer = t_flameTrap.gameObject.GetChild("DOT_Trigger").GetComponent<DOT>().damageColLayer;
@@ -86,6 +87,22 @@ namespace FS_LevelEditor
                 {
                     properties["Constant"] = (bool)value;
                     return true;
+                }
+            }
+            else if (name == "DPS")
+            {
+                if (value is int)
+                {
+                    properties["DPS"] = (int)value;
+                    return true;
+                }
+                else if (value is string)
+                {
+                    if (int.TryParse((string)value, out int result))
+                    {
+                        properties["DPS"] = result;
+                        return true;
+                    }
                 }
             }
 

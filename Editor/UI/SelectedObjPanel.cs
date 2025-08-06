@@ -665,6 +665,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("Constant", AttributeType.TOGGLE, false, null, "Constant");
+            CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "88", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "DPS");
 
             flameTrapAttributes.SetActive(false);
             attributesPanels.Add("Flame Trap", flameTrapAttributes);
