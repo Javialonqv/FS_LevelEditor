@@ -68,7 +68,7 @@ namespace FS_LevelEditor.Editor
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
         // Selected mode.
-        public enum Mode { Building, Selection, Deletion }
+        public enum Mode { Building, Selection }
         public Mode currentMode = Mode.Building;
 
         //Bulk selection.
@@ -406,21 +406,6 @@ namespace FS_LevelEditor.Editor
             }
             #endregion
 
-
-            #region Delete With Click
-            // If click and it's on deletion and it's NOT clicking a gizmos arrow AND the mouse isn't over a UI element..
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Deletion && collidingArrow == GizmosArrow.None && !Utils.IsMouseOverUIElement())
-            {
-                // If it's clicking an object.
-                if (CanSelectObjectWithRay(out GameObject obj))
-                {
-                    // Yep, I'm lazy and Ik this isn't the best way of doing it... but it works I think :D
-                    // UPDATE: NEW FUNCTION TO DELETE OBJECTS IN THE RIGHT WAY, LET'S GO
-                    DeleteObject(obj);
-                }
-            }
-            #endregion
-
             #region Move Object
             // If it's clicking a gizmos arrow.
             if (Input.GetMouseButton(0) && collidingArrow != GizmosArrow.None)
@@ -663,10 +648,6 @@ namespace FS_LevelEditor.Editor
             {
                 ChangeMode(Mode.Selection);
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha3))
-            {
-                ChangeMode(Mode.Deletion);
-            }
 
             // Shortcut for saving level data.
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S) && levelHasBeenModified)
@@ -882,7 +863,6 @@ namespace FS_LevelEditor.Editor
                     break;
 
                 case Mode.Selection:
-                case Mode.Deletion:
                     EditorObjectsToBuildUI.Instance.root.SetActive(false);
                         SelectedObjPanel.Instance.gameObject.SetActive(EditorUIManager.IsCurrentUIContext(EditorUIContext.NORMAL)); // Only when normal.
                     break;
