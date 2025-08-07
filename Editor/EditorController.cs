@@ -148,34 +148,6 @@ namespace FS_LevelEditor.Editor
             ui.HideFuelBarRoutine(0);
 
         }
-        void CreateSelectionBox()
-        {
-            if (selectionBox != null) return;
-
-            selectionBox = new GameObject("SelectionBox");
-            selectionBox.transform.parent = EditorUIManager.Instance.editorUIParent.transform;
-            selectionBox.transform.localPosition = Vector3.zero;
-            selectionBox.transform.localScale = Vector3.one;
-
-            selectionBoxSprite = selectionBox.AddComponent<UISprite>();
-
-            selectionBoxSprite.atlas = NGUI_Utils.UITexturesAtlas;
-            selectionBoxSprite.spriteName = "Square_Border_HighOpacity";
-            selectionBoxSprite.type = UIBasicSprite.Type.Sliced;
-            selectionBoxSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 0.5f);
-            selectionBoxSprite.depth = 9999;
-            selectionBoxSprite.pivot = UIWidget.Pivot.TopLeft;
-            selectionBoxSprite.width = 100;
-            selectionBoxSprite.height = 100;
-
-            UICamera uiCam = UICamera.list[0];
-            if (uiCam != null)
-            {
-                selectionBox.layer = uiCam.gameObject.layer;
-            }
-
-            selectionBox.SetActive(false);
-        }
         void LoadAssetBundle()
         {
             Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FS_LevelEditor.level_editor");
@@ -530,6 +502,34 @@ namespace FS_LevelEditor.Editor
             if (!Utils.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
         }
 
+        void CreateSelectionBox()
+        {
+            if (selectionBox != null) return;
+
+            selectionBox = new GameObject("SelectionBox");
+            selectionBox.transform.parent = EditorUIManager.Instance.editorUIParent.transform;
+            selectionBox.transform.localPosition = Vector3.zero;
+            selectionBox.transform.localScale = Vector3.one;
+
+            selectionBoxSprite = selectionBox.AddComponent<UISprite>();
+
+            selectionBoxSprite.atlas = NGUI_Utils.UITexturesAtlas;
+            selectionBoxSprite.spriteName = "Square_Border_HighOpacity";
+            selectionBoxSprite.type = UIBasicSprite.Type.Sliced;
+            selectionBoxSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 0.5f);
+            selectionBoxSprite.depth = 9999;
+            selectionBoxSprite.pivot = UIWidget.Pivot.TopLeft;
+            selectionBoxSprite.width = 100;
+            selectionBoxSprite.height = 100;
+
+            UICamera uiCam = UICamera.list[0];
+            if (uiCam != null)
+            {
+                selectionBox.layer = uiCam.gameObject.layer;
+            }
+
+            selectionBox.SetActive(false);
+        }
         private void UpdateSelectionBox()
         {
             if (selectionBox == null) return;
@@ -564,6 +564,76 @@ namespace FS_LevelEditor.Editor
             // Calculate and set size (do NOT apply any scale factor)
             selectionBoxSprite.width = Mathf.RoundToInt(Mathf.Abs(bottomRightLocal.x - topLeftLocal.x));
             selectionBoxSprite.height = Mathf.RoundToInt(Mathf.Abs(bottomRightLocal.y - topLeftLocal.y));
+        }
+        public void SetBulkSelectionMode(BulkSelectionMode mode)
+        {
+            currentBulkSelectionMode = mode;
+        }
+        public BulkSelectionMode GetBulkSelectionMode()
+        {
+            return currentBulkSelectionMode;
+        }
+        private void SelectObjectsInRectangle(Vector2 start, Vector2 end)
+        {
+            float minX = Mathf.Min(start.x, end.x);
+            float maxX = Mathf.Max(start.x, end.x);
+            float minY = Mathf.Min(start.y, end.y);
+            float maxY = Mathf.Max(start.y, end.y);
+
+            Camera cam = Camera.main;
+            Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(cam);
+
+            var selectedObjects = new List<GameObject>();
+            var bounds = new Bounds();
+
+            foreach (var obj in currentInstantiatedObjects)
+            {
+                if (obj == null || obj.isDeleted)
+                    continue;
+
+                // Filter by mode
+                switch (currentBulkSelectionMode)
+                {
+                    case BulkSelectionMode.ObjectsOnly:
+                        if (obj is LE_Waypoint) continue;
+                        break;
+                    case BulkSelectionMode.WaypointsAndObjectsWithWaypoints:
+                        // Only select LE_Waypoint objects, or objects that have at least one waypoint
+                        if (!(obj is LE_Waypoint) && (obj.waypoints == null || obj.waypoints.Count == 0))
+                            continue;
+                        break;
+                        // BulkSelectionMode.Everything: no filter
+                }
+
+                bounds.center = obj.transform.position;
+                bounds.extents = obj.transform.lossyScale * 0.5f;
+
+                if (!GeometryUtility.TestPlanesAABB(frustumPlanes, bounds))
+                    continue;
+
+                Vector3 screenPos = cam.WorldToScreenPoint(obj.transform.position);
+                if (screenPos.z < 0)
+                    continue;
+
+                if (screenPos.x >= minX && screenPos.x <= maxX &&
+                    screenPos.y >= minY && screenPos.y <= maxY)
+                {
+                    selectedObjects.Add(obj.gameObject);
+                }
+            }
+
+            if (selectedObjects.Count == 0)
+            {
+                SetSelectedObj(null);
+            }
+            else if (selectedObjects.Count == 1)
+            {
+                SetSelectedObj(selectedObjects[0]);
+            }
+            else
+            {
+                SetMultipleObjectsAsSelected(new List<GameObject>(selectedObjects));
+            }
         }
 
         void LateUpdate()
@@ -809,76 +879,6 @@ namespace FS_LevelEditor.Editor
             }
         }
 
-		private void SelectObjectsInRectangle(Vector2 start, Vector2 end)
-		{
-			float minX = Mathf.Min(start.x, end.x);
-			float maxX = Mathf.Max(start.x, end.x);
-			float minY = Mathf.Min(start.y, end.y);
-			float maxY = Mathf.Max(start.y, end.y);
-
-			Camera cam = Camera.main;
-			Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(cam);
-
-			var selectedObjects = new List<GameObject>();
-			var bounds = new Bounds();
-
-			foreach (var obj in currentInstantiatedObjects)
-			{
-				if (obj == null || obj.isDeleted)
-					continue;
-
-				// Filter by mode
-				switch (currentBulkSelectionMode)
-				{
-					case BulkSelectionMode.ObjectsOnly:
-						if (obj is LE_Waypoint) continue;
-						break;
-					case BulkSelectionMode.WaypointsAndObjectsWithWaypoints:
-						// Only select LE_Waypoint objects, or objects that have at least one waypoint
-						if (!(obj is LE_Waypoint) && (obj.waypoints == null || obj.waypoints.Count == 0))
-							continue;
-						break;
-						// BulkSelectionMode.Everything: no filter
-				}
-
-				bounds.center = obj.transform.position;
-				bounds.extents = obj.transform.lossyScale * 0.5f;
-
-				if (!GeometryUtility.TestPlanesAABB(frustumPlanes, bounds))
-					continue;
-
-				Vector3 screenPos = cam.WorldToScreenPoint(obj.transform.position);
-				if (screenPos.z < 0)
-					continue;
-
-				if (screenPos.x >= minX && screenPos.x <= maxX &&
-					screenPos.y >= minY && screenPos.y <= maxY)
-				{
-					selectedObjects.Add(obj.gameObject);
-				}
-			}
-
-			if (selectedObjects.Count == 0)
-			{
-				SetSelectedObj(null);
-			}
-			else if (selectedObjects.Count == 1)
-			{
-				SetSelectedObj(selectedObjects[0]);
-			}
-			else
-			{
-				SetMultipleObjectsAsSelected(new List<GameObject>(selectedObjects));
-			}
-		}
-		public BulkSelectionMode GetBulkSelectionMode()
-		{
-			return currentBulkSelectionMode;
-		}
-		public void SetBulkSelectionMode(BulkSelectionMode mode)
-		{
-			currentBulkSelectionMode = mode;
-		}
 		void ManageObjectRotationShortcuts()
         {
             GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
