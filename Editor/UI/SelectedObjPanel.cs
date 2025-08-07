@@ -865,6 +865,7 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentParentToCreateAttributes(movingPlatformAttributes);
 
             CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+            CreateObjectAttribute("MoveSpeed", AttributeType.INPUT_FIELD, "5", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "MoveSpeed");
 
             CreateObjectAttribute("Movement Mode", AttributeType.BUTTON_MULTIPLE, 0, null, "MovementMode");
             var movementModeButton = movingPlatformAttributes.GetChildAt("MovementMode/ButtonMultiple").GetComponent<UISmallButtonMultiple>();

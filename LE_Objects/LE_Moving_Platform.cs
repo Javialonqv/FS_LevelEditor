@@ -20,6 +20,7 @@ namespace FS_LevelEditor
             {
                 { "ActivateOnStart", true },
                 { "MovementMode", WaypointMode.TRAVEL_BACK },
+                { "MoveSpeed", 5f },
                 { "waypoints", new List<WaypointData>() }
             };
         }
@@ -74,8 +75,8 @@ namespace FS_LevelEditor
             script.moveSoundLoop = t_movingPlatform.moveSoundLoop;
             script.moveSoundStop = t_movingPlatform.moveSoundStop;
             script.movingPlatform = true;
-            script.m_originalMovingSpeed = 3;
-            script.movingSpeed = 3;
+            script.m_originalMovingSpeed = GetProperty<float>("MoveSpeed");
+            script.movingSpeed = GetProperty<float>("MoveSpeed");
             script.offMesh = content.GetComponent<MeshRenderer>();
             script.onActivate = new UnityEngine.Events.UnityEvent();
             script.onDeactivate = new UnityEngine.Events.UnityEvent();
@@ -120,6 +121,22 @@ namespace FS_LevelEditor
                 {
                     if (EditorController.Instance != null) SetMeshOnEditor((bool)value);
                     properties["ActivateOnStart"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "MoveSpeed")
+            {
+                if (value is string)
+                {
+                    if (Utils.TryParseFloat((string)value, out float result))
+                    {
+                        properties["MoveSpeed"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["MoveSpeed"] = (float)value;
                     return true;
                 }
             }
