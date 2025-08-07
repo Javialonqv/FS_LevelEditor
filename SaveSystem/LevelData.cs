@@ -72,48 +72,85 @@ namespace FS_LevelEditor.SaveSystem
 
 		// Create a LeveData instance with all of the current objects in the level.
 		public static LevelData CreateLevelData(string levelName)
-        {
-            LevelData data = new LevelData();
-            data.levelName = levelName;
-            data.cameraPosition = Camera.main.transform.position;
-            EditorCameraMovement editorCamera = Camera.main.GetComponent<EditorCameraMovement>();
-            data.cameraRotation = new Vector3Serializable(editorCamera.xRotation, editorCamera.yRotation, 0f);
-            data.createdTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+		{
+			LevelData data = new LevelData();
+			data.levelName = levelName;
 
-            if (EditorController.Instance.multipleObjectsSelected)
-            {
-                EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
-            }
+			// Camera position and rotation
+			if (Camera.main != null)
+			{
+				data.cameraPosition = Camera.main.transform.position;
+				var editorCamera = Camera.main.GetComponent<EditorCameraMovement>();
+				if (editorCamera != null)
+					data.cameraRotation = new Vector3Serializable(editorCamera.xRotation, editorCamera.yRotation, 0f);
+				else
+					data.cameraRotation = new Vector3Serializable(0f, 0f, 0f);
+			}
+			else
+			{
+				data.cameraPosition = new Vector3Serializable(0f, 0f, 0f);
+				data.cameraRotation = new Vector3Serializable(0f, 0f, 0f);
+			}
 
-            GameObject objectsParent = EditorController.Instance.levelObjectsParent;
+			data.createdTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-            // Don't get the disabled objects, since there are supposed to be DELETED objects.
-            foreach (GameObject obj in objectsParent.GetChilds(false))
-            {
-                // Only if the object has the LE_Object component.
-                if (obj.TryGetComponent(out LE_Object component))
-                {
-                    component.BeforeSave();
-                    LE_ObjectData objData = new LE_ObjectData(component);
-                    data.objects.Add(objData);
-                }
-                else
-                {
-                    Logger.Error($"The object with name \"{obj.name}\" doesn't have a LE_Object component, can't save it, please report it as a bug.");
-                    continue;
-                }
-            }
+			// EditorController context
+			if (EditorController.Instance != null)
+			{
+				if (EditorController.Instance.multipleObjectsSelected)
+				{
+					EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
+				}
 
-            if (EditorController.Instance.multipleObjectsSelected)
-            {
-                EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = EditorController.Instance.multipleSelectedObjsParent.transform);
-            }
+				GameObject objectsParent = EditorController.Instance.levelObjectsParent;
+				if (objectsParent != null)
+				{
+					foreach (GameObject obj in objectsParent.GetChilds(false))
+					{
+						if (obj.TryGetComponent(out LE_Object component))
+						{
+							component.BeforeSave();
+							LE_ObjectData objData = new LE_ObjectData(component);
+							data.objects.Add(objData);
+						}
+						else
+						{
+							Logger.Error($"The object with name \"{obj.name}\" doesn't have a LE_Object component, can't save it, please report it as a bug.");
+							continue;
+						}
+					}
+				}
 
-            data.globalProperties = new Dictionary<string, object>(EditorController.Instance.globalProperties);
+				if (EditorController.Instance.multipleObjectsSelected)
+				{
+					EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = EditorController.Instance.multipleSelectedObjsParent.transform);
+				}
 
-            return data;
-        }
-        public static string GetAvailableLevelName(string levelNameOriginal = "New Level")
+				data.globalProperties = new Dictionary<string, object>(EditorController.Instance.globalProperties);
+			}
+			else
+			{
+				// No editor context: create empty objects and default properties
+				data.objects = new List<LE_ObjectData>();
+				data.globalProperties = GetDefaultGlobalProperties();
+			}
+
+			return data;
+		}
+		public static LevelData CreateBlankLevelData(string levelName)
+		{
+			return new LevelData
+			{
+				levelName = levelName,
+				cameraPosition = new Vector3Serializable(0f, 0f, 0f), // Or a sensible default
+				cameraRotation = new Vector3Serializable(0f, 0f, 0f),
+				createdTime = DateTimeOffset.Now.ToUnixTimeSeconds(),
+				lastModificationTime = DateTimeOffset.Now.ToUnixTimeSeconds(),
+				objects = new List<LE_ObjectData>(),
+				globalProperties = GetDefaultGlobalProperties()
+			};
+		}
+		public static string GetAvailableLevelName(string levelNameOriginal = "New Level")
         {
             string levelName = levelNameOriginal;
             string toReturn = levelName;

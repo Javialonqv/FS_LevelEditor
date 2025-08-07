@@ -90,8 +90,7 @@ namespace FS_LevelEditor.Editor
         private Vector2 selectionStartScreen;
         private Vector2 selectionEndScreen;
         private float selectionStartTime;
-        private const float multiSelectDelay = 0.3f; // seconds
-        private const float minDragDistance = 5f; // pixels
+        private const float minDragDistance = 2f; // pixels
         private GameObject selectionBox;
         private UISprite selectionBoxSprite;
 
@@ -136,6 +135,7 @@ namespace FS_LevelEditor.Editor
 		private LineRenderer[] gridLines;
 		private int gridLinesCount = 100;
 		private float gridExtent = 100f;
+        private float gridAlpha = .1f;
 		private GridPlane currentGridPlane = GridPlane.XZ;
 		#endregion
 
@@ -372,17 +372,23 @@ namespace FS_LevelEditor.Editor
                 {
                     AlignSelectedObjectToGrid();
                 }
-                if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SNAPPING_TO_GRID))
-                {
-                    SetCurrentEditorState(EditorState.NORMAL);
+				if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SNAPPING_TO_GRID))
+				{
+					SetCurrentEditorState(EditorState.NORMAL);
 
-                    if (currentSelectedObj.transform.position != objPositionWhenStartToSnap)
-                    {
-                        RegisterLEAction(LEAction.LEActionType.SnapObject, currentSelectedObj, multipleObjectsSelected, objLocalPositionWhenStartToSnap,
-                            currentSelectedObj.transform.localPosition, objLocalRotationWhenStartToSnap, currentSelectedObj.transform.localRotation);
-                    }
-                }
-            }
+					Vector3 finalPosition = currentSelectedObj.transform.localPosition;
+					Quaternion finalRotation = currentSelectedObj.transform.localRotation;
+
+					// Only register if something actually changed
+					if (Vector3.Distance(objLocalPositionWhenStartToSnap, finalPosition) > 0.001f ||
+						Quaternion.Angle(objLocalRotationWhenStartToSnap, finalRotation) > 0.1f)
+					{
+						RegisterLEAction(LEAction.LEActionType.SnapObject, currentSelectedObj, multipleObjectsSelected,
+							objLocalPositionWhenStartToSnap, finalPosition,
+							objLocalRotationWhenStartToSnap, finalRotation);
+					}
+				}
+			}
             else
             {
                 snapToGridCube.SetActive(false);
@@ -443,22 +449,30 @@ namespace FS_LevelEditor.Editor
                 // Move the object.
                 MoveObject(collidingArrow);
             }
-            else if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.MOVING_OBJECT))
-            {
-                // Only reset state after fully handling the movement
-                RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected,
-                    objLocalPositionWhenStartedMoving, currentSelectedObj.transform.localPosition, null, null);
+			else if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.MOVING_OBJECT))
+			{
+				// Use the actual current position (which may have been snapped) for undo
+				Vector3 finalLocalPosition = currentSelectedObj.transform.localPosition;
 
-                levelHasBeenModified = true;
-                SetCurrentEditorState(EditorState.NORMAL);
-                collidingArrow = GizmosArrow.None;
+				// Only register undo if position actually changed
+				if (Vector3.Distance(objLocalPositionWhenStartedMoving, finalLocalPosition) > 0.001f)
+				{
+					RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected,
+						objLocalPositionWhenStartedMoving, finalLocalPosition, null, null);
+				}
+
+				levelHasBeenModified = true;
+				SetCurrentEditorState(EditorState.NORMAL);
+				collidingArrow = GizmosArrow.None;
 			}
-            #endregion
 
-            #region Delete Object With Delete
-            // If press the Delete key and there's a selected object, delete it.
-            // Also, only delete when the user is NOT typing in an input field.
-            if ((Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.KeypadPeriod)) && currentSelectedObj != null && !Utils.theresAnInputFieldSelected)
+
+			#endregion
+
+			#region Delete Object With Delete
+			// If press the Delete key and there's a selected object, delete it.
+			// Also, only delete when the user is NOT typing in an input field.
+			if ((Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.KeypadPeriod)) && currentSelectedObj != null && !Utils.theresAnInputFieldSelected)
             {
                 DeleteSelectedObj();
             }
@@ -633,8 +647,8 @@ namespace FS_LevelEditor.Editor
 				line.material = new Material(Shader.Find("Sprites/Default"));
 				line.startWidth = 0.05f; // Thinner lines
 				line.endWidth = 0.01f;
-				line.startColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
-				line.endColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+				line.startColor = new Color(0.5f, 0.5f, 0.5f, gridAlpha);
+				line.endColor = new Color(0.5f, 0.5f, 0.5f, gridAlpha);
 				line.positionCount = 2;
 				line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 				line.receiveShadows = false;
@@ -684,12 +698,12 @@ namespace FS_LevelEditor.Editor
 
 						gridLines[lineIndex].SetPosition(0, start);
 						gridLines[lineIndex].SetPosition(1, end);
-						gridLines[lineIndex].startColor = Color.red;
-						gridLines[lineIndex].endColor = Color.red;
+						gridLines[lineIndex].startColor = new Color(1f, 0f, 0f, gridAlpha); // Red with transparency
+						gridLines[lineIndex].endColor = new Color(1f, 0f, 0f, gridAlpha);
 						gridLines[lineIndex].enabled = true;
 						lineIndex++;
 					}
-					// Z axis lines (blue)
+					// Z axis lines (red)
 					for (int i = 0; i <= cellCount && lineIndex < gridLines.Length; i++)
 					{
 						float position = -totalExtent + (i * gridSize);
@@ -698,8 +712,8 @@ namespace FS_LevelEditor.Editor
 
 						gridLines[lineIndex].SetPosition(0, start);
 						gridLines[lineIndex].SetPosition(1, end);
-						gridLines[lineIndex].startColor = Color.blue;
-						gridLines[lineIndex].endColor = Color.blue;
+						gridLines[lineIndex].startColor = new Color(1f, 0f, 0f, gridAlpha); // Red with transparency
+						gridLines[lineIndex].endColor = new Color(1f, 0f, 0f, gridAlpha);
 						gridLines[lineIndex].enabled = true;
 						lineIndex++;
 					}
@@ -714,8 +728,8 @@ namespace FS_LevelEditor.Editor
 
 						gridLines[lineIndex].SetPosition(0, start);
 						gridLines[lineIndex].SetPosition(1, end);
-						gridLines[lineIndex].startColor = Color.red;
-						gridLines[lineIndex].endColor = Color.red;
+						gridLines[lineIndex].startColor = new Color(0f, 1f, 0f, gridAlpha); // Green with transparency
+						gridLines[lineIndex].endColor = new Color(0f, 1f, 0f, gridAlpha);
 						gridLines[lineIndex].enabled = true;
 						lineIndex++;
 					}
@@ -728,8 +742,8 @@ namespace FS_LevelEditor.Editor
 
 						gridLines[lineIndex].SetPosition(0, start);
 						gridLines[lineIndex].SetPosition(1, end);
-						gridLines[lineIndex].startColor = Color.green;
-						gridLines[lineIndex].endColor = Color.green;
+						gridLines[lineIndex].startColor = new Color(0f, 1f, 0f, gridAlpha); // Green with transparency
+						gridLines[lineIndex].endColor = new Color(0f, 1f, 0f, gridAlpha);
 						gridLines[lineIndex].enabled = true;
 						lineIndex++;
 					}
@@ -744,8 +758,8 @@ namespace FS_LevelEditor.Editor
 
 						gridLines[lineIndex].SetPosition(0, start);
 						gridLines[lineIndex].SetPosition(1, end);
-						gridLines[lineIndex].startColor = Color.green;
-						gridLines[lineIndex].endColor = Color.green;
+						gridLines[lineIndex].startColor = new Color(0f, 0f, 1f, gridAlpha); // Blue with transparency
+						gridLines[lineIndex].endColor = new Color(0f, 0f, 1f, gridAlpha);
 						gridLines[lineIndex].enabled = true;
 						lineIndex++;
 					}
@@ -758,8 +772,8 @@ namespace FS_LevelEditor.Editor
 
 						gridLines[lineIndex].SetPosition(0, start);
 						gridLines[lineIndex].SetPosition(1, end);
-						gridLines[lineIndex].startColor = Color.blue;
-						gridLines[lineIndex].endColor = Color.blue;
+						gridLines[lineIndex].startColor = new Color(0f, 0f, 1f, gridAlpha); // Blue with transparency
+						gridLines[lineIndex].endColor = new Color(0f, 0f, 1f, gridAlpha);
 						gridLines[lineIndex].enabled = true;
 						lineIndex++;
 					}
@@ -1089,7 +1103,7 @@ namespace FS_LevelEditor.Editor
             }
 
             // Shortcuts to switch between local and global gizmos arrows.
-            if (Input.GetKeyDown(KeyCode.G) && collidingArrow == GizmosArrow.None)
+            if ((Input.GetKeyDown(KeyCode.G) && !Input.GetKey(KeyCode.LeftShift)) && collidingArrow == GizmosArrow.None)
             {
                 globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
 
@@ -1180,9 +1194,7 @@ namespace FS_LevelEditor.Editor
 
 			Camera cam = Camera.main;
 			Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(cam);
-
 			var selectedObjects = new List<GameObject>();
-			var bounds = new Bounds();
 
 			foreach (var obj in currentInstantiatedObjects)
 			{
@@ -1196,25 +1208,56 @@ namespace FS_LevelEditor.Editor
 						if (obj is LE_Waypoint) continue;
 						break;
 					case BulkSelectionMode.WaypointsAndObjectsWithWaypoints:
-						// Only select LE_Waypoint objects, or objects that have at least one waypoint
 						if (!(obj is LE_Waypoint) && (obj.waypoints == null || obj.waypoints.Count == 0))
 							continue;
 						break;
-						// BulkSelectionMode.Everything: no filter
 				}
 
-				bounds.center = obj.transform.position;
-				bounds.extents = obj.transform.lossyScale * 0.5f;
+				var renderers = obj.gameObject.GetComponentsInChildren<Renderer>();
+				if (renderers.Length == 0) continue;
+
+				Bounds bounds = renderers[0].bounds;
+				foreach (var renderer in renderers)
+				{
+					bounds.Encapsulate(renderer.bounds);
+				}
 
 				if (!GeometryUtility.TestPlanesAABB(frustumPlanes, bounds))
 					continue;
 
-				Vector3 screenPos = cam.WorldToScreenPoint(obj.transform.position);
-				if (screenPos.z < 0)
-					continue;
+				// Project all 8 corners to screen space
+				Vector3[] corners = new Vector3[8];
+				corners[0] = new Vector3(bounds.min.x, bounds.min.y, bounds.min.z);
+				corners[1] = new Vector3(bounds.min.x, bounds.min.y, bounds.max.z);
+				corners[2] = new Vector3(bounds.min.x, bounds.max.y, bounds.min.z);
+				corners[3] = new Vector3(bounds.min.x, bounds.max.y, bounds.max.z);
+				corners[4] = new Vector3(bounds.max.x, bounds.min.y, bounds.min.z);
+				corners[5] = new Vector3(bounds.max.x, bounds.min.y, bounds.max.z);
+				corners[6] = new Vector3(bounds.max.x, bounds.max.y, bounds.min.z);
+				corners[7] = new Vector3(bounds.max.x, bounds.max.y, bounds.max.z);
 
-				if (screenPos.x >= minX && screenPos.x <= maxX &&
-					screenPos.y >= minY && screenPos.y <= maxY)
+				// Find screen-space AABB of the object
+				float objMinX = float.MaxValue, objMaxX = float.MinValue;
+				float objMinY = float.MaxValue, objMaxY = float.MinValue;
+				bool anyCornerInFront = false;
+				foreach (var corner in corners)
+				{
+					Vector3 screenPos = cam.WorldToScreenPoint(corner);
+					if (screenPos.z < 0) continue; // Behind camera
+					anyCornerInFront = true;
+					objMinX = Mathf.Min(objMinX, screenPos.x);
+					objMaxX = Mathf.Max(objMaxX, screenPos.x);
+					objMinY = Mathf.Min(objMinY, screenPos.y);
+					objMaxY = Mathf.Max(objMaxY, screenPos.y);
+				}
+				if (!anyCornerInFront) continue;
+
+				// Check for overlap between selection rect and object rect
+				bool overlaps =
+					objMaxX >= minX && objMinX <= maxX &&
+					objMaxY >= minY && objMinY <= maxY;
+
+				if (overlaps)
 				{
 					selectedObjects.Add(obj.gameObject);
 				}
@@ -1230,7 +1273,7 @@ namespace FS_LevelEditor.Editor
 			}
 			else
 			{
-				SetMultipleObjectsAsSelected(new List<GameObject>(selectedObjects));
+				SetMultipleObjectsAsSelected(selectedObjects);
 			}
 		}
 		public BulkSelectionMode GetBulkSelectionMode()
@@ -1283,34 +1326,47 @@ namespace FS_LevelEditor.Editor
             }
         }
 
-        void ManageUndo()
-        {
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
-            {
-                if (actionsMade.Count > 0)
-                {
-                    LEAction toUndo = actionsMade.Last();
+		void ManageUndo()
+		{
+			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
+			{
+				if (actionsMade.Count > 0)
+				{
+					LEAction toUndo = actionsMade.Last();
 
-                    // Remove the whole LEActions that make reference to an unexisting object and get the last one.
-                    while ((toUndo.targetObj == null && !toUndo.forMultipleObjects) || (toUndo.targetObjs == null && toUndo.forMultipleObjects))
-                    {
-                        actionsMade.Remove(toUndo);
-                        if (actionsMade.Count <= 0) return;
-                        toUndo = actionsMade.Last();
-                    }
+					// Clean up invalid actions
+					while ((toUndo.targetObj == null && !toUndo.forMultipleObjects) ||
+						   (toUndo.targetObjs == null && toUndo.forMultipleObjects))
+					{
+						actionsMade.Remove(toUndo);
+						if (actionsMade.Count <= 0) return;
+						toUndo = actionsMade.Last();
+					}
 
-                    toUndo.Undo(this);
+					// Additional validation for movement actions
+					if (toUndo.actionType == LEAction.LEActionType.MoveObject)
+					{
+						// Skip if the movement was negligible (to avoid grid-snap micro-movements)
+						if (Vector3.Distance(toUndo.oldPos, toUndo.newPos) < 0.001f)
+						{
+							actionsMade.Remove(toUndo);
+							return;
+						}
+					}
 
-                    Logger.Log($"Undid {toUndo.actionType} action for " + (toUndo.forMultipleObjects ? $"{toUndo.targetObjs.Count} objects." : $"\"{toUndo.targetObj.name}\"."));
-                    levelHasBeenModified = true;
+					toUndo.Undo(this);
 
-                    actionsMade.Remove(toUndo);
-                }
-            }
-        }
+					Logger.Log($"Undid {toUndo.actionType} action for " +
+						(toUndo.forMultipleObjects ? $"{toUndo.targetObjs.Count} objects." : $"\"{toUndo.targetObj.name}\"."));
+					levelHasBeenModified = true;
 
-        // For now, this method only disables and enables the "building" UI, with the objects available to build.
-        public void ChangeMode(Mode mode)
+					actionsMade.Remove(toUndo);
+				}
+			}
+		}
+
+		// For now, this method only disables and enables the "building" UI, with the objects available to build.
+		public void ChangeMode(Mode mode)
         {
             currentMode = mode;
 
@@ -1345,98 +1401,109 @@ namespace FS_LevelEditor.Editor
             EditorUIManager.Instance.SetCurrentModeLabelText(currentMode);
         }
 
-        void PreviewObject()
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
-            hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+		void PreviewObject()
+		{
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
+			hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+			bool snapWithTrigger = false;
+			RaycastHit rayToUseWithSnap = new RaycastHit();
+			bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+			if (hits.Count > 0)
+			{
+				// Handle snap triggers first
+				if (hits.Count == 1 || theyAreAllSnapTriggers)
+				{
+					if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
+					{
+						if (CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hits[0].collider.gameObject))
+						{
+							snapWithTrigger = true;
+							rayToUseWithSnap = hits[0];
+						}
+						hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+					}
+					else
+					{
+						hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+					}
+				}
+				else
+				{
+					foreach (var hit in hits)
+					{
+						if (hit.collider.gameObject.name.StartsWith("StaticPos") && Input.GetKey(KeyCode.LeftControl))
+						{
+							if (CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hit.collider.gameObject))
+							{
+								snapWithTrigger = true;
+								rayToUseWithSnap = hit;
+								break;
+							}
+						}
+						else
+						{
+							hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+							break;
+						}
+					}
+				}
+				if (snapWithTrigger)
+				{
+					previewObjectToBuildObj.SetActive(true);
+					previewObjectToBuildObj.transform.position = rayToUseWithSnap.collider.transform.position;
+					if (currentHittenSnapTrigger != rayToUseWithSnap.collider.gameObject)
+					{
+						currentHittenSnapTrigger = rayToUseWithSnap.collider.gameObject;
+						previewObjectToBuildObj.transform.rotation = rayToUseWithSnap.collider.transform.rotation;
+					}
+				}
+				else if (hits.Count > 0)
+				{
+					currentHittenSnapTrigger = null;
+					previewObjectToBuildObj.SetActive(true);
+					previewObjectToBuildObj.transform.position = hits[0].point;
+					// Inside PreviewObject(), replace the rotation logic section with:
+					if (lastHittenNormalByPreviewRay != hits[0].normal)
+					{
+						lastHittenNormalByPreviewRay = hits[0].normal;
+						Vector3 wallNormal = hits[0].normal;
+						if (wallNormal != Vector3.up && wallNormal != Vector3.down)
+						{
+							// For walls: Create a rotation that makes objects face outward consistently
+							Vector3 right = Vector3.Cross(Vector3.up, wallNormal).normalized;
+							Vector3 up = Vector3.Cross(wallNormal, right).normalized;
 
-            bool snapWithTrigger = false;
-            RaycastHit rayToUseWithSnap = new RaycastHit();
-
-            bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
-
-            if (hits.Count > 0)
-            {
-                // If there's only one hit and if it is a snap trigger, it has to be the only hitten object for sure.
-                // Or, if all of the hits are snap to grid triggers, also execute this and use the first hit as well, it doesn't matter.
-                if (hits.Count == 1 || theyAreAllSnapTriggers)
-                {
-                    if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
-                    {
-                        if (CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hits[0].collider.gameObject))
-                        {
-                            snapWithTrigger = true;
-                            rayToUseWithSnap = hits[0];
-                        }
-                        hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
-                    }
-                    else
-                    {
-                        hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
-                    }
-                }
-                else
-                {
-                    // If there are 2 hits or more, then iterate over the hits and check if you can snap with them.
-                    // Only if you're pressing Ctrl.
-                    foreach (var hit in hits)
-                    {
-                        if (hit.collider.gameObject.name.StartsWith("StaticPos") && Input.GetKey(KeyCode.LeftControl))
-                        {
-                            if (CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hit.collider.gameObject))
-                            {
-                                snapWithTrigger = true;
-                                rayToUseWithSnap = hit;
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            // Hits are shorted from the closest one to the farthest one.
-                            // If at some point, we stop detecting snap triggers, remove all of the snap triggeres from the hits list.
-                            // This is to avoid things like grounds colliding with the triggers and no snapping since there are more objects below.
-                            hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
-                            break;
-                        }
-                    }
-                }
-
-                if (snapWithTrigger)
-                {
-                    previewObjectToBuildObj.SetActive(true);
-                    previewObjectToBuildObj.transform.position = rayToUseWithSnap.collider.transform.position;
-                    // Only update rotation when the trigger is different, so user can rotate preview object even when snap trigger is found.
-                    if (currentHittenSnapTrigger != rayToUseWithSnap.collider.gameObject)
-                    {
-                        currentHittenSnapTrigger = rayToUseWithSnap.collider.gameObject;
-                        previewObjectToBuildObj.transform.rotation = rayToUseWithSnap.collider.transform.rotation;
-                    }
-                }
-                else if (hits.Count > 0) // When using the default preview behaviour, use the closest hit, why not?
-                {
-                    currentHittenSnapTrigger = null;
-
-                    previewObjectToBuildObj.SetActive(true);
-                    previewObjectToBuildObj.transform.position = hits[0].point;
-                    // Only update the preview object rotation when the ray hit ANOTHER surface, so the user can rotate the preview object before placing it.
-                    if (lastHittenNormalByPreviewRay != hits[0].normal)
-                    {
-                        lastHittenNormalByPreviewRay = hits[0].normal;
-                        previewObjectToBuildObj.transform.up = hits[0].normal;
-                    }
-                }
-                else
-                {
-                    previewObjectToBuildObj.SetActive(false);
-                }
-            }
-            else
-            {
-                previewObjectToBuildObj.SetActive(false);
-            }
-        }
-        void InstanceObjectInThePreviewObjectPos()
+							// Try using the up vector as forward direction
+							previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(up, wallNormal);
+						}
+						else
+						{
+							// For floors/ceilings: Use world right as forward direction
+							if (wallNormal == Vector3.up)
+							{
+								// For floors: Use the floor normal (up) as the up direction
+								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.right, Vector3.up);
+							}
+							else // Vector3.down (ceiling)
+							{
+								// For ceilings: Use the ceiling normal (down) but flip it for proper orientation
+								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.right, Vector3.down);
+							}
+						}
+					}
+				}
+				else
+				{
+					previewObjectToBuildObj.SetActive(false);
+				}
+			}
+			else
+			{
+				previewObjectToBuildObj.SetActive(false);
+			}
+		}
+		void InstanceObjectInThePreviewObjectPos()
         {
             levelHasBeenModified = true;
 
@@ -1967,26 +2034,24 @@ namespace FS_LevelEditor.Editor
                 if (arrowColliderName == "Z") offsetObjPositionAndMosueWhenClick.z = objPositionWhenArrowClick.z - collisionOnPlane.z;
             }
         }
-        void MoveObject(GizmosArrow direction)
-        {
-            // Get the ray from the camera.
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		void MoveObject(GizmosArrow direction)
+		{
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-            // If the ray can collide with the "invisible" plane.
-            if (movementPlane.Raycast(ray, out float distance))
-            {
-                if (!IsCurrentState(EditorState.MOVING_OBJECT)) SetCurrentEditorState(EditorState.MOVING_OBJECT);
+			if (movementPlane.Raycast(ray, out float distance))
+			{
+				if (!IsCurrentState(EditorState.MOVING_OBJECT))
+				{
+					SetCurrentEditorState(EditorState.MOVING_OBJECT);
+					// Store the original position when movement starts
+					objLocalPositionWhenStartedMoving = currentSelectedObj.transform.localPosition;
+				}
 
-                // IT WORKS, DON'T EVEN DARE TO TOUCH THIS EVER AGAIN!
+				Vector3 hitWorldPosition = ray.GetPoint(distance);
+				Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
+				float movementDistance = Vector3.Dot(displacement, GetAxisDirection(collidingArrow, currentSelectedObj));
+				Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
 
-                Vector3 hitWorldPosition = ray.GetPoint(distance);
-                Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
-
-                float movementDistance = Vector3.Dot(displacement, GetAxisDirection(collidingArrow, currentSelectedObj));
-
-                Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
-
-				// If it's using global arrows, just use the normal offset, otherwise, use the damn complex math path.
 				Vector3 newPosition;
 				if (globalGizmosArrowsEnabled)
 				{
@@ -1996,13 +2061,14 @@ namespace FS_LevelEditor.Editor
 				{
 					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
 				}
-				// Snap to grid if enabled
-				currentSelectedObj.transform.position = gridEnabled ? SnapToGrid(newPosition) : newPosition;
+
+				// Apply grid snapping BEFORE setting position
+				Vector3 finalPosition = gridEnabled ? SnapToGrid(newPosition) : newPosition;
+				currentSelectedObj.transform.position = finalPosition;
 			}
+		}
 
-        }
-
-        void DuplicateSelectedObject()
+		void DuplicateSelectedObject()
         {
             if (currentSelectedObj == null) return;
 
@@ -2162,62 +2228,63 @@ namespace FS_LevelEditor.Editor
             }
         }
 
-        public void RegisterLEAction(LEAction.LEActionType type, GameObject targetObj, bool forMultipleObjs, Vector3? oldPos = null, Vector3? newPos = null,
-            Quaternion? oldRot = null, Quaternion? newRot = null, Vector3? oldScale = null, Vector3? newScale = null)
-        {
-            if (!targetObj) return;
+		public void RegisterLEAction(LEAction.LEActionType type, GameObject targetObj, bool forMultipleObjs,
+	Vector3? oldPos = null, Vector3? newPos = null, Quaternion? oldRot = null, Quaternion? newRot = null,
+	Vector3? oldScale = null, Vector3? newScale = null)
+		{
+			if (!targetObj) return;
 
-            currentExecutingAction = new LEAction();
-            currentExecutingAction.forMultipleObjects = forMultipleObjs;
+			currentExecutingAction = new LEAction();
+			currentExecutingAction.forMultipleObjects = forMultipleObjs;
+			currentExecutingAction.actionType = type;
 
-            currentExecutingAction.actionType = type;
+			switch (type)
+			{
+				case LEAction.LEActionType.MoveObject:
+					// Ensure positions are grid-aligned if grid is enabled
+					currentExecutingAction.oldPos = gridEnabled && oldPos.HasValue ? SnapToGrid(oldPos.Value) : oldPos.Value;
+					currentExecutingAction.newPos = gridEnabled && newPos.HasValue ? SnapToGrid(newPos.Value) : newPos.Value;
+					break;
 
-            switch (type)
-            {
-                case LEAction.LEActionType.MoveObject:
-                    currentExecutingAction.oldPos = oldPos.Value;
-                    currentExecutingAction.newPos = newPos.Value;
-                    break;
+				case LEAction.LEActionType.RotateObject:
+					currentExecutingAction.oldRot = oldRot.Value;
+					currentExecutingAction.newRot = newRot.Value;
+					break;
 
-                case LEAction.LEActionType.RotateObject:
-                    currentExecutingAction.oldRot = oldRot.Value;
-                    currentExecutingAction.newRot = newRot.Value;
-                    break;
+				case LEAction.LEActionType.ScaleObject:
+					currentExecutingAction.oldScale = oldScale.Value;
+					currentExecutingAction.newScale = newScale.Value;
+					break;
 
-                case LEAction.LEActionType.ScaleObject:
-                    currentExecutingAction.oldScale = oldScale.Value;
-                    currentExecutingAction.newScale = newScale.Value;
-                    break;
+				case LEAction.LEActionType.SnapObject:
+					currentExecutingAction.oldPos = gridEnabled && oldPos.HasValue ? SnapToGrid(oldPos.Value) : oldPos.Value;
+					currentExecutingAction.newPos = gridEnabled && newPos.HasValue ? SnapToGrid(newPos.Value) : newPos.Value;
+					currentExecutingAction.oldRot = oldRot.Value;
+					currentExecutingAction.newRot = newRot.Value;
+					break;
+			}
 
-                case LEAction.LEActionType.SnapObject:
-                    currentExecutingAction.oldPos = oldPos.Value;
-                    currentExecutingAction.newPos = newPos.Value;
-                    currentExecutingAction.oldRot = oldRot.Value;
-                    currentExecutingAction.newRot = newRot.Value;
-                    break;
-            }
+			// Rest of the method remains the same...
+			if (forMultipleObjs)
+			{
+				currentExecutingAction.targetObjs = new List<GameObject>();
+				foreach (var obj in targetObj.GetChilds())
+				{
+					if (type == LEAction.LEActionType.DeleteObject && !obj.GetComponent<LE_Object>().canUndoDeletion) continue;
+					currentExecutingAction.targetObjs.Add(obj);
+				}
+			}
+			else
+			{
+				currentExecutingAction.targetObj = targetObj;
+			}
 
-            if (forMultipleObjs)
-            {
-                currentExecutingAction.targetObjs = new List<GameObject>();
-                foreach (var obj in targetObj.GetChilds())
-                {
-                    // If the type is Deletion, only add those objects that CAN be actually un-deleted.
-                    if (type == LEAction.LEActionType.DeleteObject && !obj.GetComponent<LE_Object>().canUndoDeletion) continue;
-
-                    currentExecutingAction.targetObjs.Add(obj);
-                }
-            }
-            else
-            {
-                currentExecutingAction.targetObj = targetObj;
-            }
-
-            actionsMade.Add(currentExecutingAction);
-        }
+			actionsMade.Add(currentExecutingAction);
+		}
 
 
-        public void EnterPlayMode()
+
+		public void EnterPlayMode()
         {
             if (enteringPlayMode) return;
 
@@ -2461,9 +2528,15 @@ namespace FS_LevelEditor.Editor
         {
             RenderSettings.skybox = skyboxes[skyboxID];
         }
-    }
+		private Vector3 GetCleanPositionForUndo(Vector3 position)
+		{
+			// If grid is enabled, return the snapped position to ensure consistency
+			return gridEnabled ? SnapToGrid(position) : position;
+		}
 
-    public struct LEAction
+	}
+
+	public struct LEAction
     {
         public enum LEActionType
         {

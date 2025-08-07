@@ -297,10 +297,10 @@ namespace FS_LevelEditor
             sprite.depth = 1;
             sprite.transform.localPosition = new Vector3(-45f, 3f, 0f);
 
-            // Set OnClick action, which is creating a new level with a new name.
-            UIButtonPatcher patcher = addButton.AddComponent<UIButtonPatcher>();
-            patcher.onClick += () => EnterEditor(false);
-        }
+			// Set OnClick action, which is creating a new level with a new name.
+			UIButtonPatcher patcher = addButton.AddComponent<UIButtonPatcher>();
+			patcher.onClick += () => EnterEditor(false);
+		}
         public void CreateOpenFolderButton()
         {
             // Get the template, spawn the copy and set some parameters.
@@ -654,9 +654,7 @@ namespace FS_LevelEditor
             // Doesn't matter if the buttons don't exit yet, in that case, the function won't do anything.
             RefreshChangePageButtons();
         }
-
-
-        public void EnterEditor(bool isLoadingLevel = false, string levelFileNameWithoutExtension = "", string levelName = "")
+		public void EnterEditor(bool isLoadingLevel = false, string levelFileNameWithoutExtension = "", string levelName = "")
         {
             if (levelButtonsWasClicked) return;
             levelButtonsWasClicked = true;
