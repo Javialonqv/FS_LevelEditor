@@ -184,13 +184,13 @@ namespace FS_LevelEditor
 
         public void ObjectStart(LEScene scene)
         {
-            if (targetObject.startMovingAtStart && scene == LEScene.Playmode && spawnedWaypoints != null && spawnedWaypoints.Count > 0)
+            if (scene == LEScene.Playmode && spawnedWaypoints != null && spawnedWaypoints.Count > 0)
             {
                 if (usesCustomMoveSystem)
                 {
                     SetupForCustomSystem();
                 }
-                else // Default system for global waypoints.
+                else if (targetObject.startMovingAtStart) // Default system for global waypoints.
                 {
                     StartObjectMovement();
                 }
