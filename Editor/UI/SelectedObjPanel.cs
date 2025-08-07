@@ -874,7 +874,7 @@ namespace FS_LevelEditor.Editor.UI
             movementModeButton.AddOption("TRAVEL BACK", Color.red);
             movementModeButton.AddOption("LOOP", Color.blue);
 
-            CreateObjectAttribute("+ Add Platform Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+            CreateObjectAttribute("AddMovingPlatformWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
             movingPlatformAttributes.SetActive(false);
             attributesPanels.Add("Moving Platform", movingPlatformAttributes);
