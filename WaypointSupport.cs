@@ -152,7 +152,7 @@ namespace FS_LevelEditor
         }
         void CreateTravelBackWaypoints(List<WaypointData> originalList)
         {
-            for (int i = originalList.Count - 1; i >= 0; i--)
+            for (int i = originalList.Count - 2; i >= 0; i--)
             {
                 WaypointData data = new WaypointData();
                 data.position = originalList[i].position;
