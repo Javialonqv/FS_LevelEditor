@@ -45,6 +45,8 @@ object.WAYPOINT,Waypoint,Waypoint,
 object.JETPACK,Jetpack,Jetpack,Ранець
 object.ARROW,Arrow,Flecha,Стрілка
 object.GUN,Taser,Taser,Тазер
+object.MOVING_PLATFORM,Moving Platform,Plataforma Movil,
+object.MOVING_PLATFORM_WAYPOINT,Moving Platform  Waypoint,Waypoint de Plataforma Movil,
 Player,Player,Jugador,Гравець
 events.WhenActivatingEvents,When Activating,Cuando Se Activa,Коли активне
 events.WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva,Коли неактивне
