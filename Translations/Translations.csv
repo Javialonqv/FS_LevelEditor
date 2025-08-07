@@ -81,6 +81,7 @@ Damage,Damage,Daño,Шкода
 TravelBack,Travel Back,Regresarse,Повернутись назад
 AddGlobalWaypoint,+ Add Global Waypoint,+ Añadir Waypoint Global,
 AddSawWaypoint,+ Add Saw Waypoint,+ Añadir Waypoint de Sierra,
+AddMovingPlatformWaypoint,+ Add Platform Waypoint,+ Añadir Waypoint de Plataforma,
 WaitTime,Wait Time,Tiempo de Espera,Час очікування
 InitialState,Initial State,Estado Inicial,Початковий стан
 DEACTIVATED,DEACTIVATED,DESACTIVADO,ДЕАКТИВОВАНИЙ
