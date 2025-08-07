@@ -864,6 +864,13 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentParentToCreateAttributes(movingPlatformAttributes);
 
             CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+
+            CreateObjectAttribute("Movement Mode", AttributeType.BUTTON_MULTIPLE, 0, null, "MovementMode");
+            var movementModeButton = movingPlatformAttributes.GetChildAt("MovementMode/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+            movementModeButton.AddOption("NONE", Color.black);
+            movementModeButton.AddOption("TRAVEL BACK", Color.red);
+            movementModeButton.AddOption("LOOP", Color.blue);
+
             CreateObjectAttribute("+ Add Platform Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
             movingPlatformAttributes.SetActive(false);

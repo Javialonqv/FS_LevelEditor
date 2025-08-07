@@ -19,6 +19,7 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>()
             {
                 { "ActivateOnStart", true },
+                { "MovementMode", WaypointMode.TRAVEL_BACK },
                 { "waypoints", new List<WaypointData>() }
             };
         }
@@ -119,6 +120,19 @@ namespace FS_LevelEditor
                 {
                     if (EditorController.Instance != null) SetMeshOnEditor((bool)value);
                     properties["ActivateOnStart"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "MovementMode")
+            {
+                if (value is int)
+                {
+                    properties["MovementMode"] = (WaypointMode)value;
+                    return true;
+                }
+                else if (value is WaypointMode)
+                {
+                    properties["MovementMode"] = value;
                     return true;
                 }
             }

@@ -29,5 +29,12 @@ namespace FS_LevelEditor.WaypointSupports
             platformScript.currentWaypoint = spawnedWaypoints[0].gameObject;
             platformScript.currentWaypointScript = spawnedWaypoints[0].GetComponent<Waypoint>();
         }
+
+        public override WaypointMode GetWaypointMode()
+        {
+            LE_Moving_Platform platform = GetComponent<LE_Moving_Platform>();
+
+            return platform.GetProperty<WaypointMode>("MovementMode");
+        }
     }
 }
