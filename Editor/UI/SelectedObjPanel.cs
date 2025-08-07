@@ -469,7 +469,7 @@ namespace FS_LevelEditor.Editor.UI
             optionParent.localPosition = Vector3.zero;
             optionParent.localScale = Vector3.one;
 
-            UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "Moving Speed");
+            UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "Movement Mode");
             title.name = "Title";
 
             waypointModeButton = NGUI_Utils.CreateSmallButtonMultiple(optionParent, new Vector3(140, yPosForGlobalProps),
