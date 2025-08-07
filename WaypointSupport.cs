@@ -248,9 +248,11 @@ namespace FS_LevelEditor
             // Update the editor link every frame while it's active.
             if (firstWaypoint && editorLine && editorLine.gameObject.active)
             {
+                if (!editorLine.enabled) editorLine.enabled = true;
                 editorLine.SetPosition(0, transform.position);
                 editorLine.SetPosition(1, firstWaypoint.transform.position);
             }
+            if (!firstWaypoint && editorLine) editorLine.enabled = false;
         }
 
         public void OnSelect()
