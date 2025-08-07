@@ -515,6 +515,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateLaserFieldAttributesPanel();
             CreateTaserAttributesPanel();
             CreateMovingPlatformAttributesPanel();
+            CreateMovingPlatformWaypointAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -578,7 +579,7 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(sawWaypointAttributes);
 
-            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
             CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
             sawWaypointAttributes.SetActive(false);
@@ -877,6 +878,21 @@ namespace FS_LevelEditor.Editor.UI
 
             movingPlatformAttributes.SetActive(false);
             attributesPanels.Add("Moving Platform", movingPlatformAttributes);
+        }
+        void CreateMovingPlatformWaypointAttributesPanel()
+        {
+            GameObject waypointAttributes = new GameObject("Moving Platform Waypoint");
+            waypointAttributes.transform.parent = objectSpecificPanelsParent;
+            waypointAttributes.transform.localPosition = Vector3.zero;
+            waypointAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(waypointAttributes);
+
+            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+            CreateObjectAttribute("Add Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+
+            waypointAttributes.SetActive(false);
+            attributesPanels.Add("Moving Platform Waypoint", waypointAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
