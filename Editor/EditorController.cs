@@ -24,8 +24,14 @@ namespace FS_LevelEditor.Editor
         SELECTING_TARGET_OBJ,
         PAUSED,
     }
+	public enum BulkSelectionMode
+	{
+		Everything,
+		ObjectsOnly,
+		WaypointsAndObjectsWithWaypoints
+	}
 
-    [RegisterTypeInIl2Cpp]
+	[RegisterTypeInIl2Cpp]
     public class EditorController : MonoBehaviour
     {
         public static EditorController Instance { get; private set; }
@@ -70,9 +76,10 @@ namespace FS_LevelEditor.Editor
         // Selected mode.
         public enum Mode { Building, Selection }
         public Mode currentMode = Mode.Building;
+		private BulkSelectionMode currentBulkSelectionMode = BulkSelectionMode.Everything;
 
-        //Bulk selection.
-        private bool isSelecting = false;
+		//Bulk selection.
+		private bool isSelecting = false;
         private Vector2 selectionStartScreen;
         private Vector2 selectionEndScreen;
         private float selectionStartTime;
@@ -798,41 +805,77 @@ namespace FS_LevelEditor.Editor
             }
         }
 
-        private void SelectObjectsInRectangle(Vector2 start, Vector2 end)
-        {
-            // Convert to min/max
-            float minX = Mathf.Min(start.x, end.x);
-            float maxX = Mathf.Max(start.x, end.x);
-            float minY = Mathf.Min(start.y, end.y);
-            float maxY = Mathf.Max(start.y, end.y);
+		private void SelectObjectsInRectangle(Vector2 start, Vector2 end)
+		{
+			float minX = Mathf.Min(start.x, end.x);
+			float maxX = Mathf.Max(start.x, end.x);
+			float minY = Mathf.Min(start.y, end.y);
+			float maxY = Mathf.Max(start.y, end.y);
 
-            List<GameObject> selectedObjects = new List<GameObject>();
-            foreach (var obj in currentInstantiatedObjects)
-            {
-                if (obj == null || obj.isDeleted || !obj.gameObject.active) continue;
-                Vector3 screenPos = Camera.main.WorldToScreenPoint(obj.transform.position);
-                if (screenPos.z < 0) continue; // Behind camera
+			Camera cam = Camera.main;
+			Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(cam);
 
-                if (screenPos.x >= minX && screenPos.x <= maxX && screenPos.y >= minY && screenPos.y <= maxY)
-                {
-                    selectedObjects.Add(obj.gameObject);
-                }
-            }
+			var selectedObjects = new List<GameObject>();
+			var bounds = new Bounds();
 
-            if (selectedObjects.Count == 0)
-            {
-                SetSelectedObj(null);
-            }
-            else if (selectedObjects.Count == 1)
-            {
-                SetSelectedObj(selectedObjects[0]);
-            }
-            else
-            {
-                SetMultipleObjectsAsSelected(selectedObjects);
-            }
-        }
-        void ManageObjectRotationShortcuts()
+			foreach (var obj in currentInstantiatedObjects)
+			{
+				if (obj == null || obj.isDeleted)
+					continue;
+
+				// Filter by mode
+				switch (currentBulkSelectionMode)
+				{
+					case BulkSelectionMode.ObjectsOnly:
+						if (obj is LE_Waypoint) continue;
+						break;
+					case BulkSelectionMode.WaypointsAndObjectsWithWaypoints:
+						// Only select LE_Waypoint objects, or objects that have at least one waypoint
+						if (!(obj is LE_Waypoint) && (obj.waypoints == null || obj.waypoints.Count == 0))
+							continue;
+						break;
+						// BulkSelectionMode.Everything: no filter
+				}
+
+				bounds.center = obj.transform.position;
+				bounds.extents = obj.transform.lossyScale * 0.5f;
+
+				if (!GeometryUtility.TestPlanesAABB(frustumPlanes, bounds))
+					continue;
+
+				Vector3 screenPos = cam.WorldToScreenPoint(obj.transform.position);
+				if (screenPos.z < 0)
+					continue;
+
+				if (screenPos.x >= minX && screenPos.x <= maxX &&
+					screenPos.y >= minY && screenPos.y <= maxY)
+				{
+					selectedObjects.Add(obj.gameObject);
+				}
+			}
+
+			if (selectedObjects.Count == 0)
+			{
+				SetSelectedObj(null);
+			}
+			else if (selectedObjects.Count == 1)
+			{
+				SetSelectedObj(selectedObjects[0]);
+			}
+			else
+			{
+				SetMultipleObjectsAsSelected(new List<GameObject>(selectedObjects));
+			}
+		}
+		public BulkSelectionMode GetBulkSelectionMode()
+		{
+			return currentBulkSelectionMode;
+		}
+		public void SetBulkSelectionMode(BulkSelectionMode mode)
+		{
+			currentBulkSelectionMode = mode;
+		}
+		void ManageObjectRotationShortcuts()
         {
             GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
 
@@ -1287,35 +1330,79 @@ namespace FS_LevelEditor.Editor
                 SelectedObjPanel.Instance.SetSelectedObjPanelAsNone();
             }
         }
-        public void SetMultipleObjectsAsSelected(List<GameObject> objects, bool isForUndo = false)
-        {
-            // Set the selected object as null so all of the "old" selected objects are deselected.
-            SetSelectedObj(null);
+		public void SetMultipleObjectsAsSelected(List<GameObject> objects, bool isForUndo = false)
+		{
+			if (objects == null || objects.Count == 0)
+			{
+				SetSelectedObj(null);
+				return;
+			}
 
-            if (objects != null)
-            {
-                if (!isForUndo) multipleSelectedObjsParent.transform.localScale = Vector3.one;
+			// Deselect current selection
+			if (currentSelectedObj != null)
+			{
+				if (multipleObjectsSelected)
+				{
+					foreach (var obj in currentSelectedObjects)
+					{
+						if (obj != null)
+						{
+							obj.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.NORMAL);
+							obj.transform.parent = obj.GetComponent<LE_Object>().objectParent;
+						}
+					}
+				}
+				else if (currentSelectedObjComponent != null)
+				{
+					currentSelectedObjComponent.SetObjectColor(LE_Object.LEObjectContext.NORMAL);
+					currentSelectedObjComponent.OnDeselect(null);
+				}
+			}
 
-                if (objects.Count > 0)
-                {
-                    if (!isForUndo) // Use this system, SetSelectObj will do whatever is needed correcty.
-                    {
-                        foreach (var obj in objects)
-                        {
-                            SetSelectedObj(obj, SelectionType.ForceMultiple);
-                        }
-                    }
-                    else // Use this old "awful" system that for some reason hasn't break anything yet, and it's needed for ManageUndo().
-                    {
-                        currentSelectedObjects = new List<GameObject>(objects); // Replace the list with the new one with the copied objects.
-                        currentSelectedObjects.ForEach(obj => obj.transform.parent = multipleSelectedObjsParent.transform);
-                        SetSelectedObj(multipleSelectedObjsParent);
-                    }
-                }
-            }
-        }
+			multipleSelectedObjsParent.transform.localScale = Vector3.one;
 
-        void DeleteObject(GameObject obj)
+			// Calculate center position using all objects, regardless of active state
+			Vector3 centeredPosition = Vector3.zero;
+			int validCount = 0;
+			foreach (var obj in objects)
+			{
+				if (obj != null)
+				{
+					centeredPosition += obj.transform.position;
+					validCount++;
+				}
+			}
+
+			if (validCount > 0)
+			{
+				centeredPosition /= validCount;
+
+				multipleSelectedObjsParent.transform.position = centeredPosition;
+				multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
+
+				currentSelectedObjects = new List<GameObject>();
+				foreach (var obj in objects)
+				{
+					if (obj != null)
+					{
+						var leObj = obj.GetComponent<LE_Object>();
+						leObj.SetObjectColor(LE_Object.LEObjectContext.SELECT);
+						obj.transform.parent = multipleSelectedObjsParent.transform;
+						currentSelectedObjects.Add(obj);
+						leObj.OnSelect();
+					}
+				}
+			}
+
+			multipleObjectsSelected = true;
+			currentSelectedObj = multipleSelectedObjsParent;
+
+			if (currentSelectedObjects.Count > 0)
+			{
+				SelectedObjPanel.Instance.SetMultipleObjectsSelected();
+			}
+		}
+		void DeleteObject(GameObject obj)
         {
             // Get the current existing objects in the level objects parent.
             int existingObjects = levelObjectsParent.GetChilds(false).ToArray().Length;

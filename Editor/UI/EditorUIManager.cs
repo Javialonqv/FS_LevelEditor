@@ -56,7 +56,11 @@ namespace FS_LevelEditor.Editor.UI
         public GameObject pauseMenu;
         public GameObject navigation;
 
-        public EditorUIManager(IntPtr ptr) : base(ptr) { }
+		GameObject bulkSelectionPanel;
+		UIButtonPatcher bulkPreviousButtonObj, bulkNextButtonObj;
+		UILabel bulkSelectionLabel;
+
+		public EditorUIManager(IntPtr ptr) : base(ptr) { }
 
         void Awake()
         {
@@ -107,8 +111,10 @@ namespace FS_LevelEditor.Editor.UI
             CreateSavingLevelLabel();
             CreateModeNavigationPanel();
             CreateHelpPanel();
+            CreateBulkSelectionPanel();
 
-            EventsUIPageManager.Create();
+
+			EventsUIPageManager.Create();
             TextEditorUI.Create();
 
             CreateHittenTargetObjPanel();
@@ -271,7 +277,61 @@ namespace FS_LevelEditor.Editor.UI
             hittenTargetObjLabel.text = hittenObjName;
         }
 
-        public void CreateHelpPanel()
+		void CreateBulkSelectionPanel()
+		{
+			// Create the main panel container
+			bulkSelectionPanel = new GameObject("BulkSelectionPanel");
+			bulkSelectionPanel.transform.parent = editorUIParent.transform;
+			bulkSelectionPanel.transform.localPosition = new Vector3(800, -440, 0); // Just above the mode panel
+			bulkSelectionPanel.transform.localScale = Vector3.one;
+
+			bulkPreviousButtonObj = NGUI_Utils.CreateButton(bulkSelectionPanel.transform, new Vector3(-160, 0), new Vector3Int(50, 50, 1), "<");
+			bulkPreviousButtonObj.gameObject.RemoveComponent<UIButtonScale>();
+			bulkPreviousButtonObj.buttonSprite.depth = 1;
+			bulkPreviousButtonObj.onClick += SwitchToPreviousBulkSelectionMode;
+
+			bulkSelectionLabel = NGUI_Utils.CreateLabel(bulkSelectionPanel.transform, new Vector3(-35, 0, 0), new Vector3Int(400, 50, 0), "", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			bulkSelectionLabel.fontSize = 28;
+			SetBulkSelectionLabelText(EditorController.Instance.GetBulkSelectionMode());
+
+			bulkNextButtonObj = NGUI_Utils.CreateButton(bulkSelectionPanel.transform, new Vector3(90, 0), new Vector3Int(50, 50, 1), ">");
+			bulkNextButtonObj.gameObject.RemoveComponent<UIButtonScale>();
+			bulkNextButtonObj.buttonSprite.depth = 1;
+			bulkNextButtonObj.onClick += SwitchToNextBulkSelectionMode;
+
+			bulkSelectionPanel.SetActive(true);
+		}
+		void SwitchToPreviousBulkSelectionMode()
+		{
+			var modes = (BulkSelectionMode[])Enum.GetValues(typeof(BulkSelectionMode));
+			int currentIndex = Array.IndexOf(modes, EditorController.Instance.GetBulkSelectionMode());
+			int previousIndex = (currentIndex - 1 + modes.Length) % modes.Length;
+			EditorController.Instance.SetBulkSelectionMode(modes[previousIndex]);
+			SetBulkSelectionLabelText(modes[previousIndex]);
+		}
+
+		void SwitchToNextBulkSelectionMode()
+		{
+			var modes = (BulkSelectionMode[])Enum.GetValues(typeof(BulkSelectionMode));
+			int currentIndex = Array.IndexOf(modes, EditorController.Instance.GetBulkSelectionMode());
+			int nextIndex = (currentIndex + 1) % modes.Length;
+			EditorController.Instance.SetBulkSelectionMode(modes[nextIndex]);
+			SetBulkSelectionLabelText(modes[nextIndex]);
+		}
+
+		public void SetBulkSelectionLabelText(BulkSelectionMode mode)
+		{
+			string text = mode switch
+			{
+				BulkSelectionMode.Everything => "Everything",
+				BulkSelectionMode.ObjectsOnly => "Objects Only",
+				BulkSelectionMode.WaypointsAndObjectsWithWaypoints => "Waypoints",
+				_ => mode.ToString()
+			};
+			bulkSelectionLabel.text = "[00ffff]" + text + "[-]";
+		}
+		public void CreateHelpPanel()
         {
             #region Create Help Panel With The BG
             helpPanel = new GameObject("HelpPanel");
@@ -472,7 +532,11 @@ namespace FS_LevelEditor.Editor.UI
 
         public void SetEditorUIContext(EditorUIContext context)
         {
-            if (context == EditorUIContext.HELP_PANEL)
+			bulkSelectionPanel.SetActive(context == EditorUIContext.NORMAL);
+			bulkNextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			bulkPreviousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			bulkSelectionLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			if (context == EditorUIContext.HELP_PANEL)
             {
                 helpPanel.SetActive(true);
 
