@@ -259,8 +259,6 @@ namespace FS_LevelEditor
         }
         public void OnDeselect()
         {
-            if (EditorController.Instance && EditorController.Instance.showAllWaypoints) return;
-
             ShowWaypoints(false);
         }
         public void BeforeSave()
@@ -271,15 +269,21 @@ namespace FS_LevelEditor
 
         public void ShowWaypoints(bool show)
         {
-            waypointsParent.gameObject.SetActive(show);
-            if (editorLine) editorLine.gameObject.SetActive(show); // Technically this can only be called when we're on the editor, but just in case.
-
             if (show)
             {
-                foreach (var waypoint in spawnedWaypoints)
-                {
-                    waypoint.gameObject.SetTransparentMaterials();
-                }
+                waypointsParent.gameObject.SetActive(true);
+                if (editorLine) editorLine.gameObject.SetActive(true); // Technically this can only be called when we're on the editor, but just in case.
+            }
+            else if (!EditorController.Instance.showAllWaypoints)
+            {
+                waypointsParent.gameObject.SetActive(false);
+                if (editorLine) editorLine.gameObject.SetActive(false); // Technically this can only be called when we're on the editor, but just in case.
+            }
+
+            // Set the transparent materials in the waypoints just in case.
+            foreach (var waypoint in spawnedWaypoints)
+            {
+                waypoint.gameObject.SetTransparentMaterials();
             }
         }
         public LE_Waypoint AddWaypoint(bool fromSave = false)

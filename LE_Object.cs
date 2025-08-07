@@ -734,6 +734,13 @@ namespace FS_LevelEditor
         {
             foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
             {
+                // Skip the waypoints, since they're OTHER objects, it's just they're inside of this main object, but whatever.
+                if (canHaveWaypoints)
+                {
+                    if (waypointSupport && renderer.transform.IsChildOf(waypointSupport.waypointsParent)) continue;
+                    if (customWaypointSupport && renderer.transform.IsChildOf(customWaypointSupport.waypointsParent)) continue;
+                }
+
                 foreach (var material in renderer.materials)
                 {
                     if (!material.HasProperty("_Color")) continue;
