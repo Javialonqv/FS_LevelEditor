@@ -120,6 +120,18 @@ namespace FS_LevelEditor
 
             return base.SetProperty(name, value);
         }
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "AddWaypoint")
+            {
+                LE_Waypoint spawnedWaypoint = mainSupport.AddWaypoint(false);
+                spawnedWaypoint.transform.localPosition = transform.localPosition;
+                spawnedWaypoint.transform.localRotation = transform.localRotation;
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
+        }
 
         public override LE_Object[] GetReferenceObjectsToGetObjID()
         {
