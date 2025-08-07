@@ -311,7 +311,7 @@ namespace FS_LevelEditor.Editor.UI
 			SetBulkSelectionLabelText(modes[previousIndex]);
 		}
 
-		void SwitchToNextBulkSelectionMode()
+		public void SwitchToNextBulkSelectionMode()
 		{
 			var modes = (BulkSelectionMode[])Enum.GetValues(typeof(BulkSelectionMode));
 			int currentIndex = Array.IndexOf(modes, EditorController.Instance.GetBulkSelectionMode());

@@ -82,8 +82,9 @@ namespace FS_LevelEditor
             GUN,
             ARROW,
             MOVING_PLATFORM,
-            MOVING_PLATFORM_WAYPOINT
-        }
+            MOVING_PLATFORM_WAYPOINT,
+			CROW
+		}
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
         {

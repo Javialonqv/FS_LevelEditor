@@ -717,6 +717,10 @@ namespace FS_LevelEditor.Editor
                 EditorUIManager.Instance.PlaySavingLevelLabel();
                 levelHasBeenModified = false;
             }
+            if(Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.W))
+            {
+                EditorUIManager.Instance.SwitchToNextBulkSelectionMode();
+			}
 
             // Shortcut for duplicating current selected object.
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.D))
