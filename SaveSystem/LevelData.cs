@@ -64,13 +64,14 @@ namespace FS_LevelEditor.SaveSystem
         public long lastModificationTime { get; set; }
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
         public Dictionary<string, object> globalProperties { get; set; } = new Dictionary<string, object>();
+		public byte[] thumbnailData; // Add thumbnail storage
 
-        public static int currentLevelObjsCount = 0;
+		public static int currentLevelObjsCount = 0;
 
         static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
 
-        // Create a LeveData instance with all of the current objects in the level.
-        public static LevelData CreateLevelData(string levelName)
+		// Create a LeveData instance with all of the current objects in the level.
+		public static LevelData CreateLevelData(string levelName)
         {
             LevelData data = new LevelData();
             data.levelName = levelName;

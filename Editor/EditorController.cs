@@ -30,6 +30,13 @@ namespace FS_LevelEditor.Editor
 		ObjectsOnly,
 		WaypointsAndObjectsWithWaypoints
 	}
+	public enum GridPlane
+	{
+		None,
+		XZ,
+		XY,
+		YZ
+	}
 
 	[RegisterTypeInIl2Cpp]
     public class EditorController : MonoBehaviour
@@ -120,7 +127,19 @@ namespace FS_LevelEditor.Editor
         public Dictionary<string, object> globalProperties = LevelData.GetDefaultGlobalProperties();
         List<Material> skyboxes = new List<Material>();
 
-        void Awake()
+		#region Grid
+		private bool gridEnabled = true;
+		private float gridSize = 1f;
+		private float minGridSize = 0.125f;
+		private float maxGridSize = 8f;
+		private GameObject gridVisual;
+		private LineRenderer[] gridLines;
+		private int gridLinesCount = 100;
+		private float gridExtent = 100f;
+		private GridPlane currentGridPlane = GridPlane.XZ;
+		#endregion
+
+		void Awake()
         {
             Instance = this;
             MenuController.isInLevelEditor = true;
@@ -146,8 +165,9 @@ namespace FS_LevelEditor.Editor
             ui.ShowFuelBar(false, 0, 0);
             ui.ForceHideFuelBar();
             ui.HideFuelBarRoutine(0);
+            CreateGridVisual();
 
-        }
+		}
         void CreateSelectionBox()
         {
             if (selectionBox != null) return;
@@ -257,12 +277,13 @@ namespace FS_LevelEditor.Editor
 
             // The code to change the Mode to Selection by default is in EditorUIManager.Start() since here, the UI script hasn't been initialized yet.
         }
-        public void AfterFinishedLoadingLevel()
-        {
-            SetupSkybox((int)globalProperties["Skybox"]);
-        }
+		public void AfterFinishedLoadingLevel()
+		{
+			SetupSkybox((int)globalProperties["Skybox"]);
+			CenterGridOnLevel();
+		}
 
-        void Update()
+		void Update()
         {
             if (PlayFromMenuHelper.PlayImmediatelyOnEditorLoad && PlayFromMenuHelper.LevelToPlay == levelFileNameWithoutExtension)
             {
@@ -431,7 +452,7 @@ namespace FS_LevelEditor.Editor
                 levelHasBeenModified = true;
                 SetCurrentEditorState(EditorState.NORMAL);
                 collidingArrow = GizmosArrow.None;
-            }
+			}
             #endregion
 
             #region Delete Object With Delete
@@ -529,8 +550,323 @@ namespace FS_LevelEditor.Editor
             // We need to avoid that.
             if (!Utils.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
         }
+		private float GetLowestObjectY()
+		{
+			float lowestY = float.MaxValue;
+			var children = levelObjectsParent.GetChilds(false).ToArray();
 
-        private void UpdateSelectionBox()
+			foreach (var obj in children)
+			{
+				if (!obj.activeSelf) continue;
+
+				// Skip if it's a waypoint since those can be floating
+				var leObj = obj.GetComponent<LE_Object>();
+				if (leObj != null && leObj is LE_Waypoint) continue;
+
+				// Get lowest Y position of the object
+				float objY = obj.transform.position.y;
+				if (objY < lowestY)
+				{
+					lowestY = objY;
+				}
+			}
+
+			// If no objects found, fallback to 0
+			return lowestY == float.MaxValue ? 0f : lowestY;
+		}
+		private Vector3 GetLevelCenter()
+		{
+			// Only use ground objects for grid centering
+			var children = levelObjectsParent.GetChilds(false).ToArray();
+			var groundTypes = LE_Object.classifiedObjectTypes["GROUND"];
+			Vector3 sum = Vector3.zero;
+			int count = 0;
+
+			foreach (var obj in children)
+			{
+				var leObj = obj.GetComponent<LE_Object>();
+				if (obj.activeSelf && leObj != null && leObj.objectType.HasValue && groundTypes.Contains(leObj.objectType.Value))
+				{
+					sum += obj.transform.position;
+					count++;
+				}
+			}
+
+			// Fallback: if no ground objects, use all objects as before
+			if (count == 0)
+			{
+				foreach (var obj in children)
+				{
+					if (obj.activeSelf)
+					{
+						sum += obj.transform.position;
+						count++;
+					}
+				}
+			}
+
+			return count > 0 ? sum / count : Vector3.zero;
+		}
+		private void CreateGridVisual()
+		{
+			if (gridVisual != null)
+			{
+				Destroy(gridVisual);
+			}
+
+			int maxCellCount = Mathf.CeilToInt(gridExtent / minGridSize) * 2;
+			int maxLines = (maxCellCount + 1) * 2;
+
+			// Use the level center for initial grid position
+			Vector3 levelCenter = GetLevelCenter();
+			float yLevel = GetLowestObjectY();
+			gridVisual = new GameObject("EditorGrid");
+			gridVisual.transform.position = new Vector3(levelCenter.x, yLevel, levelCenter.z);
+			gridLines = new LineRenderer[maxLines];
+
+			for (int i = 0; i < maxLines; i++)
+			{
+				GameObject lineObj = new GameObject($"GridLine_{i}");
+				lineObj.transform.parent = gridVisual.transform;
+
+				LineRenderer line = lineObj.AddComponent<LineRenderer>();
+				line.material = new Material(Shader.Find("Sprites/Default"));
+				line.startWidth = 0.05f; // Thinner lines
+				line.endWidth = 0.01f;
+				line.startColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+				line.endColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+				line.positionCount = 2;
+				line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+				line.receiveShadows = false;
+				line.allowOcclusionWhenDynamic = false;
+
+				gridLines[i] = line;
+			}
+
+			UpdateGridVisual();
+		}
+
+		private void UpdateGridVisual()
+		{
+			if (!gridVisual || !gridEnabled || currentGridPlane == GridPlane.None)
+			{
+				if (gridVisual) gridVisual.SetActive(false);
+				return;
+			}
+
+			// Don't update grid position while moving objects
+			if (IsCurrentState(EditorState.MOVING_OBJECT))
+				return;
+
+			gridVisual.SetActive(true);
+
+			// Use level center for grid drawing
+			Vector3 center = GetLevelCenter();
+			float yLevel = GetLowestObjectY();
+
+			// Also update gridVisual's transform to follow the level center
+			gridVisual.transform.position = new Vector3(center.x, yLevel, center.z);
+
+			int cellCount = Mathf.CeilToInt(gridExtent / gridSize) * 2;
+			float totalExtent = (cellCount / 2) * gridSize;
+
+			int lineIndex = 0;
+
+			switch (currentGridPlane)
+			{
+				case GridPlane.XZ:
+					// X axis lines (red)
+					for (int i = 0; i <= cellCount && lineIndex < gridLines.Length; i++)
+					{
+						float position = -totalExtent + (i * gridSize);
+						Vector3 start = new Vector3(center.x + position, yLevel, center.z - totalExtent);
+						Vector3 end = new Vector3(center.x + position, yLevel, center.z + totalExtent);
+
+						gridLines[lineIndex].SetPosition(0, start);
+						gridLines[lineIndex].SetPosition(1, end);
+						gridLines[lineIndex].startColor = Color.red;
+						gridLines[lineIndex].endColor = Color.red;
+						gridLines[lineIndex].enabled = true;
+						lineIndex++;
+					}
+					// Z axis lines (blue)
+					for (int i = 0; i <= cellCount && lineIndex < gridLines.Length; i++)
+					{
+						float position = -totalExtent + (i * gridSize);
+						Vector3 start = new Vector3(center.x - totalExtent, yLevel, center.z + position);
+						Vector3 end = new Vector3(center.x + totalExtent, yLevel, center.z + position);
+
+						gridLines[lineIndex].SetPosition(0, start);
+						gridLines[lineIndex].SetPosition(1, end);
+						gridLines[lineIndex].startColor = Color.blue;
+						gridLines[lineIndex].endColor = Color.blue;
+						gridLines[lineIndex].enabled = true;
+						lineIndex++;
+					}
+					break;
+				case GridPlane.XY:
+					// X axis lines (red)
+					for (int i = 0; i <= cellCount && lineIndex < gridLines.Length; i++)
+					{
+						float position = -totalExtent + (i * gridSize);
+						Vector3 start = new Vector3(center.x + position, center.y - totalExtent, center.z);
+						Vector3 end = new Vector3(center.x + position, center.y + totalExtent, center.z);
+
+						gridLines[lineIndex].SetPosition(0, start);
+						gridLines[lineIndex].SetPosition(1, end);
+						gridLines[lineIndex].startColor = Color.red;
+						gridLines[lineIndex].endColor = Color.red;
+						gridLines[lineIndex].enabled = true;
+						lineIndex++;
+					}
+					// Y axis lines (green)
+					for (int i = 0; i <= cellCount && lineIndex < gridLines.Length; i++)
+					{
+						float position = -totalExtent + (i * gridSize);
+						Vector3 start = new Vector3(center.x - totalExtent, center.y + position, center.z);
+						Vector3 end = new Vector3(center.x + totalExtent, center.y + position, center.z);
+
+						gridLines[lineIndex].SetPosition(0, start);
+						gridLines[lineIndex].SetPosition(1, end);
+						gridLines[lineIndex].startColor = Color.green;
+						gridLines[lineIndex].endColor = Color.green;
+						gridLines[lineIndex].enabled = true;
+						lineIndex++;
+					}
+					break;
+				case GridPlane.YZ:
+					// Y axis lines (green)
+					for (int i = 0; i <= cellCount && lineIndex < gridLines.Length; i++)
+					{
+						float position = -totalExtent + (i * gridSize);
+						Vector3 start = new Vector3(center.x, center.y + position, center.z - totalExtent);
+						Vector3 end = new Vector3(center.x, center.y + position, center.z + totalExtent);
+
+						gridLines[lineIndex].SetPosition(0, start);
+						gridLines[lineIndex].SetPosition(1, end);
+						gridLines[lineIndex].startColor = Color.green;
+						gridLines[lineIndex].endColor = Color.green;
+						gridLines[lineIndex].enabled = true;
+						lineIndex++;
+					}
+					// Z axis lines (blue)
+					for (int i = 0; i <= cellCount && lineIndex < gridLines.Length; i++)
+					{
+						float position = -totalExtent + (i * gridSize);
+						Vector3 start = new Vector3(center.x, center.y - totalExtent, center.z + position);
+						Vector3 end = new Vector3(center.x, center.y + totalExtent, center.z + position);
+
+						gridLines[lineIndex].SetPosition(0, start);
+						gridLines[lineIndex].SetPosition(1, end);
+						gridLines[lineIndex].startColor = Color.blue;
+						gridLines[lineIndex].endColor = Color.blue;
+						gridLines[lineIndex].enabled = true;
+						lineIndex++;
+					}
+					break;
+			}
+
+			for (; lineIndex < gridLines.Length; lineIndex++)
+			{
+				gridLines[lineIndex].enabled = false;
+			}
+		}
+		private void RotateGrid()
+		{
+			// Cycle through grid planes
+			switch (currentGridPlane)
+			{
+				case GridPlane.XZ:
+					currentGridPlane = GridPlane.XY;
+					break;
+				case GridPlane.XY:
+					currentGridPlane = GridPlane.YZ;
+					break;
+				case GridPlane.YZ:
+					currentGridPlane = GridPlane.XZ;
+					break;
+			}
+			UpdateGridVisual();
+		}
+		private void CenterGridOnLevel()
+		{
+			if (gridVisual != null)
+			{
+				float yLevel = GetLowestObjectY();
+				Vector3 center = GetLevelCenter();
+				gridVisual.transform.position = new Vector3(center.x, yLevel, center.z);
+				UpdateGridVisual();
+			}
+		}
+		private void AdjustGridSize(float delta)
+		{
+			gridSize = Mathf.Clamp(gridSize * (delta > 0 ? 0.5f : 2f), minGridSize, maxGridSize);
+			UpdateGridVisual();
+		}
+
+		private Vector3 SnapToGrid(Vector3 position)
+		{
+			if (!gridEnabled) return position;
+
+			switch (currentGridPlane)
+			{
+				case GridPlane.XZ:
+					return new Vector3(
+						Mathf.Round(position.x / gridSize) * gridSize,
+						position.y,
+						Mathf.Round(position.z / gridSize) * gridSize
+					);
+
+				case GridPlane.XY:
+					return new Vector3(
+						Mathf.Round(position.x / gridSize) * gridSize,
+						Mathf.Round(position.y / gridSize) * gridSize,
+						position.z
+					);
+
+				case GridPlane.YZ:
+					return new Vector3(
+						position.x,
+						Mathf.Round(position.y / gridSize) * gridSize,
+						Mathf.Round(position.z / gridSize) * gridSize
+					);
+
+				default:
+					return position;
+			}
+		}
+		public GridPlane GetCurrentGridPlane()
+		{
+			return currentGridPlane;
+		}
+
+		public void CycleToPreviousGridPlane()
+		{
+			currentGridPlane = currentGridPlane switch
+			{
+				GridPlane.None => GridPlane.YZ,
+				GridPlane.XZ => GridPlane.None,
+				GridPlane.XY => GridPlane.XZ,
+				GridPlane.YZ => GridPlane.XY,
+				_ => GridPlane.None
+			};
+			UpdateGridVisual();
+		}
+
+		public void CycleToNextGridPlane()
+		{
+			currentGridPlane = currentGridPlane switch
+			{
+				GridPlane.None => GridPlane.XZ,
+				GridPlane.XZ => GridPlane.XY,
+				GridPlane.XY => GridPlane.YZ,
+				GridPlane.YZ => GridPlane.None,
+				_ => GridPlane.None
+			};
+			UpdateGridVisual();
+		}
+
+		private void UpdateSelectionBox()
         {
             if (selectionBox == null) return;
 
@@ -566,46 +902,54 @@ namespace FS_LevelEditor.Editor
             selectionBoxSprite.height = Mathf.RoundToInt(Mathf.Abs(bottomRightLocal.y - topLeftLocal.y));
         }
 
-        void LateUpdate()
-        {
-            if (gizmosArrows.activeSelf && currentSelectedObj)
+        bool centerOnce = false;
+		void LateUpdate()
+		{
+            
+			if (gizmosArrows.activeSelf && currentSelectedObj)
+			{
+				gizmosArrows.transform.position = currentSelectedObj.transform.position;
+
+				// If the global gizmos arrows are enabled, force them to be with 0 rotation.
+				if (globalGizmosArrowsEnabled)
+				{
+					gizmosArrows.transform.rotation = Quaternion.identity;
+				}
+				else
+				{
+					gizmosArrows.transform.rotation = currentSelectedObj.transform.rotation;
+				}
+
+				//Scale them based on camera distance
+				float distance = Vector3.Distance(MainCam.transform.position, currentSelectedObj.transform.position);
+				float baseScale = 2f;
+				float scaleFactor = Mathf.Max(0.1f, distance * 0.15f); // 0.15f is a tweakable factor
+				float highestAxis = Utils.HighestValueOfVector(currentSelectedObj.transform.localScale);
+				if (highestAxis < 1f)
+					scaleFactor *= highestAxis;
+
+				gizmosArrows.transform.localScale = Vector3.one * baseScale * scaleFactor;
+			}
+
+			if (snapToGridCube.activeSelf && currentSelectedObj)
+			{
+				snapToGridCube.transform.position = currentSelectedObj.transform.position;
+			}
+
+			if (deathYPlane && deathYPlane.gameObject.activeSelf)
+			{
+				deathYPlane.gameObject.SetActive(true);
+				deathYPlane.SetYPos((float)globalProperties["DeathYLimit"]);
+			}
+            if(!centerOnce)
             {
-                gizmosArrows.transform.position = currentSelectedObj.transform.position;
+				CenterGridOnLevel();
+                centerOnce = true;
+			}
+            
+		}
 
-                // If the global gizmos arrows are enabled, force them to be with 0 rotation.
-                if (globalGizmosArrowsEnabled)
-                {
-                    gizmosArrows.transform.rotation = Quaternion.identity;
-                }
-                else
-                {
-                    gizmosArrows.transform.rotation = currentSelectedObj.transform.rotation;
-                }
-
-                //Scale them based on camera distance
-                float distance = Vector3.Distance(MainCam.transform.position, currentSelectedObj.transform.position);
-                float baseScale = 2f;
-                float scaleFactor = Mathf.Max(0.1f, distance * 0.15f); // 0.15f is a tweakable factor
-                float highestAxis = Utils.HighestValueOfVector(currentSelectedObj.transform.localScale);
-                if (highestAxis < 1f)
-                    scaleFactor *= highestAxis;
-
-                gizmosArrows.transform.localScale = Vector3.one * baseScale * scaleFactor;
-            }
-
-            if (snapToGridCube.activeSelf && currentSelectedObj)
-            {
-                snapToGridCube.transform.position = currentSelectedObj.transform.position;
-            }
-
-            if (deathYPlane && deathYPlane.gameObject.activeSelf)
-            {
-                deathYPlane.gameObject.SetActive(true);
-                deathYPlane.SetYPos((float)globalProperties["DeathYLimit"]);
-            }
-        }
-
-        void ManageEscAction()
+		void ManageEscAction()
         {
             // Shortcut for pausing LE.
             if (Input.GetKeyDown(KeyCode.Escape))
@@ -771,7 +1115,25 @@ namespace FS_LevelEditor.Editor
             {
                 GlobalPropertiesPanel.Instance.ShowOrHideGlobalPropertiesPanel();
             }
-        }
+			if (Input.GetKeyDown(KeyCode.G) && Input.GetKey(KeyCode.LeftShift))
+			{
+				currentGridPlane = currentGridPlane == GridPlane.None ? GridPlane.XZ : GridPlane.None;
+				UpdateGridVisual();
+				EditorUIManager.Instance.SetGridPlaneLabelText(currentGridPlane);
+			}
+            if(Input.GetKeyDown(KeyCode.Tab))
+            {
+				RotateGrid();
+				UpdateGridVisual();
+				EditorUIManager.Instance.SetGridPlaneLabelText(currentGridPlane);
+			}
+			// Grid size control with scroll wheel while holding Left Control
+			float scrollDelta = Input.mouseScrollDelta.y;
+			if (scrollDelta != 0 && !Input.GetKey(KeyCode.LeftControl))
+			{
+				AdjustGridSize(scrollDelta);
+			}
+		}
         void ManageMoveObjectShortcuts()
         {
             GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
@@ -1563,8 +1925,8 @@ namespace FS_LevelEditor.Editor
 
         void StartMovingObject(string arrowColliderName, Ray cameraRay)
         {
-            // Save the position of the object from the first time we clicked.
-            objPositionWhenArrowClick = currentSelectedObj.transform.position;
+			// Save the position of the object from the first time we clicked.
+			objPositionWhenArrowClick = currentSelectedObj.transform.position;
 
             objLocalPositionWhenStartedMoving = currentSelectedObj.transform.localPosition;
 
@@ -1624,16 +1986,20 @@ namespace FS_LevelEditor.Editor
 
                 Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
 
-                // If it's using global arrows, just use the normal offset, otherwise, use the damn complex math path.
-                if (globalGizmosArrowsEnabled)
-                {
-                    currentSelectedObj.transform.position = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
-                }
-                else
-                {
-                    currentSelectedObj.transform.position = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
-                }
-            }
+				// If it's using global arrows, just use the normal offset, otherwise, use the damn complex math path.
+				Vector3 newPosition;
+				if (globalGizmosArrowsEnabled)
+				{
+					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
+				}
+				else
+				{
+					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
+				}
+				// Snap to grid if enabled
+				currentSelectedObj.transform.position = gridEnabled ? SnapToGrid(newPosition) : newPosition;
+			}
+
         }
 
         void DuplicateSelectedObject()
