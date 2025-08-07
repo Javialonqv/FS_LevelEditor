@@ -10,7 +10,7 @@
 
 /Keyboard_Num 1\ to switch to building mode.
 /Keyboard_Num 2\ to switch to selection mode.
-/Keyboard_Num 3\ to switch to deletion mode.
+/Keyboard_Num 3\ to toggle the object waypoints' visibility.
 
 /Keyboard_Left Click\ to place/select/delete an object.
 /Keyboard_Left Control\ to snap to grid the object to build, before placing it.
