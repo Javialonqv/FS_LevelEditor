@@ -662,6 +662,17 @@ namespace FS_LevelEditor.Editor
 
                         foreach (var support in obj.GetComponents<WaypointSupport>())
                         {
+                            // In case it's hiding, check if the user's selecting one of the waypoints of the object, skip it in that case.
+                            if (!showAllWaypoints)
+                            {
+                                bool skipThisObject = false;
+                                foreach (var waypoint in support.spawnedWaypoints)
+                                {
+                                    if (currentSelectedObjects.Contains(waypoint.gameObject)) skipThisObject = true; break;
+                                }
+                                if (skipThisObject) continue;
+                            }
+
                             support.ShowWaypoints(showAllWaypoints);
                         }
                     }
@@ -675,6 +686,17 @@ namespace FS_LevelEditor.Editor
 
                         foreach (var support in obj.GetComponents<WaypointSupport>())
                         {
+                            // In case it's hiding, check if the user's selecting one of the waypoints of the object, skip it in that case.
+                            if (!showAllWaypoints)
+                            {
+                                bool skipThisObject = false;
+                                foreach (var waypoint in support.spawnedWaypoints)
+                                {
+                                    if (currentSelectedObj == waypoint.gameObject) skipThisObject = true; break;
+                                }
+                                if (skipThisObject) continue;
+                            }
+
                             support.ShowWaypoints(showAllWaypoints);
                         }
                     }
