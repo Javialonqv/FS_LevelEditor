@@ -514,6 +514,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateWaypointAttributesPanel();
             CreateLaserFieldAttributesPanel();
             CreateTaserAttributesPanel();
+            CreateMovingPlatformAttributesPanel();
         }
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -852,6 +853,20 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
             attributesPanels.Add("Gun", gun);
+        }
+        void CreateMovingPlatformAttributesPanel()
+        {
+            GameObject movingPlatformAttributes = new GameObject("Moving Platform");
+            movingPlatformAttributes.transform.parent = objectSpecificPanelsParent;
+            movingPlatformAttributes.transform.localPosition = Vector3.zero;
+            movingPlatformAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(movingPlatformAttributes);
+
+            CreateObjectAttribute("+ Add Platform Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+
+            movingPlatformAttributes.SetActive(false);
+            attributesPanels.Add("Moving Platform", movingPlatformAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }

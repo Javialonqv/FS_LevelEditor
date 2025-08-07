@@ -51,9 +51,11 @@
 		<Compile Include="LE_Objects\LE_Gun.cs" />
 		<Compile Include="LE_Objects\LE_Jetpack.cs" />
 		<Compile Include="LE_Objects\LE_Laser_Field.cs" />
+		<Compile Include="LE_Objects\LE_Moving_Platform.cs" />
 		<Compile Include="LE_Objects\LE_Small_Screen.cs" />
 		<Compile Include="LE_Objects\LE_Trigger.cs" />
 		<Compile Include="LE_Objects\LE_Waypoint.cs" />
+		<Compile Include="LE_Objects\Waypoints\LE_Moving_Platform_Waypoint.cs" />
 		<Compile Include="Logger.cs" />
 		<Compile Include="Misc\RotationTweener.cs" />
 		<Compile Include="Misc\ScaleScreenText.cs" />
@@ -116,6 +118,7 @@
 		<Compile Include="UI_Related\UITogglePatcher.cs" />
 		<Compile Include="Utils.cs" />
 		<Compile Include="WaypointSupport.cs" />
+		<Compile Include="WaypointSupports\MovingPlatformWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\SawWaypointSupport.cs" />
 	</ItemGroup>
 

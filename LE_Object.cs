@@ -80,7 +80,9 @@ namespace FS_LevelEditor
             WAYPOINT,
             JETPACK,
             GUN,
-            ARROW
+            ARROW,
+            MOVING_PLATFORM,
+            MOVING_PLATFORM_WAYPOINT
         }
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -117,7 +119,8 @@ namespace FS_LevelEditor
 
         public readonly static Dictionary<ObjectType, Type> customWaypointSupports = new Dictionary<ObjectType, Type>()
         {
-            { ObjectType.SAW, typeof(SawWaypointSupport) }
+            { ObjectType.SAW, typeof(SawWaypointSupport) },
+            { ObjectType.MOVING_PLATFORM, typeof(MovingPlatformWaypointSupport) }
         };
         public readonly static Dictionary<ObjectType?, Vector3> defaultScalesForObjects = new Dictionary<ObjectType?, Vector3>()
         {
@@ -205,6 +208,7 @@ namespace FS_LevelEditor
         public static BreakableWindowController t_window;
         public static PorteScript t_door;
         public static PorteScript t_doorV2;
+        public static MovingPlatformController t_movingPlatform;
 
         public static void GetTemplatesReferences()
         {
@@ -221,6 +225,7 @@ namespace FS_LevelEditor
             t_window = Utils.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
             t_door = Utils.FindObjectOfType<PorteScript>(x => !x.isSkinV2);
             t_doorV2 = Utils.FindObjectOfType<PorteScript>(x => x.isSkinV2);
+            t_movingPlatform = Utils.FindObjectOfType<MovingPlatformController>(x => x.movingPlatform);
         }
         #endregion
 
