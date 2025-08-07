@@ -36,7 +36,7 @@ namespace FS_LevelEditor
 
             properties = new Dictionary<string, object>()
             {
-                { "WaitTime", 0.3f }
+                { "WaitTime", 0f }
             };
 
             mainSupport = GetMainSupport();
