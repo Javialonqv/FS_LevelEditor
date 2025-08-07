@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor;
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,15 +18,27 @@ namespace FS_LevelEditor
         {
             properties = new Dictionary<string, object>()
             {
+                { "ActivateOnStart", true },
                 { "waypoints", new List<WaypointData>() }
             };
         }
 
+
+        public override void OnInstantiated(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                // Set the platform active or not.
+                SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
+            }
+
+            base.OnInstantiated(scene);
+        }
         public override void ObjectStart(LEScene scene)
         {
             if (scene == LEScene.Playmode)
             {
-                script.Activate();
+                if (GetProperty<bool>("ActivateOnStart")) script.Activate();
             }
 
             base.ObjectStart(scene);
@@ -100,7 +113,16 @@ namespace FS_LevelEditor
 
         public override bool SetProperty(string name, object value)
         {
-            if (name == "waypoints")
+            if (name == "ActivateOnStart")
+            {
+                if (value is bool)
+                {
+                    if (EditorController.Instance != null) SetMeshOnEditor((bool)value);
+                    properties["ActivateOnStart"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "waypoints")
             {
                 if (value is List<WaypointData>)
                 {
@@ -119,6 +141,11 @@ namespace FS_LevelEditor
             }
 
             return base.TriggerAction(actionName);
+        }
+
+        void SetMeshOnEditor(bool isPlatformActive)
+        {
+            gameObject.GetChildAt("Content/OnMesh_MovingPlatform").SetActive(isPlatformActive);
         }
     }
 }

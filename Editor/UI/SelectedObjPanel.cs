@@ -863,6 +863,7 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(movingPlatformAttributes);
 
+            CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
             CreateObjectAttribute("+ Add Platform Waypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
             movingPlatformAttributes.SetActive(false);
