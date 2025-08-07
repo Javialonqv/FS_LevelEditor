@@ -304,7 +304,7 @@ namespace FS_LevelEditor
 
             foreach (var obj in levelObjects)
             {
-                if (obj.objectType == LE_Object.ObjectType.SAW_WAYPOINT || obj.objectType == LE_Object.ObjectType.WAYPOINT) continue;
+                if (LE_Object.IsWaypoint(obj.objectType.Value)) continue;
 
                 if (!seenIds.Add(obj.objectFullNameWithID))
                 {
@@ -324,6 +324,8 @@ namespace FS_LevelEditor
 
             foreach (var obj in levelObjects)
             {
+                if (LE_Object.IsWaypoint(obj.objectType.Value)) continue;
+
                 string toAdd = obj.objectType + " " + obj.objectID;
                 if (!seenIds.Add(toAdd))
                 {
@@ -571,6 +573,9 @@ namespace FS_LevelEditor
 
                 case LE_Event @event:
                     return new LE_Event(@event);
+
+                case WaypointData waypoint:
+                    return new WaypointData(waypoint);
             }
 
             if (value.GetType().IsValueType)

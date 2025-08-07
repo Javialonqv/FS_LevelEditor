@@ -22,6 +22,14 @@ namespace FS_LevelEditor
 
         [JsonConverter(typeof(LEPropertiesConverterNew))]
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
+
+        public WaypointData() { }
+        public WaypointData(WaypointData original)
+        {
+            position = original.position;
+            rotation = original.rotation;
+            properties = new Dictionary<string, object>(properties);
+        }
     }
     public enum WaypointMode
     {

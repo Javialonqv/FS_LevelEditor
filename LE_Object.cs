@@ -800,7 +800,7 @@ namespace FS_LevelEditor
             LE_Breakable_Window.staticVariablesInitialized = false;
         }
 
-        static bool IsWaypoint(ObjectType type)
+        public static bool IsWaypoint(ObjectType type)
         {
             return type.ToString().Contains("Waypoint", StringComparison.OrdinalIgnoreCase);
         }
