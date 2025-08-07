@@ -14,6 +14,7 @@ namespace FS_LevelEditor
         Gun gun;
         public static bool infTaser;
         public static int ammo;
+        public static bool rot;
 
         void Awake()
         {
@@ -21,7 +22,8 @@ namespace FS_LevelEditor
             {
                 { "OnPickup", new List<LE_Event>() },
                 { "InfiniteTaser", false },
-                { "Ammo", 1 }
+                { "Ammo", 1 },
+                { "Rotate", true }
             };
         }
 
@@ -43,6 +45,7 @@ namespace FS_LevelEditor
             gun.battery3 = new GameObject();
             infTaser = (bool)properties["InfiniteTaser"];
             ammo = (int)properties["Ammo"];
+            rot = (bool)properties["Rotate"];
             ConfigureEvents(gun);
 
             // --------- SETUP TAGS & LAYERS ---------
@@ -87,6 +90,15 @@ namespace FS_LevelEditor
                     }
                 }
             }
+            else if (name == "Rotate")
+            {
+                if (value is bool)
+                {
+                    properties["Rotate"] = (bool)value;
+                    return true;
+                }
+            }
+
 
             return base.SetProperty(name, value);
         }
@@ -136,6 +148,7 @@ public static class TazerTutModeFix
                     Controls.m_currentSafeLandingLevel = 0;
                     Controls.m_currentUVFlashlightLevel = 0;
                     Controls.m_currentScannerLevel = 0;
+                    Controls.m_currentAimStabilizerLevel = 0;
                     __instance.gunController.RefreshTaserModules();
                     gameObject.SendMessage("Pickup", SendMessageOptions.DontRequireReceiver);
                     Controls.inGameUI.ShowNotification(InGameUIManager.NotificationType.GunPickup, InGameUIManager.NotificationColor.Blue, 0f, 1.7f, false, true);
@@ -148,5 +161,24 @@ public static class TazerTutModeFix
         }
         return true;
 
+    }
+}
+[HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.Update))]
+public static class TazerRotFix
+{
+    public static bool Prefix(Gun __instance)
+    {
+        if(PlayModeController.Instance)
+        {
+            if(!LE_Gun.rot)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        return true;
     }
 }

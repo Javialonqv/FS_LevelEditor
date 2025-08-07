@@ -238,108 +238,169 @@ namespace FS_LevelEditor.SaveSystem
 
             return data;
         }
-        public static void LoadLevelDataInEditor(string levelFileNameWithoutExtension)
-        {
-            LevelData data = LoadLevelData(levelFileNameWithoutExtension);
+		public static void LoadLevelDataInEditor(string levelFileNameWithoutExtension)
+		{
+			LevelData data = LoadLevelData(levelFileNameWithoutExtension);
 
-            Camera.main.transform.position = data.cameraPosition;
-            Camera.main.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
+			// Set camera properties in batch
+			var cam = Camera.main;
+			cam.transform.position = data.cameraPosition;
+			cam.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
 
-            GameObject objectsParent = EditorController.Instance.levelObjectsParent;
-            objectsParent.DeleteAllChildren();
+			// Pre-allocate capacity for better performance
+			var objectsToInstantiate = new List<(LE_Object.ObjectType type, Vector3 pos, Vector3 rot, Vector3 scale)>(data.objects.Count);
 
-            foreach (LE_ObjectData obj in data.objects)
-            {
-                GameObject objInstance = EditorController.Instance.PlaceObject(obj.objectType, obj.objPosition, obj.objRotation, obj.objScale, false);
-                LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
+			// Batch collect object data
+			foreach (LE_ObjectData obj in data.objects)
+			{
+				objectsToInstantiate.Add(((LE_Object.ObjectType type, Vector3 pos, Vector3 rot, Vector3 scale))(
+					obj.objectType,
+					obj.objPosition,
+					obj.objRotation,
+					obj.objScale
+				));
+			}
 
-                SetInstantiatedObjectProperties(objClassInstance, obj);
+			// Clear existing objects
+			GameObject objectsParent = EditorController.Instance.levelObjectsParent;
+			objectsParent.DeleteAllChildren();
 
-                // In case the object is defined to be disabled at start, change its materials to transparent.
-                if (!objClassInstance.setActiveAtStart)
-                {
-                    objInstance.SetTransparentMaterials();
-                }
-            }
+			// Batch instantiate objects
+			var instantiatedObjects = new List<(GameObject obj, LE_ObjectData data)>(data.objects.Count);
+			foreach (var objData in objectsToInstantiate)
+			{
+				var objInstance = EditorController.Instance.PlaceObject(
+					objData.type,
+					objData.pos,
+					objData.rot,
+					objData.scale,
+					false
+				);
+				if (objInstance != null)
+				{
+					instantiatedObjects.Add((objInstance, data.objects[instantiatedObjects.Count]));
+				}
+			}
 
-            // Load Global Properties.
-            // Only load the SUPPORTED ones.
-            foreach (var keyPair in data.globalProperties)
-            {
-                if (EditorController.Instance.globalProperties.ContainsKey(keyPair.Key))
-                {
-                    // Make sure we don't replace the whole list, only modify the existing elements with the saved ones, so we don't delete the elements that
-                    // are in the default list, but not in the saved list, to avoid bugs.
-                    if (keyPair.Value is List<UpgradeSaveData>)
-                    {
-                        var savedList = keyPair.Value as List<UpgradeSaveData>;
-                        foreach (var upgradeSaveData in savedList)
-                        {
-                            var defaultList = EditorController.Instance.globalProperties[keyPair.Key] as List<UpgradeSaveData>;
-                            var itemIndex = defaultList.FindIndex(x => x.type == upgradeSaveData.type);
-                            defaultList[itemIndex] = upgradeSaveData;
-                        }
-                    }
-                    else
-                    {
-                        EditorController.Instance.globalProperties[keyPair.Key] = keyPair.Value;
-                    }
-                }
-            }
+			// Batch configure objects
+			foreach (var (obj, objData) in instantiatedObjects)
+			{
+				var objClassInstance = obj.GetComponent<LE_Object>();
+				SetInstantiatedObjectProperties(objClassInstance, objData);
 
-            EditorController.Instance.AfterFinishedLoadingLevel();
-            Logger.Log($"\"{data.levelName}\" level loaded in the editor!");
-        }
-        public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
-        {
-            LE_Object.GetTemplatesReferences();
-            PlayModeController playModeCtrl = new GameObject("PlayModeController").AddComponent<PlayModeController>();
+				if (!objClassInstance.setActiveAtStart)
+				{
+					obj.SetTransparentMaterials();
+				}
+			}
 
-            GameObject objectsParent = playModeCtrl.levelObjectsParent;
-            objectsParent.DeleteAllChildren();
+			// Batch apply global properties
+			foreach (var keyPair in data.globalProperties)
+			{
+				if (EditorController.Instance.globalProperties.ContainsKey(keyPair.Key))
+				{
+					if (keyPair.Value is List<UpgradeSaveData>)
+					{
+						BatchApplyUpgradeData(keyPair, EditorController.Instance.globalProperties);
+					}
+					else
+					{
+						EditorController.Instance.globalProperties[keyPair.Key] = keyPair.Value;
+					}
+				}
+			}
 
-            LevelData data = LoadLevelData(levelFileNameWithoutExtension);
+			EditorController.Instance.AfterFinishedLoadingLevel();
+		}
 
-            foreach (LE_ObjectData obj in data.objects)
-            {
-                GameObject objInstance = playModeCtrl.PlaceObject(obj.objectType, obj.objPosition, obj.objRotation, obj.objScale, false);
-                LE_Object objClassInstance = objInstance.GetComponent<LE_Object>();
+		private static void BatchApplyUpgradeData(KeyValuePair<string, object> keyPair, Dictionary<string, object> targetProperties)
+		{
+			var savedList = keyPair.Value as List<UpgradeSaveData>;
+			var defaultList = targetProperties[keyPair.Key] as List<UpgradeSaveData>;
 
-                SetInstantiatedObjectProperties(objClassInstance, obj);
+			// Pre-create lookup for faster matching
+			var upgradeMap = savedList.ToDictionary(x => x.type);
 
-                if (!obj.setActiveAtStart)
-                {
-                    // Only god knows when the user will enable the obj, so call Start() so the object calls InitComponent() to init the
-                    // component NOW and not later.
-                    objInstance.SetActive(false);
-                    objClassInstance.Start();
-                }
-            }
+			for (int i = 0; i < defaultList.Count; i++)
+			{
+				if (upgradeMap.TryGetValue(defaultList[i].type, out var savedData))
+				{
+					defaultList[i] = savedData;
+				}
+			}
+		}
 
-            playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
-            playModeCtrl.levelName = data.levelName;
+		public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
+		{
+			// Initialize essential components first
+			LE_Object.GetTemplatesReferences();
+			PlayModeController playModeCtrl = new GameObject("PlayModeController").AddComponent<PlayModeController>();
 
-            // Load Global Properties.
-            // Only load the SUPPORTED ones.
-            foreach (var keyPair in data.globalProperties)
-            {
-                if (playModeCtrl.globalProperties.ContainsKey(keyPair.Key))
-                {
-                    if (keyPair.Value is JsonElement) // The expected behaviour.
-                    {
-                        Type toConvert = playModeCtrl.globalProperties[keyPair.Key].GetType();
-                        playModeCtrl.globalProperties[keyPair.Key] = LEPropertiesConverterNew.NewDeserealize(toConvert, (JsonElement)keyPair.Value);
-                    }
-                    else
-                    {
-                        playModeCtrl.globalProperties[keyPair.Key] = keyPair.Value;
-                    }
-                }
-            }
+			// Pre-load level data before any instantiation
+			LevelData data = LoadLevelData(levelFileNameWithoutExtension);
 
-            Logger.Log($"\"{data.levelName}\" level loaded in playmode!");
-        }
-        static void SetInstantiatedObjectProperties(LE_Object spawnedObject, LE_ObjectData objectData)
+			// Clear existing objects in one operation
+			GameObject objectsParent = playModeCtrl.levelObjectsParent;
+			objectsParent.DeleteAllChildren();
+
+			// Pre-allocate collections and batch object creation
+			int objectCount = data.objects.Count;
+			var objectsToInstantiate = new List<(LE_ObjectData data, GameObject obj)>(objectCount);
+
+			// First pass: Create all GameObjects without configuring them
+			foreach (LE_ObjectData obj in data.objects)
+			{
+				var objInstance = playModeCtrl.PlaceObject(
+					obj.objectType,
+					obj.objPosition,
+					obj.objRotation,
+					obj.objScale,
+					false
+				);
+
+				if (objInstance != null)
+				{
+					objectsToInstantiate.Add((obj, objInstance));
+				}
+			}
+
+			// Second pass: Configure all objects in batch
+			foreach (var (objData, objInstance) in objectsToInstantiate)
+			{
+				var objClassInstance = objInstance.GetComponent<LE_Object>();
+				SetInstantiatedObjectProperties(objClassInstance, objData);
+
+				// Only handle inactive objects - active ones will initialize naturally
+				if (!objData.setActiveAtStart)
+				{
+					objInstance.SetActive(false);
+					objClassInstance.Start();
+				}
+			}
+
+			// Set controller properties once
+			playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
+			playModeCtrl.levelName = data.levelName;
+
+			// Batch apply global properties
+			foreach (var keyPair in data.globalProperties)
+			{
+				if (playModeCtrl.globalProperties.ContainsKey(keyPair.Key))
+				{
+					// Handle JsonElement conversion in batch
+					if (keyPair.Value is JsonElement jsonElement)
+					{
+						var targetType = playModeCtrl.globalProperties[keyPair.Key].GetType();
+						playModeCtrl.globalProperties[keyPair.Key] = LEPropertiesConverterNew.NewDeserealize(targetType, jsonElement);
+					}
+					else
+					{
+						playModeCtrl.globalProperties[keyPair.Key] = keyPair.Value;
+					}
+				}
+			}
+		}
+		static void SetInstantiatedObjectProperties(LE_Object spawnedObject, LE_ObjectData objectData)
         {
             spawnedObject.objectID = objectData.objectID;
             spawnedObject.gameObject.name = spawnedObject.objectFullNameWithID;

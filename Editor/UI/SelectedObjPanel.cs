@@ -851,6 +851,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectAttribute("InfiniteTaser", AttributeType.TOGGLE, false, null, "InfiniteTaser");
             CreateObjectAttribute("Ammo", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Ammo");
             CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
+            CreateObjectAttribute("Rotation", AttributeType.TOGGLE, true, null, "Rotate");
 
             attributesPanels.Add("Gun", gun);
         }

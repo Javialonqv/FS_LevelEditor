@@ -613,15 +613,20 @@ namespace FS_LevelEditor
                     playButtonColor.pressed = new Color(0f, 0.5f, 0f, 1f);
                     playButtonColor.SetState(UIButtonColor.State.Normal, true);
 
-                    // Wire up the click event to play the level directly
-                    playBtn.onClick += () =>
-                    {
-                        PlayFromMenuHelper.PlayImmediatelyOnEditorLoad = true;
-                        PlayFromMenuHelper.LevelToPlay = levelFileNameWithoutExtension;
-                        EnterEditor(true, levelFileNameWithoutExtension, data.levelName);
-                    };
-                    #endregion
-                }
+					playBtn.onClick += () =>
+					{
+						// Skip editor load and go straight to play mode
+						Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
+						Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
+
+						// Close menus and load level directly
+						SwitchBetweenMenuAndLEMenu(false);
+						MenuController.SoftInputAuthorized = true;
+						MenuController.InputAuthorized = true;
+						MenuController.GetInstance().ButtonPressed(ButtonController.Type.CHAPTER_4);
+					};
+					#endregion
+				}
             }
 
             // If there are more than 5 levels, create the buttons to travel between lists.
