@@ -60,6 +60,11 @@ namespace FS_LevelEditor.Editor.UI
 		UIButtonPatcher bulkPreviousButtonObj, bulkNextButtonObj;
 		UILabel bulkSelectionLabel;
 
+		//grid
+		GameObject gridNavigationPanel;
+		UIButtonPatcher gridPreviousButtonObj, gridNextButtonObj;
+		UILabel gridPlanelLabel;
+
 		public EditorUIManager(IntPtr ptr) : base(ptr) { }
 
         void Awake()
@@ -112,7 +117,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateModeNavigationPanel();
             CreateHelpPanel();
             CreateBulkSelectionPanel();
-
+			CreateGridNavigationPanel();
 
 			EventsUIPageManager.Create();
             TextEditorUI.Create();
@@ -331,6 +336,56 @@ namespace FS_LevelEditor.Editor.UI
 			};
 			bulkSelectionLabel.text = "[00ffff]" + text + "[-]";
 		}
+		void CreateGridNavigationPanel()
+		{
+			// Create the main panel container
+			gridNavigationPanel = new GameObject("GridNavigationPanel");
+			gridNavigationPanel.transform.parent = editorUIParent.transform;
+			gridNavigationPanel.transform.localPosition = new Vector3(800, -380, 0); // Just above the bulk selection panel
+			gridNavigationPanel.transform.localScale = Vector3.one;
+
+			gridPreviousButtonObj = NGUI_Utils.CreateButton(gridNavigationPanel.transform, new Vector3(-160, 0), new Vector3Int(50, 50, 1), "<");
+			gridPreviousButtonObj.gameObject.RemoveComponent<UIButtonScale>();
+			gridPreviousButtonObj.buttonSprite.depth = 1;
+			gridPreviousButtonObj.onClick += SwitchToPreviousGridPlane;
+
+			gridPlanelLabel = NGUI_Utils.CreateLabel(gridNavigationPanel.transform, new Vector3(-35, 0, 0), new Vector3Int(400, 50, 0), "", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			gridPlanelLabel.fontSize = 28;
+			SetGridPlaneLabelText(EditorController.Instance.GetCurrentGridPlane());
+
+			gridNextButtonObj = NGUI_Utils.CreateButton(gridNavigationPanel.transform, new Vector3(90, 0), new Vector3Int(50, 50, 1), ">");
+			gridNextButtonObj.gameObject.RemoveComponent<UIButtonScale>();
+			gridNextButtonObj.buttonSprite.depth = 1;
+			gridNextButtonObj.onClick += SwitchToNextGridPlane;
+
+			gridNavigationPanel.SetActive(true);
+		}
+
+		void SwitchToPreviousGridPlane()
+		{
+			EditorController.Instance.CycleToPreviousGridPlane();
+			SetGridPlaneLabelText(EditorController.Instance.GetCurrentGridPlane());
+		}
+
+		void SwitchToNextGridPlane()
+		{
+			EditorController.Instance.CycleToNextGridPlane();
+			SetGridPlaneLabelText(EditorController.Instance.GetCurrentGridPlane());
+		}
+
+		public void SetGridPlaneLabelText(GridPlane plane)
+		{
+			string text = plane switch
+			{
+				GridPlane.None => "No Grid",
+				GridPlane.XY => "XY Plane",
+				GridPlane.YZ => "YZ Plane",
+				GridPlane.XZ => "XZ Plane",
+				_ => plane.ToString()
+			};
+			gridPlanelLabel.text = "[00ff00]" + text + "[-]";
+		}
 		public void CreateHelpPanel()
         {
             #region Create Help Panel With The BG
@@ -536,6 +591,10 @@ namespace FS_LevelEditor.Editor.UI
 			bulkNextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			bulkPreviousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			bulkSelectionLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			gridNavigationPanel.SetActive(context == EditorUIContext.NORMAL);
+			gridPreviousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			gridNextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			gridPlanelLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			if (context == EditorUIContext.HELP_PANEL)
             {
                 helpPanel.SetActive(true);

@@ -74,23 +74,23 @@ namespace FS_LevelEditor
                     properties[name] = (List<LE_Event>)value;
                 }
             }
-            else if (name == "Ammo")
-            {
-                if (value is int)
-                {
-                    properties["Ammo"] = (int)value;
-                    return true;
-                }
-                else if (value is string)
-                {
-                    if (int.TryParse((string)value, out int result))
-                    {
-                        properties["Ammo"] = result;
-                        return true;
-                    }
-                }
-            }
-            else if (name == "Rotate")
+			else if (name == "Ammo")
+			{
+				if (value is int)
+				{
+					properties["Ammo"] = Math.Min((int)value, 99);
+					return true;
+				}
+				else if (value is string)
+				{
+					if (int.TryParse((string)value, out int result))
+					{
+						properties["Ammo"] = Math.Min(result, 99);
+						return true;
+					}
+				}
+			}
+			else if (name == "Rotate")
             {
                 if (value is bool)
                 {
@@ -153,8 +153,13 @@ public static class TazerTutModeFix
                     gameObject.SendMessage("Pickup", SendMessageOptions.DontRequireReceiver);
                     Controls.inGameUI.ShowNotification(InGameUIManager.NotificationType.GunPickup, InGameUIManager.NotificationColor.Blue, 0f, 1.7f, false, true);
                     __instance.SetTazerInTutorialMode(gun.infTaser);
-                    __instance.gunController.SetAmmos(gun.ammo);
-                    return false;
+					__instance.gunController.tmpAmmoDefaultFontSize = 45;
+					__instance.gunController.screenTextTMPLabel.gameObject.SetActive(false);
+					__instance.gunController.screenTextTMPLabel.fontSizeMin = 45;
+					__instance.gunController.screenTextTMPLabel.fontSize = 45;
+					__instance.gunController.screenTextTMPLabel.gameObject.SetActive(true);
+					__instance.gunController.SetAmmos(gun.ammo);
+					return false;
                 }
             }
 

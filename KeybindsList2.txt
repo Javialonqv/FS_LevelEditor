@@ -7,3 +7,8 @@
 /Keyboard_G\ to switch between global/local move arrow gizmos.
 /Keyboard_Left Control\ + /Keyboard_O\ to open the Global Properties Panel.
 /Keyboard_Space\ (while selecting an object) to change the "Set Active At Start" toggle.
+
+/Keyboard_Space\ (while selecting an object) to change the "Set Active At Start" toggle.
+/Keyboard_Tab\ to switch grid modes.
+/Keyboard_Left Shift\ + /Keyboard_G\ to toggle the grid.
+/Keyboard_Black_PositiveScrollWheel\ or /Keyboard_Black_NegativeScrollWheel\ to control the grid size.
