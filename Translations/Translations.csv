@@ -82,6 +82,7 @@ Damage,Damage,Daño,Шкода
 TravelBack,Travel Back,Regresarse,Повернутись назад
 AddGlobalWaypoint,+ Add Global Waypoint,+ Añadir Waypoint Global,
 AddSawWaypoint,+ Add Saw Waypoint,+ Añadir Waypoint de Sierra,
+AddMovingPlatformWaypoint,+ Add Platform Waypoint,+ Añadir Waypoint de Plataforma,
 WaitTime,Wait Time,Tiempo de Espera,Час очікування
 InitialState,Initial State,Estado Inicial,Початковий стан
 DEACTIVATED,DEACTIVATED,DESACTIVADO,ДЕАКТИВОВАНИЙ
@@ -129,3 +130,16 @@ Rotate,Rotate?,¿Rotar?,Повертати?
 RotateSpeed,Rotate speed,Velocidad de Rotación,Швидкість повертання
 Ammo,Ammo,Munición,Патрони
 InfiniteTaser,Infinite Taser,Taser infinito,Бескінечний тазер
+InvisibleEdges,Invisible Edges,Border Invisibles,
+StartMovingAtStart,Start Moving At Start,Mover Al Inicio,
+MovingSpeed,Moving Speed,Velocidad de Movimiento,
+StartDelay,Start Delay,Espera al Inicio,
+MovementMode,Movement Mode,Modo de Movimiento,
+None_Mayus,NONE,NINGUNO,
+TravelBack_Mayus,TRAVEL BACK,REGRESARSE,
+Loop_Mayus,LOOP,BUCLE,
+IsAutomatic,Is Automatic?,¿Es Automática?,
+CLOSED,CLOSED,CERRADA,
+OPEN,OPEN,ABIERTA,
+LOCKED,LOCKED,BLOQUEADA,
+UNLOCKED,UNLOCKED,DESBLOQUEADA,

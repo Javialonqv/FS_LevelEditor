@@ -399,7 +399,7 @@ namespace FS_LevelEditor.Editor.UI
             toggleParent.localPosition = Vector3.zero;
             toggleParent.localScale = Vector3.one;
 
-            UILabel title = NGUI_Utils.CreateLabel(toggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "Start Moving At Start");
+            UILabel title = NGUI_Utils.CreateLabel(toggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "StartMovingAtStart");
             title.name = "Title";
 
             GameObject toggle = NGUI_Utils.CreateToggle(toggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
@@ -418,7 +418,7 @@ namespace FS_LevelEditor.Editor.UI
             fieldParent.localPosition = Vector3.zero;
             fieldParent.localScale = Vector3.one;
 
-            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "Moving Speed");
+            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "MovingSpeed");
             title.name = "Title";
 
             movingSpeedField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "5", false,
@@ -435,7 +435,7 @@ namespace FS_LevelEditor.Editor.UI
             fieldParent.localPosition = Vector3.zero;
             fieldParent.localScale = Vector3.one;
 
-            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "Start Delay");
+            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "StartDelay");
             title.name = "Title";
 
             startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "0", false,
@@ -469,7 +469,7 @@ namespace FS_LevelEditor.Editor.UI
             optionParent.localPosition = Vector3.zero;
             optionParent.localScale = Vector3.one;
 
-            UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "Movement Mode");
+            UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "MovementMode");
             title.name = "Title";
 
             waypointModeButton = NGUI_Utils.CreateSmallButtonMultiple(optionParent, new Vector3(140, yPosForGlobalProps),
@@ -478,9 +478,9 @@ namespace FS_LevelEditor.Editor.UI
             waypointModeButton.onChange += (id) => SetPropertyWithButtonMultiple("WaypointMode", waypointModeButton);
             waypointModeButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             waypointModeButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-            waypointModeButton.AddOption("NONE", Color.black);
-            waypointModeButton.AddOption("TRAVEL BACK", Color.red);
-            waypointModeButton.AddOption("LOOP", Color.blue);
+            waypointModeButton.AddOption("None_Mayus", Color.black);
+            waypointModeButton.AddOption("TravelBack_Mayus", Color.red);
+            waypointModeButton.AddOption("Loop_Mayus", Color.blue);
 
             yPosForGlobalProps -= 50;
         }
@@ -756,9 +756,9 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(doorAttributes);
 
-            CreateObjectAttribute("Is Automatic?", AttributeType.TOGGLE, false, null, "IsAuto");
+            CreateObjectAttribute("IsAutomatic", AttributeType.TOGGLE, false, null, "IsAuto");
 
-            CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
+            CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
             var initialStateButton = doorAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
             initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
             initialStateButton.AddOption("OPEN", Color.green);
@@ -780,9 +780,9 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(doorV2Attributes);
 
-            CreateObjectAttribute("Is Automatic?", AttributeType.TOGGLE, false, null, "IsAuto");
+            CreateObjectAttribute("IsAutomatic", AttributeType.TOGGLE, false, null, "IsAuto");
 
-            CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
+            CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
             var initialStateButton = doorV2Attributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
             initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
             initialStateButton.AddOption("OPEN", Color.green);
@@ -836,7 +836,7 @@ namespace FS_LevelEditor.Editor.UI
 
             SetCurrentParentToCreateAttributes(laserFieldAttributes);
 
-            CreateObjectAttribute("Invisible Edges", AttributeType.TOGGLE, false, null, "InvisibleEdges");
+            CreateObjectAttribute("InvisibleEdges", AttributeType.TOGGLE, false, null, "InvisibleEdges");
 
             attributesPanels.Add("Laser Field", laserFieldAttributes);
         }
@@ -867,13 +867,13 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentParentToCreateAttributes(movingPlatformAttributes);
 
             CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
-            CreateObjectAttribute("MoveSpeed", AttributeType.INPUT_FIELD, "5", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "MoveSpeed");
+            CreateObjectAttribute("MovingSpeed", AttributeType.INPUT_FIELD, "5", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "MoveSpeed");
 
-            CreateObjectAttribute("Movement Mode", AttributeType.BUTTON_MULTIPLE, 0, null, "MovementMode");
+            CreateObjectAttribute("MovementMode", AttributeType.BUTTON_MULTIPLE, 0, null, "MovementMode");
             var movementModeButton = movingPlatformAttributes.GetChildAt("MovementMode/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
-            movementModeButton.AddOption("NONE", Color.black);
-            movementModeButton.AddOption("TRAVEL BACK", Color.red);
-            movementModeButton.AddOption("LOOP", Color.blue);
+            movementModeButton.AddOption("None_Mayus", Color.black);
+            movementModeButton.AddOption("TravelBack_Mayus", Color.red);
+            movementModeButton.AddOption("Loop_Mayus", Color.blue);
 
             CreateObjectAttribute("AddMovingPlatformWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
