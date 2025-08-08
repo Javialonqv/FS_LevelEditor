@@ -47,6 +47,7 @@ object.ARROW,Arrow,Flecha,Стрілка
 object.GUN,Taser,Taser,Тазер
 object.MOVING_PLATFORM,Moving Platform,Plataforma Movil,
 object.MOVING_PLATFORM_WAYPOINT,Moving Platform  Waypoint,Waypoint de Plataforma Movil,
+object.CROW,Crow,Cuervo,
 Player,Player,Jugador,Гравець
 events.WhenActivatingEvents,When Activating,Cuando Se Activa,Коли активне
 events.WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva,Коли неактивне
@@ -81,7 +82,6 @@ Damage,Damage,Daño,Шкода
 TravelBack,Travel Back,Regresarse,Повернутись назад
 AddGlobalWaypoint,+ Add Global Waypoint,+ Añadir Waypoint Global,
 AddSawWaypoint,+ Add Saw Waypoint,+ Añadir Waypoint de Sierra,
-AddMovingPlatformWaypoint,+ Add Platform Waypoint,+ Añadir Waypoint de Plataforma,
 WaitTime,Wait Time,Tiempo de Espera,Час очікування
 InitialState,Initial State,Estado Inicial,Початковий стан
 DEACTIVATED,DEACTIVATED,DESACTIVADO,ДЕАКТИВОВАНИЙ
