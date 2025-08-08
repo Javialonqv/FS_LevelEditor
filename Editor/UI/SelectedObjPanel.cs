@@ -826,6 +826,7 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentParentToCreateAttributes(waypointAttributes);
 
             CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+            CreateObjectAttribute("AddGlobalWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
             attributesPanels.Add("Waypoint", waypointAttributes);
         }
