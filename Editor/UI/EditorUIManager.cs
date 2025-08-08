@@ -718,7 +718,11 @@ namespace FS_LevelEditor.Editor.UI
         public void OnLanguageChanged()
         {
             SetCurrentModeLabelText(EditorController.Instance.currentMode);
-            if (GlobalPropertiesPanel.Instance) GlobalPropertiesPanel.Instance.RefreshLocalization();
+            UIDropdownPatcher.RefreshLocalizationForAll();
+            UIButtonMultiple.RefreshLocalizationForAll();
+            UISmallButtonMultiple.RefreshLocalizationForAll();
+
+            if (SelectedObjPanel.Instance) SelectedObjPanel.Instance.UpdateHeaderTitle();
         }
 
         void OnDestroy()

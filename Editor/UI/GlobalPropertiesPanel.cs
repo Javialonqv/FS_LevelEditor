@@ -315,27 +315,5 @@ namespace FS_LevelEditor.Editor.UI
         {
             EditorController.Instance.deathYPlane.gameObject.SetActive(newState);
         }
-
-        public void RefreshLocalization()
-        {
-            skyboxDropdown.RefreshLocalization();
-            RefreshUpgradeLevelButtonsLocalization();
-        }
-        void RefreshUpgradeLevelButtonsLocalization()
-        {
-            var upgradesParent = gameObject.GetChild("Upgrades");
-
-            // Start at 1 to skip the title.
-            for (int i = 1; i < upgradesParent.transform.childCount; i++)
-            {
-                var upgradeParent = upgradesParent.transform.GetChild(i);
-
-                // The object may not have a LevelButton obj because that upgrade doesn't have a level property.
-                if (upgradeParent.gameObject.ExistsChild("LevelButton"))
-                {
-                    upgradeParent.gameObject.GetChild("LevelButton").GetComponent<UIButtonMultiple>().RefreshLocalization();
-                }
-            }
-        }
     }
 }

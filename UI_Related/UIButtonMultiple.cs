@@ -11,6 +11,8 @@ namespace FS_LevelEditor.UI_Related
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIButtonMultiple : MonoBehaviour
     {
+        static List<UIButtonMultiple> instances = new List<UIButtonMultiple>();
+
         UIButton button;
         UILabel titleLabel;
         UILabel currentOptionLabel;
@@ -27,6 +29,15 @@ namespace FS_LevelEditor.UI_Related
             {
                 return options[currentSelectedID];
             }
+        }
+
+        void Awake()
+        {
+            instances.Add(this);
+        }
+        void OnDestroy()
+        {
+            instances.Remove(this);
         }
 
         public void Init()
@@ -105,6 +116,14 @@ namespace FS_LevelEditor.UI_Related
             titleLabel.text = Loc.Get(titleLocKey, false);
 
             currentOptionLabel.text = onLocalize(currentSelectedID);
+        }
+
+        public static void RefreshLocalizationForAll()
+        {
+            foreach (var instance in instances)
+            {
+                if (instance != null) instance.RefreshLocalization();
+            }
         }
     }
 }

@@ -48,6 +48,8 @@ namespace FS_LevelEditor.Editor.UI
         Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
         Transform whereToCreateObjAttributesParent;
 
+        bool isSelectingAnObjectRightNow = false;
+        bool isSelectingMultipleObjects = false;
         LE_Object currentSelectedObj;
         bool executeSetActiveAtStartToggleActions = true;
         bool executeCollisionToggleActions = true;
@@ -1042,13 +1044,37 @@ namespace FS_LevelEditor.Editor.UI
         {
             ShowPanel(showingPanel, !panelIsExpanded, currentHeaderLocKey);
         }
+        public void UpdateHeaderTitle()
+        {
+            if (isSelectingAnObjectRightNow)
+            {
+                if (isSelectingMultipleObjects)
+                {
+                    headerTitle.SetLocKey("selection.MultipleObjectsSelected");
+                }
+                else
+                {
+                    headerTitle.SetLocKey(currentSelectedObj.objectFullNameWithID);
+                }
+            }
+            else
+            {
+                headerTitle.SetLocKey("selection.NoObjectSelected");
+            }
+        }
 
         public void SetSelectedObjPanelAsNone()
         {
+            isSelectingAnObjectRightNow = false;
+            isSelectingMultipleObjects = true;
+
             ShowPanel(false, "selection.NoObjectSelected");
         }
         public void SetMultipleObjectsSelected()
         {
+            isSelectingAnObjectRightNow = true;
+            isSelectingMultipleObjects = true;
+
             ShowPanel(true, "selection.MultipleObjectsSelected");
 
             setActiveAtStartToggle.gameObject.SetActive(true);
@@ -1102,6 +1128,9 @@ namespace FS_LevelEditor.Editor.UI
         }
         public void SetSelectedObject(LE_Object objComponent)
         {
+            isSelectingAnObjectRightNow = true;
+            isSelectingMultipleObjects = false;
+
             currentSelectedObj = objComponent;
 
             // The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.

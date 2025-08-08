@@ -11,6 +11,8 @@ namespace FS_LevelEditor.UI_Related
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UISmallButtonMultiple : MonoBehaviour
     {
+        static List<UISmallButtonMultiple> instances = new List<UISmallButtonMultiple>();
+
         UIButton button;
         UILabel buttonLabel;
         UIButtonColor buttonColor;
@@ -23,9 +25,15 @@ namespace FS_LevelEditor.UI_Related
 
         void Awake()
         {
+            instances.Add(this);
+
             button = GetComponent<UIButton>();
             buttonLabel = gameObject.GetChildAt("Background/Label").GetComponent<UILabel>();
             buttonColor = GetComponent<UIButtonColor>();
+        }
+        void OnDestroy()
+        {
+            instances.Remove(this);
         }
 
         public void Setup()
@@ -85,6 +93,19 @@ namespace FS_LevelEditor.UI_Related
             if (executeActions && onChange != null)
             {
                 onChange(currentOption);
+            }
+        }
+
+        public void RefreshLocalization()
+        {
+            buttonLabel.text = Loc.Get(options[currentOption].text, false);
+        }
+
+        public static void RefreshLocalizationForAll()
+        {
+            foreach (var instance in instances)
+            {
+                if (instance != null) instance.RefreshLocalization();
             }
         }
     }

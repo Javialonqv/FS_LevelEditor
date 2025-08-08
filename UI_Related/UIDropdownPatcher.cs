@@ -11,6 +11,8 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIDropdownPatcher : MonoBehaviour
     {
+        static List<UIDropdownPatcher> instances = new List<UIDropdownPatcher>();
+
         public string titleLocKey;
         public List<string> optionsLocKeys = new List<string>();
 
@@ -33,6 +35,15 @@ namespace FS_LevelEditor
         }
 
         public UIDropdownPatcher(IntPtr ptr) : base(ptr) { }
+
+        void Awake()
+        {
+            instances.Add(this);
+        }
+        void OnDestroy()
+        {
+            instances.Remove(this);
+        }
 
         public void Init()
         {
@@ -117,6 +128,14 @@ namespace FS_LevelEditor
             // Doesn't matter if the optionName is not a valid key.
             popupScript.gameObject.GetChildAt("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text =
                 Loc.Get(optionsLocKeys[currentlySelectedID], false);
+        }
+
+        public static void RefreshLocalizationForAll()
+        {
+            foreach (var instance in instances)
+            {
+                if (instance != null) instance.RefreshLocalization();
+            }
         }
     }
 }
