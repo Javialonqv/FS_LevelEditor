@@ -24,15 +24,18 @@ namespace FS_LevelEditor
         public bool isFirstWaypoint => waypointIndex == 0;
         public bool isLastWaypoint => waypointIndex == mainSupport.targetWaypointsData.Count - 1;
 
-        bool alreadyCalledAwake = false;
-        internal void Awake()
+        public LE_Waypoint()
         {
-            if (alreadyCalledAwake) return;
-
             canBeUsedInEventsTab = false;
             canBeDisabledAtStart = false;
             canUndoDeletion = false;
             canHaveWaypoints = false;
+        }
+
+        bool alreadyCalledAwake = false;
+        internal void Awake()
+        {
+            if (alreadyCalledAwake) return;
 
             properties = new Dictionary<string, object>()
             {
