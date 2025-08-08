@@ -130,7 +130,7 @@ namespace FS_LevelEditor.Editor
 		private bool gridEnabled = true;
 		private bool gridVisible = true;
 		private float gridSize = 1f;
-		private float minGridSize = 0.0625f;
+		private float minGridSize = 0.01f;
 		private float maxGridSize = 8f;
 		private GameObject gridVisual;
 		private LineRenderer[] gridLines;
