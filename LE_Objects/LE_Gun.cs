@@ -12,9 +12,9 @@ namespace FS_LevelEditor
     public class LE_Gun : LE_Object
     {
         Gun gun;
-        public static bool infTaser;
-        public static int ammo;
-        public static bool rot;
+        public bool infTaser;
+        public int ammo;
+        public bool rot;
 
         void Awake()
         {
@@ -132,7 +132,7 @@ public static class TazerTutModeFix
             gameObject = collider ? collider.gameObject : null;
             if(__instance.alive && gameObject)
             {
-                if (gameObject.CompareTag("Gun"))
+                if (gameObject.CompareTag("Gun") && gameObject.transform.parent && gameObject.transform.parent.TryGetComponent<LE_Gun>(out var gun))
                 {
                     FS_LevelEditor.Logger.Log("Player just picked up Taser, patching the hell out!");
 
@@ -152,8 +152,8 @@ public static class TazerTutModeFix
                     __instance.gunController.RefreshTaserModules();
                     gameObject.SendMessage("Pickup", SendMessageOptions.DontRequireReceiver);
                     Controls.inGameUI.ShowNotification(InGameUIManager.NotificationType.GunPickup, InGameUIManager.NotificationColor.Blue, 0f, 1.7f, false, true);
-                    __instance.SetTazerInTutorialMode(LE_Gun.infTaser);
-                    __instance.gunController.SetAmmos(LE_Gun.ammo);
+                    __instance.SetTazerInTutorialMode(gun.infTaser);
+                    __instance.gunController.SetAmmos(gun.ammo);
                     return false;
                 }
             }
@@ -168,9 +168,9 @@ public static class TazerRotFix
 {
     public static bool Prefix(Gun __instance)
     {
-        if(PlayModeController.Instance)
+        if (PlayModeController.Instance && __instance.transform.parent && __instance.transform.parent.TryGetComponent<LE_Gun>(out var gun))
         {
-            if(!LE_Gun.rot)
+            if(!gun.rot)
             {
                 return false;
             }
