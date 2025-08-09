@@ -519,7 +519,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateMovingPlatformAttributesPanel();
             CreateMovingPlatformWaypointAttributesPanel();
 		    CreateDestructibleWallAttributesPanel();
-
+            CreateBridgeAttributesPanel();
 		}
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -875,6 +875,19 @@ namespace FS_LevelEditor.Editor.UI
 			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
 			attributesPanels.Add("Destructible_Wall", DestructibleWall);
+		}
+		void CreateBridgeAttributesPanel()
+		{
+			GameObject bridge = new GameObject("Bridge");
+			bridge.transform.parent = objectSpecificPanelsParent;
+			bridge.transform.localPosition = Vector3.zero;
+			bridge.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(bridge);
+
+			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
+
+			attributesPanels.Add("Bridge", bridge);
 		}
 		void CreateMovingPlatformAttributesPanel()
         {

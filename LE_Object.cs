@@ -72,7 +72,6 @@ namespace FS_LevelEditor
             SCREEN,
             SMALL_SCREEN,
             BREAKABLE_WINDOW,
-            DESTRUCTIBLE_WALL,
 			TRIGGER,
             DOOR,
             LASER_FIELD,
@@ -84,7 +83,9 @@ namespace FS_LevelEditor
             ARROW,
             MOVING_PLATFORM,
             MOVING_PLATFORM_WAYPOINT,
-			CROW
+			CROW,
+            DESTRUCTIBLE_WALL,
+            BRIDGE
 		}
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()

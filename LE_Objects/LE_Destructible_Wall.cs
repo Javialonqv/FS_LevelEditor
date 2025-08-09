@@ -24,6 +24,14 @@ namespace FS_LevelEditor
 				{ "OnBreak", new List<LE_Event>() },
 				{ "Lifetime", 10f }
 			};
+			if(EditorController.Instance)
+			{
+				Transform debrisParent = gameObject.GetChild("Content/Debris").transform;
+				for (int i = 0; i < debrisParent.childCount; i++)
+				{
+					Destroy(debrisParent.GetChild(i));
+				}
+			}
 		}
 
 		public override void InitComponent()

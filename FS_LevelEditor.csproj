@@ -45,6 +45,7 @@
 		<Compile Include="Editor\UI\EventsUIPageManager.cs" />
 		<Compile Include="LE_MenuUIManager.cs" />
 		<Compile Include="ExternalSpriteLoader.cs" />
+		<Compile Include="LE_Objects\LE_Bridge.cs" />
 		<Compile Include="LE_Objects\LE_Death_Trigger.cs" />
 		<Compile Include="LE_Objects\LE_Destructible_Wall.cs" />
 		<Compile Include="LE_Objects\LE_Door.cs" />
