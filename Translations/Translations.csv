@@ -48,6 +48,7 @@ object.GUN,Taser,Taser,Тазер
 object.MOVING_PLATFORM,Moving Platform,Plataforma Movil,
 object.MOVING_PLATFORM_WAYPOINT,Moving Platform  Waypoint,Waypoint de Plataforma Movil,
 object.CROW,Crow,Cuervo,
+object.DESTRUCTIBLE_WALL,Fragile Wall,,Крихка стіна
 Player,Player,Jugador,Гравець
 events.WhenActivatingEvents,When Activating,Cuando Se Activa,Коли активне
 events.WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva,Коли неактивне
@@ -58,6 +59,7 @@ events.OnBoth,On Both,Ambos Casos,На обох
 events.OnEnter,On Enter,Al Entrar,При вході
 events.OnExit,On Exit,Al Salir,При виході
 events.OnPickup,On Pickup,Al Recoger,При піднятті
+events.OnBreak,On Break,,При розваленні
 pause.PlayLevel,Play Level,Jugar Nivel,Грати рівень
 pause.NoSpawnObject,There isn't any player spawn obj in the scene.,No hay ningún spawn del jugador en la escena.,В сцені немає точки появи гравця.
 pause.SaveLevel,Save Level,Guardar Nivel,Зберегти рівень

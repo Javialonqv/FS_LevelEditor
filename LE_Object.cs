@@ -72,7 +72,8 @@ namespace FS_LevelEditor
             SCREEN,
             SMALL_SCREEN,
             BREAKABLE_WINDOW,
-            TRIGGER,
+            DESTRUCTIBLE_WALL,
+			TRIGGER,
             DOOR,
             LASER_FIELD,
             DOOR_V2,
@@ -207,7 +208,8 @@ namespace FS_LevelEditor
         public static BlocSwitchScript t_pressurePlate;
         public static ScreenController t_screen;
         public static BreakableWindowController t_window;
-        public static PorteScript t_door;
+        public static DestructibleWall t_breakableWall;
+		public static PorteScript t_door;
         public static PorteScript t_doorV2;
         public static MovingPlatformController t_movingPlatform;
 
@@ -227,7 +229,9 @@ namespace FS_LevelEditor
             t_door = Utils.FindObjectOfType<PorteScript>(x => !x.isSkinV2);
             t_doorV2 = Utils.FindObjectOfType<PorteScript>(x => x.isSkinV2);
             t_movingPlatform = Utils.FindObjectOfType<MovingPlatformController>(x => x.movingPlatform);
-        }
+            t_breakableWall = FindObjectOfType<DestructibleWall>();
+
+		}
         #endregion
 
         public virtual void Start()

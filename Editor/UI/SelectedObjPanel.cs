@@ -518,7 +518,9 @@ namespace FS_LevelEditor.Editor.UI
             CreateTaserAttributesPanel();
             CreateMovingPlatformAttributesPanel();
             CreateMovingPlatformWaypointAttributesPanel();
-        }
+		    CreateDestructibleWallAttributesPanel();
+
+		}
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
         {
@@ -860,7 +862,21 @@ namespace FS_LevelEditor.Editor.UI
 
             attributesPanels.Add("Gun", gun);
         }
-        void CreateMovingPlatformAttributesPanel()
+		void CreateDestructibleWallAttributesPanel()
+		{
+			GameObject DestructibleWall = new GameObject("Destructible_Wall");
+			DestructibleWall.transform.parent = objectSpecificPanelsParent;
+			DestructibleWall.transform.localPosition = Vector3.zero;
+			DestructibleWall.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(DestructibleWall);
+
+			CreateObjectAttribute("Lifetime", AttributeType.INPUT_FIELD, "10", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Lifetime");
+			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
+
+			attributesPanels.Add("Destructible_Wall", DestructibleWall);
+		}
+		void CreateMovingPlatformAttributesPanel()
         {
             GameObject movingPlatformAttributes = new GameObject("Moving Platform");
             movingPlatformAttributes.transform.parent = objectSpecificPanelsParent;
