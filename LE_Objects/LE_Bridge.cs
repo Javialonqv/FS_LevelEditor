@@ -15,16 +15,42 @@ namespace FS_LevelEditor
 	public class LE_Bridge : LE_Object
 	{
 		private BridgeController bridgeController;
-
+		public enum InitialState { RETRACTED, DEPLOYED };
 		void Awake()
 		{
 			properties = new Dictionary<string, object>
 			{
+				{ "InitialState", InitialState.RETRACTED },
 				{ "OnDeploy", new List<LE_Event>() },
 				{ "OnRetract", new List<LE_Event>() },
 			};
 		}
-
+		public override void OnInstantiated(LEScene scene)
+		{
+			if (scene == LEScene.Editor)
+			{
+				UpdateBridgeStateInEditor();
+			}
+			base.OnInstantiated(scene);
+		}
+		public override void ObjectStart(LEScene scene)
+		{
+			if (scene == LEScene.Playmode)
+			{
+				// Set initial state when starting in playmode
+				if (GetProperty<InitialState>("InitialState") == InitialState.DEPLOYED)
+				{
+					bridgeController.deployed = false; // Ensure state is correct before deploying
+					bridgeController.Deploy();
+				}
+				else
+				{
+					bridgeController.deployed = true; // Ensure state is correct before retracting
+					bridgeController.Retract();
+				}
+			}
+			base.ObjectStart(scene);
+		}
 		public override void InitComponent()
 		{
 			GameObject content = gameObject.GetChild("Content");
@@ -45,6 +71,22 @@ namespace FS_LevelEditor
 		}
 		public override bool SetProperty(string name, object value)
 		{
+			if (name == "InitialState")
+			{
+				if (value is int)
+				{
+					properties["InitialState"] = (InitialState)value;
+					UpdateBridgeStateInEditor();
+					return true;
+				}
+				else if (value is InitialState)
+				{
+					properties["InitialState"] = value;
+					UpdateBridgeStateInEditor();
+					return true;
+				}
+			}
+
 			if (GetAvailableEventsIDs().Contains(name))
 			{
 				if (value is List<LE_Event>)
@@ -109,6 +151,25 @@ namespace FS_LevelEditor
 			}
 
 			return base.TriggerAction(actionName);
+		}
+		void UpdateBridgeStateInEditor()
+		{
+			// Only update visuals in editor mode
+			if (!EditorController.Instance) return;
+
+			if (bridgeController != null)
+			{
+				InitialState state = GetProperty<InitialState>("InitialState");
+				bridgeController.deployed = state == InitialState.DEPLOYED;
+
+				// Update animation state to match
+				if (bridgeController.m_animationComp != null)
+				{
+					bridgeController.m_animationComp.Play(
+						state == InitialState.DEPLOYED ? "Deploy" : "Retract"
+					);
+				}
+			}
 		}
 	}
 }

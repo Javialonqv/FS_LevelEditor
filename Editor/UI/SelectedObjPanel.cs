@@ -885,6 +885,12 @@ namespace FS_LevelEditor.Editor.UI
 
 			SetCurrentParentToCreateAttributes(bridge);
 
+			// Add InitialState property as a BUTTON_MULTIPLE
+			CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
+			var initialStateButton = bridge.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			initialStateButton.AddOption("RETRACTED", new Color(0.8f, 0f, 0f));
+			initialStateButton.AddOption("DEPLOYED", Color.green);
+
 			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
 			attributesPanels.Add("Bridge", bridge);

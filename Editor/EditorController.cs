@@ -1064,16 +1064,12 @@ namespace FS_LevelEditor.Editor
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
 			hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
-
 			bool snapWithTrigger = false;
 			RaycastHit rayToUseWithSnap = new RaycastHit();
-
 			bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
-
 			if (hits.Count > 0)
 			{
-				// If there's only one hit and if it is a snap trigger, it has to be the only hitten object for sure.
-				// Or, if all of the hits are snap to grid triggers, also execute this and use the first hit as well, it doesn't matter.
+				// Handle snap triggers first
 				if (hits.Count == 1 || theyAreAllSnapTriggers)
 				{
 					if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
@@ -1092,8 +1088,6 @@ namespace FS_LevelEditor.Editor
 				}
 				else
 				{
-					// If there are 2 hits or more, then iterate over the hits and check if you can snap with them.
-					// Only if you're pressing Ctrl.
 					foreach (var hit in hits)
 					{
 						if (hit.collider.gameObject.name.StartsWith("StaticPos") && Input.GetKey(KeyCode.LeftControl))
@@ -1107,37 +1101,54 @@ namespace FS_LevelEditor.Editor
 						}
 						else
 						{
-							// Hits are shorted from the closest one to the farthest one.
-							// If at some point, we stop detecting snap triggers, remove all of the snap triggeres from the hits list.
-							// This is to avoid things like grounds colliding with the triggers and no snapping since there are more objects below.
 							hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
 							break;
 						}
 					}
 				}
-
 				if (snapWithTrigger)
 				{
 					previewObjectToBuildObj.SetActive(true);
 					previewObjectToBuildObj.transform.position = rayToUseWithSnap.collider.transform.position;
-					// Only update rotation when the trigger is different, so user can rotate preview object even when snap trigger is found.
 					if (currentHittenSnapTrigger != rayToUseWithSnap.collider.gameObject)
 					{
 						currentHittenSnapTrigger = rayToUseWithSnap.collider.gameObject;
 						previewObjectToBuildObj.transform.rotation = rayToUseWithSnap.collider.transform.rotation;
 					}
 				}
-				else if (hits.Count > 0) // When using the default preview behaviour, use the closest hit, why not?
+				else if (hits.Count > 0)
 				{
 					currentHittenSnapTrigger = null;
-
 					previewObjectToBuildObj.SetActive(true);
 					previewObjectToBuildObj.transform.position = hits[0].point;
-					// Only update the preview object rotation when the ray hit ANOTHER surface, so the user can rotate the preview object before placing it.
+					// Inside PreviewObject(), replace the rotation logic section with:
 					if (lastHittenNormalByPreviewRay != hits[0].normal)
 					{
 						lastHittenNormalByPreviewRay = hits[0].normal;
-						previewObjectToBuildObj.transform.up = hits[0].normal;
+						Vector3 wallNormal = hits[0].normal;
+						if (wallNormal != Vector3.up && wallNormal != Vector3.down)
+						{
+							// For walls: Create a rotation that makes objects face outward consistently
+							Vector3 right = Vector3.Cross(Vector3.up, wallNormal).normalized;
+							Vector3 up = Vector3.Cross(wallNormal, right).normalized;
+
+							// Try using the up vector as forward direction
+							previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(up, wallNormal);
+						}
+						else
+						{
+							// For floors/ceilings: Use world right as forward direction
+							if (wallNormal == Vector3.up)
+							{
+								// For floors: Use the floor normal (up) as the up direction
+								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+							}
+							else // Vector3.down (ceiling)
+							{
+								// For ceilings: Use the ceiling normal (down) but flip it for proper orientation
+								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.down);
+							}
+						}
 					}
 				}
 				else
@@ -1150,6 +1161,7 @@ namespace FS_LevelEditor.Editor
 				previewObjectToBuildObj.SetActive(false);
 			}
 		}
+
 		void InstanceObjectInThePreviewObjectPos()
 		{
 			levelHasBeenModified = true;
