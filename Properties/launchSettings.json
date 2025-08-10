@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "LE debugger": {
+      "commandName": "Executable",
+      "executablePath": "$(FSPath)\\Fractal_Space.exe",
+      "commandLineArgs": "--melonloader.launchdebugger",
+      "workingDirectory": "$(FSPath)",
+      "launchBrowser": false
+    }
+  }
+}

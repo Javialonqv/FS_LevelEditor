@@ -435,7 +435,22 @@ namespace FS_LevelEditor
                             break;
                     }
                 }
-            }
+				else if (targetObj is LE_Bridge)
+				{
+					switch (@event.bridgeState)
+					{
+						case LE_Event.BridgeState.Extend:
+							targetObj.TriggerAction("Deploy");
+							break;
+						case LE_Event.BridgeState.Retract:
+							targetObj.TriggerAction("Retract");
+							break;
+						case LE_Event.BridgeState.Toggle:
+							targetObj.TriggerAction("Toggle");
+							break;
+					}
+				}
+			}
         }
     }
 }

@@ -106,10 +106,13 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject doorObjectsSettings;
         UIButtonMultiple setDoorStateButton;
-        #endregion
+		//-----------------------------------
+		GameObject bridgeObjectsSettings;
+		UIButtonMultiple bridgeStateButton;
+		#endregion
 
 
-        List<string> eventsListsNames = new List<string>();
+		List<string> eventsListsNames = new List<string>();
         int currentEventsListID;
         string currentEventsListName;
         bool eventSelected;
@@ -157,8 +160,9 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateFlameTrapObjectSettings();
                 Instance.CreateScreenObjectSettings();
                 Instance.CreateDoorObjectSettings();
+				Instance.CreateBridgeObjectSettings();
 
-                Instance.CreateDetails();
+				Instance.CreateDetails();
             }
         }
 
@@ -1149,8 +1153,9 @@ namespace FS_LevelEditor.Editor.UI
             changeScreenTextToggle.Set(currentSelectedEvent.changeScreenText);
             screenNewTextField.SetText(currentSelectedEvent.screenNewText);
             setDoorStateButton.SelectOption((int)currentSelectedEvent.doorState);
+			bridgeStateButton.SelectOption((int)currentSelectedEvent.bridgeState);
 
-            eventSettingsPanel.SetActive(true);
+			eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
             OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
@@ -1252,8 +1257,12 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     currentActiveObjectPanel = doorObjectsSettings;
                 }
+				else if (targetObj is LE_Bridge)
+				{
+					currentActiveObjectPanel = bridgeObjectsSettings;
+				}
 
-                if (currentActiveObjectPanel && !globalOptionsExpanded) currentActiveObjectPanel.SetActive(true);
+				if (currentActiveObjectPanel && !globalOptionsExpanded) currentActiveObjectPanel.SetActive(true);
             }
             else
             {
@@ -1492,7 +1501,19 @@ namespace FS_LevelEditor.Editor.UI
             CreateCubeObjectsTitleLabel();
             CreateRespawnCubeToggle();
         }
-        void CreateCubeObjectsTitleLabel()
+		void CreateBridgeObjectSettings()
+		{
+			bridgeObjectsSettings = new GameObject("Bridge");
+			bridgeObjectsSettings.transform.parent = eventOptionsParent.transform;
+			bridgeObjectsSettings.transform.localPosition = Vector3.zero;
+			bridgeObjectsSettings.transform.localScale = Vector3.one;
+			bridgeObjectsSettings.SetActive(false);
+
+			CreateBridgeObjectsTitleLabel();
+			CreateBridgeStateButton();
+		}
+
+		void CreateCubeObjectsTitleLabel()
         {
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
@@ -1513,7 +1534,16 @@ namespace FS_LevelEditor.Editor.UI
             // Change the label position AFTER changing the pivot.
             titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
         }
-        void CreateRespawnCubeToggle()
+		void CreateBridgeObjectsTitleLabel()
+		{
+			UILabel titleLabel = NGUI_Utils.CreateLabel(bridgeObjectsSettings.transform, Vector3.up * 40, new Vector3Int(700, 40, 0), "BRIDGE OPTIONS",
+				NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+			titleLabel.name = "TitleLabel";
+			titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+			titleLabel.fontSize = 35;
+		}
+
+		void CreateRespawnCubeToggle()
         {
             GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
 
@@ -1985,8 +2015,25 @@ namespace FS_LevelEditor.Editor.UI
 
             screenNewTextField.onChange += OnNewScreenTextFieldChanged;
         }
-        // -----------------------------------------
-        void CreateDoorObjectSettings()
+		void CreateBridgeStateButton()
+		{
+			UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(bridgeObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+			button.name = "BridgeStateButton";
+			button.Init();
+			button.SetTitle("Set Bridge State");
+			button.ClearOptions();
+			button.AddOption("Do Nothing", true);
+			button.AddOption("Extend", false);
+			button.AddOption("Retract", false);
+			button.AddOption("Toggle", false);
+			button.onClick += (option) => OnBridgeStateButtonChanged();
+			button.SetTooltip("EventsBridgeStateTooltip"); // Optional: add tooltip
+
+			bridgeStateButton = button;
+			button.gameObject.SetActive(true);
+		}
+		// -----------------------------------------
+		void CreateDoorObjectSettings()
         {
             doorObjectsSettings = new GameObject("Door");
             doorObjectsSettings.transform.parent = eventOptionsParent.transform;
@@ -2094,8 +2141,13 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.laserState = (LE_Event.LaserState)laserStateButton.currentSelectedID;
         }
-        // -----------------------------------------
-        void OnChangeLightColorToggleChanged()
+		// -----------------------------------------
+		void OnBridgeStateButtonChanged()
+		{
+			currentSelectedEvent.bridgeState = (LE_Event.BridgeState)bridgeStateButton.currentSelectedID;
+		}
+		// -----------------------------------------
+		void OnChangeLightColorToggleChanged()
         {
             currentSelectedEvent.changeLightColor = changeLightColorToggle.isChecked;
             newLightColorTitleLabel.gameObject.SetActive(changeLightColorToggle.isChecked);
@@ -2349,5 +2401,10 @@ public class LE_Event
     #region Door Options
     public enum DoorState { Do_Nothing, Closed, ClosedFast, Open, Toggle }
     public DoorState doorState { get; set; } = DoorState.Toggle;
-    #endregion
+	#endregion
+
+	#region Bridge Options
+	public enum BridgeState { Do_Nothing, Extend, Retract, Toggle }
+	public BridgeState bridgeState { get; set; } = BridgeState.Toggle;
+	#endregion
 }

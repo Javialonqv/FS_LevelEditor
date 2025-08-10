@@ -14,8 +14,7 @@ namespace FS_LevelEditor
 	[MelonLoader.RegisterTypeInIl2Cpp]
 	public class LE_Bridge : LE_Object
 	{
-
-		private List<BrickMaterialController> bricks = new List<BrickMaterialController>();
+		private BridgeController bridgeController;
 
 		void Awake()
 		{
@@ -32,14 +31,14 @@ namespace FS_LevelEditor
 			content.tag = "Bridge";
 			content.SetActive(false);
 
-			BridgeController bridge = content.AddComponent<BridgeController>();
-			bridge.isLightBridge = false;
-			bridge.movePlayerComp = null;
-			bridge.deployed = false;
-			bridge.playNecessaryAtStart = true;
-			bridge.instantAtStart = true;
-			bridge.m_animationComp = content.GetComponent<Animation>();
-			ConfigureEvents(bridge);
+			bridgeController = content.AddComponent<BridgeController>();
+			bridgeController.isLightBridge = false;
+			bridgeController.movePlayerComp = null;
+			bridgeController.deployed = false;
+			bridgeController.playNecessaryAtStart = true;
+			bridgeController.instantAtStart = true;
+			bridgeController.m_animationComp = content.GetComponent<Animation>();
+			ConfigureEvents(bridgeController);
 
 			content.SetActive(true);
 			initialized = true;
@@ -51,22 +50,6 @@ namespace FS_LevelEditor
 				if (value is List<LE_Event>)
 				{
 					properties[name] = (List<LE_Event>)value;
-				}
-			}
-			else if (name == "Lifetime")
-			{
-				if (value is string)
-				{
-					if (Utils.TryParseFloat((string)value, out float result))
-					{
-						properties["Lifetime"] = result;
-						return true;
-					}
-				}
-				else if (value is float)
-				{
-					properties["Lifetime"] = (float)value;
-					return true;
 				}
 			}
 			return base.SetProperty(name, value);
@@ -94,6 +77,38 @@ namespace FS_LevelEditor
 				"OnDeploy",
 				"OnRetract"
 			};
+		}
+		public override bool TriggerAction(string actionName)
+		{
+			switch (actionName)
+			{
+				case "Deploy":
+					if (!bridgeController.deployed)
+					{
+						bridgeController.Deploy();
+					}
+					return true;
+
+				case "Retract":
+					if (bridgeController.deployed)
+					{
+						bridgeController.Retract();
+					}
+					return true;
+
+				case "Toggle":
+					if (bridgeController.deployed)
+					{
+						bridgeController.Retract();
+					}
+					else
+					{
+						bridgeController.Deploy();
+					}
+					return true;
+			}
+
+			return base.TriggerAction(actionName);
 		}
 	}
 }

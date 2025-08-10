@@ -231,7 +231,7 @@ namespace FS_LevelEditor.Editor.UI
             xTitle.name = "XTitle";
             // ------------------------------
             posXField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 2);
+                maxDecimals: 3);
             posXField.name = "XField";
             posXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
             posXField.onChange += (() => SetPropertyWithInput("XPosition", posXField));
@@ -242,7 +242,7 @@ namespace FS_LevelEditor.Editor.UI
             yTitle.name = "YTitle";
             // ------------------------------
             posYField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 2);
+                maxDecimals: 3);
             posYField.name = "YField";
             posYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
             posYField.onChange += (() => SetPropertyWithInput("YPosition", posYField));
@@ -253,7 +253,7 @@ namespace FS_LevelEditor.Editor.UI
             zTitle.name = "ZTitle";
             // ------------------------------
             posZField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 2);
+                maxDecimals: 3);
             posZField.name = "ZField";
             posZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
             posZField.onChange += (() => SetPropertyWithInput("ZPosition", posZField));
@@ -276,7 +276,7 @@ namespace FS_LevelEditor.Editor.UI
             xTitle.name = "XTitle";
             // ------------------------------
             rotXField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 2);
+                maxDecimals: 3);
             rotXField.name = "XField";
             rotXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
             rotXField.onChange += (() => SetPropertyWithInput("XRotation", rotXField));
@@ -287,7 +287,7 @@ namespace FS_LevelEditor.Editor.UI
             yTitle.name = "YTitle";
             // ------------------------------
             rotYField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 2);
+                maxDecimals: 3);
             rotYField.name = "YField";
             rotYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
             rotYField.onChange += (() => SetPropertyWithInput("YRotation", rotYField));
@@ -298,7 +298,7 @@ namespace FS_LevelEditor.Editor.UI
             zTitle.name = "ZTitle";
             // ------------------------------
             rotZField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 2);
+                maxDecimals: 3);
             rotZField.name = "ZField";
             rotZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
             rotZField.onChange += (() => SetPropertyWithInput("ZRotation", rotZField));
@@ -321,7 +321,7 @@ namespace FS_LevelEditor.Editor.UI
             xTitle.name = "XTitle";
             // ------------------------------
             scaleXField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 2);
+                maxDecimals: 3);
             scaleXField.name = "XField";
             scaleXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
             scaleXField.onChange += (() => SetPropertyWithInput("XScale", scaleXField));
@@ -332,7 +332,7 @@ namespace FS_LevelEditor.Editor.UI
             yTitle.name = "YTitle";
             // ------------------------------
             scaleYField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 2);
+                maxDecimals: 3);
             scaleYField.name = "YField";
             scaleYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
             scaleYField.onChange += (() => SetPropertyWithInput("YScale", scaleYField));
@@ -343,7 +343,7 @@ namespace FS_LevelEditor.Editor.UI
             zTitle.name = "ZTitle";
             // ------------------------------
             scaleZField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 2);
+                maxDecimals: 3);
             scaleZField.name = "ZField";
             scaleZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
             scaleZField.onChange += (() => SetPropertyWithInput("ZScale", scaleZField));
@@ -1393,25 +1393,25 @@ namespace FS_LevelEditor.Editor.UI
         }
         public void UpdateGlobalObjectAttributes(Transform obj)
         {
-            // UICustomInput already verifies if the user is typing on the field, if so, SetText does nothing, we don't need to worry about that.
+			// UICustomInput already verifies if the user is typing on the field, if so, SetText does nothing, we don't need to worry about that.
 
-            // Set Global Attributes...
-            #region Position/Rotation/Scale Fields
-            posXField.SetText(obj.position.x, 2, false);
-            posYField.SetText(obj.position.y, 2, false);
-            posZField.SetText(obj.position.z, 2, false);
+			// Set Global Attributes...
+			#region Position/Rotation/Scale Fields
+			posXField.SetText(obj.position.x, 3, false); // Changed from 2 to 3
+			posYField.SetText(obj.position.y, 3, false);
+			posZField.SetText(obj.position.z, 3, false);
 
-            rotXField.SetText(obj.localEulerAngles.x, 2, false);
-            rotYField.SetText(obj.localEulerAngles.y, 2, false);
-            rotZField.SetText(obj.localEulerAngles.z, 2, false);
+			rotXField.SetText(obj.localEulerAngles.x, 3, false);
+			rotYField.SetText(obj.localEulerAngles.y, 3, false);
+			rotZField.SetText(obj.localEulerAngles.z, 3, false);
 
-            scaleXField.SetText(obj.localScale.x, 2, false);
-            scaleYField.SetText(obj.localScale.y, 2, false);
-            scaleZField.SetText(obj.localScale.z, 2, false);
-            #endregion
+			scaleXField.SetText(obj.localScale.x, 3, false);
+			scaleYField.SetText(obj.localScale.y, 3, false);
+			scaleZField.SetText(obj.localScale.z, 3, false);
+			#endregion
 
-            #region Collision Toggle
-            if (EditorController.Instance.multipleObjectsSelected)
+			#region Collision Toggle
+			if (EditorController.Instance.multipleObjectsSelected)
             {
                 // If this is null, that means the "Collision" in the current selected objects is different in at least one of them.
                 // If it's true or false, then ALL of them are true or false.
