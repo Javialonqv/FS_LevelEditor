@@ -520,6 +520,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateMovingPlatformWaypointAttributesPanel();
 		    CreateDestructibleWallAttributesPanel();
             CreateBridgeAttributesPanel();
+            CreateCubeKillplaneAttributePanel();
+            CreateKeypadAttributesPanel();
 		}
         #region Create Object Specific Panels
         void CreateDirectionalLightAttributesPanel()
@@ -845,6 +847,19 @@ namespace FS_LevelEditor.Editor.UI
 
             attributesPanels.Add("Laser Field", laserFieldAttributes);
         }
+        void CreateCubeKillplaneAttributePanel()
+        {
+            GameObject Cube_Killplane = new GameObject("Cube Killplane");
+            Cube_Killplane.transform.parent = objectSpecificPanelsParent;
+            Cube_Killplane.transform.localPosition = Vector3.zero;
+            Cube_Killplane.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(Cube_Killplane);
+
+            CreateObjectAttribute("IgnoreIfInHands", AttributeType.TOGGLE, false, null, "IgnoreIfInHands");
+
+            attributesPanels.Add("Cube Killplane", Cube_Killplane);
+		}
         void CreateTaserAttributesPanel()
         {
             GameObject gun = new GameObject("Gun");
@@ -855,7 +870,7 @@ namespace FS_LevelEditor.Editor.UI
             SetCurrentParentToCreateAttributes(gun);
 
             CreateObjectAttribute("InfiniteTaser", AttributeType.TOGGLE, false, null, "InfiniteTaser");
-            CreateObjectAttribute("Ammo", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Ammo");
+            CreateObjectAttribute("Ammo", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Ammo", maxLength: 2);
 
             CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
             CreateObjectAttribute("Rotation", AttributeType.TOGGLE, true, null, "Rotate");
@@ -933,6 +948,22 @@ namespace FS_LevelEditor.Editor.UI
             waypointAttributes.SetActive(false);
             attributesPanels.Add("Moving Platform Waypoint", waypointAttributes);
         }
+        void CreateKeypadAttributesPanel()
+        {
+			GameObject keypad = new GameObject("Keypad");
+			keypad.transform.parent = objectSpecificPanelsParent;
+			keypad.transform.localPosition = Vector3.zero;
+			keypad.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(keypad);
+
+			CreateObjectAttribute("Keycode", AttributeType.INPUT_FIELD, "1234", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Keycode", maxLength: 4);
+            CreateObjectAttribute("leaveOnIncorrect", AttributeType.TOGGLE, false, null, "leaveOnIncorrect");
+			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
+
+			keypad.SetActive(false);
+			attributesPanels.Add("Keypad", keypad);
+		}
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
         void SetCurrentParentToCreateAttributes(GameObject newParent)
@@ -940,7 +971,7 @@ namespace FS_LevelEditor.Editor.UI
             whereToCreateObjAttributesParent = newParent.transform;
         }
         void CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType? fieldType, string targetPropName,
-            bool createHastag = false, string tooltip = null, bool dontChangeYPos = false)
+            bool createHastag = false, string tooltip = null, bool dontChangeYPos = false, int? maxLength = null)
         {
             GameObject attributeParent = new GameObject(targetPropName);
             attributeParent.transform.parent = whereToCreateObjAttributesParent;
@@ -967,15 +998,22 @@ namespace FS_LevelEditor.Editor.UI
                 hashtagLOL.color = Color.white;
             }
 
-            if (attrType == AttributeType.INPUT_FIELD)
-            {
-                var field = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(140, yPos), new Vector3Int(200, 38, 0), 27, (string)defaultValue, false,
-                    inputType: (UICustomInputField.UIInputType)fieldType);
-                field.name = "Field";
-                field.setFieldColorAutomatically = false;
-                field.onChange += () => SetPropertyWithInput(targetPropName, field);
-            }
-            else if (attrType == AttributeType.TOGGLE)
+
+			if (attrType == AttributeType.INPUT_FIELD)
+			{
+				var field = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(140, yPos), new Vector3Int(200, 38, 0), 27, (string)defaultValue, false,
+					inputType: (UICustomInputField.UIInputType)fieldType);
+				field.name = "Field";
+				field.setFieldColorAutomatically = false;
+				field.onChange += () => SetPropertyWithInput(targetPropName, field);
+
+				// Add max length restriction if specified
+				if (maxLength.HasValue)
+				{
+					field.input.characterLimit = maxLength.Value;
+				}
+			}
+			else if (attrType == AttributeType.TOGGLE)
             {
                 GameObject toggle = NGUI_Utils.CreateToggle(attributeParent.transform, new Vector3(200f, yPos), new Vector3Int(48, 48, 0));
                 toggle.name = "Toggle";
@@ -1028,59 +1066,67 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
 
         public void ShowPanel(bool show, string headerLocKey) => ShowPanel(show, panelIsExpanded, headerLocKey);
-        public void ShowPanel(bool show, bool expand, string headerLocKey)
-        {
-            headerTitle.SetLocKey(headerLocKey);
-            currentHeaderLocKey = headerLocKey;
+		public void ShowPanel(bool show, bool expand, string headerLocKey)
+		{
+			headerTitle.SetLocKey(headerLocKey);
+			currentHeaderLocKey = headerLocKey;
 
-            if (show)
-            {
-                if (!expand) // Normal selection
-                {
-                    gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
-                    headerTitle.width = 300; // So it doesn't overlap with the two toggles in the sides.
-                    body.SetActive(true);
-                    body.GetComponent<UISprite>().height = 300;
-                    body.GetComponent<BoxCollider>().center = new Vector3(0, -150f);
-                    body.GetComponent<BoxCollider>().size = new Vector3(500, 300);
-                    // Set the UIPanel clipping height a bit smaller just because NGUICRAP doesn't hide the objects until they're FULLY outside.
-                    body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -150f, 500, 280);
+			if (show)
+			{
+				// Ensure button is visible when panel is shown
+				expandPanelButton.gameObject.SetActive(true);
 
-                    panelIsExpanded = false;
-                }
-                else // EXPANDED PANEL
-                {
-                    gameObject.transform.localPosition = new Vector3(-700f, 500, 0f);
-                    headerTitle.width = 300; // So it doesn't overlap with the two toggles in the sides.
-                    body.SetActive(true);
-                    body.GetComponent<UISprite>().height = 1020;
-                    body.GetComponent<BoxCollider>().center = new Vector3(0, -510f);
-                    body.GetComponent<BoxCollider>().size = new Vector3(500, 1020);
-                    // Set the UIPanel clipping height a bit smaller just because NGUICRAP doesn't hide the objects until they're FULLY outside.
-                    body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -510f, 500, 1000);
+				if (!expand) // Normal selection
+				{
+					gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
+					headerTitle.width = 300;
+					body.SetActive(true);
+					body.GetComponent<UISprite>().height = 300;
+					body.GetComponent<BoxCollider>().center = new Vector3(0, -150f);
+					body.GetComponent<BoxCollider>().size = new Vector3(500, 300);
+					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -150f, 500, 280);
+				}
+				else // EXPANDED PANEL
+				{
+					gameObject.transform.localPosition = new Vector3(-700f, 500, 0f);
+					headerTitle.width = 300;
+					body.SetActive(true);
+					body.GetComponent<UISprite>().height = 1020;
+					body.GetComponent<BoxCollider>().center = new Vector3(0, -510f);
+					body.GetComponent<BoxCollider>().size = new Vector3(500, 1020);
+					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -510f, 500, 1000);
+				}
 
-                    panelIsExpanded = true;
-                }
-            }
-            else
-            {
-                gameObject.transform.localPosition = new Vector3(-700f, -505f, 0f);
-                headerTitle.width = 520;
-                body.SetActive(false);
-                setActiveAtStartToggle.gameObject.SetActive(false);
-                expandPanelButton.gameObject.SetActive(false);
-                globalObjAttributesToggle.gameObject.SetActive(false);
-            }
+				panelIsExpanded = expand;
+			}
+			else
+			{
+				gameObject.transform.localPosition = new Vector3(-700f, -505f, 0f);
+				headerTitle.width = 520;
+				body.SetActive(false);
+				setActiveAtStartToggle.gameObject.SetActive(false);
+				expandPanelButton.gameObject.SetActive(false);
+				globalObjAttributesToggle.gameObject.SetActive(false);
+				panelIsExpanded = false;
+			}
 
-            expandPanelButtonSprite.transform.localScale = new Vector3(1f, expand ? -1 : 1, 1);
+			showingPanel = show;
+		}
+		public void ExpandButtonClick()
+		{
+			if (!showingPanel) return; // Don't process clicks if panel isn't shown
 
-            showingPanel = show;
-        }
-        public void ExpandButtonClick()
-        {
-            ShowPanel(showingPanel, !panelIsExpanded, currentHeaderLocKey);
-        }
-        public void UpdateHeaderTitle()
+			// Toggle expanded state and update panel immediately
+			panelIsExpanded = !panelIsExpanded;
+			ShowPanel(true, panelIsExpanded, currentHeaderLocKey);
+
+			// Update button sprite orientation
+			if (expandPanelButtonSprite != null)
+			{
+				expandPanelButtonSprite.transform.localScale = new Vector3(1f, panelIsExpanded ? -1 : 1, 1);
+			}
+		}
+		public void UpdateHeaderTitle()
         {
             if (isSelectingAnObjectRightNow)
             {
@@ -1580,7 +1626,43 @@ namespace FS_LevelEditor.Editor.UI
                 return;
             }
 
-            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.GetText()))
+            if(propertyName == "Keycode")
+            {
+				string text = inputField.GetText();
+				// Accept only if it's 4 digits (0-9)
+				if (text.Length == 4 && text.All(char.IsDigit))
+				{
+					if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, text))
+					{
+						EditorController.Instance.levelHasBeenModified = true;
+						inputField.Set(true);
+					}
+					else
+					{
+						inputField.Set(false);
+					}
+				}
+				else
+				{
+					inputField.Set(false); // Mark field as invalid
+				}
+				return;
+			}
+			if (propertyName == "Intensity" && Utils.TryParseFloat(inputField.GetText(), out float intensityValue))
+			{
+				if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, intensityValue))
+				{
+					EditorController.Instance.levelHasBeenModified = true;
+					inputField.Set(true);
+				}
+				else
+				{
+					inputField.Set(false);
+				}
+				return;
+			}
+
+			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.GetText()))
             {
                 EditorController.Instance.levelHasBeenModified = true;
                 inputField.Set(true);
