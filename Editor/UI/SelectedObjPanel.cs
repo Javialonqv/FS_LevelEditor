@@ -15,853 +15,868 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace FS_LevelEditor.Editor.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
-    public class SelectedObjPanel : MonoBehaviour
-    {
-        public static SelectedObjPanel Instance;
-
-        GameObject header;
-        UILabel headerTitle;
-        public UIToggle setActiveAtStartToggle;
-        UIButtonPatcher expandPanelButton;
-        UISprite expandPanelButtonSprite;
-        UIButtonAsToggle globalObjAttributesToggle;
-
-        GameObject body;
-        Transform globalObjectPanelsParent;
-        UICustomInputField posXField, posYField, posZField;
-        UICustomInputField rotXField, rotYField, rotZField;
-        UICustomInputField scaleXField, scaleYField, scaleZField;
-        UIToggle collisionToggle;
-        UIButtonPatcher addWaypointButton;
-        UIToggle startMovingAtStartToggle;
-        UICustomInputField movingSpeedField;
-        UICustomInputField startDelayField;
-        UICustomInputField waitTimeField;
-        UISmallButtonMultiple waypointModeButton;
-        // ------------------------------
-        bool showingPanel = false;
-        bool panelIsExpanded = false;
-        string currentHeaderLocKey = "";
-        // ------------------------------
-        Transform objectSpecificPanelsParent;
-        Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
-        Transform whereToCreateObjAttributesParent;
-
-        bool isSelectingAnObjectRightNow = false;
-        bool isSelectingMultipleObjects = false;
-        LE_Object currentSelectedObj;
-        bool executeSetActiveAtStartToggleActions = true;
-        bool executeCollisionToggleActions = true;
-
-        Vector3 objPositionWhenSelectedField;
-        Quaternion objRotationWhenSelectedField;
-        Vector3 objScaleWhenSelectedField;
-
-        public static void Create(Transform editorUIParent)
-        {
-            GameObject root = new GameObject("CurrentSelectedObjPanel");
-            root.transform.parent = editorUIParent;
-            root.transform.localPosition = new Vector3(-700f, -220f, 0f);
-            root.transform.localScale = Vector3.one;
-
-            root.AddComponent<SelectedObjPanel>();
-        }
-
-        void Awake()
-        {
-            Instance = this;
-
-            CreateHeader();
-            CreateBody();
-        }
-
-        #region Create UI
-        void CreateHeader()
-        {
-            header = new GameObject("Header");
-            header.transform.parent = transform;
-            header.transform.localPosition = Vector3.zero;
-            header.transform.localScale = Vector3.one;
-
-            UISprite sprite = header.AddComponent<UISprite>();
-            sprite.atlas = NGUI_Utils.UITexturesAtlas;
-            sprite.spriteName = "Square_Border_Beveled_HighOpacity";
-            sprite.type = UIBasicSprite.Type.Sliced;
-            sprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
-            sprite.width = 520;
-            sprite.height = 60;
-
-            BoxCollider collider = header.AddComponent<BoxCollider>();
-            collider.size = new Vector3(520f, 60f, 1f);
-
-            headerTitle = NGUI_Utils.CreateLabel(header.transform, Vector3.zero, new Vector3Int(520, 60, 0), "selection.NoObjectSelected", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
-            headerTitle.name = "Label";
-            headerTitle.fontSize = 27;
-            headerTitle.depth = 1;
-
-            CreateSetActiveAtStartToggle();
-            CreateExpandPanelToggle();
-            CreateGlobalObjectAttributesToggle();
-        }
-        void CreateSetActiveAtStartToggle()
-        {
-            GameObject toggleObj = NGUI_Utils.CreateToggle(header.transform, new Vector3(-220f, 0f, 0f),
-                new Vector3Int(48, 48, 0));
-            toggleObj.name = "SetActiveAtStartToggle";
-
-            setActiveAtStartToggle = toggleObj.GetComponent<UIToggle>();
-            setActiveAtStartToggle.onChange.Clear();
-            setActiveAtStartToggle.onChange.Add(new EventDelegate(this, nameof(SetSetActiveAtStart)));
-            setActiveAtStartToggle.instantTween = true;
-
-            FractalTooltip tooltip = toggleObj.AddComponent<FractalTooltip>();
-            tooltip.toolTipLocKey = "tooltip.SetActiveAtStartToggle";
-            tooltip.staticTooltipPos = true;
-            tooltip.staticTooltipOffset = new Vector2(0.42f, 0.1f);
-
-            toggleObj.SetActive(false);
-
-            GameObject line = new GameObject("Line");
-            line.transform.parent = toggleObj.GetChild("Background").transform;
-            line.transform.localPosition = Vector3.zero;
-            line.transform.localScale = Vector3.one;
-
-            UISprite lineSprite = line.AddComponent<UISprite>();
-            lineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
-            lineSprite.spriteName = "Square";
-            lineSprite.width = 35;
-            lineSprite.height = 6;
-            lineSprite.depth = 8;
-            line.SetActive(false);
-        }
-        void CreateExpandPanelToggle()
-        {
-            expandPanelButton = NGUI_Utils.CreateButtonWithSprite(header.transform, new Vector3(-160f, 0f, 0f), new Vector3Int(45, 45, 0), 2, "Triangle",
-                new Vector2Int(25, 15));
-            expandPanelButton.name = "ExpandPanelButton";
-            expandPanelButton.onClick += ExpandButtonClick;
-            expandPanelButton.GetComponent<UISprite>().depth = 1;
-
-            expandPanelButtonSprite = expandPanelButton.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>();
-
-            expandPanelButton.gameObject.SetActive(false);
-        }
-        void CreateGlobalObjectAttributesToggle()
-        {
-            globalObjAttributesToggle = NGUI_Utils.CreateButtonAsToggleWithSprite(header.transform, new Vector3(220f, 0f, 0f), new Vector3Int(45, 45, 0), 2, "Global",
-                Vector2Int.one * 25);
-            globalObjAttributesToggle.name = "GlobalObjectAttributesBtnToggle";
-            globalObjAttributesToggle.onClick += ShowGlobalObjectAttributes;
-            globalObjAttributesToggle.gameObject.SetActive(false);
-        }
-
-        void CreateBody()
-        {
-            body = new GameObject("Body");
-            body.transform.parent = gameObject.transform;
-            body.transform.localScale = Vector3.one;
-            body.layer = LayerMask.NameToLayer("2D GUI"); // To avoid the object not showing once the UIPanel attached.
-
-            UISprite sprite = body.AddComponent<UISprite>();
-            sprite.atlas = NGUI_Utils.UITexturesAtlas;
-            sprite.spriteName = "Square_Border_Beveled_HighOpacity";
-            sprite.type = UIBasicSprite.Type.Sliced;
-            sprite.color = new Color(0.0039f, 0.3568f, 0.3647f, 1f);
-            sprite.depth = -1;
-            sprite.width = 500;
-            sprite.height = 300;
-            sprite.pivot = UIWidget.Pivot.Top;
-
-            BoxCollider collider = body.AddComponent<BoxCollider>();
-            collider.size = new Vector3(500f, 300f, 1f);
-            collider.center = new Vector3(0f, -150f);
-
-            // Add a UIPanel just to hide the objects outside of the panel.
-            UIPanel panel = body.AddComponent<UIPanel>();
-            panel.clipRange = new Vector4(0f, -150f, 500f, 280f);
-            panel.clipping = UIDrawCall.Clipping.SoftClip;
-
-            body.transform.localPosition = new Vector3(0f, -10f, 0f);
-
-            CreateGlobalObjectsOptionsParent();
-            CreateGlobalObjectAttributesPanel();
-
-            CreateObjectSpecificOptionsParent();
-            CreateObjectSpecificOptionsPanels();
-
-            SetSelectedObjPanelAsNone();
-        }
-        // ------------------------------
-        int yPosForGlobalProps = 90;
-        void CreateGlobalObjectsOptionsParent()
-        {
-            GameObject globalObjectOptionsParent = new GameObject("GlobalObjectOptions");
-            globalObjectOptionsParent.transform.parent = body.transform;
-            globalObjectOptionsParent.transform.localPosition = new Vector3(0f, -150f);
-            globalObjectOptionsParent.transform.localScale = Vector3.one;
-            globalObjectPanelsParent = globalObjectOptionsParent.transform;
-        }
-        void CreateGlobalObjectAttributesPanel()
-        {
-            CreateObjectPositionUIElements();
-            CreateObjectRotationUIElements();
-            CreateObjectScaleUIElements();
-            CreateCollisionToggle();
-            CreateAddWaypointButton();
-            CreateStartMovingAtStartToggle();
-            CreateMovingSpeedField();
-            CreateStartDelayField();
-            CreateWaitTimeField();
-            CreateWaypointModeButton();
-        }
-        void CreateObjectPositionUIElements()
-        {
-            Transform positionThingsParent = new GameObject("Position").transform;
-            positionThingsParent.parent = globalObjectPanelsParent;
-            positionThingsParent.localPosition = Vector3.zero;
-            positionThingsParent.localScale = Vector3.one;
-
-            UILabel title = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(150, 38, 0), "Position");
-            title.name = "Title";
-
-            UILabel xTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(-40f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
-            xTitle.name = "XTitle";
-            // ------------------------------
-            posXField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 3);
-            posXField.name = "XField";
-            posXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
-            posXField.onChange += (() => SetPropertyWithInput("XPosition", posXField));
-            posXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
-
-            UILabel yTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
-            yTitle.name = "YTitle";
-            // ------------------------------
-            posYField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 3);
-            posYField.name = "YField";
-            posYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
-            posYField.onChange += (() => SetPropertyWithInput("YPosition", posYField));
-            posYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
-
-            UILabel zTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
-            zTitle.name = "ZTitle";
-            // ------------------------------
-            posZField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 3);
-            posZField.name = "ZField";
-            posZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
-            posZField.onChange += (() => SetPropertyWithInput("ZPosition", posZField));
-            posZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
-
-            yPosForGlobalProps -= 50;
-        }
-        void CreateObjectRotationUIElements()
-        {
-            Transform rotationThingsParent = new GameObject("Rotation").transform;
-            rotationThingsParent.parent = globalObjectPanelsParent;
-            rotationThingsParent.localPosition = Vector3.zero;
-            rotationThingsParent.localScale = Vector3.one;
-
-            UILabel title = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(150, 38, 0), "Rotation");
-            title.name = "Title";
-
-            UILabel xTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(-40f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
-            xTitle.name = "XTitle";
-            // ------------------------------
-            rotXField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 3);
-            rotXField.name = "XField";
-            rotXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
-            rotXField.onChange += (() => SetPropertyWithInput("XRotation", rotXField));
-            rotXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
-
-            UILabel yTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
-            yTitle.name = "YTitle";
-            // ------------------------------
-            rotYField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 3);
-            rotYField.name = "YField";
-            rotYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
-            rotYField.onChange += (() => SetPropertyWithInput("YRotation", rotYField));
-            rotYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
-
-            UILabel zTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
-            zTitle.name = "ZTitle";
-            // ------------------------------
-            rotZField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 3);
-            rotZField.name = "ZField";
-            rotZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
-            rotZField.onChange += (() => SetPropertyWithInput("ZRotation", rotZField));
-            rotZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
-
-            yPosForGlobalProps -= 50;
-        }
-        void CreateObjectScaleUIElements()
-        {
-            Transform scaleThingsParent = new GameObject("Scale").transform;
-            scaleThingsParent.parent = globalObjectPanelsParent;
-            scaleThingsParent.localPosition = Vector3.zero;
-            scaleThingsParent.localScale = Vector3.one;
-
-            UILabel title = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(150, 38, 0), "Scale");
-            title.name = "Title";
-
-            UILabel xTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(-40f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
-            xTitle.name = "XTitle";
-            // ------------------------------
-            scaleXField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 3);
-            scaleXField.name = "XField";
-            scaleXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
-            scaleXField.onChange += (() => SetPropertyWithInput("XScale", scaleXField));
-            scaleXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
-
-            UILabel yTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
-            yTitle.name = "YTitle";
-            // ------------------------------
-            scaleYField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 3);
-            scaleYField.name = "YField";
-            scaleYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
-            scaleYField.onChange += (() => SetPropertyWithInput("YScale", scaleYField));
-            scaleYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
-
-            UILabel zTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center);
-            zTitle.name = "ZTitle";
-            // ------------------------------
-            scaleZField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
-                maxDecimals: 3);
-            scaleZField.name = "ZField";
-            scaleZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
-            scaleZField.onChange += (() => SetPropertyWithInput("ZScale", scaleZField));
-            scaleZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
-
-            yPosForGlobalProps -= 50;
-        }
-        void CreateCollisionToggle()
-        {
-            Transform collisionToggleParent = new GameObject("Collision").transform;
-            collisionToggleParent.parent = globalObjectPanelsParent;
-            collisionToggleParent.localPosition = Vector3.zero;
-            collisionToggleParent.localScale = Vector3.one;
-
-            UILabel title = NGUI_Utils.CreateLabel(collisionToggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "Collision");
-            title.name = "Title";
-
-            GameObject toggle = NGUI_Utils.CreateToggle(collisionToggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
-            toggle.name = "Toggle";
-            toggle.GetComponent<UIToggle>().onChange.Clear();
-            var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetCollisionToggle));
-            toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
-            collisionToggle = toggle.GetComponent<UIToggle>();
-            collisionToggle.instantTween = true;
-
-            GameObject line = new GameObject("Line");
-            line.transform.parent = toggle.GetChild("Background").transform;
-            line.transform.localPosition = Vector3.zero;
-            line.transform.localScale = Vector3.one;
-
-            UISprite lineSprite = line.AddComponent<UISprite>();
-            lineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
-            lineSprite.spriteName = "Square";
-            lineSprite.width = 35;
-            lineSprite.height = 6;
-            lineSprite.depth = 8;
-            line.SetActive(false);
-
-            yPosForGlobalProps -= 55;
-        }
-        void CreateAddWaypointButton()
-        {
-            addWaypointButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "AddGlobalWaypoint");
-            addWaypointButton.name = "AddWaypointButton";
-            addWaypointButton.onClick += AddWaypointForObject;
-            addWaypointButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            addWaypointButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-
-            yPosForGlobalProps -= 55;
-        }
-        void CreateStartMovingAtStartToggle()
-        {
-            Transform toggleParent = new GameObject("StartMovingAtStart").transform;
-            toggleParent.parent = globalObjectPanelsParent;
-            toggleParent.localPosition = Vector3.zero;
-            toggleParent.localScale = Vector3.one;
-
-            UILabel title = NGUI_Utils.CreateLabel(toggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "StartMovingAtStart");
-            title.name = "Title";
-
-            GameObject toggle = NGUI_Utils.CreateToggle(toggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
-            toggle.name = "Toggle";
-            toggle.GetComponent<UIToggle>().onChange.Clear();
-            toggle.GetComponent<UIToggle>().onChange.Add(new EventDelegate(this, nameof(SetStartMovingAtStart)));
-            startMovingAtStartToggle = toggle.GetComponent<UIToggle>();
-            startMovingAtStartToggle.instantTween = true;
-
-            yPosForGlobalProps -= 50;
-        }
-        void CreateMovingSpeedField()
-        {
-            Transform fieldParent = new GameObject("MovingSpeed").transform;
-            fieldParent.parent = globalObjectPanelsParent;
-            fieldParent.localPosition = Vector3.zero;
-            fieldParent.localScale = Vector3.one;
-
-            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "MovingSpeed");
-            title.name = "Title";
-
-            movingSpeedField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "5", false,
-                inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
-            movingSpeedField.name = "Field";
-            movingSpeedField.onChange += () => SetPropertyWithInput("MovingSpeed", movingSpeedField);
-
-            yPosForGlobalProps -= 50;
-        }
-        void CreateStartDelayField()
-        {
-            Transform fieldParent = new GameObject("StartDelay").transform;
-            fieldParent.parent = globalObjectPanelsParent;
-            fieldParent.localPosition = Vector3.zero;
-            fieldParent.localScale = Vector3.one;
-
-            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "StartDelay");
-            title.name = "Title";
-
-            startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "0", false,
-                inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
-            startDelayField.name = "Field";
-            startDelayField.onChange += () => SetPropertyWithInput("StartDelay", startDelayField);
-
-            yPosForGlobalProps -= 50;
-        }
-        void CreateWaitTimeField()
-        {
-            Transform fieldParent = new GameObject("WaitTime").transform;
-            fieldParent.parent = globalObjectPanelsParent;
-            fieldParent.localPosition = Vector3.zero;
-            fieldParent.localScale = Vector3.one;
-
-            UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "WaitTime");
-            title.name = "Title";
-
-            waitTimeField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "0", false,
-                inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
-            waitTimeField.name = "Field";
-            waitTimeField.onChange += () => SetPropertyWithInput("WaitTime", waitTimeField);
-
-            yPosForGlobalProps -= 50;
-        }
-        void CreateWaypointModeButton()
-        {
-            var optionParent = new GameObject("WaypointMode").transform;
-            optionParent.parent = globalObjectPanelsParent;
-            optionParent.localPosition = Vector3.zero;
-            optionParent.localScale = Vector3.one;
-
-            UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "MovementMode");
-            title.name = "Title";
-
-            waypointModeButton = NGUI_Utils.CreateSmallButtonMultiple(optionParent, new Vector3(140, yPosForGlobalProps),
-                new Vector3Int(200, 38, 0), "NONE", 25);
-            waypointModeButton.name = "ButtonMultiple";
-            waypointModeButton.onChange += (id) => SetPropertyWithButtonMultiple("WaypointMode", waypointModeButton);
-            waypointModeButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-            waypointModeButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-            waypointModeButton.AddOption("None_Mayus", Color.black);
-            waypointModeButton.AddOption("TravelBack_Mayus", Color.red);
-            waypointModeButton.AddOption("Loop_Mayus", Color.blue);
-
-            yPosForGlobalProps -= 50;
-        }
-        // ------------------------------
-        void CreateObjectSpecificOptionsParent()
-        {
-            GameObject objectSpecificOptionsParent = new GameObject("ObjectSpecificOptions");
-            objectSpecificOptionsParent.transform.parent = body.transform;
-            objectSpecificOptionsParent.transform.localPosition = new Vector3(0f, -150f);
-            objectSpecificOptionsParent.transform.localScale = Vector3.one;
-            objectSpecificPanelsParent = objectSpecificOptionsParent.transform;
-        }
-        void CreateObjectSpecificOptionsPanels()
-        {
-            CreateDirectionalLightAttributesPanel();
-            CreatePointLightAttributesPanel();
-            CreateSawAttributesPanel();
-            CreateSawWaypointAttributesPanel();
-            CreateSwitchAttributesPanel();
-            CreateAmmoAndHealthPackAttributesPanel();
-            CreateLaserAttributesPanel();
-            CreateCeilingLightPanel();
-            CreateFlameTrapAttributesPanel();
-            CreatePressurePlateAttributesPanel();
-            CreateScreenAttributesPanel();
-            CreateSmallScreenAttributesPanel();
-            CreateTriggerAttributesPanel();
-            CreateDoorAttributesPanel();
-            CreateDoorV2AttributesPanel();
-            CreateDeathTriggerAttributesPanel();
-            CreateWaypointAttributesPanel();
-            CreateLaserFieldAttributesPanel();
-            CreateTaserAttributesPanel();
-            CreateMovingPlatformAttributesPanel();
-            CreateMovingPlatformWaypointAttributesPanel();
-		    CreateDestructibleWallAttributesPanel();
-            CreateBridgeAttributesPanel();
+	[MelonLoader.RegisterTypeInIl2Cpp]
+	public class SelectedObjPanel : MonoBehaviour
+	{
+		public static SelectedObjPanel Instance;
+
+		GameObject header;
+		UILabel headerTitle;
+		public UIToggle setActiveAtStartToggle;
+		UIButtonPatcher expandPanelButton;
+		UISprite expandPanelButtonSprite;
+		UIButtonAsToggle globalObjAttributesToggle;
+
+		GameObject body;
+		Transform globalObjectPanelsParent;
+		UICustomInputField posXField, posYField, posZField;
+		UICustomInputField rotXField, rotYField, rotZField;
+		UICustomInputField scaleXField, scaleYField, scaleZField;
+		UIToggle collisionToggle;
+		UIButtonPatcher addWaypointButton;
+		UIToggle startMovingAtStartToggle;
+		UICustomInputField movingSpeedField;
+		UICustomInputField startDelayField;
+		UICustomInputField waitTimeField;
+		UISmallButtonMultiple waypointModeButton;
+		// ------------------------------
+		bool showingPanel = false;
+		bool panelIsExpanded = false;
+		string currentHeaderLocKey = "";
+		// ------------------------------
+		Transform objectSpecificPanelsParent;
+		Dictionary<string, GameObject> attributesPanels = new Dictionary<string, GameObject>();
+		Transform whereToCreateObjAttributesParent;
+
+		bool isSelectingAnObjectRightNow = false;
+		bool isSelectingMultipleObjects = false;
+		LE_Object currentSelectedObj;
+		bool executeSetActiveAtStartToggleActions = true;
+		bool executeCollisionToggleActions = true;
+
+		Vector3 objPositionWhenSelectedField;
+		Quaternion objRotationWhenSelectedField;
+		Vector3 objScaleWhenSelectedField;
+
+		public static void Create(Transform editorUIParent)
+		{
+			GameObject root = new GameObject("CurrentSelectedObjPanel");
+			root.transform.parent = editorUIParent;
+			root.transform.localPosition = new Vector3(-700f, -220f, 0f);
+			root.transform.localScale = Vector3.one;
+
+			root.AddComponent<SelectedObjPanel>();
 		}
-        #region Create Object Specific Panels
-        void CreateDirectionalLightAttributesPanel()
-        {
-            GameObject directionalLightAttributes = new GameObject("Directional Light");
-            directionalLightAttributes.transform.parent = objectSpecificPanelsParent;
-            directionalLightAttributes.transform.localPosition = Vector3.zero;
-            directionalLightAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(directionalLightAttributes);
-
-            CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
-            CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
-
-            directionalLightAttributes.SetActive(false);
-            attributesPanels.Add("Directional Light", directionalLightAttributes);
-        }
-        void CreatePointLightAttributesPanel()
-        {
-            GameObject pointLightAttributes = new GameObject("Point Light");
-            pointLightAttributes.transform.parent = objectSpecificPanelsParent;
-            pointLightAttributes.transform.localPosition = Vector3.zero;
-            pointLightAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(pointLightAttributes);
-
-            CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
-            CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
-            CreateObjectAttribute("Range", AttributeType.INPUT_FIELD, "10", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Range");
-
-            pointLightAttributes.SetActive(false);
-            attributesPanels.Add("Point Light", pointLightAttributes);
-        }
-        void CreateSawAttributesPanel()
-        {
-            GameObject sawAttributes = new GameObject("Saw");
-            sawAttributes.transform.parent = objectSpecificPanelsParent;
-            sawAttributes.transform.localPosition = Vector3.zero;
-            sawAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(sawAttributes);
-
-            CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
-            CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
-            CreateObjectAttribute("TravelBack", AttributeType.TOGGLE, true, null, "TravelBack", tooltip: "TravelBackTooltip");
-            CreateObjectAttribute("Loop", AttributeType.TOGGLE, false, null, "Loop", tooltip: "LoopTooltip");
-            CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
-            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
-            CreateObjectAttribute("Rotate", AttributeType.TOGGLE, false, null, "Rotate");
-            CreateObjectAttribute("RotateSpeed", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "RotateSpeed");
-
-            sawAttributes.SetActive(false);
-            attributesPanels.Add("Saw", sawAttributes);
-        }
-        void CreateSawWaypointAttributesPanel()
-        {
-            GameObject sawWaypointAttributes = new GameObject("Saw Waypoint");
-            sawWaypointAttributes.transform.parent = objectSpecificPanelsParent;
-            sawWaypointAttributes.transform.localPosition = Vector3.zero;
-            sawWaypointAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(sawWaypointAttributes);
-
-            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
-            CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
-
-            sawWaypointAttributes.SetActive(false);
-            attributesPanels.Add("Saw Waypoint", sawWaypointAttributes);
-        }
-        void CreateSwitchAttributesPanel()
-        {
-            GameObject switchAttributes = new GameObject("Switch");
-            switchAttributes.transform.parent = objectSpecificPanelsParent;
-            switchAttributes.transform.localPosition = Vector3.zero;
-            switchAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(switchAttributes);
-
-            CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
-            var initiaStateButton = switchAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
-            initiaStateButton.AddOption("DEACTIVATED", new Color(0.8f, 0f, 0f));
-            initiaStateButton.AddOption("ACTIVATED", Color.green);
-            initiaStateButton.AddOption("UNUSABLE", Color.black);
-
-            CreateObjectAttribute("UsableOnce", AttributeType.TOGGLE, false, null, "UsableOnce");
-            CreateObjectAttribute("CanBeShotByTaser", AttributeType.TOGGLE, true, null, "CanUseTaser");
-            CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
-
-            switchAttributes.SetActive(false);
-            attributesPanels.Add("Switch", switchAttributes);
-        }
-        void CreateAmmoAndHealthPackAttributesPanel()
-        {
-            GameObject ammoHealthAttributes = new GameObject("Ammo Pack | Health Pack");
-            ammoHealthAttributes.transform.parent = objectSpecificPanelsParent;
-            ammoHealthAttributes.transform.localPosition = Vector3.zero;
-            ammoHealthAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(ammoHealthAttributes);
-
-            CreateObjectAttribute("RespawnTime", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RespawnTime");
-
-            ammoHealthAttributes.SetActive(false);
-            attributesPanels.Add("Ammo Pack | Health Pack", ammoHealthAttributes);
-        }
-        void CreateLaserAttributesPanel()
-        {
-            GameObject laserAttributes = new GameObject("Laser");
-            laserAttributes.transform.parent = objectSpecificPanelsParent;
-            laserAttributes.transform.localPosition = Vector3.zero;
-            laserAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(laserAttributes);
-
-            CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
-            CreateObjectAttribute("InstantKill", AttributeType.TOGGLE, false, null, "InstaKill");
-            CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Damage");
-            CreateObjectAttribute("Blinking", AttributeType.TOGGLE, false, null, "Blinking");
-            CreateObjectAttribute("OFFDuration", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "OffDuration");
-            CreateObjectAttribute("ONDuration", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "OnDuration");
-
-            laserAttributes.SetActive(false);
-            attributesPanels.Add("Laser", laserAttributes);
-        }
-        void CreateCeilingLightPanel()
-        {
-            GameObject ceilingLightAttributes = new GameObject("Ceiling Light");
-            ceilingLightAttributes.transform.parent = objectSpecificPanelsParent;
-            ceilingLightAttributes.transform.localPosition = Vector3.zero;
-            ceilingLightAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(ceilingLightAttributes);
-
-            CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
-            CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
-            CreateObjectAttribute("Range", AttributeType.INPUT_FIELD, "6", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Range");
-
-            ceilingLightAttributes.SetActive(false);
-            attributesPanels.Add("Ceiling Light", ceilingLightAttributes);
-        }
-        void CreateFlameTrapAttributesPanel()
-        {
-            GameObject flameTrapAttributes = new GameObject("Flame Trap");
-            flameTrapAttributes.transform.parent = objectSpecificPanelsParent;
-            flameTrapAttributes.transform.localPosition = Vector3.zero;
-            flameTrapAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(flameTrapAttributes);
-
-            CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
-            CreateObjectAttribute("Constant", AttributeType.TOGGLE, false, null, "Constant");
-            CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "88", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "DPS");
-
-            flameTrapAttributes.SetActive(false);
-            attributesPanels.Add("Flame Trap", flameTrapAttributes);
-        }
-        void CreatePressurePlateAttributesPanel()
-        {
-            GameObject pressurePlateAttributes = new GameObject("Pressure Plate");
-            pressurePlateAttributes.transform.parent = objectSpecificPanelsParent;
-            pressurePlateAttributes.transform.localPosition = Vector3.zero;
-            pressurePlateAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(pressurePlateAttributes);
-
-            CreateObjectAttribute("OnlyOnce", AttributeType.TOGGLE, false, null, "OnlyOnce");
-            CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
-
-            pressurePlateAttributes.SetActive(false);
-            attributesPanels.Add("Pressure Plate", pressurePlateAttributes);
-        }
-        void CreateScreenAttributesPanel()
-        {
-            GameObject screenAttributes = new GameObject("Screen");
-            screenAttributes.transform.parent = objectSpecificPanelsParent;
-            screenAttributes.transform.localPosition = Vector3.zero;
-            screenAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(screenAttributes);
-
-            CreateObjectAttribute("ScreenColor", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
-            var screenColorButton = screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
-            screenColorButton.AddOption("CYAN", null); // Use the default button color.
-            screenColorButton.AddOption("GREEN", Color.green);
-            screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
-
-            CreateObjectAttribute("InvisibleMesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
-            CreateObjectAttribute("InvertTextWithGravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
-            CreateObjectAttribute("ScaledText", AttributeType.TOGGLE, true, null, "ScaledText");
-            CreateObjectAttribute("EditText", AttributeType.BUTTON, null, null, "EditText");
-
-            screenAttributes.SetActive(false);
-            attributesPanels.Add("Screen", screenAttributes);
-        }
-        void CreateSmallScreenAttributesPanel()
-        {
-            GameObject smallScreenAttributes = new GameObject("Small Screen");
-            smallScreenAttributes.transform.parent = objectSpecificPanelsParent;
-            smallScreenAttributes.transform.localPosition = Vector3.zero;
-            smallScreenAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(smallScreenAttributes);
-
-            CreateObjectAttribute("ScreenColor", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
-            var screenColorButton = smallScreenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
-            screenColorButton.AddOption("CYAN", null); // Use the default button color.
-            screenColorButton.AddOption("GREEN", Color.green);
-            screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
-
-            CreateObjectAttribute("InvisibleMesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
-            CreateObjectAttribute("InvertTextWithGravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
-            CreateObjectAttribute("ScaledText", AttributeType.TOGGLE, true, null, "ScaledText");
-            CreateObjectAttribute("EditText", AttributeType.BUTTON, null, null, "EditText");
-
-            smallScreenAttributes.SetActive(false);
-            attributesPanels.Add("Small Screen", smallScreenAttributes);
-        }
-        void CreateTriggerAttributesPanel()
-        {
-            GameObject triggerAttributes = new GameObject("Trigger");
-            triggerAttributes.transform.parent = objectSpecificPanelsParent;
-            triggerAttributes.transform.localPosition = Vector3.zero;
-            triggerAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(triggerAttributes);
-
-            CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
-
-            triggerAttributes.SetActive(false);
-            attributesPanels.Add("Trigger", triggerAttributes);
-        }
-        void CreateDoorAttributesPanel()
-        {
-            GameObject doorAttributes = new GameObject("Door");
-            doorAttributes.transform.parent = objectSpecificPanelsParent;
-            doorAttributes.transform.localPosition = Vector3.zero;
-            doorAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(doorAttributes);
-
-            CreateObjectAttribute("IsAutomatic", AttributeType.TOGGLE, false, null, "IsAuto");
-
-            CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
-            var initialStateButton = doorAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
-            initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
-            initialStateButton.AddOption("OPEN", Color.green);
-
-            CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialStateAuto", dontChangeYPos: true);
-            var initialStateAutoButton = doorAttributes.GetChildAt("InitialStateAuto/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
-            initialStateAutoButton.AddOption("LOCKED", new Color(0.8f, 0f, 0f));
-            initialStateAutoButton.AddOption("UNLOCKED", Color.green);
-
-            doorAttributes.SetActive(false);
-            attributesPanels.Add("Door", doorAttributes);
-        }
-        void CreateDoorV2AttributesPanel()
-        {
-            GameObject doorV2Attributes = new GameObject("Door V2");
-            doorV2Attributes.transform.parent = objectSpecificPanelsParent;
-            doorV2Attributes.transform.localPosition = Vector3.zero;
-            doorV2Attributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(doorV2Attributes);
-
-            CreateObjectAttribute("IsAutomatic", AttributeType.TOGGLE, false, null, "IsAuto");
-
-            CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
-            var initialStateButton = doorV2Attributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
-            initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
-            initialStateButton.AddOption("OPEN", Color.green);
-
-            CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialStateAuto", dontChangeYPos: true);
-            var initialStateAutoButton = doorV2Attributes.GetChildAt("InitialStateAuto/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
-            initialStateAutoButton.AddOption("LOCKED", new Color(0.8f, 0f, 0f));
-            initialStateAutoButton.AddOption("UNLOCKED", Color.green);
-
-            doorV2Attributes.SetActive(false);
-            attributesPanels.Add("Door V2", doorV2Attributes);
-        }
-        void CreateDeathTriggerAttributesPanel()
-        {
-            GameObject deathTriggerAttributes = new GameObject("Death Trigger");
-            deathTriggerAttributes.transform.parent = objectSpecificPanelsParent;
-            deathTriggerAttributes.transform.localPosition = Vector3.zero;
-            deathTriggerAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(deathTriggerAttributes);
-
-            CreateObjectAttribute("DeathTriggerType", AttributeType.BUTTON_MULTIPLE, null, null, "Type");
-            var typeButton = deathTriggerAttributes.GetChildAt("Type/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
-            typeButton.AddOption("DeathRelocation", new Color(0.8f, 0f, 0f));
-            typeButton.AddOption("DeathImminent", Color.black);
-
-            CreateObjectAttribute("Delay", AttributeType.INPUT_FIELD, "2", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Delay");
-
-            deathTriggerAttributes.SetActive(false);
-            attributesPanels.Add("Death Trigger", deathTriggerAttributes);
-        }
-        void CreateWaypointAttributesPanel()
-        {
-            GameObject waypointAttributes = new GameObject("Waypoint");
-            waypointAttributes.transform.parent = objectSpecificPanelsParent;
-            waypointAttributes.transform.localPosition = Vector3.zero;
-            waypointAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(waypointAttributes);
-
-            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
-            CreateObjectAttribute("AddGlobalWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
-
-            attributesPanels.Add("Waypoint", waypointAttributes);
-        }
-        void CreateLaserFieldAttributesPanel()
-        {
-            GameObject laserFieldAttributes = new GameObject("Laser Field");
-            laserFieldAttributes.transform.parent = objectSpecificPanelsParent;
-            laserFieldAttributes.transform.localPosition = Vector3.zero;
-            laserFieldAttributes.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(laserFieldAttributes);
-
-            CreateObjectAttribute("InvisibleEdges", AttributeType.TOGGLE, false, null, "InvisibleEdges");
-
-            attributesPanels.Add("Laser Field", laserFieldAttributes);
-        }
-        void CreateTaserAttributesPanel()
-        {
-            GameObject gun = new GameObject("Gun");
-            gun.transform.parent = objectSpecificPanelsParent;
-            gun.transform.localPosition = Vector3.zero;
-            gun.transform.localScale = Vector3.one;
-
-            SetCurrentParentToCreateAttributes(gun);
-
-            CreateObjectAttribute("InfiniteTaser", AttributeType.TOGGLE, false, null, "InfiniteTaser");
-            CreateObjectAttribute("Ammo", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Ammo");
-
-            CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
-            CreateObjectAttribute("Rotation", AttributeType.TOGGLE, true, null, "Rotate");
-
-            attributesPanels.Add("Gun", gun);
-        }
+
+		void Awake()
+		{
+			Instance = this;
+
+			CreateHeader();
+			CreateBody();
+		}
+
+		#region Create UI
+		void CreateHeader()
+		{
+			header = new GameObject("Header");
+			header.transform.parent = transform;
+			header.transform.localPosition = Vector3.zero;
+			header.transform.localScale = Vector3.one;
+
+			UISprite sprite = header.AddComponent<UISprite>();
+			sprite.atlas = NGUI_Utils.UITexturesAtlas;
+			sprite.spriteName = "Square_Border_Beveled_HighOpacity";
+			sprite.type = UIBasicSprite.Type.Sliced;
+			sprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+			sprite.width = 520;
+			sprite.height = 60;
+
+			BoxCollider collider = header.AddComponent<BoxCollider>();
+			collider.size = new Vector3(520f, 60f, 1f);
+
+			headerTitle = NGUI_Utils.CreateLabel(header.transform, Vector3.zero, new Vector3Int(520, 60, 0), "selection.NoObjectSelected", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			headerTitle.name = "Label";
+			headerTitle.fontSize = 27;
+			headerTitle.depth = 1;
+
+			CreateSetActiveAtStartToggle();
+			CreateExpandPanelToggle();
+			CreateGlobalObjectAttributesToggle();
+		}
+		void CreateSetActiveAtStartToggle()
+		{
+			GameObject toggleObj = NGUI_Utils.CreateToggle(header.transform, new Vector3(-220f, 0f, 0f),
+				new Vector3Int(48, 48, 0));
+			toggleObj.name = "SetActiveAtStartToggle";
+
+			setActiveAtStartToggle = toggleObj.GetComponent<UIToggle>();
+			setActiveAtStartToggle.onChange.Clear();
+			setActiveAtStartToggle.onChange.Add(new EventDelegate(this, nameof(SetSetActiveAtStart)));
+			setActiveAtStartToggle.instantTween = true;
+
+			FractalTooltip tooltip = toggleObj.AddComponent<FractalTooltip>();
+			tooltip.toolTipLocKey = "tooltip.SetActiveAtStartToggle";
+			tooltip.staticTooltipPos = true;
+			tooltip.staticTooltipOffset = new Vector2(0.42f, 0.1f);
+
+			toggleObj.SetActive(false);
+
+			GameObject line = new GameObject("Line");
+			line.transform.parent = toggleObj.GetChild("Background").transform;
+			line.transform.localPosition = Vector3.zero;
+			line.transform.localScale = Vector3.one;
+
+			UISprite lineSprite = line.AddComponent<UISprite>();
+			lineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
+			lineSprite.spriteName = "Square";
+			lineSprite.width = 35;
+			lineSprite.height = 6;
+			lineSprite.depth = 8;
+			line.SetActive(false);
+		}
+		void CreateExpandPanelToggle()
+		{
+			expandPanelButton = NGUI_Utils.CreateButtonWithSprite(header.transform, new Vector3(-160f, 0f, 0f), new Vector3Int(45, 45, 0), 2, "Triangle",
+				new Vector2Int(25, 15));
+			expandPanelButton.name = "ExpandPanelButton";
+			expandPanelButton.onClick += ExpandButtonClick;
+			expandPanelButton.GetComponent<UISprite>().depth = 1;
+
+			expandPanelButtonSprite = expandPanelButton.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>();
+
+			expandPanelButton.gameObject.SetActive(false);
+		}
+		void CreateGlobalObjectAttributesToggle()
+		{
+			globalObjAttributesToggle = NGUI_Utils.CreateButtonAsToggleWithSprite(header.transform, new Vector3(220f, 0f, 0f), new Vector3Int(45, 45, 0), 2, "Global",
+				Vector2Int.one * 25);
+			globalObjAttributesToggle.name = "GlobalObjectAttributesBtnToggle";
+			globalObjAttributesToggle.onClick += ShowGlobalObjectAttributes;
+			globalObjAttributesToggle.gameObject.SetActive(false);
+		}
+
+		void CreateBody()
+		{
+			body = new GameObject("Body");
+			body.transform.parent = gameObject.transform;
+			body.transform.localScale = Vector3.one;
+			body.layer = LayerMask.NameToLayer("2D GUI"); // To avoid the object not showing once the UIPanel attached.
+
+			UISprite sprite = body.AddComponent<UISprite>();
+			sprite.atlas = NGUI_Utils.UITexturesAtlas;
+			sprite.spriteName = "Square_Border_Beveled_HighOpacity";
+			sprite.type = UIBasicSprite.Type.Sliced;
+			sprite.color = new Color(0.0039f, 0.3568f, 0.3647f, 1f);
+			sprite.depth = -1;
+			sprite.width = 500;
+			sprite.height = 300;
+			sprite.pivot = UIWidget.Pivot.Top;
+
+			BoxCollider collider = body.AddComponent<BoxCollider>();
+			collider.size = new Vector3(500f, 300f, 1f);
+			collider.center = new Vector3(0f, -150f);
+
+			// Add a UIPanel just to hide the objects outside of the panel.
+			UIPanel panel = body.AddComponent<UIPanel>();
+			panel.clipRange = new Vector4(0f, -150f, 500f, 280f);
+			panel.clipping = UIDrawCall.Clipping.SoftClip;
+
+			body.transform.localPosition = new Vector3(0f, -10f, 0f);
+
+			CreateGlobalObjectsOptionsParent();
+			CreateGlobalObjectAttributesPanel();
+
+			CreateObjectSpecificOptionsParent();
+			CreateObjectSpecificOptionsPanels();
+
+			SetSelectedObjPanelAsNone();
+		}
+		// ------------------------------
+		int yPosForGlobalProps = 90;
+		void CreateGlobalObjectsOptionsParent()
+		{
+			GameObject globalObjectOptionsParent = new GameObject("GlobalObjectOptions");
+			globalObjectOptionsParent.transform.parent = body.transform;
+			globalObjectOptionsParent.transform.localPosition = new Vector3(0f, -150f);
+			globalObjectOptionsParent.transform.localScale = Vector3.one;
+			globalObjectPanelsParent = globalObjectOptionsParent.transform;
+		}
+		void CreateGlobalObjectAttributesPanel()
+		{
+			CreateObjectPositionUIElements();
+			CreateObjectRotationUIElements();
+			CreateObjectScaleUIElements();
+			CreateCollisionToggle();
+			CreateAddWaypointButton();
+			CreateStartMovingAtStartToggle();
+			CreateMovingSpeedField();
+			CreateStartDelayField();
+			CreateWaitTimeField();
+			CreateWaypointModeButton();
+		}
+		void CreateObjectPositionUIElements()
+		{
+			Transform positionThingsParent = new GameObject("Position").transform;
+			positionThingsParent.parent = globalObjectPanelsParent;
+			positionThingsParent.localPosition = Vector3.zero;
+			positionThingsParent.localScale = Vector3.one;
+
+			UILabel title = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(150, 38, 0), "Position");
+			title.name = "Title";
+
+			UILabel xTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(-40f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			xTitle.name = "XTitle";
+			// ------------------------------
+			posXField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+				maxDecimals: 3);
+			posXField.name = "XField";
+			posXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
+			posXField.onChange += (() => SetPropertyWithInput("XPosition", posXField));
+			posXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
+
+			UILabel yTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			yTitle.name = "YTitle";
+			// ------------------------------
+			posYField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+				maxDecimals: 3);
+			posYField.name = "YField";
+			posYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
+			posYField.onChange += (() => SetPropertyWithInput("YPosition", posYField));
+			posYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
+
+			UILabel zTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			zTitle.name = "ZTitle";
+			// ------------------------------
+			posZField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+				maxDecimals: 3);
+			posZField.name = "ZField";
+			posZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
+			posZField.onChange += (() => SetPropertyWithInput("ZPosition", posZField));
+			posZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
+
+			yPosForGlobalProps -= 50;
+		}
+		void CreateObjectRotationUIElements()
+		{
+			Transform rotationThingsParent = new GameObject("Rotation").transform;
+			rotationThingsParent.parent = globalObjectPanelsParent;
+			rotationThingsParent.localPosition = Vector3.zero;
+			rotationThingsParent.localScale = Vector3.one;
+
+			UILabel title = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(150, 38, 0), "Rotation");
+			title.name = "Title";
+
+			UILabel xTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(-40f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			xTitle.name = "XTitle";
+			// ------------------------------
+			rotXField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+				maxDecimals: 3);
+			rotXField.name = "XField";
+			rotXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
+			rotXField.onChange += (() => SetPropertyWithInput("XRotation", rotXField));
+			rotXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
+
+			UILabel yTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			yTitle.name = "YTitle";
+			// ------------------------------
+			rotYField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+				maxDecimals: 3);
+			rotYField.name = "YField";
+			rotYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
+			rotYField.onChange += (() => SetPropertyWithInput("YRotation", rotYField));
+			rotYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
+
+			UILabel zTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			zTitle.name = "ZTitle";
+			// ------------------------------
+			rotZField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
+				maxDecimals: 3);
+			rotZField.name = "ZField";
+			rotZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
+			rotZField.onChange += (() => SetPropertyWithInput("ZRotation", rotZField));
+			rotZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
+
+			yPosForGlobalProps -= 50;
+		}
+		void CreateObjectScaleUIElements()
+		{
+			Transform scaleThingsParent = new GameObject("Scale").transform;
+			scaleThingsParent.parent = globalObjectPanelsParent;
+			scaleThingsParent.localPosition = Vector3.zero;
+			scaleThingsParent.localScale = Vector3.one;
+
+			UILabel title = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(150, 38, 0), "Scale");
+			title.name = "Title";
+
+			UILabel xTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(-40f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			xTitle.name = "XTitle";
+			// ------------------------------
+			scaleXField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
+				maxDecimals: 3);
+			scaleXField.name = "XField";
+			scaleXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
+			scaleXField.onChange += (() => SetPropertyWithInput("XScale", scaleXField));
+			scaleXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
+
+			UILabel yTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			yTitle.name = "YTitle";
+			// ------------------------------
+			scaleYField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
+				maxDecimals: 3);
+			scaleYField.name = "YField";
+			scaleYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
+			scaleYField.onChange += (() => SetPropertyWithInput("YScale", scaleYField));
+			scaleYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
+
+			UILabel zTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
+				UIWidget.Pivot.Center);
+			zTitle.name = "ZTitle";
+			// ------------------------------
+			scaleZField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
+				maxDecimals: 3);
+			scaleZField.name = "ZField";
+			scaleZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
+			scaleZField.onChange += (() => SetPropertyWithInput("ZScale", scaleZField));
+			scaleZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
+
+			yPosForGlobalProps -= 50;
+		}
+		void CreateCollisionToggle()
+		{
+			Transform collisionToggleParent = new GameObject("Collision").transform;
+			collisionToggleParent.parent = globalObjectPanelsParent;
+			collisionToggleParent.localPosition = Vector3.zero;
+			collisionToggleParent.localScale = Vector3.one;
+
+			UILabel title = NGUI_Utils.CreateLabel(collisionToggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "Collision");
+			title.name = "Title";
+
+			GameObject toggle = NGUI_Utils.CreateToggle(collisionToggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
+			toggle.name = "Toggle";
+			toggle.GetComponent<UIToggle>().onChange.Clear();
+			var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetCollisionToggle));
+			toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
+			collisionToggle = toggle.GetComponent<UIToggle>();
+			collisionToggle.instantTween = true;
+
+			GameObject line = new GameObject("Line");
+			line.transform.parent = toggle.GetChild("Background").transform;
+			line.transform.localPosition = Vector3.zero;
+			line.transform.localScale = Vector3.one;
+
+			UISprite lineSprite = line.AddComponent<UISprite>();
+			lineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
+			lineSprite.spriteName = "Square";
+			lineSprite.width = 35;
+			lineSprite.height = 6;
+			lineSprite.depth = 8;
+			line.SetActive(false);
+
+			yPosForGlobalProps -= 55;
+		}
+		void CreateAddWaypointButton()
+		{
+			addWaypointButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "AddGlobalWaypoint");
+			addWaypointButton.name = "AddWaypointButton";
+			addWaypointButton.onClick += AddWaypointForObject;
+			addWaypointButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+			addWaypointButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+
+			yPosForGlobalProps -= 55;
+		}
+		void CreateStartMovingAtStartToggle()
+		{
+			Transform toggleParent = new GameObject("StartMovingAtStart").transform;
+			toggleParent.parent = globalObjectPanelsParent;
+			toggleParent.localPosition = Vector3.zero;
+			toggleParent.localScale = Vector3.one;
+
+			UILabel title = NGUI_Utils.CreateLabel(toggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "StartMovingAtStart");
+			title.name = "Title";
+
+			GameObject toggle = NGUI_Utils.CreateToggle(toggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
+			toggle.name = "Toggle";
+			toggle.GetComponent<UIToggle>().onChange.Clear();
+			toggle.GetComponent<UIToggle>().onChange.Add(new EventDelegate(this, nameof(SetStartMovingAtStart)));
+			startMovingAtStartToggle = toggle.GetComponent<UIToggle>();
+			startMovingAtStartToggle.instantTween = true;
+
+			yPosForGlobalProps -= 50;
+		}
+		void CreateMovingSpeedField()
+		{
+			Transform fieldParent = new GameObject("MovingSpeed").transform;
+			fieldParent.parent = globalObjectPanelsParent;
+			fieldParent.localPosition = Vector3.zero;
+			fieldParent.localScale = Vector3.one;
+
+			UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "MovingSpeed");
+			title.name = "Title";
+
+			movingSpeedField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "5", false,
+				inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+			movingSpeedField.name = "Field";
+			movingSpeedField.onChange += () => SetPropertyWithInput("MovingSpeed", movingSpeedField);
+
+			yPosForGlobalProps -= 50;
+		}
+		void CreateStartDelayField()
+		{
+			Transform fieldParent = new GameObject("StartDelay").transform;
+			fieldParent.parent = globalObjectPanelsParent;
+			fieldParent.localPosition = Vector3.zero;
+			fieldParent.localScale = Vector3.one;
+
+			UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "StartDelay");
+			title.name = "Title";
+
+			startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "0", false,
+				inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+			startDelayField.name = "Field";
+			startDelayField.onChange += () => SetPropertyWithInput("StartDelay", startDelayField);
+
+			yPosForGlobalProps -= 50;
+		}
+		void CreateWaitTimeField()
+		{
+			Transform fieldParent = new GameObject("WaitTime").transform;
+			fieldParent.parent = globalObjectPanelsParent;
+			fieldParent.localPosition = Vector3.zero;
+			fieldParent.localScale = Vector3.one;
+
+			UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "WaitTime");
+			title.name = "Title";
+
+			waitTimeField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "0", false,
+				inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+			waitTimeField.name = "Field";
+			waitTimeField.onChange += () => SetPropertyWithInput("WaitTime", waitTimeField);
+
+			yPosForGlobalProps -= 50;
+		}
+		void CreateWaypointModeButton()
+		{
+			var optionParent = new GameObject("WaypointMode").transform;
+			optionParent.parent = globalObjectPanelsParent;
+			optionParent.localPosition = Vector3.zero;
+			optionParent.localScale = Vector3.one;
+
+			UILabel title = NGUI_Utils.CreateLabel(optionParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "MovementMode");
+			title.name = "Title";
+
+			waypointModeButton = NGUI_Utils.CreateSmallButtonMultiple(optionParent, new Vector3(140, yPosForGlobalProps),
+				new Vector3Int(200, 38, 0), "NONE", 25);
+			waypointModeButton.name = "ButtonMultiple";
+			waypointModeButton.onChange += (id) => SetPropertyWithButtonMultiple("WaypointMode", waypointModeButton);
+			waypointModeButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+			waypointModeButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+			waypointModeButton.AddOption("None_Mayus", Color.black);
+			waypointModeButton.AddOption("TravelBack_Mayus", Color.red);
+			waypointModeButton.AddOption("Loop_Mayus", Color.blue);
+
+			yPosForGlobalProps -= 50;
+		}
+		// ------------------------------
+		void CreateObjectSpecificOptionsParent()
+		{
+			GameObject objectSpecificOptionsParent = new GameObject("ObjectSpecificOptions");
+			objectSpecificOptionsParent.transform.parent = body.transform;
+			objectSpecificOptionsParent.transform.localPosition = new Vector3(0f, -150f);
+			objectSpecificOptionsParent.transform.localScale = Vector3.one;
+			objectSpecificPanelsParent = objectSpecificOptionsParent.transform;
+		}
+		void CreateObjectSpecificOptionsPanels()
+		{
+			CreateDirectionalLightAttributesPanel();
+			CreatePointLightAttributesPanel();
+			CreateSawAttributesPanel();
+			CreateSawWaypointAttributesPanel();
+			CreateSwitchAttributesPanel();
+			CreateAmmoAndHealthPackAttributesPanel();
+			CreateLaserAttributesPanel();
+			CreateCeilingLightPanel();
+			CreateFlameTrapAttributesPanel();
+			CreatePressurePlateAttributesPanel();
+			CreateScreenAttributesPanel();
+			CreateSmallScreenAttributesPanel();
+			CreateTriggerAttributesPanel();
+			CreateDoorAttributesPanel();
+			CreateDoorV2AttributesPanel();
+			CreateDeathTriggerAttributesPanel();
+			CreateWaypointAttributesPanel();
+			CreateLaserFieldAttributesPanel();
+			CreateTaserAttributesPanel();
+			CreateMovingPlatformAttributesPanel();
+			CreateMovingPlatformWaypointAttributesPanel();
+			CreateDestructibleWallAttributesPanel();
+			CreateBridgeAttributesPanel();
+			CreateCubeKillplaneAttributePanel();
+			CreateKeypadAttributesPanel();
+		}
+		#region Create Object Specific Panels
+		void CreateDirectionalLightAttributesPanel()
+		{
+			GameObject directionalLightAttributes = new GameObject("Directional Light");
+			directionalLightAttributes.transform.parent = objectSpecificPanelsParent;
+			directionalLightAttributes.transform.localPosition = Vector3.zero;
+			directionalLightAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(directionalLightAttributes);
+
+			CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+			CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
+
+			directionalLightAttributes.SetActive(false);
+			attributesPanels.Add("Directional Light", directionalLightAttributes);
+		}
+		void CreatePointLightAttributesPanel()
+		{
+			GameObject pointLightAttributes = new GameObject("Point Light");
+			pointLightAttributes.transform.parent = objectSpecificPanelsParent;
+			pointLightAttributes.transform.localPosition = Vector3.zero;
+			pointLightAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(pointLightAttributes);
+
+			CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+			CreateObjectAttribute("Intensity", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Intensity");
+			CreateObjectAttribute("Range", AttributeType.INPUT_FIELD, "10", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Range");
+
+			pointLightAttributes.SetActive(false);
+			attributesPanels.Add("Point Light", pointLightAttributes);
+		}
+		void CreateSawAttributesPanel()
+		{
+			GameObject sawAttributes = new GameObject("Saw");
+			sawAttributes.transform.parent = objectSpecificPanelsParent;
+			sawAttributes.transform.localPosition = Vector3.zero;
+			sawAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(sawAttributes);
+
+			CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+			CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
+			CreateObjectAttribute("TravelBack", AttributeType.TOGGLE, true, null, "TravelBack", tooltip: "TravelBackTooltip");
+			CreateObjectAttribute("Loop", AttributeType.TOGGLE, false, null, "Loop", tooltip: "LoopTooltip");
+			CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+			CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+			CreateObjectAttribute("Rotate", AttributeType.TOGGLE, false, null, "Rotate");
+			CreateObjectAttribute("RotateSpeed", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "RotateSpeed");
+
+			sawAttributes.SetActive(false);
+			attributesPanels.Add("Saw", sawAttributes);
+		}
+		void CreateSawWaypointAttributesPanel()
+		{
+			GameObject sawWaypointAttributes = new GameObject("Saw Waypoint");
+			sawWaypointAttributes.transform.parent = objectSpecificPanelsParent;
+			sawWaypointAttributes.transform.localPosition = Vector3.zero;
+			sawWaypointAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(sawWaypointAttributes);
+
+			CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+			CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+
+			sawWaypointAttributes.SetActive(false);
+			attributesPanels.Add("Saw Waypoint", sawWaypointAttributes);
+		}
+		void CreateSwitchAttributesPanel()
+		{
+			GameObject switchAttributes = new GameObject("Switch");
+			switchAttributes.transform.parent = objectSpecificPanelsParent;
+			switchAttributes.transform.localPosition = Vector3.zero;
+			switchAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(switchAttributes);
+
+			CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
+			var initiaStateButton = switchAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			initiaStateButton.AddOption("DEACTIVATED", new Color(0.8f, 0f, 0f));
+			initiaStateButton.AddOption("ACTIVATED", Color.green);
+			initiaStateButton.AddOption("UNUSABLE", Color.black);
+
+			CreateObjectAttribute("UsableOnce", AttributeType.TOGGLE, false, null, "UsableOnce");
+			CreateObjectAttribute("CanBeShotByTaser", AttributeType.TOGGLE, true, null, "CanUseTaser");
+			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
+
+			switchAttributes.SetActive(false);
+			attributesPanels.Add("Switch", switchAttributes);
+		}
+		void CreateAmmoAndHealthPackAttributesPanel()
+		{
+			GameObject ammoHealthAttributes = new GameObject("Ammo Pack | Health Pack");
+			ammoHealthAttributes.transform.parent = objectSpecificPanelsParent;
+			ammoHealthAttributes.transform.localPosition = Vector3.zero;
+			ammoHealthAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(ammoHealthAttributes);
+
+			CreateObjectAttribute("RespawnTime", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RespawnTime");
+
+			ammoHealthAttributes.SetActive(false);
+			attributesPanels.Add("Ammo Pack | Health Pack", ammoHealthAttributes);
+		}
+		void CreateLaserAttributesPanel()
+		{
+			GameObject laserAttributes = new GameObject("Laser");
+			laserAttributes.transform.parent = objectSpecificPanelsParent;
+			laserAttributes.transform.localPosition = Vector3.zero;
+			laserAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(laserAttributes);
+
+			CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+			CreateObjectAttribute("InstantKill", AttributeType.TOGGLE, false, null, "InstaKill");
+			CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Damage");
+			CreateObjectAttribute("Blinking", AttributeType.TOGGLE, false, null, "Blinking");
+			CreateObjectAttribute("OFFDuration", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "OffDuration");
+			CreateObjectAttribute("ONDuration", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "OnDuration");
+
+			laserAttributes.SetActive(false);
+			attributesPanels.Add("Laser", laserAttributes);
+		}
+		void CreateCeilingLightPanel()
+		{
+			GameObject ceilingLightAttributes = new GameObject("Ceiling Light");
+			ceilingLightAttributes.transform.parent = objectSpecificPanelsParent;
+			ceilingLightAttributes.transform.localPosition = Vector3.zero;
+			ceilingLightAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(ceilingLightAttributes);
+
+			CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+			CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+			CreateObjectAttribute("Range", AttributeType.INPUT_FIELD, "6", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Range");
+
+			ceilingLightAttributes.SetActive(false);
+			attributesPanels.Add("Ceiling Light", ceilingLightAttributes);
+		}
+		void CreateFlameTrapAttributesPanel()
+		{
+			GameObject flameTrapAttributes = new GameObject("Flame Trap");
+			flameTrapAttributes.transform.parent = objectSpecificPanelsParent;
+			flameTrapAttributes.transform.localPosition = Vector3.zero;
+			flameTrapAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(flameTrapAttributes);
+
+			CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+			CreateObjectAttribute("Constant", AttributeType.TOGGLE, false, null, "Constant");
+			CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "88", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "DPS");
+
+			flameTrapAttributes.SetActive(false);
+			attributesPanels.Add("Flame Trap", flameTrapAttributes);
+		}
+		void CreatePressurePlateAttributesPanel()
+		{
+			GameObject pressurePlateAttributes = new GameObject("Pressure Plate");
+			pressurePlateAttributes.transform.parent = objectSpecificPanelsParent;
+			pressurePlateAttributes.transform.localPosition = Vector3.zero;
+			pressurePlateAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(pressurePlateAttributes);
+
+			CreateObjectAttribute("OnlyOnce", AttributeType.TOGGLE, false, null, "OnlyOnce");
+			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
+
+			pressurePlateAttributes.SetActive(false);
+			attributesPanels.Add("Pressure Plate", pressurePlateAttributes);
+		}
+		void CreateScreenAttributesPanel()
+		{
+			GameObject screenAttributes = new GameObject("Screen");
+			screenAttributes.transform.parent = objectSpecificPanelsParent;
+			screenAttributes.transform.localPosition = Vector3.zero;
+			screenAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(screenAttributes);
+
+			CreateObjectAttribute("ScreenColor", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
+			var screenColorButton = screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			screenColorButton.AddOption("CYAN", null); // Use the default button color.
+			screenColorButton.AddOption("GREEN", Color.green);
+			screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
+
+			CreateObjectAttribute("InvisibleMesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
+			CreateObjectAttribute("InvertTextWithGravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
+			CreateObjectAttribute("ScaledText", AttributeType.TOGGLE, true, null, "ScaledText");
+			CreateObjectAttribute("EditText", AttributeType.BUTTON, null, null, "EditText");
+
+			screenAttributes.SetActive(false);
+			attributesPanels.Add("Screen", screenAttributes);
+		}
+		void CreateSmallScreenAttributesPanel()
+		{
+			GameObject smallScreenAttributes = new GameObject("Small Screen");
+			smallScreenAttributes.transform.parent = objectSpecificPanelsParent;
+			smallScreenAttributes.transform.localPosition = Vector3.zero;
+			smallScreenAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(smallScreenAttributes);
+
+			CreateObjectAttribute("ScreenColor", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
+			var screenColorButton = smallScreenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			screenColorButton.AddOption("CYAN", null); // Use the default button color.
+			screenColorButton.AddOption("GREEN", Color.green);
+			screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
+
+			CreateObjectAttribute("InvisibleMesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
+			CreateObjectAttribute("InvertTextWithGravity", AttributeType.TOGGLE, true, null, "InvertWithGravity");
+			CreateObjectAttribute("ScaledText", AttributeType.TOGGLE, true, null, "ScaledText");
+			CreateObjectAttribute("EditText", AttributeType.BUTTON, null, null, "EditText");
+
+			smallScreenAttributes.SetActive(false);
+			attributesPanels.Add("Small Screen", smallScreenAttributes);
+		}
+		void CreateTriggerAttributesPanel()
+		{
+			GameObject triggerAttributes = new GameObject("Trigger");
+			triggerAttributes.transform.parent = objectSpecificPanelsParent;
+			triggerAttributes.transform.localPosition = Vector3.zero;
+			triggerAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(triggerAttributes);
+
+			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
+
+			triggerAttributes.SetActive(false);
+			attributesPanels.Add("Trigger", triggerAttributes);
+		}
+		void CreateDoorAttributesPanel()
+		{
+			GameObject doorAttributes = new GameObject("Door");
+			doorAttributes.transform.parent = objectSpecificPanelsParent;
+			doorAttributes.transform.localPosition = Vector3.zero;
+			doorAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(doorAttributes);
+
+			CreateObjectAttribute("IsAutomatic", AttributeType.TOGGLE, false, null, "IsAuto");
+
+			CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
+			var initialStateButton = doorAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
+			initialStateButton.AddOption("OPEN", Color.green);
+
+			CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialStateAuto", dontChangeYPos: true);
+			var initialStateAutoButton = doorAttributes.GetChildAt("InitialStateAuto/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			initialStateAutoButton.AddOption("LOCKED", new Color(0.8f, 0f, 0f));
+			initialStateAutoButton.AddOption("UNLOCKED", Color.green);
+
+			doorAttributes.SetActive(false);
+			attributesPanels.Add("Door", doorAttributes);
+		}
+		void CreateDoorV2AttributesPanel()
+		{
+			GameObject doorV2Attributes = new GameObject("Door V2");
+			doorV2Attributes.transform.parent = objectSpecificPanelsParent;
+			doorV2Attributes.transform.localPosition = Vector3.zero;
+			doorV2Attributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(doorV2Attributes);
+
+			CreateObjectAttribute("IsAutomatic", AttributeType.TOGGLE, false, null, "IsAuto");
+
+			CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
+			var initialStateButton = doorV2Attributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
+			initialStateButton.AddOption("OPEN", Color.green);
+
+			CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialStateAuto", dontChangeYPos: true);
+			var initialStateAutoButton = doorV2Attributes.GetChildAt("InitialStateAuto/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			initialStateAutoButton.AddOption("LOCKED", new Color(0.8f, 0f, 0f));
+			initialStateAutoButton.AddOption("UNLOCKED", Color.green);
+
+			doorV2Attributes.SetActive(false);
+			attributesPanels.Add("Door V2", doorV2Attributes);
+		}
+		void CreateDeathTriggerAttributesPanel()
+		{
+			GameObject deathTriggerAttributes = new GameObject("Death Trigger");
+			deathTriggerAttributes.transform.parent = objectSpecificPanelsParent;
+			deathTriggerAttributes.transform.localPosition = Vector3.zero;
+			deathTriggerAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(deathTriggerAttributes);
+
+			CreateObjectAttribute("DeathTriggerType", AttributeType.BUTTON_MULTIPLE, null, null, "Type");
+			var typeButton = deathTriggerAttributes.GetChildAt("Type/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			typeButton.AddOption("DeathRelocation", new Color(0.8f, 0f, 0f));
+			typeButton.AddOption("DeathImminent", Color.black);
+
+			CreateObjectAttribute("Delay", AttributeType.INPUT_FIELD, "2", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Delay");
+
+			deathTriggerAttributes.SetActive(false);
+			attributesPanels.Add("Death Trigger", deathTriggerAttributes);
+		}
+		void CreateWaypointAttributesPanel()
+		{
+			GameObject waypointAttributes = new GameObject("Waypoint");
+			waypointAttributes.transform.parent = objectSpecificPanelsParent;
+			waypointAttributes.transform.localPosition = Vector3.zero;
+			waypointAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(waypointAttributes);
+
+			CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0.3", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+			CreateObjectAttribute("AddGlobalWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+
+			attributesPanels.Add("Waypoint", waypointAttributes);
+		}
+		void CreateLaserFieldAttributesPanel()
+		{
+			GameObject laserFieldAttributes = new GameObject("Laser Field");
+			laserFieldAttributes.transform.parent = objectSpecificPanelsParent;
+			laserFieldAttributes.transform.localPosition = Vector3.zero;
+			laserFieldAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(laserFieldAttributes);
+
+			CreateObjectAttribute("InvisibleEdges", AttributeType.TOGGLE, false, null, "InvisibleEdges");
+
+			attributesPanels.Add("Laser Field", laserFieldAttributes);
+		}
+		void CreateCubeKillplaneAttributePanel()
+		{
+			GameObject Cube_Killplane = new GameObject("Cube Killplane");
+			Cube_Killplane.transform.parent = objectSpecificPanelsParent;
+			Cube_Killplane.transform.localPosition = Vector3.zero;
+			Cube_Killplane.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(Cube_Killplane);
+
+			CreateObjectAttribute("IgnoreIfInHands", AttributeType.TOGGLE, false, null, "IgnoreIfInHands");
+
+			attributesPanels.Add("Cube Killplane", Cube_Killplane);
+		}
+		void CreateTaserAttributesPanel()
+		{
+			GameObject gun = new GameObject("Gun");
+			gun.transform.parent = objectSpecificPanelsParent;
+			gun.transform.localPosition = Vector3.zero;
+			gun.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(gun);
+
+			CreateObjectAttribute("InfiniteTaser", AttributeType.TOGGLE, false, null, "InfiniteTaser");
+			CreateObjectAttribute("Ammo", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Ammo", maxLength: 2);
+
+			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
+			CreateObjectAttribute("Rotation", AttributeType.TOGGLE, true, null, "Rotate");
+
+			attributesPanels.Add("Gun", gun);
+		}
 		void CreateDestructibleWallAttributesPanel()
 		{
 			GameObject DestructibleWall = new GameObject("Destructible_Wall");
@@ -896,513 +911,540 @@ namespace FS_LevelEditor.Editor.UI
 			attributesPanels.Add("Bridge", bridge);
 		}
 		void CreateMovingPlatformAttributesPanel()
-        {
-            GameObject movingPlatformAttributes = new GameObject("Moving Platform");
-            movingPlatformAttributes.transform.parent = objectSpecificPanelsParent;
-            movingPlatformAttributes.transform.localPosition = Vector3.zero;
-            movingPlatformAttributes.transform.localScale = Vector3.one;
+		{
+			GameObject movingPlatformAttributes = new GameObject("Moving Platform");
+			movingPlatformAttributes.transform.parent = objectSpecificPanelsParent;
+			movingPlatformAttributes.transform.localPosition = Vector3.zero;
+			movingPlatformAttributes.transform.localScale = Vector3.one;
 
-            SetCurrentParentToCreateAttributes(movingPlatformAttributes);
+			SetCurrentParentToCreateAttributes(movingPlatformAttributes);
 
-            CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
-            CreateObjectAttribute("MovingSpeed", AttributeType.INPUT_FIELD, "5", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "MoveSpeed");
+			CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+			CreateObjectAttribute("MovingSpeed", AttributeType.INPUT_FIELD, "5", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "MoveSpeed");
 
-            CreateObjectAttribute("MovementMode", AttributeType.BUTTON_MULTIPLE, 0, null, "MovementMode");
-            var movementModeButton = movingPlatformAttributes.GetChildAt("MovementMode/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
-            movementModeButton.AddOption("None_Mayus", Color.black);
-            movementModeButton.AddOption("TravelBack_Mayus", Color.red);
-            movementModeButton.AddOption("Loop_Mayus", Color.blue);
+			CreateObjectAttribute("MovementMode", AttributeType.BUTTON_MULTIPLE, 0, null, "MovementMode");
+			var movementModeButton = movingPlatformAttributes.GetChildAt("MovementMode/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			movementModeButton.AddOption("None_Mayus", Color.black);
+			movementModeButton.AddOption("TravelBack_Mayus", Color.red);
+			movementModeButton.AddOption("Loop_Mayus", Color.blue);
 
-            CreateObjectAttribute("AddMovingPlatformWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+			CreateObjectAttribute("AddMovingPlatformWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
-            movingPlatformAttributes.SetActive(false);
-            attributesPanels.Add("Moving Platform", movingPlatformAttributes);
-        }
-        void CreateMovingPlatformWaypointAttributesPanel()
-        {
-            GameObject waypointAttributes = new GameObject("Moving Platform Waypoint");
-            waypointAttributes.transform.parent = objectSpecificPanelsParent;
-            waypointAttributes.transform.localPosition = Vector3.zero;
-            waypointAttributes.transform.localScale = Vector3.one;
+			movingPlatformAttributes.SetActive(false);
+			attributesPanels.Add("Moving Platform", movingPlatformAttributes);
+		}
+		void CreateMovingPlatformWaypointAttributesPanel()
+		{
+			GameObject waypointAttributes = new GameObject("Moving Platform Waypoint");
+			waypointAttributes.transform.parent = objectSpecificPanelsParent;
+			waypointAttributes.transform.localPosition = Vector3.zero;
+			waypointAttributes.transform.localScale = Vector3.one;
 
-            SetCurrentParentToCreateAttributes(waypointAttributes);
+			SetCurrentParentToCreateAttributes(waypointAttributes);
 
-            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
-            CreateObjectAttribute("AddMovingPlatformWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
+			CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+			CreateObjectAttribute("AddMovingPlatformWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
-            waypointAttributes.SetActive(false);
-            attributesPanels.Add("Moving Platform Waypoint", waypointAttributes);
-        }
+			waypointAttributes.SetActive(false);
+			attributesPanels.Add("Moving Platform Waypoint", waypointAttributes);
+		}
+		void CreateKeypadAttributesPanel()
+		{
+			GameObject keypad = new GameObject("Keypad");
+			keypad.transform.parent = objectSpecificPanelsParent;
+			keypad.transform.localPosition = Vector3.zero;
+			keypad.transform.localScale = Vector3.one;
 
-        enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
-        void SetCurrentParentToCreateAttributes(GameObject newParent)
-        {
-            whereToCreateObjAttributesParent = newParent.transform;
-        }
-        void CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType? fieldType, string targetPropName,
-            bool createHastag = false, string tooltip = null, bool dontChangeYPos = false)
-        {
-            GameObject attributeParent = new GameObject(targetPropName);
-            attributeParent.transform.parent = whereToCreateObjAttributesParent;
-            attributeParent.transform.localPosition = Vector3.zero;
-            attributeParent.transform.localScale = Vector3.one;
+			SetCurrentParentToCreateAttributes(keypad);
 
-            float yPos = 90 - (50 * (whereToCreateObjAttributesParent.gameObject.GetChilds().Where(x => !x.ExistsChild("IgnoreYPos")).ToArray().Length - 1));
-            if (dontChangeYPos) yPos += 50;
+			CreateObjectAttribute("Keycode", AttributeType.INPUT_FIELD, "1234", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Keycode", maxLength: 4);
+			CreateObjectAttribute("leaveOnIncorrect", AttributeType.TOGGLE, false, null, "leaveOnIncorrect");
+			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
-            if (attrType != AttributeType.BUTTON)
-            {
-                int titleWidth = attrType == AttributeType.INPUT_FIELD || attrType == AttributeType.BUTTON_MULTIPLE ? 260 : 395;
-                if (createHastag) titleWidth = 235;
-                UILabel title = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(-230, yPos), new Vector3Int(titleWidth, NGUI_Utils.defaultLabelSize.y, 0),
-                    text);
-                title.name = "Title";
-            }
+			keypad.SetActive(false);
+			attributesPanels.Add("Keypad", keypad);
+		}
 
-            if (createHastag && attrType == AttributeType.INPUT_FIELD)
-            {
-                UILabel hashtagLOL = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(15, yPos), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
-                    NGUIText.Alignment.Center, UIWidget.Pivot.Left);
-                hashtagLOL.name = "HashtagLOL";
-                hashtagLOL.color = Color.white;
-            }
+		enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
+		void SetCurrentParentToCreateAttributes(GameObject newParent)
+		{
+			whereToCreateObjAttributesParent = newParent.transform;
+		}
+		void CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType? fieldType, string targetPropName,
+			bool createHastag = false, string tooltip = null, bool dontChangeYPos = false, int? maxLength = null)
+		{
+			GameObject attributeParent = new GameObject(targetPropName);
+			attributeParent.transform.parent = whereToCreateObjAttributesParent;
+			attributeParent.transform.localPosition = Vector3.zero;
+			attributeParent.transform.localScale = Vector3.one;
 
-            if (attrType == AttributeType.INPUT_FIELD)
-            {
-                var field = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(140, yPos), new Vector3Int(200, 38, 0), 27, (string)defaultValue, false,
-                    inputType: (UICustomInputField.UIInputType)fieldType);
-                field.name = "Field";
-                field.setFieldColorAutomatically = false;
-                field.onChange += () => SetPropertyWithInput(targetPropName, field);
-            }
-            else if (attrType == AttributeType.TOGGLE)
-            {
-                GameObject toggle = NGUI_Utils.CreateToggle(attributeParent.transform, new Vector3(200f, yPos), new Vector3Int(48, 48, 0));
-                toggle.name = "Toggle";
-                toggle.GetComponent<UIToggle>().onChange.Clear();
-                var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-                    NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", targetPropName),
-                    NGUI_Utils.CreateEventDelegateParamter(this, "toggle", toggle.GetComponent<UIToggle>()));
-                toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
-                if ((bool)defaultValue) toggle.GetComponent<UIToggle>().Set(true);
-                if (tooltip != null)
-                {
-                    toggle.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
-                }
-            }
-            else if (attrType == AttributeType.BUTTON)
-            {
-                UIButtonPatcher button = NGUI_Utils.CreateButton(attributeParent.transform, new Vector3(0, yPos), new Vector3Int(480, 50, 0), text);
-                button.name = "Button";
-                button.onClick += () => TriggerAction(targetPropName);
-                button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-                button.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-                if (tooltip != null)
-                {
-                    button.gameObject.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
-                }
-            }
-            else if (attrType == AttributeType.BUTTON_MULTIPLE)
-            {
-                UISmallButtonMultiple button = NGUI_Utils.CreateSmallButtonMultiple(attributeParent.transform, new Vector3(140, yPos),
-                    new Vector3Int(200, 38, 0), text, 25);
-                button.name = "ButtonMultiple";
-                button.onChange += (id) => SetPropertyWithButtonMultiple(targetPropName, button);
-                button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-                button.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
-                if (tooltip != null)
-                {
-                    button.gameObject.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
-                }
-            }
+			float yPos = 90 - (50 * (whereToCreateObjAttributesParent.gameObject.GetChilds().Where(x => !x.ExistsChild("IgnoreYPos")).ToArray().Length - 1));
+			if (dontChangeYPos) yPos += 50;
 
-            if (dontChangeYPos)
-            {
-                GameObject ignoreYPosObj = new GameObject("IgnoreYPos");
-                ignoreYPosObj.transform.parent = attributeParent.transform;
-                ignoreYPosObj.transform.localPosition = Vector3.zero;
-                ignoreYPosObj.transform.localScale = Vector3.one;
-            }
-        }
-        #endregion
-        #endregion
+			if (attrType != AttributeType.BUTTON)
+			{
+				int titleWidth = attrType == AttributeType.INPUT_FIELD || attrType == AttributeType.BUTTON_MULTIPLE ? 260 : 395;
+				if (createHastag) titleWidth = 235;
+				UILabel title = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(-230, yPos), new Vector3Int(titleWidth, NGUI_Utils.defaultLabelSize.y, 0),
+					text);
+				title.name = "Title";
+			}
 
-        public void ShowPanel(bool show, string headerLocKey) => ShowPanel(show, panelIsExpanded, headerLocKey);
-        public void ShowPanel(bool show, bool expand, string headerLocKey)
-        {
-            headerTitle.SetLocKey(headerLocKey);
-            currentHeaderLocKey = headerLocKey;
+			if (createHastag && attrType == AttributeType.INPUT_FIELD)
+			{
+				UILabel hashtagLOL = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(15, yPos), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
+					NGUIText.Alignment.Center, UIWidget.Pivot.Left);
+				hashtagLOL.name = "HashtagLOL";
+				hashtagLOL.color = Color.white;
+			}
 
-            if (show)
-            {
-                if (!expand) // Normal selection
-                {
-                    gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
-                    headerTitle.width = 300; // So it doesn't overlap with the two toggles in the sides.
-                    body.SetActive(true);
-                    body.GetComponent<UISprite>().height = 300;
-                    body.GetComponent<BoxCollider>().center = new Vector3(0, -150f);
-                    body.GetComponent<BoxCollider>().size = new Vector3(500, 300);
-                    // Set the UIPanel clipping height a bit smaller just because NGUICRAP doesn't hide the objects until they're FULLY outside.
-                    body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -150f, 500, 280);
 
-                    panelIsExpanded = false;
-                }
-                else // EXPANDED PANEL
-                {
-                    gameObject.transform.localPosition = new Vector3(-700f, 500, 0f);
-                    headerTitle.width = 300; // So it doesn't overlap with the two toggles in the sides.
-                    body.SetActive(true);
-                    body.GetComponent<UISprite>().height = 1020;
-                    body.GetComponent<BoxCollider>().center = new Vector3(0, -510f);
-                    body.GetComponent<BoxCollider>().size = new Vector3(500, 1020);
-                    // Set the UIPanel clipping height a bit smaller just because NGUICRAP doesn't hide the objects until they're FULLY outside.
-                    body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -510f, 500, 1000);
+			if (attrType == AttributeType.INPUT_FIELD)
+			{
+				var field = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(140, yPos), new Vector3Int(200, 38, 0), 27, (string)defaultValue, false,
+					inputType: (UICustomInputField.UIInputType)fieldType);
+				field.name = "Field";
+				field.setFieldColorAutomatically = false;
+				field.onChange += () => SetPropertyWithInput(targetPropName, field);
 
-                    panelIsExpanded = true;
-                }
-            }
-            else
-            {
-                gameObject.transform.localPosition = new Vector3(-700f, -505f, 0f);
-                headerTitle.width = 520;
-                body.SetActive(false);
-                setActiveAtStartToggle.gameObject.SetActive(false);
-                expandPanelButton.gameObject.SetActive(false);
-                globalObjAttributesToggle.gameObject.SetActive(false);
-            }
+				// Add max length restriction if specified
+				if (maxLength.HasValue)
+				{
+					field.input.characterLimit = maxLength.Value;
+				}
+			}
+			else if (attrType == AttributeType.TOGGLE)
+			{
+				GameObject toggle = NGUI_Utils.CreateToggle(attributeParent.transform, new Vector3(200f, yPos), new Vector3Int(48, 48, 0));
+				toggle.name = "Toggle";
+				toggle.GetComponent<UIToggle>().onChange.Clear();
+				var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
+					NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", targetPropName),
+					NGUI_Utils.CreateEventDelegateParamter(this, "toggle", toggle.GetComponent<UIToggle>()));
+				toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
+				if ((bool)defaultValue) toggle.GetComponent<UIToggle>().Set(true);
+				if (tooltip != null)
+				{
+					toggle.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
+				}
+			}
+			else if (attrType == AttributeType.BUTTON)
+			{
+				UIButtonPatcher button = NGUI_Utils.CreateButton(attributeParent.transform, new Vector3(0, yPos), new Vector3Int(480, 50, 0), text);
+				button.name = "Button";
+				button.onClick += () => TriggerAction(targetPropName);
+				button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+				button.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+				if (tooltip != null)
+				{
+					button.gameObject.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
+				}
+			}
+			else if (attrType == AttributeType.BUTTON_MULTIPLE)
+			{
+				UISmallButtonMultiple button = NGUI_Utils.CreateSmallButtonMultiple(attributeParent.transform, new Vector3(140, yPos),
+					new Vector3Int(200, 38, 0), text, 25);
+				button.name = "ButtonMultiple";
+				button.onChange += (id) => SetPropertyWithButtonMultiple(targetPropName, button);
+				button.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+				button.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+				if (tooltip != null)
+				{
+					button.gameObject.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
+				}
+			}
 
-            expandPanelButtonSprite.transform.localScale = new Vector3(1f, expand ? -1 : 1, 1);
+			if (dontChangeYPos)
+			{
+				GameObject ignoreYPosObj = new GameObject("IgnoreYPos");
+				ignoreYPosObj.transform.parent = attributeParent.transform;
+				ignoreYPosObj.transform.localPosition = Vector3.zero;
+				ignoreYPosObj.transform.localScale = Vector3.one;
+			}
+		}
+		#endregion
+		#endregion
 
-            showingPanel = show;
-        }
-        public void ExpandButtonClick()
-        {
-            ShowPanel(showingPanel, !panelIsExpanded, currentHeaderLocKey);
-        }
-        public void UpdateHeaderTitle()
-        {
-            if (isSelectingAnObjectRightNow)
-            {
-                if (isSelectingMultipleObjects)
-                {
-                    headerTitle.SetLocKey("selection.MultipleObjectsSelected");
-                }
-                else
-                {
-                    headerTitle.SetLocKey(currentSelectedObj.objectFullNameWithID);
-                }
-            }
-            else
-            {
-                headerTitle.SetLocKey("selection.NoObjectSelected");
-            }
-        }
+		public void ShowPanel(bool show, string headerLocKey) => ShowPanel(show, panelIsExpanded, headerLocKey);
+		public void ShowPanel(bool show, bool expand, string headerLocKey)
+		{
+			headerTitle.SetLocKey(headerLocKey);
+			currentHeaderLocKey = headerLocKey;
 
-        public void SetSelectedObjPanelAsNone()
-        {
-            isSelectingAnObjectRightNow = false;
-            isSelectingMultipleObjects = true;
+			if (show)
+			{
+				// Ensure button is visible when panel is shown
+				expandPanelButton.gameObject.SetActive(true);
 
-            ShowPanel(false, "selection.NoObjectSelected");
-        }
-        public void SetMultipleObjectsSelected()
-        {
-            isSelectingAnObjectRightNow = true;
-            isSelectingMultipleObjects = true;
+				if (!expand) // Normal selection
+				{
+					gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
+					headerTitle.width = 300;
+					body.SetActive(true);
+					body.GetComponent<UISprite>().height = 300;
+					body.GetComponent<BoxCollider>().center = new Vector3(0, -150f);
+					body.GetComponent<BoxCollider>().size = new Vector3(500, 300);
+					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -150f, 500, 280);
+				}
+				else // EXPANDED PANEL
+				{
+					gameObject.transform.localPosition = new Vector3(-700f, 500, 0f);
+					headerTitle.width = 300;
+					body.SetActive(true);
+					body.GetComponent<UISprite>().height = 1020;
+					body.GetComponent<BoxCollider>().center = new Vector3(0, -510f);
+					body.GetComponent<BoxCollider>().size = new Vector3(500, 1020);
+					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -510f, 500, 1000);
+				}
 
-            ShowPanel(true, "selection.MultipleObjectsSelected");
+				panelIsExpanded = expand;
+			}
+			else
+			{
+				gameObject.transform.localPosition = new Vector3(-700f, -505f, 0f);
+				headerTitle.width = 520;
+				body.SetActive(false);
+				setActiveAtStartToggle.gameObject.SetActive(false);
+				expandPanelButton.gameObject.SetActive(false);
+				globalObjAttributesToggle.gameObject.SetActive(false);
+				panelIsExpanded = false;
+			}
 
-            setActiveAtStartToggle.gameObject.SetActive(true);
-            expandPanelButton.gameObject.SetActive(true);
+			showingPanel = show;
+		}
+		public void ExpandButtonClick()
+		{
+			if (!showingPanel) return; // Don't process clicks if panel isn't shown
 
-            #region Set Active At Start Toggle
-            // If this is null, that means the "Set Active At Start" in the current selected objects is different in at least one of them.
-            // If it's true or false, then ALL of them are true or false.
-            bool? setActiveStateInObjects = null;
-            foreach (var obj in EditorController.Instance.currentSelectedObjects)
-            {
-                LE_Object comp = obj.GetComponent<LE_Object>();
-                // Skip objects that can't be disabled at start.
-                if (!comp.canBeDisabledAtStart) continue;
+			// Toggle expanded state and update panel immediately
+			panelIsExpanded = !panelIsExpanded;
+			ShowPanel(true, panelIsExpanded, currentHeaderLocKey);
 
-                if (setActiveStateInObjects == null)
-                {
-                    setActiveStateInObjects = comp.setActiveAtStart;
-                    continue;
-                }
+			// Update button sprite orientation
+			if (expandPanelButtonSprite != null)
+			{
+				expandPanelButtonSprite.transform.localScale = new Vector3(1f, panelIsExpanded ? -1 : 1, 1);
+			}
+		}
+		public void UpdateHeaderTitle()
+		{
+			if (isSelectingAnObjectRightNow)
+			{
+				if (isSelectingMultipleObjects)
+				{
+					headerTitle.SetLocKey("selection.MultipleObjectsSelected");
+				}
+				else
+				{
+					headerTitle.SetLocKey(currentSelectedObj.objectFullNameWithID);
+				}
+			}
+			else
+			{
+				headerTitle.SetLocKey("selection.NoObjectSelected");
+			}
+		}
 
-                if (setActiveStateInObjects == comp.setActiveAtStart)
-                {
-                    continue;
-                }
-                else
-                {
-                    setActiveStateInObjects = null;
-                    break;
-                }
-            }
+		public void SetSelectedObjPanelAsNone()
+		{
+			isSelectingAnObjectRightNow = false;
+			isSelectingMultipleObjects = true;
 
-            if (setActiveStateInObjects != null)
-            {
-                setActiveAtStartToggle.Set((bool)setActiveStateInObjects);
-                setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
-            }
-            else
-            {
-                executeSetActiveAtStartToggleActions = false;
-                setActiveAtStartToggle.Set(false);
-                executeSetActiveAtStartToggleActions = true;
-                setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
-            }
-            #endregion
+			ShowPanel(false, "selection.NoObjectSelected");
+		}
+		public void SetMultipleObjectsSelected()
+		{
+			isSelectingAnObjectRightNow = true;
+			isSelectingMultipleObjects = true;
 
-            globalObjAttributesToggle.gameObject.SetActive(false);
-            globalObjAttributesToggle.SetToggleState(true, true);
+			ShowPanel(true, "selection.MultipleObjectsSelected");
 
-            UpdateGlobalObjectAttributes(EditorController.Instance.currentSelectedObj.transform);
-        }
-        public void SetSelectedObject(LE_Object objComponent)
-        {
-            isSelectingAnObjectRightNow = true;
-            isSelectingMultipleObjects = false;
+			setActiveAtStartToggle.gameObject.SetActive(true);
+			expandPanelButton.gameObject.SetActive(true);
 
-            currentSelectedObj = objComponent;
+			#region Set Active At Start Toggle
+			// If this is null, that means the "Set Active At Start" in the current selected objects is different in at least one of them.
+			// If it's true or false, then ALL of them are true or false.
+			bool? setActiveStateInObjects = null;
+			foreach (var obj in EditorController.Instance.currentSelectedObjects)
+			{
+				LE_Object comp = obj.GetComponent<LE_Object>();
+				// Skip objects that can't be disabled at start.
+				if (!comp.canBeDisabledAtStart) continue;
 
-            // The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.
-            ShowPanel(true, objComponent.objectFullNameWithID);
-            expandPanelButton.gameObject.SetActive(true);
+				if (setActiveStateInObjects == null)
+				{
+					setActiveStateInObjects = comp.setActiveAtStart;
+					continue;
+				}
 
-            #region Select Right Attributes Panel And Setup Global Attributes Toggle
-            // Disable all of the attributes panels.
-            attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
+				if (setActiveStateInObjects == comp.setActiveAtStart)
+				{
+					continue;
+				}
+				else
+				{
+					setActiveStateInObjects = null;
+					break;
+				}
+			}
 
-            // Enable the toggle and show object-specific attributes, then it will be disabled or changed to GLOBAL attributes if the object doesn't have unique ones.
-            globalObjAttributesToggle.gameObject.SetActive(true);
-            globalObjAttributesToggle.SetToggleState(false, true);
+			if (setActiveStateInObjects != null)
+			{
+				setActiveAtStartToggle.Set((bool)setActiveStateInObjects);
+				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+			}
+			else
+			{
+				executeSetActiveAtStartToggleActions = false;
+				setActiveAtStartToggle.Set(false);
+				executeSetActiveAtStartToggleActions = true;
+				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
+			}
+			#endregion
 
-            bool specificAttributesFound = false;
-            // The child's name is the name of the target obj, but if it contains a '|' then that panel may be compatible for multiple objects (Like ammo & health packs).
-            foreach (var child in objectSpecificPanelsParent.gameObject.GetChilds())
-            {
-                List<LE_Object.ObjectType?> thisPanelIsForObjects = child.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim()))
-                    .ToList();
+			globalObjAttributesToggle.gameObject.SetActive(false);
+			globalObjAttributesToggle.SetToggleState(true, true);
 
-                if (thisPanelIsForObjects.Contains(objComponent.objectType))
-                {
-                    specificAttributesFound = true;
+			UpdateGlobalObjectAttributes(EditorController.Instance.currentSelectedObj.transform);
+		}
+		public void SetSelectedObject(LE_Object objComponent)
+		{
+			isSelectingAnObjectRightNow = true;
+			isSelectingMultipleObjects = false;
 
-                    child.SetActive(true);
-                    UpdateObjectSpecificAttribute(objComponent, child);
-                    break; // We already found the right panel, stop iterating.
-                }
-            }
-            if (!specificAttributesFound)
-            {
-                globalObjAttributesToggle.gameObject.SetActive(false);
-                globalObjAttributesToggle.SetToggleState(true, true);
-            }
-            #endregion
+			currentSelectedObj = objComponent;
 
-            UpdateGlobalObjectAttributes(objComponent.transform);
+			// The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.
+			ShowPanel(true, objComponent.objectFullNameWithID);
+			expandPanelButton.gameObject.SetActive(true);
 
-            #region Set At Start Toggle
-            if (objComponent.canBeDisabledAtStart)
-            {
-                setActiveAtStartToggle.gameObject.SetActive(true);
-                setActiveAtStartToggle.Set(objComponent.setActiveAtStart);
-                setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
-            }
-            else
-            {
-                setActiveAtStartToggle.gameObject.SetActive(false);
-                objComponent.setActiveAtStart = true; // Just in case ;)
-            }
-            #endregion
-        }
-        void UpdateObjectSpecificAttribute(LE_Object objComp, GameObject panelInUI)
-        {
-            // OFFICIALLY, THIS IS THE ULTIMATE MOST BETTER AUTOMATED PROPERTY UPDATER OF THE WORLD!
-            foreach (var attribute in panelInUI.GetChilds())
-            {
-                string attributeName = attribute.name; // Assuming the name of the childs in the UI is the same as the REAL attribute name.
-                if (objComp.TryGetProperty(attributeName, out object value))
-                {
-                    if (attribute.ExistsChild("Field"))
-                    {
-                        switch (value)
-                        {
-                            case int intValue:
-                                value = value + ""; // Convert to string directly, no ToString() shit needed here.
-                                break;
+			#region Select Right Attributes Panel And Setup Global Attributes Toggle
+			// Disable all of the attributes panels.
+			attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
 
-                            case float floatValue:
-                                // C# is a pussy that wants me to specify I wanna convert this float to a string using DOTS, not fucking commas.
-                                value = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
-                                break;
+			// Enable the toggle and show object-specific attributes, then it will be disabled or changed to GLOBAL attributes if the object doesn't have unique ones.
+			globalObjAttributesToggle.gameObject.SetActive(true);
+			globalObjAttributesToggle.SetToggleState(false, true);
 
-                            case Color colorValue:
-                                value = Utils.ColorToHex(colorValue);
-                                break;
+			bool specificAttributesFound = false;
+			// The child's name is the name of the target obj, but if it contains a '|' then that panel may be compatible for multiple objects (Like ammo & health packs).
+			foreach (var child in objectSpecificPanelsParent.gameObject.GetChilds())
+			{
+				List<LE_Object.ObjectType?> thisPanelIsForObjects = child.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim()))
+					.ToList();
 
-                            case string:
-                                // With string there's no problem, but put this so it's not catched by "default:".
-                                break;
+				if (thisPanelIsForObjects.Contains(objComponent.objectType))
+				{
+					specificAttributesFound = true;
 
-                            default:
-                                Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in an INPUT FIELD?");
-                                continue;
-                        }
+					child.SetActive(true);
+					UpdateObjectSpecificAttribute(objComponent, child);
+					break; // We already found the right panel, stop iterating.
+				}
+			}
+			if (!specificAttributesFound)
+			{
+				globalObjAttributesToggle.gameObject.SetActive(false);
+				globalObjAttributesToggle.SetToggleState(true, true);
+			}
+			#endregion
 
-                        attribute.GetChild("Field").GetComponent<UIInput>().text = (string)value;
-                    }
-                    else if (attribute.ExistsChild("Toggle"))
-                    {
-                        // Values for toggles can ONLY be bools, nothing else LOL.
-                        if (value is not bool)
-                        {
-                            Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in a TOGGLE?");
-                            continue;
-                        }
+			UpdateGlobalObjectAttributes(objComponent.transform);
 
-                        attribute.GetChild("Toggle").GetComponent<UIToggle>().Set((bool)value);
-                    }
-                    else if (attribute.ExistsChild("ButtonMultiple"))
-                    {
-                        // Values for multiple option buttons can be, int or maybe an enum
-                        if (value is not int && value is not Enum)
-                        {
-                            Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in a BUTTON MULTIPLE?");
-                            continue;
-                        }
+			#region Set At Start Toggle
+			if (objComponent.canBeDisabledAtStart)
+			{
+				setActiveAtStartToggle.gameObject.SetActive(true);
+				setActiveAtStartToggle.Set(objComponent.setActiveAtStart);
+				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+			}
+			else
+			{
+				setActiveAtStartToggle.gameObject.SetActive(false);
+				objComponent.setActiveAtStart = true; // Just in case ;)
+			}
+			#endregion
+		}
+		void UpdateObjectSpecificAttribute(LE_Object objComp, GameObject panelInUI)
+		{
+			// OFFICIALLY, THIS IS THE ULTIMATE MOST BETTER AUTOMATED PROPERTY UPDATER OF THE WORLD!
+			foreach (var attribute in panelInUI.GetChilds())
+			{
+				string attributeName = attribute.name; // Assuming the name of the childs in the UI is the same as the REAL attribute name.
+				if (objComp.TryGetProperty(attributeName, out object value))
+				{
+					if (attribute.ExistsChild("Field"))
+					{
+						switch (value)
+						{
+							case int:
+							case float:
+								value = value + ""; // Convert to string.
+								break;
 
-                        attribute.GetChild("ButtonMultiple").GetComponent<UISmallButtonMultiple>().SetOption((int)value);
-                    }
-                }
-            }
+							case Color:
+								value = Utils.ColorToHex((Color)value);
+								break;
 
-            if (objComp is LE_Saw)
-            {
-                var waypoints = objComp.GetProperty<List<WaypointData>>("waypoints");
-                ShowOrHideSawWaitTimeField(waypoints.Count);
+							case string:
+								// With string there's no problem, but put this so it's not catched by "default:".
+								break;
 
-                if (objComp.TryGetProperty("Rotate", out object rotateValue) && rotateValue is bool rotate)
-                {
-                    OnSawRotateChecked(rotate);
-                }
-            }
-        }
+							default:
+								Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in an INPUT FIELD?");
+								continue;
+						}
 
-        enum GlobalFieldType { Position, Rotation, Scale }
-        void OnGlobalAttributeFieldSelected(GlobalFieldType fieldType)
-        {
-            switch (fieldType)
-            {
-                case GlobalFieldType.Position:
-                    objPositionWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localPosition;
-                    break;
+						attribute.GetChild("Field").GetComponent<UIInput>().text = (string)value;
+					}
+					else if (attribute.ExistsChild("Toggle"))
+					{
+						// Values for toggles can ONLY be bools, nothing else LOL.
+						if (value is not bool)
+						{
+							Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in a TOGGLE?");
+							continue;
+						}
 
-                case GlobalFieldType.Rotation:
-                    objRotationWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localRotation;
-                    break;
+						attribute.GetChild("Toggle").GetComponent<UIToggle>().Set((bool)value);
+					}
+					else if (attribute.ExistsChild("ButtonMultiple"))
+					{
+						// Values for multiple option buttons can be, int or maybe an enum
+						if (value is not int && value is not Enum)
+						{
+							Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in a BUTTON MULTIPLE?");
+							continue;
+						}
 
-                case GlobalFieldType.Scale:
-                    objScaleWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localScale;
-                    break;
-            }
-        }
-        void OnGlobalAttributeFieldDeselected(GlobalFieldType fieldType)
-        {
-            EditorController editor = EditorController.Instance;
+						attribute.GetChild("ButtonMultiple").GetComponent<UISmallButtonMultiple>().SetOption((int)value);
+					}
+				}
+			}
 
-            switch (fieldType)
-            {
-                case GlobalFieldType.Position:
-                    editor.RegisterLEAction(LEAction.LEActionType.MoveObject, editor.currentSelectedObj, editor.multipleObjectsSelected,
-                        objPositionWhenSelectedField, editor.currentSelectedObj.transform.localPosition, null, null);
-                    break;
+			if (objComp is LE_Saw)
+			{
+				var waypoints = objComp.GetProperty<List<WaypointData>>("waypoints");
+				ShowOrHideSawWaitTimeField(waypoints.Count);
 
-                case GlobalFieldType.Rotation:
-                    editor.RegisterLEAction(LEAction.LEActionType.RotateObject, editor.currentSelectedObj, editor.multipleObjectsSelected, null, null,
-                        objRotationWhenSelectedField, editor.currentSelectedObj.transform.localRotation);
-                    break;
+				if (objComp.TryGetProperty("Rotate", out object rotateValue) && rotateValue is bool rotate)
+				{
+					OnSawRotateChecked(rotate);
+				}
+			}
+		}
 
-                case GlobalFieldType.Scale:
-                    editor.RegisterLEAction(LEAction.LEActionType.ScaleObject, editor.currentSelectedObj, editor.multipleObjectsSelected, null, null, null, null,
-                        objScaleWhenSelectedField, editor.currentSelectedObj.transform.localScale);
-                    break;
-            }
-        }
+		enum GlobalFieldType { Position, Rotation, Scale }
+		void OnGlobalAttributeFieldSelected(GlobalFieldType fieldType)
+		{
+			switch (fieldType)
+			{
+				case GlobalFieldType.Position:
+					objPositionWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localPosition;
+					break;
 
-        public void SetSetActiveAtStart()
-        {
-            if (!executeSetActiveAtStartToggleActions) return;
+				case GlobalFieldType.Rotation:
+					objRotationWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localRotation;
+					break;
 
-            if (EditorController.Instance.multipleObjectsSelected)
-            {
-                setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
-                foreach (var obj in EditorController.Instance.currentSelectedObjects)
-                {
-                    LE_Object comp = obj.GetComponent<LE_Object>();
-                    if (comp.canBeDisabledAtStart)
-                    {
-                        comp.setActiveAtStart = setActiveAtStartToggle.isChecked;
-                    }
-                }
-            }
-            else
-            {
-                EditorController.Instance.currentSelectedObjComponent.setActiveAtStart = setActiveAtStartToggle.isChecked;
-            }
-            EditorController.Instance.levelHasBeenModified = true;
-        }
-        public void SetCollisionToggle()
-        {
-            if (!executeCollisionToggleActions) return;
+				case GlobalFieldType.Scale:
+					objScaleWhenSelectedField = EditorController.Instance.currentSelectedObj.transform.localScale;
+					break;
+			}
+		}
+		void OnGlobalAttributeFieldDeselected(GlobalFieldType fieldType)
+		{
+			EditorController editor = EditorController.Instance;
 
-            if (EditorController.Instance.multipleObjectsSelected)
-            {
-                collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
-                foreach (var obj in EditorController.Instance.currentSelectedObjects)
-                {
-                    LE_Object comp = obj.GetComponent<LE_Object>();
-                    comp.collision = collisionToggle.isChecked;
-                }
-            }
-            else
-            {
-                EditorController.Instance.currentSelectedObjComponent.collision = collisionToggle.isChecked;
-            }
-            EditorController.Instance.levelHasBeenModified = true;
-        }
-        public void AddWaypointForObject()
-        {
-            if (!EditorController.Instance.multipleObjectsSelected)
-            {
-                EditorController.Instance.currentSelectedObjComponent.GetComponent<WaypointSupport>().AddWaypoint();
-            }
-            else
-            {
-                List<GameObject> cachedSelectedObjects = new List<GameObject>(EditorController.Instance.currentSelectedObjects);
-                EditorController.Instance.SetMultipleObjectsAsSelected(null);
+			switch (fieldType)
+			{
+				case GlobalFieldType.Position:
+					editor.RegisterLEAction(LEAction.LEActionType.MoveObject, editor.currentSelectedObj, editor.multipleObjectsSelected,
+						objPositionWhenSelectedField, editor.currentSelectedObj.transform.localPosition, null, null);
+					break;
 
-                List<LE_Waypoint> createdWaypoints = new List<LE_Waypoint>();
-                cachedSelectedObjects.ForEach(obj => createdWaypoints.Add(obj.GetComponent<WaypointSupport>().AddWaypoint()));
+				case GlobalFieldType.Rotation:
+					editor.RegisterLEAction(LEAction.LEActionType.RotateObject, editor.currentSelectedObj, editor.multipleObjectsSelected, null, null,
+						objRotationWhenSelectedField, editor.currentSelectedObj.transform.localRotation);
+					break;
 
-                EditorController.Instance.SetMultipleObjectsAsSelected(createdWaypoints.Select(waypoint => waypoint.gameObject).ToList());
-            }
-        }
-        public void SetStartMovingAtStart()
-        {
-            SetPropertyWithToggle("StartMovingAtStart", startMovingAtStartToggle);
-        }
-        public void ShowGlobalObjectAttributes(bool show)
-        {
-            objectSpecificPanelsParent.gameObject.SetActive(!show);
-            globalObjectPanelsParent.gameObject.SetActive(show);
-        }
-        public void UpdateGlobalObjectAttributes(Transform obj)
-        {
+				case GlobalFieldType.Scale:
+					editor.RegisterLEAction(LEAction.LEActionType.ScaleObject, editor.currentSelectedObj, editor.multipleObjectsSelected, null, null, null, null,
+						objScaleWhenSelectedField, editor.currentSelectedObj.transform.localScale);
+					break;
+			}
+		}
+
+		public void SetSetActiveAtStart()
+		{
+			if (!executeSetActiveAtStartToggleActions) return;
+
+			if (EditorController.Instance.multipleObjectsSelected)
+			{
+				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+				foreach (var obj in EditorController.Instance.currentSelectedObjects)
+				{
+					LE_Object comp = obj.GetComponent<LE_Object>();
+					if (comp.canBeDisabledAtStart)
+					{
+						comp.setActiveAtStart = setActiveAtStartToggle.isChecked;
+					}
+				}
+			}
+			else
+			{
+				EditorController.Instance.currentSelectedObjComponent.setActiveAtStart = setActiveAtStartToggle.isChecked;
+			}
+			EditorController.Instance.levelHasBeenModified = true;
+		}
+		public void SetCollisionToggle()
+		{
+			if (!executeCollisionToggleActions) return;
+
+			if (EditorController.Instance.multipleObjectsSelected)
+			{
+				collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+				foreach (var obj in EditorController.Instance.currentSelectedObjects)
+				{
+					LE_Object comp = obj.GetComponent<LE_Object>();
+					comp.collision = collisionToggle.isChecked;
+				}
+			}
+			else
+			{
+				EditorController.Instance.currentSelectedObjComponent.collision = collisionToggle.isChecked;
+			}
+			EditorController.Instance.levelHasBeenModified = true;
+		}
+		public void AddWaypointForObject()
+		{
+			if (!EditorController.Instance.multipleObjectsSelected)
+			{
+				EditorController.Instance.currentSelectedObjComponent.GetComponent<WaypointSupport>().AddWaypoint();
+			}
+			else
+			{
+				List<GameObject> cachedSelectedObjects = new List<GameObject>(EditorController.Instance.currentSelectedObjects);
+				EditorController.Instance.SetMultipleObjectsAsSelected(null);
+
+				List<LE_Waypoint> createdWaypoints = new List<LE_Waypoint>();
+				cachedSelectedObjects.ForEach(obj => createdWaypoints.Add(obj.GetComponent<WaypointSupport>().AddWaypoint()));
+
+				EditorController.Instance.SetMultipleObjectsAsSelected(createdWaypoints.Select(waypoint => waypoint.gameObject).ToList());
+			}
+		}
+		public void SetStartMovingAtStart()
+		{
+			SetPropertyWithToggle("StartMovingAtStart", startMovingAtStartToggle);
+		}
+		public void ShowGlobalObjectAttributes(bool show)
+		{
+			objectSpecificPanelsParent.gameObject.SetActive(!show);
+			globalObjectPanelsParent.gameObject.SetActive(show);
+		}
+		public void UpdateGlobalObjectAttributes(Transform obj)
+		{
 			// UICustomInput already verifies if the user is typing on the field, if so, SetText does nothing, we don't need to worry about that.
 
 			// Set Global Attributes...
@@ -1422,294 +1464,330 @@ namespace FS_LevelEditor.Editor.UI
 
 			#region Collision Toggle
 			if (EditorController.Instance.multipleObjectsSelected)
-            {
-                // If this is null, that means the "Collision" in the current selected objects is different in at least one of them.
-                // If it's true or false, then ALL of them are true or false.
-                bool? collisionStateInObjects = null;
-                foreach (var @object in EditorController.Instance.currentSelectedObjects)
-                {
-                    LE_Object comp = @object.GetComponent<LE_Object>();
-                    if (collisionStateInObjects == null)
-                    {
-                        collisionStateInObjects = comp.collision;
-                        continue;
-                    }
+			{
+				// If this is null, that means the "Collision" in the current selected objects is different in at least one of them.
+				// If it's true or false, then ALL of them are true or false.
+				bool? collisionStateInObjects = null;
+				foreach (var @object in EditorController.Instance.currentSelectedObjects)
+				{
+					LE_Object comp = @object.GetComponent<LE_Object>();
+					if (collisionStateInObjects == null)
+					{
+						collisionStateInObjects = comp.collision;
+						continue;
+					}
 
-                    if (collisionStateInObjects == comp.collision)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        collisionStateInObjects = null;
-                        break;
-                    }
-                }
+					if (collisionStateInObjects == comp.collision)
+					{
+						continue;
+					}
+					else
+					{
+						collisionStateInObjects = null;
+						break;
+					}
+				}
 
-                if (collisionStateInObjects != null)
-                {
-                    collisionToggle.Set((bool)collisionStateInObjects);
-                    collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
-                }
-                else
-                {
-                    executeCollisionToggleActions = false;
-                    collisionToggle.Set(false);
-                    executeCollisionToggleActions = true;
-                    collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
-                }
-            }
-            else
-            {
-                collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
-                collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
-            }
-            #endregion
+				if (collisionStateInObjects != null)
+				{
+					collisionToggle.Set((bool)collisionStateInObjects);
+					collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+				}
+				else
+				{
+					executeCollisionToggleActions = false;
+					collisionToggle.Set(false);
+					executeCollisionToggleActions = true;
+					collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
+				}
+			}
+			else
+			{
+				collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
+				collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+			}
+			#endregion
 
-            #region Add Waypoint Button
-            if (EditorController.Instance.multipleObjectsSelected)
-            {
-                // Only enable the button when ALL of the selected objects allow waypoints.
-                addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjects.All(x => x.GetComponent<LE_Object>().canHaveWaypoints));
-            }
-            else
-            {
-                addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjComponent.canHaveWaypoints);
-            }
-            #endregion
+			#region Add Waypoint Button
+			if (EditorController.Instance.multipleObjectsSelected)
+			{
+				// Only enable the button when ALL of the selected objects allow waypoints.
+				addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjects.All(x => x.GetComponent<LE_Object>().canHaveWaypoints));
+			}
+			else
+			{
+				addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjComponent.canHaveWaypoints);
+			}
+			#endregion
 
-            #region Start Moving At Start Toggle
-            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
-            {
-                startMovingAtStartToggle.transform.parent.gameObject.SetActive(true);
-                startMovingAtStartToggle.Set(EditorController.Instance.currentSelectedObjComponent.startMovingAtStart);
-            }
-            else
-            {
-                startMovingAtStartToggle.transform.parent.gameObject.SetActive(false);
-            }
-            #endregion
+			#region Start Moving At Start Toggle
+			if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
+			{
+				startMovingAtStartToggle.transform.parent.gameObject.SetActive(true);
+				startMovingAtStartToggle.Set(EditorController.Instance.currentSelectedObjComponent.startMovingAtStart);
+			}
+			else
+			{
+				startMovingAtStartToggle.transform.parent.gameObject.SetActive(false);
+			}
+			#endregion
 
-            #region Moving Speed Field
-            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
-            {
-                movingSpeedField.transform.parent.gameObject.SetActive(true);
-                movingSpeedField.SetText(EditorController.Instance.currentSelectedObjComponent.movingSpeed);
-            }
-            else
-            {
-                movingSpeedField.transform.parent.gameObject.SetActive(false);
-            }
-            #endregion
+			#region Moving Speed Field
+			if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
+			{
+				movingSpeedField.transform.parent.gameObject.SetActive(true);
+				movingSpeedField.SetText(EditorController.Instance.currentSelectedObjComponent.movingSpeed);
+			}
+			else
+			{
+				movingSpeedField.transform.parent.gameObject.SetActive(false);
+			}
+			#endregion
 
-            #region Start Delay Field
-            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
-            {
-                startDelayField.transform.parent.gameObject.SetActive(true);
-                startDelayField.SetText(EditorController.Instance.currentSelectedObjComponent.startDelay);
-            }
-            else
-            {
-                startDelayField.transform.parent.gameObject.SetActive(false);
-            }
-            #endregion
+			#region Start Delay Field
+			if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
+			{
+				startDelayField.transform.parent.gameObject.SetActive(true);
+				startDelayField.SetText(EditorController.Instance.currentSelectedObjComponent.startDelay);
+			}
+			else
+			{
+				startDelayField.transform.parent.gameObject.SetActive(false);
+			}
+			#endregion
 
-            #region Wait Time Field
-            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
-            {
-                waitTimeField.transform.parent.gameObject.SetActive(true);
-                waitTimeField.SetText(EditorController.Instance.currentSelectedObjComponent.waitTime);
-            }
-            else
-            {
-                waitTimeField.transform.parent.gameObject.SetActive(false);
-            }
-            #endregion
+			#region Wait Time Field
+			if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
+			{
+				waitTimeField.transform.parent.gameObject.SetActive(true);
+				waitTimeField.SetText(EditorController.Instance.currentSelectedObjComponent.waitTime);
+			}
+			else
+			{
+				waitTimeField.transform.parent.gameObject.SetActive(false);
+			}
+			#endregion
 
-            #region Waypoint Mode Button
-            if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
-            {
-                waypointModeButton.transform.parent.gameObject.SetActive(true);
-                waypointModeButton.SetOption((int)EditorController.Instance.currentSelectedObjComponent.waypointMode);
-            }
-            else
-            {
-                waypointModeButton.transform.parent.gameObject.SetActive(false);
-            }
-            #endregion
-        }
+			#region Waypoint Mode Button
+			if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
+			{
+				waypointModeButton.transform.parent.gameObject.SetActive(true);
+				waypointModeButton.SetOption((int)EditorController.Instance.currentSelectedObjComponent.waypointMode);
+			}
+			else
+			{
+				waypointModeButton.transform.parent.gameObject.SetActive(false);
+			}
+			#endregion
+		}
 
-        public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
-        {
-            // Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
-            if ((propertyName.Contains("Position") || propertyName.Contains("Rotation") || propertyName.Contains("Scale")) &&
-                Utils.TryParseFloat(inputField.GetText(), out float floatValue))
-            {
-                switch (propertyName)
-                {
-                    case "XPosition":
-                        EditorController.Instance.currentSelectedObj.transform.SetXPosition(floatValue);
-                        break;
-                    case "YPosition":
-                        EditorController.Instance.currentSelectedObj.transform.SetYPosition(floatValue);
-                        break;
-                    case "ZPosition":
-                        EditorController.Instance.currentSelectedObj.transform.SetZPosition(floatValue);
-                        break;
+		public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
+		{
+			// Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
+			if ((propertyName.Contains("Position") || propertyName.Contains("Rotation") || propertyName.Contains("Scale")) &&
+				Utils.TryParseFloat(inputField.GetText(), out float floatValue))
+			{
+				switch (propertyName)
+				{
+					case "XPosition":
+						EditorController.Instance.currentSelectedObj.transform.SetXPosition(floatValue);
+						break;
+					case "YPosition":
+						EditorController.Instance.currentSelectedObj.transform.SetYPosition(floatValue);
+						break;
+					case "ZPosition":
+						EditorController.Instance.currentSelectedObj.transform.SetZPosition(floatValue);
+						break;
 
-                    case "XRotation":
-                        EditorController.Instance.currentSelectedObj.transform.SetXRotation(floatValue);
-                        break;
-                    case "YRotation":
-                        EditorController.Instance.currentSelectedObj.transform.SetYRotation(floatValue);
-                        break;
-                    case "ZRotation":
-                        EditorController.Instance.currentSelectedObj.transform.SetZRotation(floatValue);
-                        break;
+					case "XRotation":
+						EditorController.Instance.currentSelectedObj.transform.SetXRotation(floatValue);
+						break;
+					case "YRotation":
+						EditorController.Instance.currentSelectedObj.transform.SetYRotation(floatValue);
+						break;
+					case "ZRotation":
+						EditorController.Instance.currentSelectedObj.transform.SetZRotation(floatValue);
+						break;
 
-                    case "XScale":
-                        EditorController.Instance.currentSelectedObj.transform.SetXScale(floatValue);
-                        EditorController.Instance.ApplyGizmosArrowsScale();
-                        break;
-                    case "YScale":
-                        EditorController.Instance.currentSelectedObj.transform.SetYScale(floatValue);
-                        EditorController.Instance.ApplyGizmosArrowsScale();
-                        break;
-                    case "ZScale":
-                        EditorController.Instance.currentSelectedObj.transform.SetZScale(floatValue);
-                        EditorController.Instance.ApplyGizmosArrowsScale();
-                        break;
-                }
+					case "XScale":
+						EditorController.Instance.currentSelectedObj.transform.SetXScale(floatValue);
+						EditorController.Instance.ApplyGizmosArrowsScale();
+						break;
+					case "YScale":
+						EditorController.Instance.currentSelectedObj.transform.SetYScale(floatValue);
+						EditorController.Instance.ApplyGizmosArrowsScale();
+						break;
+					case "ZScale":
+						EditorController.Instance.currentSelectedObj.transform.SetZScale(floatValue);
+						EditorController.Instance.ApplyGizmosArrowsScale();
+						break;
+				}
 
-                return;
-            }
+				return;
+			}
 
-            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.GetText()))
-            {
-                EditorController.Instance.levelHasBeenModified = true;
-                inputField.Set(true);
-            }
-            else
-            {
-                inputField.Set(false);
-            }
-        }
-        public void SetPropertyWithToggle(string propertyName, UIToggle toggle)
-        {
-            switch (propertyName)
-            {
-                case "InstaKill":
-                    OnLaserInstaKillChecked(toggle.isChecked);
-                    break;
-                case "Blinking":
-                    OnLaserBlinkingChecked(toggle.isChecked);
-                    break;
+			if (propertyName == "Keycode")
+			{
+				string text = inputField.GetText();
+				// Accept only if it's 4 digits (0-9)
+				if (text.Length == 4 && text.All(char.IsDigit))
+				{
+					if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, text))
+					{
+						EditorController.Instance.levelHasBeenModified = true;
+						inputField.Set(true);
+					}
+					else
+					{
+						inputField.Set(false);
+					}
+				}
+				else
+				{
+					inputField.Set(false); // Mark field as invalid
+				}
+				return;
+			}
+			if (propertyName == "Intensity" && Utils.TryParseFloat(inputField.GetText(), out float intensityValue))
+			{
+				if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, intensityValue))
+				{
+					EditorController.Instance.levelHasBeenModified = true;
+					inputField.Set(true);
+				}
+				else
+				{
+					inputField.Set(false);
+				}
+				return;
+			}
 
-                case "TravelBack":
-                    SetSawTravelBackORLoop(toggle.isChecked, false);
-                    break;
-                case "Loop":
-                    SetSawTravelBackORLoop(false, toggle.isChecked);
-                    break;
+			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.GetText()))
+			{
+				EditorController.Instance.levelHasBeenModified = true;
+				inputField.Set(true);
+			}
+			else
+			{
+				inputField.Set(false);
+			}
+		}
+		public void SetPropertyWithToggle(string propertyName, UIToggle toggle)
+		{
+			switch (propertyName)
+			{
+				case "InstaKill":
+					OnLaserInstaKillChecked(toggle.isChecked);
+					break;
+				case "Blinking":
+					OnLaserBlinkingChecked(toggle.isChecked);
+					break;
 
-                case "IsAuto":
-                    OnDoorAutoChecked(toggle.isChecked);
-                    OnDoorV2AutoChecked(toggle.isChecked);
-                    break;
-                case "Rotate":
-                    OnSawRotateChecked(toggle.isChecked);
-                    break;
-            }
+				case "TravelBack":
+					SetSawTravelBackORLoop(toggle.isChecked, false);
+					break;
+				case "Loop":
+					SetSawTravelBackORLoop(false, toggle.isChecked);
+					break;
 
-            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
-            {
-                EditorController.Instance.levelHasBeenModified = true;
-            }
-        }
-        public void SetPropertyWithButtonMultiple(string propertyName, UISmallButtonMultiple button)
-        {
-            if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, button.currentOption))
-            {
-                EditorController.Instance.levelHasBeenModified = true;
-            }
-        }
-        public void TriggerAction(string actionName)
-        {
-            if (EditorController.Instance.currentSelectedObjComponent.TriggerAction(actionName))
-            {
-                EditorController.Instance.levelHasBeenModified = true;
-            }
-        }
+				case "IsAuto":
+					OnDoorAutoChecked(toggle.isChecked);
+					OnDoorV2AutoChecked(toggle.isChecked);
+					break;
+				case "Rotate":
+					OnSawRotateChecked(toggle.isChecked);
+					break;
+			}
 
-        // Extra functions for specific things for specific attributes for specific objects LOL.
-        void OnSawRotateChecked(bool isEnabled)
-        {
-            if (attributesPanels.TryGetValue("Saw", out var sawPanel))
-            {
-                var rotateSpeedAttr = sawPanel.GetChild("RotateSpeed");
-                if (rotateSpeedAttr != null)
-                {
-                    rotateSpeedAttr.SetActive(isEnabled);
+			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
+			{
+				EditorController.Instance.levelHasBeenModified = true;
+			}
+		}
+		public void SetPropertyWithButtonMultiple(string propertyName, UISmallButtonMultiple button)
+		{
+			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, button.currentOption))
+			{
+				EditorController.Instance.levelHasBeenModified = true;
+			}
+		}
+		public void TriggerAction(string actionName)
+		{
+			if (EditorController.Instance.currentSelectedObjComponent.TriggerAction(actionName))
+			{
+				EditorController.Instance.levelHasBeenModified = true;
+			}
+		}
 
-                    // Update the rotate speed value when showing the field
-                    if (isEnabled)
-                    {
-                        var field = rotateSpeedAttr.GetChild("Field").GetComponent<UIInput>();
-                        if (EditorController.Instance.currentSelectedObjComponent.TryGetProperty("RotateSpeed", out object value))
-                        {
-                            field.text = value.ToString();
-                        }
-                    }
-                }
-            }
-        }
-        void OnLaserInstaKillChecked(bool newState)
-        {
-            attributesPanels["Laser"].GetChild("Damage").SetActive(!newState);
-        }
-        void OnLaserBlinkingChecked(bool newState)
-        {
-            attributesPanels["Laser"].GetChild("OffDuration").SetActive(newState);
-            attributesPanels["Laser"].GetChild("OnDuration").SetActive(newState);
-        }
-        void ShowOrHideSawWaitTimeField(int waypointsCount)
-        {
-            attributesPanels["Saw"].GetChild("WaitTime").SetActive(waypointsCount > 0);
-        }
-        void SetSawTravelBackORLoop(bool travelBack, bool loop)
-        {
-            // This is to always enable one or the other, but NEVER both of the toggles, only one or the other.
-            // To avoid bugs, only change the values when at least one of the bools is true.
+		// Extra functions for specific things for specific attributes for specific objects LOL.
+		void OnSawRotateChecked(bool isEnabled)
+		{
+			if (attributesPanels.TryGetValue("Saw", out var sawPanel))
+			{
+				var rotateSpeedAttr = sawPanel.GetChild("RotateSpeed");
+				if (rotateSpeedAttr != null)
+				{
+					rotateSpeedAttr.SetActive(isEnabled);
 
-            var travelBackToggle = attributesPanels["Saw"].GetChildAt("TravelBack/Toggle").GetComponent<UIToggle>();
-            var loopToggle = attributesPanels["Saw"].GetChildAt("Loop/Toggle").GetComponent<UIToggle>();
+					// Update the rotate speed value when showing the field
+					if (isEnabled)
+					{
+						var field = rotateSpeedAttr.GetChild("Field").GetComponent<UIInput>();
+						if (EditorController.Instance.currentSelectedObjComponent.TryGetProperty("RotateSpeed", out object value))
+						{
+							field.text = value.ToString();
+						}
+					}
+				}
+			}
+		}
+		void OnLaserInstaKillChecked(bool newState)
+		{
+			attributesPanels["Laser"].GetChild("Damage").SetActive(!newState);
+		}
+		void OnLaserBlinkingChecked(bool newState)
+		{
+			attributesPanels["Laser"].GetChild("OffDuration").SetActive(newState);
+			attributesPanels["Laser"].GetChild("OnDuration").SetActive(newState);
+		}
+		void ShowOrHideSawWaitTimeField(int waypointsCount)
+		{
+			attributesPanels["Saw"].GetChild("WaitTime").SetActive(waypointsCount > 0);
+		}
+		void SetSawTravelBackORLoop(bool travelBack, bool loop)
+		{
+			// This is to always enable one or the other, but NEVER both of the toggles, only one or the other.
+			// To avoid bugs, only change the values when at least one of the bools is true.
 
-            if (travelBack && !loop)
-            {
-                travelBackToggle.Set(true);
-                if (loopToggle.isChecked) loopToggle.Set(false);
+			var travelBackToggle = attributesPanels["Saw"].GetChildAt("TravelBack/Toggle").GetComponent<UIToggle>();
+			var loopToggle = attributesPanels["Saw"].GetChildAt("Loop/Toggle").GetComponent<UIToggle>();
 
-                EditorController.Instance.currentSelectedObjComponent.SetProperty("TravelBack", true);
-                EditorController.Instance.currentSelectedObjComponent.SetProperty("Loop", false);
-            }
-            if (!travelBack && loop)
-            {
-                if (travelBackToggle.isChecked) travelBackToggle.Set(false);
-                loopToggle.Set(true);
+			if (travelBack && !loop)
+			{
+				travelBackToggle.Set(true);
+				if (loopToggle.isChecked) loopToggle.Set(false);
 
-                EditorController.Instance.currentSelectedObjComponent.SetProperty("TravelBack", false);
-                EditorController.Instance.currentSelectedObjComponent.SetProperty("Loop", true);
-            }
-        }
-        void OnDoorAutoChecked(bool newState)
-        {
-            attributesPanels["Door"].GetChild("InitialState").SetActive(!newState);
-            attributesPanels["Door"].GetChild("InitialStateAuto").SetActive(newState);
-        }
-        void OnDoorV2AutoChecked(bool newState)
-        {
-            attributesPanels["Door V2"].GetChild("InitialState").SetActive(!newState);
-            attributesPanels["Door V2"].GetChild("InitialStateAuto").SetActive(newState);
-        }
-    }
+				EditorController.Instance.currentSelectedObjComponent.SetProperty("TravelBack", true);
+				EditorController.Instance.currentSelectedObjComponent.SetProperty("Loop", false);
+			}
+			if (!travelBack && loop)
+			{
+				if (travelBackToggle.isChecked) travelBackToggle.Set(false);
+				loopToggle.Set(true);
+
+				EditorController.Instance.currentSelectedObjComponent.SetProperty("TravelBack", false);
+				EditorController.Instance.currentSelectedObjComponent.SetProperty("Loop", true);
+			}
+		}
+		void OnDoorAutoChecked(bool newState)
+		{
+			attributesPanels["Door"].GetChild("InitialState").SetActive(!newState);
+			attributesPanels["Door"].GetChild("InitialStateAuto").SetActive(newState);
+		}
+		void OnDoorV2AutoChecked(bool newState)
+		{
+			attributesPanels["Door V2"].GetChild("InitialState").SetActive(!newState);
+			attributesPanels["Door V2"].GetChild("InitialStateAuto").SetActive(newState);
+		}
+	}
 }

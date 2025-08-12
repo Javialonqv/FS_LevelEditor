@@ -85,7 +85,9 @@ namespace FS_LevelEditor
             MOVING_PLATFORM_WAYPOINT,
 			CROW,
             DESTRUCTIBLE_WALL,
-            BRIDGE
+            BRIDGE,
+            CUBE_KILLPLANE,
+            KEYPAD
 		}
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -213,29 +215,34 @@ namespace FS_LevelEditor
 		public static PorteScript t_door;
         public static PorteScript t_doorV2;
         public static MovingPlatformController t_movingPlatform;
+		public static KeycodeController t_keycodeM;
+		public static InterrupteurController t_keycode;
+		public static BridgeController t_bridge;
 
-        public static void GetTemplatesReferences()
-        {
-            t_ammoPack = FindObjectOfType<Ammo>();
-            t_healthPack = FindObjectOfType<Health>();
-            t_saw = FindObjectOfType<ScieScript>();
-            t_switch = FindObjectOfType<InterrupteurController>();
-            t_cube = Utils.FindObjectOfType<BlocScript>(x => x.IsCube());
-            t_laser = FindObjectOfType<Laser_H_Controller>();
-            t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
-            t_flameTrap = FindObjectOfType<FlameTrapController>();
-            t_pressurePlate = Utils.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer == null);
-            t_screen = FindObjectOfType<ScreenController>();
-            t_window = Utils.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
-            t_door = Utils.FindObjectOfType<PorteScript>(x => !x.isSkinV2);
-            t_doorV2 = Utils.FindObjectOfType<PorteScript>(x => x.isSkinV2);
-            t_movingPlatform = Utils.FindObjectOfType<MovingPlatformController>(x => x.movingPlatform);
-            t_breakableWall = FindObjectOfType<DestructibleWall>();
-
+		public static void GetTemplatesReferences()
+		{
+			t_ammoPack = FindObjectOfType<Ammo>();
+			t_healthPack = FindObjectOfType<Health>();
+			t_saw = FindObjectOfType<ScieScript>();
+			t_switch = FindObjectOfType<InterrupteurController>();
+			t_cube = Utils.FindObjectOfType<BlocScript>(x => x.IsCube());
+			t_laser = FindObjectOfType<Laser_H_Controller>();
+			t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
+			t_flameTrap = FindObjectOfType<FlameTrapController>();
+			t_pressurePlate = Utils.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer == null);
+			t_screen = FindObjectOfType<ScreenController>();
+			t_window = Utils.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
+			t_door = Utils.FindObjectOfType<PorteScript>(x => !x.isSkinV2);
+			t_doorV2 = Utils.FindObjectOfType<PorteScript>(x => x.isSkinV2);
+			t_movingPlatform = Utils.FindObjectOfType<MovingPlatformController>(x => x.movingPlatform);
+			t_breakableWall = FindObjectOfType<DestructibleWall>();
+			t_keycodeM = Utils.FindObjectOfType<KeycodeController>(x => x.gameObject.layer == LayerMask.NameToLayer("MiniGames"));
+			t_keycode = Utils.FindObjectOfType<InterrupteurController>(x => x.CompareTag("Keypad"));
+			t_bridge = FindObjectOfType<BridgeController>();
 		}
-        #endregion
+		#endregion
 
-        public virtual void Start()
+		public virtual void Start()
         {
             if (EditorController.Instance && !onInstantiatedCalled) OnInstantiated(LEScene.Editor);
             else if (PlayModeController.Instance && !onInstantiatedCalled) OnInstantiated(LEScene.Playmode);

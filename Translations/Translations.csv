@@ -50,6 +50,8 @@ object.MOVING_PLATFORM_WAYPOINT,Moving Platform  Waypoint,Waypoint de Plataforma
 object.CROW,Crow,Cuervo,
 object.DESTRUCTIBLE_WALL,Fragile Wall,,Крихка стіна
 object.BRIDGE,Bridge,,Міст
+object.CUBE_KILLPLANE,Unauthorized Object,,Неавторизований об'єкт
+object.KEYPAD,Keypad,,Циферблат
 Player,Player,Jugador,Гравець
 events.WhenActivatingEvents,When Activating,Cuando Se Activa,Коли активне
 events.WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva,Коли неактивне
@@ -63,6 +65,8 @@ events.OnPickup,On Pickup,Al Recoger,При піднятті
 events.OnBreak,On Break,,При розваленні
 events.OnDeploy,On Deploy,,При розкритті
 events.OnRetract,On Retract,,При скритті
+events.onWinEvents,On Win,,При правильній комбінації
+events.onFailEvents,On Lose,,При неправильній комбінації
 pause.PlayLevel,Play Level,Jugar Nivel,Грати рівень
 pause.NoSpawnObject,There isn't any player spawn obj in the scene.,No hay ningún spawn del jugador en la escena.,В сцені немає точки появи гравця.
 pause.SaveLevel,Save Level,Guardar Nivel,Зберегти рівень
@@ -141,6 +145,9 @@ MovingSpeed,Moving Speed,Velocidad de Movimiento,
 StartDelay,Start Delay,Espera al Inicio,
 MovementMode,Movement Mode,Modo de Movimiento,
 None_Mayus,NONE,NINGUNO,
+leaveOnIncorrect,Leave on Incorrect,,
+Keycode,Keycode,,Код
+IgnoreIfInHands,Ignore if currently picked up,,"Ігнорувати, якщо піднято"
 TravelBack_Mayus,TRAVEL BACK,REGRESARSE,
 Loop_Mayus,LOOP,BUCLE,
 IsAutomatic,Is Automatic?,¿Es Automática?,

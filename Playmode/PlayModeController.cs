@@ -141,24 +141,25 @@ namespace FS_LevelEditor.Playmode
             Destroy(backToLEButton);
         }
 
-        void DisableTheCurrentScene()
-        {
-            GameObject[] sceneObjects = SceneManager.GetActiveScene().GetRootGameObjects();
+		void DisableTheCurrentScene()
+		{
+			GameObject[] sceneObjects = SceneManager.GetActiveScene().GetRootGameObjects();
 
-            foreach (GameObject obj in sceneObjects)
-            {
-                if (obj.name == gameObject.name) continue;
-                if (obj.name == "Character") continue;
-                if (obj.name == "FootStepController") continue;
-                if (obj.name == "Checkpoints") continue;
-                if (obj.name == "LevelObjects") continue;
-                if (obj.name == "Player") continue;
-                if (obj.name == "GUI") continue;
+			foreach (GameObject obj in sceneObjects)
+			{
+				if (obj.name == gameObject.name) continue;
+				if (obj.name == "Character") continue;
+				if (obj.name == "FootStepController") continue;
+				if (obj.name == "Checkpoints") continue;
+				if (obj.name == "LevelObjects") continue;
+				if (obj.name == "Player") continue;
+				if (obj.name == "GUI") continue;
+				if (obj.name == "2DGUI") continue;
 
-                obj.SetActive(false);
-            }
-        }
-        void TeleportPlayer()
+				obj.SetActive(false);
+			}
+		}
+		void TeleportPlayer()
         {
             LE_Player_Spawn spawn = FindObjectOfType<LE_Player_Spawn>();
 
