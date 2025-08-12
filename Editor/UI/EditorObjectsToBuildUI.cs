@@ -59,16 +59,23 @@ namespace FS_LevelEditor.Editor.UI
             Invoke("ForceEnableFirstCategory", 0.1f);
         }
 
-        #region Create UI
-        void ForceEnableFirstCategory()
-        {
-            // For some fucking reason the code enables the content in the SECOND category, I need to force it... damn it.
-            EditorController.Instance.ChangeCategory(0);
-            ChangeCategory(0);
-            SelectObjToBuild(0);
-        }
+		#region Create UI
+		void ForceEnableFirstCategory()
+		{
+			// Set up the first category and grid
+			EditorController.Instance.ChangeCategory(0);
+			ChangeCategory(0);
 
-        void CreateObjectsCategories()
+			// Select the first object (GROUND) by default
+			SelectObjToBuild(0);
+
+			// Optionally, trigger the button click if you want the selection logic to run
+			GameObject firstGrid = objectsToBuildGrids[0][0];
+			UIButtonPatcher firstButton = firstGrid.transform.GetChild(0).GetComponent<UIButtonPatcher>();
+			firstButton.OnClick();
+		}
+
+		void CreateObjectsCategories()
         {
             // Setup the category buttons parent and add a panel to it so I can modify the alpha of the whole buttons inside of it with just one panel.
             categoryButtonsParent = new GameObject("CategoryButtons");
@@ -221,31 +228,25 @@ namespace FS_LevelEditor.Editor.UI
             nextGridButton.buttonSprite.depth = 1;
             nextGridButton.onClick += NextGridPage;
         }
-        #endregion
+		#endregion
 
 
-        public void ChangeCategory(int categoryID)
-        {
-            currentCategoryID = categoryID;
+		public void ChangeCategory(int categoryID)
+		{
+			currentCategoryID = categoryID;
 
-            foreach (var parent in objectsToBuildParentsByCategories)
-            {
-                parent.SetActive(false);
-            }
+			foreach (var parent in objectsToBuildParentsByCategories)
+			{
+				parent.SetActive(false);
+			}
 
-            objectsToBuildParentsByCategories[categoryID].SetActive(true);
+			objectsToBuildParentsByCategories[categoryID].SetActive(true);
 
-            SetCurrentSelectedCategoryGrid(0);
+			SetCurrentSelectedCategoryGrid(0);
 
-            // Select the very first element on the objects list on the very first grid.
-            GameObject firstGridOfNewCurrentCategory = objectsToBuildGrids[categoryID][0];
-            UIButtonPatcher firstButtonInGrid = firstGridOfNewCurrentCategory.transform.GetChild(0).GetComponent<UIButtonPatcher>();
-            firstButtonInGrid.OnClick();
-
-            //objectsToBuildParentsByCategories[categoryID].transform.GetChild(0).GetChild(0).GetComponent<UIButton>().OnClick();
-            //UICamera.Notify(objectsToBuildParentsByCategories[categoryID].transform.GetChild(0).GetChild(0).gameObject, "OnClick", null);
-        }
-        public void SelectObjToBuild(int buttonID)
+			// Do NOT select the first button here either.
+		}
+		public void SelectObjToBuild(int buttonID)
         {
             // Disable the "selected" obj in the other buttons.
             foreach (var grid in objectsToBuildParentsByCategories[currentCategoryID].GetChilds())
@@ -275,20 +276,19 @@ namespace FS_LevelEditor.Editor.UI
                 SetCurrentSelectedCategoryGrid(currentGridID + 1);
             }
         }
-        void SetCurrentSelectedCategoryGrid(int gridIndex)
-        {
-            currentGridID = gridIndex;
+		void SetCurrentSelectedCategoryGrid(int gridIndex)
+		{
+			currentGridID = gridIndex;
 
-            objectsToBuildGrids[currentCategoryID].ForEach(grid => grid.SetActive(false));
-            objectsToBuildGrids[currentCategoryID][gridIndex].SetActive(true);
+			objectsToBuildGrids[currentCategoryID].ForEach(grid => grid.SetActive(false));
+			objectsToBuildGrids[currentCategoryID][gridIndex].SetActive(true);
 
-            //objectsToBuildParentsByCategories[currentCategoryID].DisableAllChildren();
-            //objectsToBuildParentsByCategories[currentCategoryID].transform.GetChild(gridIndex).gameObject.SetActive(true);
+			// Do NOT call SelectObjToBuild(0) or trigger any button click here.
+			// This prevents the tick from appearing on the first object by default.
 
-            SelectObjToBuild(0);
-            UpdatePreviousAndNextGridButtonsState();
-        }
-        void UpdatePreviousAndNextGridButtonsState()
+			UpdatePreviousAndNextGridButtonsState();
+		}
+		void UpdatePreviousAndNextGridButtonsState()
         {
             if (objectsToBuildGrids[currentCategoryID].Count == 1)
             {
