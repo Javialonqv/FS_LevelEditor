@@ -82,7 +82,7 @@ tooltip.SetActiveAtStartToggle,Defines if the object will be [00FFFF]enabled[-] 
 ColorHex,Color (Hex),Color (Hex),Колір (Hex)
 Intensity,Intensity,Intensidad,Інтенсивність
 Range,Range,Rango,Діапазон
-ActivateOnStart,Activate On Start,Activar Al Inicio,Активувати на старті
+ActivateOnStart,Start Enabled,Activar Al Inicio,Активувати на старті
 Damage,Damage,Daño,Шкода
 TravelBack,Travel Back,Regresarse,Повернутись назад
 AddGlobalWaypoint,+ Add Global Waypoint,+ Añadir Waypoint Global,
@@ -136,7 +136,7 @@ RotateSpeed,Rotate speed,Velocidad de Rotación,Швидкість поверт�
 Ammo,Ammo,Munición,Патрони
 InfiniteTaser,Infinite Taser,Taser infinito,Бескінечний тазер
 InvisibleEdges,Invisible Edges,Border Invisibles,
-StartMovingAtStart,Start Moving At Start,Mover Al Inicio,
+StartMovingAtStart,Move At Start,Mover Al Inicio,
 MovingSpeed,Moving Speed,Velocidad de Movimiento,
 StartDelay,Start Delay,Espera al Inicio,
 MovementMode,Movement Mode,Modo de Movimiento,
