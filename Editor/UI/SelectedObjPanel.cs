@@ -1278,13 +1278,17 @@ namespace FS_LevelEditor.Editor.UI
                     {
                         switch (value)
                         {
-                            case int:
-                            case float:
-                                value = value + ""; // Convert to string.
+                            case int intValue:
+                                value = value + ""; // Convert to string directly, no ToString() shit needed here.
                                 break;
 
-                            case Color:
-                                value = Utils.ColorToHex((Color)value);
+                            case float floatValue:
+                                // C# is a pussy that wants me to specify I wanna convert this float to a string using DOTS, not fucking commas.
+                                value = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
+                                break;
+
+                            case Color colorValue:
+                                value = Utils.ColorToHex(colorValue);
                                 break;
 
                             case string:
