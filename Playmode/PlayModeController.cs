@@ -154,7 +154,6 @@ namespace FS_LevelEditor.Playmode
                 if (obj.name == "LevelObjects") continue;
                 if (obj.name == "Player") continue;
                 if (obj.name == "GUI") continue;
-                if (obj.name == "2DGUI") continue;
 
                 obj.SetActive(false);
             }

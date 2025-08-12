@@ -85,9 +85,7 @@ namespace FS_LevelEditor
             MOVING_PLATFORM_WAYPOINT,
 			CROW,
             DESTRUCTIBLE_WALL,
-            BRIDGE,
-            CUBE_KILLPLANE,
-            KEYPAD,
+            BRIDGE
 		}
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -199,10 +197,8 @@ namespace FS_LevelEditor
         public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
 
-		public Rigidbody rb;
-
-		#region Object Templates References
-		public static Ammo t_ammoPack;
+        #region Object Templates References
+        public static Ammo t_ammoPack;
         public static Health t_healthPack;
         public static ScieScript t_saw;
         public static InterrupteurController t_switch;
@@ -217,9 +213,6 @@ namespace FS_LevelEditor
 		public static PorteScript t_door;
         public static PorteScript t_doorV2;
         public static MovingPlatformController t_movingPlatform;
-        public static KeycodeController t_keycodeM;
-        public static InterrupteurController t_keycode;
-        public static BridgeController t_bridge;
 
         public static void GetTemplatesReferences()
         {
@@ -238,9 +231,7 @@ namespace FS_LevelEditor
             t_doorV2 = Utils.FindObjectOfType<PorteScript>(x => x.isSkinV2);
             t_movingPlatform = Utils.FindObjectOfType<MovingPlatformController>(x => x.movingPlatform);
             t_breakableWall = FindObjectOfType<DestructibleWall>();
-            t_keycodeM = Utils.FindObjectOfType<KeycodeController>(x => x.gameObject.layer == LayerMask.NameToLayer("MiniGames"));
-            t_keycode = Utils.FindObjectOfType<InterrupteurController>(x => x.CompareTag("Keypad"));
-            t_bridge = FindObjectOfType<BridgeController>();
+
 		}
         #endregion
 
@@ -308,19 +299,7 @@ namespace FS_LevelEditor
                     customWaypointSupport = (WaypointSupport)gameObject.AddComponent(Il2CppType.From(customWaypointSupports[objectType]));
                 }
             }
-
-			rb = gameObject.GetComponent<Rigidbody>();
-			if (rb == null)
-				rb = gameObject.AddComponent<Rigidbody>();
-
-			rb.mass = 1f; // Set a default mass, adjust as needed
-			rb.isKinematic = true; // Start with physics disabled
-			rb.interpolation = RigidbodyInterpolation.Interpolate;
-			rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-
-			properties["PhysicsEnabled"] = false;
-			properties["Mass"] = rb.mass;
-		}
+        }
 
         /// <summary>
         /// The correct way to add a LE_Object component to a GameObject.
@@ -516,23 +495,8 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-			if (name == "PhysicsEnabled")
-			{
-				bool enable = Convert.ToBoolean(value);
-				if (rb != null)
-					rb.isKinematic = !enable;
-				properties["PhysicsEnabled"] = enable;
-				return true;
-			}
-			if (name == "Mass")
-			{
-				float mass = Utils.ParseFloat(value.ToString());
-				if (rb != null)
-					rb.mass = mass;
-				properties["Mass"] = mass;
-				return true;
-			}
-			if (name == "StartMovingAtStart")
+
+            if (name == "StartMovingAtStart")
             {
                 startMovingAtStart = (bool)value;
                 return true;
@@ -613,38 +577,7 @@ namespace FS_LevelEditor
 
         public virtual bool TriggerAction(string actionName)
         {
-			if (actionName == "EnablePhysics")
-			{
-				if (rb != null)
-				{
-					rb.isKinematic = false;
-					properties["PhysicsEnabled"] = true;
-					return true;
-				}
-			}
-			else if (actionName == "DisablePhysics")
-			{
-				if (rb != null)
-				{
-					rb.isKinematic = true;
-					properties["PhysicsEnabled"] = false;
-					return true;
-				}
-			}
-			else if (actionName.StartsWith("SetMass:"))
-			{
-				if (rb != null)
-				{
-					var parts = actionName.Split(':');
-					if (parts.Length == 2 && float.TryParse(parts[1], out float newMass))
-					{
-						rb.mass = newMass;
-						properties["Mass"] = newMass;
-						return true;
-					}
-				}
-			}
-			if (actionName == "SetActive_True")
+            if (actionName == "SetActive_True")
             {
                 gameObject.SetActive(true);
             }
