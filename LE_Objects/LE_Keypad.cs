@@ -131,7 +131,7 @@ namespace FS_LevelEditor
 
 			if(GetProperty<bool>("leaveOnIncorrect"))
 			{
-				keycode.onFailEvents.AddListener((UnityEngine.Events.UnityAction)delegate { keycode.OnLeaveButton(); });
+				keycode.onFailEvents.AddListener((UnityEngine.Events.UnityAction)delegate { keycode.LeaveNow(); });
 			}
 
 			initialized = true;
