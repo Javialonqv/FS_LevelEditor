@@ -758,7 +758,6 @@ namespace FS_LevelEditor.Editor
 			if (gizmosArrows.activeSelf && currentSelectedObj)
 			{
 				gizmo.SetPosition(currentSelectedObj.transform.position);
-				// If the global gizmos arrows are enabled, force them to be with 0 rotation.
 				if (globalGizmosArrowsEnabled)
 				{
 					gizmo.SetRotation(Quaternion.identity);
@@ -767,14 +766,17 @@ namespace FS_LevelEditor.Editor
 				{
 					gizmo.SetRotation(currentSelectedObj.transform.rotation);
 				}
-				//Scale them based on camera distance
+				// Improved infinite scaling for arrows and cones
 				float distance = Vector3.Distance(MainCam.transform.position, currentSelectedObj.transform.position);
-				float baseScale = 2f;
-				float scaleFactor = Mathf.Max(0.1f, distance * 0.15f); // 0.15f is a tweakable factor
+				float baseArrowScale = 2f;
+				float scaleFactor = Mathf.Max(0.1f, distance * 0.15f);
 				float highestAxis = Utils.HighestValueOfVector(currentSelectedObj.transform.localScale);
 				if (highestAxis < 1f)
 					scaleFactor *= highestAxis;
-				gizmo.SetScale(Vector3.one * baseScale * scaleFactor);
+				// Set arrows and cones scale
+				gizmo.SetScale(Vector3.one * baseArrowScale * scaleFactor);
+				// Make cones always a bit larger than arrows, and thickness grow with distance
+				gizmo.UpdateScaleByCamera(MainCam, 10f, 0.01f, 1000f);
 			}
 			if (snapToGridCube.activeSelf && currentSelectedObj)
 			{
@@ -1198,6 +1200,9 @@ namespace FS_LevelEditor.Editor
 		public void SetGridEnabled(bool enabled)
 		{
 			gridEnabled = enabled;
+			// Hide grid if disabled
+			if (!gridEnabled)
+				SetGridVisible(false);
 		}
 		public void SetGridVisible(bool visible)
 		{
@@ -1206,124 +1211,95 @@ namespace FS_LevelEditor.Editor
 
 		void PreviewObject()
 		{
-			if (gridEnabled)
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
+			hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+
+			bool didPlace = false;
+			float gridEnter = float.MaxValue;
+			Vector3 gridPoint = Vector3.zero;
+			bool gridHit = false;
+
+			// 1. If grid is enabled and visible, check if grid is hit
+			if (gridEnabled && gridVisible)
 			{
-				// Snap preview to grid under mouse (XZ plane at gridHeight)
-				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 				Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0));
 				float enter = 0f;
 				if (gridPlane.Raycast(ray, out enter))
 				{
-					Vector3 hitPoint = ray.GetPoint(enter);
-					// Snap to grid
-					hitPoint.x = Mathf.Round(hitPoint.x / gridSize) * gridSize;
-					hitPoint.y = gridHeight;
-					hitPoint.z = Mathf.Round(hitPoint.z / gridSize) * gridSize;
-					previewObjectToBuildObj.SetActive(true);
-					previewObjectToBuildObj.transform.position = hitPoint;
-					previewObjectToBuildObj.transform.rotation = Quaternion.identity;
-					return;
+					gridPoint = ray.GetPoint(enter);
+					gridPoint.x = Mathf.Round(gridPoint.x / gridSize) * gridSize;
+					gridPoint.y = gridHeight;
+					gridPoint.z = Mathf.Round(gridPoint.z / gridSize) * gridSize;
+					gridEnter = enter;
+					gridHit = true;
 				}
-				// If ray doesn't hit grid, fallback to old logic below
 			}
 
-			// --- Old logic fallback ---
-			Ray fallbackRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-			List<RaycastHit> hits = Physics.RaycastAll(fallbackRay, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
-			hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
-			bool snapWithTrigger = false;
-			RaycastHit rayToUseWithSnap = new RaycastHit();
-			bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
-			if (hits.Count > 0)
+			// 2. Always check for snap triggers first, even if grid is hit
+			RaycastHit? snapHit = null;
+			foreach (var hit in hits)
 			{
-				// Handle snap triggers first
-				if (hits.Count == 1 || theyAreAllSnapTriggers)
+				if (hit.collider.gameObject.name.StartsWith("StaticPos"))
 				{
-					if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
+					if (currentObjectToBuildType.HasValue && CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hit.collider.gameObject))
 					{
-						if (CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hits[0].collider.gameObject))
-						{
-							snapWithTrigger = true;
-							rayToUseWithSnap = hits[0];
-						}
-						hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+						snapHit = hit;
+						break;
+					}
+				}
+			}
+			if (snapHit.HasValue)
+			{
+				previewObjectToBuildObj.SetActive(true);
+				previewObjectToBuildObj.transform.position = snapHit.Value.collider.transform.position;
+				if (currentHittenSnapTrigger != snapHit.Value.collider.gameObject)
+				{
+					currentHittenSnapTrigger = snapHit.Value.collider.gameObject;
+					previewObjectToBuildObj.transform.rotation = snapHit.Value.collider.transform.rotation;
+				}
+				didPlace = true;
+			}
+			// 3. If not snapped, check grid (if hit and is closer than any object)
+			else if (gridHit && (hits.Count == 0 || hits[0].distance > gridEnter))
+			{
+				previewObjectToBuildObj.SetActive(true);
+				previewObjectToBuildObj.transform.position = gridPoint;
+				previewObjectToBuildObj.transform.rotation = Quaternion.identity;
+				didPlace = true;
+			}
+			// 4. Otherwise, place on object
+			else if (hits.Count > 0)
+			{
+				currentHittenSnapTrigger = null;
+				previewObjectToBuildObj.SetActive(true);
+				previewObjectToBuildObj.transform.position = hits[0].point;
+				if (lastHittenNormalByPreviewRay != hits[0].normal)
+				{
+					lastHittenNormalByPreviewRay = hits[0].normal;
+					Vector3 wallNormal = hits[0].normal;
+					if (wallNormal != Vector3.up && wallNormal != Vector3.down)
+					{
+						Vector3 right = Vector3.Cross(Vector3.up, wallNormal).normalized;
+						Vector3 up = Vector3.Cross(wallNormal, right).normalized;
+						previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(up, wallNormal);
 					}
 					else
 					{
-						hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
-					}
-				}
-				else
-				{
-					foreach (var hit in hits)
-					{
-						if (hit.collider.gameObject.name.StartsWith("StaticPos") && Input.GetKey(KeyCode.LeftControl))
+						if (wallNormal == Vector3.up)
 						{
-							if (CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hit.collider.gameObject))
-							{
-								snapWithTrigger = true;
-								rayToUseWithSnap = hit;
-								break;
-							}
+							previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
 						}
 						else
 						{
-							hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
-							break;
+							previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.down);
 						}
 					}
 				}
-				if (snapWithTrigger)
-				{
-					previewObjectToBuildObj.SetActive(true);
-					previewObjectToBuildObj.transform.position = rayToUseWithSnap.collider.transform.position;
-					if (currentHittenSnapTrigger != rayToUseWithSnap.collider.gameObject)
-					{
-						currentHittenSnapTrigger = rayToUseWithSnap.collider.gameObject;
-						previewObjectToBuildObj.transform.rotation = rayToUseWithSnap.collider.transform.rotation;
-					}
-				}
-				else if (hits.Count > 0)
-				{
-					currentHittenSnapTrigger = null;
-					previewObjectToBuildObj.SetActive(true);
-					previewObjectToBuildObj.transform.position = hits[0].point;
-					// Inside PreviewObject(), replace the rotation logic section with:
-					if (lastHittenNormalByPreviewRay != hits[0].normal)
-					{
-						lastHittenNormalByPreviewRay = hits[0].normal;
-						Vector3 wallNormal = hits[0].normal;
-						if (wallNormal != Vector3.up && wallNormal != Vector3.down)
-						{
-							// For walls: Create a rotation that makes objects face outward consistently
-							Vector3 right = Vector3.Cross(Vector3.up, wallNormal).normalized;
-							Vector3 up = Vector3.Cross(wallNormal, right).normalized;
-
-							// Try using the up vector as forward direction
-							previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(up, wallNormal);
-						}
-						else
-						{
-							// For floors/ceilings: Use world right as forward direction
-							if (wallNormal == Vector3.up)
-							{
-								// For floors: Use the floor normal (up) as the up direction
-								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
-							}
-							else // Vector3.down (ceiling)
-							{
-								// For ceilings: Use the ceiling normal (down) but flip it for proper orientation
-								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.down);
-							}
-						}
-					}
-				}
-				else
-				{
-					previewObjectToBuildObj.SetActive(false);
-				}
+				didPlace = true;
 			}
-			else
+
+			if (!didPlace)
 			{
 				previewObjectToBuildObj.SetActive(false);
 			}
