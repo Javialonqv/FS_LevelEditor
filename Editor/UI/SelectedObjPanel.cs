@@ -1278,13 +1278,14 @@ namespace FS_LevelEditor.Editor.UI
 					{
 						switch (value)
 						{
-							case int:
-							case float:
-								value = value + ""; // Convert to string.
+							case int intValue:
+								value = value + ""; // Convert to string directly, no ToString() shit needed here.
 								break;
-
-							case Color:
-								value = Utils.ColorToHex((Color)value);
+							case float floatValue:
+								value = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
+								break;
+							case Color colorValue:
+								value = Utils.ColorToHex(colorValue);
 								break;
 
 							case string:
@@ -1421,7 +1422,14 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			if (!EditorController.Instance.multipleObjectsSelected)
 			{
-				EditorController.Instance.currentSelectedObjComponent.GetComponent<WaypointSupport>().AddWaypoint();
+				var objComp = EditorController.Instance.currentSelectedObjComponent;
+				objComp.GetComponent<WaypointSupport>().AddWaypoint();
+
+				// If this is the first waypoint, set startMovingAtStart to true
+				if (objComp.waypoints.Count == 1)
+				{
+					objComp.startMovingAtStart = true;
+				}
 			}
 			else
 			{
@@ -1429,7 +1437,18 @@ namespace FS_LevelEditor.Editor.UI
 				EditorController.Instance.SetMultipleObjectsAsSelected(null);
 
 				List<LE_Waypoint> createdWaypoints = new List<LE_Waypoint>();
-				cachedSelectedObjects.ForEach(obj => createdWaypoints.Add(obj.GetComponent<WaypointSupport>().AddWaypoint()));
+				cachedSelectedObjects.ForEach(obj =>
+				{
+					var comp = obj.GetComponent<LE_Object>();
+					var waypoint = comp.GetComponent<WaypointSupport>().AddWaypoint();
+					createdWaypoints.Add(waypoint);
+
+					// If this is the first waypoint, set startMovingAtStart to true
+					if (comp.waypoints.Count == 1)
+					{
+						comp.startMovingAtStart = true;
+					}
+				});
 
 				EditorController.Instance.SetMultipleObjectsAsSelected(createdWaypoints.Select(waypoint => waypoint.gameObject).ToList());
 			}
