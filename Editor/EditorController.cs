@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using static MelonLoader.bHaptics;
+
 
 namespace FS_LevelEditor.Editor
 {
@@ -90,7 +90,10 @@ namespace FS_LevelEditor.Editor
 
 
 		// Gizmos arrows to move objects.
-		GameObject gizmosArrows;
+		//GameObject gizmosArrows;
+		EditorGizmo gizmo;
+		GameObject gizmoPrefab; // <-- Add this as a private field
+		GameObject gizmosArrows => gizmo?.Root;
 		enum GizmosArrow { None, X, Y, Z }
 		GizmosArrow collidingArrow;
 		Vector3 objPositionWhenArrowClick;
@@ -120,6 +123,42 @@ namespace FS_LevelEditor.Editor
 		public Dictionary<string, object> globalProperties = LevelData.GetDefaultGlobalProperties();
 		List<Material> skyboxes = new List<Material>();
 
+		// --- GRID FIELDS ---
+		private float gridSize = 1f;
+		private const float MIN_GRID_SIZE = 0.0001f; // Infinite precision
+		private const float MAX_GRID_SIZE = 8f;
+		private const float GRID_SIZE_MULTIPLIER = 2f;
+		private float gridHeight = 121.7324f; // Default to correct Y
+		private int gridExtent = 256; // Larger for infinite look
+		private bool gridVisible = true;
+		private bool gridEnabled = true;
+		private Material gridLineMaterial;
+		private Vector3 gridCenter = Vector3.zero;
+
+		private void UpdateGridCenter()
+		{
+			// Center grid on all objects, or at (0, gridHeight, 0) if none
+			if (currentInstantiatedObjects.Count > 0)
+			{
+				Vector3 sum = Vector3.zero;
+				int count = 0;
+				foreach (var obj in currentInstantiatedObjects)
+				{
+					if (obj != null && obj.gameObject.activeSelf)
+					{
+						sum += obj.transform.position;
+						count++;
+					}
+				}
+				gridCenter = (count > 0) ? (sum / count) : Vector3.zero;
+			}
+			else
+			{
+				gridCenter = Vector3.zero;
+			}
+			gridCenter.y = gridHeight;
+		}
+
 		void Awake()
 		{
 			Instance = this;
@@ -137,16 +176,24 @@ namespace FS_LevelEditor.Editor
 			MainCam.fieldOfView = 90f; // Set FOV to 90 by default.
 			MainCam.nearClipPlane = 0.1f; //to prevent disappearing when near objects.
 
-			//To ensure nothing is left in our scene
+			//Toensure nothing is left in our scene
 			InGameUIManager ui = InGameUIManager.Instance;
 			ui.HideHealthBarRoutine();
 			ui.HideDodgeCooldown(true);
-			ui.HideHoverGauge(true);
+		 ui.HideHoverGauge(true);
 			ui.ShowSprintFeedback(false);
 			ui.ShowFuelBar(false, 0, 0);
 			ui.ForceHideFuelBar();
 			ui.HideFuelBarRoutine(0);
 
+			CreateGridLineMaterial();
+			gridHeight = 121.7324f;
+			gridCenter = new Vector3(0, gridHeight, 0); // Always start centered at origin
+			UpdateGridCenter(); // Ensure gridCenter is correct at start
+			currentEditorState = EditorState.NORMAL; // Ensure state is initialized
+
+			// --- Initialize new gizmo ---
+			gizmo = new EditorGizmo(gizmoPrefab);
 		}
 		void LoadAssetBundle()
 		{
@@ -185,10 +232,17 @@ namespace FS_LevelEditor.Editor
 				allCategoriesObjectsSorted.Add(categoryObjects);
 			}
 
-			gizmosArrows = Instantiate(bundle.Load<GameObject>("MoveObjectArrows"));
-			gizmosArrows.name = "MoveObjectArrows";
-			gizmosArrows.transform.localPosition = Vector3.zero;
-			gizmosArrows.SetActive(false);
+			// REMOVE old gizmosArrows instantiation
+			// gizmosArrows = Instantiate(bundle.Load<GameObject>("MoveObjectArrows"));
+			// gizmosArrows.name = "MoveObjectArrows";
+			// gizmosArrows.transform.localPosition = Vector3.zero;
+			// gizmosArrows.SetActive(false);
+
+			// --- Load old gizmo prefab for EditorGizmo ---
+			if (bundle.Contains("MoveObjectArrows"))
+			{
+				gizmoPrefab = bundle.Load<GameObject>("MoveObjectArrows");
+			}
 
 			snapToGridCube = Instantiate(bundle.Load<GameObject>("SnapToGridCube"));
 			snapToGridCube.name = "SnapToGridCube";
@@ -210,7 +264,7 @@ namespace FS_LevelEditor.Editor
 
 			bundle.Unload(false);
 		}
-		public GameObject LoadOtherObjectInBundle(string objectName)
+		public GameObject LoadOtherObjectInBundle(String objectName)
 		{
 			GameObject toReturn = otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
 
@@ -373,13 +427,13 @@ namespace FS_LevelEditor.Editor
 						}
 						else
 						{
-							SetSelectedObj(obj);
+						 SetSelectedObj(obj);
 						}
 					}
 					// Otherwise, deselect the last selected object if there's one ONLY if it's not holding Ctrl
 					else if (!Input.GetKey(KeyCode.LeftControl))
 					{
-						SetSelectedObj(null);
+					 SetSelectedObj(null);
 					}
 				}
 			}
@@ -684,18 +738,16 @@ namespace FS_LevelEditor.Editor
 		{
 			if (gizmosArrows.activeSelf && currentSelectedObj)
 			{
-				gizmosArrows.transform.position = currentSelectedObj.transform.position;
-
+				gizmo.SetPosition(currentSelectedObj.transform.position);
 				// If the global gizmos arrows are enabled, force them to be with 0 rotation.
 				if (globalGizmosArrowsEnabled)
 				{
-					gizmosArrows.transform.rotation = Quaternion.identity;
+					gizmo.SetRotation(Quaternion.identity);
 				}
 				else
 				{
-					gizmosArrows.transform.rotation = currentSelectedObj.transform.rotation;
+					gizmo.SetRotation(currentSelectedObj.transform.rotation);
 				}
-
 				//Scale them based on camera distance
 				float distance = Vector3.Distance(MainCam.transform.position, currentSelectedObj.transform.position);
 				float baseScale = 2f;
@@ -703,15 +755,12 @@ namespace FS_LevelEditor.Editor
 				float highestAxis = Utils.HighestValueOfVector(currentSelectedObj.transform.localScale);
 				if (highestAxis < 1f)
 					scaleFactor *= highestAxis;
-
-				gizmosArrows.transform.localScale = Vector3.one * baseScale * scaleFactor;
+				gizmo.SetScale(Vector3.one * baseScale * scaleFactor);
 			}
-
 			if (snapToGridCube.activeSelf && currentSelectedObj)
 			{
 				snapToGridCube.transform.position = currentSelectedObj.transform.position;
 			}
-
 			if (deathYPlane && deathYPlane.gameObject.activeSelf)
 			{
 				deathYPlane.gameObject.SetActive(true);
@@ -760,6 +809,31 @@ namespace FS_LevelEditor.Editor
 				return;
 			}
 
+			// --- GRID SHORTCUTS ---
+			float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
+			if (Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
+			{
+				if (scrollDelta > 0)
+					DecreaseGridSize(); // Finer
+				else if (scrollDelta < 0)
+					IncreaseGridSize(); // Coarser
+			}
+			// MouseWheel: Change grid height
+			if (!Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
+			{
+				AdjustGridHeight(scrollDelta, Input.GetKey(KeyCode.LeftShift));
+			}
+			// G: Toggle grid visibility
+			if (Input.GetKeyDown(KeyCode.G) && !Input.GetKey(KeyCode.LeftShift))
+			{
+				SetGridVisible(!gridVisible);
+			}
+			// Shift+G: Toggle grid enabled
+			if (Input.GetKeyDown(KeyCode.G) && Input.GetKey(KeyCode.LeftShift))
+			{
+				SetGridEnabled(!gridEnabled);
+			}
+
 			// Shortcuts for changing between editor modes.
 			if (Input.GetKeyDown(KeyCode.Alpha1))
 			{
@@ -803,7 +877,7 @@ namespace FS_LevelEditor.Editor
 					foreach (var obj in currentInstantiatedObjects)
 					{
 						if (!obj.canHaveWaypoints || !obj.gameObject.active) continue;
-						if (currentSelectedObj == obj.gameObject) continue;
+						if (currentSelectedObj == obj) continue;
 
 						foreach (var support in obj.GetComponents<WaypointSupport>())
 						{
@@ -923,34 +997,53 @@ namespace FS_LevelEditor.Editor
 			GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
 			if (targetObj == null) return;
 
+			float moveAmount = gridEnabled ? gridSize : 0.01f;
 			Vector3 toMove = Vector3.zero;
 
-			if (Input.GetKeyDown(KeyCode.LeftArrow)) toMove += Vector3.left * 0.01f;
-			if (Input.GetKeyDown(KeyCode.RightArrow)) toMove += Vector3.right * 0.01f;
-			if (Input.GetKeyDown(KeyCode.UpArrow)) toMove += Vector3.up * 0.01f;
-			if (Input.GetKeyDown(KeyCode.DownArrow)) toMove += Vector3.down * 0.01f;
-
-			if (toMove != Vector3.zero)
+			// Only process if an arrow key is pressed
+			if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
 			{
-				Vector3 oldPos = targetObj.transform.localPosition;
+				// Use the object's up as the plane normal, or grid up if grid is enabled
+				Vector3 planeNormal = gridEnabled ? Vector3.up : targetObj.transform.up;
+				// Project camera's right and up onto the plane
+				Vector3 moveRight = Vector3.ProjectOnPlane(Camera.main.transform.right, planeNormal).normalized;
+				Vector3 moveUp = Vector3.ProjectOnPlane(Camera.main.transform.up, planeNormal).normalized;
 
-				if (globalGizmosArrowsEnabled)
+				if (Input.GetKeyDown(KeyCode.LeftArrow))
+					toMove -= moveRight * moveAmount;
+				else if (Input.GetKeyDown(KeyCode.RightArrow))
+					toMove += moveRight * moveAmount;
+				else if (Input.GetKeyDown(KeyCode.UpArrow))
+					toMove += moveUp * moveAmount;
+				else if (Input.GetKeyDown(KeyCode.DownArrow))
+					toMove -= moveUp * moveAmount;
+
+				if (gridEnabled)
 				{
-					targetObj.transform.Translate(toMove, Space.World);
+					Vector3 newPos = targetObj.transform.localPosition + toMove;
+					newPos.x = Mathf.Round(newPos.x / gridSize) * gridSize;
+					newPos.y = Mathf.Round(newPos.y / gridSize) * gridSize;
+					newPos.z = Mathf.Round(newPos.z / gridSize) * gridSize;
+					Vector3 oldPos = targetObj.transform.localPosition;
+					targetObj.transform.localPosition = newPos;
+					if (currentSelectedObj)
+					{
+						RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition, null, null);
+						SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+					}
 				}
 				else
 				{
-					if (Vector3.Dot(targetObj.transform.forward, Camera.main.transform.forward) < 0) toMove *= -1;
-
-					targetObj.transform.Translate(toMove, Space.Self);
-				}
-
-				if (currentSelectedObj) // If the target obj is the current selected object, to check if it's NOT the preview object.
-				{
-					RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition,
-						null, null);
-
-					SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+					Vector3 oldPos = targetObj.transform.localPosition;
+					if (globalGizmosArrowsEnabled)
+						targetObj.transform.Translate(toMove, Space.World);
+					else
+						targetObj.transform.Translate(toMove, Space.Self);
+					if (currentSelectedObj)
+					{
+						RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition, null, null);
+						SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+					}
 				}
 			}
 		}
@@ -1059,10 +1152,65 @@ namespace FS_LevelEditor.Editor
 			EditorUIManager.Instance.SetCurrentModeLabelText(currentMode);
 		}
 
+		// --- GRID API ---
+		public void SetGridSize(float newSize)
+		{
+			gridSize = Mathf.Clamp(newSize, MIN_GRID_SIZE, MAX_GRID_SIZE);
+			UpdateGridCenter();
+		}
+		public void IncreaseGridSize()
+		{
+			SetGridSize(gridSize * GRID_SIZE_MULTIPLIER);
+		}
+		public void DecreaseGridSize()
+		{
+			SetGridSize(gridSize / GRID_SIZE_MULTIPLIER);
+		}
+		public void SetGridHeight(float newHeight)
+		{
+			gridHeight = newHeight;
+			UpdateGridCenter();
+		}
+		public void AdjustGridHeight(float delta, bool precise)
+		{
+			gridHeight += precise ? delta * 0.1f : delta;
+			UpdateGridCenter();
+		}
+		public void SetGridEnabled(bool enabled)
+		{
+			gridEnabled = enabled;
+		}
+		public void SetGridVisible(bool visible)
+		{
+			gridVisible = visible;
+		}
+
 		void PreviewObject()
 		{
-			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-			List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
+			if (gridEnabled)
+			{
+				// Snap preview to grid under mouse (XZ plane at gridHeight)
+				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+				Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0));
+				float enter = 0f;
+				if (gridPlane.Raycast(ray, out enter))
+				{
+					Vector3 hitPoint = ray.GetPoint(enter);
+					// Snap to grid
+					hitPoint.x = Mathf.Round(hitPoint.x / gridSize) * gridSize;
+					hitPoint.y = gridHeight;
+					hitPoint.z = Mathf.Round(hitPoint.z / gridSize) * gridSize;
+					previewObjectToBuildObj.SetActive(true);
+					previewObjectToBuildObj.transform.position = hitPoint;
+					previewObjectToBuildObj.transform.rotation = Quaternion.identity;
+					return;
+				}
+				// If ray doesn't hit grid, fallback to old logic below
+			}
+
+			// --- Old logic fallback ---
+			Ray fallbackRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+			List<RaycastHit> hits = Physics.RaycastAll(fallbackRay, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
 			hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
 			bool snapWithTrigger = false;
 			RaycastHit rayToUseWithSnap = new RaycastHit();
@@ -1717,8 +1865,6 @@ namespace FS_LevelEditor.Editor
 			{
 				if (!IsCurrentState(EditorState.MOVING_OBJECT)) SetCurrentEditorState(EditorState.MOVING_OBJECT);
 
-				// IT WORKS, DON'T EVEN DARE TO TOUCH THIS EVER AGAIN!
-
 				Vector3 hitWorldPosition = ray.GetPoint(distance);
 				Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
 
@@ -1726,15 +1872,26 @@ namespace FS_LevelEditor.Editor
 
 				Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
 
-				// If it's using global arrows, just use the normal offset, otherwise, use the damn complex math path.
+				Vector3 newPosition;
 				if (globalGizmosArrowsEnabled)
 				{
-					currentSelectedObj.transform.position = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
+					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
 				}
 				else
 				{
-					currentSelectedObj.transform.position = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
+					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
 				}
+
+				// --- GRID SNAPPING ---
+				if (gridEnabled)
+				{
+					// Snap to grid increments
+					newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
+					newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+					newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
+				}
+
+				currentSelectedObj.transform.position = newPosition;
 			}
 		}
 
@@ -1792,10 +1949,10 @@ namespace FS_LevelEditor.Editor
 					newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
 				}
 
-				SetSelectedObj(placedObj);
+			 SetSelectedObj(placedObj);
 
 				isDuplicatingObj = false;
-				levelHasBeenModified = true;
+			 levelHasBeenModified = true;
 			}
 
 			Logger.Log("DuplicateSelectedObj function finished!");
@@ -1893,7 +2050,7 @@ namespace FS_LevelEditor.Editor
 				gizmosArrows.transform.localScale = Vector3.one * 2f;
 			}
 			else
-			{
+				{
 				gizmosArrows.transform.localScale = Vector3.one * 2f * highestAxis;
 			}
 		}
@@ -1910,7 +2067,7 @@ namespace FS_LevelEditor.Editor
 
 			switch (type)
 			{
-				case LEAction.LEActionType.MoveObject:
+			 case LEAction.LEActionType.MoveObject:
 					currentExecutingAction.oldPos = oldPos.Value;
 					currentExecutingAction.newPos = newPos.Value;
 					break;
@@ -2197,8 +2354,86 @@ namespace FS_LevelEditor.Editor
 		{
 			RenderSettings.skybox = skyboxes[skyboxID];
 		}
-	}
 
+		void CreateGridLineMaterial()
+		{
+			if (!gridLineMaterial)
+			{
+				Shader shader = Shader.Find("Hidden/Internal-Colored");
+				gridLineMaterial = new Material(shader)
+				{
+					hideFlags = HideFlags.HideAndDontSave
+				};
+				gridLineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+				gridLineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+				gridLineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+				gridLineMaterial.SetInt("_ZWrite", 0);
+				gridLineMaterial.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.LessEqual); // Enable depth test
+			}
+		}
+
+		void OnRenderObject()
+		{
+			if (!gridVisible || !gridLineMaterial) return;
+			if (Camera.current != Camera.main) return;
+			gridLineMaterial.SetPass(0);
+			GL.PushMatrix();
+			GL.MultMatrix(Matrix4x4.identity);
+			GL.Begin(GL.LINES);
+			// Grid colors
+			Color gridColor = new Color(1f, 1f, 1f, 0.10f); // Lower alpha for regular lines
+			Color axisColorX = new Color(1f, 0.3f, 0.3f, 0.25f); // Lower alpha for axes
+			Color axisColorZ = new Color(0.3f, 0.6f, 1f, 0.25f);
+
+			float y = gridHeight;
+			Vector3 center = gridCenter;
+			Camera cam = Camera.main;
+			float camDist = Mathf.Max(10f, Vector3.Distance(cam.transform.position, center));
+			float visibleRange = Mathf.Min(200f * gridSize, camDist * 2f); // Only draw what is visible
+			int maxLines = 200; // Max lines in each direction (total 400 per axis)
+			int halfLines = Mathf.Clamp(Mathf.CeilToInt(visibleRange / gridSize), 1, maxLines);
+
+			// Calculate how many pixels per grid line on screen
+			Vector3 screenOrigin = cam.WorldToScreenPoint(center);
+			Vector3 screenNext = cam.WorldToScreenPoint(center + new Vector3(gridSize, 0, 0));
+			float pixelsPerLine = Mathf.Abs(screenNext.x - screenOrigin.x);
+			int lineStep = 1;
+			if (pixelsPerLine < 1f)
+			{
+				// If lines would be less than 1 pixel apart, skip some
+				lineStep = Mathf.CeilToInt(1f / Mathf.Max(pixelsPerLine, 0.0001f));
+			}
+
+			// Draw regular grid lines (skip axes)
+			for (int i = -halfLines; i <= halfLines; i += lineStep)
+			{
+				if (i == 0) continue; // Skip axes for now
+				float x = center.x + i * gridSize;
+				float zStart = center.z - visibleRange;
+				float zEnd = center.z + visibleRange;
+				GL.Color(gridColor);
+				GL.Vertex3(x, y, zStart);
+				GL.Vertex3(x, y, zEnd);
+
+				float z = center.z + i * gridSize;
+				float xStart = center.x - visibleRange;
+				float xEnd = center.x + visibleRange;
+				GL.Color(gridColor);
+				GL.Vertex3(xStart, y, z);
+				GL.Vertex3(xEnd, y, z);
+			}
+			// Draw axes last (no blending/overlap)
+			GL.Color(axisColorX);
+			GL.Vertex3(center.x, y, center.z - visibleRange);
+			GL.Vertex3(center.x, y, center.z + visibleRange);
+			GL.Color(axisColorZ);
+			GL.Vertex3(center.x - visibleRange, y, center.z);
+			GL.Vertex3(center.x + visibleRange, y, center.z);
+			GL.End();
+			GL.PopMatrix();
+		}
+	}
+	
 	public struct LEAction
 	{
 		public enum LEActionType

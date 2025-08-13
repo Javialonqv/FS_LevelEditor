@@ -89,10 +89,16 @@ namespace FS_LevelEditor.Editor
         }
         void ManageMoveSpeed()
         {
-            float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
-            if (Input.GetKey(KeyCode.LeftControl) && scrollDelta != 0 && !Input.GetKey(KeyCode.LeftShift))
+            // Camera speed: + and - keys
+            if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus))
             {
-                moveSpeed += scrollDelta * SPEED_CHANGE_RATE;
+                moveSpeed += SPEED_CHANGE_RATE;
+                moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
+                Logger.DebugLog("New move speed: " + moveSpeed);
+            }
+            if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
+            {
+                moveSpeed -= SPEED_CHANGE_RATE;
                 moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
                 Logger.DebugLog("New move speed: " + moveSpeed);
             }
