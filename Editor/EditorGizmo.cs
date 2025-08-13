@@ -59,12 +59,18 @@ namespace FS_LevelEditor.Editor
             // X Axis
             xArrow = CreateAxis(Vector3.right, xColor, "X", arrowMat, out xCone);
             xArrow.transform.parent = root.transform;
+            AddArrowCollider(xArrow, Vector3.right);
+            AddConeCollider(xCone);
             // Y Axis
             yArrow = CreateAxis(Vector3.up, yColor, "Y", arrowMat, out yCone);
             yArrow.transform.parent = root.transform;
+            AddArrowCollider(yArrow, Vector3.up);
+            AddConeCollider(yCone);
             // Z Axis
             zArrow = CreateAxis(Vector3.forward, zColor, "Z", arrowMat, out zCone);
             zArrow.transform.parent = root.transform;
+            AddArrowCollider(zArrow, Vector3.forward);
+            AddConeCollider(zCone);
         }
 
         private Material CreateGizmoMaterial()
@@ -95,11 +101,14 @@ namespace FS_LevelEditor.Editor
             lr.material = new Material(sharedMat.shader);
             lr.material.CopyPropertiesFromMaterial(sharedMat);
             lr.material.color = color;
+            // (Revert emission change: do not set _EmissionColor or enable keyword)
             lr.useWorldSpace = false;
             lr.numCapVertices = 8;
             lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             lr.receiveShadows = false;
             lr.sortingOrder = 32767; // Draw below cone
+            // Add collider to the axis line itself (for raycast picking)
+            AddArrowCollider(go, dir);
             // Cone at the end (drawn after line for render order)
             coneObj = CreateCone(dir, color, axisName + "_Cone", sharedMat);
             coneObj.transform.parent = go.transform;
@@ -213,6 +222,43 @@ namespace FS_LevelEditor.Editor
             {
                 lr.startWidth = lineWidth;
                 lr.endWidth = lineWidth;
+            }
+        }
+
+        // Add a CapsuleCollider to the arrow for raycast detection
+        private void AddArrowCollider(GameObject arrow, Vector3 dir)
+        {
+            // Remove any existing collider to avoid duplicates
+            foreach (var col in arrow.GetComponents<Collider>())
+                UnityEngine.Object.Destroy(col);
+
+            // Use a CapsuleCollider for better line picking
+            var capsule = arrow.AddComponent<CapsuleCollider>();
+            float length = arrowLength;
+            float thickness = arrowThickness * 1.5f;
+            capsule.radius = thickness * 0.7f; // slightly thicker for easier picking
+            capsule.height = length;
+            capsule.isTrigger = true;
+            // Set direction: 0=X, 1=Y, 2=Z
+            if (dir == Vector3.right) capsule.direction = 0;
+            else if (dir == Vector3.up) capsule.direction = 1;
+            else capsule.direction = 2;
+            capsule.center = dir * (length / 2f);
+
+            // Set layer to Default (0) for raycast, not Ignore Raycast
+            arrow.layer = 0;
+        }
+
+        // Add a MeshCollider to the cone for raycast detection
+        private void AddConeCollider(GameObject cone)
+        {
+            var meshFilter = cone.GetComponent<MeshFilter>();
+            if (meshFilter != null && meshFilter.mesh != null)
+            {
+                var meshCollider = cone.AddComponent<MeshCollider>();
+                meshCollider.sharedMesh = meshFilter.mesh;
+                meshCollider.convex = true;
+                meshCollider.isTrigger = true;
             }
         }
 

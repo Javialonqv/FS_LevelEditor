@@ -1214,94 +1214,169 @@ namespace FS_LevelEditor.Editor
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
 			hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
-
-			bool didPlace = false;
-			float gridEnter = float.MaxValue;
-			Vector3 gridPoint = Vector3.zero;
-			bool gridHit = false;
-
-			// 1. If grid is enabled and visible, check if grid is hit
-			if (gridEnabled && gridVisible)
+			bool snapWithTrigger = false;
+			RaycastHit rayToUseWithSnap = new RaycastHit();
+			bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+			if (hits.Count > 0)
 			{
-				Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0));
-				float enter = 0f;
-				if (gridPlane.Raycast(ray, out enter))
+				// Handle snap triggers first
+				if (hits.Count == 1 || theyAreAllSnapTriggers)
 				{
-					gridPoint = ray.GetPoint(enter);
-					gridPoint.x = Mathf.Round(gridPoint.x / gridSize) * gridSize;
-					gridPoint.y = gridHeight;
-					gridPoint.z = Mathf.Round(gridPoint.z / gridSize) * gridSize;
-					gridEnter = enter;
-					gridHit = true;
-				}
-			}
-
-			// 2. Always check for snap triggers first, even if grid is hit
-			RaycastHit? snapHit = null;
-			foreach (var hit in hits)
-			{
-				if (hit.collider.gameObject.name.StartsWith("StaticPos"))
-				{
-					if (currentObjectToBuildType.HasValue && CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hit.collider.gameObject))
+					if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
 					{
-						snapHit = hit;
-						break;
-					}
-				}
-			}
-			if (snapHit.HasValue)
-			{
-				previewObjectToBuildObj.SetActive(true);
-				previewObjectToBuildObj.transform.position = snapHit.Value.collider.transform.position;
-				if (currentHittenSnapTrigger != snapHit.Value.collider.gameObject)
-				{
-					currentHittenSnapTrigger = snapHit.Value.collider.gameObject;
-					previewObjectToBuildObj.transform.rotation = snapHit.Value.collider.transform.rotation;
-				}
-				didPlace = true;
-			}
-			// 3. If not snapped, check grid (if hit and is closer than any object)
-			else if (gridHit && (hits.Count == 0 || hits[0].distance > gridEnter))
-			{
-				previewObjectToBuildObj.SetActive(true);
-				previewObjectToBuildObj.transform.position = gridPoint;
-				previewObjectToBuildObj.transform.rotation = Quaternion.identity;
-				didPlace = true;
-			}
-			// 4. Otherwise, place on object
-			else if (hits.Count > 0)
-			{
-				currentHittenSnapTrigger = null;
-				previewObjectToBuildObj.SetActive(true);
-				previewObjectToBuildObj.transform.position = hits[0].point;
-				if (lastHittenNormalByPreviewRay != hits[0].normal)
-				{
-					lastHittenNormalByPreviewRay = hits[0].normal;
-					Vector3 wallNormal = hits[0].normal;
-					if (wallNormal != Vector3.up && wallNormal != Vector3.down)
-					{
-						Vector3 right = Vector3.Cross(Vector3.up, wallNormal).normalized;
-						Vector3 up = Vector3.Cross(wallNormal, right).normalized;
-						previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(up, wallNormal);
+						if (currentObjectToBuildType.HasValue && CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hits[0].collider.gameObject))
+						{
+							snapWithTrigger = true;
+							rayToUseWithSnap = hits[0];
+						}
+						hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
 					}
 					else
 					{
-						if (wallNormal == Vector3.up)
+						hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+					}
+				}
+				else
+				{
+					foreach (var hit in hits.ToList())
+					{
+						if (hit.collider.gameObject.name.StartsWith("StaticPos") && Input.GetKey(KeyCode.LeftControl))
 						{
-							previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+							if (currentObjectToBuildType.HasValue && CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hit.collider.gameObject))
+							{
+								snapWithTrigger = true;
+								rayToUseWithSnap = hit;
+								break;
+							}
 						}
 						else
 						{
-							previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.down);
+							hits.RemoveAll(h => h.collider.gameObject.name.StartsWith("StaticPos"));
+							break;
 						}
 					}
 				}
-				didPlace = true;
+				if (snapWithTrigger)
+				{
+					previewObjectToBuildObj.SetActive(true);
+					previewObjectToBuildObj.transform.position = rayToUseWithSnap.collider.transform.position;
+					if (currentHittenSnapTrigger != rayToUseWithSnap.collider.gameObject)
+					{
+						currentHittenSnapTrigger = rayToUseWithSnap.collider.gameObject;
+						previewObjectToBuildObj.transform.rotation = rayToUseWithSnap.collider.transform.rotation;
+					}
+				}
+				else if (hits.Count > 0)
+				{
+					// Only consider colliders that are children of objects in the levelObjectsParent
+					var surfaceHit = hits.FirstOrDefault(h =>
+						h.collider is Collider &&
+						!(h.collider is TerrainCollider) &&
+						h.collider.transform.IsChildOf(levelObjectsParent.transform) &&
+						h.collider.enabled &&
+						h.collider.gameObject.activeInHierarchy
+					);
+					if (surfaceHit.collider != null)
+					{
+						currentHittenSnapTrigger = null;
+						previewObjectToBuildObj.SetActive(true);
+						previewObjectToBuildObj.transform.position = surfaceHit.point;
+						Vector3 normal = surfaceHit.normal;
+						if (normal != Vector3.up && normal != Vector3.down)
+						{
+							Vector3 right = Vector3.Cross(Vector3.up, normal).normalized;
+							Vector3 up = Vector3.Cross(normal, right).normalized;
+							previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(up, normal);
+						}
+						else
+						{
+							if (normal == Vector3.up)
+								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+							else
+								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.down);
+						}
+					}
+					else
+					{
+						currentHittenSnapTrigger = null;
+						previewObjectToBuildObj.SetActive(true);
+						previewObjectToBuildObj.transform.position = hits[0].point;
+						if (lastHittenNormalByPreviewRay != hits[0].normal)
+						{
+							lastHittenNormalByPreviewRay = hits[0].normal;
+							Vector3 wallNormal = hits[0].normal;
+							if (wallNormal != Vector3.up && wallNormal != Vector3.down)
+							{
+								Vector3 right = Vector3.Cross(Vector3.up, wallNormal).normalized;
+								Vector3 up = Vector3.Cross(wallNormal, right).normalized;
+								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(up, wallNormal);
+							}
+							else
+							{
+								if (wallNormal == Vector3.up)
+								{
+									previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+								}
+								else
+								{
+									previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.down);
+								}
+							}
+						}
+					}
+				}
+				else // If nothing is hit, place on grid
+				{
+					if (gridEnabled && gridVisible)
+					{
+						Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0));
+						float enter = 0f;
+						if (gridPlane.Raycast(ray, out enter))
+						{
+							previewObjectToBuildObj.SetActive(true);
+							Vector3 gridPoint = ray.GetPoint(enter);
+							gridPoint.x = Mathf.Round(gridPoint.x / gridSize) * gridSize;
+							gridPoint.y = gridHeight;
+							gridPoint.z = Mathf.Round(gridPoint.z / gridSize) * gridSize;
+							previewObjectToBuildObj.transform.position = gridPoint;
+							previewObjectToBuildObj.transform.rotation = Quaternion.identity;
+						}
+						else
+						{
+							previewObjectToBuildObj.SetActive(false);
+						}
+					}
+					else
+					{
+						previewObjectToBuildObj.SetActive(false);
+					}
+				}
 			}
-
-			if (!didPlace)
+			else // If nothing is hit, place on grid
 			{
-				previewObjectToBuildObj.SetActive(false);
+				if (gridEnabled && gridVisible)
+				{
+					Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0));
+					float enter = 0f;
+					if (gridPlane.Raycast(ray, out enter))
+					{
+						previewObjectToBuildObj.SetActive(true);
+						Vector3 gridPoint = ray.GetPoint(enter);
+						gridPoint.x = Mathf.Round(gridPoint.x / gridSize) * gridSize;
+						gridPoint.y = gridHeight;
+						gridPoint.z = Mathf.Round(gridPoint.z / gridSize) * gridSize;
+						previewObjectToBuildObj.transform.position = gridPoint;
+						previewObjectToBuildObj.transform.rotation = Quaternion.identity;
+					}
+					else
+					{
+						previewObjectToBuildObj.SetActive(false);
+					}
+				}
+				else
+				{
+					previewObjectToBuildObj.SetActive(false);
+				}
 			}
 		}
 
@@ -1763,7 +1838,7 @@ namespace FS_LevelEditor.Editor
 				levelHasBeenModified = true;
 			}
 
-			if ((!multipleObjectsSelected && currentSelectedObjComponent.canUndoDeletion) || multipleObjectsSelected)
+			if ((!multipleObjectsSelected && currentSelectedObjComponent != null && currentSelectedObjComponent.canUndoDeletion) || multipleObjectsSelected)
 			{
 				// Register the LEAction before deselecting the object, so I can set the target obj with the reference to the current selected object.
 				RegisterLEAction(LEAction.LEActionType.DeleteObject, currentSelectedObj, multipleObjectsSelected, null, null, null, null);
@@ -1851,44 +1926,52 @@ namespace FS_LevelEditor.Editor
 			}
 		}
 		void MoveObject(GizmosArrow direction)
-		{
-			// Get the ray from the camera.
-			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        {
+            // Get the ray from the camera.
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-			// If the ray can collide with the "invisible" plane.
-			if (movementPlane.Raycast(ray, out float distance))
-			{
-				if (!IsCurrentState(EditorState.MOVING_OBJECT)) SetCurrentEditorState(EditorState.MOVING_OBJECT);
+            // If the ray can collide with the "invisible" plane.
+            if (movementPlane.Raycast(ray, out float distance))
+            {
+                if (!IsCurrentState(EditorState.MOVING_OBJECT)) SetCurrentEditorState(EditorState.MOVING_OBJECT);
 
-				Vector3 hitWorldPosition = ray.GetPoint(distance);
-				Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
+                Vector3 hitWorldPosition = ray.GetPoint(distance);
+                Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
 
-				float movementDistance = Vector3.Dot(displacement, GetAxisDirection(collidingArrow, currentSelectedObj));
+                float movementDistance = Vector3.Dot(displacement, GetAxisDirection(collidingArrow, currentSelectedObj));
 
-				Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
+                Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
 
-				Vector3 newPosition;
-				if (globalGizmosArrowsEnabled)
-				{
-					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
-				}
-				else
-				{
-					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
-				}
+                Vector3 newPosition;
+                if (globalGizmosArrowsEnabled)
+                {
+                    newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
+                }
+                else
+                {
+                    newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
+                }
 
-				// --- GRID SNAPPING ---
-				if (gridEnabled)
-				{
-					// Snap to grid increments
-					newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
-					newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
-					newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
-				}
+                // --- GRID SNAPPING ---
+                if (gridEnabled)
+                {
+                    // Snap to grid increments, but preserve Y if moving on X or Z only
+                    if (collidingArrow == GizmosArrow.Y) {
+                        newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+                    } else {
+                        newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
+                        newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
+                        // Only snap Y if the movement is significant (avoid small jumps)
+                        if (Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y) > 0.01f)
+                            newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+                        else
+                            newPosition.y = objPositionWhenArrowClick.y;
+                    }
+                }
 
-				currentSelectedObj.transform.position = newPosition;
-			}
-		}
+                currentSelectedObj.transform.position = newPosition;
+            }
+        }
 
 		void DuplicateSelectedObject()
 		{
@@ -1944,9 +2027,8 @@ namespace FS_LevelEditor.Editor
 					newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
 				}
 
-			 SetSelectedObj(placedObj);
-
-				isDuplicatingObj = false;
+				SetSelectedObj(placedObj);
+			 isDuplicatingObj = false;
 				levelHasBeenModified = true;
 			}
 
@@ -1957,7 +2039,7 @@ namespace FS_LevelEditor.Editor
 		{
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
-			hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+		 hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
 
 			if (hits.Count > 0)
 			{
@@ -2246,17 +2328,34 @@ namespace FS_LevelEditor.Editor
 		/// <returns></returns>
 		GizmosArrow GetCollidingWithAnArrow()
 		{
-			// The parent of the gizmos arrows is "MoveObjectsArrows".
-			// hittenArrow is NOT the parent, it's the actual hitten arrow :)
-			if (IsHittingObjectWhoseParentIs(gizmosArrows.name, out GameObject hittenArrow, out Ray cameraRay))
+			// Check for collision with new EditorGizmo arrows/cones
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
+
+			foreach (var hit in hits)
 			{
-				StartMovingObject(hittenArrow.name, cameraRay);
-
-				if (hittenArrow.name == "X") return GizmosArrow.X;
-				if (hittenArrow.name == "Y") return GizmosArrow.Y;
-				if (hittenArrow.name == "Z") return GizmosArrow.Z;
+				if (hit.collider != null && hit.collider.gameObject != null && hit.collider.transform.parent != null)
+				{
+					var parent = hit.collider.transform.parent.gameObject;
+					if (parent == gizmo.XArrow || parent == gizmo.YArrow || parent == gizmo.ZArrow)
+					{
+						string arrowName = parent.name;
+						StartMovingObject(arrowName, ray);
+						if (arrowName == "X") return GizmosArrow.X;
+						if (arrowName == "Y") return GizmosArrow.Y;
+						if (arrowName == "Z") return GizmosArrow.Z;
+					}
+					// Also check for cones
+					if (parent == gizmo.XCone || parent == gizmo.YCone || parent == gizmo.ZCone)
+					{
+						string coneName = parent.name;
+						// Cones are named X_Cone, Y_Cone, Z_Cone
+						if (coneName.StartsWith("X")) { StartMovingObject("X", ray); return GizmosArrow.X; }
+						if (coneName.StartsWith("Y")) { StartMovingObject("Y", ray); return GizmosArrow.Y; }
+						if (coneName.StartsWith("Z")) { StartMovingObject("Z", ray); return GizmosArrow.Z; }
+					}
+				}
 			}
-
 			return GizmosArrow.None;
 		}
 
@@ -2376,54 +2475,67 @@ namespace FS_LevelEditor.Editor
 			GL.MultMatrix(Matrix4x4.identity);
 			GL.Begin(GL.LINES);
 			// Grid colors
-			Color gridColor = new Color(1f, 1f, 1f, 0.10f); // Lower alpha for regular lines
-			Color axisColorX = new Color(1f, 0.3f, 0.3f, 0.25f); // Lower alpha for axes
+			Color gridColor = new Color(1f, 1f, 1f, 0.10f);
+			Color axisColorX = new Color(1f, 0.3f, 0.3f, 0.25f);
 			Color axisColorZ = new Color(0.3f, 0.6f, 1f, 0.25f);
 
 			float y = gridHeight;
 			Vector3 center = gridCenter;
 			Camera cam = Camera.main;
-			// float camDist = Mathf.Max(10f, Vector3.Distance(cam.transform.position, center));
-			float visibleRange = 64f * gridSize; // Fixed grid draw range for consistent look
-			int maxLines = 200; // Max lines in each direction (total 400 per axis)
-			int halfLines = Mathf.Clamp(Mathf.CeilToInt(visibleRange / gridSize), 1, maxLines);
+			// --- Minimum region size: 200x200 ---
+			float minRegion = 100f * gridSize; // 200x200 region
+			float camRange = Mathf.Max(Mathf.Clamp(Vector3.Distance(cam.transform.position, center) * 2f, 32f * gridSize, 256f * gridSize), minRegion);
+			float maxWorldRange = camRange;
+			int maxLines = 512;
+			int halfLines = Mathf.Clamp(Mathf.CeilToInt(maxWorldRange / gridSize), 1, maxLines);
+			float minAlpha = 0.03f; // Minimum alpha for distant lines
 
-			// Calculate how many pixels per grid line on screen
-			Vector3 screenOrigin = cam.WorldToScreenPoint(center);
-			Vector3 screenNext = cam.WorldToScreenPoint(center + new Vector3(gridSize, 0, 0));
-			float pixelsPerLine = Mathf.Abs(screenNext.x - screenOrigin.x);
-			int lineStep = 1;
-			if (pixelsPerLine < 1f)
-			{
-				// If lines would be less than 1 pixel apart, skip some
-				lineStep = Mathf.CeilToInt(1f / Mathf.Max(pixelsPerLine, 0.0001f));
-			}
+			// Calculate visible grid bounds in world space
+			Vector3 camPos = cam.transform.position;
+			float gridY = y;
+			float minX = Mathf.Floor((camPos.x - maxWorldRange) / gridSize) * gridSize;
+			float maxX = Mathf.Ceil((camPos.x + maxWorldRange) / gridSize) * gridSize;
+			float minZ = Mathf.Floor((camPos.z - maxWorldRange) / gridSize) * gridSize;
+			float maxZ = Mathf.Ceil((camPos.z + maxWorldRange) / gridSize) * gridSize;
+
+			// --- Smooth fade: use a wider fade region for nice blending ---
+			float fadeStart = maxWorldRange * 0.7f;
+			float fadeEnd = maxWorldRange;
 
 			// Draw regular grid lines (skip axes)
-			for (int i = -halfLines; i <= halfLines; i += lineStep)
+			for (float x = minX; x <= maxX; x += gridSize)
 			{
-				if (i == 0) continue; // Skip axes for now
-				float x = center.x + i * gridSize;
-				float zStart = center.z - visibleRange;
-				float zEnd = center.z + visibleRange;
-				GL.Color(gridColor);
-				GL.Vertex3(x, y, zStart);
-				GL.Vertex3(x, y, zEnd);
-
-				float z = center.z + i * gridSize;
-				float xStart = center.x - visibleRange;
-				float xEnd = center.x + visibleRange;
-				GL.Color(gridColor);
-				GL.Vertex3(xStart, y, z);
-				GL.Vertex3(xEnd, y, z);
+				if (Mathf.Approximately(x, center.x)) continue;
+				float camDist = Mathf.Abs(x - camPos.x);
+				float fade = 1f;
+				if (camDist > fadeStart)
+					fade = Mathf.InverseLerp(fadeEnd, fadeStart, camDist); // 1 at fadeStart, 0 at fadeEnd
+				float alpha = Mathf.Lerp(minAlpha, gridColor.a, fade);
+				Color fadedColor = new Color(gridColor.r, gridColor.g, gridColor.b, alpha);
+				GL.Color(fadedColor);
+				GL.Vertex3(x, gridY, minZ);
+				GL.Vertex3(x, gridY, maxZ);
+			}
+			for (float z = minZ; z <= maxZ; z += gridSize)
+			{
+				if (Mathf.Approximately(z, center.z)) continue;
+				float camDist = Mathf.Abs(z - camPos.z);
+				float fade = 1f;
+				if (camDist > fadeStart)
+					fade = Mathf.InverseLerp(fadeEnd, fadeStart, camDist);
+				float alpha = Mathf.Lerp(minAlpha, gridColor.a, fade);
+				Color fadedColor = new Color(gridColor.r, gridColor.g, gridColor.b, alpha);
+				GL.Color(fadedColor);
+				GL.Vertex3(minX, gridY, z);
+				GL.Vertex3(maxX, gridY, z);
 			}
 			// Draw axes last (no blending/overlap)
 			GL.Color(axisColorX);
-			GL.Vertex3(center.x, y, center.z - visibleRange);
-			GL.Vertex3(center.x, y, center.z + visibleRange);
+			GL.Vertex3(center.x, y, minZ);
+			GL.Vertex3(center.x, y, maxZ);
 			GL.Color(axisColorZ);
-			GL.Vertex3(center.x - visibleRange, y, center.z);
-			GL.Vertex3(center.x + visibleRange, y, center.z);
+			GL.Vertex3(minX, y, center.z);
+			GL.Vertex3(maxX, y, center.z);
 			GL.End();
 			GL.PopMatrix();
 		}
