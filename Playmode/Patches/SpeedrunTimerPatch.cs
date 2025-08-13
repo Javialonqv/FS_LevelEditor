@@ -14,7 +14,7 @@ namespace FS_LevelEditor.Playmode.Patches
             {
                 //Guess what it does BASED on the class name.
                 __instance.currentLevelRankLabel.gameObject.SetActive(false);
-                if (FractalSave.HasKey($"{PlayModeController.Instance.levelName}_Time"))
+                if (FractalSave.HasKey($"{PlayModeController.Instance.levelName}_LETime"))
                 {
                     __instance.currentLevelBestTimeLabel.bestTimeLabel.text = Controls.GetFormattedElapsedTimeFromSeconds(FractalSave.GetInt($"{PlayModeController.Instance.levelName}_Time"));
                    

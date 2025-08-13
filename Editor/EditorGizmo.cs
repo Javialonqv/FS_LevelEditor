@@ -31,15 +31,14 @@ namespace FS_LevelEditor.Editor
                 root = UnityEngine.Object.Instantiate(gizmoPrefab);
                 root.name = gizmoPrefab.name;
                 root.SetActive(false);
-                // Try to find arrows and cones by name
+                // Use the X, Y, Z objects from the prefab directly for each axis
                 xArrow = FindChildByName(root, "X");
                 yArrow = FindChildByName(root, "Y");
                 zArrow = FindChildByName(root, "Z");
                 xCone = FindChildByName(root, "X_Cone");
                 yCone = FindChildByName(root, "Y_Cone");
                 zCone = FindChildByName(root, "Z_Cone");
-                // Set correct shader/material for all renderers
-                ApplyCorrectShaderToAllRenderers(root);
+                // Do NOT apply the X axis shader/material to all axes anymore
             }
             else
             {
@@ -51,25 +50,28 @@ namespace FS_LevelEditor.Editor
         {
             root = new GameObject("EditorGizmo");
             root.SetActive(false);
-            arrowMat = CreateGizmoMaterial();
+            // Use the extracted material if available, otherwise fallback
+            arrowMat = FS_LevelEditor.Editor.EditorController.GizmoArrowMaterial != null
+                ? new Material(FS_LevelEditor.Editor.EditorController.GizmoArrowMaterial)
+                : CreateGizmoMaterial();
 
             // X Axis
             Color xColor = new Color(1f, 0.5f, 0.5f, 0.85f);
-            xArrow = CreateAxis(Vector3.right, xColor, "X_Axis");
+            xArrow = CreateAxis(Vector3.right, xColor, "X_Axis", arrowMat);
             xArrow.transform.parent = root.transform;
-            xCone = CreateCone(Vector3.right, xColor, "X_Cone");
+            xCone = CreateCone(Vector3.right, xColor, "X_Cone", arrowMat);
             xCone.transform.parent = root.transform;
             // Y Axis
-            Color yColor = new Color(0.7f, 1f, 0.7f, 0.85f);
-            yArrow = CreateAxis(Vector3.up, yColor, "Y_Axis");
+            Color yColor = new Color(0.5f, 1f, 0.5f, 0.85f);
+            yArrow = CreateAxis(Vector3.up, yColor, "Y_Axis", arrowMat);
             yArrow.transform.parent = root.transform;
-            yCone = CreateCone(Vector3.up, yColor, "Y_Cone");
+            yCone = CreateCone(Vector3.up, yColor, "Y_Cone", arrowMat);
             yCone.transform.parent = root.transform;
-            // Z Axis
-            Color zColor = new Color(0.7f, 0.9f, 1f, 0.85f);
-            zArrow = CreateAxis(Vector3.forward, zColor, "Z_Axis");
+            // Z Axis (Cyan: must mix red due to base color bug)
+            Color zColor = new Color(0.0f, 1.0f, 1.0f, 0.85f); // Pure cyan (green+blue, no red)
+            zArrow = CreateAxis(Vector3.forward, zColor, "Z_Axis", arrowMat);
             zArrow.transform.parent = root.transform;
-            zCone = CreateCone(Vector3.forward, zColor, "Z_Cone");
+            zCone = CreateCone(Vector3.forward, zColor, "Z_Cone", arrowMat);
             zCone.transform.parent = root.transform;
         }
 
@@ -86,16 +88,18 @@ namespace FS_LevelEditor.Editor
             return mat;
         }
 
-        private GameObject CreateAxis(Vector3 dir, Color color, string name)
+        private GameObject CreateAxis(Vector3 dir, Color color, string name, Material sharedMat)
         {
             var go = new GameObject(name);
             var lr = go.AddComponent<LineRenderer>();
+            // Make the line stop before the cone to avoid overlap
+            float lineEnd = arrowLength - coneHeight * 1.1f; // 1.1 to leave a gap
             lr.positionCount = 2;
             lr.SetPosition(0, Vector3.zero);
-            lr.SetPosition(1, dir * (arrowLength - coneHeight * 0.7f));
+            lr.SetPosition(1, dir * lineEnd);
             lr.startWidth = arrowThickness;
             lr.endWidth = arrowThickness;
-            lr.material = CreateGizmoMaterial();
+            lr.material = sharedMat;
             lr.material.color = color;
             lr.useWorldSpace = false;
             lr.numCapVertices = 16;
@@ -106,30 +110,28 @@ namespace FS_LevelEditor.Editor
         }
 
         // Create a cone mesh for the arrow tip, facing the correct direction
-        private GameObject CreateCone(Vector3 dir, Color color, string name)
+        private GameObject CreateCone(Vector3 dir, Color color, string name, Material sharedMat)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder); // Use cylinder as fallback
-            go.name = name;
-            Mesh coneMesh = CreateConeMesh(24);
-            go.GetComponent<MeshFilter>().mesh = coneMesh;
-            go.transform.localScale = new Vector3(coneRadius, coneHeight, coneRadius);
+            var go = new GameObject(name);
             go.transform.localPosition = dir * (arrowLength - coneHeight * 0.5f);
-            // Rotate 180 degrees around the axis to flip the tip
             go.transform.localRotation = Quaternion.FromToRotation(Vector3.up, dir) * Quaternion.AngleAxis(180, Vector3.right);
-            go.GetComponent<Renderer>().material = CreateGizmoMaterial();
-            go.GetComponent<Renderer>().material.color = color;
-            go.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            go.GetComponent<Renderer>().receiveShadows = false;
-            UnityEngine.Object.Destroy(go.GetComponent<Collider>());
+            go.transform.localScale = new Vector3(coneRadius, coneHeight, coneRadius);
+            var meshFilter = go.AddComponent<MeshFilter>();
+            var meshRenderer = go.AddComponent<MeshRenderer>();
+            meshFilter.mesh = CreateClosedConeMesh(24);
+            meshRenderer.material = sharedMat;
+            meshRenderer.material.color = color;
+            meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            meshRenderer.receiveShadows = false;
             return go;
         }
 
-        // Standard cone mesh, tip at Vector3.zero, base at y=1
-        private Mesh CreateConeMesh(int segments)
+        // Standard cone mesh, tip at Vector3.zero, base at y=1, with closed base
+        private Mesh CreateClosedConeMesh(int segments)
         {
             Mesh mesh = new Mesh();
             Vector3[] vertices = new Vector3[segments + 2];
-            int[] triangles = new int[segments * 3];
+            int[] triangles = new int[segments * 3 + segments * 3]; // side + base
             float angleStep = 2 * Mathf.PI / segments;
             vertices[0] = Vector3.zero; // tip
             for (int i = 0; i < segments; i++)
@@ -138,11 +140,20 @@ namespace FS_LevelEditor.Editor
                 vertices[i + 1] = new Vector3(Mathf.Cos(angle), 1, Mathf.Sin(angle));
             }
             vertices[segments + 1] = new Vector3(0, 1, 0); // base center
+            // Side triangles
             for (int i = 0; i < segments; i++)
             {
                 triangles[i * 3] = 0;
                 triangles[i * 3 + 1] = i + 1;
                 triangles[i * 3 + 2] = i + 1 == segments ? 1 : i + 2;
+            }
+            // Base triangles
+            int baseOffset = segments * 3;
+            for (int i = 0; i < segments; i++)
+            {
+                triangles[baseOffset + i * 3] = segments + 1;
+                triangles[baseOffset + i * 3 + 1] = i + 1 == segments ? 1 : i + 2;
+                triangles[baseOffset + i * 3 + 2] = i + 1;
             }
             mesh.vertices = vertices;
             mesh.triangles = triangles;
@@ -177,8 +188,10 @@ namespace FS_LevelEditor.Editor
         // Helper: Find child by name recursively
         private GameObject FindChildByName(GameObject parent, string name)
         {
-            foreach (Transform child in parent.transform)
+            var t = parent.transform;
+            for (int i = 0; i < t.childCount; i++)
             {
+                var child = t.GetChild(i);
                 if (child.name == name) return child.gameObject;
                 var found = FindChildByName(child.gameObject, name);
                 if (found != null) return found;

@@ -159,11 +159,30 @@ namespace FS_LevelEditor.Editor
 			gridCenter.y = gridHeight;
 		}
 
+		private static Material _gizmoArrowMaterial = null;
+		public static Material GizmoArrowMaterial => _gizmoArrowMaterial;
+
 		void Awake()
 		{
 			Instance = this;
 			MenuController.isInLevelEditor = true;
 			LoadAssetBundle();
+
+			// --- Extract old gizmo material and destroy old gizmo ---
+			if (gizmoPrefab != null)
+			{
+				GameObject oldGizmo = Instantiate(gizmoPrefab);
+				var xObj = oldGizmo.transform.Find("X");
+				if (xObj != null)
+				{
+					var renderer = xObj.GetComponent<Renderer>();
+					if (renderer != null)
+					{
+						_gizmoArrowMaterial = new Material(renderer.material); // Copy material
+					}
+				}
+				Destroy(oldGizmo);
+			}
 
 			levelObjectsParent = new GameObject("LevelObjects");
 			levelObjectsParent.transform.position = Vector3.zero;
@@ -193,7 +212,7 @@ namespace FS_LevelEditor.Editor
 			currentEditorState = EditorState.NORMAL; // Ensure state is initialized
 
 			// --- Initialize new gizmo ---
-			gizmo = new EditorGizmo(gizmoPrefab);
+			gizmo = new EditorGizmo(); // Use the new line-renderer based gizmo, not the prefab
 		}
 		void LoadAssetBundle()
 		{
@@ -726,7 +745,7 @@ namespace FS_LevelEditor.Editor
 			}
 			else if (selectedObjects.Count == 1)
 			{
-				SetSelectedObj(selectedObjects[0]);
+			 SetSelectedObj(selectedObjects[0]);
 			}
 			else
 			{
@@ -1688,7 +1707,7 @@ namespace FS_LevelEditor.Editor
 			{
 				if (currentSelectedObj == obj)
 				{
-					SetSelectedObj(null); // Deselect the object if it was the current selected object.
+				 SetSelectedObj(null); // Deselect the object if it was the current selected object.
 				}
 			}
 
@@ -1938,7 +1957,7 @@ namespace FS_LevelEditor.Editor
 				GameObject placedObj = PlaceObject(objComponent.objectType, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
 					objComponent.transform.localScale, false);
 				if (!placedObj)
-				{
+					{
 					Logger.Log($"PlaceObject when duplicating \"{objComponent.objectType}\" returned null. It probably reached its max object limit.");
 					return;
 				}
@@ -1952,7 +1971,7 @@ namespace FS_LevelEditor.Editor
 			 SetSelectedObj(placedObj);
 
 				isDuplicatingObj = false;
-			 levelHasBeenModified = true;
+				levelHasBeenModified = true;
 			}
 
 			Logger.Log("DuplicateSelectedObj function finished!");

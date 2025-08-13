@@ -21,7 +21,7 @@ namespace FS_LevelEditor.Playmode.Patches
                 if (PlayModeController.Instance.endTriggerReached)
                 {
                     // Allow saving time even when ending level
-                    if (_key.EndsWith("_Time"))
+                    if (_key.EndsWith("_LETime"))
                     {
                         return true;
                     }
