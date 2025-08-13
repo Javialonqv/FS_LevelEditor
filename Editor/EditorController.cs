@@ -1957,7 +1957,12 @@ namespace FS_LevelEditor.Editor
                 {
                     // Snap to grid increments, but preserve Y if moving on X or Z only
                     if (collidingArrow == GizmosArrow.Y) {
-                        newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+                        // Only snap Y if the movement is significant (avoid small jumps)
+                        if (Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y) > 0.01f)
+                            newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+                        else
+                            newPosition.y = objPositionWhenArrowClick.y;
+                        // Do not snap X/Z when moving Y
                     } else {
                         newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
                         newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;

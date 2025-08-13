@@ -228,38 +228,42 @@ namespace FS_LevelEditor.Editor
         // Add a CapsuleCollider to the arrow for raycast detection
         private void AddArrowCollider(GameObject arrow, Vector3 dir)
         {
-            // Remove any existing collider to avoid duplicates
+            // Remove all colliders from the arrow (no collider on the line itself)
             foreach (var col in arrow.GetComponents<Collider>())
-                UnityEngine.Object.Destroy(col);
+                UnityEngine.Object.DestroyImmediate(col);
+            var rb = arrow.GetComponent<Rigidbody>();
+            if (rb) UnityEngine.Object.DestroyImmediate(rb);
 
-            // Use a CapsuleCollider for better line picking
-            var capsule = arrow.AddComponent<CapsuleCollider>();
-            float length = arrowLength;
-            float thickness = arrowThickness * 1.5f;
-            capsule.radius = thickness * 0.7f; // slightly thicker for easier picking
-            capsule.height = length;
-            capsule.isTrigger = true;
+            // Remove any previous AxisCollider child
+            var oldAxisCollider = arrow.transform.Find("AxisCollider");
+            if (oldAxisCollider != null)
+                UnityEngine.Object.DestroyImmediate(oldAxisCollider.gameObject);
+
+            // Create a new child for the collider
+            var axisColliderObj = new GameObject("AxisCollider");
+            axisColliderObj.transform.SetParent(arrow.transform, false);
+            // Center the collider along the axis
+            float totalLength = arrowLength + coneHeight * 0.9f; // cover line and most of cone
+            axisColliderObj.transform.localPosition = dir * (totalLength / 2f);
+            axisColliderObj.transform.localRotation = Quaternion.identity;
+            // Add CapsuleCollider
+            var capsule = axisColliderObj.AddComponent<CapsuleCollider>();
+            capsule.radius = arrowThickness * 1.2f;
+            capsule.height = totalLength;
+            capsule.isTrigger = false;
             // Set direction: 0=X, 1=Y, 2=Z
             if (dir == Vector3.right) capsule.direction = 0;
             else if (dir == Vector3.up) capsule.direction = 1;
             else capsule.direction = 2;
-            capsule.center = dir * (length / 2f);
-
-            // Set layer to Default (0) for raycast, not Ignore Raycast
-            arrow.layer = 0;
+            // Set layer to Default (0) for raycast
+            axisColliderObj.layer = 0;
         }
 
-        // Add a MeshCollider to the cone for raycast detection
         private void AddConeCollider(GameObject cone)
         {
-            var meshFilter = cone.GetComponent<MeshFilter>();
-            if (meshFilter != null && meshFilter.mesh != null)
-            {
-                var meshCollider = cone.AddComponent<MeshCollider>();
-                meshCollider.sharedMesh = meshFilter.mesh;
-                meshCollider.convex = true;
-                meshCollider.isTrigger = true;
-            }
+            // Only visual, no collider on cone itself
+            foreach (var col in cone.GetComponents<Collider>())
+                UnityEngine.Object.DestroyImmediate(col);
         }
 
         // Helper: Find child by name recursively
