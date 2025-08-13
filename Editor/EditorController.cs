@@ -36,6 +36,11 @@ namespace FS_LevelEditor.Editor
 	{
 		public static EditorController Instance { get; private set; }
 
+		// Status label fields for camera speed and grid size
+		private GameObject statusLabelsRoot;
+		private UILabel cameraSpeedLabel;
+		private UILabel gridSizeLabel;
+
 		public string levelName = "test_level";
 		public string levelFileNameWithoutExtension = "test_level";
 
@@ -213,6 +218,23 @@ namespace FS_LevelEditor.Editor
 
 			// --- Initialize new gizmo ---
 			gizmo = new EditorGizmo(); // Use the new line-renderer based gizmo, not the prefab
+
+			// Create status labels root
+			statusLabelsRoot = new GameObject("EditorStatusLabels");
+			statusLabelsRoot.transform.SetParent(null); // Not parented to build UI
+			statusLabelsRoot.transform.localScale = Vector3.one;
+			// Place at bottom center of screen (NGUI coordinates)
+			statusLabelsRoot.transform.position = Vector3.zero;
+			// Create labels
+			float yBase = -470f; // Lowered further
+			cameraSpeedLabel = NGUI_Utils.CreateLabel(statusLabelsRoot.transform, new Vector3(0f, yBase, 0f), new Vector3Int(400, 30, 0), "Camera Speed: 0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+			cameraSpeedLabel.fontSize = 24; // Increased font size
+			cameraSpeedLabel.color = Color.white;
+			cameraSpeedLabel.name = "CameraSpeedLabel";
+			gridSizeLabel = NGUI_Utils.CreateLabel(statusLabelsRoot.transform, new Vector3(0f, yBase - 34f, 0f), new Vector3Int(400, 30, 0), "Grid Size: 0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+			gridSizeLabel.fontSize = 24; // Increased font size
+			gridSizeLabel.color = Color.white;
+			gridSizeLabel.name = "GridSizeLabel";
 		}
 		void LoadAssetBundle()
 		{
@@ -573,6 +595,15 @@ namespace FS_LevelEditor.Editor
 			// If the user's typing and then he uses an arrow key to navigate to another character of the field... well... the arrow also moves the object LOL.
 			// We need to avoid that.
 			if (!Utils.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
+
+			// Update camera speed and grid size labels
+			if (cameraSpeedLabel != null && gridSizeLabel != null)
+			{
+				float camSpeed = FS_LevelEditor.Editor.EditorCameraMovement.Instance != null ? FS_LevelEditor.Editor.EditorCameraMovement.Instance.moveSpeed : 0f;
+				float gridSizeVal = GetGridSize();
+				cameraSpeedLabel.text = $"Camera Speed: {camSpeed:0.###}";
+				gridSizeLabel.text = $"Grid Size: {gridSizeVal:0.###}";
+			}
 		}
 
 		void CreateSelectionBox()
@@ -832,17 +863,20 @@ namespace FS_LevelEditor.Editor
 
 			// --- GRID SHORTCUTS ---
 			float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
-			if (Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
+			if (!Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.RightAlt))
 			{
-				if (scrollDelta > 0)
-					DecreaseGridSize(); // Finer
-				else if (scrollDelta < 0)
-					IncreaseGridSize(); // Coarser
-			}
-			// MouseWheel: Change grid height
-			if (!Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
-			{
-				AdjustGridHeight(scrollDelta, Input.GetKey(KeyCode.LeftShift));
+				if (Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
+				{
+					if (scrollDelta > 0)
+						DecreaseGridSize(); // Finer
+					else if (scrollDelta < 0)
+						IncreaseGridSize(); // Coarser
+				}
+				// MouseWheel: Change grid height
+				if (!Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
+				{
+					AdjustGridHeight(scrollDelta, Input.GetKey(KeyCode.LeftShift));
+				}
 			}
 			// G: Toggle grid visibility
 			if (Input.GetKeyDown(KeyCode.G) && !Input.GetKey(KeyCode.LeftShift))
@@ -1216,6 +1250,10 @@ namespace FS_LevelEditor.Editor
 				gridEnabled = true;
 			}
 		}
+		public float GetGridSize()
+		{
+			return gridSize;
+		}
 
 		void PreviewObject()
 		{
@@ -1232,7 +1270,7 @@ namespace FS_LevelEditor.Editor
 				{
 					if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
 					{
-						if (currentObjectToBuildType.HasValue && CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hits[0].collider.gameObject))
+						if (currentObjectToBuildType.HasValue && CanUseCaughtSnapToGridTrigger(currentObjectToBuildType.Value, hits[0].collider.gameObject))
 						{
 							snapWithTrigger = true;
 							rayToUseWithSnap = hits[0];
@@ -1250,7 +1288,7 @@ namespace FS_LevelEditor.Editor
 					{
 						if (hit.collider.gameObject.name.StartsWith("StaticPos") && Input.GetKey(KeyCode.LeftControl))
 						{
-							if (currentObjectToBuildType.HasValue && CanUseThatSnapToGridTrigger(currentObjectToBuildType.Value, hit.collider.gameObject))
+							if (currentObjectToBuildType.HasValue && CanUseCaughtSnapToGridTrigger(currentObjectToBuildType.Value, hit.collider.gameObject))
 							{
 								snapWithTrigger = true;
 								rayToUseWithSnap = hit;
@@ -1855,7 +1893,7 @@ namespace FS_LevelEditor.Editor
 			SetSelectedObj(null);
 		}
 
-		bool CanUseThatSnapToGridTrigger(LE_Object.ObjectType objToBuildType, GameObject triggerObj)
+		bool CanUseCaughtSnapToGridTrigger(LE_Object.ObjectType objToBuildType, GameObject triggerObj)
 		{
 			var triggerRootObj = triggerObj.transform.parent.parent.gameObject;
 
@@ -1940,58 +1978,58 @@ namespace FS_LevelEditor.Editor
 
             // If the ray can collide with the "invisible" plane.
             if (movementPlane.Raycast(ray, out float distance))
-            {
-                if (!IsCurrentState(EditorState.MOVING_OBJECT)) SetCurrentEditorState(EditorState.MOVING_OBJECT);
+			{
+				if (!IsCurrentState(EditorState.MOVING_OBJECT)) SetCurrentEditorState(EditorState.MOVING_OBJECT);
 
-                Vector3 hitWorldPosition = ray.GetPoint(distance);
-                Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
+				Vector3 hitWorldPosition = ray.GetPoint(distance);
+				Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
 
-                float movementDistance = Vector3.Dot(displacement, GetAxisDirection(collidingArrow, currentSelectedObj));
+				float movementDistance = Vector3.Dot(displacement, GetAxisDirection(collidingArrow, currentSelectedObj));
 
-                Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
+				Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
 
-                Vector3 newPosition;
-                if (globalGizmosArrowsEnabled)
-                {
-                    newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
-                }
-                else
-                {
-                    newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
-                }
+				Vector3 newPosition;
+				if (globalGizmosArrowsEnabled)
+				{
+					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
+				}
+				else
+				{
+					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
+				}
 
-                // --- GRID SNAPPING ---
-                if (gridEnabled)
-                {
-                    switch (collidingArrow)
-                    {
-                        case GizmosArrow.X:
-                            newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
-                            newPosition.y = objPositionWhenArrowClick.y;
-                            newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
-                            break;
-                        case GizmosArrow.Y:
-                            // Only snap Y if mouse moved significantly
-                            float mouseDeltaY = Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y);
-                            if (mouseDeltaY > 0.01f) {
-                                newPosition.x = objPositionWhenArrowClick.x;
-                                newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
-                                newPosition.z = objPositionWhenArrowClick.z;
-                            } else {
-                                newPosition = objPositionWhenArrowClick;
-                            }
-                            break;
-                        case GizmosArrow.Z:
-                            newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
-                            newPosition.y = objPositionWhenArrowClick.y;
-                            newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
-                            break;
-                    }
-                }
+				// --- GRID SNAPPING ---
+				if (gridEnabled)
+				{
+					switch (collidingArrow)
+					{
+						case GizmosArrow.X:
+							newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
+							newPosition.y = objPositionWhenArrowClick.y;
+							newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
+							break;
+						case GizmosArrow.Y:
+							// Only snap Y if mouse moved significantly
+							float mouseDeltaY = Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y);
+							if (mouseDeltaY > 0.01f) {
+								newPosition.x = objPositionWhenArrowClick.x;
+								newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+								newPosition.z = objPositionWhenArrowClick.z;
+							} else {
+								newPosition = objPositionWhenArrowClick;
+							}
+							break;
+						case GizmosArrow.Z:
+							newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
+							newPosition.y = objPositionWhenArrowClick.y;
+							newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
+							break;
+					}
+				}
 
-                currentSelectedObj.transform.position = newPosition;
-            }
-        }
+				currentSelectedObj.transform.position = newPosition;
+			}
+		}
 
 		void DuplicateSelectedObject()
 		{
@@ -2105,7 +2143,7 @@ namespace FS_LevelEditor.Editor
 							{
 								objectTypeToUse = waypoint.mainObjectType.Value;
 							}
-							if (CanUseThatSnapToGridTrigger(objectTypeToUse, hit.collider.gameObject))
+							if (CanUseCaughtSnapToGridTrigger(objectTypeToUse, hit.collider.gameObject))
 							{
 								currentSelectedObj.transform.position = hit.collider.transform.position;
 								currentSelectedObj.transform.rotation = hit.collider.transform.rotation;
@@ -2510,27 +2548,28 @@ namespace FS_LevelEditor.Editor
 			Vector3 center = gridCenter;
 			Camera cam = Camera.main;
 			// --- Minimum region size: 200x200 ---
-			float minRegion = 100f * gridSize; // 200x200 region
-			float camRange = Mathf.Max(Mathf.Clamp(Vector3.Distance(cam.transform.position, center) * 2f, 32f * gridSize, 256f * gridSize), minRegion);
+			float renderGridSize = Mathf.Max(gridSize, 0.1f); // Clamp minimum grid size for rendering
+			float minRegion = 100f * renderGridSize; // 200x200 region
+			float camRange = Mathf.Max(Mathf.Clamp(Vector3.Distance(cam.transform.position, center) * 2f, 32f * renderGridSize, 256f * renderGridSize), minRegion);
 			float maxWorldRange = camRange;
 			int maxLines = 512;
-			int halfLines = Mathf.Clamp(Mathf.CeilToInt(maxWorldRange / gridSize), 1, maxLines);
+			int halfLines = Mathf.Clamp(Mathf.CeilToInt(maxWorldRange / renderGridSize), 1, maxLines);
 			float minAlpha = 0.03f; // Minimum alpha for distant lines
 
 			// Calculate visible grid bounds in world space
 			Vector3 camPos = cam.transform.position;
 			float gridY = y;
-			float minX = Mathf.Floor((camPos.x - maxWorldRange) / gridSize) * gridSize;
-			float maxX = Mathf.Ceil((camPos.x + maxWorldRange) / gridSize) * gridSize;
-			float minZ = Mathf.Floor((camPos.z - maxWorldRange) / gridSize) * gridSize;
-			float maxZ = Mathf.Ceil((camPos.z + maxWorldRange) / gridSize) * gridSize;
+			float minX = Mathf.Floor((camPos.x - maxWorldRange) / renderGridSize) * renderGridSize;
+			float maxX = Mathf.Ceil((camPos.x + maxWorldRange) / renderGridSize) * renderGridSize;
+			float minZ = Mathf.Floor((camPos.z - maxWorldRange) / renderGridSize) * renderGridSize;
+			float maxZ = Mathf.Ceil((camPos.z + maxWorldRange) / renderGridSize) * renderGridSize;
 
 			// --- Smooth fade: use a wider fade region for nice blending ---
 			float fadeStart = maxWorldRange * 0.7f;
 			float fadeEnd = maxWorldRange;
 
 			// Draw regular grid lines (skip axes)
-			for (float x = minX; x <= maxX; x += gridSize)
+			for (float x = minX; x <= maxX; x += renderGridSize)
 			{
 				if (Mathf.Approximately(x, center.x)) continue;
 				float camDist = Mathf.Abs(x - camPos.x);
@@ -2543,7 +2582,7 @@ namespace FS_LevelEditor.Editor
 				GL.Vertex3(x, gridY, minZ);
 				GL.Vertex3(x, gridY, maxZ);
 			}
-			for (float z = minZ; z <= maxZ; z += gridSize)
+			for (float z = minZ; z <= maxZ; z += renderGridSize)
 			{
 				if (Mathf.Approximately(z, center.z)) continue;
 				float camDist = Mathf.Abs(z - camPos.z);
@@ -2556,7 +2595,7 @@ namespace FS_LevelEditor.Editor
 				GL.Vertex3(minX, gridY, z);
 				GL.Vertex3(maxX, gridY, z);
 			}
-			// Draw axes last (no blending/overlap)
+			// Draw axes last (no blending/overlap) - always draw at center.x and center.z
 			GL.Color(axisColorX);
 			GL.Vertex3(center.x, y, minZ);
 			GL.Vertex3(center.x, y, maxZ);

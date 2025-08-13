@@ -38,6 +38,13 @@ namespace FS_LevelEditor.Editor
             }
         }
 
+        public static EditorCameraMovement Instance { get; private set; }
+
+        void Awake()
+        {
+            Instance = this;
+        }
+
         void Update()
         {
             if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ)) return;
@@ -55,13 +62,15 @@ namespace FS_LevelEditor.Editor
             if (Input.GetMouseButtonUp(2) && currentCameraMove == CameraMove.MOUSE_DRAG) currentCameraMove = CameraMove.NONE;
             #endregion
 
+            // Camera speed can be changed at any time
+            ManageMoveSpeed();
+
             if (currentCameraMove == CameraMove.NORMAL)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
                 RotateCamera();
                 MoveCamera();
-                ManageMoveSpeed();
             }
             else if (currentCameraMove == CameraMove.MOUSE_DRAG)
             {
@@ -89,30 +98,24 @@ namespace FS_LevelEditor.Editor
         }
         void ManageMoveSpeed()
         {
-            // Camera speed: + and - keys
-            if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus))
+            // Camera speed: Alt + Mouse Wheel only
+            float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
+            if ((Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) && Mathf.Abs(scrollDelta) > 0.0001f)
             {
-                moveSpeed += SPEED_CHANGE_RATE;
-                moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
-                Logger.DebugLog("New move speed: " + moveSpeed);
+                if (scrollDelta > 0)
+                {
+                    moveSpeed += SPEED_CHANGE_RATE;
+                    moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
+                    Logger.DebugLog("New move speed: " + moveSpeed);
+                }
+                else if (scrollDelta < 0)
+                {
+                    moveSpeed -= SPEED_CHANGE_RATE;
+                    moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
+                    Logger.DebugLog("New move speed: " + moveSpeed);
+                }
             }
-            if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
-            {
-                moveSpeed -= SPEED_CHANGE_RATE;
-                moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
-                Logger.DebugLog("New move speed: " + moveSpeed);
-            }
-
-            if (Input.GetKeyDown(KeyCode.LeftShift))
-            {
-                moveSpeedWhenShiftPressed = moveSpeed;
-                moveSpeed = moveSpeedWhenShiftPressed * 2;
-            }
-            if (Input.GetKeyUp(KeyCode.LeftShift))
-            {
-                moveSpeed = moveSpeedWhenShiftPressed;
-                moveSpeedWhenShiftPressed = 0;
-            }
+            // Remove Shift speed doubling logic
             downAndUpSpeed = moveSpeed;
         }
 
