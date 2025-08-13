@@ -300,7 +300,7 @@ namespace FS_LevelEditor.Editor
 			// Disable occlusion culling.
 			Camera.main.useOcclusionCulling = false;
 
-			// The code to change the Mode to Selection by default is in EditorUIManager.Start() since here, the UI script hasn't been initialized yet.
+			UpdateGridCenter(); // Ensure grid is placed correctly on editor start
 		}
 		public void AfterFinishedLoadingLevel()
 		{
@@ -2383,8 +2383,8 @@ namespace FS_LevelEditor.Editor
 			float y = gridHeight;
 			Vector3 center = gridCenter;
 			Camera cam = Camera.main;
-			float camDist = Mathf.Max(10f, Vector3.Distance(cam.transform.position, center));
-			float visibleRange = Mathf.Min(200f * gridSize, camDist * 2f); // Only draw what is visible
+			// float camDist = Mathf.Max(10f, Vector3.Distance(cam.transform.position, center));
+			float visibleRange = 64f * gridSize; // Fixed grid draw range for consistent look
 			int maxLines = 200; // Max lines in each direction (total 400 per axis)
 			int halfLines = Mathf.Clamp(Mathf.CeilToInt(visibleRange / gridSize), 1, maxLines);
 

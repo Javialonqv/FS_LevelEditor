@@ -2,17 +2,18 @@ using UnityEngine;
 
 namespace FS_LevelEditor.Editor
 {
-    // Draws Unity/SEUM-style gizmo arrows with cones for each axis for object movement.
+    // Draws Unity-style gizmo arrows with cones for each axis for object movement.
     public class EditorGizmo
     {
         private GameObject root;
         private GameObject xArrow, yArrow, zArrow;
         private GameObject xCone, yCone, zCone;
         private Material arrowMat;
-        private float arrowLength = 2.2f; // Increased for bigger gizmo
-        private float arrowThickness = 0.18f; // Thicker lines
-        private float coneHeight = 0.22f; // Bigger cone
-        private float coneRadius = 0.18f; // Bigger cone
+        // Unity-like proportions, but bigger and thicker as requested
+        private float arrowLength = 1.7f; // Bigger arrow
+        private float arrowThickness = 0.12f; // Thicker line
+        private float coneHeight = 0.45f; // Bigger cone
+        private float coneRadius = 0.16f; // Wider cone
 
         public GameObject Root => root;
         public GameObject XArrow => xArrow;
@@ -22,23 +23,19 @@ namespace FS_LevelEditor.Editor
         public GameObject YCone => yCone;
         public GameObject ZCone => zCone;
 
-        // New: Accept a prefab for the gizmo root
         public EditorGizmo(GameObject gizmoPrefab = null)
         {
             if (gizmoPrefab != null)
             {
-                // Instantiate the prefab and set up references
                 root = UnityEngine.Object.Instantiate(gizmoPrefab);
                 root.name = gizmoPrefab.name;
                 root.SetActive(false);
-                // Use the X, Y, Z objects from the prefab directly for each axis
                 xArrow = FindChildByName(root, "X");
                 yArrow = FindChildByName(root, "Y");
                 zArrow = FindChildByName(root, "Z");
                 xCone = FindChildByName(root, "X_Cone");
                 yCone = FindChildByName(root, "Y_Cone");
                 zCone = FindChildByName(root, "Z_Cone");
-                // Do NOT apply the X axis shader/material to all axes anymore
             }
             else
             {
@@ -50,67 +47,68 @@ namespace FS_LevelEditor.Editor
         {
             root = new GameObject("EditorGizmo");
             root.SetActive(false);
-            // Use the extracted material if available, otherwise fallback
             arrowMat = FS_LevelEditor.Editor.EditorController.GizmoArrowMaterial != null
                 ? new Material(FS_LevelEditor.Editor.EditorController.GizmoArrowMaterial.shader)
                 : CreateGizmoMaterial();
 
+            // Unity gizmo colors
+            Color xColor = new Color(0.89f, 0.27f, 0.20f, 1f); // Red
+            Color yColor = new Color(0.25f, 0.78f, 0.35f, 1f); // Green
+            Color zColor = new Color(0.20f, 0.52f, 0.89f, 1f); // Blue
+
             // X Axis
-            Color xColor = new Color(1f, 0.5f, 0.5f, 0.85f);
-            xArrow = CreateAxis(Vector3.right, xColor, "X_Axis", arrowMat);
+            xArrow = CreateAxis(Vector3.right, xColor, "X", arrowMat, out xCone);
             xArrow.transform.parent = root.transform;
-            xCone = CreateCone(Vector3.right, xColor, "X_Cone", arrowMat);
-            xCone.transform.parent = root.transform;
             // Y Axis
-            Color yColor = new Color(0.5f, 1f, 0.5f, 0.85f);
-            yArrow = CreateAxis(Vector3.up, yColor, "Y_Axis", arrowMat);
+            yArrow = CreateAxis(Vector3.up, yColor, "Y", arrowMat, out yCone);
             yArrow.transform.parent = root.transform;
-            yCone = CreateCone(Vector3.up, yColor, "Y_Cone", arrowMat);
-            yCone.transform.parent = root.transform;
-            // Z Axis (Cyan: must mix red due to base color bug)
-            Color zColor = new Color(0.0f, 0.5f, 1.0f, 0.85f); // Pure cyan (green+blue, no red)
-            zArrow = CreateAxis(Vector3.forward, zColor, "Z_Axis", arrowMat);
+            // Z Axis
+            zArrow = CreateAxis(Vector3.forward, zColor, "Z", arrowMat, out zCone);
             zArrow.transform.parent = root.transform;
-            zCone = CreateCone(Vector3.forward, zColor, "Z_Cone", arrowMat);
-            zCone.transform.parent = root.transform;
         }
 
-        private Material CreateGizmoMaterial(bool forCone = false)
+        private Material CreateGizmoMaterial()
         {
+            // Fallback: Use Unlit/Color if no custom material is available
             var mat = new Material(Shader.Find("Unlit/Color"));
-            mat.SetInt("_ZWrite", 0); // Don't write to depth
-            mat.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always); // Always render on top
-            mat.renderQueue = 5000; // Overlay
+            mat.SetInt("_ZWrite", 0);
+            mat.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always);
+            mat.renderQueue = 5000;
             mat.EnableKeyword("_ALPHABLEND_ON");
-            mat.SetOverrideTag("RenderType", "Transparent");
+            mat.SetOverrideTag("RenderType", "Opaque");
             mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
             mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
             return mat;
         }
 
-        private GameObject CreateAxis(Vector3 dir, Color color, string name, Material sharedMat)
+        // Creates an axis with a line and a cone at the end, returns the arrow GameObject and outputs the cone GameObject
+        private GameObject CreateAxis(Vector3 dir, Color color, string axisName, Material sharedMat, out GameObject coneObj)
         {
-            var go = new GameObject(name);
+            var go = new GameObject(axisName);
             var lr = go.AddComponent<LineRenderer>();
-            float lineEnd = arrowLength - coneHeight * 0.5f; // End at cone base
+            float lineEnd = arrowLength; // End at cone base
             lr.positionCount = 2;
             lr.SetPosition(0, Vector3.zero);
             lr.SetPosition(1, dir * lineEnd);
             lr.startWidth = arrowThickness;
             lr.endWidth = arrowThickness;
-            lr.material = sharedMat;
+            lr.material = new Material(sharedMat.shader);
+            lr.material.CopyPropertiesFromMaterial(sharedMat);
             lr.material.color = color;
             lr.useWorldSpace = false;
-            lr.numCapVertices = 16;
+            lr.numCapVertices = 8;
             lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             lr.receiveShadows = false;
-            lr.sortingOrder = 32767;
-            // Create and parent the cone to the end of the line
-            var cone = CreateCone(dir, color, name + "_Cone", sharedMat);
-            cone.transform.parent = go.transform;
-            cone.transform.localPosition = dir * lineEnd;
-            cone.transform.localRotation = Quaternion.FromToRotation(Vector3.up, dir) * Quaternion.AngleAxis(180, Vector3.right);
-            cone.transform.localScale = new Vector3(coneRadius, coneHeight, coneRadius);
+            lr.sortingOrder = 32767; // Draw below cone
+            // Cone at the end (drawn after line for render order)
+            coneObj = CreateCone(dir, color, axisName + "_Cone", sharedMat);
+            coneObj.transform.parent = go.transform;
+            coneObj.transform.localPosition = dir * (lineEnd + coneHeight * 0.5f);
+            coneObj.transform.localRotation = Quaternion.FromToRotation(Vector3.up, dir) * Quaternion.Euler(180, 0, 0); // 180 deg rotation
+            coneObj.transform.localScale = new Vector3(coneRadius, coneHeight, coneRadius);
+            // Set cone renderer to higher sorting order so it draws on top
+            var coneRenderer = coneObj.GetComponent<Renderer>();
+            if (coneRenderer != null) coneRenderer.sortingOrder = 32768;
             return go;
         }
 
@@ -120,10 +118,11 @@ namespace FS_LevelEditor.Editor
             var go = new GameObject(name);
             var meshFilter = go.AddComponent<MeshFilter>();
             var meshRenderer = go.AddComponent<MeshRenderer>();
-            meshFilter.mesh = CreateClosedConeMesh(24);
-            var coneMat = sharedMat ?? CreateGizmoMaterial();
+            meshFilter.mesh = CreateClosedConeMesh(32);
+            var coneMat = new Material((sharedMat ?? arrowMat).shader);
+            coneMat.CopyPropertiesFromMaterial(sharedMat ?? arrowMat);
+            coneMat.color = color;
             meshRenderer.material = coneMat;
-            meshRenderer.material.color = color;
             meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             meshRenderer.receiveShadows = false;
             return go;
@@ -195,11 +194,25 @@ namespace FS_LevelEditor.Editor
             float dist = Vector3.Distance(camera.transform.position, root.transform.position);
             float scale = Mathf.Clamp(dist / baseDistance, minScale, maxScale);
             root.transform.localScale = Vector3.one * scale;
-            // Keep line width constant regardless of distance
+            // Prevent cones from becoming too small (set a minimum local scale for cones)
+            float minConeScale = 0.18f; // Adjust as needed for visibility
+            foreach (var cone in new[] { xCone, yCone, zCone })
+            {
+                if (cone != null)
+                {
+                    float coneScale = Mathf.Max(scale, minConeScale);
+                    cone.transform.localScale = new Vector3(coneRadius, coneHeight, coneRadius) * coneScale / scale;
+                }
+            }
+            // Make lines thinner the closer you get (inverse relation)
+            float minWidth = arrowThickness * 0.5f;
+            float maxWidth = arrowThickness;
+            float t = Mathf.Clamp01(dist / 10f);
+            float lineWidth = Mathf.Lerp(minWidth, maxWidth, t);
             foreach (var lr in root.GetComponentsInChildren<LineRenderer>(true))
             {
-                lr.startWidth = arrowThickness;
-                lr.endWidth = arrowThickness;
+                lr.startWidth = lineWidth;
+                lr.endWidth = lineWidth;
             }
         }
 
@@ -215,29 +228,6 @@ namespace FS_LevelEditor.Editor
                 if (found != null) return found;
             }
             return null;
-        }
-
-        // Helper: Set correct shader/material for all renderers
-        private void ApplyCorrectShaderToAllRenderers(GameObject go)
-        {
-            var renderers = go.GetComponentsInChildren<Renderer>(true);
-            foreach (var renderer in renderers)
-            {
-                foreach (var mat in renderer.materials)
-                {
-                    if (mat.shader.name != "Unlit/Color")
-                    {
-                        mat.shader = Shader.Find("Unlit/Color");
-                        mat.SetInt("_ZWrite", 0);
-                        mat.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always);
-                        mat.renderQueue = 5000;
-                        mat.EnableKeyword("_ALPHABLEND_ON");
-                        mat.SetOverrideTag("RenderType", "Transparent");
-                        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                    }
-                }
-            }
         }
     }
 }
