@@ -849,10 +849,12 @@ namespace FS_LevelEditor.Editor
 			{
 				SetGridVisible(!gridVisible);
 			}
-			// Shift+G: Toggle grid enabled
+			// Shift+G: Toggle grid enabled AND visibility
 			if (Input.GetKeyDown(KeyCode.G) && Input.GetKey(KeyCode.LeftShift))
 			{
-				SetGridEnabled(!gridEnabled);
+				bool newState = !gridEnabled;
+				SetGridEnabled(newState);
+				SetGridVisible(newState);
 			}
 
 			// Shortcuts for changing between editor modes.
@@ -1206,7 +1208,13 @@ namespace FS_LevelEditor.Editor
 		}
 		public void SetGridVisible(bool visible)
 		{
+			// Allow toggling visibility even if grid is disabled
 			gridVisible = visible;
+			// Re-enable grid if becoming visible
+			if (visible && !gridEnabled)
+			{
+				gridEnabled = true;
+			}
 		}
 
 		void PreviewObject()
@@ -1955,22 +1963,29 @@ namespace FS_LevelEditor.Editor
                 // --- GRID SNAPPING ---
                 if (gridEnabled)
                 {
-                    // Snap to grid increments, but preserve Y if moving on X or Z only
-                    if (collidingArrow == GizmosArrow.Y) {
-                        // Only snap Y if the movement is significant (avoid small jumps)
-                        if (Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y) > 0.01f)
-                            newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
-                        else
+                    switch (collidingArrow)
+                    {
+                        case GizmosArrow.X:
+                            newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
                             newPosition.y = objPositionWhenArrowClick.y;
-                        // Do not snap X/Z when moving Y
-                    } else {
-                        newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
-                        newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
-                        // Only snap Y if the movement is significant (avoid small jumps)
-                        if (Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y) > 0.01f)
-                            newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
-                        else
+                            newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
+                            break;
+                        case GizmosArrow.Y:
+                            // Only snap Y if mouse moved significantly
+                            float mouseDeltaY = Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y);
+                            if (mouseDeltaY > 0.01f) {
+                                newPosition.x = objPositionWhenArrowClick.x;
+                                newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+                                newPosition.z = objPositionWhenArrowClick.z;
+                            } else {
+                                newPosition = objPositionWhenArrowClick;
+                            }
+                            break;
+                        case GizmosArrow.Z:
+                            newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
                             newPosition.y = objPositionWhenArrowClick.y;
+                            newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
+                            break;
                     }
                 }
 
@@ -2138,58 +2153,65 @@ namespace FS_LevelEditor.Editor
 		}
 
 		public void RegisterLEAction(LEAction.LEActionType type, GameObject targetObj, bool forMultipleObjs, Vector3? oldPos = null, Vector3? newPos = null,
-			Quaternion? oldRot = null, Quaternion? newRot = null, Vector3? oldScale = null, Vector3? newScale = null)
-		{
-			if (!targetObj) return;
+            Quaternion? oldRot = null, Quaternion? newRot = null, Vector3? oldScale = null, Vector3? newScale = null)
+        {
+            if (!targetObj) return;
 
-			currentExecutingAction = new LEAction();
-			currentExecutingAction.forMultipleObjects = forMultipleObjs;
+            currentExecutingAction = new LEAction();
+            currentExecutingAction.forMultipleObjects = forMultipleObjs;
 
-			currentExecutingAction.actionType = type;
+            currentExecutingAction.actionType = type;
 
-			switch (type)
-			{
-			 case LEAction.LEActionType.MoveObject:
-					currentExecutingAction.oldPos = oldPos.Value;
-					currentExecutingAction.newPos = newPos.Value;
-					break;
+            switch (type)
+            {
+                case LEAction.LEActionType.MoveObject:
+                    currentExecutingAction.oldPos = oldPos.Value;
+                    currentExecutingAction.newPos = newPos.Value;
+                    break;
 
-				case LEAction.LEActionType.RotateObject:
-					currentExecutingAction.oldRot = oldRot.Value;
-					currentExecutingAction.newRot = newRot.Value;
-					break;
+                case LEAction.LEActionType.RotateObject:
+                    currentExecutingAction.oldRot = oldRot.Value;
+                    currentExecutingAction.newRot = newRot.Value;
+                    break;
 
-				case LEAction.LEActionType.ScaleObject:
-					currentExecutingAction.oldScale = oldScale.Value;
-					currentExecutingAction.newScale = newScale.Value;
-					break;
+                case LEAction.LEActionType.ScaleObject:
+                    currentExecutingAction.oldScale = oldScale.Value;
+                    currentExecutingAction.newScale = newScale.Value;
+                    break;
 
-				case LEAction.LEActionType.SnapObject:
-					currentExecutingAction.oldPos = oldPos.Value;
-					currentExecutingAction.newPos = newPos.Value;
-					currentExecutingAction.oldRot = oldRot.Value;
-					currentExecutingAction.newRot = newRot.Value;
-					break;
-			}
+                case LEAction.LEActionType.SnapObject:
+                    currentExecutingAction.oldPos = oldPos.Value;
+                    currentExecutingAction.newPos = newPos.Value;
+                    currentExecutingAction.oldRot = oldRot.Value;
+                    currentExecutingAction.newRot = newRot.Value;
+                    break;
+            }
 
-			if (forMultipleObjs)
-			{
-				currentExecutingAction.targetObjs = new List<GameObject>();
-				foreach (var obj in targetObj.GetChilds())
-				{
-					// If the type is Deletion, only add those objects that CAN be actually un-deleted.
-					if (type == LEAction.LEActionType.DeleteObject && !obj.GetComponent<LE_Object>().canUndoDeletion) continue;
+            if (forMultipleObjs)
+            {
+                currentExecutingAction.targetObjs = new List<GameObject>();
+                foreach (var obj in targetObj.GetChilds())
+                {
+                    // If the type is Deletion, only add those objects that CAN be actually un-deleted.
+                    if (type == LEAction.LEActionType.DeleteObject)
+                    {
+                        if (obj.GetComponent<LE_Object>().canUndoDeletion)
+                        {
+                            currentExecutingAction.targetObjs.Add(obj);
+                        }
+                        continue;
+                    }
 
-					currentExecutingAction.targetObjs.Add(obj);
-				}
-			}
-			else
-			{
-				currentExecutingAction.targetObj = targetObj;
-			}
+                    currentExecutingAction.targetObjs.Add(obj);
+                }
+            }
+            else
+            {
+                currentExecutingAction.targetObj = targetObj;
+            }
 
-			actionsMade.Add(currentExecutingAction);
-		}
+            actionsMade.Add(currentExecutingAction);
+        }
 
 
 		public void EnterPlayMode()
