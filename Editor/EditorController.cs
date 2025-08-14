@@ -1065,31 +1065,34 @@ namespace FS_LevelEditor.Editor
 			if (targetObj == null) return;
 
 			float moveAmount = gridEnabled ? gridSize : 0.01f;
-			Vector3 toMove = Vector3.zero;
 
 			// Only process if an arrow key is pressed
 			if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
 			{
-				// Use the object's up as the plane normal, or grid up if grid is enabled
-				Vector3 planeNormal = gridEnabled ? Vector3.up : targetObj.transform.up;
-				// Project camera's right and up onto the plane
-				Vector3 moveRight = Vector3.ProjectOnPlane(Camera.main.transform.right, planeNormal).normalized;
-				Vector3 moveUp = Vector3.ProjectOnPlane(Camera.main.transform.up, planeNormal).normalized;
+				Vector3 toMove = Vector3.zero;
 
+				// Define movement plane based on mode
+				Vector3 planeNormal = globalGizmosArrowsEnabled || gridEnabled ? Vector3.up : targetObj.transform.up;
+				Vector3 forward = Vector3.ProjectOnPlane(Camera.main.transform.forward, planeNormal).normalized;
+				Vector3 right = Vector3.ProjectOnPlane(Camera.main.transform.right, planeNormal).normalized;
+
+				// Calculate movement direction based on key pressed
 				if (Input.GetKeyDown(KeyCode.LeftArrow))
-					toMove -= moveRight * moveAmount;
+					toMove -= right * moveAmount;
 				else if (Input.GetKeyDown(KeyCode.RightArrow))
-					toMove += moveRight * moveAmount;
+					toMove += right * moveAmount;
 				else if (Input.GetKeyDown(KeyCode.UpArrow))
-					toMove += moveUp * moveAmount;
+					toMove += forward * moveAmount;
 				else if (Input.GetKeyDown(KeyCode.DownArrow))
-					toMove -= moveUp * moveAmount;
+					toMove -= forward * moveAmount;
 
 				if (gridEnabled)
 				{
 					Vector3 newPos = targetObj.transform.localPosition + toMove;
+					// Maintain Y position when grid is enabled
+					float currentY = targetObj.transform.localPosition.y;
 					newPos.x = Mathf.Round(newPos.x / gridSize) * gridSize;
-					newPos.y = Mathf.Round(newPos.y / gridSize) * gridSize;
+					newPos.y = currentY; // Keep same Y level
 					newPos.z = Mathf.Round(newPos.z / gridSize) * gridSize;
 					Vector3 oldPos = targetObj.transform.localPosition;
 					targetObj.transform.localPosition = newPos;
@@ -1103,9 +1106,22 @@ namespace FS_LevelEditor.Editor
 				{
 					Vector3 oldPos = targetObj.transform.localPosition;
 					if (globalGizmosArrowsEnabled)
+					{
+						// In global mode, maintain absolute Y position
+						float currentY = targetObj.transform.position.y;
 						targetObj.transform.Translate(toMove, Space.World);
+						Vector3 pos = targetObj.transform.position;
+						pos.y = currentY;
+						targetObj.transform.position = pos;
+					}
 					else
-						targetObj.transform.Translate(toMove, Space.Self);
+					{
+						// In local mode, move along the object's XZ plane
+						Vector3 localMove = targetObj.transform.InverseTransformDirection(toMove);
+						localMove.y = 0f; // Zero out vertical movement in local space
+						targetObj.transform.Translate(localMove, Space.Self);
+					}
+					
 					if (currentSelectedObj)
 					{
 						RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition, null, null);
@@ -1115,73 +1131,97 @@ namespace FS_LevelEditor.Editor
 			}
 		}
 
+		private float lastRotationTime = 0f;
+		private float rotationRepeatDelay = 0.12f;
 		private object currentRotationCoroutine;
-private bool isRotatingWithR = false;
+		private bool isRotatingWithR = false;
 
-void ManageObjectRotationShortcuts()
-{
-    GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
-    if (targetObj == null) return;
+		void ManageObjectRotationShortcuts()
+		{
+			GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
+			if (targetObj == null) return;
 
-    int multiplier = Input.GetKey(KeyCode.T) ? -1 : 1;
-    float rotationAngle = 15f;
-    Quaternion rotation = targetObj.transform.localRotation;
+			// Only allow new rotation if not already rotating
+			if (targetObj.GetComponent<RotationTweener>() != null)
+				return;
 
-    // Start continuous rotation if R is held
-    if (Input.GetKey(KeyCode.R))
-    {
-        if (!isRotatingWithR)
-        {
-            isRotatingWithR = true;
-            if (currentRotationCoroutine != null)
-                MelonCoroutines.Stop(currentRotationCoroutine);
-            currentRotationCoroutine = MelonCoroutines.Start(ContinuousSmoothRotate(targetObj.transform, multiplier, rotationAngle));
-        }
-    }
-    else if (isRotatingWithR)
-    {
-        isRotatingWithR = false;
-        if (currentRotationCoroutine != null)
-        {
-            MelonCoroutines.Stop(currentRotationCoroutine);
-            currentRotationCoroutine = null;
-        }
-    }
+			// Get current time
+			float now = Time.unscaledTime;
+			bool doRotate = false;
 
-    // If the rotation changed and the object isn't the preview object...
-    if (rotation != targetObj.transform.localRotation && currentMode != Mode.Building)
-    {
-        SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
-        RegisterLEAction(LEAction.LEActionType.RotateObject, currentSelectedObj, multipleObjectsSelected, null, null, rotation, currentSelectedObj.transform.localRotation);
-        levelHasBeenModified = true;
-    }
-}
+			// Check if R is pressed or held, and enough time has passed
+			if (Input.GetKey(KeyCode.R) && (now - lastRotationTime > rotationRepeatDelay))
+			{
+				doRotate = true;
+				lastRotationTime = now;
+			}
+			// Also allow single press
+			if (Input.GetKeyDown(KeyCode.R))
+			{
+				doRotate = true;
+				lastRotationTime = now;
+			}
 
-IEnumerator ContinuousSmoothRotate(Transform transform, int multiplier, float rotationAngle)
-{
-    while (Input.GetKey(KeyCode.R))
-    {
-        Quaternion startRotation = transform.localRotation;
-        Quaternion targetRotation = startRotation * Quaternion.Euler(0f, rotationAngle * multiplier, 0f);
-        float elapsedTime = 0f;
-        float duration = 0.15f;
-        while (elapsedTime < duration)
-        {
-            elapsedTime += Time.deltaTime;
-            float t = elapsedTime / duration;
-            t = t * t * (3f - 2f * t);
-            transform.localRotation = Quaternion.Lerp(startRotation, targetRotation, t);
-            yield return null;
-        }
-        transform.localRotation = targetRotation;
-        // Normalize rotation to prevent drift
-        Vector3 euler = transform.localRotation.eulerAngles;
-        transform.localRotation = Quaternion.Euler(Mathf.Round(euler.x), Mathf.Round(euler.y), Mathf.Round(euler.z));
-        yield return null;
-    }
-    isRotatingWithR = false;
-    currentRotationCoroutine = null;
-}
+			if (!doRotate) return;
+
+			Quaternion oldRotation = targetObj.transform.localRotation;
+			float rotationAngle = 15f;
+			int multiplier = Input.GetKey(KeyCode.T) ? -1 : 1;
+
+			// Ctrl+R: Reset rotation
+			if (Input.GetKey(KeyCode.LeftControl))
+			{
+				Vector3 resetEuler = Vector3.zero;
+				RotationTweener.RotateTo(targetObj, resetEuler, 0.12f, RotationPath.Shortest);
+
+				if (currentMode != Mode.Building && currentSelectedObj != null)
+					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
+				return;
+			}
+
+			// Shift+R: Rotate X axis
+			if (Input.GetKey(KeyCode.LeftShift))
+			{
+				Vector3 currentEuler = targetObj.transform.localEulerAngles;
+				Vector3 targetEuler = new Vector3(currentEuler.x + rotationAngle * multiplier, currentEuler.y, currentEuler.z);
+				RotationTweener.RotateTo(targetObj, targetEuler, 0.08f, RotationPath.Shortest);
+				if (currentMode != Mode.Building && currentSelectedObj != null)
+					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
+				return;
+			}
+
+			// Alt+R: Rotate Z axis
+			if (Input.GetKey(KeyCode.LeftAlt))
+			{
+				Vector3 currentEuler = targetObj.transform.localEulerAngles;
+				Vector3 targetEuler = new Vector3(currentEuler.x, currentEuler.y, currentEuler.z + rotationAngle * multiplier);
+				RotationTweener.RotateTo(targetObj, targetEuler, 0.08f, RotationPath.Shortest);
+				if (currentMode != Mode.Building && currentSelectedObj != null)
+					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
+				return;
+			}
+
+			// Default: Rotate Y axis
+			Vector3 curEuler = targetObj.transform.localEulerAngles;
+			Vector3 tgtEuler = new Vector3(curEuler.x, curEuler.y + rotationAngle * multiplier, curEuler.z);
+			RotationTweener.RotateTo(targetObj, tgtEuler, 0.08f, RotationPath.Shortest);
+			if (currentMode != Mode.Building && currentSelectedObj != null)
+				MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
+		}
+
+		private IEnumerator WaitAndRegisterRotation(GameObject obj, Quaternion oldRotation)
+		{
+			// Wait until RotationTweener is destroyed (rotation finished)
+			while (obj.GetComponent<RotationTweener>() != null)
+				yield return null;
+			if (currentMode != Mode.Building && currentSelectedObj != null)
+			{
+				SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+				RegisterLEAction(LEAction.LEActionType.RotateObject, currentSelectedObj, multipleObjectsSelected, null, null, oldRotation, currentSelectedObj.transform.localRotation);
+				levelHasBeenModified = true;
+			}
+		}
+
 		void ManageUndo()
 		{
 			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
@@ -1875,7 +1915,7 @@ IEnumerator ContinuousSmoothRotate(Transform transform, int multiplier, float ro
 
 				if (existingObjects - currentSelectedObjects.Count <= 0)
 				{
-					Utils.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+								Utils.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
 					return;
 				}
 
@@ -2669,9 +2709,9 @@ IEnumerator ContinuousSmoothRotate(Transform transform, int multiplier, float ro
 			Vector3 camPos = cam.transform.position;
 			float gridY = y;
 			float minX = Mathf.Floor((camPos.x - maxWorldRange) / renderGridSize) * renderGridSize;
-			float maxX = Mathf.Ceil((camPos.x + maxWorldRange) / renderGridSize) * renderGridSize;
+			float maxX = Mathf.Ceil((camPos.x + maxWorldRange) / renderGridSize) * gridSize;
 			float minZ = Mathf.Floor((camPos.z - maxWorldRange) / renderGridSize) * renderGridSize;
-			float maxZ = Mathf.Ceil((camPos.z + maxWorldRange) / renderGridSize) * renderGridSize;
+			float maxZ = Mathf.Ceil((camPos.z + maxWorldRange) / renderGridSize) * gridSize;
 
 			// --- Smooth fade: use a wider fade region for nice blending ---
 			float fadeStart = maxWorldRange * 0.7f;
