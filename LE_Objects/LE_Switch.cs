@@ -32,6 +32,8 @@ namespace FS_LevelEditor
                 { "InitialState", SwitchState.DEACTIVATED },
                 { "UsableOnce", false },
                 { "CanUseTaser", true },
+                { "OnlyByTaser", false },
+                { "InvisibleMesh", false },
                 { "WhenInvertingEvents", new List<LE_Event>() },
                 { "WhenActivatingEvents", new List<LE_Event>() },
                 { "WhenDeactivatingEvents", new List<LE_Event>() }
@@ -44,9 +46,19 @@ namespace FS_LevelEditor
         public override void ObjectStart(LEScene scene)
         {
             SetMeshInEditor(GetProperty<SwitchState>("InitialState"));
-
+            if (scene != LEScene.Editor)
+            {
+                SetAllMeshRenderersEnabled(!GetProperty<bool>("InvisibleMesh"));
+            }
             base.ObjectStart(scene);
         }
+
+        void SetAllMeshRenderersEnabled(bool enabled)
+        {
+			gameObject.GetChild("Content").GetComponentsInChildren<MeshRenderer>(true)
+                .ToList()
+                .ForEach(mr => mr.enabled = enabled);
+		}
 
         public override void InitComponent()
         {
@@ -79,10 +91,6 @@ namespace FS_LevelEditor
             controller.allowWhenSwitchingUIContext = true;
             controller.canBeUsed = true;
             controller.controlScript = Controls.Instance;
-            controller.cyanLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Cyan").GetComponent<MeshRenderer>();
-            controller.cyanPlane = button.GetChildAt("ButtonMesh/CyanPlaneButton").GetComponent<MeshRenderer>();
-            controller.greenLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Green").GetComponent<MeshRenderer>();
-            controller.greenPlane = button.GetChildAt("ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
             controller.handleAnimator = button.GetChildAt("ButtonMesh/HandleHolder").GetComponent<Animator>();
             controller.iconActivationSound = t_switch.iconActivationSound;
             controller.iconDeactivationSound = t_switch.iconDeactivationSound;
@@ -93,14 +101,32 @@ namespace FS_LevelEditor
             controller.lockboxAnimTrigger = "IGC_Open";
             controller.m_audioSource = button.GetComponent<AudioSource>();
             controller.m_audioSource.outputAudioMixerGroup = t_switch.m_audioSource.outputAudioMixerGroup;
-            controller.m_meshRenderer = button.GetChild("ButtonMesh").GetComponent<MeshRenderer>();
-            controller.m_meshTransform = button.GetChild("ButtonMesh").transform;
+            if(!GetProperty<bool>("InvisibleMesh"))
+            {
+				controller.cyanLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Cyan").GetComponent<MeshRenderer>();
+				controller.cyanPlane = button.GetChildAt("ButtonMesh/CyanPlaneButton").GetComponent<MeshRenderer>();
+				controller.greenLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Green").GetComponent<MeshRenderer>();
+				controller.greenPlane = button.GetChildAt("ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
+				controller.redLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Bottom/Lightbands_Bottom_Red").GetComponent<MeshRenderer>();
+				controller.redPlane = button.GetChildAt("ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
+				controller.m_meshRenderer = button.GetChild("ButtonMesh").GetComponent<MeshRenderer>();
+			} else
+            {
+                var nofuckingthing = new GameObject().AddComponent<MeshRenderer>();
+				controller.m_meshRenderer = nofuckingthing;
+				controller.cyanLightbandPlane = nofuckingthing;
+				controller.cyanPlane = nofuckingthing;
+				controller.greenLightbandPlane = nofuckingthing;
+				controller.greenPlane = nofuckingthing;
+				controller.redPlane = nofuckingthing;
+				controller.redLightbandPlane = nofuckingthing;
+
+			}
+			controller.m_meshTransform = button.GetChild("ButtonMesh").transform;
             controller.offColor = InterrupteurController.ColorType.RED;
             controller.offMaterials = t_switch.offMaterials;
             controller.onColor = InterrupteurController.ColorType.GREEN;
             controller.onMaterials = t_switch.onMaterials;
-            controller.redLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Bottom/Lightbands_Bottom_Red").GetComponent<MeshRenderer>();
-            controller.redPlane = button.GetChildAt("ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
             controller.unusableColor = InterrupteurController.ColorType.BLACK;
             controller.unusableCoverAnimator = button.GetChildAt("ButtonMesh/UnusableCoverHolder").GetComponent<Animator>();
             controller.unusableMaterials = t_switch.unusableMaterials;
@@ -116,9 +142,10 @@ namespace FS_LevelEditor
 
             controller.usableOnce = (bool)GetProperty("UsableOnce");
             controller.ignoreLaser = !(bool)GetProperty("CanUseTaser");
+            controller.laserOnly = (bool)GetProperty("OnlyByTaser");
 
-            // Do all of this BEFORE configuring the switch events.
-            switch (GetProperty<SwitchState>("InitialState"))
+			// Do all of this BEFORE configuring the switch events.
+			switch (GetProperty<SwitchState>("InitialState"))
             {
                 case SwitchState.DEACTIVATED:
                     // Switch is already disabled at start by default.
@@ -134,7 +161,7 @@ namespace FS_LevelEditor
             }
 
             ConfigureEvents(controller);
-
+            // Do NOT hide mesh in editor
             initialized = true;
         }
 
@@ -181,7 +208,26 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-            else if (name == "WhenActivatingEvents")
+			else if (name == "OnlyByTaser")
+			{
+				if (value is bool)
+				{
+					properties["OnlyByTaser"] = (bool)value;
+					return true;
+				}
+			}
+			else if (name == "InvisibleMesh")
+			{
+				if (value is bool)
+				{
+					properties["InvisibleMesh"] = (bool)value;
+					// Only hide mesh if not in editor
+					if (EditorController.Instance == null)
+                        SetAllMeshRenderersEnabled(!(bool)value);
+					return true;
+				}
+			}
+			else if (name == "WhenActivatingEvents")
             {
                 if (value is List<LE_Event>)
                 {
@@ -276,6 +322,7 @@ namespace FS_LevelEditor
             greenPlane.enabled = newState == SwitchState.ACTIVATED;
 
             // Both will be disabled if newState is UNUSABLE, that should show the UNUSABLE state as expected:)
+            // Do NOT hide mesh in editor
         }
 
         void ConfigureEvents(InterrupteurController controller)

@@ -608,7 +608,10 @@ namespace FS_LevelEditor.Editor.UI
 
 			CreateObjectAttribute("UsableOnce", AttributeType.TOGGLE, false, null, "UsableOnce");
 			CreateObjectAttribute("CanBeShotByTaser", AttributeType.TOGGLE, true, null, "CanUseTaser");
+			CreateObjectAttribute("OnlyByTaser", AttributeType.TOGGLE, false, null, "OnlyByTaser");
 			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
+
+			CreateObjectAttribute("InvisibleMesh", AttributeType.TOGGLE, false, null, "InvisibleMesh");
 
 			switchAttributes.SetActive(false);
 			attributesPanels.Add("Switch", switchAttributes);
@@ -1071,12 +1074,47 @@ namespace FS_LevelEditor.Editor.UI
 			headerTitle.SetLocKey(headerLocKey);
 			currentHeaderLocKey = headerLocKey;
 
+			// Hide all object-specific panels and global panels before showing
+			if (objectSpecificPanelsParent != null)
+				objectSpecificPanelsParent.gameObject.SetActive(false);
+			if (globalObjectPanelsParent != null)
+				globalObjectPanelsParent.gameObject.SetActive(false);
+
+			// Hide all children for both parents by default
+			if (objectSpecificPanelsParent != null)
+			{
+				int childCount = objectSpecificPanelsParent.childCount;
+				for (int i = 0; i < childCount; i++)
+				{
+					objectSpecificPanelsParent.GetChild(i).gameObject.SetActive(false);
+				}
+			}
+			if (globalObjectPanelsParent != null)
+			{
+				int childCount = globalObjectPanelsParent.childCount;
+				for (int i = 0; i < childCount; i++)
+				{
+					globalObjectPanelsParent.GetChild(i).gameObject.SetActive(false);
+				}
+			}
+
 			if (show)
 			{
 				// Ensure button is visible when panel is shown
 				expandPanelButton.gameObject.SetActive(true);
 
-				if (!expand) // Normal selection
+				// Determine which page is currently active (object-specific or global)
+				bool showObjectSpecific = true;
+				if (FS_LevelEditor.Editor.UI.EditorUIManager.Instance != null)
+				{
+					var context = FS_LevelEditor.Editor.UI.EditorUIManager.Instance.GetType().GetField("currentUIContext", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(FS_LevelEditor.Editor.UI.EditorUIManager.Instance);
+					if (context != null && context.ToString() == "GLOBAL_PROPERTIES")
+					{
+						showObjectSpecific = false;
+					}
+				}
+
+				if (!expand)
 				{
 					gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
 					headerTitle.width = 300;
@@ -1085,8 +1123,55 @@ namespace FS_LevelEditor.Editor.UI
 					body.GetComponent<BoxCollider>().center = new Vector3(0, -150f);
 					body.GetComponent<BoxCollider>().size = new Vector3(500, 300);
 					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -150f, 500, 280);
+
+					if (!showObjectSpecific)
+					{
+						// Only show global settings (first 5 children)
+						if (globalObjectPanelsParent != null)
+						{
+							globalObjectPanelsParent.gameObject.SetActive(true);
+							int childCount = globalObjectPanelsParent.childCount;
+							for (int i = 0; i < childCount; i++)
+							{
+								globalObjectPanelsParent.GetChild(i).gameObject.SetActive(i < 5);
+							}
+						}
+					}
+					else
+					{
+						// Show both global and object-specific (first 5 children each)
+						if (globalObjectPanelsParent != null)
+						{
+							globalObjectPanelsParent.gameObject.SetActive(true);
+							int childCount = globalObjectPanelsParent.childCount;
+							for (int i = 0; i < childCount; i++)
+							{
+								globalObjectPanelsParent.GetChild(i).gameObject.SetActive(i < 5);
+							}
+						}
+						if (!isSelectingMultipleObjects && currentSelectedObj != null)
+						{
+							objectSpecificPanelsParent.gameObject.SetActive(true);
+							foreach (var panel in attributesPanels)
+							{
+								if (panel.Key.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim())).Contains(currentSelectedObj.objectType))
+								{
+									panel.Value.SetActive(true);
+									int childCount = panel.Value.transform.childCount;
+									for (int i = 0; i < childCount; i++)
+									{
+										panel.Value.transform.GetChild(i).gameObject.SetActive(i < 5);
+									}
+								}
+								else
+								{
+									panel.Value.SetActive(false);
+								}
+							}
+						}
+					}
 				}
-				else // EXPANDED PANEL
+				else // EXPANDED PANEL (show all for selected type or all global)
 				{
 					gameObject.transform.localPosition = new Vector3(-700f, 500, 0f);
 					headerTitle.width = 300;
@@ -1095,6 +1180,60 @@ namespace FS_LevelEditor.Editor.UI
 					body.GetComponent<BoxCollider>().center = new Vector3(0, -510f);
 					body.GetComponent<BoxCollider>().size = new Vector3(500, 1020);
 					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -510f, 500, 1000);
+
+					if (!showObjectSpecific)
+					{
+						// Only show all global settings
+						if (globalObjectPanelsParent != null)
+						{
+							globalObjectPanelsParent.gameObject.SetActive(true);
+							int childCount = globalObjectPanelsParent.childCount;
+							for (int i = 0; i < childCount; i++)
+							{
+								globalObjectPanelsParent.GetChild(i).gameObject.SetActive(true);
+							}
+						}
+						// Hide all object-specific panels
+						if (objectSpecificPanelsParent != null)
+						{
+							objectSpecificPanelsParent.gameObject.SetActive(false);
+						}
+					}
+					else
+					{
+						// Show all object-specific settings for the selected type
+						if (globalObjectPanelsParent != null)
+						{
+							globalObjectPanelsParent.gameObject.SetActive(true);
+							int childCount = globalObjectPanelsParent.childCount;
+							for (int i = 0; i < childCount; i++)
+							{
+								globalObjectPanelsParent.GetChild(i).gameObject.SetActive(true);
+							}
+						}
+						if (!isSelectingMultipleObjects && currentSelectedObj != null)
+						{
+							objectSpecificPanelsParent.gameObject.SetActive(true);
+							foreach (var panel in attributesPanels)
+							{
+								if (panel.Key.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim())).Contains(currentSelectedObj.objectType))
+								{
+									panel.Value.SetActive(true);
+									int childCount = panel.Value.transform.childCount;
+									for (int i = 0; i < childCount; i++)
+									{
+										panel.Value.transform.GetChild(i).gameObject.SetActive(true);
+									}
+								}
+								else
+								{
+									panel.Value.SetActive(false);
+								}
+							}
+						}
+						// Hide all global panels if only object-specific should be shown (optional, if needed)
+						// globalObjectPanelsParent.gameObject.SetActive(false);
+					}
 				}
 
 				panelIsExpanded = expand;
@@ -1211,62 +1350,68 @@ namespace FS_LevelEditor.Editor.UI
 		public void SetSelectedObject(LE_Object objComponent)
 		{
 			isSelectingAnObjectRightNow = true;
-			isSelectingMultipleObjects = false;
+		 isSelectingMultipleObjects = false;
 
-			currentSelectedObj = objComponent;
+            currentSelectedObj = objComponent;
 
-			// The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.
-			ShowPanel(true, objComponent.objectFullNameWithID);
-			expandPanelButton.gameObject.SetActive(true);
+            // The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.
+            ShowPanel(true, objComponent.objectFullNameWithID);
+            expandPanelButton.gameObject.SetActive(true);
 
-			#region Select Right Attributes Panel And Setup Global Attributes Toggle
-			// Disable all of the attributes panels.
-			attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
+            #region Select Right Attributes Panel And Setup Global Attributes Toggle
+            // Disable all of the attributes panels.
+            attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
 
-			// Enable the toggle and show object-specific attributes, then it will be disabled or changed to GLOBAL attributes if the object doesn't have unique ones.
-			globalObjAttributesToggle.gameObject.SetActive(true);
-			globalObjAttributesToggle.SetToggleState(false, true);
+            // Hide all children of objectSpecificPanelsParent to prevent stray UI (fix for tickbox issue)
+            for (int i = 0; i < objectSpecificPanelsParent.childCount; i++)
+            {
+                objectSpecificPanelsParent.GetChild(i).gameObject.SetActive(false);
+            }
 
-			bool specificAttributesFound = false;
-			// The child's name is the name of the target obj, but if it contains a '|' then that panel may be compatible for multiple objects (Like ammo & health packs).
-			foreach (var child in objectSpecificPanelsParent.gameObject.GetChilds())
-			{
-				List<LE_Object.ObjectType?> thisPanelIsForObjects = child.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim()))
-					.ToList();
+            // Enable the toggle and show object-specific attributes, then it will be disabled or changed to GLOBAL attributes if the object doesn't have unique ones.
+            globalObjAttributesToggle.gameObject.SetActive(true);
+            globalObjAttributesToggle.SetToggleState(false, true);
 
-				if (thisPanelIsForObjects.Contains(objComponent.objectType))
-				{
-					specificAttributesFound = true;
+            bool specificAttributesFound = false;
+            // The child's name is the name of the target obj, but if it contains a '|' then that panel may be compatible for multiple objects (Like ammo & health packs).
+            foreach (var child in objectSpecificPanelsParent.gameObject.GetChilds())
+            {
+                List<LE_Object.ObjectType?> thisPanelIsForObjects = child.name.Split('|').Select(x => LE_Object.ConvertNameToObjectType(x.Trim()))
+                    .ToList();
 
-					child.SetActive(true);
-					UpdateObjectSpecificAttribute(objComponent, child);
-					break; // We already found the right panel, stop iterating.
-				}
-			}
-			if (!specificAttributesFound)
-			{
-				globalObjAttributesToggle.gameObject.SetActive(false);
-				globalObjAttributesToggle.SetToggleState(true, true);
-			}
-			#endregion
+                if (thisPanelIsForObjects.Contains(objComponent.objectType))
+                {
+                    specificAttributesFound = true;
 
-			UpdateGlobalObjectAttributes(objComponent.transform);
+                    child.SetActive(true);
+                    UpdateObjectSpecificAttribute(objComponent, child);
+                    break; // We already found the right panel, stop iterating.
+                }
+            }
+            if (!specificAttributesFound)
+            {
+                globalObjAttributesToggle.gameObject.SetActive(false);
+                globalObjAttributesToggle.SetToggleState(true, true);
+            }
+            #endregion
 
-			#region Set At Start Toggle
-			if (objComponent.canBeDisabledAtStart)
-			{
-				setActiveAtStartToggle.gameObject.SetActive(true);
-				setActiveAtStartToggle.Set(objComponent.setActiveAtStart);
-				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
-			}
-			else
-			{
-				setActiveAtStartToggle.gameObject.SetActive(false);
-				objComponent.setActiveAtStart = true; // Just in case ;)
-			}
-			#endregion
-		}
-		void UpdateObjectSpecificAttribute(LE_Object objComp, GameObject panelInUI)
+            UpdateGlobalObjectAttributes(objComponent.transform);
+
+            #region Set At Start Toggle
+            if (objComponent.canBeDisabledAtStart)
+            {
+                setActiveAtStartToggle.gameObject.SetActive(true);
+                setActiveAtStartToggle.Set(objComponent.setActiveAtStart);
+                setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+            }
+            else
+            {
+                setActiveAtStartToggle.gameObject.SetActive(false);
+                objComponent.setActiveAtStart = true; // Just in case ;)
+            }
+            #endregion
+        }
+        void UpdateObjectSpecificAttribute(LE_Object objComp, GameObject panelInUI)
 		{
 			// OFFICIALLY, THIS IS THE ULTIMATE MOST BETTER AUTOMATED PROPERTY UPDATER OF THE WORLD!
 			foreach (var attribute in panelInUI.GetChilds())
@@ -1602,7 +1747,7 @@ namespace FS_LevelEditor.Editor.UI
 		public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
 		{
 			if (currentSelectedObj == null || inputField == null) return;
-			// Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
+			// Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?>
 			if ((propertyName.Contains("Position") || propertyName.Contains("Rotation") || propertyName.Contains("Scale")) &&
 				Utils.TryParseFloat(inputField.GetText(), out float floatValue))
 			{
@@ -1717,6 +1862,9 @@ namespace FS_LevelEditor.Editor.UI
 				case "Rotate":
 					OnSawRotateChecked(toggle.isChecked);
 					break;
+				case "CanUseTaser":
+					OnSwitchCanBeUsedOnTaser(toggle.isChecked);
+					break;
 			}
 
 			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
@@ -1773,6 +1921,10 @@ namespace FS_LevelEditor.Editor.UI
 		void ShowOrHideSawWaitTimeField(int waypointsCount)
 		{
 			attributesPanels["Saw"].GetChild("WaitTime").SetActive(waypointsCount > 0);
+		}
+		void OnSwitchCanBeUsedOnTaser(bool newState)
+		{
+			attributesPanels["Switch"].GetChild("OnlyByTaser").SetActive(newState);
 		}
 		void SetSawTravelBackORLoop(bool travelBack, bool loop)
 		{
