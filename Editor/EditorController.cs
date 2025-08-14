@@ -36,11 +36,6 @@ namespace FS_LevelEditor.Editor
 	{
 		public static EditorController Instance { get; private set; }
 
-		// Status label fields for camera speed and grid size
-		private GameObject statusLabelsRoot;
-		private UILabel cameraSpeedLabel;
-		private UILabel gridSizeLabel;
-
 		public string levelName = "test_level";
 		public string levelFileNameWithoutExtension = "test_level";
 
@@ -220,7 +215,7 @@ namespace FS_LevelEditor.Editor
 			gizmo = new EditorGizmo(); // Use the new line-renderer based gizmo, not the prefab
 
 			// Create status labels root
-			statusLabelsRoot = new GameObject("EditorStatusLabels");
+			/*statusLabelsRoot = new GameObject("EditorStatusLabels");
 			statusLabelsRoot.transform.SetParent(null); // Not parented to build UI
 			statusLabelsRoot.transform.localScale = Vector3.one;
 			// Place at bottom center of screen (NGUI coordinates)
@@ -234,7 +229,7 @@ namespace FS_LevelEditor.Editor
 			gridSizeLabel = NGUI_Utils.CreateLabel(statusLabelsRoot.transform, new Vector3(0f, yBase - 34f, 0f), new Vector3Int(400, 30, 0), "Grid Size: 0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
 			gridSizeLabel.fontSize = 24; // Increased font size
 			gridSizeLabel.color = Color.white;
-			gridSizeLabel.name = "GridSizeLabel";
+			gridSizeLabel.name = "GridSizeLabel";*/
 		}
 		void LoadAssetBundle()
 		{
@@ -597,12 +592,12 @@ namespace FS_LevelEditor.Editor
 			if (!Utils.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
 
 			// Update camera speed and grid size labels
-			if (cameraSpeedLabel != null && gridSizeLabel != null)
+			if (EditorUIManager.Instance != null && EditorUIManager.Instance.cameraSpeedLabel != null && EditorUIManager.Instance.gridSizeLabel != null)
 			{
 				float camSpeed = FS_LevelEditor.Editor.EditorCameraMovement.Instance != null ? FS_LevelEditor.Editor.EditorCameraMovement.Instance.moveSpeed : 0f;
 				float gridSizeVal = GetGridSize();
-				cameraSpeedLabel.text = $"Camera Speed: {camSpeed:0.###}";
-				gridSizeLabel.text = $"Grid Size: {gridSizeVal:0.###}";
+				EditorUIManager.Instance.cameraSpeedLabel.text = $"Camera Speed: {camSpeed:0.###}";
+				EditorUIManager.Instance.gridSizeLabel.text = $"Grid Size: {gridSizeVal:0.###}";
 			}
 		}
 
@@ -679,7 +674,7 @@ namespace FS_LevelEditor.Editor
 		}
 		private void SelectObjectsInRectangle(Vector2 start, Vector2 end)
 		{
-			// Calculate selection rectangle bounds
+			// Calculate selection rectangle boundaries
 			float minX = Mathf.Min(start.x, end.x);
 			float maxX = Mathf.Max(start.x, end.x);
 			float minY = Mathf.Min(start.y, end.y);
@@ -1065,49 +1060,62 @@ namespace FS_LevelEditor.Editor
 			if (targetObj == null) return;
 
 			float moveAmount = gridEnabled ? gridSize : 0.01f;
+			Vector3 toMove = Vector3.zero;
+			bool moved = false;
 
-			// Only process if an arrow key is pressed
-			if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
+			// Define movement plane based on mode
+			Vector3 planeNormal = globalGizmosArrowsEnabled || gridEnabled ? Vector3.up : targetObj.transform.up;
+			Vector3 forward = Vector3.ProjectOnPlane(Camera.main.transform.forward, planeNormal).normalized;
+			Vector3 right = Vector3.ProjectOnPlane(Camera.main.transform.right, planeNormal).normalized;
+
+			// Arrow keys
+			if (Input.GetKeyDown(KeyCode.LeftArrow)) { Logger.DebugLog("LeftArrow pressed"); toMove -= right * moveAmount; moved = true; }
+			else if (Input.GetKeyDown(KeyCode.RightArrow)) { Logger.DebugLog("RightArrow pressed"); toMove += right * moveAmount; moved = true; }
+			else if (Input.GetKeyDown(KeyCode.UpArrow)) { Logger.DebugLog("UpArrow pressed"); toMove += forward * moveAmount; moved = true; }
+			else if (Input.GetKeyDown(KeyCode.DownArrow)) { Logger.DebugLog("DownArrow pressed"); toMove -= forward * moveAmount; moved = true; }
+			// Mouse 4/5 for up/down
+			else if (Input.GetKeyDown(KeyCode.Mouse4)) { Logger.DebugLog("Mouse4 pressed"); toMove += Vector3.up * moveAmount; moved = true; }
+			else if (Input.GetKeyDown(KeyCode.Mouse3)) { Logger.DebugLog("Mouse5 pressed"); toMove -= Vector3.up * moveAmount; moved = true; }
+			else { return; }
+
+			Logger.DebugLog($"MoveObjectShortcuts: moved={moved}, toMove={toMove}");
+
+			if (!moved) return;
+
+			if (gridEnabled)
 			{
-				Vector3 toMove = Vector3.zero;
-
-				// Define movement plane based on mode
-				Vector3 planeNormal = globalGizmosArrowsEnabled || gridEnabled ? Vector3.up : targetObj.transform.up;
-				Vector3 forward = Vector3.ProjectOnPlane(Camera.main.transform.forward, planeNormal).normalized;
-				Vector3 right = Vector3.ProjectOnPlane(Camera.main.transform.right, planeNormal).normalized;
-
-				// Calculate movement direction based on key pressed
-				if (Input.GetKeyDown(KeyCode.LeftArrow))
-					toMove -= right * moveAmount;
-				else if (Input.GetKeyDown(KeyCode.RightArrow))
-					toMove += right * moveAmount;
-				else if (Input.GetKeyDown(KeyCode.UpArrow))
-					toMove += forward * moveAmount;
-				else if (Input.GetKeyDown(KeyCode.DownArrow))
-					toMove -= forward * moveAmount;
-
-				if (gridEnabled)
+				Vector3 newPos = targetObj.transform.localPosition + toMove;
+				// Maintain Y position when grid is enabled, except for up/down
+				if (toMove.y == 0)
 				{
-					Vector3 newPos = targetObj.transform.localPosition + toMove;
-					// Maintain Y position when grid is enabled
 					float currentY = targetObj.transform.localPosition.y;
 					newPos.x = Mathf.Round(newPos.x / gridSize) * gridSize;
-					newPos.y = currentY; // Keep same Y level
+					newPos.y = currentY;
 					newPos.z = Mathf.Round(newPos.z / gridSize) * gridSize;
-					Vector3 oldPos = targetObj.transform.localPosition;
-					targetObj.transform.localPosition = newPos;
-					if (currentSelectedObj)
-					{
-						RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition, null, null);
-						SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
-					}
 				}
 				else
 				{
-					Vector3 oldPos = targetObj.transform.localPosition;
-					if (globalGizmosArrowsEnabled)
+					newPos.x = Mathf.Round(newPos.x / gridSize) * gridSize;
+					newPos.y = Mathf.Round(newPos.y / gridSize) * gridSize;
+					newPos.z = Mathf.Round(newPos.z / gridSize) * gridSize;
+				}
+				Vector3 oldPos = targetObj.transform.localPosition;
+				targetObj.transform.localPosition = newPos;
+				Logger.DebugLog($"Moved object to {newPos} (grid enabled)");
+				if (currentSelectedObj)
+				{
+					RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition, null, null);
+					SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+				}
+			}
+			else
+			{
+				Vector3 oldPos = targetObj.transform.localPosition;
+				if (globalGizmosArrowsEnabled)
+				{
+					// In global mode, maintain absolute Y position except for up/down
+					if (toMove.y == 0)
 					{
-						// In global mode, maintain absolute Y position
 						float currentY = targetObj.transform.position.y;
 						targetObj.transform.Translate(toMove, Space.World);
 						Vector3 pos = targetObj.transform.position;
@@ -1116,17 +1124,23 @@ namespace FS_LevelEditor.Editor
 					}
 					else
 					{
-						// In local mode, move along the object's XZ plane
-						Vector3 localMove = targetObj.transform.InverseTransformDirection(toMove);
-						localMove.y = 0f; // Zero out vertical movement in local space
-						targetObj.transform.Translate(localMove, Space.Self);
+						targetObj.transform.Translate(toMove, Space.World);
 					}
-					
-					if (currentSelectedObj)
-					{
-						RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition, null, null);
-						SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
-					}
+					Logger.DebugLog($"Moved object (global) to {targetObj.transform.position}");
+				}
+				else
+				{
+					// In local mode, move along the object's XZ plane, but allow Y for up/down
+					Vector3 localMove = targetObj.transform.InverseTransformDirection(toMove);
+					if (toMove.y == 0)
+						localMove.y = 0f; // Zero out vertical movement in local space for arrow keys
+					targetObj.transform.Translate(localMove, Space.Self);
+					Logger.DebugLog($"Moved object (local) to {targetObj.transform.position}");
+				}
+				if (currentSelectedObj)
+				{
+					RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition, null, null);
+					SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
 				}
 			}
 		}

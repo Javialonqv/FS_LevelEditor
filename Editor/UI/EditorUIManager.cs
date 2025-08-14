@@ -60,6 +60,9 @@ namespace FS_LevelEditor.Editor.UI
 		UIButtonPatcher bulkPreviousButtonObj, bulkNextButtonObj;
 		UILabel bulkSelectionLabel;
 
+		public UILabel cameraSpeedLabel;
+		public UILabel gridSizeLabel;
+
 		public EditorUIManager(IntPtr ptr) : base(ptr) { }
 
 		void Awake()
@@ -112,6 +115,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateModeNavigationPanel();
 			CreateHelpPanel();
 			CreateBulkSelectionPanel();
+			CreateStatusLabels();
 
 			EventsUIPageManager.Create();
 			TextEditorUI.Create();
@@ -526,6 +530,9 @@ namespace FS_LevelEditor.Editor.UI
 			Destroy(editorUIParent);
 			Destroy(pauseMenu.GetChild("SavingLevelInPauseMenu"));
 
+			if (cameraSpeedLabel != null) Destroy(cameraSpeedLabel.gameObject);
+			if (gridSizeLabel != null) Destroy(gridSizeLabel.gameObject);
+
 			Logger.Log("LE UI deleted!");
 		}
 
@@ -535,6 +542,11 @@ namespace FS_LevelEditor.Editor.UI
 			bulkNextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			bulkPreviousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			bulkSelectionLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			nextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			previousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			if (cameraSpeedLabel != null) cameraSpeedLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			if (gridSizeLabel != null) gridSizeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			if (context == EditorUIContext.HELP_PANEL)
 			{
 				helpPanel.SetActive(true);
@@ -642,6 +654,8 @@ namespace FS_LevelEditor.Editor.UI
 			currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			nextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			previousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			if (cameraSpeedLabel != null) cameraSpeedLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
+			if (gridSizeLabel != null) gridSizeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
 
 			previousUIContext = currentUIContext;
 			currentUIContext = context;
@@ -672,6 +686,24 @@ namespace FS_LevelEditor.Editor.UI
 				// Revert this just in case it breaks something LOL.
 				MenuController.GetInstance().m_uiCamera.submitKey0 = KeyCode.None;
 			}
+		}
+
+		void CreateStatusLabels()
+		{
+			// Create status labels root
+			GameObject statusLabelsRoot = new GameObject("EditorStatusLabels");
+			statusLabelsRoot.transform.SetParent(editorUIParent.transform);
+			statusLabelsRoot.transform.localScale = Vector3.one;
+			statusLabelsRoot.transform.localPosition = Vector3.zero;
+			float yBase = -470f;
+			cameraSpeedLabel = NGUI_Utils.CreateLabel(statusLabelsRoot.transform, new Vector3(0f, yBase, 0f), new Vector3Int(400, 30, 0), "Camera Speed: 0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+			cameraSpeedLabel.fontSize = 24;
+			cameraSpeedLabel.color = Color.white;
+			cameraSpeedLabel.name = "CameraSpeedLabel";
+			gridSizeLabel = NGUI_Utils.CreateLabel(statusLabelsRoot.transform, new Vector3(0f, yBase - 34f, 0f), new Vector3Int(400, 30, 0), "Grid Size: 0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+			gridSizeLabel.fontSize = 24;
+			gridSizeLabel.color = Color.white;
+			gridSizeLabel.name = "GridSizeLabel";
 		}
 	}
 }
