@@ -8,7 +8,7 @@
 /Keyboard_Left Control\ + /Keyboard_O\ to open the Global Properties Panel.
 /Keyboard_Space\ (while selecting an object) to change the "Set Active At Start" toggle.
 
-/Keyboard_Space\ (while selecting an object) to change the "Set Active At Start" toggle.
-/Keyboard_Tab\ to switch grid modes.
-/Keyboard_Left Shift\ + /Keyboard_G\ to toggle the grid.
-/Keyboard_Black_PositiveScrollWheel\ or /Keyboard_Black_NegativeScrollWheel\ to control the grid size.
+/Keyboard_Left Control\ + /Keyboard_A\ to select all objects (in selection mode).
+/Keyboard_4\ to toggle global/local gizmo mode (Selection mode only).
+/Mouse4\ to move selected object up.
+/Mouse5\ to move selected object down.
