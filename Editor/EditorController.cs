@@ -1145,17 +1145,14 @@ namespace FS_LevelEditor.Editor
 			if (targetObj.GetComponent<RotationTweener>() != null)
 				return;
 
-			// Get current time
 			float now = Time.unscaledTime;
 			bool doRotate = false;
 
-			// Check if R is pressed or held, and enough time has passed
 			if (Input.GetKey(KeyCode.R) && (now - lastRotationTime > rotationRepeatDelay))
 			{
 				doRotate = true;
 				lastRotationTime = now;
 			}
-			// Also allow single press
 			if (Input.GetKeyDown(KeyCode.R))
 			{
 				doRotate = true;
@@ -1168,43 +1165,41 @@ namespace FS_LevelEditor.Editor
 			float rotationAngle = 15f;
 			int multiplier = Input.GetKey(KeyCode.T) ? -1 : 1;
 
-			// Ctrl+R: Reset rotation
+			// Ctrl+R: Reset rotation (use Quaternion.identity)
 			if (Input.GetKey(KeyCode.LeftControl))
 			{
-				Vector3 resetEuler = Vector3.zero;
-				RotationTweener.RotateTo(targetObj, resetEuler, 0.12f, RotationPath.Shortest);
-
+				RotationTweener.RotateTo(targetObj, Quaternion.identity.eulerAngles, 0.12f, RotationPath.Shortest);
 				if (currentMode != Mode.Building && currentSelectedObj != null)
 					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
 				return;
 			}
 
-			// Shift+R: Rotate X axis
+			// Shift+R: Rotate X axis using Quaternion.AngleAxis
 			if (Input.GetKey(KeyCode.LeftShift))
 			{
-				Vector3 currentEuler = targetObj.transform.localEulerAngles;
-				Vector3 targetEuler = new Vector3(currentEuler.x + rotationAngle * multiplier, currentEuler.y, currentEuler.z);
-				RotationTweener.RotateTo(targetObj, targetEuler, 0.08f, RotationPath.Shortest);
+				Quaternion delta = Quaternion.AngleAxis(rotationAngle * multiplier, Vector3.right);
+				Quaternion targetRot = targetObj.transform.localRotation * delta;
+				RotationTweener.RotateTo(targetObj, targetRot.eulerAngles, 0.08f, RotationPath.Shortest);
 				if (currentMode != Mode.Building && currentSelectedObj != null)
 					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
 				return;
 			}
 
-			// Alt+R: Rotate Z axis
+			// Alt+R: Rotate Z axis using Quaternion.AngleAxis
 			if (Input.GetKey(KeyCode.LeftAlt))
 			{
-				Vector3 currentEuler = targetObj.transform.localEulerAngles;
-				Vector3 targetEuler = new Vector3(currentEuler.x, currentEuler.y, currentEuler.z + rotationAngle * multiplier);
-				RotationTweener.RotateTo(targetObj, targetEuler, 0.08f, RotationPath.Shortest);
+				Quaternion delta = Quaternion.AngleAxis(rotationAngle * multiplier, Vector3.forward);
+				Quaternion targetRot = targetObj.transform.localRotation * delta;
+				RotationTweener.RotateTo(targetObj, targetRot.eulerAngles, 0.08f, RotationPath.Shortest);
 				if (currentMode != Mode.Building && currentSelectedObj != null)
 					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
 				return;
 			}
 
-			// Default: Rotate Y axis
-			Vector3 curEuler = targetObj.transform.localEulerAngles;
-			Vector3 tgtEuler = new Vector3(curEuler.x, curEuler.y + rotationAngle * multiplier, curEuler.z);
-			RotationTweener.RotateTo(targetObj, tgtEuler, 0.08f, RotationPath.Shortest);
+			// Default: Rotate Y axis using Quaternion.AngleAxis
+			Quaternion yDelta = Quaternion.AngleAxis(rotationAngle * multiplier, Vector3.up);
+			Quaternion yTargetRot = targetObj.transform.localRotation * yDelta;
+			RotationTweener.RotateTo(targetObj, yTargetRot.eulerAngles, 0.08f, RotationPath.Shortest);
 			if (currentMode != Mode.Building && currentSelectedObj != null)
 				MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
 		}
@@ -1910,17 +1905,24 @@ namespace FS_LevelEditor.Editor
 
 			if (multipleObjectsSelected)
 			{
-				// Since the selected objects are in another parent, also count the objects in that parent.
-				existingObjects += multipleSelectedObjsParent.GetChilds(false).ToArray().Length;
+				// Create a copy of the list to avoid modifying the original list while iterating
+				List<GameObject> objectsToDelete = new List<GameObject>(currentSelectedObjects);
 
-				if (existingObjects - currentSelectedObjects.Count <= 0)
+				foreach (var obj in objectsToDelete)
 				{
-								Utils.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
-					return;
-				}
+					// Skip if object is null
+					if (obj == null)
+						continue;
 
-				foreach (var obj in currentSelectedObj.GetChilds())
-				{
+					// Since the selected objects are in another parent, also count the objects in that parent.
+					existingObjects += multipleSelectedObjsParent.GetChilds(false).ToArray().Length;
+
+					if (existingObjects - currentSelectedObjects.Count <= 0)
+					{
+									Utils.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+						return;
+					}
+
 					obj.GetComponent<LE_Object>().OnDelete();
 
 					if (obj.GetComponent<LE_Object>().canUndoDeletion)
