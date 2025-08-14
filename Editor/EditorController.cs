@@ -298,7 +298,7 @@ namespace FS_LevelEditor.Editor
 			{
 				if (material.name.StartsWith("Skybox"))
 				{
-					material.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+				material.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
 					skyboxes.Add(material);
 				}
 			}
@@ -870,7 +870,7 @@ namespace FS_LevelEditor.Editor
 					if (scrollDelta > 0)
 						DecreaseGridSize(); // Finer
 					else if (scrollDelta < 0)
-						IncreaseGridSize(); // Coarser
+					IncreaseGridSize(); // Coarser
 				}
 				// MouseWheel: Change grid height
 				if (!Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
@@ -989,17 +989,27 @@ namespace FS_LevelEditor.Editor
 				EditorObjectsToBuildUI.Instance.HideOrShowCategoryButtons();
 			}
 
-			// Shortcuts to switch between local and global gizmos arrows.
-			if (Input.GetKeyDown(KeyCode.G) && collidingArrow == GizmosArrow.None)
+			// Shortcut for toggling gizmo mode (4 key)
+			if (Input.GetKeyDown(KeyCode.Alpha4) && currentMode == Mode.Selection && currentSelectedObj != null)
 			{
 				globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
-
-				// If it's using gizmos arrows right now, change its rotation rn.
-				if (!globalGizmosArrowsEnabled && gizmosArrows.activeSelf)
-				{
-					gizmosArrows.transform.localRotation = Quaternion.identity;
-				}
+				gizmo.SetRotation(globalGizmosArrowsEnabled ? Quaternion.identity : currentSelectedObj.transform.rotation);
+				
+				// Show feedback to user
+				string mode = globalGizmosArrowsEnabled ? "Global" : "Local";
+				Utils.ShowCustomNotificationRed($"Switched to {mode} Gizmo Mode", 1.5f);
 			}
+
+			// Shortcuts to switch between local and global gizmos arrows.
+			if (Input.GetKeyDown(KeyCode.G) && !Input.GetKey(KeyCode.LeftShift) && currentMode == Mode.Selection && currentSelectedObj != null)
+            {
+                globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
+                gizmo.SetRotation(globalGizmosArrowsEnabled ? Quaternion.identity : currentSelectedObj.transform.rotation);
+                
+                // Show feedback to user
+                string mode = globalGizmosArrowsEnabled ? "Global" : "Local";
+                Utils.ShowCustomNotificationRed($"Switched to {mode} Gizmo Mode", 1.5f);
+            }
 
 			if (Input.GetKeyDown(KeyCode.Space) && currentSelectedObj)
 			{
@@ -1105,48 +1115,73 @@ namespace FS_LevelEditor.Editor
 			}
 		}
 
-		void ManageObjectRotationShortcuts()
-		{
-			GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
+		private object currentRotationCoroutine;
+private bool isRotatingWithR = false;
 
-			if (targetObj == null) return;
+void ManageObjectRotationShortcuts()
+{
+    GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
+    if (targetObj == null) return;
 
-			// Rotate to the other side when pressing Left Shift.
-			int multiplier = Input.GetKey(KeyCode.T) ? -1 : 1;
+    int multiplier = Input.GetKey(KeyCode.T) ? -1 : 1;
+    float rotationAngle = 15f;
+    Quaternion rotation = targetObj.transform.localRotation;
 
-			Quaternion rotation = targetObj.transform.localRotation;
+    // Start continuous rotation if R is held
+    if (Input.GetKey(KeyCode.R))
+    {
+        if (!isRotatingWithR)
+        {
+            isRotatingWithR = true;
+            if (currentRotationCoroutine != null)
+                MelonCoroutines.Stop(currentRotationCoroutine);
+            currentRotationCoroutine = MelonCoroutines.Start(ContinuousSmoothRotate(targetObj.transform, multiplier, rotationAngle));
+        }
+    }
+    else if (isRotatingWithR)
+    {
+        isRotatingWithR = false;
+        if (currentRotationCoroutine != null)
+        {
+            MelonCoroutines.Stop(currentRotationCoroutine);
+            currentRotationCoroutine = null;
+        }
+    }
 
-			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
-			{
-				targetObj.transform.localRotation = Quaternion.identity;
-			}
-			else if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.R))
-			{
-				targetObj.transform.Rotate(15f * multiplier, 0f, 0f);
-			}
-			else if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.R))
-			{
-				targetObj.transform.Rotate(0f, 0f, 15f * multiplier);
-			}
-			else if (Input.GetKeyDown(KeyCode.R))
-			{
-				targetObj.transform.Rotate(0f, 15f * multiplier, 0f);
-			}
+    // If the rotation changed and the object isn't the preview object...
+    if (rotation != targetObj.transform.localRotation && currentMode != Mode.Building)
+    {
+        SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+        RegisterLEAction(LEAction.LEActionType.RotateObject, currentSelectedObj, multipleObjectsSelected, null, null, rotation, currentSelectedObj.transform.localRotation);
+        levelHasBeenModified = true;
+    }
+}
 
-			// If the rotation changed and the object isn't the preview object...
-			if (rotation != targetObj.transform.localRotation && currentMode != Mode.Building)
-			{
-				// Update global attributes.
-				SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
-
-				RegisterLEAction(LEAction.LEActionType.RotateObject, currentSelectedObj, multipleObjectsSelected, null, null, rotation,
-					currentSelectedObj.transform.localRotation);
-
-				// Also set the level as modified:
-				levelHasBeenModified = true;
-			}
-		}
-
+IEnumerator ContinuousSmoothRotate(Transform transform, int multiplier, float rotationAngle)
+{
+    while (Input.GetKey(KeyCode.R))
+    {
+        Quaternion startRotation = transform.localRotation;
+        Quaternion targetRotation = startRotation * Quaternion.Euler(0f, rotationAngle * multiplier, 0f);
+        float elapsedTime = 0f;
+        float duration = 0.15f;
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / duration;
+            t = t * t * (3f - 2f * t);
+            transform.localRotation = Quaternion.Lerp(startRotation, targetRotation, t);
+            yield return null;
+        }
+        transform.localRotation = targetRotation;
+        // Normalize rotation to prevent drift
+        Vector3 euler = transform.localRotation.eulerAngles;
+        transform.localRotation = Quaternion.Euler(Mathf.Round(euler.x), Mathf.Round(euler.y), Mathf.Round(euler.z));
+        yield return null;
+    }
+    isRotatingWithR = false;
+    currentRotationCoroutine = null;
+}
 		void ManageUndo()
 		{
 			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
@@ -1897,7 +1932,7 @@ namespace FS_LevelEditor.Editor
 		{
 			var triggerRootObj = triggerObj.transform.parent.parent.gameObject;
 
-			// Check for ALL of the object-specific triggers for this object, and see if there's a specific trigger for this object to build.
+		 // Check for ALL of the object-specific triggers for this object, and see if there's a specific trigger for this object to build.
 			bool existsSpecificTriggerForThisObjToBuild = false;
 			foreach (var child in triggerRootObj.GetChilds())
 			{
@@ -1938,7 +1973,7 @@ namespace FS_LevelEditor.Editor
 			if (arrowColliderName == "X" || arrowColliderName == "Z")
 			{
 				if (globalGizmosArrowsEnabled)
-				{
+					{
 					movementPlane = new Plane(Vector3.up, objPositionWhenArrowClick);
 				}
 				else
@@ -1973,61 +2008,129 @@ namespace FS_LevelEditor.Editor
 		}
 		void MoveObject(GizmosArrow direction)
         {
-            // Get the ray from the camera.
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-            // If the ray can collide with the "invisible" plane.
             if (movementPlane.Raycast(ray, out float distance))
 			{
-				if (!IsCurrentState(EditorState.MOVING_OBJECT)) SetCurrentEditorState(EditorState.MOVING_OBJECT);
+				if (!IsCurrentState(EditorState.MOVING_OBJECT)) 
+					SetCurrentEditorState(EditorState.MOVING_OBJECT);
 
 				Vector3 hitWorldPosition = ray.GetPoint(distance);
-				Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
+				Vector3 axisDirection;
 
-				float movementDistance = Vector3.Dot(displacement, GetAxisDirection(collidingArrow, currentSelectedObj));
-
-				Vector3 realOffset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
-
-				Vector3 newPosition;
+				// Get proper axis direction based on mode
 				if (globalGizmosArrowsEnabled)
 				{
-					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + offsetObjPositionAndMosueWhenClick;
+					// Global axes are always world-aligned
+					switch (collidingArrow)
+					{
+						case GizmosArrow.X: axisDirection = Vector3.right; break;
+						case GizmosArrow.Y: axisDirection = Vector3.up; break;
+						case GizmosArrow.Z: axisDirection = Vector3.forward; break;
+						default: axisDirection = Vector3.zero; break;
+					}
 				}
 				else
 				{
-					newPosition = objPositionWhenArrowClick + (GetAxisDirection(collidingArrow, currentSelectedObj) * movementDistance) + realOffset;
-				}
-
-				// --- GRID SNAPPING ---
-				if (gridEnabled)
-				{
+					// Local axes need to account for object's current orientation
 					switch (collidingArrow)
 					{
-						case GizmosArrow.X:
-							newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
-							newPosition.y = objPositionWhenArrowClick.y;
-							newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
-							break;
-						case GizmosArrow.Y:
-							// Only snap Y if mouse moved significantly
-							float mouseDeltaY = Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y);
-							if (mouseDeltaY > 0.01f) {
-								newPosition.x = objPositionWhenArrowClick.x;
-								newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
-								newPosition.z = objPositionWhenArrowClick.z;
-							} else {
-								newPosition = objPositionWhenArrowClick;
-							}
-							break;
-						case GizmosArrow.Z:
-							newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
-							newPosition.y = objPositionWhenArrowClick.y;
-							newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
-							break;
+						case GizmosArrow.X: axisDirection = currentSelectedObj.transform.right; break;
+						case GizmosArrow.Y: axisDirection = currentSelectedObj.transform.up; break;
+						case GizmosArrow.Z: axisDirection = currentSelectedObj.transform.forward; break;
+						default: axisDirection = Vector3.zero; break;
 					}
 				}
 
-				currentSelectedObj.transform.position = newPosition;
+				Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
+				float movementDistance = Vector3.Dot(displacement, axisDirection);
+				Vector3 movement = axisDirection * movementDistance;
+
+				// Calculate offset based on movement mode
+				Vector3 offset;
+				if (globalGizmosArrowsEnabled)
+				{
+					offset = offsetObjPositionAndMosueWhenClick;
+				}
+				else 
+				{
+					offset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, 
+                        objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
+				}
+
+				Vector3 newPosition = objPositionWhenArrowClick + movement + offset;
+
+				// Grid snapping with proper axis constraint
+				if (gridEnabled)
+				{
+					Vector3 gridPos = newPosition;
+					if (globalGizmosArrowsEnabled)
+					{
+						// Global mode: snap along world axes
+						switch (collidingArrow)
+						{
+							case GizmosArrow.X:
+								gridPos.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
+								gridPos.y = objPositionWhenArrowClick.y;
+								gridPos.z = objPositionWhenArrowClick.z;
+								break;
+							case GizmosArrow.Y:
+								float mouseDeltaY = Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y);
+								if (mouseDeltaY > 0.01f)
+								{
+									gridPos.x = objPositionWhenArrowClick.x;
+									gridPos.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+									gridPos.z = objPositionWhenArrowClick.z;
+								}
+								else
+								{
+									gridPos = objPositionWhenArrowClick;
+								}
+								break;
+							case GizmosArrow.Z:
+								gridPos.x = objPositionWhenArrowClick.x;
+								gridPos.y = objPositionWhenArrowClick.y;
+								gridPos.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
+								break;
+						}
+					}
+					else
+					{
+						// Local mode: snap along local axes
+						Vector3 localPos = currentSelectedObj.transform.InverseTransformPoint(newPosition);
+						Vector3 snappedLocalPos = localPos;
+						
+						switch (collidingArrow)
+						{
+							case GizmosArrow.X:
+								snappedLocalPos.x = Mathf.Round(localPos.x / gridSize) * gridSize;
+								snappedLocalPos.y = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).y;
+								snappedLocalPos.z = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).z;
+								break;
+							case GizmosArrow.Y:
+								snappedLocalPos.x = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).x;
+								snappedLocalPos.y = Mathf.Round(localPos.y / gridSize) * gridSize;
+								snappedLocalPos.z = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).z;
+								break;
+							case GizmosArrow.Z:
+								snappedLocalPos.x = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).x;
+								snappedLocalPos.y = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).y;
+								snappedLocalPos.z = Mathf.Round(localPos.z / gridSize) * gridSize;
+								break;
+						}
+						gridPos = currentSelectedObj.transform.TransformPoint(snappedLocalPos);
+					}
+					newPosition = gridPos;
+				}
+
+				if (multipleObjectsSelected)
+				{
+					currentSelectedObj.transform.position = newPosition;
+				}
+				else
+				{
+					currentSelectedObj.transform.position = newPosition;
+				}
 			}
 		}
 
@@ -2113,7 +2216,7 @@ namespace FS_LevelEditor.Editor
 					}
 					else
 					{
-						hitIsFromTheCurrentSelectedObj = currentSelectedObj == hit.collider.transform.parent.gameObject;
+					hitIsFromTheCurrentSelectedObj = currentSelectedObj == hit.collider.transform.parent.gameObject;
 					}
 					if (hitIsFromTheCurrentSelectedObj) continue;
 					#endregion
@@ -2428,15 +2531,21 @@ namespace FS_LevelEditor.Editor
 		{
 			if (globalGizmosArrowsEnabled)
 			{
+				// Global axes are always world-aligned
 				if (arrow == GizmosArrow.X) return Vector3.right;
 				if (arrow == GizmosArrow.Y) return Vector3.up;
 				if (arrow == GizmosArrow.Z) return Vector3.forward;
 			}
 			else
 			{
-				if (arrow == GizmosArrow.X) return obj.transform.right;
-				if (arrow == GizmosArrow.Y) return obj.transform.up;
-				if (arrow == GizmosArrow.Z) return obj.transform.forward;
+				// Local axes need to account for object's current orientation
+				Vector3 direction = Vector3.zero;
+				if (arrow == GizmosArrow.X) direction = Vector3.right;
+				if (arrow == GizmosArrow.Y) direction = Vector3.up;
+				if (arrow == GizmosArrow.Z) direction = Vector3.forward;
+                
+				// Transform the direction by the object's rotation
+				return obj.transform.TransformDirection(direction);
 			}
 
 			return Vector3.zero;

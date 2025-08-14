@@ -447,10 +447,7 @@ namespace FS_LevelEditor
             }
             else if (scene == LEScene.Playmode)
             {
-                // Don't set the colliders to true because they can be objects with enabled AND disabled colliders, we don't want to break
-                // that.
                 SetEditorCollider(false);
-
                 if (!initialized) InitComponent();
             }
 
@@ -510,17 +507,17 @@ namespace FS_LevelEditor
             }
             else if (name == "MovingSpeed")
             {
-                movingSpeed = Utils.ParseFloat((string)value);
+                movingSpeed = Utils.ParseFloat(value.ToString());
                 return true;
             }
             else if (name == "StartDelay")
             {
-                startDelay = Utils.ParseFloat((string)value);
+                startDelay = Utils.ParseFloat(value.ToString());
                 return true;
             }
             else if (name == "WaitTime")
             {
-                waitTime = Utils.ParseFloat((string)value);
+                waitTime = Utils.ParseFloat(value.ToString());
                 return true;
             }
             else if (name == "WaypointMode")
@@ -528,6 +525,7 @@ namespace FS_LevelEditor
                 waypointMode = (WaypointMode)value;
                 return true;
             }
+           
 
             return false;
         }

@@ -423,7 +423,7 @@ namespace FS_LevelEditor.Editor.UI
 			UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "MovingSpeed");
 			title.name = "Title";
 
-			movingSpeedField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "5", false,
+			movingSpeedField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps, 0f), new Vector3Int(200, 38, 0), 27, "5", false,
 				inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
 			movingSpeedField.name = "Field";
 			movingSpeedField.onChange += () => SetPropertyWithInput("MovingSpeed", movingSpeedField);
@@ -440,7 +440,7 @@ namespace FS_LevelEditor.Editor.UI
 			UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "StartDelay");
 			title.name = "Title";
 
-			startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "0", false,
+			startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps, 0f), new Vector3Int(200, 38, 0), 27, "0", false,
 				inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
 			startDelayField.name = "Field";
 			startDelayField.onChange += () => SetPropertyWithInput("StartDelay", startDelayField);
@@ -457,7 +457,7 @@ namespace FS_LevelEditor.Editor.UI
 			UILabel title = NGUI_Utils.CreateLabel(fieldParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(260, 38, 0), "WaitTime");
 			title.name = "Title";
 
-			waitTimeField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "0", false,
+			waitTimeField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps, 0f), new Vector3Int(200, 38, 0), 27, "0", false,
 				inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
 			waitTimeField.name = "Field";
 			waitTimeField.onChange += () => SetPropertyWithInput("WaitTime", waitTimeField);
@@ -1463,9 +1463,9 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		public void UpdateGlobalObjectAttributes(Transform obj)
 		{
-			// UICustomInput already verifies if the user is typing on the field, if so, SetText does nothing, we don't need to worry about that.
-
-			// Set Global Attributes...
+			if (obj == null) return;
+			var leObj = obj.GetComponent<LE_Object>();
+			if (leObj == null) return;
 			#region Position/Rotation/Scale Fields
 			posXField.SetText(obj.position.x, 3, false); // Changed from 2 to 3
 			posYField.SetText(obj.position.y, 3, false);
@@ -1601,6 +1601,7 @@ namespace FS_LevelEditor.Editor.UI
 
 		public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
 		{
+			if (currentSelectedObj == null || inputField == null) return;
 			// Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
 			if ((propertyName.Contains("Position") || propertyName.Contains("Rotation") || propertyName.Contains("Scale")) &&
 				Utils.TryParseFloat(inputField.GetText(), out float floatValue))
@@ -1692,6 +1693,7 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		public void SetPropertyWithToggle(string propertyName, UIToggle toggle)
 		{
+			if (currentSelectedObj == null || toggle == null) return;
 			switch (propertyName)
 			{
 				case "InstaKill":
