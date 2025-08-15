@@ -310,7 +310,27 @@ namespace FS_LevelEditor.Playmode
             var camera = envCam.GetComponent<Camera>();
             camera.useOcclusionCulling = false;
             camera.farClipPlane = 200f;
-        }
+			Controls.m_currentJetpackUpgradeLevel = 1;
+			Controls.m_currentHealthUpgradeLevel = 1;
+			Controls.m_currentSpeedUpgradeLevel = 1;
+			Controls.m_currentTaserCapacityUpgradeLevel = 1;
+			Controls.m_currentHealthBackpackLevel = 0;
+			Controls.m_currentTaserBackpackLevel = 0;
+			Controls.m_currentTaserPowerUpgradeLevel = 0;
+			Controls.m_currentDodgeLevel = 0;
+			Controls.m_currentStealthUpgradeLevel = 1;
+			Controls.m_currentAimStabilizerLevel = 0;
+			Controls.m_currentHoverUpgradeLevel = 0;
+			Controls.m_currentScopeLevel = 0;
+			Controls.m_currentSafeLandingLevel = 0;
+			Controls.m_currentUVFlashlightLevel = 0;
+			Controls.m_currentScannerLevel = 0;
+            TimeManipulator.Instance.SetInPlayerPosession(false);
+			if (Controls.Instance.HasTaser())
+            {
+                Controls.Instance.gunController.RefreshTaserModules();
+            }
+		}
 
         void OnDestroy()
         {

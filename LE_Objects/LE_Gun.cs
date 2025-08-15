@@ -136,19 +136,6 @@ public static class TazerTutModeFix
                 {
                     FS_LevelEditor.Logger.Log("Player just picked up Taser, patching the hell out!");
 
-                    Controls.m_currentJetpackUpgradeLevel = 1;
-                    Controls.m_currentHealthUpgradeLevel = 1;
-                    Controls.m_currentTaserCapacityUpgradeLevel = 1;
-                    Controls.m_currentHealthBackpackLevel = 0;
-                    Controls.m_currentTaserBackpackLevel = 0;
-                    Controls.m_currentTaserPowerUpgradeLevel = 0;
-                    Controls.m_currentStealthUpgradeLevel = 0;
-                    Controls.m_currentHoverUpgradeLevel = 0;
-                    Controls.m_currentScopeLevel = 0;
-                    Controls.m_currentSafeLandingLevel = 0;
-                    Controls.m_currentUVFlashlightLevel = 0;
-                    Controls.m_currentScannerLevel = 0;
-                    Controls.m_currentAimStabilizerLevel = 0;
                     __instance.gunController.RefreshTaserModules();
                     gameObject.SendMessage("Pickup", SendMessageOptions.DontRequireReceiver);
                     Controls.inGameUI.ShowNotification(InGameUIManager.NotificationType.GunPickup, InGameUIManager.NotificationColor.Blue, 0f, 1.7f, false, true);

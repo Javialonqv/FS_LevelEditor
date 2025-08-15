@@ -508,8 +508,8 @@ namespace FS_LevelEditor.Editor
 			#region Bulk selection
 			if (Input.GetMouseButtonDown(0) && !Utils.IsMouseOverUIElement() && !Input.GetKey(KeyCode.F))
 			{
-				// Only start selection if we're not using gizmo
-				if (GetCollidingWithAnArrow() == GizmosArrow.None && currentMode == Mode.Selection)
+				// Only start selection if we're not using gizmo and Shift is held
+				if (GetCollidingWithAnArrow() == GizmosArrow.None && currentMode == Mode.Selection && Input.GetKey(KeyCode.LeftShift))
 				{
 					isSelecting = true;
 					selectionStartScreen = Input.mousePosition;
@@ -519,8 +519,8 @@ namespace FS_LevelEditor.Editor
 				}
 			}
 
-			// Update selection rectangle
-			if (isSelecting && Input.GetMouseButton(0) && !Input.GetKey(KeyCode.F))
+			// Update selection rectangle (only if Shift is held)
+			if (isSelecting && Input.GetMouseButton(0) && !Input.GetKey(KeyCode.F) && Input.GetKey(KeyCode.LeftShift))
 			{
 				selectionEndScreen = Input.mousePosition;
 				float dragDistance = (selectionEndScreen - selectionStartScreen).magnitude;
@@ -546,7 +546,7 @@ namespace FS_LevelEditor.Editor
 					selectionBox.SetActive(false);
 			}
 
-			// End selection
+			// End selection (only if Shift was held)
 			if (isSelecting && Input.GetMouseButtonUp(0))
 			{
 				isSelecting = false;
@@ -556,8 +556,8 @@ namespace FS_LevelEditor.Editor
 				float dragDistance = (selectionEndScreen - selectionStartScreen).magnitude;
 				float heldTime = Time.unscaledTime - selectionStartTime;
 
-				// Only perform rectangle selection if it was a drag and not snapping
-				if (!IsCurrentState(EditorState.MOVING_OBJECT) && !Input.GetKey(KeyCode.F))
+				// Only perform rectangle selection if it was a drag, not snapping, and Shift was held
+				if (!IsCurrentState(EditorState.MOVING_OBJECT) && !Input.GetKey(KeyCode.F) && heldTime > 0 && Input.GetKey(KeyCode.LeftShift))
 				{
 					if (dragDistance >= minDragDistance && currentMode == Mode.Selection)
 					{
@@ -698,30 +698,34 @@ namespace FS_LevelEditor.Editor
 				if (obj == null || obj.isDeleted || !obj.gameObject.activeSelf)
 					continue;
 
+				// Filter by bulk selection mode
 				switch (currentBulkSelectionMode)
 				{
 					case BulkSelectionMode.ObjectsOnly:
 						if (obj is LE_Waypoint) continue;
 						break;
 					case BulkSelectionMode.WaypointsAndObjectsWithWaypoints:
-						// Skip if not a waypoint and doesn't have waypoints
 						if (!(obj is LE_Waypoint) && (obj.waypoints == null || obj.waypoints.Count == 0))
 							continue;
 						break;
 				}
 
-				var renderers = obj.gameObject.GetComponentsInChildren<Renderer>(false);
+				var renderers = obj.gameObject.GetComponentsInChildren<Renderer>(true);
 				if (renderers.Length == 0) continue;
 
+				// Calculate the world AABB for the object
 				Bounds bounds = renderers[0].bounds;
 				for (int i = 1; i < renderers.Length; i++)
 				{
-					bounds.Encapsulate(renderers[i].bounds);
+					if (renderers[i].gameObject.activeSelf)
+						bounds.Encapsulate(renderers[i].bounds);
 				}
 
+				// Frustum culling
 				if (!GeometryUtility.TestPlanesAABB(frustumPlanes, bounds))
 					continue;
 
+				// Project all 8 corners to screen space
 				Vector3[] corners = new Vector3[8];
 				corners[0] = new Vector3(bounds.min.x, bounds.min.y, bounds.min.z);
 				corners[1] = new Vector3(bounds.min.x, bounds.min.y, bounds.max.z);
@@ -739,7 +743,7 @@ namespace FS_LevelEditor.Editor
 				foreach (var corner in corners)
 				{
 					Vector3 screenPos = cam.WorldToScreenPoint(corner);
-					if (screenPos.z < 0) continue;
+					if (screenPos.z < 0) continue; // Behind camera
 
 					objMinX = Mathf.Min(objMinX, screenPos.x);
 					objMaxX = Mathf.Max(objMaxX, screenPos.x);
@@ -758,8 +762,7 @@ namespace FS_LevelEditor.Editor
 					objMinX <= minX && objMaxX >= maxX &&
 					objMinY <= minY && objMaxY >= maxY;
 
-				if (objMinX != float.MaxValue &&
-					(anyCornerInSelection || containsSelectionRect))
+				if ((anyCornerInSelection || containsSelectionRect) && obj.gameObject.activeSelf)
 				{
 					selectedObjects.Add(obj.gameObject);
 				}
@@ -771,7 +774,7 @@ namespace FS_LevelEditor.Editor
 			}
 			else if (selectedObjects.Count == 1)
 			{
-			 SetSelectedObj(selectedObjects[0]);
+				SetSelectedObj(selectedObjects[0]);
 			}
 			else
 			{
@@ -862,9 +865,9 @@ namespace FS_LevelEditor.Editor
 			{
 				if (Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
 				{
-					if (scrollDelta > 0)
+					if (scrollDelta < 0)
 						DecreaseGridSize(); // Finer
-					else if (scrollDelta < 0)
+					else if (scrollDelta > 0)
 					IncreaseGridSize(); // Coarser
 				}
 				// MouseWheel: Change grid height
@@ -1145,6 +1148,25 @@ namespace FS_LevelEditor.Editor
 			}
 		}
 
+		// --- Snap Euler Angles Helper ---
+        public static Vector3 SnapEulerAnglesToStep(Vector3 euler, float step)
+        {
+            // Always snap to the nearest multiple of step, in [0,360)
+            float Snap(float angle)
+            {
+                float snapped = Mathf.Round(angle / step) * step;
+                // Normalize to [0, 360)
+                snapped = snapped % 360f;
+                if (snapped < 0) snapped += 360f;
+                return snapped;
+            }
+            return new Vector3(
+                Snap(euler.x),
+                Snap(euler.y),
+                Snap(euler.z)
+            );
+        }
+
 		private float lastRotationTime = 0f;
 		private float rotationRepeatDelay = 0.12f;
 		private object currentRotationCoroutine;
@@ -1182,7 +1204,9 @@ namespace FS_LevelEditor.Editor
 			// Ctrl+R: Reset rotation (use Quaternion.identity)
 			if (Input.GetKey(KeyCode.LeftControl))
 			{
-				RotationTweener.RotateTo(targetObj, Quaternion.identity.eulerAngles, 0.12f, RotationPath.Shortest);
+				Quaternion targetRot = Quaternion.identity;
+				RotationTweener.RotateTo(targetObj, SnapEulerAnglesToStep(targetRot.eulerAngles, rotationAngle), 0.12f, RotationPath.Shortest);
+				RotateWaypointsWithObject(targetObj, targetObj.transform.localRotation, targetRot);
 				if (currentMode != Mode.Building && currentSelectedObj != null)
 					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
 				return;
@@ -1193,7 +1217,9 @@ namespace FS_LevelEditor.Editor
 			{
 				Quaternion delta = Quaternion.AngleAxis(rotationAngle * multiplier, Vector3.right);
 				Quaternion targetRot = targetObj.transform.localRotation * delta;
-				RotationTweener.RotateTo(targetObj, targetRot.eulerAngles, 0.08f, RotationPath.Shortest);
+				Vector3 snappedEuler = SnapEulerAnglesToStep(targetRot.eulerAngles, rotationAngle);
+				RotationTweener.RotateTo(targetObj, snappedEuler, 0.08f, RotationPath.Shortest);
+				RotateWaypointsWithObject(targetObj, oldRotation, Quaternion.Euler(snappedEuler));
 				if (currentMode != Mode.Building && currentSelectedObj != null)
 					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
 				return;
@@ -1204,7 +1230,9 @@ namespace FS_LevelEditor.Editor
 			{
 				Quaternion delta = Quaternion.AngleAxis(rotationAngle * multiplier, Vector3.forward);
 				Quaternion targetRot = targetObj.transform.localRotation * delta;
-				RotationTweener.RotateTo(targetObj, targetRot.eulerAngles, 0.08f, RotationPath.Shortest);
+				Vector3 snappedEuler = SnapEulerAnglesToStep(targetRot.eulerAngles, rotationAngle);
+				RotationTweener.RotateTo(targetObj, snappedEuler, 0.08f, RotationPath.Shortest);
+				RotateWaypointsWithObject(targetObj, oldRotation, Quaternion.Euler(snappedEuler));
 				if (currentMode != Mode.Building && currentSelectedObj != null)
 					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
 				return;
@@ -1213,24 +1241,39 @@ namespace FS_LevelEditor.Editor
 			// Default: Rotate Y axis using Quaternion.AngleAxis
 			Quaternion yDelta = Quaternion.AngleAxis(rotationAngle * multiplier, Vector3.up);
 			Quaternion yTargetRot = targetObj.transform.localRotation * yDelta;
-			RotationTweener.RotateTo(targetObj, yTargetRot.eulerAngles, 0.08f, RotationPath.Shortest);
+			Vector3 ySnappedEuler = SnapEulerAnglesToStep(yTargetRot.eulerAngles, rotationAngle);
+			RotationTweener.RotateTo(targetObj, ySnappedEuler, 0.08f, RotationPath.Shortest);
+			RotateWaypointsWithObject(targetObj, oldRotation, Quaternion.Euler(ySnappedEuler));
 			if (currentMode != Mode.Building && currentSelectedObj != null)
 				MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
 		}
 
-		private IEnumerator WaitAndRegisterRotation(GameObject obj, Quaternion oldRotation)
+		// Helper to rotate waypoints with their parent object
+		void RotateWaypointsWithObject(GameObject parentObj, Quaternion oldRot, Quaternion newRot)
 		{
-			// Wait until RotationTweener is destroyed (rotation finished)
-			while (obj.GetComponent<RotationTweener>() != null)
-				yield return null;
-			if (currentMode != Mode.Building && currentSelectedObj != null)
+			var leObj = parentObj.GetComponent<LE_Object>();
+			if (leObj == null || leObj.waypoints == null || leObj.waypoints.Count == 0) return;
+			var supports = parentObj.GetComponents<WaypointSupport>();
+			float rotationStep = 15f;
+			foreach (var support in supports)
 			{
-				SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
-				RegisterLEAction(LEAction.LEActionType.RotateObject, currentSelectedObj, multipleObjectsSelected, null, null, oldRotation, currentSelectedObj.transform.localRotation);
-				levelHasBeenModified = true;
+				foreach (var waypoint in support.spawnedWaypoints)
+				{
+					var t = waypoint.transform;
+					// Calculate the rotation delta in Euler angles
+					Vector3 oldEuler = t.localEulerAngles;
+					Quaternion deltaRot = newRot * Quaternion.Inverse(oldRot);
+					Vector3 deltaEuler = deltaRot.eulerAngles;
+					// Snap delta to nearest 15 deg
+					deltaEuler.x = Mathf.Round(deltaEuler.x / rotationStep) * rotationStep;
+					deltaEuler.y = Mathf.Round(deltaEuler.y / rotationStep) * rotationStep;
+					deltaEuler.z = Mathf.Round(deltaEuler.z / rotationStep) * rotationStep;
+					// Add delta to oldEuler, then snap result
+					Vector3 newEuler = oldEuler + deltaEuler;
+					t.localEulerAngles = SnapEulerAnglesToStep(newEuler, rotationStep);
+				}
 			}
 		}
-
 		void ManageUndo()
 		{
 			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
@@ -1381,7 +1424,7 @@ namespace FS_LevelEditor.Editor
 						}
 						else
 						{
-							hits.RemoveAll(h => h.collider.gameObject.name.StartsWith("StaticPos"));
+							hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
 							break;
 						}
 					}
@@ -1778,7 +1821,8 @@ namespace FS_LevelEditor.Editor
 				return;
 			}
 
-			var filtered = objects.Where(obj => obj != null).ToList();
+			// Only select active objects for parenting
+			var filtered = objects.Where(obj => obj != null && obj.activeSelf).ToList();
 			if (filtered.Count == 0)
 			{
 				SetSelectedObj(null);
@@ -1810,42 +1854,22 @@ namespace FS_LevelEditor.Editor
 
 			multipleSelectedObjsParent.transform.localScale = Vector3.one;
 
-			// Calculate center position using only active objects
+			// Calculate center position
 			Vector3 centeredPosition = Vector3.zero;
-			int validCount = 0;
-			foreach (var obj in filtered.Where(o => o.activeSelf))
-			{
+			foreach (var obj in filtered)
 				centeredPosition += obj.transform.position;
-				validCount++;
-			}
+			centeredPosition /= filtered.Count;
+			multipleSelectedObjsParent.transform.position = centeredPosition;
+			multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
 
-			if (validCount > 0)
+			currentSelectedObjects = new List<GameObject>();
+			foreach (var obj in filtered)
 			{
-				centeredPosition /= validCount;
-
-				multipleSelectedObjsParent.transform.position = centeredPosition;
-				multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
-
-				currentSelectedObjects = new List<GameObject>();
-
-				// --- FIX: Store and restore active state ---
-				var activeStates = new Dictionary<GameObject, bool>();
-				foreach (var obj in filtered)
-					activeStates[obj] = obj.activeSelf;
-
-				foreach (var obj in filtered)
-				{
-					var leObj = obj.GetComponent<LE_Object>();
-					leObj.SetObjectColor(LE_Object.LEObjectContext.SELECT);
-					obj.transform.parent = multipleSelectedObjsParent.transform;
-					currentSelectedObjects.Add(obj);
-					leObj.OnSelect();
-				}
-
-				// Restore active states
-				foreach (var obj in filtered)
-					obj.SetActive(activeStates[obj]);
-				// --- END FIX ---
+			 var leObj = obj.GetComponent<LE_Object>();
+				leObj.SetObjectColor(LE_Object.LEObjectContext.SELECT);
+				obj.transform.parent = multipleSelectedObjsParent.transform;
+				currentSelectedObjects.Add(obj);
+				leObj.OnSelect();
 			}
 
 			multipleObjectsSelected = true;
@@ -1872,7 +1896,7 @@ namespace FS_LevelEditor.Editor
 			if (multipleObjectsSelected && currentSelectedObjects.Contains(obj))
 			{
 				// Since the object is already selected, this SetSelectedObj is going to DESELECT it.
-				SetSelectedObj(obj, SelectionType.ForceMultiple);
+			 SetSelectedObj(obj, SelectionType.ForceMultiple);
 				if (currentSelectedObjects.Count > 1)
 				{
 					SetMultipleObjectsAsSelected(new List<GameObject>(currentSelectedObjects));
@@ -2212,7 +2236,6 @@ namespace FS_LevelEditor.Editor
 						continue;
 					}
 					LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
-
 					foreach (var property in objComponent.properties)
 					{
 						newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
@@ -2410,7 +2433,18 @@ namespace FS_LevelEditor.Editor
             actionsMade.Add(currentExecutingAction);
         }
 
-
+	private System.Collections.IEnumerator WaitAndRegisterRotation(GameObject obj, Quaternion oldRotation)
+{
+    // Wait until RotationTweener is destroyed (rotation finished)
+    while (obj.GetComponent<RotationTweener>() != null)
+        yield return null;
+    if (currentMode != Mode.Building && currentSelectedObj != null)
+    {
+        SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+        RegisterLEAction(LEAction.LEActionType.RotateObject, currentSelectedObj, multipleObjectsSelected, null, null, oldRotation, currentSelectedObj.transform.localRotation);
+        levelHasBeenModified = true;
+    }
+}
 		public void EnterPlayMode()
 		{
 			if (enteringPlayMode) return;
@@ -2595,13 +2629,13 @@ namespace FS_LevelEditor.Editor
 			else
 			{
 				// Local axes need to account for object's current orientation
-				Vector3 direction = Vector3.zero;
-				if (arrow == GizmosArrow.X) direction = Vector3.right;
-				if (arrow == GizmosArrow.Y) direction = Vector3.up;
-				if (arrow == GizmosArrow.Z) direction = Vector3.forward;
-                
-				// Transform the direction by the object's rotation
-				return obj.transform.TransformDirection(direction);
+				switch (arrow)
+				{
+					case GizmosArrow.X: return obj.transform.right;
+					case GizmosArrow.Y: return obj.transform.up;
+					case GizmosArrow.Z: return obj.transform.forward;
+					default: return Vector3.zero;
+				}
 			}
 
 			return Vector3.zero;

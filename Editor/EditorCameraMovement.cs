@@ -115,8 +115,15 @@ namespace FS_LevelEditor.Editor
                     Logger.DebugLog("New move speed: " + moveSpeed);
                 }
             }
-            // Remove Shift speed doubling logic
-            downAndUpSpeed = moveSpeed;
+            // Restore Shift speed doubling logic
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                downAndUpSpeed = moveSpeed * 2f;
+            }
+            else
+            {
+                downAndUpSpeed = moveSpeed;
+            }
         }
 
         void MoveCameraWithMouseDrag()

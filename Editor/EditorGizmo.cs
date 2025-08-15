@@ -41,6 +41,10 @@ namespace FS_LevelEditor.Editor
             {
                 CreateGizmo();
             }
+            // --- Ensure cones are rendered after lines ---
+            if (xCone != null) xCone.transform.SetAsLastSibling();
+            if (yCone != null) yCone.transform.SetAsLastSibling();
+            if (zCone != null) zCone.transform.SetAsLastSibling();
         }
 
         private void CreateGizmo()
@@ -197,24 +201,35 @@ namespace FS_LevelEditor.Editor
         }
 
         // Call this in LateUpdate from EditorController or wherever the gizmo is managed
-        public void UpdateScaleByCamera(Camera camera, float baseDistance = 10f, float minScale = 1.0f, float maxScale = 3.5f)
+        public void UpdateScaleByCamera(Camera camera, float baseDistance = 10f, float minScale = 0.7f, float maxScale = 3.5f)
         {
             if (root == null || camera == null) return;
             float dist = Vector3.Distance(camera.transform.position, root.transform.position);
             float scale = Mathf.Clamp(dist / baseDistance, minScale, maxScale);
             root.transform.localScale = Vector3.one * scale;
-            // Prevent cones from becoming too small (set a minimum local scale for cones)
-            float minConeScale = 0.18f; // Adjust as needed for visibility
+            float minConeScale = 0.22f;
             foreach (var cone in new[] { xCone, yCone, zCone })
             {
                 if (cone != null)
                 {
                     float coneScale = Mathf.Max(scale, minConeScale);
                     cone.transform.localScale = new Vector3(coneRadius, coneHeight, coneRadius) * coneScale / scale;
+                    var parentArrow = cone.transform.parent;
+                    if (parentArrow != null)
+                    {
+                        Vector3 dir = (cone == xCone) ? Vector3.right : (cone == yCone) ? Vector3.up : Vector3.forward;
+                        float lineEnd = arrowLength;
+                        cone.transform.localPosition = dir * (lineEnd + coneHeight * 0.5f * coneScale / scale);
+                    }
+                    // --- Set cones' renderQueue higher than lines ---
+                    var meshRenderer = cone.GetComponent<MeshRenderer>();
+                    if (meshRenderer != null)
+                    {
+                        meshRenderer.material.renderQueue = 3100;
+                    }
                 }
             }
-            // Make lines thinner the closer you get (inverse relation)
-            float minWidth = arrowThickness * 0.5f;
+            float minWidth = arrowThickness * 0.7f;
             float maxWidth = arrowThickness;
             float t = Mathf.Clamp01(dist / 10f);
             float lineWidth = Mathf.Lerp(minWidth, maxWidth, t);
@@ -222,6 +237,21 @@ namespace FS_LevelEditor.Editor
             {
                 lr.startWidth = lineWidth;
                 lr.endWidth = lineWidth;
+                lr.material.renderQueue = 3000;
+            }
+            foreach (var arrow in new[] { xArrow, yArrow, zArrow })
+            {
+                var axisCollider = arrow.transform.Find("AxisCollider");
+                if (axisCollider != null)
+                {
+                    var capsule = axisCollider.GetComponent<CapsuleCollider>();
+                    if (capsule != null)
+                    {
+                        capsule.radius = Mathf.Max(arrowThickness * 1.2f * scale, 0.12f);
+                        capsule.height = arrowLength + coneHeight * 0.9f;
+                        capsule.enabled = true;
+                    }
+                }
             }
         }
 
