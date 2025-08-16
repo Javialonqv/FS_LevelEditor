@@ -1268,7 +1268,7 @@ namespace FS_LevelEditor.Editor
 					deltaEuler.x = Mathf.Round(deltaEuler.x / rotationStep) * rotationStep;
 					deltaEuler.y = Mathf.Round(deltaEuler.y / rotationStep) * rotationStep;
 					deltaEuler.z = Mathf.Round(deltaEuler.z / rotationStep) * rotationStep;
-					// Add delta to oldEuler, then snap result
+					// Add delta to oldEuler, then snap to result
 					Vector3 newEuler = oldEuler + deltaEuler;
 					t.localEulerAngles = SnapEulerAnglesToStep(newEuler, rotationStep);
 				}
@@ -1565,50 +1565,49 @@ namespace FS_LevelEditor.Editor
 			// About the scale being fixed to 1... you can't change the scale of the PREVIEW object, so...
 		}
 		public GameObject PlaceObject(LE_Object.ObjectType? objectType, Vector3 position, Vector3 eulerAngles, Vector3 scale, bool setAsSelected = true)
-		{
-			if (setAsSelected)
-			{
-				// if setAsSelect is false, that would probably mean it's placing objects from save.
-				Logger.Log($"Placing object of name \"{objectType}\". This log only appears when setAsSelected is true.");
-			}
+        {
+            if (setAsSelected)
+            {
+                Logger.Log($"Placing object of name \"{objectType}\". This log only appears when setAsSelected is true.");
+            }
 
-			if (objectType == null)
-			{
-				Logger.Error("objectType is null. Skipping object placement...");
-				return null;
-			}
-			if (!allCategoriesObjects.ContainsKey(objectType.Value))
-			{
-				Logger.Error($"Can't find object with name \"{objectType}\". Skipping it...");
-				return null;
-			}
+            if (objectType == null)
+            {
+                Logger.Error("objectType is null. Skipping object placement...");
+                return null;
+            }
+            if (!allCategoriesObjects.ContainsKey(objectType.Value))
+            {
+                Logger.Error($"Can't find object with name \"{objectType}\". Skipping it...");
+                return null;
+            }
 
-			GameObject template = allCategoriesObjects[objectType.Value];
-			GameObject obj = Instantiate(template, levelObjectsParent.transform);
+            GameObject template = allCategoriesObjects[objectType.Value];
+            GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
-			obj.transform.localPosition = position;
-			obj.transform.localEulerAngles = eulerAngles;
-			obj.transform.localScale = scale;
+            obj.transform.localPosition = position;
+            obj.transform.localEulerAngles = eulerAngles;
+            obj.transform.localScale = scale;
 
-			LE_Object addedComp = LE_Object.AddComponentToObject(obj, objectType.Value);
+            LE_Object addedComp = LE_Object.AddComponentToObject(obj, objectType.Value);
 
-			if (addedComp == null)
-			{
-				Destroy(obj);
-				return null;
-			}
+            if (addedComp == null)
+            {
+                Destroy(obj);
+                return null;
+            }
 
-			addedComp.SetObjectColor(LE_Object.LEObjectContext.NORMAL);
+            addedComp.SetObjectColor(LE_Object.LEObjectContext.NORMAL);
 
-			obj.SetActive(true);
+            obj.SetActive(true);
 
-			if (setAsSelected)
-			{
-				SetSelectedObj(obj);
-			}
+            if (setAsSelected)
+            {
+                SetSelectedObj(obj);
+            }
 
-			return obj;
-		}
+            return obj;
+        }
 
 		public enum SelectionType { Normal, ForceSingle, ForceMultiple }
 		public void SetSelectedObj(GameObject obj, SelectionType selectionType = SelectionType.Normal)
@@ -2091,129 +2090,132 @@ namespace FS_LevelEditor.Editor
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             if (movementPlane.Raycast(ray, out float distance))
-			{
-				if (!IsCurrentState(EditorState.MOVING_OBJECT)) 
-					SetCurrentEditorState(EditorState.MOVING_OBJECT);
+            {
+                // Only set MOVING_OBJECT state when the user actually moves the object, not just on arrow press
+                Vector3 hitWorldPosition = ray.GetPoint(distance);
+                Vector3 axisDirection;
 
-				Vector3 hitWorldPosition = ray.GetPoint(distance);
-				Vector3 axisDirection;
+                // Get proper axis direction based on mode
+                if (globalGizmosArrowsEnabled)
+                {
+                    switch (collidingArrow)
+                    {
+                        case GizmosArrow.X: axisDirection = Vector3.right; break;
+                        case GizmosArrow.Y: axisDirection = Vector3.up; break;
+                        case GizmosArrow.Z: axisDirection = Vector3.forward; break;
+                        default: axisDirection = Vector3.zero; break;
+                    }
+                }
+                else
+                {
+                    switch (collidingArrow)
+                    {
+                        case GizmosArrow.X: axisDirection = currentSelectedObj.transform.right; break;
+                        case GizmosArrow.Y: axisDirection = currentSelectedObj.transform.up; break;
+                        case GizmosArrow.Z: axisDirection = currentSelectedObj.transform.forward; break;
+                        default: axisDirection = Vector3.zero; break;
+                    }
+                }
 
-				// Get proper axis direction based on mode
-				if (globalGizmosArrowsEnabled)
-				{
-					// Global axes are always world-aligned
-					switch (collidingArrow)
-					{
-						case GizmosArrow.X: axisDirection = Vector3.right; break;
-						case GizmosArrow.Y: axisDirection = Vector3.up; break;
-						case GizmosArrow.Z: axisDirection = Vector3.forward; break;
-						default: axisDirection = Vector3.zero; break;
-					}
-				}
-				else
-				{
-					// Local axes need to account for object's current orientation
-					switch (collidingArrow)
-					{
-						case GizmosArrow.X: axisDirection = currentSelectedObj.transform.right; break;
-						case GizmosArrow.Y: axisDirection = currentSelectedObj.transform.up; break;
-						case GizmosArrow.Z: axisDirection = currentSelectedObj.transform.forward; break;
-						default: axisDirection = Vector3.zero; break;
-					}
-				}
+                Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
+                float movementDistance = Vector3.Dot(displacement, axisDirection);
+                Vector3 movement = axisDirection * movementDistance;
 
-				Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
-				float movementDistance = Vector3.Dot(displacement, axisDirection);
-				Vector3 movement = axisDirection * movementDistance;
+                // Only start moving if the mouse has moved a minimum distance
+                float minMoveDistance = 0.001f; // Small threshold to avoid snapping on click
+                if (movement.magnitude < minMoveDistance)
+                {
+                    // Don't move or snap to grid until user actually drags
+                    return;
+                }
+                if (!IsCurrentState(EditorState.MOVING_OBJECT))
+                    SetCurrentEditorState(EditorState.MOVING_OBJECT);
 
-				// Calculate offset based on movement mode
-				Vector3 offset;
-				if (globalGizmosArrowsEnabled)
-				{
-					offset = offsetObjPositionAndMosueWhenClick;
-				}
-				else 
-				{
-					offset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick, 
+                // Calculate offset based on movement mode
+                Vector3 offset;
+                if (globalGizmosArrowsEnabled)
+                {
+                    offset = offsetObjPositionAndMosueWhenClick;
+                }
+                else
+                {
+                    offset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick,
                         objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
-				}
+                }
 
-				Vector3 newPosition = objPositionWhenArrowClick + movement + offset;
+                Vector3 newPosition = objPositionWhenArrowClick + movement + offset;
 
-				// Grid snapping with proper axis constraint
-				if (gridEnabled)
-				{
-					Vector3 gridPos = newPosition;
-					if (globalGizmosArrowsEnabled)
-					{
-						// Global mode: snap along world axes
-						switch (collidingArrow)
-						{
-							case GizmosArrow.X:
-								gridPos.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
-								gridPos.y = objPositionWhenArrowClick.y;
-								gridPos.z = objPositionWhenArrowClick.z;
-								break;
-							case GizmosArrow.Y:
-								float mouseDeltaY = Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y);
-								if (mouseDeltaY > 0.01f)
-								{
-									gridPos.x = objPositionWhenArrowClick.x;
-									gridPos.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
-									gridPos.z = objPositionWhenArrowClick.z;
-								}
-								else
-								{
-									gridPos = objPositionWhenArrowClick;
-								}
-								break;
-							case GizmosArrow.Z:
-								gridPos.x = objPositionWhenArrowClick.x;
-								gridPos.y = objPositionWhenArrowClick.y;
-								gridPos.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
-								break;
-						}
-					}
-					else
-					{
-						// Local mode: snap along local axes
-						Vector3 localPos = currentSelectedObj.transform.InverseTransformPoint(newPosition);
-						Vector3 snappedLocalPos = localPos;
-						
-						switch (collidingArrow)
-						{
-							case GizmosArrow.X:
-								snappedLocalPos.x = Mathf.Round(localPos.x / gridSize) * gridSize;
-								snappedLocalPos.y = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).y;
-								snappedLocalPos.z = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).z;
-								break;
-							case GizmosArrow.Y:
-								snappedLocalPos.x = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).x;
-								snappedLocalPos.y = Mathf.Round(localPos.y / gridSize) * gridSize;
-								snappedLocalPos.z = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).z;
-								break;
-							case GizmosArrow.Z:
-								snappedLocalPos.x = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).x;
-								snappedLocalPos.y = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).y;
-								snappedLocalPos.z = Mathf.Round(localPos.z / gridSize) * gridSize;
-								break;
-						}
-						gridPos = currentSelectedObj.transform.TransformPoint(snappedLocalPos);
-					}
-					newPosition = gridPos;
-				}
+                // Grid snapping with proper axis constraint, only when actually moving
+                if (gridEnabled)
+                {
+                    Vector3 gridPos = newPosition;
+                    if (globalGizmosArrowsEnabled)
+                    {
+                        switch (collidingArrow)
+                        {
+                            case GizmosArrow.X:
+                                gridPos.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
+                                gridPos.y = objPositionWhenArrowClick.y;
+                                gridPos.z = objPositionWhenArrowClick.z;
+                                break;
+                            case GizmosArrow.Y:
+                                float mouseDeltaY = Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y);
+                                if (mouseDeltaY > 0.01f)
+                                {
+                                    gridPos.x = objPositionWhenArrowClick.x;
+                                    gridPos.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+                                    gridPos.z = objPositionWhenArrowClick.z;
+                                }
+                                else
+                                {
+                                    gridPos = objPositionWhenArrowClick;
+                                }
+                                break;
+                            case GizmosArrow.Z:
+                                gridPos.x = objPositionWhenArrowClick.x;
+                                gridPos.y = objPositionWhenArrowClick.y;
+                                gridPos.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        Vector3 localPos = currentSelectedObj.transform.InverseTransformPoint(newPosition);
+                        Vector3 snappedLocalPos = localPos;
 
-				if (multipleObjectsSelected)
-				{
-					currentSelectedObj.transform.position = newPosition;
-				}
-				else
-				{
-					currentSelectedObj.transform.position = newPosition;
-				}
-			}
-		}
+                        switch (collidingArrow)
+                        {
+                            case GizmosArrow.X:
+                                snappedLocalPos.x = Mathf.Round(localPos.x / gridSize) * gridSize;
+                                snappedLocalPos.y = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).y;
+                                snappedLocalPos.z = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).z;
+                                break;
+                            case GizmosArrow.Y:
+                                snappedLocalPos.x = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).x;
+                                snappedLocalPos.y = Mathf.Round(localPos.y / gridSize) * gridSize;
+                                snappedLocalPos.z = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).z;
+                                break;
+                            case GizmosArrow.Z:
+                                snappedLocalPos.x = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).x;
+                                snappedLocalPos.y = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).y;
+                                snappedLocalPos.z = Mathf.Round(localPos.z / gridSize) * gridSize;
+                                break;
+                        }
+                        gridPos = currentSelectedObj.transform.TransformPoint(snappedLocalPos);
+                    }
+                    newPosition = gridPos;
+                }
 
+                if (multipleObjectsSelected)
+                {
+                    currentSelectedObj.transform.position = newPosition;
+                }
+                else
+                {
+                    currentSelectedObj.transform.position = newPosition;
+                }
+            }
+        }
 		void DuplicateSelectedObject()
 		{
 			if (currentSelectedObj == null) return;
@@ -2781,7 +2783,7 @@ namespace FS_LevelEditor.Editor
 				GL.Vertex3(x, gridY, minZ);
 				GL.Vertex3(x, gridY, maxZ);
 			}
-			for (float z = minZ; z <= maxZ; z += renderGridSize)
+			for (float z = minZ; z <= maxZ; z += gridSize)
 			{
 				if (Mathf.Approximately(z, center.z)) continue;
 				float camDist = Mathf.Abs(z - camPos.z);

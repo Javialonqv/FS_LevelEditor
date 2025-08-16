@@ -784,11 +784,16 @@ namespace FS_LevelEditor
                 if (!IsWaypoint(objectType.Value)) Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
                 return;
             }
-
-            foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>(true))
+            if(objectType == ObjectType.SWITCH || objectType == ObjectType.CEILING_LIGHT)
             {
-                collider.enabled = newEnabledState;
-            }
+				gameObject.GetChild("Content").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
+			} else
+            {
+				foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>(true))
+				{
+					collider.enabled = newEnabledState;
+				}
+			}
             currentCollisionState = newEnabledState;
         }
         public void SetEditorCollider(bool newEnabledState)

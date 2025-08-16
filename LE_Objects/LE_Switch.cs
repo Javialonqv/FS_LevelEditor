@@ -58,7 +58,6 @@ namespace FS_LevelEditor
 			gameObject.GetChild("Content").GetComponentsInChildren<MeshRenderer>(true)
                 .ToList()
                 .ForEach(mr => mr.enabled = enabled);
-			gameObject.GetChild("Content").GetComponent<BoxCollider>().isTrigger = !enabled;
 		}
 
         public override void InitComponent()
