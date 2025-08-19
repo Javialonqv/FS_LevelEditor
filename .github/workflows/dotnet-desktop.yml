@@ -1,89 +1,138 @@
-name: Build LE
-
+name: Build MelonLoader Mod
 on:
   push:
     branches: [ major-update-v0.3.0, grayperimental ]
-  release:
-    types: [ published ]
   workflow_dispatch:
-    inputs:
-      create_release:
-        description: 'Build'
-        required: false
-        default: false
-        type: boolean
-
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        branch: [major-update-v0.3.0, grayperimental]
     
     steps:
-    - name: Checkout code
+    - name: Checkout code (${{ matrix.branch }})
       uses: actions/checkout@v4
+      with:
+        ref: ${{ matrix.branch }}
       
     - name: Setup .NET 6
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '6.0.x'
+        
+    - name: Download and setup assemblies
+      run: |
+        # Create libs directory
+        New-Item -ItemType Directory -Force -Path "libs" | Out-Null
+        
+        # Download assemblies from Google Drive
+        $downloadUrl = "https://drive.google.com/uc?export=download&id=12blNzDzSB_k5w-GMT1iBbUrCjZC0Iphc"
+        $zipPath = "assemblies.zip"
+        
+        Write-Host "Downloading assemblies..."
+        try {
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -UseBasicParsing
+          Write-Host "Download completed"
+        }
+        catch {
+          Write-Error "Download failed: $($_.Exception.Message)"
+          exit 1
+        }
+        
+        # Extract assemblies directly to libs folder
+        Write-Host "Extracting assemblies..."
+        try {
+          Expand-Archive -Path $zipPath -DestinationPath "libs" -Force
+          
+          # Verify extraction
+          $assemblies = Get-ChildItem -Path "libs" -Filter "*.dll"
+          Write-Host "Extracted $($assemblies.Count) assemblies:"
+          $assemblies | ForEach-Object { Write-Host "  - $($_.Name)" }
+        }
+        catch {
+          Write-Error "Extraction failed: $($_.Exception.Message)"
+          exit 1
+        }
+      shell: pwsh
         
     - name: Restore dependencies
       run: dotnet restore
       
     - name: Build mod
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Debug --no-restore
       
     - name: Run tests (if any)
-      run: dotnet test --no-build --verbosity normal --configuration Release
+      run: dotnet test --no-build --verbosity normal --configuration Debug
       continue-on-error: true
       
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: mod-build-${{ github.sha }}
-        path: |
-          **/bin/Release/**/*.dll
-          **/bin/Release/**/*.pdb
-        retention-days: 7
-        
-  release:
-    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
-    needs: build
-    runs-on: windows-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup .NET 6
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '6.0.x'
-        
-    - name: Build release
-      run: dotnet build --configuration Release
-      
-    - name: Package mod
+    - name: Create release package
       run: |
-        mkdir release
-        Copy-Item -Path "**/bin/Release/**/*.dll" -Destination "release/" -Recurse -Force
-        Compress-Archive -Path "release/*" -DestinationPath "mod-release.zip"
+        # Get branch name and timestamp
+        $branchName = "${{ matrix.branch }}" -replace "[^a-zA-Z0-9-]", "_"
+        $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+        $zipName = "LevelEditor_${branchName}_${timestamp}.zip"
+        
+        Write-Host "Creating release package for branch ${{ matrix.branch }}: $zipName"
+        
+        # Debug: List all DLL files in the workspace
+        Write-Host "Searching for DLL files..."
+        $allDlls = Get-ChildItem -Path "." -Filter "*.dll" -Recurse
+        Write-Host "Found DLL files:"
+        $allDlls | ForEach-Object { Write-Host "  - $($_.FullName)" }
+        
+        # Find the FS_LevelEditor.dll file
+        $dllPath = Get-ChildItem -Path "." -Filter "FS_LevelEditor.dll" -Recurse | Where-Object { $_.FullName -like "*bin*Debug*" } | Select-Object -First 1
+        
+        if ($dllPath) {
+          Write-Host "Found FS_LevelEditor.dll at: $($dllPath.FullName)"
+          
+          # Create a temporary directory for packaging
+          New-Item -ItemType Directory -Force -Path "package" | Out-Null
+          
+          # Copy only the FS_LevelEditor.dll to the package directory
+          Copy-Item -Path $dllPath.FullName -Destination "package\FS_LevelEditor.dll"
+          
+          # Create the zip file with only the DLL in the root (no nested structure)
+          Compress-Archive -Path "package\*" -DestinationPath $zipName -Force
+          
+          Write-Host "Successfully created $zipName"
+          
+          # Set output for next step
+          echo "RELEASE_ZIP=$zipName" >> $env:GITHUB_ENV
+          
+          # Cleanup package directory
+          Remove-Item "package" -Recurse -Force
+        } else {
+          Write-Error "FS_LevelEditor.dll not found in build output"
+          Write-Host "Expected location pattern: *bin*Debug*"
+          exit 1
+        }
       shell: pwsh
       
-    - name: Upload manual run artifact
-      if: github.event_name == 'workflow_dispatch' && inputs.create_release == true
+    - name: Upload release package
       uses: actions/upload-artifact@v4
       with:
-        name: manual-release-${{ github.sha }}
-        path: ./mod-release.zip
+        name: ${{ env.RELEASE_ZIP }}
+        path: ${{ env.RELEASE_ZIP }}
         retention-days: 30
         
-    - name: Upload release asset
-      if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./mod-release.zip
-        asset_name: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}.zip
-        asset_content_type: application/zip
+    - name: Cleanup assemblies
+      if: always() # Run cleanup even if previous steps fail
+      run: |
+        Write-Host "Cleaning up assembly files..."
+        
+        # Remove the zip file
+        if (Test-Path "assemblies.zip") {
+          Remove-Item "assemblies.zip" -Force
+          Write-Host "Removed assemblies.zip"
+        }
+        
+        # Remove the libs directory and all contents
+        if (Test-Path "libs") {
+          Remove-Item "libs" -Recurse -Force
+          Write-Host "Removed libs directory"
+        }
+        
+        Write-Host "Cleanup completed"
+      shell: pwsh
