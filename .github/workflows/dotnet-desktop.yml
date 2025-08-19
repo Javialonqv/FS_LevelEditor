@@ -1,0 +1,73 @@
+name: Build LE
+
+on:
+  push:
+    branches: [ major-update-v0.3.0, grayperimental ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET 6
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build mod
+      run: dotnet build --configuration Release --no-restore
+      
+    - name: Run tests (if any)
+      run: dotnet test --no-build --verbosity normal --configuration Release
+      continue-on-error: true
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: mod-build-${{ github.sha }}
+        path: |
+          **/bin/Release/**/*.dll
+          **/bin/Release/**/*.pdb
+        retention-days: 7
+        
+  release:
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET 6
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
+        
+    - name: Build release
+      run: dotnet build --configuration Release
+      
+    - name: Package mod
+      run: |
+        mkdir release
+        Copy-Item -Path "**/bin/Release/**/*.dll" -Destination "release/" -Recurse -Force
+        Compress-Archive -Path "release/*" -DestinationPath "mod-release.zip"
+      shell: pwsh
+      
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./mod-release.zip
+        asset_name: ${{ github.event.repository.name }}-${{ github.event.release.tag_name }}.zip
+        asset_content_type: application/zip
