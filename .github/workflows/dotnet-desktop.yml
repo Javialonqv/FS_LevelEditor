@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       create_release:
-        description: 'Create release package'
+        description: 'Build'
         required: false
         default: false
         type: boolean
