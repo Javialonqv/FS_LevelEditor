@@ -297,7 +297,6 @@ namespace FS_LevelEditor.Editor
 					skyboxes.Add(material);
 				}
 			}
-			skyboxes.Insert(0, RenderSettings.skybox);
 
 			bundle.Unload(false);
 		}
