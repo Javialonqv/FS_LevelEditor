@@ -54,6 +54,7 @@ namespace FS_LevelEditor
         public GameObject levelNameLabel;
         public GameObject levelObjectsLabel;
         UIButtonPatcher previousPageButton, nextPageButton;
+        bool trackIfComingBack = false;
 
         void Awake()
         {
@@ -443,6 +444,7 @@ namespace FS_LevelEditor
             string levelsPath = Path.Combine(Application.persistentDataPath, "Custom Levels").Replace('/', '\\');
             if (Directory.Exists(levelsPath))
             {
+                trackIfComingBack = true;
                 System.Diagnostics.Process.Start("explorer.exe", $"/root,\"{levelsPath}\"");
             }
         }
@@ -613,20 +615,20 @@ namespace FS_LevelEditor
                     playButtonColor.pressed = new Color(0f, 0.5f, 0f, 1f);
                     playButtonColor.SetState(UIButtonColor.State.Normal, true);
 
-					playBtn.onClick += () =>
-					{
-						// Skip editor load and go straight to play mode
-						Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
-						Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
+                    playBtn.onClick += () =>
+                    {
+                        // Skip editor load and go straight to play mode
+                        Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
+                        Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
 
-						// Close menus and load level directly
-						SwitchBetweenMenuAndLEMenu(false);
-						MenuController.SoftInputAuthorized = true;
-						MenuController.InputAuthorized = true;
-						MenuController.GetInstance().ButtonPressed(ButtonController.Type.CHAPTER_4);
-					};
-					#endregion
-				}
+                        // Close menus and load level directly
+                        SwitchBetweenMenuAndLEMenu(false);
+                        MenuController.SoftInputAuthorized = true;
+                        MenuController.InputAuthorized = true;
+                        MenuController.GetInstance().ButtonPressed(ButtonController.Type.CHAPTER_4);
+                    };
+                    #endregion
+                }
             }
 
             // If there are more than 5 levels, create the buttons to travel between lists.
@@ -878,7 +880,7 @@ namespace FS_LevelEditor
                     leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
                     leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
                     yield return new WaitForSecondsRealtime(0.2f);
-                    
+
                     mainMenu.SetActive(false);
                     isInMidTransition = false;
                 }
@@ -942,11 +944,23 @@ namespace FS_LevelEditor
             previousPageButton.gameObject.SetActive(previousPageButton.button.isEnabled);
             nextPageButton.gameObject.SetActive(nextPageButton.button.isEnabled);
         }
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            // We only care when the application GAINS focus
+            if (hasFocus && trackIfComingBack)
+            {
+                // The user has returned to the application after we opened the folder.
+                // Reset the flag so this doesn't trigger again unintentionally.
+                trackIfComingBack = false;
+
+				CreateLevelsList();
+            }
+        }
     }
-    //It's in the name, go figure.
-    public static class PlayFromMenuHelper
-    {
-        public static bool PlayImmediatelyOnEditorLoad = false;
-        public static string LevelToPlay = null;
-    }
+	//It's in the name, go figure.
+	public static class PlayFromMenuHelper
+	{
+		public static bool PlayImmediatelyOnEditorLoad = false;
+		public static string LevelToPlay = null;
+	}
 }
