@@ -89,12 +89,13 @@ namespace FS_LevelEditor.Editor
         }
         void MoveCamera()
         {
-            float inputX = InControlSingleton.Instance.playerActions.Move.X;
+			float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? moveSpeed * 2f : moveSpeed;
+			float inputX = InControlSingleton.Instance.playerActions.Move.X;
             float inputZ = InControlSingleton.Instance.playerActions.Move.Y;
-            Vector3 toMove = transform.right * inputX * moveSpeed * Time.deltaTime +
-                transform.forward * inputZ * moveSpeed * Time.deltaTime;
+			Vector3 toMove = transform.right * inputX * currentSpeed * Time.deltaTime +
+				 transform.forward * inputZ * currentSpeed * Time.deltaTime;
 
-            transform.position += toMove;
+			transform.position += toMove;
         }
         void ManageMoveSpeed()
         {
@@ -116,7 +117,7 @@ namespace FS_LevelEditor.Editor
                 }
             }
             // Restore Shift speed doubling logic
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            if (Input.GetKey(KeyCode.LeftShift))
             {
                 downAndUpSpeed = moveSpeed * 2f;
             }
