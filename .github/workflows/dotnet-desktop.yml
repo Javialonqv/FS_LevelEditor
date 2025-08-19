@@ -1,4 +1,4 @@
-name: Build MelonLoader Mod
+name: Build LE 0.3.0 and Nightly (grayperimental branch)
 on:
   push:
     branches: [ major-update-v0.3.0, grayperimental ]
