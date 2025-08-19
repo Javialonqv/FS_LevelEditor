@@ -297,6 +297,7 @@ namespace FS_LevelEditor.Editor
 					skyboxes.Add(material);
 				}
 			}
+			skyboxes.Insert(0, RenderSettings.skybox);
 
 			bundle.Unload(false);
 		}
@@ -998,17 +999,6 @@ namespace FS_LevelEditor.Editor
 				Utils.ShowCustomNotificationRed($"Switched to {mode} Gizmo Mode", 1.5f);
 			}
 
-			// Shortcuts to switch between local and global gizmos arrows.
-			if (Input.GetKeyDown(KeyCode.G) && !Input.GetKey(KeyCode.LeftShift) && currentMode == Mode.Selection && currentSelectedObj != null)
-            {
-                globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
-                gizmo.SetRotation(globalGizmosArrowsEnabled ? Quaternion.identity : currentSelectedObj.transform.rotation);
-                
-                // Show feedback to user
-                string mode = globalGizmosArrowsEnabled ? "Global" : "Local";
-                Utils.ShowCustomNotificationRed($"Switched to {mode} Gizmo Mode", 1.5f);
-            }
-
 			if (Input.GetKeyDown(KeyCode.Space) && currentSelectedObj)
 			{
 				SelectedObjPanel.Instance.setActiveAtStartToggle.Set(!SelectedObjPanel.Instance.setActiveAtStartToggle.isChecked);
@@ -1172,89 +1162,99 @@ namespace FS_LevelEditor.Editor
 		private object currentRotationCoroutine;
 		private bool isRotatingWithR = false;
 
+		private Coroutine rotationCoroutine;
+
 		void ManageObjectRotationShortcuts()
 		{
 			GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
-			if (targetObj == null) return;
+			// Prevent starting a new rotation while one is in progress.
+			if (targetObj == null || rotationCoroutine != null) return;
 
-			// Only allow new rotation if not already rotating
-			if (targetObj.GetComponent<RotationTweener>() != null)
-				return;
-
-			float now = Time.unscaledTime;
-			bool doRotate = false;
-
-			if (Input.GetKey(KeyCode.R) && (now - lastRotationTime > rotationRepeatDelay))
-			{
-				doRotate = true;
-				lastRotationTime = now;
-			}
 			if (Input.GetKeyDown(KeyCode.R))
 			{
-				doRotate = true;
-				lastRotationTime = now;
+				Quaternion oldRotation = targetObj.transform.localRotation;
+				float rotationAngle = 15f * (Input.GetKey(KeyCode.T) ? -1 : 1);
+
+				Quaternion newRotation;
+
+				if (Input.GetKey(KeyCode.LeftControl))
+				{
+					// Reset rotation
+					newRotation = Quaternion.identity;
+				}
+				else
+				{
+					Quaternion deltaRotation;
+					if (Input.GetKey(KeyCode.LeftShift))
+					{
+						// Create a rotation around the local X-axis
+						deltaRotation = Quaternion.AngleAxis(rotationAngle, Vector3.right);
+					}
+					else if (Input.GetKey(KeyCode.LeftAlt))
+					{
+						// Create a rotation around the local Z-axis
+						deltaRotation = Quaternion.AngleAxis(rotationAngle, Vector3.forward);
+					}
+					else
+					{
+						// Create a rotation around the local Y-axis
+						deltaRotation = Quaternion.AngleAxis(rotationAngle, Vector3.up);
+					}
+
+					// Apply the delta rotation to the current local rotation
+					newRotation = oldRotation * deltaRotation;
+
+					// Snap the final Euler angles to clean up any floating point inaccuracies
+					newRotation.eulerAngles = SnapEulerAnglesToStep(newRotation.eulerAngles, 15f);
+				}
+
+				// Stop any existing rotation coroutine before starting a new one.
+				if (rotationCoroutine != null)
+				{
+					MelonCoroutines.Stop(rotationCoroutine);
+				}
+				rotationCoroutine = (Coroutine)MelonCoroutines.Start(SmoothRotate(targetObj, oldRotation, newRotation, 0.1f));
+
+				RotateWaypointsWithObject(targetObj, oldRotation, newRotation);
 			}
+		}
 
-			if (!doRotate) return;
 
-			Quaternion oldRotation = targetObj.transform.localRotation;
-			float rotationAngle = 15f;
-			int multiplier = Input.GetKey(KeyCode.T) ? -1 : 1;
+		IEnumerator SmoothRotate(GameObject obj, Quaternion oldRotation, Quaternion newRotation, float duration)
+		{
+			Quaternion currentRot = obj.transform.rotation;
+			float counter = 0;
 
-			// Ctrl+R: Reset rotation (use Quaternion.identity)
-			if (Input.GetKey(KeyCode.LeftControl))
+			while (counter < duration)
 			{
-				Quaternion targetRot = Quaternion.identity;
-				RotationTweener.RotateTo(targetObj, SnapEulerAnglesToStep(targetRot.eulerAngles, rotationAngle), 0.12f, RotationPath.Shortest);
-				RotateWaypointsWithObject(targetObj, targetObj.transform.localRotation, targetRot);
-				if (currentMode != Mode.Building && currentSelectedObj != null)
-					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
-				return;
+				counter += Time.deltaTime;
+				obj.transform.rotation = Quaternion.Slerp(currentRot, newRotation, counter / duration);
+				yield return null;
 			}
+			// Ensure the final rotation is precise
+			obj.transform.rotation = newRotation;
 
-			// Shift+R: Rotate X axis using Quaternion.AngleAxis
-			if (Input.GetKey(KeyCode.LeftShift))
-			{
-				Quaternion delta = Quaternion.AngleAxis(rotationAngle * multiplier, Vector3.right);
-				Quaternion targetRot = targetObj.transform.localRotation * delta;
-				Vector3 snappedEuler = SnapEulerAnglesToStep(targetRot.eulerAngles, rotationAngle);
-				RotationTweener.RotateTo(targetObj, snappedEuler, 0.08f, RotationPath.Shortest);
-				RotateWaypointsWithObject(targetObj, oldRotation, Quaternion.Euler(snappedEuler));
-				if (currentMode != Mode.Building && currentSelectedObj != null)
-					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
-				return;
-			}
-
-			// Alt+R: Rotate Z axis using Quaternion.AngleAxis
-			if (Input.GetKey(KeyCode.LeftAlt))
-			{
-				Quaternion delta = Quaternion.AngleAxis(rotationAngle * multiplier, Vector3.forward);
-				Quaternion targetRot = targetObj.transform.localRotation * delta;
-				Vector3 snappedEuler = SnapEulerAnglesToStep(targetRot.eulerAngles, rotationAngle);
-				RotationTweener.RotateTo(targetObj, snappedEuler, 0.08f, RotationPath.Shortest);
-				RotateWaypointsWithObject(targetObj, oldRotation, Quaternion.Euler(snappedEuler));
-				if (currentMode != Mode.Building && currentSelectedObj != null)
-					MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
-				return;
-			}
-
-			// Default: Rotate Y axis using Quaternion.AngleAxis
-			Quaternion yDelta = Quaternion.AngleAxis(rotationAngle * multiplier, Vector3.up);
-			Quaternion yTargetRot = targetObj.transform.localRotation * yDelta;
-			Vector3 ySnappedEuler = SnapEulerAnglesToStep(yTargetRot.eulerAngles, rotationAngle);
-			RotationTweener.RotateTo(targetObj, ySnappedEuler, 0.08f, RotationPath.Shortest);
-			RotateWaypointsWithObject(targetObj, oldRotation, Quaternion.Euler(ySnappedEuler));
+			// After rotation is complete, update UI and register the undo action.
 			if (currentMode != Mode.Building && currentSelectedObj != null)
-				MelonCoroutines.Start(WaitAndRegisterRotation(targetObj, oldRotation));
+			{
+				SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(obj.transform);
+				RegisterLEAction(LEAction.LEActionType.RotateObject, obj, multipleObjectsSelected,
+					null, null, oldRotation, newRotation);
+			}
+
+			rotationCoroutine = null;
 		}
 
 		// Helper to rotate waypoints with their parent object
 		void RotateWaypointsWithObject(GameObject parentObj, Quaternion oldRot, Quaternion newRot)
 		{
 			var leObj = parentObj.GetComponent<LE_Object>();
-			if (leObj == null || leObj.waypoints == null || leObj.waypoints.Count == 0) return;
+			if (leObj == null || leObj.waypoints == null || leObj.waypoints.Count == 0)
+				return;
+
 			var supports = parentObj.GetComponents<WaypointSupport>();
 			float rotationStep = 15f;
+
 			foreach (var support in supports)
 			{
 				foreach (var waypoint in support.spawnedWaypoints)
@@ -1264,16 +1264,19 @@ namespace FS_LevelEditor.Editor
 					Vector3 oldEuler = t.localEulerAngles;
 					Quaternion deltaRot = newRot * Quaternion.Inverse(oldRot);
 					Vector3 deltaEuler = deltaRot.eulerAngles;
+
 					// Snap delta to nearest 15 deg
 					deltaEuler.x = Mathf.Round(deltaEuler.x / rotationStep) * rotationStep;
 					deltaEuler.y = Mathf.Round(deltaEuler.y / rotationStep) * rotationStep;
 					deltaEuler.z = Mathf.Round(deltaEuler.z / rotationStep) * rotationStep;
-					// Add delta to oldEuler, then snap to result
+
+					// Add delta to current waypoint rotation
 					Vector3 newEuler = oldEuler + deltaEuler;
-					t.localEulerAngles = SnapEulerAnglesToStep(newEuler, rotationStep);
+					t.localEulerAngles = newEuler;
 				}
 			}
 		}
+
 		void ManageUndo()
 		{
 			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
@@ -2435,18 +2438,6 @@ namespace FS_LevelEditor.Editor
             actionsMade.Add(currentExecutingAction);
         }
 
-	private System.Collections.IEnumerator WaitAndRegisterRotation(GameObject obj, Quaternion oldRotation)
-{
-    // Wait until RotationTweener is destroyed (rotation finished)
-    while (obj.GetComponent<RotationTweener>() != null)
-        yield return null;
-    if (currentMode != Mode.Building && currentSelectedObj != null)
-    {
-        SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
-        RegisterLEAction(LEAction.LEActionType.RotateObject, currentSelectedObj, multipleObjectsSelected, null, null, oldRotation, currentSelectedObj.transform.localRotation);
-        levelHasBeenModified = true;
-    }
-}
 		public void EnterPlayMode()
 		{
 			if (enteringPlayMode) return;
@@ -2736,73 +2727,109 @@ namespace FS_LevelEditor.Editor
 		{
 			if (!gridVisible || !gridLineMaterial) return;
 			if (Camera.current != Camera.main) return;
+
 			gridLineMaterial.SetPass(0);
 			GL.PushMatrix();
 			GL.MultMatrix(Matrix4x4.identity);
 			GL.Begin(GL.LINES);
+
 			// Grid colors
 			Color gridColor = new Color(1f, 1f, 1f, 0.10f);
 			Color axisColorX = new Color(1f, 0.3f, 0.3f, 0.25f);
 			Color axisColorZ = new Color(0.3f, 0.6f, 1f, 0.25f);
-
 			float y = gridHeight;
 			Vector3 center = gridCenter;
 			Camera cam = Camera.main;
-			// --- Minimum region size: 200x200 ---
-			float renderGridSize = Mathf.Max(gridSize, 0.1f); // Clamp minimum grid size for rendering
-			float minRegion = 100f * renderGridSize; // 200x200 region
-			float camRange = Mathf.Max(Mathf.Clamp(Vector3.Distance(cam.transform.position, center) * 2f, 32f * renderGridSize, 256f * renderGridSize), minRegion);
+
+			// Optimization: Use adaptive rendering based on grid size
+			float renderGridSize = Mathf.Max(gridSize, 0.1f);
+			bool isVerySmallGrid = gridSize < 0.01f; // When original grid is very small
+
+			// For very small grids, reduce render distance and line count significantly
+			float baseRange = Vector3.Distance(cam.transform.position, center) * 2f;
+			float minRange = isVerySmallGrid ? 16f * renderGridSize : 32f * renderGridSize;
+			float maxRange = isVerySmallGrid ? 64f * renderGridSize : 256f * renderGridSize;
+
+			float minRegion = isVerySmallGrid ? 50f * renderGridSize : 100f * renderGridSize;
+			float camRange = Mathf.Max(Mathf.Clamp(baseRange, minRange, maxRange), minRegion);
 			float maxWorldRange = camRange;
-			int maxLines = 512;
+
+			// Reduce maximum lines for very small grids to prevent performance issues
+			int maxLines = isVerySmallGrid ? 128 : 512;
 			int halfLines = Mathf.Clamp(Mathf.CeilToInt(maxWorldRange / renderGridSize), 1, maxLines);
-			float minAlpha = 0.03f; // Minimum alpha for distant lines
+
+			float minAlpha = isVerySmallGrid ? 0.05f : 0.03f; // Slightly higher alpha for visibility
 
 			// Calculate visible grid bounds in world space
 			Vector3 camPos = cam.transform.position;
 			float gridY = y;
-			float minX = Mathf.Floor((camPos.x - maxWorldRange) / renderGridSize) * renderGridSize;
-			float maxX = Mathf.Ceil((camPos.x + maxWorldRange) / renderGridSize) * gridSize;
-			float minZ = Mathf.Floor((camPos.z - maxWorldRange) / renderGridSize) * renderGridSize;
-			float maxZ = Mathf.Ceil((camPos.z + maxWorldRange) / renderGridSize) * gridSize;
 
-			// --- Smooth fade: use a wider fade region for nice blending ---
-			float fadeStart = maxWorldRange * 0.7f;
+			// Use renderGridSize consistently for calculations to avoid precision issues
+			float minX = Mathf.Floor((camPos.x - maxWorldRange) / renderGridSize) * renderGridSize;
+			float maxX = Mathf.Ceil((camPos.x + maxWorldRange) / renderGridSize) * renderGridSize;
+			float minZ = Mathf.Floor((camPos.z - maxWorldRange) / renderGridSize) * renderGridSize;
+			float maxZ = Mathf.Ceil((camPos.z + maxWorldRange) / renderGridSize) * renderGridSize;
+
+			// Tighter fade region for small grids to reduce overdraw
+			float fadeStart = maxWorldRange * (isVerySmallGrid ? 0.8f : 0.7f);
 			float fadeEnd = maxWorldRange;
 
+			// For very small grids, use coarser step size to reduce line count
+			float stepSize = isVerySmallGrid ? renderGridSize * 2f : renderGridSize;
+
 			// Draw regular grid lines (skip axes)
-			for (float x = minX; x <= maxX; x += renderGridSize)
+			for (float x = minX; x <= maxX; x += stepSize)
 			{
 				if (Mathf.Approximately(x, center.x)) continue;
 				float camDist = Mathf.Abs(x - camPos.x);
+
+				// Early skip for very distant lines in small grids
+				if (isVerySmallGrid && camDist > maxWorldRange * 0.9f) continue;
+
 				float fade = 1f;
 				if (camDist > fadeStart)
-					fade = Mathf.InverseLerp(fadeEnd, fadeStart, camDist); // 1 at fadeStart, 0 at fadeEnd
+					fade = Mathf.InverseLerp(fadeEnd, fadeStart, camDist);
+
+				// Skip lines that would be nearly invisible
 				float alpha = Mathf.Lerp(minAlpha, gridColor.a, fade);
+				if (alpha < 0.02f) continue;
+
 				Color fadedColor = new Color(gridColor.r, gridColor.g, gridColor.b, alpha);
 				GL.Color(fadedColor);
 				GL.Vertex3(x, gridY, minZ);
 				GL.Vertex3(x, gridY, maxZ);
 			}
-			for (float z = minZ; z <= maxZ; z += gridSize)
+
+			for (float z = minZ; z <= maxZ; z += stepSize)
 			{
 				if (Mathf.Approximately(z, center.z)) continue;
 				float camDist = Mathf.Abs(z - camPos.z);
+
+				// Early skip for very distant lines in small grids
+				if (isVerySmallGrid && camDist > maxWorldRange * 0.9f) continue;
+
 				float fade = 1f;
 				if (camDist > fadeStart)
 					fade = Mathf.InverseLerp(fadeEnd, fadeStart, camDist);
+
+				// Skip lines that would be nearly invisible
 				float alpha = Mathf.Lerp(minAlpha, gridColor.a, fade);
+				if (alpha < 0.02f) continue;
+
 				Color fadedColor = new Color(gridColor.r, gridColor.g, gridColor.b, alpha);
 				GL.Color(fadedColor);
 				GL.Vertex3(minX, gridY, z);
 				GL.Vertex3(maxX, gridY, z);
 			}
-			// Draw axes last (no blending/overlap) - always draw at center.x and center.z
+
+			// Draw axes last (always visible regardless of grid size)
 			GL.Color(axisColorX);
 			GL.Vertex3(center.x, y, minZ);
 			GL.Vertex3(center.x, y, maxZ);
 			GL.Color(axisColorZ);
 			GL.Vertex3(minX, y, center.z);
 			GL.Vertex3(maxX, y, center.z);
+
 			GL.End();
 			GL.PopMatrix();
 		}

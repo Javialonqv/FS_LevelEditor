@@ -32,6 +32,7 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Visible T bonds|AnyCPU'" />
 
 	<ItemGroup>
+		<Compile Include="BuildInfo.cs" />
 		<Compile Include="Core.cs" />
 		<Compile Include="Editor\EditorGizmo.cs" />
 		<Compile Include="Editor\UI\ContextMenu.cs" />
@@ -564,5 +565,15 @@
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(FSPath)\Mods&quot;" />
+	</Target>
+	<Target Name="InjectBuildDate" AfterTargets="BeforeCompile">
+		<PropertyGroup>
+			<BuildDate>$([System.DateTime]::Now.ToString("yyyy-MM-dd HH:mm:ss"))</BuildDate>
+		</PropertyGroup>
+		<Message Text="Injecting build date: $(BuildDate)" Importance="high" />
+		<ItemGroup>
+			<BuildInfoFiles Include="BuildInfo.cs" />
+		</ItemGroup>
+		<WriteLinesToFile File="BuildInfo.cs" Lines="namespace FS_LevelEditor { public static class BuildInfo { public const string BuildDate = &quot;$(BuildDate)&quot;%3B } }" Overwrite="true" />
 	</Target>
 </Project>

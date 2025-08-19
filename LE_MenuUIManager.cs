@@ -356,7 +356,7 @@ namespace FS_LevelEditor
             version.name = "CurrentModVersion";
 
             // Ik this this inaccessible code, it's just I'll change that bool when I release the public build.
-            string currentModVersion = "v" + Assembly.GetExecutingAssembly().GetCustomAttribute<MelonInfoAttribute>().Version;
+            string currentModVersion = $"{BuildInfo.BuildDate}";
 #if DEBUG
             currentModVersion += " DEV BUILD";
 #endif

@@ -126,7 +126,8 @@ namespace FS_LevelEditor.Editor.UI
 			skyboxDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 160f), Vector3.one * 0.8f);
 			skyboxDropdown.gameObject.name = "SkyboxDropdown";
 			skyboxDropdown.SetTitle("Skybox");
-			skyboxDropdown.AddOption("Chapter 1", true);
+			skyboxDropdown.AddOption("Menu", true);
+			skyboxDropdown.AddOption("Chapter 1", false);
 			skyboxDropdown.AddOption("Chapter 2", false);
 			skyboxDropdown.AddOption("Chapter 3 & 4", false);
 
