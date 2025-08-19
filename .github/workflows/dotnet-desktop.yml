@@ -5,6 +5,13 @@ on:
     branches: [ major-update-v0.3.0, grayperimental ]
   release:
     types: [ published ]
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create release package'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -39,7 +46,7 @@ jobs:
         retention-days: 7
         
   release:
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
     needs: build
     runs-on: windows-latest
     
@@ -62,7 +69,16 @@ jobs:
         Compress-Archive -Path "release/*" -DestinationPath "mod-release.zip"
       shell: pwsh
       
+    - name: Upload manual run artifact
+      if: github.event_name == 'workflow_dispatch' && inputs.create_release == true
+      uses: actions/upload-artifact@v4
+      with:
+        name: manual-release-${{ github.sha }}
+        path: ./mod-release.zip
+        retention-days: 30
+        
     - name: Upload release asset
+      if: github.event_name == 'release'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
