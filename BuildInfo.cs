@@ -1,1 +1,1 @@
-namespace FS_LevelEditor { public static class BuildInfo { public const string BuildDate = "2025-08-19 23:42:21"; } }
+namespace FS_LevelEditor { public static class BuildInfo { public const string BuildDate = "2025-08-20 13:48:46"; } }

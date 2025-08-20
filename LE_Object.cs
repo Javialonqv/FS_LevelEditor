@@ -87,7 +87,8 @@ namespace FS_LevelEditor
             DESTRUCTIBLE_WALL,
             BRIDGE,
             CUBE_KILLPLANE,
-            KEYPAD
+            KEYPAD,
+            RELOCATION_POINT
 		}
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -787,13 +788,22 @@ namespace FS_LevelEditor
             if(objectType == ObjectType.SWITCH || objectType == ObjectType.CEILING_LIGHT)
             {
 				gameObject.GetChild("Content").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
-			} else
+			} 
+            else if(objectType == ObjectType.AMMO_PACK || objectType == ObjectType.HEALTH_PACK)
             {
-				foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>(true))
-				{
-					collider.enabled = newEnabledState;
-				}
+                gameObject.GetChildAt("Content/Mesh/PreciseCollider").SetActive(newEnabledState);
+            }
+            else if (objectType == ObjectType.VENT_WITH_SMOKE_GREEN || objectType == ObjectType.VENT_WITH_SMOKE_CYAN)
+            {
+                gameObject.GetChildAt("Content/Mesh").GetComponent<MeshCollider>().enabled = newEnabledState;
 			}
+            else
+            {
+                foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>(true))
+                {
+                    collider.enabled = newEnabledState;
+                }
+            }
             currentCollisionState = newEnabledState;
         }
         public void SetEditorCollider(bool newEnabledState)
