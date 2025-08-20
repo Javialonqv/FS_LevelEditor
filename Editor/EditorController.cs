@@ -135,6 +135,10 @@ namespace FS_LevelEditor.Editor
 		private Material gridLineMaterial;
 		private Vector3 gridCenter = Vector3.zero;
 
+		// ESC Fix
+		private bool _isInitialized = false;
+
+
 		private void UpdateGridCenter()
 		{
 			// Center grid on all objects, or at (0, gridHeight, 0) if none
@@ -318,6 +322,7 @@ namespace FS_LevelEditor.Editor
 			Camera.main.useOcclusionCulling = false;
 
 			UpdateGridCenter(); // Ensure grid is placed correctly on editor start
+			_isInitialized = true;
 		}
 		public void AfterFinishedLoadingLevel()
 		{
@@ -821,6 +826,10 @@ namespace FS_LevelEditor.Editor
 		void ManageEscAction()
 		{
 			// Shortcut for pausing LE.
+			if(!_isInitialized)
+			{
+				return;
+			}
 			if (Input.GetKeyDown(KeyCode.Escape))
 			{
 				if (EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL))
@@ -1174,6 +1183,7 @@ namespace FS_LevelEditor.Editor
 				Quaternion oldRotation = targetObj.transform.localRotation;
 				float rotationAngle = 15f * (Input.GetKey(KeyCode.T) ? -1 : 1);
 
+
 				Quaternion newRotation;
 
 				if (Input.GetKey(KeyCode.LeftControl))
@@ -1212,35 +1222,51 @@ namespace FS_LevelEditor.Editor
 				{
 					MelonCoroutines.Stop(rotationCoroutine);
 				}
-				rotationCoroutine = (Coroutine)MelonCoroutines.Start(SmoothRotate(targetObj, oldRotation, newRotation, 0.1f));
+
+				// --- CHANGE 3: Use the variable speed in the coroutine call ---
+				rotationCoroutine = (Coroutine)MelonCoroutines.Start(SmoothRotate(targetObj, oldRotation, newRotation, .15f));
 
 				RotateWaypointsWithObject(targetObj, oldRotation, newRotation);
 			}
 		}
 
-
 		IEnumerator SmoothRotate(GameObject obj, Quaternion oldRotation, Quaternion newRotation, float duration)
 		{
-			Quaternion currentRot = obj.transform.rotation;
-			float counter = 0;
-
-			while (counter < duration)
+			if (duration <= 0)
 			{
-				counter += Time.deltaTime;
-				obj.transform.rotation = Quaternion.Slerp(currentRot, newRotation, counter / duration);
+				obj.transform.rotation = newRotation;
+				yield break;
+			}
+
+			float elapsedTime = 0f;
+			float lastFrameTime = Time.unscaledTime;
+
+			while (elapsedTime < duration)
+			{
+				float currentFrameTime = Time.unscaledTime;
+				float deltaTime = currentFrameTime - lastFrameTime;
+				lastFrameTime = currentFrameTime;
+
+				// Clamp delta time to prevent huge jumps
+				deltaTime = Mathf.Min(deltaTime, 0.1f);
+
+				elapsedTime += deltaTime;
+				float t = Mathf.Clamp01(elapsedTime / duration);
+
+				// Smoothstep easing
+				t = t * t * (3f - 2f * t);
+
+				obj.transform.rotation = Quaternion.Slerp(oldRotation, newRotation, t);
 				yield return null;
 			}
-			// Ensure the final rotation is precise
+
 			obj.transform.rotation = newRotation;
 
-			// After rotation is complete, update UI and register the undo action.
 			if (currentMode != Mode.Building && currentSelectedObj != null)
 			{
 				SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(obj.transform);
-				RegisterLEAction(LEAction.LEActionType.RotateObject, obj, multipleObjectsSelected,
-					null, null, oldRotation, newRotation);
+				RegisterLEAction(LEAction.LEActionType.RotateObject, obj, multipleObjectsSelected, null, null, oldRotation, newRotation);
 			}
-
 			rotationCoroutine = null;
 		}
 

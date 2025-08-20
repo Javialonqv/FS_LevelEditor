@@ -816,8 +816,10 @@ namespace FS_LevelEditor.Editor.UI
 			var typeButton = deathTriggerAttributes.GetChildAt("Type/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			typeButton.AddOption("DeathRelocation", new Color(0.8f, 0f, 0f));
 			typeButton.AddOption("DeathImminent", Color.black);
-
+			CreateObjectAttribute("CustomCoordinates", AttributeType.TOGGLE, false, null, "CustomCoordinates");
+			CreateObjectAttribute("TeleportCoordinates", AttributeType.VECTOR, new Vector3(0, 0, 0), null, "TeleportCoordinates");
 			CreateObjectAttribute("Delay", AttributeType.INPUT_FIELD, "2", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "Delay");
+			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
 			deathTriggerAttributes.SetActive(false);
 			attributesPanels.Add("Death Trigger", deathTriggerAttributes);
@@ -967,7 +969,7 @@ namespace FS_LevelEditor.Editor.UI
 			attributesPanels.Add("Keypad", keypad);
 		}
 
-		enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE }
+		enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE, VECTOR }
 		void SetCurrentParentToCreateAttributes(GameObject newParent)
 		{
 			whereToCreateObjAttributesParent = newParent.transform;
@@ -985,7 +987,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			if (attrType != AttributeType.BUTTON)
 			{
-				int titleWidth = attrType == AttributeType.INPUT_FIELD || attrType == AttributeType.BUTTON_MULTIPLE ? 260 : 395;
+				int titleWidth = (attrType == AttributeType.INPUT_FIELD || attrType == AttributeType.BUTTON_MULTIPLE || attrType == AttributeType.VECTOR) ? 260 : 395;
 				if (createHastag) titleWidth = 235;
 				UILabel title = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(-230, yPos), new Vector3Int(titleWidth, NGUI_Utils.defaultLabelSize.y, 0),
 					text);
@@ -1000,7 +1002,6 @@ namespace FS_LevelEditor.Editor.UI
 				hashtagLOL.color = Color.white;
 			}
 
-
 			if (attrType == AttributeType.INPUT_FIELD)
 			{
 				var field = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(140, yPos), new Vector3Int(200, 38, 0), 27, (string)defaultValue, false,
@@ -1009,7 +1010,6 @@ namespace FS_LevelEditor.Editor.UI
 				field.setFieldColorAutomatically = false;
 				field.onChange += () => SetPropertyWithInput(targetPropName, field);
 
-				// Add max length restriction if specified
 				if (maxLength.HasValue)
 				{
 					field.input.characterLimit = maxLength.Value;
@@ -1053,6 +1053,48 @@ namespace FS_LevelEditor.Editor.UI
 				if (tooltip != null)
 				{
 					button.gameObject.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
+				}
+			}
+			else if (attrType == AttributeType.VECTOR)
+			{
+				string[] defaultValues = { "0", "0", "0" };
+				if (defaultValue is string defaultString && !string.IsNullOrEmpty(defaultString))
+				{
+					string[] parsedValues = defaultString.Split(',');
+					for (int i = 0; i < parsedValues.Length && i < 3; i++)
+					{
+						string trimmedValue = parsedValues[i].Trim();
+						if (!string.IsNullOrEmpty(trimmedValue))
+						{
+							defaultValues[i] = trimmedValue;
+						}
+					}
+				}
+				var inputTypeForVector = fieldType ?? UICustomInputField.UIInputType.FLOAT;
+
+				float startX = 70f;
+				float fieldWidth = 60f;
+				float spacing = 2f;
+
+				UICustomInputField xField = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(startX, yPos), new Vector3Int((int)fieldWidth, 38, 0), 27, defaultValues[0], inputType: inputTypeForVector);
+				xField.name = "XField";
+				// **THE FIX**: Call the new method that rebuilds the vector from the UI
+				xField.onChange += () => SetVector3PropertyWithInput(targetPropName, attributeParent);
+
+				// Y Coordinate
+				UICustomInputField yField = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(startX + fieldWidth + spacing, yPos), new Vector3Int((int)fieldWidth, 38, 0), 27, defaultValues[1], inputType: inputTypeForVector);
+				yField.name = "YField";
+				yField.onChange += () => SetVector3PropertyWithInput(targetPropName, attributeParent);
+
+				// Z Coordinate
+				UICustomInputField zField = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(startX + (fieldWidth + spacing) * 2, yPos), new Vector3Int((int)fieldWidth, 38, 0), 27, defaultValues[2], inputType: inputTypeForVector);
+				zField.name = "ZField";
+				zField.onChange += () => SetVector3PropertyWithInput(targetPropName, attributeParent);
+
+
+				if (tooltip != null)
+				{
+					attributeParent.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
 				}
 			}
 
@@ -1601,7 +1643,33 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			#endregion
 		}
+		void SetVector3PropertyWithInput(string propertyName, GameObject attributeParent)
+		{
+			var objComponent = EditorController.Instance.currentSelectedObjComponent;
+			if (objComponent == null) return;
 
+			// Find the three input fields within the attribute's parent object
+			var xField = attributeParent.transform.Find("XField").GetComponent<UICustomInputField>();
+			var yField = attributeParent.transform.Find("YField").GetComponent<UICustomInputField>();
+			var zField = attributeParent.transform.Find("ZField").GetComponent<UICustomInputField>();
+
+			if (xField == null || yField == null || zField == null)
+			{
+				UnityEngine.Debug.LogError("Could not find all three Vector3 input fields.");
+				return;
+			}
+
+			// Parse the current values from all three UI fields
+			float.TryParse(xField.input.text, out float xVal);
+			float.TryParse(yField.input.text, out float yVal);
+			float.TryParse(zField.input.text, out float zVal);
+
+			// Create the new Vector3 from the UI state
+			Vector3 newVector = new Vector3(xVal, yVal, zVal);
+
+			// Set the property using the editor's reliable SetProperty method
+			objComponent.SetProperty(propertyName, newVector);
+		}
 		public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
 		{
 			// Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
@@ -1646,7 +1714,6 @@ namespace FS_LevelEditor.Editor.UI
 
 				return;
 			}
-
 			if (propertyName == "Keycode")
 			{
 				string text = inputField.GetText();
@@ -1721,6 +1788,9 @@ namespace FS_LevelEditor.Editor.UI
 				case "CanUseTaser":
 					OnTaserUsed(toggle.isChecked);
 					break;
+				case "CustomCoordinates":
+					OnCustomCoordinates(toggle.isChecked);
+					break;
 			}
 
 			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
@@ -1781,6 +1851,10 @@ namespace FS_LevelEditor.Editor.UI
 		void OnTaserUsed(bool isEnabled)
 		{
 			attributesPanels["Switch"].GetChild("OnlyByTaser").SetActive(isEnabled);
+		}
+		void OnCustomCoordinates(bool isEnabled)
+		{
+			attributesPanels["Death Trigger"].GetChild("TeleportCoordinates").SetActive(isEnabled);
 		}
 		void SetSawTravelBackORLoop(bool travelBack, bool loop)
 		{

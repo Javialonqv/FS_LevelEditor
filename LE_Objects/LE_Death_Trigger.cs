@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace FS_LevelEditor
 {
@@ -18,7 +19,10 @@ namespace FS_LevelEditor
             properties = new Dictionary<string, object>()
             {
                 { "Type", TriggerType.Relocation },
-                { "Delay", 0f }
+                { "Delay", 0f },
+				{ "CustomCoordinates", false },
+				{ "TeleportCoordinates", new Vector3(0,0,0)},
+				{ "OnTeleport", new List<LE_Event>() }
             };
         }
 
@@ -44,7 +48,18 @@ namespace FS_LevelEditor
             script.warnDistance = 9;
             script.currentRespawnIndex = 0;
             content.GetChild("Spawn").transform.position = content.transform.position;
-            script.m_resetTransform = content.GetChild("Spawn").transform;
+            if(GetProperty<bool>("CustomCoordinates"))
+            {
+				GameObject target = new GameObject();
+				target.transform.position = GetProperty<Vector3>("TeleportCoordinates");
+				target.transform.eulerAngles = GetProperty<Vector3>("TeleportRotation");
+				target.transform.localScale = Vector3.one;
+				script.m_resetTransform = target.transform;
+			}
+            else
+            {
+				script.m_resetTransform = content.GetChild("Spawn").transform;
+			}
             script.playDialogs = false;
             script.selectivePlayDialogs = false;
             script.dialogsUpperLimit = false;
@@ -56,7 +71,9 @@ namespace FS_LevelEditor
 
             script.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
 
-            content.SetActive(true);
+			ConfigureEvents(script);
+
+			content.SetActive(true);
 
             initialized = true;
         }
@@ -76,7 +93,15 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-            else if (name == "Delay")
+			else if (name == "CustomCoordinates")
+			{
+				if (value is bool)
+				{
+					properties["CustomCoordinates"] = (bool)value;
+					return true;
+				}
+			}
+			else if (name == "Delay")
             {
                 if (value is string)
                 {
@@ -92,11 +117,48 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-
-            return base.SetProperty(name, value);
+			else if (name == "TeleportCoordinates")
+			{
+				if (value is Vector3)
+				{
+					properties["TeleportCoordinates"] = (Vector3)value;
+					return true;
+				}
+			}
+			else if (name == "TeleportRotation")
+			{
+				if (value is Vector3)
+				{
+					properties["TeleportRotation"] = (Vector3)value;
+					return true;
+				}
+			}
+			else if (GetAvailableEventsIDs().Contains(name))
+			{
+				if (value is List<LE_Event>)
+				{
+					properties[name] = (List<LE_Event>)value;
+				}
+			}
+			return base.SetProperty(name, value);
         }
-
-        public static new Color GetDefaultObjectColor(LEObjectContext context)
+		public override List<string> GetAvailableEventsIDs()
+		{
+			return new List<string>
+			{
+				"OnTeleport",
+			};
+		}
+		void ConfigureEvents(ContainmentBox script)
+		{
+			script.onTeleport = new UnityEngine.Events.UnityEvent();
+			script.onTeleport.AddListener((UnityAction)ExecuteOnTeleportEvents);
+		}
+		void ExecuteOnTeleportEvents()
+		{
+			eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnTeleport"]);
+		}
+		public static new Color GetDefaultObjectColor(LEObjectContext context)
         {
             return new Color(1f, 0f, 0f, 0.05f);
         }

@@ -10,93 +10,93 @@ using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
-    public class LE_Ammo_Pack : LE_Object
-    {
-        Ammo ammo;
+	[MelonLoader.RegisterTypeInIl2Cpp]
+	public class LE_Ammo_Pack : LE_Object
+	{
+		Ammo ammo;
 
-        void Awake()
-        {
-            properties = new Dictionary<string, object>()
-            {
-                { "RespawnTime", 20f }
-            };
-        }
+		void Awake()
+		{
+			properties = new Dictionary<string, object>()
+			{
+				{ "RespawnTime", 20f }
+			};
+		}
 
-        public override void InitComponent()
-        {
-            gameObject.GetChild("Content").SetActive(false);
-            gameObject.GetChild("Content").tag = "AmmoPack";
+		public override void InitComponent()
+		{
+			gameObject.GetChild("Content").SetActive(false);
+			gameObject.GetChild("Content").tag = "AmmoPack";
 
-            DisolveOnEnable disolve = gameObject.GetChildAt("Content/Mesh/PC_Only").AddComponent<DisolveOnEnable>();
+			DisolveOnEnable disolve = gameObject.GetChildAt("Content/Mesh/PC_Only").AddComponent<DisolveOnEnable>();
 
-            disolve.m_renderer = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
-            disolve.dissolveMaterials = t_ammoPack.gameObject.GetChildAt("Mesh/PC_Only").GetComponent<DisolveOnEnable>().dissolveMaterials;
-            disolve.finalMaterials = new Material[] { disolve.m_renderer.sharedMaterial };
-            disolve.appearSpeed = 3;
-            disolve.startOffset = -0.6f;
-            disolve.endOffset = 0.8f;
-            disolve.ignoreTimeScale = true;
+			disolve.m_renderer = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
+			disolve.dissolveMaterials = t_ammoPack.gameObject.GetChildAt("Mesh/PC_Only").GetComponent<DisolveOnEnable>().dissolveMaterials;
+			disolve.finalMaterials = new Material[] { disolve.m_renderer.sharedMaterial };
+			disolve.appearSpeed = 3;
+			disolve.startOffset = -0.6f;
+			disolve.endOffset = 0.8f;
+			disolve.ignoreTimeScale = true;
 
-            ammo = gameObject.GetChild("Content").AddComponent<Ammo>();
+			ammo = gameObject.GetChild("Content").AddComponent<Ammo>();
 
-            ammo.preciseCollider = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<MeshCollider>();
-            ammo.preciseCollider2 = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<CapsuleCollider>();
-            ammo.m_animComp = gameObject.GetChild("Content").GetComponent<Animation>();
-            ammo.m_boxCollider = gameObject.GetChild("Content").GetComponent<BoxCollider>();
-            ammo.mesh = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
-            ammo.timerBeforeRespawn = -1;
-            Invoke("SetRespawnTime", 0.1f);
-            ammo.generalGrowSpeed = 3;
-            ammo.xScaleSpeed = 2;
-            ammo.yScaleSpeed = 1;
-            ammo.zScaleSpeed = 1;
-            ammo.m_light = gameObject.GetChildAt("Content/Mesh/PC_Only").GetComponent<Light>();
-            ammo.m_flare = gameObject.GetChildAt("Content/Mesh/AmmoFlare").GetComponent<LensFlare>();
-            ammo.m_dissolve = disolve;
+			ammo.preciseCollider = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<MeshCollider>();
+			ammo.preciseCollider2 = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<CapsuleCollider>();
+			ammo.m_animComp = gameObject.GetChild("Content").GetComponent<Animation>();
+			ammo.m_boxCollider = gameObject.GetChild("Content").GetComponent<BoxCollider>();
+			ammo.mesh = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
+			ammo.timerBeforeRespawn = -1;
+			Invoke("SetRespawnTime", 0.1f);
+			ammo.generalGrowSpeed = 3;
+			ammo.xScaleSpeed = 2;
+			ammo.yScaleSpeed = 1;
+			ammo.zScaleSpeed = 1;
+			ammo.m_light = gameObject.GetChildAt("Content/Mesh/PC_Only").GetComponent<Light>();
+			ammo.m_flare = gameObject.GetChildAt("Content/Mesh/AmmoFlare").GetComponent<LensFlare>();
+			ammo.m_dissolve = disolve;
 
-            gameObject.GetChild("Content").SetActive(true);
+			gameObject.GetChild("Content").SetActive(true);
 
-            initialized = true;
-        }
+			initialized = true;
+		}
 
-        // Since respawn time is fixed and is changed to default (20) at Start() of Ammo class, change it after 0.1s
-        void SetRespawnTime()
-        {
-            ammo.respawnTime = (float)GetProperty("RespawnTime");
-        }
+		// Since respawn time is fixed and is changed to default (20) at Start() of Ammo class, change it after 0.1s
+		void SetRespawnTime()
+		{
+			ammo.respawnTime = (float)GetProperty("RespawnTime");
+		}
 
-        public override bool SetProperty(string name, object value)
-        {
-            if (name == "RespawnTime")
-            {
-                if (value is string)
-                {
-                    if (Utils.TryParseFloat((string)value, out float result))
-                    {
-                        properties["RespawnTime"] = result;
-                        return true;
-                    }
-                }
-                else if (value is float)
-                {
-                    properties["RespawnTime"] = (float)value;
-                    if (ammo) ammo.respawnTime = (float)value;
-                    return true;
-                }
-            }
+		public override bool SetProperty(string name, object value)
+		{
+			if (name == "RespawnTime")
+			{
+				if (value is string)
+				{
+					if (Utils.TryParseFloat((string)value, out float result))
+					{
+						properties["RespawnTime"] = result;
+						return true;
+					}
+				}
+				else if (value is float)
+				{
+					properties["RespawnTime"] = (float)value;
+					if (ammo) ammo.respawnTime = (float)value;
+					return true;
+				}
+			}
 
-            return base.SetProperty(name, value);
-        }
+			return base.SetProperty(name, value);
+		}
 
-        public override bool TriggerAction(string actionName)
-        {
-            if (actionName == "SpawnNow")
-            {
-                if (ammo) ammo.Activate();
-            }
+		public override bool TriggerAction(string actionName)
+		{
+			if (actionName == "SpawnNow")
+			{
+				if (ammo) ammo.Activate();
+			}
 
-            return base.TriggerAction(actionName);
-        }
-    }
+			return base.TriggerAction(actionName);
+		}
+	}
 }
