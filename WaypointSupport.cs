@@ -305,6 +305,16 @@ namespace FS_LevelEditor
 
                 waypoint = Instantiate(template, waypointsParent);
                 waypoint.SetTransparentMaterials();
+                if(targetObject.objectType == LE_Object.ObjectType.CEILING_LIGHT || targetObject.objectType == LE_Object.ObjectType.POINT_LIGHT 
+                    || targetObject.objectType == LE_Object.ObjectType.DIRECTIONAL_LIGHT)
+                {
+                    waypoint.GetComponentInChildren<Light>().range = targetObject.GetProperty<float>("Range");
+                    targetObject.TryGetProperty("Intensity", out object intensity);
+                    if(intensity != null)
+                    {
+						waypoint.GetComponentInChildren<Light>().intensity = (float)intensity;
+					}
+				}
                 // DESTROY EVERY FUCKING RIGIDBODY WE FIND.
                 foreach (var rigidBody in waypoint.TryGetComponents<Rigidbody>(true))
                 {
