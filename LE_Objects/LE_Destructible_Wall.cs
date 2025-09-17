@@ -29,7 +29,8 @@ namespace FS_LevelEditor
 				Transform debrisParent = gameObject.GetChild("Content/Debris").transform;
 				for (int i = 0; i < debrisParent.childCount; i++)
 				{
-					Destroy(debrisParent.GetChild(i));
+					Transform child = debrisParent.GetChild(i);
+					child.GetComponent<Rigidbody>().useGravity = false;
 				}
 			}
 		}

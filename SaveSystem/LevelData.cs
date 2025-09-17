@@ -17,44 +17,110 @@ using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor.SaveSystem
 {
-    public enum UpgradeType
-    {
-        DODGE,
-        SPRINT,
-        HYPER_SPEED
-    }
-    public class UpgradeSaveData
-    {
-        public UpgradeType type { get; set; }
-        public bool active { get; set; }
-        public int level { get; set; }
+	public enum UpgradeType
+	{
+		DODGE,
+		SPRINT,
+		HYPER_SPEED,
+		JETPACK,
+		HEALTH,
+		SPEED,
+		TASER_CAPACITY,
+		HEALTH_BACKPACK,
+		TASER_BACKPACK,
+		TASER_POWER,
+		STEALTH,
+		AIM_STABILIZER,
+		HOVER,
+		SCOPE,
+		SAFE_LANDING,
+		UV_FLASHLIGHT,
+		SCANNER
+	}
+	public class UpgradeSaveData
+	{
+		public UpgradeType type { get; set; }
+		public bool active { get; set; }
+		public int level { get; set; }
 
-        public UpgradeSaveData() { }
-        public UpgradeSaveData(UpgradeType _type, bool _active, int _level)
-        {
-            type = _type;
-            active = _active;
-            level = _level;
-        }
+		public UpgradeSaveData() { }
+		public UpgradeSaveData(UpgradeType _type, bool _active, int _level)
+		{
+			type = _type;
+			active = _active;
+			level = _level;
+		}
 
-        public static UpgradePageController.UpgradeType? ConvertTypeToFSType(UpgradeType type)
-        {
-            switch (type)
-            {
-                case UpgradeType.DODGE:
-                    return UpgradePageController.UpgradeType.DODGE;
-                case UpgradeType.SPRINT:
-                    return UpgradePageController.UpgradeType.SPRINT;
-                case UpgradeType.HYPER_SPEED:
-                    return UpgradePageController.UpgradeType.CONCENTRATION;
+		/// <summary>
+		/// Returns true if this upgrade is effectively enabled (active and level > 0)
+		/// </summary>
+		public bool IsEnabled => active && level > 0;
 
-                default:
-                    return null;
-            }
-        }
-    }
+		/// <summary>
+		/// Sets the upgrade to disabled state (active = false, level = 0)
+		/// </summary>
+		public void SetDisabled()
+		{
+			active = false;
+			level = 0;
+		}
 
-    [Serializable]
+		/// <summary>
+		/// Sets the upgrade to enabled with specified level
+		/// </summary>
+		public void SetEnabled(int targetLevel)
+		{
+			active = true;
+			level = Math.Max(1, targetLevel); // Ensure level is at least 1 when enabled
+		}
+
+		public static UpgradePageController.UpgradeType? ConvertTypeToFSType(UpgradeType type)
+		{
+			switch (type)
+			{
+				case UpgradeType.DODGE:
+					return UpgradePageController.UpgradeType.DODGE;
+				case UpgradeType.SPRINT:
+					return UpgradePageController.UpgradeType.SPRINT;
+				case UpgradeType.HYPER_SPEED:
+					return UpgradePageController.UpgradeType.CONCENTRATION;
+				case UpgradeType.JETPACK:
+					return UpgradePageController.UpgradeType.JETPACK;
+				case UpgradeType.HEALTH:
+					return UpgradePageController.UpgradeType.HEALTH;
+				case UpgradeType.SPEED:
+					return UpgradePageController.UpgradeType.SPEED;
+				case UpgradeType.STEALTH:
+					return UpgradePageController.UpgradeType.STEALTH;
+				case UpgradeType.TASER_CAPACITY:
+					return UpgradePageController.UpgradeType.TASER;
+				case UpgradeType.HEALTH_BACKPACK:
+					return UpgradePageController.UpgradeType.HEALTHBACKPACK;
+				case UpgradeType.TASER_BACKPACK:
+					return UpgradePageController.UpgradeType.TASERBACKPACK;
+				case UpgradeType.TASER_POWER:
+					return UpgradePageController.UpgradeType.TASER_POWER;
+				case UpgradeType.AIM_STABILIZER:
+					return UpgradePageController.UpgradeType.AIM_STABILIZER;
+				case UpgradeType.HOVER:
+					return UpgradePageController.UpgradeType.HOVER;
+				case UpgradeType.SCOPE:
+					return UpgradePageController.UpgradeType.SCOPE;
+				case UpgradeType.SAFE_LANDING:
+					return UpgradePageController.UpgradeType.SAFE_LANDING;
+				case UpgradeType.UV_FLASHLIGHT:
+					return UpgradePageController.UpgradeType.INFRARED_FLASHLIGHT;
+				case UpgradeType.SCANNER:
+					return UpgradePageController.UpgradeType.SCANNER;
+
+				default:
+					return null;
+			}
+		}
+	}
+
+
+	[Serializable]
     public class LevelData
     {
         public string levelName { get; set; }
@@ -313,23 +379,6 @@ namespace FS_LevelEditor.SaveSystem
 			EditorController.Instance.AfterFinishedLoadingLevel();
 		}
 
-		private static void BatchApplyUpgradeData(KeyValuePair<string, object> keyPair, Dictionary<string, object> targetProperties)
-		{
-			var savedList = keyPair.Value as List<UpgradeSaveData>;
-			var defaultList = targetProperties[keyPair.Key] as List<UpgradeSaveData>;
-
-			// Pre-create lookup for faster matching
-			var upgradeMap = savedList.ToDictionary(x => x.type);
-
-			for (int i = 0; i < defaultList.Count; i++)
-			{
-				if (upgradeMap.TryGetValue(defaultList[i].type, out var savedData))
-				{
-					defaultList[i] = savedData;
-				}
-			}
-		}
-
 		public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
 		{
 			// Initialize essential components first
@@ -504,14 +553,61 @@ namespace FS_LevelEditor.SaveSystem
                 { "Upgrades", GetDefaultUpgradeSaveData() }
             };
         }
-        public static List<UpgradeSaveData> GetDefaultUpgradeSaveData()
-        {
-            return new List<UpgradeSaveData>()
-            {
-                new (UpgradeType.DODGE, true, Controls.m_dodgeUpgradeMaxLevel),
-                new (UpgradeType.SPRINT, true, 0),
-                new (UpgradeType.HYPER_SPEED, true, 0)
-            };
-        }
-    }
+		public static List<UpgradeSaveData> GetDefaultUpgradeSaveData()
+		{
+			return new List<UpgradeSaveData>()
+			{
+                // Jetpack now disabled by default; enabled only if HasJetpack global property is true
+                new (UpgradeType.JETPACK, false, 0),
+				new (UpgradeType.HEALTH, true, 1),
+				new (UpgradeType.SPEED, true, 1),
+				new (UpgradeType.TASER_CAPACITY, true, 1),
+				new (UpgradeType.STEALTH, true, 1),
+                // Remaining upgrades start disabled / level 0
+                new (UpgradeType.DODGE, false, 0),
+				new (UpgradeType.SPRINT, false, 0),
+				new (UpgradeType.HYPER_SPEED, false, 0),
+				new (UpgradeType.HEALTH_BACKPACK, false, 0),
+				new (UpgradeType.TASER_BACKPACK, false, 0),
+				new (UpgradeType.TASER_POWER, false, 0),
+				new (UpgradeType.AIM_STABILIZER, false, 0),
+				new (UpgradeType.HOVER, false, 0),
+				new (UpgradeType.SCOPE, false, 0),
+				new (UpgradeType.SAFE_LANDING, false, 0),
+				new (UpgradeType.UV_FLASHLIGHT, false, 0),
+				new (UpgradeType.SCANNER, false, 0)
+			};
+		}
+		/// <summary>
+		/// Returns the maximum allowed level for an upgrade type based on base game limits.
+		/// Screenshot reference: most upgrades 3, some capped at 2.
+		/// </summary>
+		public static int GetUpgradeMaxLevel(UpgradeType type)
+		{
+			return type switch
+			{
+				UpgradeType.TASER_POWER => 2,
+				UpgradeType.AIM_STABILIZER => 2,
+				UpgradeType.SCOPE => 2,
+				UpgradeType.SAFE_LANDING => 2,
+				UpgradeType.UV_FLASHLIGHT => 2,
+				UpgradeType.SCANNER => 2,
+				_ => 3
+			};
+		}
+
+		static void BatchApplyUpgradeData(KeyValuePair<string, object> keyPair, Dictionary<string, object> targetProperties)
+		{
+			if (keyPair.Value is not List<UpgradeSaveData> savedList) return;
+			if (targetProperties[keyPair.Key] is not List<UpgradeSaveData> defaultList) return;
+			var upgradeMap = savedList.ToDictionary(x => x.type);
+			for (int i = 0; i < defaultList.Count; i++)
+			{
+				if (upgradeMap.TryGetValue(defaultList[i].type, out var savedData))
+				{
+					defaultList[i] = savedData;
+				}
+			}
+		}
+	}
 }

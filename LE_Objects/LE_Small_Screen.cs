@@ -27,7 +27,10 @@ namespace FS_LevelEditor
         GameObject greenMesh, redMesh;
         TextMeshPro screenText;
 
-        void Awake()
+		//Made for templates feature
+		string _rawTemplateText;
+
+		void Awake()
         {
             properties = new Dictionary<string, object>()
             {
@@ -56,10 +59,11 @@ namespace FS_LevelEditor
             // No matter the scene (Editor/Playmode) change the mesh.
             SetScreenMeshVisibility(GetProperty<bool>("InvisibleMesh"));
             SetScreenColor(GetProperty<ScreenColorType>("ColorType"));
-            SetScreenText(GetProperty<string>("Text"));
-            UpdateScreenTextFont();
+			_rawTemplateText = GetProperty<string>("Text");
+			SetScreenText(_rawTemplateText);
+			UpdateScreenTextFont();
 
-            base.ObjectStart(scene);
+			base.ObjectStart(scene);
         }
 
         public override void InitComponent()
@@ -211,23 +215,24 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-            else if (name == "Text")
-            {
-                properties["Text"] = value.ToString();
-                if (PlayModeController.Instance)
-                {
-                    SetScreenText(value.ToString()); // Only requires manually update in playmode.
-                }
+			else if (name == "Text")
+			{
+				properties["Text"] = value.ToString();
+				_rawTemplateText = value.ToString();
+				if (PlayModeController.Instance)
+				{
+					SetScreenText(_rawTemplateText); // Only requires manually update in playmode.
+				}
 
-                // Since this will convert the value to string no matter what, it'll catch the JsonElement before base.SetProperty() does, so, skip the warning in case it is
-                // JsonElement.
-                if (value is not string && value is not JsonElement)
-                {
-                    Logger.Warning($"The value wasn't a string, that's not expected, the value type was \"{value.GetType().Name}\".");
-                }
-            }
+				// Since this will convert the value to string no matter what, it'll catch the JsonElement before base.SetProperty() does, so, skip the warning in case it is
+				// JsonElement.
+				if (value is not string && value is not JsonElement)
+				{
+					Logger.Warning($"The value wasn't a string, that's not expected, the value type was \"{value.GetType().Name}\".");
+				}
+			}
 
-            return base.SetProperty(name, value);
+			return base.SetProperty(name, value);
         }
         public override bool TriggerAction(string actionName)
         {
@@ -236,15 +241,16 @@ namespace FS_LevelEditor
                 TextEditorUI.Instance.ShowTextEditor(this);
                 return true;
             }
-            else if (actionName == "OnTextEditorClose")
-            {
-                // NOT update the screen mesh color since that's in another property that's NOT in the text editor.
-                SetScreenText(GetProperty<string>("Text"));
-                UpdateScreenTextFont();
-                return true;
-            }
+			else if (actionName == "OnTextEditorClose")
+			{
+				// NOT update the screen mesh color since that's in another property that's NOT in the text editor.
+				_rawTemplateText = GetProperty<string>("Text");
+				SetScreenText(_rawTemplateText);
+				UpdateScreenTextFont();
+				return true;
+			}
 
-            else if (actionName == "InvertText")
+			else if (actionName == "InvertText")
             {
                 if (screen.isInverted)
                 {
@@ -341,9 +347,11 @@ namespace FS_LevelEditor
                 screenText.fontSize = GetProperty<float>("FontSize");
             }
         }
-        void SetScreenText(string newText)
-        {
-            screenText.text = newText;
-        }
-    }
+		void SetScreenText(string raw)
+		{
+			string expanded = ScreenTemplateExpander.Expand(raw);
+			screenText.text = expanded;
+			ScreenTemplateExpander.EnsureUpdater(screenText, raw);
+		}
+	}
 }

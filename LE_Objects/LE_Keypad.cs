@@ -133,6 +133,7 @@ namespace FS_LevelEditor
 			{
 				keycode.onFailEvents.AddListener((UnityEngine.Events.UnityAction)delegate { keycode.OnLeaveButton(); });
 			}
+			keycode.onFailEvents.AddListener((UnityEngine.Events.UnityAction)delegate { keycode.onFailEvents = new UnityEvent(); });
 
 			initialized = true;
 		}

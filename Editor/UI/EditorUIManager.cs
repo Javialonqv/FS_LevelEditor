@@ -25,7 +25,8 @@ namespace FS_LevelEditor.Editor.UI
 		EVENTS_PANEL,
 		SELECTING_TARGET_OBJ,
 		GLOBAL_PROPERTIES,
-		TEXT_EDITOR
+		TEXT_EDITOR,
+		UPGRADES_PANEL
 	}
 
 	[RegisterTypeInIl2Cpp]
@@ -119,6 +120,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			EventsUIPageManager.Create();
 			TextEditorUI.Create();
+			UpgradesPanel.Create();
 
 			CreateHittenTargetObjPanel();
 
@@ -588,7 +590,17 @@ namespace FS_LevelEditor.Editor.UI
 				TextEditorUI.Instance.editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
 				Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
 			}
-
+			if (context == EditorUIContext.UPGRADES_PANEL)
+			{
+				UpgradesPanel.Instance.upgradesPanel.SetActive(true);
+				UpgradesPanel.Instance.upgradesPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
+				Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
+				// If coming from Global Properties, close it
+				if (currentUIContext == EditorUIContext.GLOBAL_PROPERTIES)
+				{
+					TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(1320, 0));
+				}
+			}
 			if (context == EditorUIContext.GLOBAL_PROPERTIES)
 			{
 				GlobalPropertiesPanel.Instance.RefreshGlobalPropertiesPanelValues();
@@ -621,12 +633,16 @@ namespace FS_LevelEditor.Editor.UI
 						TextEditorUI.Instance.editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
 						Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
 						break;
+					case EditorUIContext.UPGRADES_PANEL:
+						UpgradesPanel.Instance.upgradesPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
+						Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
+						break;
 				}
 
 				switch (previousUIContext)
 				{
 					case EditorUIContext.HELP_PANEL:
-						if (currentUIContext != EditorUIContext.GLOBAL_PROPERTIES) // Avoid an infinite loop with help panel and global properties.
+						if (currentUIContext != EditorUIContext.GLOBAL_PROPERTIES && currentUIContext != EditorUIContext.UPGRADES_PANEL) // Avoid an infinite loop with help panel and global properties.
 						{
 							helpPanel.SetActive(true);
 							context = EditorUIContext.HELP_PANEL;
@@ -634,8 +650,11 @@ namespace FS_LevelEditor.Editor.UI
 						break;
 
 					case EditorUIContext.GLOBAL_PROPERTIES:
-						TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(600, 0));
-						context = EditorUIContext.GLOBAL_PROPERTIES;
+						if(currentUIContext != EditorUIContext.UPGRADES_PANEL)
+						{
+							TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(600, 0));
+							context = EditorUIContext.GLOBAL_PROPERTIES;
+						}
 						break;
 				}
 			}

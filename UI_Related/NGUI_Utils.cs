@@ -65,8 +65,24 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
-        // Color
-        public static Color fsPauseButtonsDefaultColor
+		static UIFont _juraFont;
+		public static UIFont juraFont
+		{
+			get
+			{
+				if (!_juraFont)
+				{
+					var titleObj = GameObject.Find("MainMenu/Camera/Holder/Options/Title");
+					if (titleObj)
+						_juraFont = titleObj.GetComponent<UILabel>().font;
+					else
+						_juraFont = labelFont; // fallback
+				}
+				return _juraFont;
+			}
+		}
+		// Color
+		public static Color fsPauseButtonsDefaultColor
         {
             get { return new Color(0f, 0.3603f, 0.3603f, 1f); }
         }

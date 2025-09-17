@@ -22,9 +22,6 @@ namespace FS_LevelEditor.Editor.UI
 		UICustomInputField deathYLimitField;
 		UIButtonAsToggle visualizeDeathYLimitButton;
 		UIDropdownPatcher skyboxDropdown;
-		// -----------------------------
-		GameObject upgradesParent;
-		int createdUpgradesUICount = 0;
 
 		public static void Create(Transform parent)
 		{
@@ -48,10 +45,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateHasJetpackToggle();
 			CreateDeathYLimitField();
 			CreateLevelSkyboxDropdown();
-
-			CreateUpgradesParent();
-			CreateUpgradesTitle();
-			CreateUpgradesUI();
+			CreateUpgradesButton();
 		}
 		void Start()
 		{
@@ -134,60 +128,15 @@ namespace FS_LevelEditor.Editor.UI
 			skyboxDropdown.AddOnChangeOption((id) => SetGlobalPropertyWithDropdown("Skybox", id));
 		}
 		#region Upgrades UI
-		void CreateUpgradesParent()
+		void CreateUpgradesButton()
 		{
-			upgradesParent = new GameObject("Upgrades");
-			upgradesParent.transform.parent = transform;
-			upgradesParent.transform.localPosition = Vector3.zero;
-			upgradesParent.transform.localScale = Vector3.one;
-		}
-		void CreateUpgradesTitle()
-		{
-			UILabel title = NGUI_Utils.CreateLabel(upgradesParent.transform, new Vector3(0, 100), new Vector3Int(600, 48, 0),
-				"Upgrades_Word", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
-			title.name = "Title";
-			title.fontSize = 35;
-			title.color = NGUI_Utils.fsLabelDefaultColor;
-		}
-		void CreateUpgradesUI()
-		{
-			CreateUpgradeUI(UpgradeType.DODGE);
-			CreateUpgradeUI(UpgradeType.SPRINT);
-			CreateUpgradeUI(UpgradeType.HYPER_SPEED);
-		}
-		void CreateUpgradeUI(UpgradeType type)
-		{
-			GameObject parent = new GameObject(type.ToString());
-			parent.transform.parent = upgradesParent.transform;
-			parent.transform.localPosition = new Vector3(0, 20 - (100 * createdUpgradesUICount));
-			parent.transform.localScale = Vector3.one;
-
-			string locKey = "Upgrade_" + UpgradeSaveData.ConvertTypeToFSType(type) + "_Title";
-			bool isAOneTimeSkill = Controls.IsSkill(UpgradeSaveData.ConvertTypeToFSType(type).Value);
-
-			Vector3 togglePos = isAOneTimeSkill ? new Vector3(-100, 0) : new Vector3(-300, 0);
-			GameObject toggle = NGUI_Utils.CreateToggle(parent.transform, togglePos, new Vector3Int(200, 48, 0), locKey);
-			EventDelegate toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetUpgradeEnabledState),
-				NGUI_Utils.CreateEventDelegateParamter(this, "type", (int)type),
-				NGUI_Utils.CreateEventDelegateParamter(this, "toggle", toggle.GetComponent<UIToggle>()));
-			toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
-
-			if (!isAOneTimeSkill) // One-Time Skills don't have levels.
-			{
-				UIButtonMultiple levelButton = NGUI_Utils.CreateButtonMultiple(parent.transform, new Vector3(160, 15), Vector3.one * 0.8f, 1);
-				levelButton.name = "LevelButton";
-				levelButton.SetTitle("Level_Word"); // FS sheet key.
-				for (int i = 0; i < Controls.GetMaxLevelFor(UpgradeSaveData.ConvertTypeToFSType(type).Value); i++)
-				{
-					bool setAsSelected = i == 0;
-					levelButton.AddOption("Level " + (i + 1), setAsSelected);
-				}
-
-				levelButton.onClick += (id) => SetUpgradeLevel((int)type, levelButton);
-				levelButton.onLocalize = (id) => { return Loc.Get("Level_Word") + " " + (id + 1); };
-			}
-
-			createdUpgradesUICount++;
+			UIButtonPatcher upgradesButton = NGUI_Utils.CreateButton(transform, new Vector3(0f, 50f), new Vector3Int(300, 50, 0), "Player Upgrades");
+			upgradesButton.name = "UpgradesButton";
+			upgradesButton.buttonSprite.depth = 1;
+			upgradesButton.buttonLabel.fontSize = 28;
+			upgradesButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+			upgradesButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+			upgradesButton.onClick += () => UpgradesPanel.Instance.ShowUpgradesPanel();
 		}
 		#endregion
 
@@ -210,27 +159,6 @@ namespace FS_LevelEditor.Editor.UI
 			panel.GetChild("HasJetpackToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasJetpack"));
 			panel.GetChild("DeathYLimit").GetComponent<UIInput>().text = (float)GetGlobalProperty("DeathYLimit") + "";
 			panel.GetChild("SkyboxDropdown").GetComponent<UIDropdownPatcher>().SelectOption((int)GetGlobalProperty("Skybox"));
-
-			UpdateUpgradesUI();
-		}
-		void UpdateUpgradesUI()
-		{
-			var upgradesParent = gameObject.GetChild("Upgrades");
-
-			// Start at 1 to skip the title.
-			for (int i = 1; i < upgradesParent.transform.childCount; i++)
-			{
-				var upgradeParent = upgradesParent.transform.GetChild(i);
-				var upgradeType = Enum.Parse<UpgradeType>(upgradeParent.name);
-				var upgradeData = ((List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"]).Find(x => x.type == upgradeType);
-
-				upgradeParent.gameObject.GetChild("Toggle").GetComponent<UIToggle>().Set(upgradeData.active);
-				// The object may not have a LevelButton obj because that upgrade doesn't have a level property.
-				if (upgradeParent.gameObject.ExistsChild("LevelButton"))
-				{
-					upgradeParent.gameObject.GetChild("LevelButton").GetComponent<UIButtonMultiple>().SelectOption(upgradeData.level - 1);
-				}
-			}
 		}
 
 		public void SetGlobalPropertyWithToggle(string name, UIToggle toggle)
@@ -292,23 +220,6 @@ namespace FS_LevelEditor.Editor.UI
 			}
 
 			return null;
-		}
-
-		public void SetUpgradeEnabledState(int typeID, UIToggle toggle)
-		{
-			var list = (List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"];
-			var typeToModify = list.Find(x => x.type == (UpgradeType)typeID);
-
-			typeToModify.active = toggle.isChecked;
-		}
-		// Make the STUPID BUTTON VARIABLE AN OBJECT, CAUSE OTHERWISE ML GETS MAD (PD: Fuck ML).
-		public void SetUpgradeLevel(int typeID, object button)
-		{
-			var list = (List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"];
-			var typeToModify = list.Find(x => x.type == (UpgradeType)typeID);
-
-			// The selected ID is according to the upgrade level.
-			typeToModify.level = ((UIButtonMultiple)button).currentSelectedID + 1;
 		}
 
 		// Methods for "special" UI elements, such as buttons.

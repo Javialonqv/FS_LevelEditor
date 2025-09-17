@@ -23,4 +23,17 @@ namespace FS_LevelEditor.Playmode.Patches
             }
         }
     }
+
+	[HarmonyPatch(typeof(Controls), "UpdateLevelLeaderboard")]
+	public class NoUpdates
+	{
+		public static bool Prefix()
+		{
+			if (PlayModeController.Instance)
+			{
+				return false;
+			}
+			return true;
+		}
+	}
 }

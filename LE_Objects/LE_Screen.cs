@@ -34,7 +34,10 @@ namespace FS_LevelEditor
         GameObject greenMesh, redMesh;
         TextMeshPro screenText;
 
-        void Awake()
+		//Made for templates feature
+		string _rawTemplateText;
+
+		void Awake()
         {
             properties = new Dictionary<string, object>()
             {
@@ -63,8 +66,9 @@ namespace FS_LevelEditor
             // No matter the scene (Editor/Playmode) change the mesh.
             SetScreenMeshVisibility(GetProperty<bool>("InvisibleMesh"));
             SetScreenColor(GetProperty<ScreenColorType>("ColorType"));
-            SetScreenText(GetProperty<string>("Text"));
-            UpdateScreenTextFont();
+			_rawTemplateText = GetProperty<string>("Text");
+			SetScreenText(_rawTemplateText);
+			UpdateScreenTextFont();
 
             base.ObjectStart(scene);
         }
@@ -221,9 +225,10 @@ namespace FS_LevelEditor
             else if (name == "Text")
             {
                 properties["Text"] = value.ToString();
-                if (PlayModeController.Instance)
+                _rawTemplateText = value.ToString();
+				if (PlayModeController.Instance)
                 {
-                    SetScreenText(value.ToString()); // Only requires manually update in playmode.
+                    SetScreenText(_rawTemplateText); // Only requires manually update in playmode.
                 }
 
                 // Since this will convert the value to string no matter what, it'll catch the JsonElement before base.SetProperty() does, so, skip the warning in case it is
@@ -245,9 +250,10 @@ namespace FS_LevelEditor
             }
             else if (actionName == "OnTextEditorClose")
             {
-                // NOT update the screen mesh color since that's in another property that's NOT in the text editor.
-                SetScreenText(GetProperty<string>("Text"));
-                UpdateScreenTextFont();
+				// NOT update the screen mesh color since that's in another property that's NOT in the text editor.
+				_rawTemplateText = GetProperty<string>("Text");
+				SetScreenText(_rawTemplateText);
+				UpdateScreenTextFont();
                 return true;
             }
 
@@ -348,9 +354,11 @@ namespace FS_LevelEditor
                 screenText.fontSize = GetProperty<float>("FontSize");
             }
         }
-        void SetScreenText(string newText)
+        void SetScreenText(string raw)
         {
-            screenText.text = newText;
+            string expanded = ScreenTemplateExpander.Expand(raw);
+            screenText.text = expanded;
+            ScreenTemplateExpander.EnsureUpdater(screenText, raw);
         }
     }
 }

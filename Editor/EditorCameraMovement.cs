@@ -23,7 +23,10 @@ namespace FS_LevelEditor.Editor
         public float xRotation = 0f;
         public float yRotation = 0f;
 
-        private const float MIN_MOVE_SPEED = 5f;
+		//To jaiv - this one is to make sure no "sudden rotation" happens.
+		bool rotationInitialized;
+
+		private const float MIN_MOVE_SPEED = 5f;
         private const float MAX_MOVE_SPEED = 60f;
         private const float SPEED_CHANGE_RATE = 5f;
 
@@ -42,10 +45,29 @@ namespace FS_LevelEditor.Editor
 
         void Awake()
         {
-            Instance = this;
-        }
+            Instance = this; InitializeRotationFromTransform();
+		}
+		void OnEnable()
+		{
+			// In case object is disabled/enabled from editor, ensure rotation stays in sync
+			InitializeRotationFromTransform();
+		}
 
-        void Update()
+		void InitializeRotationFromTransform()
+		{
+			if (rotationInitialized) return;
+			// Use current transform local euler so first mouse movement does not snap to (0,0,0)
+			Vector3 e = transform.localEulerAngles;
+			// Convert Unity's 0..360 representation to -180..180 for the X axis so clamp works correctly
+			float ex = e.x;
+			if (ex > 180f) ex -= 360f;
+			xRotation = Mathf.Clamp(ex, -90f, 90f); // respect existing clamp
+			yRotation = e.y; // yaw can wrap freely
+			rotationInitialized = true;
+
+		}
+
+		void Update()
         {
             if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ)) return;
 
@@ -175,7 +197,8 @@ namespace FS_LevelEditor.Editor
         {
             xRotation = eulerAngles.x;
             yRotation = eulerAngles.y;
-            RotateCamera();
+			rotationInitialized = true;
+			RotateCamera();
         }
 
         void ManageDownAndUp()

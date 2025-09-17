@@ -40,6 +40,7 @@
 		<Compile Include="Editor\UI\GlobalPropertiesPanel.cs" />
 		<Compile Include="Editor\UI\SelectedObjPanel.cs" />
 		<Compile Include="Editor\UI\TextEditorUI.cs" />
+		<Compile Include="Editor\UI\UpgradesPanel.cs" />
 		<Compile Include="EventExecuter.cs" />
 		<Compile Include="Editor\DeathYPlaneCtrl.cs" />
 		<Compile Include="Editor\EditorCameraMovement.cs" />
@@ -123,6 +124,7 @@
 		<Compile Include="UI_Related\UIToggleCheckedFix.cs" />
 		<Compile Include="UI_Related\UITogglePatcher.cs" />
 		<Compile Include="Utils.cs" />
+		<Compile Include="Utils\ScreenTemplateExpander.cs" />
 		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="WaypointSupports\MovingPlatformWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\SawWaypointSupport.cs" />
