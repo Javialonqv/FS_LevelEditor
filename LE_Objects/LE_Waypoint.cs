@@ -127,13 +127,21 @@ namespace FS_LevelEditor
         {
             if (actionName == "AddWaypoint")
             {
-                LE_Waypoint spawnedWaypoint = mainSupport.AddWaypoint(false);
-                spawnedWaypoint.transform.localPosition = transform.localPosition;
-                spawnedWaypoint.transform.localRotation = transform.localRotation;
+                AddWaypoint(true);
                 return true;
             }
 
             return base.TriggerAction(actionName);
+        }
+
+        // I'll be honest with you, I just added this in a separate method so I could have a reference to the created waypoint. - Jav.
+        public LE_Waypoint AddWaypoint(bool setAsSelected)
+        {
+            LE_Waypoint spawnedWaypoint = mainSupport.AddWaypoint(false, setAsSelected);
+            spawnedWaypoint.transform.localPosition = transform.localPosition;
+            spawnedWaypoint.transform.localRotation = transform.localRotation;
+
+            return spawnedWaypoint;
         }
 
         public override LE_Object[] GetReferenceObjectsToGetObjID()
