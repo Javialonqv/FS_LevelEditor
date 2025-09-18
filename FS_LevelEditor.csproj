@@ -58,6 +58,7 @@
 		<Compile Include="LE_Objects\LE_Jetpack.cs" />
 		<Compile Include="LE_Objects\LE_Keypad.cs" />
 		<Compile Include="LE_Objects\LE_Laser_Field.cs" />
+		<Compile Include="LE_Objects\LE_Mine.cs" />
 		<Compile Include="LE_Objects\LE_Moving_Platform.cs" />
 		<Compile Include="LE_Objects\LE_Small_Screen.cs" />
 		<Compile Include="LE_Objects\LE_Trigger.cs" />

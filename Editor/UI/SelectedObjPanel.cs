@@ -504,6 +504,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateSwitchAttributesPanel();
 			CreateAmmoAndHealthPackAttributesPanel();
 			CreateLaserAttributesPanel();
+			CreateMineAttributesPanel();
 			CreateCeilingLightPanel();
 			CreateFlameTrapAttributesPanel();
 			CreatePressurePlateAttributesPanel();
@@ -647,6 +648,25 @@ namespace FS_LevelEditor.Editor.UI
 
 			laserAttributes.SetActive(false);
 			attributesPanels.Add("Laser", laserAttributes);
+		}
+		void CreateMineAttributesPanel()
+		{
+			GameObject mineAttributes = new GameObject("Mine");
+			mineAttributes.transform.parent = objectSpecificPanelsParent;
+			mineAttributes.transform.localPosition = Vector3.zero;
+			mineAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(mineAttributes);
+
+			CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
+			CreateObjectAttribute("InstantKill", AttributeType.TOGGLE, false, null, "InstaKill");
+			CreateObjectAttribute("ExplosionDamage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ExplosionDamage");
+			CreateObjectAttribute("ContactRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ContactRadius");
+			CreateObjectAttribute("RemoteRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RemoteRadius");
+			CreateObjectAttribute("ProximityRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ProximityRadius");
+
+			mineAttributes.SetActive(false);
+			attributesPanels.Add("Mine", mineAttributes);
 		}
 		void CreateCeilingLightPanel()
 		{

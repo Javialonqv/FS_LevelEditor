@@ -334,6 +334,7 @@ namespace FS_LevelEditor.Playmode
 						break;
 					case UpgradeType.HEALTH:
 						Controls.m_currentHealthUpgradeLevel = upgrade.level;
+						Controls.Instance.currentHP = Controls.Instance.currentMaxHP; // Heal to full on health upgrade application
 						break;
 					case UpgradeType.SPEED:
 						Controls.m_currentSpeedUpgradeLevel = upgrade.level;
@@ -423,7 +424,6 @@ namespace FS_LevelEditor.Playmode
 			// Refresh taser modules only if present to reflect applied upgrades.
 			if (Controls.Instance.HasTaser())
 				Controls.Instance.gunController.RefreshTaserModules();
-			Controls.RefreshUpgradeVariables();
 		}
 
 		void OnDestroy()

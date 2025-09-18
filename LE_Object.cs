@@ -88,7 +88,7 @@ namespace FS_LevelEditor
             BRIDGE,
             CUBE_KILLPLANE,
             KEYPAD,
-            RELOCATION_POINT
+            MINE,
 		}
 
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -207,6 +207,7 @@ namespace FS_LevelEditor
         public static InterrupteurController t_switch;
         public static BlocScript t_cube;
         public static Laser_H_Controller t_laser;
+        public static Laser_H_Controller t_mine;
         public static RealtimeCeilingLight t_ceilingLight;
         public static FlameTrapController t_flameTrap;
         public static BlocSwitchScript t_pressurePlate;
@@ -228,6 +229,7 @@ namespace FS_LevelEditor
 			t_switch = FindObjectOfType<InterrupteurController>();
 			t_cube = Utils.FindObjectOfType<BlocScript>(x => x.IsCube());
 			t_laser = FindObjectOfType<Laser_H_Controller>();
+            t_mine = Utils.FindObjectOfType<Laser_H_Controller>(x => x.isMine);
 			t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
 			t_flameTrap = FindObjectOfType<FlameTrapController>();
 			t_pressurePlate = Utils.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer == null);
@@ -780,7 +782,7 @@ namespace FS_LevelEditor
 
         public void SetCollidersState(bool newEnabledState)
         {
-            if (!gameObject.ExistsChild("Content") && objectType != ObjectType.KEYPAD)
+            if (!gameObject.ExistsChild("Content") && objectType != ObjectType.KEYPAD && objectType != ObjectType.MINE)
             {
                 if (!IsWaypoint(objectType.Value)) Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
                 return;
