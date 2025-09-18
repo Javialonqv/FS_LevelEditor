@@ -705,6 +705,46 @@ namespace FS_LevelEditor
 
             return val;
         }
+		public static void SetChildCollidersState(this GameObject obj, bool state, bool includeInactive = true, params string[] except)
+		{
+			foreach (var collider in obj.TryGetComponents<Collider>(includeInactive))
+			{
+				if (except != null && except.Contains(collider.gameObject.name)) continue;
+				collider.enabled = state;
+			}
+		}
 
-    }
+		/// <summary>
+		/// Gets the hierarchical path of a GameObject from the root to the object.
+		/// </summary>
+		/// <param name="obj">The GameObject to get the path for.</param>
+		/// <param name="separator">The separator to use between path segments. Default is "/".</param>
+		/// <param name="includeScene">Whether to include the scene name at the beginning of the path.</param>
+		/// <returns>The hierarchical path as a string.</returns>
+		public static string GetGameObjectPath(this GameObject obj, string separator = "/", bool includeScene = false)
+		{
+			if (obj == null) return string.Empty;
+
+			List<string> pathParts = new List<string>();
+			Transform current = obj.transform;
+
+			// Traverse up the hierarchy
+			while (current != null)
+			{
+				pathParts.Add(current.name);
+				current = current.parent;
+			}
+
+			// Reverse to get root-to-object order
+			pathParts.Reverse();
+
+			// Optionally include scene name
+			if (includeScene && obj.scene.isLoaded)
+			{
+				pathParts.Insert(0, obj.scene.name);
+			}
+
+			return string.Join(separator, pathParts);
+		}
+	}
 }

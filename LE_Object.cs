@@ -780,7 +780,7 @@ namespace FS_LevelEditor
 
         public void SetCollidersState(bool newEnabledState)
         {
-            if (!gameObject.ExistsChild("Content"))
+            if (!gameObject.ExistsChild("Content") && objectType != ObjectType.KEYPAD)
             {
                 if (!IsWaypoint(objectType.Value)) Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
                 return;
@@ -796,6 +796,10 @@ namespace FS_LevelEditor
             else if (objectType == ObjectType.VENT_WITH_SMOKE_GREEN || objectType == ObjectType.VENT_WITH_SMOKE_CYAN)
             {
                 gameObject.GetChildAt("Content/Mesh").GetComponent<MeshCollider>().enabled = newEnabledState;
+			}
+            else if(objectType == ObjectType.KEYPAD)
+            {
+				gameObject.GetChild("LE_Keypad").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
 			}
             else
             {

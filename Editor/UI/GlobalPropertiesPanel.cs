@@ -124,7 +124,15 @@ namespace FS_LevelEditor.Editor.UI
 			skyboxDropdown.AddOption("Chapter 2", false);
 			skyboxDropdown.AddOption("Chapter 3 & 4", false);
 			skyboxDropdown.AddOption("Menu", true);
-
+			skyboxDropdown.AddOption("Chapter 1 (0.53)", false);
+			skyboxDropdown.AddOption("Chapter 2 (0.53)", false);
+			skyboxDropdown.AddOption("Chapter 3 (0.53)", false);
+			skyboxDropdown.AddOption("Chapter 4 & Menu (0.53)", false);
+			skyboxDropdown.AddOption("Chapter 1 (PE)", false);
+			skyboxDropdown.AddOption("Chapter 2 (PE)", false);
+			skyboxDropdown.AddOption("Chapter 3 (PE)", false);
+			skyboxDropdown.AddOption("Chapter 4 (PE)", false);
+			skyboxDropdown.AddOption("Chapter 5 (PE)", false);
 			skyboxDropdown.AddOnChangeOption((id) => SetGlobalPropertyWithDropdown("Skybox", id));
 		}
 		#region Upgrades UI

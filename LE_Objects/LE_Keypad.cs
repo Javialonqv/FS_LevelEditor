@@ -26,13 +26,24 @@ namespace FS_LevelEditor
 				{ "Keycode", 1234 },
 				{ "onWinEvents", new List<LE_Event>() },
 				{ "onFailEvents", new List<LE_Event>() },
-				{ "leaveOnIncorrect", false }
+				{ "leaveOnIncorrect", false },
+				{ "allCorrect", false }
 			};
+			if(EditorController.Instance)
+			{
+				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(false);
+				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(false);
+			}
+			else
+			{
+				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(true);
+				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(true);
+			}
 		}
 
 		public override void InitComponent()
 		{
-			GameObject button = gameObject.GetChild("Content");
+			GameObject button = gameObject.GetChild("LE_Keypad");
 
 			button.tag = "Keypad";
 			button.GetChild("Mesh").tag = "Interrupteur";
@@ -115,6 +126,7 @@ namespace FS_LevelEditor
 			keycode.keycode.combination = il2cppDigits;
 			keycode.keycode.label = keycode.gameObject.GetChildAt("Screen/Label/Label.Label").GetComponent<UILabel>();
 			keycode.keycode.keycodeController = keycode;
+			keycode.keycode.birthdayInput = GetProperty<bool>("allCorrect");	
 
 			controller.objectsToActivate = new GameObject[] { keycode.gameObject };
 
@@ -171,22 +183,30 @@ namespace FS_LevelEditor
 					return true;
 				}
 			}
+			else if (name == "allCorrect")
+			{
+				if (value is bool)
+				{
+					properties["allCorrect"] = (bool)value;
+					return true;
+				}
+			}
 
 			return base.SetProperty(name, value);
 		}
 		void ConfigureEvents(KeycodeController script)
 		{
 			script.onWinEvents = new UnityEngine.Events.UnityEvent();
-			script.onWinEvents.AddListener((UnityAction)ExecuteOnDeployEvents);
+			script.onWinEvents.AddListener((UnityAction)ExecuteOnWinEvents);
 
 			script.onFailEvents = new UnityEngine.Events.UnityEvent();
-			script.onFailEvents.AddListener((UnityAction)ExecuteOnRetractEvents);
+			script.onFailEvents.AddListener((UnityAction)ExecuteOnFailEvents);
 		}
-		void ExecuteOnDeployEvents()
+		void ExecuteOnWinEvents()
 		{
 			eventExecuter.ExecuteEvents((List<LE_Event>)properties["onWinEvents"]);
 		}
-		void ExecuteOnRetractEvents()
+		void ExecuteOnFailEvents()
 		{
 			eventExecuter.ExecuteEvents((List<LE_Event>)properties["onFailEvents"]);
 		}

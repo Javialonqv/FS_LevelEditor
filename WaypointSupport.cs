@@ -375,8 +375,6 @@ namespace FS_LevelEditor
                 waypointComp.SetCollidersState(false);
             }
 
-            Logger.DebugLog($"Created waypoint! ID: {waypointComp.objectID}.");
-
             return waypointComp;
         }
 

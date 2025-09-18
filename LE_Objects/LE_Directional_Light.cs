@@ -19,7 +19,7 @@ namespace FS_LevelEditor
         void Awake()
         {
             currentInstances++;
-
+            canUndoDeletion = false;
             light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
             lightSprite = gameObject.GetChildAt("Content/Sprite");
 

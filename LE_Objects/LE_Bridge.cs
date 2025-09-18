@@ -16,6 +16,7 @@ namespace FS_LevelEditor
 	{
 		private BridgeController bridgeController;
 		public enum InitialState { RETRACTED, DEPLOYED };
+
 		void Awake()
 		{
 			properties = new Dictionary<string, object>
@@ -38,19 +39,23 @@ namespace FS_LevelEditor
 			if (scene == LEScene.Playmode)
 			{
 				// Set initial state when starting in playmode
+				// NOTE: Use Instant methods to avoid playing animations/sounds at start.
 				if (GetProperty<InitialState>("InitialState") == InitialState.DEPLOYED)
 				{
-					bridgeController.deployed = false; // Ensure state is correct before deploying
-					bridgeController.Deploy();
+					// InstantDeploy doesn't check if "deployed" is false.
+					bridgeController.InstantDeploy();
+					bridgeController.deployed = true; // It seems InstantRetract doesn't set this. Do it manually.
 				}
 				else
 				{
-					bridgeController.deployed = true; // Ensure state is correct before retracting
-					bridgeController.Retract();
+					// InstantRetract doesn't check if "deployed" is true.
+					bridgeController.InstantRetract();
+					bridgeController.deployed = false; // It seems InstantRetract doesn't set this. Do it manually.
 				}
 			}
 			base.ObjectStart(scene);
 		}
+
 		public override void InitComponent()
 		{
 			GameObject content = gameObject.GetChild("Content");
@@ -69,6 +74,7 @@ namespace FS_LevelEditor
 			content.SetActive(true);
 			initialized = true;
 		}
+
 		public override bool SetProperty(string name, object value)
 		{
 			if (name == "InitialState")
@@ -96,6 +102,7 @@ namespace FS_LevelEditor
 			}
 			return base.SetProperty(name, value);
 		}
+
 		void ConfigureEvents(BridgeController script)
 		{
 			script.onDeploy = new UnityEngine.Events.UnityEvent();
@@ -120,6 +127,7 @@ namespace FS_LevelEditor
 				"OnRetract"
 			};
 		}
+
 		public override bool TriggerAction(string actionName)
 		{
 			switch (actionName)
@@ -152,21 +160,30 @@ namespace FS_LevelEditor
 
 			return base.TriggerAction(actionName);
 		}
-		void UpdateBridgeStateInEditor()
+
+		// Gray, just in case you wanna revert this and play the whole animation, just change 'instant' to false and fuck it. - Jav
+		void UpdateBridgeStateInEditor(bool instant = true)
 		{
 			// Only update visuals in editor mode
 			if (!EditorController.Instance) return;
 
-			if (bridgeController != null)
-			{
-				InitialState state = GetProperty<InitialState>("InitialState");
-				bridgeController.deployed = state == InitialState.DEPLOYED;
+			InitialState state = GetProperty<InitialState>("InitialState");
 
-				// Update animation state to match
-				if (bridgeController.m_animationComp != null)
+			// Update animation state to match
+			Animation animation = gameObject.GetChild("Content").GetComponent<Animation>();
+			if (animation != null)
+			{
+				if (instant)
 				{
-					bridgeController.m_animationComp.Play(
-						state == InitialState.DEPLOYED ? "Deploy" : "Retract"
+					string animName = state == InitialState.DEPLOYED ? "BridgeDeploy" : "BridgeRetract";
+					// Don't ask me why I'm substracting 0.01 here, I'm just copy pasting what I saw inside of Charles' code. - Jav
+					animation[animName].time = animation[animName].length - 0.01f;
+					animation.Play(animName);
+				}
+				else
+				{
+					animation.Play(
+						state == InitialState.DEPLOYED ? "BridgeDeploy" : "BridgeRetract"
 					);
 				}
 			}

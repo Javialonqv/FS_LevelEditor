@@ -749,7 +749,11 @@ namespace FS_LevelEditor.Editor.UI
 			triggerAttributes.transform.localScale = Vector3.one;
 
 			SetCurrentParentToCreateAttributes(triggerAttributes);
-
+			CreateObjectAttribute("TriggerMode", AttributeType.BUTTON_MULTIPLE, 0, null, "TriggerMode");
+			var triggerModeButton = triggerAttributes.GetChildAt("TriggerMode/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			triggerModeButton.AddOption("Once", new Color(0.8f, 0.8f, 0.8f)); // Light gray for Once (default)
+			triggerModeButton.AddOption("Multiple", Color.green);              // Green for Multiple
+			triggerModeButton.AddOption("Cube-only", Color.cyan);             // Cyan for Cube-only
 			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
 			triggerAttributes.SetActive(false);
@@ -963,6 +967,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			CreateObjectAttribute("Keycode", AttributeType.INPUT_FIELD, "1234", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Keycode", maxLength: 4);
 			CreateObjectAttribute("leaveOnIncorrect", AttributeType.TOGGLE, false, null, "leaveOnIncorrect");
+			CreateObjectAttribute("allCorrect", AttributeType.TOGGLE, false, null, "allCorrect");
 			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
 			keypad.SetActive(false);

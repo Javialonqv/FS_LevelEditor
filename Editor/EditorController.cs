@@ -12,7 +12,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-
+using System.Text.RegularExpressions;
 
 namespace FS_LevelEditor.Editor
 {
@@ -56,7 +56,7 @@ namespace FS_LevelEditor.Editor
 		public LE_Object.ObjectType? currentObjectToBuildType = null;
 		GameObject currentObjectToBuild;
 		GameObject previewObjectToBuildObj = null;
-
+		Vector3 previewRotationOffsetEuler = Vector3.zero;
 		// Related to object placement? Dunno how to call this.
 		Vector3? lastHittenNormalByPreviewRay = null;
 		GameObject currentHittenSnapTrigger = null;
@@ -297,8 +297,32 @@ namespace FS_LevelEditor.Editor
 			{
 				if (material.name.StartsWith("Skybox"))
 				{
-				material.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+					if (Regex.Match(material.name, @"(?:9|10|11|12|13)$").Success)
+					{
+						material.shader = Shader.Find("Skybox/6 Sided");
+					}
+					else
+					{
+						material.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+					}
 					skyboxes.Add(material);
+				}
+				// sorting the list to get all new skyboxes in the order
+				if (skyboxes.Count > 1)
+				{
+					int ExtractChapterNumber(string name)
+					{
+						// Matches Skybox_CH<number> (stops at first non-digit after the number)
+						var match = Regex.Match(name, @"^Skybox_CH(\d+)");
+						if (match.Success && int.TryParse(match.Groups[1].Value, out int num))
+							return num;
+						return int.MaxValue; // Non-numbered variants go last
+					}
+					// Stable sort: first by extracted numeric value, then by original name to keep deterministic order for variants
+					skyboxes = skyboxes
+						.OrderBy(m => ExtractChapterNumber(m.name))
+						.ThenBy(m => m.name, StringComparer.Ordinal)
+						.ToList();
 				}
 			}
 
@@ -468,7 +492,7 @@ namespace FS_LevelEditor.Editor
 						}
 						else
 						{
-						 SetSelectedObj(obj);
+							SetSelectedObj(obj);
 						}
 					}
 					// Otherwise, deselect the last selected object if there's one ONLY if it's not holding Ctrl
@@ -826,7 +850,7 @@ namespace FS_LevelEditor.Editor
 		void ManageEscAction()
 		{
 			// Shortcut for pausing LE.
-			if(!_isInitialized)
+			if (!_isInitialized)
 			{
 				return;
 			}
@@ -877,7 +901,7 @@ namespace FS_LevelEditor.Editor
 					if (scrollDelta < 0)
 						DecreaseGridSize(); // Finer
 					else if (scrollDelta > 0)
-					IncreaseGridSize(); // Coarser
+						IncreaseGridSize(); // Coarser
 				}
 				// MouseWheel: Change grid height
 				if (!Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
@@ -1001,7 +1025,7 @@ namespace FS_LevelEditor.Editor
 			{
 				globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
 				gizmo.SetRotation(globalGizmosArrowsEnabled ? Quaternion.identity : currentSelectedObj.transform.rotation);
-				
+
 				// Show feedback to user
 				string mode = globalGizmosArrowsEnabled ? "Global" : "Local";
 				Utils.ShowCustomNotificationRed($"Switched to {mode} Gizmo Mode", 1.5f);
@@ -1147,23 +1171,23 @@ namespace FS_LevelEditor.Editor
 		}
 
 		// --- Snap Euler Angles Helper ---
-        public static Vector3 SnapEulerAnglesToStep(Vector3 euler, float step)
-        {
-            // Always snap to the nearest multiple of step, in [0,360)
-            float Snap(float angle)
-            {
-                float snapped = Mathf.Round(angle / step) * step;
-                // Normalize to [0, 360)
-                snapped = snapped % 360f;
-                if (snapped < 0) snapped += 360f;
-                return snapped;
-            }
-            return new Vector3(
-                Snap(euler.x),
-                Snap(euler.y),
-                Snap(euler.z)
-            );
-        }
+		public static Vector3 SnapEulerAnglesToStep(Vector3 euler, float step)
+		{
+			// Always snap to the nearest multiple of step, in [0,360)
+			float Snap(float angle)
+			{
+				float snapped = Mathf.Round(angle / step) * step;
+				// Normalize to [0, 360)
+				snapped = snapped % 360f;
+				if (snapped < 0) snapped += 360f;
+				return snapped;
+			}
+			return new Vector3(
+				Snap(euler.x),
+				Snap(euler.y),
+				Snap(euler.z)
+			);
+		}
 
 		private float lastRotationTime = 0f;
 		private float rotationRepeatDelay = 0.12f;
@@ -1171,95 +1195,161 @@ namespace FS_LevelEditor.Editor
 		private bool isRotatingWithR = false;
 
 		private Coroutine rotationCoroutine;
+		private Coroutine previewRotationCoroutine;
 
 		void ManageObjectRotationShortcuts()
 		{
 			GameObject targetObj = currentMode == Mode.Building ? previewObjectToBuildObj : currentSelectedObj;
-			// Prevent starting a new rotation while one is in progress.
-			if (targetObj == null || rotationCoroutine != null) return;
+			if (targetObj == null) return;
+
+			// Prevent rotation when snapping to a trigger in building mode
+			if (currentMode == Mode.Building && currentHittenSnapTrigger != null)
+			{
+				return; // Don't allow rotation when snapping to a trigger
+			}
+
+			// Prevent starting a new rotation while one is in progress for placed objects
+			if (currentMode != Mode.Building && rotationCoroutine != null) return;
+			if (currentMode != Mode.Building && previewRotationCoroutine != null) return;
 
 			if (Input.GetKeyDown(KeyCode.R))
 			{
-				Quaternion oldRotation = targetObj.transform.localRotation;
-				float rotationAngle = 15f * (Input.GetKey(KeyCode.T) ? -1 : 1);
+				bool reset = Input.GetKey(KeyCode.LeftControl);
+				float angleStep = 15f * (Input.GetKey(KeyCode.T) ? -1f : 1f);
 
+				// Determine which axis to rotate around
+				bool rotateX = Input.GetKey(KeyCode.LeftShift);
+				bool rotateZ = !rotateX && Input.GetKey(KeyCode.LeftAlt);
+				bool rotateY = !rotateX && !rotateZ; // default
 
-				Quaternion newRotation;
-
-				if (Input.GetKey(KeyCode.LeftControl))
+				if (currentMode == Mode.Building)
 				{
-					// Reset rotation
-					newRotation = Quaternion.identity;
-				}
-				else
-				{
-					Quaternion deltaRotation;
-					if (Input.GetKey(KeyCode.LeftShift))
+					// PREVIEW MODE: now use smooth rotation too
+					Vector3 oldOffset = previewRotationOffsetEuler;
+					Vector3 newOffset;
+
+					if (reset)
 					{
-						// Create a rotation around the local X-axis
-						deltaRotation = Quaternion.AngleAxis(rotationAngle, Vector3.right);
-					}
-					else if (Input.GetKey(KeyCode.LeftAlt))
-					{
-						// Create a rotation around the local Z-axis
-						deltaRotation = Quaternion.AngleAxis(rotationAngle, Vector3.forward);
+						newOffset = Vector3.zero;
 					}
 					else
 					{
-						// Create a rotation around the local Y-axis
-						deltaRotation = Quaternion.AngleAxis(rotationAngle, Vector3.up);
+						newOffset = oldOffset;
+						if (rotateX) newOffset.x = Mathf.Repeat(oldOffset.x + angleStep, 360f);
+						else if (rotateZ) newOffset.z = Mathf.Repeat(oldOffset.z + angleStep, 360f);
+						else /* Y */ newOffset.y = Mathf.Repeat(oldOffset.y + angleStep, 360f);
 					}
 
-					// Apply the delta rotation to the current local rotation
-					newRotation = oldRotation * deltaRotation;
-
-					// Snap the final Euler angles to clean up any floating point inaccuracies
-					newRotation.eulerAngles = SnapEulerAnglesToStep(newRotation.eulerAngles, 15f);
+					// Start smooth rotation for preview
+					StartPreviewRotationCoroutine(oldOffset, newOffset);
+					return;
 				}
 
-				// Stop any existing rotation coroutine before starting a new one.
-				if (rotationCoroutine != null)
+
+				// SELECTION MODE (actual placed objects) -> smooth rotate
+				Quaternion oldRotation = targetObj.transform.rotation;
+				Quaternion delta;
+
+				if (reset)
 				{
-					MelonCoroutines.Stop(rotationCoroutine);
+					// Reset keeps world upright orientation on Y only (no tilt)
+					Quaternion upright = Quaternion.identity;
+					StartRotationCoroutine(targetObj, oldRotation, upright);
+					RotateWaypointsWithObject(targetObj, oldRotation, upright);
+					return;
 				}
 
-				// --- CHANGE 3: Use the variable speed in the coroutine call ---
-				rotationCoroutine = (Coroutine)MelonCoroutines.Start(SmoothRotate(targetObj, oldRotation, newRotation, .15f));
-
-				RotateWaypointsWithObject(targetObj, oldRotation, newRotation);
+				// Axis logic:
+				//  - Y rotations always around world up to avoid gimbal issues when object is pitched
+				//  - X & Z rotations around LOCAL axes to produce intuitive behavior
+				if (rotateY)
+				{
+					delta = Quaternion.AngleAxis(angleStep, Vector3.up);
+					// Pre-multiply for world axis rotation
+					StartRotationCoroutine(targetObj, oldRotation, delta * oldRotation);
+					RotateWaypointsWithObject(targetObj, oldRotation, delta * oldRotation);
+				}
+				else if (rotateX)
+				{
+					delta = Quaternion.AngleAxis(angleStep, Vector3.right);
+					// Post-multiply for local axis rotation
+					StartRotationCoroutine(targetObj, oldRotation, oldRotation * delta);
+					RotateWaypointsWithObject(targetObj, oldRotation, oldRotation * delta);
+				}
+				else if (rotateZ)
+				{
+					delta = Quaternion.AngleAxis(angleStep, Vector3.forward);
+					StartRotationCoroutine(targetObj, oldRotation, oldRotation * delta);
+					RotateWaypointsWithObject(targetObj, oldRotation, oldRotation * delta);
+				}
 			}
 		}
-
-		IEnumerator SmoothRotate(GameObject obj, Quaternion oldRotation, Quaternion newRotation, float duration)
+		void StartPreviewRotationCoroutine(Vector3 oldOffset, Vector3 newOffset)
 		{
-			if (duration <= 0)
+			if (previewRotationCoroutine != null)
 			{
-				obj.transform.rotation = newRotation;
-				yield break;
+				MelonCoroutines.Stop(previewRotationCoroutine);
+				previewRotationCoroutine = null;
 			}
+			previewRotationCoroutine = (Coroutine)MelonCoroutines.Start(SmoothRotatePreview(oldOffset, newOffset));
+		}
+		IEnumerator SmoothRotatePreview(Vector3 oldOffset, Vector3 newOffset)
+		{
+			// Calculate rotation angle for consistent speed
+			float angle = Vector3.Angle(Quaternion.Euler(oldOffset) * Vector3.forward, Quaternion.Euler(newOffset) * Vector3.forward);
+			float degreesPerSecond = 720f; // Same speed as placed objects
+			float duration = angle / degreesPerSecond;
+			duration = Mathf.Clamp(duration, 0.08f, 0.25f); // Keep within reasonable bounds
 
-			float elapsedTime = 0f;
-			float lastFrameTime = Time.unscaledTime;
-
-			while (elapsedTime < duration)
+			float elapsed = 0f;
+			while (elapsed < duration)
 			{
-				float currentFrameTime = Time.unscaledTime;
-				float deltaTime = currentFrameTime - lastFrameTime;
-				lastFrameTime = currentFrameTime;
-
-				// Clamp delta time to prevent huge jumps
-				deltaTime = Mathf.Min(deltaTime, 0.1f);
-
-				elapsedTime += deltaTime;
-				float t = Mathf.Clamp01(elapsedTime / duration);
-
-				// Smoothstep easing
+				float dt = Time.unscaledDeltaTime;
+				// Prevent large jumps at very low FPS but still progress
+				if (dt > 0.05f) dt = 0.05f;
+				elapsed += dt;
+				float t = Mathf.Clamp01(elapsed / duration);
+				// Smoothstep for nice easing
 				t = t * t * (3f - 2f * t);
 
-				obj.transform.rotation = Quaternion.Slerp(oldRotation, newRotation, t);
+				// Interpolate the Euler angles
+				previewRotationOffsetEuler = Vector3.Lerp(oldOffset, newOffset, t);
 				yield return null;
 			}
 
+			previewRotationOffsetEuler = newOffset;
+			previewRotationCoroutine = null;
+		}
+		void StartRotationCoroutine(GameObject obj, Quaternion oldRot, Quaternion newRot)
+		{
+			if (rotationCoroutine != null)
+			{
+				MelonCoroutines.Stop(rotationCoroutine);
+				rotationCoroutine = null;
+			}
+			rotationCoroutine = (Coroutine)MelonCoroutines.Start(SmoothRotate(obj, oldRot, newRot));
+		}
+		IEnumerator SmoothRotate(GameObject obj, Quaternion oldRotation, Quaternion newRotation)
+		{
+			// Adaptive duration based on angle (consistent speed across frame rates)
+			float angle = Quaternion.Angle(oldRotation, newRotation);
+			float degreesPerSecond = 720f; // fast but still visible
+			float duration = angle / degreesPerSecond;
+			duration = Mathf.Clamp(duration, 0.08f, 0.25f); // Keep within reasonable bounds
+
+			float elapsed = 0f;
+			while (elapsed < duration)
+			{
+				float dt = Time.unscaledDeltaTime;
+				// Prevent large jumps at very low FPS but still progress
+				if (dt > 0.05f) dt = 0.05f;
+				elapsed += dt;
+				float t = Mathf.Clamp01(elapsed / duration);
+				// Smoothstep
+				t = t * t * (3f - 2f * t);
+				obj.transform.rotation = Quaternion.Slerp(oldRotation, newRotation, t);
+				yield return null;
+			}
 			obj.transform.rotation = newRotation;
 
 			if (currentMode != Mode.Building && currentSelectedObj != null)
@@ -1332,6 +1422,13 @@ namespace FS_LevelEditor.Editor
 		public void ChangeMode(Mode mode)
 		{
 			currentMode = mode;
+
+			// Clean up any ongoing preview rotation when changing modes
+			if (previewRotationCoroutine != null)
+			{
+				MelonCoroutines.Stop(previewRotationCoroutine);
+				previewRotationCoroutine = null;
+			}
 
 			switch (currentMode)
 			{
@@ -1418,6 +1515,7 @@ namespace FS_LevelEditor.Editor
 			bool snapWithTrigger = false;
 			RaycastHit rayToUseWithSnap = new RaycastHit();
 			bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+			Quaternion baseRotation = previewObjectToBuildObj ? previewObjectToBuildObj.transform.rotation : Quaternion.identity;
 			if (hits.Count > 0)
 			{
 				// Handle snap triggers first
@@ -1461,10 +1559,19 @@ namespace FS_LevelEditor.Editor
 				{
 					previewObjectToBuildObj.SetActive(true);
 					previewObjectToBuildObj.transform.position = rayToUseWithSnap.collider.transform.position;
+					
+					// Only apply trigger rotation when hitting a NEW trigger, otherwise preserve current rotation
 					if (currentHittenSnapTrigger != rayToUseWithSnap.collider.gameObject)
 					{
 						currentHittenSnapTrigger = rayToUseWithSnap.collider.gameObject;
-						previewObjectToBuildObj.transform.rotation = rayToUseWithSnap.collider.transform.rotation;
+						// Apply trigger rotation and reset user rotation offset when snapping to a new trigger
+						baseRotation = rayToUseWithSnap.collider.transform.rotation;
+						previewRotationOffsetEuler = Vector3.zero; // Reset user rotation when snapping
+					}
+					else
+					{
+						// When staying on the same trigger, use the trigger's rotation (no user modifications allowed)
+						baseRotation = rayToUseWithSnap.collider.transform.rotation;
 					}
 				}
 				else if (hits.Count > 0)
@@ -1487,14 +1594,14 @@ namespace FS_LevelEditor.Editor
 						{
 							Vector3 right = Vector3.Cross(Vector3.up, normal).normalized;
 							Vector3 up = Vector3.Cross(normal, right).normalized;
-							previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(up, normal);
+							baseRotation = Quaternion.LookRotation(up, normal);
 						}
 						else
 						{
 							if (normal == Vector3.up)
-								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+								baseRotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
 							else
-								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.down);
+								baseRotation = Quaternion.LookRotation(Vector3.back, Vector3.down);
 						}
 					}
 					else
@@ -1510,19 +1617,23 @@ namespace FS_LevelEditor.Editor
 							{
 								Vector3 right = Vector3.Cross(Vector3.up, wallNormal).normalized;
 								Vector3 up = Vector3.Cross(wallNormal, right).normalized;
-								previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(up, wallNormal);
+								baseRotation = Quaternion.LookRotation(up, wallNormal);
 							}
 							else
 							{
 								if (wallNormal == Vector3.up)
 								{
-									previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+									baseRotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
 								}
 								else
 								{
-									previewObjectToBuildObj.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.down);
+									baseRotation = Quaternion.LookRotation(Vector3.back, Vector3.down);
 								}
 							}
+						}
+						else
+						{
+							baseRotation = previewObjectToBuildObj.transform.rotation; // keep last
 						}
 					}
 				}
@@ -1540,16 +1651,18 @@ namespace FS_LevelEditor.Editor
 							gridPoint.y = gridHeight;
 							gridPoint.z = Mathf.Round(gridPoint.z / gridSize) * gridSize;
 							previewObjectToBuildObj.transform.position = gridPoint;
-							previewObjectToBuildObj.transform.rotation = Quaternion.identity;
+							baseRotation = Quaternion.identity;
 						}
 						else
 						{
 							previewObjectToBuildObj.SetActive(false);
+							return;
 						}
 					}
 					else
 					{
 						previewObjectToBuildObj.SetActive(false);
+						return;
 					}
 				}
 			}
@@ -1567,16 +1680,33 @@ namespace FS_LevelEditor.Editor
 						gridPoint.y = gridHeight;
 						gridPoint.z = Mathf.Round(gridPoint.z / gridSize) * gridSize;
 						previewObjectToBuildObj.transform.position = gridPoint;
-						previewObjectToBuildObj.transform.rotation = Quaternion.identity;
+						baseRotation = Quaternion.identity;
 					}
 					else
 					{
 						previewObjectToBuildObj.SetActive(false);
+						return;
 					}
 				}
 				else
 				{
 					previewObjectToBuildObj.SetActive(false);
+					return;
+				}
+			}
+			// Finally apply user rotation offset (so manual rotations persist across alignment updates)
+			// But only when NOT snapping to a trigger
+			if (previewObjectToBuildObj.activeInHierarchy)
+			{
+				if (currentHittenSnapTrigger != null)
+				{
+					// When snapping, use only the trigger's rotation (no user offset)
+					previewObjectToBuildObj.transform.rotation = baseRotation;
+				}
+				else
+				{
+					// When not snapping, apply user rotation offset
+					previewObjectToBuildObj.transform.rotation = baseRotation * Quaternion.Euler(previewRotationOffsetEuler);
 				}
 			}
 		}
@@ -1593,49 +1723,49 @@ namespace FS_LevelEditor.Editor
 			// About the scale being fixed to 1... you can't change the scale of the PREVIEW object, so...
 		}
 		public GameObject PlaceObject(LE_Object.ObjectType? objectType, Vector3 position, Vector3 eulerAngles, Vector3 scale, bool setAsSelected = true)
-        {
-            if (setAsSelected)
-            {
-                Logger.Log($"Placing object of name \"{objectType}\". This log only appears when setAsSelected is true.");
-            }
+		{
+			if (setAsSelected)
+			{
+				Logger.Log($"Placing object of name \"{objectType}\". This log only appears when setAsSelected is true.");
+			}
 
-            if (objectType == null)
-            {
-                Logger.Error("objectType is null. Skipping object placement...");
-                return null;
-            }
-            if (!allCategoriesObjects.ContainsKey(objectType.Value))
-            {
-                Logger.Error($"Can't find object with name \"{objectType}\". Skipping it...");
-                return null;
-            }
+			if (objectType == null)
+			{
+				Logger.Error("objectType is null. Skipping object placement...");
+				return null;
+			}
+			if (!allCategoriesObjects.ContainsKey(objectType.Value))
+			{
+				Logger.Error($"Can't find object with name \"{objectType}\". Skipping it...");
+				return null;
+			}
 
-            GameObject template = allCategoriesObjects[objectType.Value];
-            GameObject obj = Instantiate(template, levelObjectsParent.transform);
+			GameObject template = allCategoriesObjects[objectType.Value];
+			GameObject obj = Instantiate(template, levelObjectsParent.transform);
 
-            obj.transform.localPosition = position;
-            obj.transform.localEulerAngles = eulerAngles;
-            obj.transform.localScale = scale;
+			obj.transform.localPosition = position;
+			obj.transform.localEulerAngles = eulerAngles;
+			obj.transform.localScale = scale;
 
-            LE_Object addedComp = LE_Object.AddComponentToObject(obj, objectType.Value);
+			LE_Object addedComp = LE_Object.AddComponentToObject(obj, objectType.Value);
 
-            if (addedComp == null)
-            {
-                Destroy(obj);
-                return null;
-            }
+			if (addedComp == null)
+			{
+				Destroy(obj);
+				return null;
+			}
 
-            addedComp.SetObjectColor(LE_Object.LEObjectContext.NORMAL);
+			addedComp.SetObjectColor(LE_Object.LEObjectContext.NORMAL);
 
-            obj.SetActive(true);
+			obj.SetActive(true);
 
-            if (setAsSelected)
-            {
-                SetSelectedObj(obj);
-            }
+			if (setAsSelected)
+			{
+				SetSelectedObj(obj);
+			}
 
-            return obj;
-        }
+			return obj;
+		}
 
 		public enum SelectionType { Normal, ForceSingle, ForceMultiple }
 		public void SetSelectedObj(GameObject obj, SelectionType selectionType = SelectionType.Normal)
@@ -1653,7 +1783,7 @@ namespace FS_LevelEditor.Editor
 
 			if (obj && obj != multipleSelectedObjsParent && obj.GetComponent<LE_Object>() == null)
 			{
-				Logger.Error($"No no, wait wait, how did you select an object called \"{obj.name}\"!? ARE YOU INSANE!? HOW!?!?!?");
+				Logger.Error($"Illegal object selected! Name: {obj.name}, path: {obj.GetGameObjectPath(">")}");
 				// Idk either mate.
 				return;
 			}
@@ -1741,7 +1871,7 @@ namespace FS_LevelEditor.Editor
 							continue;
 						}
 
-						// If the obj type of this obj is different from the first found one, the obj types diffier.
+						// // If the obj type of this obj is different from the first found one, the obj types diffier.
 						if (objInList.GetComponent<LE_Object>().objectType != firstTypeFound)
 						{
 							selectionHasDifferentObjTypes = true;
@@ -1869,6 +1999,7 @@ namespace FS_LevelEditor.Editor
 						{
 							obj.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.NORMAL);
 							obj.transform.parent = obj.GetComponent<LE_Object>().objectParent;
+							obj.GetComponent<LE_Object>().OnDeselect(null);
 						}
 					}
 				}
@@ -1892,7 +2023,7 @@ namespace FS_LevelEditor.Editor
 			currentSelectedObjects = new List<GameObject>();
 			foreach (var obj in filtered)
 			{
-			 var leObj = obj.GetComponent<LE_Object>();
+				var leObj = obj.GetComponent<LE_Object>();
 				leObj.SetObjectColor(LE_Object.LEObjectContext.SELECT);
 				obj.transform.parent = multipleSelectedObjsParent.transform;
 				currentSelectedObjects.Add(obj);
@@ -1923,7 +2054,7 @@ namespace FS_LevelEditor.Editor
 			if (multipleObjectsSelected && currentSelectedObjects.Contains(obj))
 			{
 				// Since the object is already selected, this SetSelectedObj is going to DESELECT it.
-			 SetSelectedObj(obj, SelectionType.ForceMultiple);
+				SetSelectedObj(obj, SelectionType.ForceMultiple);
 				if (currentSelectedObjects.Count > 1)
 				{
 					SetMultipleObjectsAsSelected(new List<GameObject>(currentSelectedObjects));
@@ -1984,7 +2115,7 @@ namespace FS_LevelEditor.Editor
 
 					if (existingObjects - currentSelectedObjects.Count <= 0)
 					{
-									Utils.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
+						Utils.ShowCustomNotificationRed("There must be at least 1 object in the level", 2f);
 						return;
 					}
 
@@ -2039,7 +2170,7 @@ namespace FS_LevelEditor.Editor
 		{
 			var triggerRootObj = triggerObj.transform.parent.parent.gameObject;
 
-		 // Check for ALL of the object-specific triggers for this object, and see if there's a specific trigger for this object to build.
+			// Check for ALL of the object-specific triggers for this object, and see if there's a specific trigger for this object to build.
 			bool existsSpecificTriggerForThisObjToBuild = false;
 			foreach (var child in triggerRootObj.GetChilds())
 			{
@@ -2080,7 +2211,7 @@ namespace FS_LevelEditor.Editor
 			if (arrowColliderName == "X" || arrowColliderName == "Z")
 			{
 				if (globalGizmosArrowsEnabled)
-					{
+				{
 					movementPlane = new Plane(Vector3.up, objPositionWhenArrowClick);
 				}
 				else
@@ -2114,136 +2245,136 @@ namespace FS_LevelEditor.Editor
 			}
 		}
 		void MoveObject(GizmosArrow direction)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		{
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-            if (movementPlane.Raycast(ray, out float distance))
-            {
-                // Only set MOVING_OBJECT state when the user actually moves the object, not just on arrow press
-                Vector3 hitWorldPosition = ray.GetPoint(distance);
-                Vector3 axisDirection;
+			if (movementPlane.Raycast(ray, out float distance))
+			{
+				// Only set MOVING_OBJECT state when the user actually moves the object, not just on arrow press
+				Vector3 hitWorldPosition = ray.GetPoint(distance);
+				Vector3 axisDirection;
 
-                // Get proper axis direction based on mode
-                if (globalGizmosArrowsEnabled)
-                {
-                    switch (collidingArrow)
-                    {
-                        case GizmosArrow.X: axisDirection = Vector3.right; break;
-                        case GizmosArrow.Y: axisDirection = Vector3.up; break;
-                        case GizmosArrow.Z: axisDirection = Vector3.forward; break;
-                        default: axisDirection = Vector3.zero; break;
-                    }
-                }
-                else
-                {
-                    switch (collidingArrow)
-                    {
-                        case GizmosArrow.X: axisDirection = currentSelectedObj.transform.right; break;
-                        case GizmosArrow.Y: axisDirection = currentSelectedObj.transform.up; break;
-                        case GizmosArrow.Z: axisDirection = currentSelectedObj.transform.forward; break;
-                        default: axisDirection = Vector3.zero; break;
-                    }
-                }
+				// Get proper axis direction based on mode
+				if (globalGizmosArrowsEnabled)
+				{
+					switch (collidingArrow)
+					{
+						case GizmosArrow.X: axisDirection = Vector3.right; break;
+						case GizmosArrow.Y: axisDirection = Vector3.up; break;
+						case GizmosArrow.Z: axisDirection = Vector3.forward; break;
+						default: axisDirection = Vector3.zero; break;
+					}
+				}
+				else
+				{
+					switch (collidingArrow)
+					{
+						case GizmosArrow.X: axisDirection = currentSelectedObj.transform.right; break;
+						case GizmosArrow.Y: axisDirection = currentSelectedObj.transform.up; break;
+						case GizmosArrow.Z: axisDirection = currentSelectedObj.transform.forward; break;
+						default: axisDirection = Vector3.zero; break;
+					}
+				}
 
-                Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
-                float movementDistance = Vector3.Dot(displacement, axisDirection);
-                Vector3 movement = axisDirection * movementDistance;
+				Vector3 displacement = hitWorldPosition - objPositionWhenArrowClick;
+				float movementDistance = Vector3.Dot(displacement, axisDirection);
+				Vector3 movement = axisDirection * movementDistance;
 
-                // Only start moving if the mouse has moved a minimum distance
-                float minMoveDistance = 0.001f; // Small threshold to avoid snapping on click
-                if (movement.magnitude < minMoveDistance)
-                {
-                    // Don't move or snap to grid until user actually drags
-                    return;
-                }
-                if (!IsCurrentState(EditorState.MOVING_OBJECT))
-                    SetCurrentEditorState(EditorState.MOVING_OBJECT);
+				// Only start moving if the mouse has moved a minimum distance
+				float minMoveDistance = 0.001f; // Small threshold to avoid snapping on click
+				if (movement.magnitude < minMoveDistance)
+				{
+					// Don't move or snap to grid until user actually drags
+					return;
+				}
+				if (!IsCurrentState(EditorState.MOVING_OBJECT))
+					SetCurrentEditorState(EditorState.MOVING_OBJECT);
 
-                // Calculate offset based on movement mode
-                Vector3 offset;
-                if (globalGizmosArrowsEnabled)
-                {
-                    offset = offsetObjPositionAndMosueWhenClick;
-                }
-                else
-                {
-                    offset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick,
-                        objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
-                }
+				// Calculate offset based on movement mode
+				Vector3 offset;
+				if (globalGizmosArrowsEnabled)
+				{
+					offset = offsetObjPositionAndMosueWhenClick;
+				}
+				else
+				{
+					offset = RotatePositionAroundPivot(offsetObjPositionAndMosueWhenClick + objPositionWhenArrowClick,
+						objPositionWhenArrowClick, currentSelectedObj.transform.rotation) - objPositionWhenArrowClick;
+				}
 
-                Vector3 newPosition = objPositionWhenArrowClick + movement + offset;
+				Vector3 newPosition = objPositionWhenArrowClick + movement + offset;
 
-                // Grid snapping with proper axis constraint, only when actually moving
-                if (gridEnabled)
-                {
-                    Vector3 gridPos = newPosition;
-                    if (globalGizmosArrowsEnabled)
-                    {
-                        switch (collidingArrow)
-                        {
-                            case GizmosArrow.X:
-                                gridPos.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
-                                gridPos.y = objPositionWhenArrowClick.y;
-                                gridPos.z = objPositionWhenArrowClick.z;
-                                break;
-                            case GizmosArrow.Y:
-                                float mouseDeltaY = Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y);
-                                if (mouseDeltaY > 0.01f)
-                                {
-                                    gridPos.x = objPositionWhenArrowClick.x;
-                                    gridPos.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
-                                    gridPos.z = objPositionWhenArrowClick.z;
-                                }
-                                else
-                                {
-                                    gridPos = objPositionWhenArrowClick;
-                                }
-                                break;
-                            case GizmosArrow.Z:
-                                gridPos.x = objPositionWhenArrowClick.x;
-                                gridPos.y = objPositionWhenArrowClick.y;
-                                gridPos.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        Vector3 localPos = currentSelectedObj.transform.InverseTransformPoint(newPosition);
-                        Vector3 snappedLocalPos = localPos;
+				// Grid snapping with proper axis constraint, only when actually moving
+				if (gridEnabled)
+				{
+					Vector3 gridPos = newPosition;
+					if (globalGizmosArrowsEnabled)
+					{
+						switch (collidingArrow)
+						{
+							case GizmosArrow.X:
+								gridPos.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
+								gridPos.y = objPositionWhenArrowClick.y;
+								gridPos.z = objPositionWhenArrowClick.z;
+								break;
+							case GizmosArrow.Y:
+								float mouseDeltaY = Mathf.Abs(newPosition.y - objPositionWhenArrowClick.y);
+								if (mouseDeltaY > 0.01f)
+								{
+									gridPos.x = objPositionWhenArrowClick.x;
+									gridPos.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+									gridPos.z = objPositionWhenArrowClick.z;
+								}
+								else
+								{
+									gridPos = objPositionWhenArrowClick;
+								}
+								break;
+							case GizmosArrow.Z:
+								gridPos.x = objPositionWhenArrowClick.x;
+								gridPos.y = objPositionWhenArrowClick.y;
+								gridPos.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
+								break;
+						}
+					}
+					else
+					{
+						Vector3 localPos = currentSelectedObj.transform.InverseTransformPoint(newPosition);
+						Vector3 snappedLocalPos = localPos;
 
-                        switch (collidingArrow)
-                        {
-                            case GizmosArrow.X:
-                                snappedLocalPos.x = Mathf.Round(localPos.x / gridSize) * gridSize;
-                                snappedLocalPos.y = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).y;
-                                snappedLocalPos.z = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).z;
-                                break;
-                            case GizmosArrow.Y:
-                                snappedLocalPos.x = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).x;
-                                snappedLocalPos.y = Mathf.Round(localPos.y / gridSize) * gridSize;
-                                snappedLocalPos.z = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).z;
-                                break;
-                            case GizmosArrow.Z:
-                                snappedLocalPos.x = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).x;
-                                snappedLocalPos.y = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).y;
-                                snappedLocalPos.z = Mathf.Round(localPos.z / gridSize) * gridSize;
-                                break;
-                        }
-                        gridPos = currentSelectedObj.transform.TransformPoint(snappedLocalPos);
-                    }
-                    newPosition = gridPos;
-                }
+						switch (collidingArrow)
+						{
+							case GizmosArrow.X:
+								snappedLocalPos.x = Mathf.Round(localPos.x / gridSize) * gridSize;
+								snappedLocalPos.y = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).y;
+								snappedLocalPos.z = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).z;
+								break;
+							case GizmosArrow.Y:
+								snappedLocalPos.x = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).x;
+								snappedLocalPos.y = Mathf.Round(localPos.y / gridSize) * gridSize;
+								snappedLocalPos.z = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).z;
+								break;
+							case GizmosArrow.Z:
+								snappedLocalPos.x = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).x;
+								snappedLocalPos.y = currentSelectedObj.transform.InverseTransformPoint(objPositionWhenArrowClick).y;
+								snappedLocalPos.z = Mathf.Round(localPos.z / gridSize) * gridSize;
+								break;
+						}
+						gridPos = currentSelectedObj.transform.TransformPoint(snappedLocalPos);
+					}
+					newPosition = gridPos;
+				}
 
-                if (multipleObjectsSelected)
-                {
-                    currentSelectedObj.transform.position = newPosition;
-                }
-                else
-                {
-                    currentSelectedObj.transform.position = newPosition;
-                }
-            }
-        }
+				if (multipleObjectsSelected)
+				{
+					currentSelectedObj.transform.position = newPosition;
+				}
+				else
+				{
+					currentSelectedObj.transform.position = newPosition;
+				}
+			}
+		}
 		void DuplicateSelectedObject()
 		{
 			if (currentSelectedObj == null) return;
@@ -2286,7 +2417,7 @@ namespace FS_LevelEditor.Editor
 				GameObject placedObj = PlaceObject(objComponent.objectType, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
 					objComponent.transform.localScale, false);
 				if (!placedObj)
-					{
+				{
 					Logger.Log($"PlaceObject when duplicating \"{objComponent.objectType}\" returned null. It probably reached its max object limit.");
 					return;
 				}
@@ -2298,7 +2429,7 @@ namespace FS_LevelEditor.Editor
 				}
 
 				SetSelectedObj(placedObj);
-			 isDuplicatingObj = false;
+				isDuplicatingObj = false;
 				levelHasBeenModified = true;
 			}
 
@@ -2309,7 +2440,7 @@ namespace FS_LevelEditor.Editor
 		{
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			List<RaycastHit> hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide).ToList();
-		 hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
+			hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
 
 			if (hits.Count > 0)
 			{
@@ -2325,7 +2456,7 @@ namespace FS_LevelEditor.Editor
 					}
 					else
 					{
-					hitIsFromTheCurrentSelectedObj = currentSelectedObj == hit.collider.transform.parent.gameObject;
+						hitIsFromTheCurrentSelectedObj = currentSelectedObj == hit.collider.transform.parent.gameObject;
 					}
 					if (hitIsFromTheCurrentSelectedObj) continue;
 					#endregion
@@ -2397,71 +2528,71 @@ namespace FS_LevelEditor.Editor
 				gizmosArrows.transform.localScale = Vector3.one * 2f;
 			}
 			else
-				{
+			{
 				gizmosArrows.transform.localScale = Vector3.one * 2f * highestAxis;
 			}
 		}
 
 		public void RegisterLEAction(LEAction.LEActionType type, GameObject targetObj, bool forMultipleObjs, Vector3? oldPos = null, Vector3? newPos = null,
-            Quaternion? oldRot = null, Quaternion? newRot = null, Vector3? oldScale = null, Vector3? newScale = null)
-        {
-            if (!targetObj) return;
+			Quaternion? oldRot = null, Quaternion? newRot = null, Vector3? oldScale = null, Vector3? newScale = null)
+		{
+			if (!targetObj) return;
 
-            currentExecutingAction = new LEAction();
-            currentExecutingAction.forMultipleObjects = forMultipleObjs;
+			currentExecutingAction = new LEAction();
+			currentExecutingAction.forMultipleObjects = forMultipleObjs;
 
-            currentExecutingAction.actionType = type;
+			currentExecutingAction.actionType = type;
 
-            switch (type)
-            {
-                case LEAction.LEActionType.MoveObject:
-                    currentExecutingAction.oldPos = oldPos.Value;
-                    currentExecutingAction.newPos = newPos.Value;
-                    break;
+			switch (type)
+			{
+				case LEAction.LEActionType.MoveObject:
+					currentExecutingAction.oldPos = oldPos.Value;
+					currentExecutingAction.newPos = newPos.Value;
+					break;
 
-                case LEAction.LEActionType.RotateObject:
-                    currentExecutingAction.oldRot = oldRot.Value;
-                    currentExecutingAction.newRot = newRot.Value;
-                    break;
+				case LEAction.LEActionType.RotateObject:
+					currentExecutingAction.oldRot = oldRot.Value;
+					currentExecutingAction.newRot = newRot.Value;
+					break;
 
-                case LEAction.LEActionType.ScaleObject:
-                    currentExecutingAction.oldScale = oldScale.Value;
-                    currentExecutingAction.newScale = newScale.Value;
-                    break;
+				case LEAction.LEActionType.ScaleObject:
+					currentExecutingAction.oldScale = oldScale.Value;
+					currentExecutingAction.newScale = newScale.Value;
+					break;
 
-                case LEAction.LEActionType.SnapObject:
-                    currentExecutingAction.oldPos = oldPos.Value;
-                    currentExecutingAction.newPos = newPos.Value;
-                    currentExecutingAction.oldRot = oldRot.Value;
-                    currentExecutingAction.newRot = newRot.Value;
-                    break;
-            }
+				case LEAction.LEActionType.SnapObject:
+					currentExecutingAction.oldPos = oldPos.Value;
+					currentExecutingAction.newPos = newPos.Value;
+					currentExecutingAction.oldRot = oldRot.Value;
+					currentExecutingAction.newRot = newRot.Value;
+					break;
+			}
 
-            if (forMultipleObjs)
-            {
-                currentExecutingAction.targetObjs = new List<GameObject>();
-                foreach (var obj in targetObj.GetChilds())
-                {
-                    // If the type is Deletion, only add those objects that CAN be actually un-deleted.
-                    if (type == LEAction.LEActionType.DeleteObject)
-                    {
-                        if (obj.GetComponent<LE_Object>().canUndoDeletion)
-                        {
-                            currentExecutingAction.targetObjs.Add(obj);
-                        }
-                        continue;
-                    }
+			if (forMultipleObjs)
+			{
+				currentExecutingAction.targetObjs = new List<GameObject>();
+				foreach (var obj in targetObj.GetChilds())
+				{
+					// If the type is Deletion, only add those objects that CAN be actually un-deleted.
+					if (type == LEAction.LEActionType.DeleteObject)
+					{
+						if (obj.GetComponent<LE_Object>().canUndoDeletion)
+						{
+							currentExecutingAction.targetObjs.Add(obj);
+						}
+						continue;
+					}
 
-                    currentExecutingAction.targetObjs.Add(obj);
-                }
-            }
-            else
-            {
-                currentExecutingAction.targetObj = targetObj;
-            }
+					currentExecutingAction.targetObjs.Add(obj);
+				}
+			}
+			else
+			{
+				currentExecutingAction.targetObj = targetObj;
+			}
 
-            actionsMade.Add(currentExecutingAction);
-        }
+			actionsMade.Add(currentExecutingAction);
+		}
 
 		public void EnterPlayMode()
 		{
@@ -2538,18 +2669,27 @@ namespace FS_LevelEditor.Editor
 			// Do nothing if trying to select the same object as the last selected one.
 			if (currentObjectToBuildType == objectType) return;
 
+			// Clean up any ongoing preview rotation
+			if (previewRotationCoroutine != null)
+			{
+				MelonCoroutines.Stop(previewRotationCoroutine);
+				previewRotationCoroutine = null;
+			}
+
 			if (objectType == null)
 			{
 				currentObjectToBuildType = null;
 				currentObjectToBuild = null;
 				Destroy(previewObjectToBuildObj);
+				previewRotationOffsetEuler = Vector3.zero; // reset offset
 				return;
 			}
 
 			currentObjectToBuildType = objectType;
 			currentObjectToBuild = allCategoriesObjectsSorted[currentCategoryID][objectType.Value];
+			previewRotationOffsetEuler = Vector3.zero; // reset when changing object
 
-			// Destroy the preview object and create another one with the mew selected model.
+			// Destroy the preview object and create another one with the new selected model.
 			Destroy(previewObjectToBuildObj);
 			previewObjectToBuildObj = Instantiate(currentObjectToBuild);
 
@@ -2859,7 +2999,7 @@ namespace FS_LevelEditor.Editor
 			GL.PopMatrix();
 		}
 	}
-	
+
 	public struct LEAction
 	{
 		public enum LEActionType
@@ -2891,20 +3031,20 @@ namespace FS_LevelEditor.Editor
 		{
 			switch (actionType)
 			{
-				case LEActionType.MoveObject:
+				case LEAction.LEActionType.MoveObject:
 					UndoMoveObject(editor);
 					break;
-				case LEActionType.RotateObject:
+				case LEAction.LEActionType.RotateObject:
 					UndoRotateObject(editor);
 					break;
-				case LEActionType.ScaleObject:
+				case LEAction.LEActionType.ScaleObject:
 					UndoScaleObject(editor);
 					break;
-				case LEActionType.SnapObject:
+				case LEAction.LEActionType.SnapObject:
 					UndoMoveObject(editor);
 					UndoRotateObject(editor);
 					break;
-				case LEActionType.DeleteObject:
+				case LEAction.LEActionType.DeleteObject:
 					UndoDeleteObject(editor);
 					break;
 			}
