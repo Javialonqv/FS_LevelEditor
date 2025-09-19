@@ -35,12 +35,12 @@ namespace FS_LevelEditor
 
             blocScript = gameObject.GetChild("Content").AddComponent<BlocScript>();
             blocScript.allCompoundColliders = new Il2CppSystem.Collections.Generic.List<Collider>();
-            blocScript.transparentMeshFilter = gameObject.GetChildAt("Content/Bloc_TransparentMesh").GetComponent<MeshFilter>();
+            blocScript.transparentMeshFilter = gameObject.GetChild("Content/Bloc_TransparentMesh").GetComponent<MeshFilter>();
             blocScript.normalMesh = template.normalMesh;
             blocScript.errorMesh = template.errorMesh;
             blocScript.playFirstWrongInsert = true;
             blocScript.interactionDistanceMultiplier = 0.91f;
-            blocScript.m_light = gameObject.GetChildAt("Content/OnlyForPC/Light").GetComponent<Light>();
+            blocScript.m_light = gameObject.GetChild("Content/OnlyForPC/Light").GetComponent<Light>();
             blocScript.lightIntensity = 2;
             blocScript.useSwitchPosRespawn = true;
             blocScript.respawnPosOffsetFromSafeSwitchPos = new Vector3(0f, 1.8f, 0f);
@@ -57,12 +57,12 @@ namespace FS_LevelEditor
             blocScript.m_audioSource = blocScript.GetComponent<AudioSource>();
             blocScript.m_authorizeRespawn = true;
             blocScript.isFirstPickupEver = true;
-            blocScript.m_defaultObject = gameObject.GetChildAt("Content/Bloc_DefaultMesh");
-            blocScript.m_transparentObject = gameObject.GetChildAt("Content/Bloc_TransparentMesh");
-            blocScript.disableWhenInHands = gameObject.GetChildAt("Content/AdditionalInteractionCollider");
+            blocScript.m_defaultObject = gameObject.GetChild("Content/Bloc_DefaultMesh");
+            blocScript.m_transparentObject = gameObject.GetChild("Content/Bloc_TransparentMesh");
+            blocScript.disableWhenInHands = gameObject.GetChild("Content/AdditionalInteractionCollider");
             blocScript.cubePickupSound = template.cubePickupSound;
-            blocScript.m_collisionAudioSource = gameObject.GetChildAt("Content/Audio").GetComponent<AudioSource>();
-            blocScript.m_collisionAudioSource2 = gameObject.GetChildAt("Content/Audio2").GetComponent<AudioSource>();
+            blocScript.m_collisionAudioSource = gameObject.GetChild("Content/Audio").GetComponent<AudioSource>();
+            blocScript.m_collisionAudioSource2 = gameObject.GetChild("Content/Audio2").GetComponent<AudioSource>();
             blocScript.m_collisionSounds = template.m_collisionSounds;
             blocScript.targetScale = Vector3.one;
             blocScript.respawnHeight = -115.73f;
@@ -95,7 +95,7 @@ namespace FS_LevelEditor
             blocScript.m_audioSource.outputAudioMixerGroup = template.m_audioSource.outputAudioMixerGroup;
 
             DisolveOnEnable disolve = gameObject.GetChild("Content").AddComponent<DisolveOnEnable>();
-            disolve.m_renderer = gameObject.GetChildAt("Content/Bloc_DefaultMesh").GetComponent<MeshRenderer>();
+            disolve.m_renderer = gameObject.GetChild("Content/Bloc_DefaultMesh").GetComponent<MeshRenderer>();
             disolve.dissolveMaterials = template.m_dissolve.dissolveMaterials;
             disolve.finalMaterials = template.m_dissolve.finalMaterials;
             disolve.appearSpeed = 3f;
@@ -107,11 +107,11 @@ namespace FS_LevelEditor
             disolve.useGlobal = false;
 
             OnlyForPC pcOnly = gameObject.GetChild("Content").AddComponent<OnlyForPC>();
-            pcOnly.PC_ExclusiveChild = gameObject.GetChildAt("Content/OnlyForPC");
+            pcOnly.PC_ExclusiveChild = gameObject.GetChild("Content/OnlyForPC");
             pcOnly.allowOnHDEdition = true;
             pcOnly.allowOniOS = true;
             pcOnly.minLightingLevel = 1;
-            pcOnly.lightForImportance = gameObject.GetChildAt("Content/OnlyForPC/Light").GetComponent<Light>();
+            pcOnly.lightForImportance = gameObject.GetChild("Content/OnlyForPC/Light").GetComponent<Light>();
             pcOnly.forceLightMode = true;
 
             MovingPlatformProxy platformProxy = gameObject.GetChild("Content").AddComponent<MovingPlatformProxy>();

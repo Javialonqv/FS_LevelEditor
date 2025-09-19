@@ -16,9 +16,9 @@ namespace FS_LevelEditor
 
         void Awake()
         {
-            light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
-            lightBulbSprite = gameObject.GetChildAt("Content/Sprite");
-            rangeSphere = gameObject.GetChildAt("Content/RangeSphere");
+            light = gameObject.GetChild("Content/Light").GetComponent<Light>();
+            lightBulbSprite = gameObject.GetChild("Content/Sprite");
+            rangeSphere = gameObject.GetChild("Content/RangeSphere");
 
             properties = new Dictionary<string, object>()
             {

@@ -90,7 +90,7 @@ namespace FS_LevelEditor
             }
             script.scieSound = t_saw.scieSound;
             script.offMesh = content.GetChild("Scie_OFF").GetComponent<MeshRenderer>();
-            script.onMesh = content.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>();
+            script.onMesh = content.GetChild("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>();
             script.m_collision = content.GetChild("Collision").GetComponent<BoxCollider>();
             script.physicsCollider = content.GetChild("Saw_PhysicsCollider").GetComponent<MeshCollider>();
             script.m_damageCollider = content.GetChild("Saw_DamageCollider").GetComponent<MeshCollider>();
@@ -101,10 +101,10 @@ namespace FS_LevelEditor
             damageTrigger.triggerExit = true;
 
             script.particlesHolder = content.GetChild("SawParticlesHolder");
-            script.particles1 = content.GetChildAt("SawParticlesHolder/SawSparks_1").GetComponent<ParticleSystem>();
-            script.particles2 = content.GetChildAt("SawParticlesHolder/SawSparks_2").GetComponent<ParticleSystem>();
-            script.particles3 = content.GetChildAt("SawParticlesHolder/SawSparks_3").GetComponent<ParticleSystem>();
-            script.particles4 = content.GetChildAt("SawParticlesHolder/SawSparks_4").GetComponent<ParticleSystem>();
+            script.particles1 = content.GetChild("SawParticlesHolder/SawSparks_1").GetComponent<ParticleSystem>();
+            script.particles2 = content.GetChild("SawParticlesHolder/SawSparks_2").GetComponent<ParticleSystem>();
+            script.particles3 = content.GetChild("SawParticlesHolder/SawSparks_3").GetComponent<ParticleSystem>();
+            script.particles4 = content.GetChild("SawParticlesHolder/SawSparks_4").GetComponent<ParticleSystem>();
             script.particles1.GetComponent<ParticleSystemRenderer>().sharedMaterial = t_saw.particles1.GetComponent<ParticleSystemRenderer>().sharedMaterial;
             script.particles2.GetComponent<ParticleSystemRenderer>().sharedMaterial = t_saw.particles2.GetComponent<ParticleSystemRenderer>().sharedMaterial;
             script.particles3.GetComponent<ParticleSystemRenderer>().sharedMaterial = t_saw.particles3.GetComponent<ParticleSystemRenderer>().sharedMaterial;
@@ -268,8 +268,8 @@ namespace FS_LevelEditor
 
         void SetMeshOnEditor(bool isSawOn)
         {
-            gameObject.GetChildAt("Content/Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;
-            gameObject.GetChildAt("Content/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
+            gameObject.GetChild("Content/Scie_OFF").GetComponent<MeshRenderer>().enabled = !isSawOn;
+            gameObject.GetChild("Content/Scie_OFF/Scie_ON").GetComponent<MeshRenderer>().enabled = isSawOn;
         }
     }
 }

@@ -284,19 +284,19 @@ namespace FS_LevelEditor.Editor.UI
         {
             GameObject optionsPanel = NGUI_Utils.optionsPanel;
 
-            GameObject horizontalLine = Instantiate(optionsPanel.GetChildAt("Game_Options/HorizontalLine"), eventsPanel.transform);
+            GameObject horizontalLine = Instantiate(optionsPanel.GetChild("Game_Options/HorizontalLine"), eventsPanel.transform);
             horizontalLine.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
             horizontalLine.transform.localPosition = new Vector3(0f, 250f, 0f);
             horizontalLine.GetComponent<UISprite>().width = 1600;
             horizontalLine.SetActive(true);
 
-            GameObject verticalLine = Instantiate(optionsPanel.GetChildAt("Game_Options/VerticalLine"), eventsPanel.transform);
+            GameObject verticalLine = Instantiate(optionsPanel.GetChild("Game_Options/VerticalLine"), eventsPanel.transform);
             verticalLine.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
             verticalLine.transform.localPosition = new Vector3(70f, -100f, 0f);
             verticalLine.GetComponent<UISprite>().height = 580;
             verticalLine.SetActive(true);
 
-            GameObject horizontalLine2 = Instantiate(optionsPanel.GetChildAt("Game_Options/HorizontalLine"), eventSettingsPanel.transform);
+            GameObject horizontalLine2 = Instantiate(optionsPanel.GetChild("Game_Options/HorizontalLine"), eventSettingsPanel.transform);
             horizontalLine2.GetComponent<UISprite>().pivot = UIWidget.Pivot.Center;
             horizontalLine2.transform.localPosition = new Vector3(0f, 170f, 0f);
             horizontalLine2.GetComponent<UISprite>().width = 700;
@@ -535,7 +535,7 @@ namespace FS_LevelEditor.Editor.UI
 
                         x += widthPerButton + padding;
 
-                        topButtonsParent.GetChild(i).gameObject.GetChildAt("Background/Label").GetComponent<UILabel>().text = Loc.Get("events." + eventsListsNames[i]);
+                        topButtonsParent.GetChild(i).gameObject.GetChild("Background/Label").GetComponent<UILabel>().text = Loc.Get("events." + eventsListsNames[i]);
                     }
                 }
             }
@@ -670,7 +670,7 @@ namespace FS_LevelEditor.Editor.UI
                 scale.pressed = Vector3.one * 0.98f;
 
                 // Destroy the "original" label, since it's going to be replaced with the other name label.
-                Destroy(eventButton.GetChildAt("Background/Label"));
+                Destroy(eventButton.GetChild("Background/Label"));
 
                 // Destroy the UIButtonPatcher, we'll use a custom class instead:
                 Destroy(eventButton.GetComponent<UIButtonPatcher>());
@@ -684,7 +684,7 @@ namespace FS_LevelEditor.Editor.UI
                 UIButtonPatcher deleteBtn = NGUI_Utils.CreateButton(eventButtonParent.transform, new Vector3(350, 0), Vector3Int.one * 60);
                 deleteBtn.name = "DeleteBtn";
                 // Destroy the label, since we're going to add a SPRITE.
-                Destroy(deleteBtn.gameObject.GetChildAt("Background/Label"));
+                Destroy(deleteBtn.gameObject.GetChild("Background/Label"));
 
                 deleteBtn.GetComponent<UISprite>().depth = 3;
 
@@ -1340,7 +1340,7 @@ namespace FS_LevelEditor.Editor.UI
             expandDefaultOptionsButton = NGUI_Utils.CreateButtonWithSprite(defaultObjectsSettings.transform, new Vector3(360, 120), Vector3Int.one * 55, 2,
                 "Triangle", new Vector2Int(35, 25));
             expandDefaultOptionsButton.onClick += OnExpandDefaultOptionsButtonClicked;
-            expandDefaultOptionsButtonSprite = expandDefaultOptionsButton.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>();
+            expandDefaultOptionsButtonSprite = expandDefaultOptionsButton.gameObject.GetChild("Background/Label").GetComponent<UISprite>();
 
             expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, -1, 1); // Default.
         }

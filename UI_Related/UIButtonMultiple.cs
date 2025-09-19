@@ -44,7 +44,7 @@ namespace FS_LevelEditor.UI_Related
         {
             button = GetComponent<UIButton>();
             titleLabel = gameObject.GetChild("Label").GetComponent<UILabel>();
-            currentOptionLabel = gameObject.GetChildAt("Background/Label").GetComponent<UILabel>();
+            currentOptionLabel = gameObject.GetChild("Background/Label").GetComponent<UILabel>();
 
             // FUCKING UILOCALIZE
             Destroy(titleLabel.GetComponent<UILocalize>());

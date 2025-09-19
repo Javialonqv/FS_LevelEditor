@@ -20,8 +20,8 @@ namespace FS_LevelEditor
         {
             currentInstances++;
             canUndoDeletion = false;
-            light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
-            lightSprite = gameObject.GetChildAt("Content/Sprite");
+            light = gameObject.GetChild("Content/Light").GetComponent<Light>();
+            lightSprite = gameObject.GetChild("Content/Sprite");
 
             properties = new Dictionary<string, object>()
             {
@@ -35,7 +35,7 @@ namespace FS_LevelEditor
             if (scene == LEScene.Playmode)
             {
                 Destroy(lightSprite);
-                Destroy(gameObject.GetChildAt("Content/Arrow"));
+                Destroy(gameObject.GetChild("Content/Arrow"));
             }
 
             base.OnInstantiated(scene);

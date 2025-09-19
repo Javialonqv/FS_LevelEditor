@@ -29,12 +29,12 @@ namespace FS_LevelEditor
                 { "InitialStateAuto", InitialStateAuto.LOCKED }
             };
 
-            cyanPillars = gameObject.GetChildAt("Content/Mesh_V2/portev2/DoorPillars/Cyan");
-            redPillars = gameObject.GetChildAt("Content/Mesh_V2/portev2/DoorPillars/Red");
-            topPartCyan = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Cyan");
-            bottomPartCyan = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Cyan");
-            topPartRed = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Red");
-            bottomPartRed = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Red");
+            cyanPillars = gameObject.GetChild("Content/Mesh_V2/portev2/DoorPillars/Cyan");
+            redPillars = gameObject.GetChild("Content/Mesh_V2/portev2/DoorPillars/Red");
+            topPartCyan = gameObject.GetChild("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Cyan");
+            bottomPartCyan = gameObject.GetChild("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Cyan");
+            topPartRed = gameObject.GetChild("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Red");
+            bottomPartRed = gameObject.GetChild("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Red");
         }
 
         public override void OnInstantiated(LEScene scene)
@@ -51,7 +51,7 @@ namespace FS_LevelEditor
             if (scene == LEScene.Playmode)
             {
                 // To avoid bugs, the trigger is disabled if it's NOT auto.
-                gameObject.GetChildAt("Content/ActivateTrigger").SetActive(GetProperty<bool>("IsAuto"));
+                gameObject.GetChild("Content/ActivateTrigger").SetActive(GetProperty<bool>("IsAuto"));
 
                 if (GetProperty<bool>("IsAuto"))
                 {
@@ -96,7 +96,7 @@ namespace FS_LevelEditor
             doorScript.doorMesh = content.GetChild("Mesh").transform;
             doorScript.doorMeshV2 = content.GetChild("Mesh_V2").transform;
             //doorScript.forceTeleportGO = content.GetChildAt("Mesh/porte1/ForceTeleport_Holder/ForceTeleport_Vent");
-            doorScript.forceTeleportGO_MeshV2 = content.GetChildAt("Mesh_V2/portev2/ForceTeleport_Holder/ForceTeleport_Vent");
+            doorScript.forceTeleportGO_MeshV2 = content.GetChild("Mesh_V2/portev2/ForceTeleport_Holder/ForceTeleport_Vent");
             doorScript.instantCollider = content.GetChild("InstantCollider").GetComponent<BoxCollider>();
             doorScript.isRed = true;
             doorScript.isSkinV2 = true;
@@ -107,20 +107,20 @@ namespace FS_LevelEditor
             doorScript.m_animationToUse = doorScript.doorMeshV2.GetComponent<Animation>();
             doorScript.m_audioSource = content.GetComponent<AudioSource>();
             doorScript.m_audioSource.outputAudioMixerGroup = t_doorV2.m_audioSource.outputAudioMixerGroup;
-            doorScript.m_greenPillars = content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan");
+            doorScript.m_greenPillars = content.GetChild("Mesh_V2/portev2/DoorPillars/Cyan");
             doorScript.m_greenRenderers = new Il2CppSystem.Collections.Generic.List<GameObject>();
-            doorScript.m_greenRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Cyan"));
-            doorScript.m_greenRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Cyan"));
+            doorScript.m_greenRenderers.Add(content.GetChild("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Cyan"));
+            doorScript.m_greenRenderers.Add(content.GetChild("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Cyan"));
             //doorScript.m_leftDoorRedRenderer = content.GetChildAt("Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
             //doorScript.m_leftDoorRenderer = content.GetChildAt("Mesh/porte1/gauche").GetComponent<MeshRenderer>();
             doorScript.m_onClose = new UnityEngine.Events.UnityEvent();
             doorScript.m_onLock = new UnityEngine.Events.UnityEvent();
             doorScript.m_onOpen = new UnityEngine.Events.UnityEvent();
             doorScript.m_onUnlock = new UnityEngine.Events.UnityEvent();
-            doorScript.m_redPillars = content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red");
+            doorScript.m_redPillars = content.GetChild("Mesh_V2/portev2/DoorPillars/Red");
             doorScript.m_redRenderers = new Il2CppSystem.Collections.Generic.List<GameObject>();
-            doorScript.m_redRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Red"));
-            doorScript.m_redRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Red"));
+            doorScript.m_redRenderers.Add(content.GetChild("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Red"));
+            doorScript.m_redRenderers.Add(content.GetChild("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Red"));
             //doorScript.m_rightDoorRedRenderer = content.GetChildAt("Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
             //doorScript.m_rightDoorRenderer = content.GetChildAt("Mesh/porte1/droite").GetComponent<MeshRenderer>();
             doorScript.m_switchList = new InterrupteurController[0];
@@ -156,26 +156,26 @@ namespace FS_LevelEditor
             // ---------- SETUP TAGS & LAYERS ----------
 
             content.tag = GetProperty<bool>("IsAuto") ? "PorteAuto" : "Porte";
-            content.GetChildAt("Mesh_V2/portev2/cadre_v2/CadreColliders/Bottom_IgnorePlayer").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
+            content.GetChild("Mesh_V2/portev2/cadre_v2/CadreColliders/Bottom_IgnorePlayer").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
             #region Door Pillars Tags & Layers
             // --------------------------------------------------
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Left").tag = "Pillar";
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Left/SimplifiedCollider").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Left/PerfectCollider").layer = LayerMask.NameToLayer("AllExceptPlayer");
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Left/SimplifiedPhysicsCollider").layer = LayerMask.NameToLayer("Planet");
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Right").tag = "Pillar";
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Right/SimplifiedCollider").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Right/PerfectCollider").layer = LayerMask.NameToLayer("AllExceptPlayer");
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Right/SimplifiedPhysicsCollider").layer = LayerMask.NameToLayer("Planet");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Left").tag = "Pillar";
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Left/SimplifiedCollider").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Left/PerfectCollider").layer = LayerMask.NameToLayer("AllExceptPlayer");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Left/SimplifiedPhysicsCollider").layer = LayerMask.NameToLayer("Planet");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Right").tag = "Pillar";
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Right/SimplifiedCollider").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Right/PerfectCollider").layer = LayerMask.NameToLayer("AllExceptPlayer");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Cyan/Pillar_Type1_Cyan_Right/SimplifiedPhysicsCollider").layer = LayerMask.NameToLayer("Planet");
             // --------------------------------------------------
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(0).tag = "Pillar";
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(0).gameObject.GetChild("SimplifiedCollider").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(0).gameObject.GetChild("PerfectCollider").layer = LayerMask.NameToLayer("AllExceptPlayer");
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(0).gameObject.GetChild("SimplifiedPhysicsCollider").layer = LayerMask.NameToLayer("Planet");
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(1).tag = "Pillar";
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(1).gameObject.GetChild("SimplifiedCollider").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(1).gameObject.GetChild("PerfectCollider").layer = LayerMask.NameToLayer("AllExceptPlayer");
-            content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(1).gameObject.GetChild("SimplifiedPhysicsCollider").layer = LayerMask.NameToLayer("Planet");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(0).tag = "Pillar";
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(0).gameObject.GetChild("SimplifiedCollider").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(0).gameObject.GetChild("PerfectCollider").layer = LayerMask.NameToLayer("AllExceptPlayer");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(0).gameObject.GetChild("SimplifiedPhysicsCollider").layer = LayerMask.NameToLayer("Planet");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(1).tag = "Pillar";
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(1).gameObject.GetChild("SimplifiedCollider").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(1).gameObject.GetChild("PerfectCollider").layer = LayerMask.NameToLayer("AllExceptPlayer");
+            content.GetChild("Mesh_V2/portev2/DoorPillars/Red").transform.GetChild(1).gameObject.GetChild("SimplifiedPhysicsCollider").layer = LayerMask.NameToLayer("Planet");
             // --------------------------------------------------
             #endregion
             teleport.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");

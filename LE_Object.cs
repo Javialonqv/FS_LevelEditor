@@ -795,11 +795,11 @@ namespace FS_LevelEditor
 			} 
             else if(objectType == ObjectType.AMMO_PACK || objectType == ObjectType.HEALTH_PACK)
             {
-                gameObject.GetChildAt("Content/Mesh/PreciseCollider").SetActive(newEnabledState);
+                gameObject.GetChild("Content/Mesh/PreciseCollider").SetActive(newEnabledState);
             }
             else if (objectType == ObjectType.VENT_WITH_SMOKE_GREEN || objectType == ObjectType.VENT_WITH_SMOKE_CYAN)
             {
-                gameObject.GetChildAt("Content/Mesh").GetComponent<MeshCollider>().enabled = newEnabledState;
+                gameObject.GetChild("Content/Mesh").GetComponent<MeshCollider>().enabled = newEnabledState;
 			}
             else if(objectType == ObjectType.KEYPAD)
             {

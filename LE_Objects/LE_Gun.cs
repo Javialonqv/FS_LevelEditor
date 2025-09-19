@@ -40,7 +40,7 @@ namespace FS_LevelEditor
             gun.powerRail2Module = new GameObject();
             gun.scopeModule = new GameObject();
             gun.hoverModule = new GameObject();
-            gun.battery1 = content.GetChildAt("Taser_PC/Battery/Battery1");
+            gun.battery1 = content.GetChild("Taser_PC/Battery/Battery1");
             gun.battery2 = new GameObject();
             gun.battery3 = new GameObject();
             infTaser = (bool)properties["InfiniteTaser"];
@@ -50,8 +50,8 @@ namespace FS_LevelEditor
 
             // --------- SETUP TAGS & LAYERS ---------
 
-            content.GetChildAt("Taser_PC/PhysicsCollider").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
-            content.GetChildAt("Taser_PC/PhysicsCollider/PhysicsCollider_Box").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
+            content.GetChild("Taser_PC/PhysicsCollider").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
+            content.GetChild("Taser_PC/PhysicsCollider/PhysicsCollider_Box").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
 
             content.SetActive(true);
 

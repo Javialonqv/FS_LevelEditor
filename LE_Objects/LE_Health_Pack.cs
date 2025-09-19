@@ -30,7 +30,7 @@ namespace FS_LevelEditor
 			DisolveOnEnable disolve = gameObject.GetChild("Content").AddComponent<DisolveOnEnable>();
 
 			disolve.onEnable = true;
-			disolve.m_renderer = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
+			disolve.m_renderer = gameObject.GetChild("Content/Mesh").GetComponent<MeshRenderer>();
 			// Extract the dissolve materials from another healthpack in the scene.
 			disolve.dissolveMaterials = t_healthPack.GetComponent<DisolveOnEnable>().dissolveMaterials;
 			disolve.finalMaterials = new Material[] { disolve.m_renderer.sharedMaterial };
@@ -41,16 +41,16 @@ namespace FS_LevelEditor
 
 			health = gameObject.GetChild("Content").AddComponent<Health>();
 
-			health.preciseCollider = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<MeshCollider>();
+			health.preciseCollider = gameObject.GetChild("Content/Mesh/PreciseCollider").GetComponent<MeshCollider>();
 			Invoke("SetRespawnTime", 0.1f);
 			health.timerBeforeRespawn = -1;
 			health.generalGrowSpeed = 3;
 			health.m_animComp = gameObject.GetChild("Content").GetComponent<Animation>();
 			health.m_boxCollider = gameObject.GetChild("Content").GetComponent<BoxCollider>();
-			health.mesh = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
-			health.m_light = gameObject.GetChildAt("Content/Mesh/PC_Only").GetComponent<Light>();
-			health.m_lightBreathAnimComp = gameObject.GetChildAt("Content/Mesh/PC_Only").GetComponent<Animation>();
-			health.m_flare = gameObject.GetChildAt("Content/Mesh/HealthFlare").GetComponent<LensFlare>();
+			health.mesh = gameObject.GetChild("Content/Mesh").GetComponent<MeshRenderer>();
+			health.m_light = gameObject.GetChild("Content/Mesh/PC_Only").GetComponent<Light>();
+			health.m_lightBreathAnimComp = gameObject.GetChild("Content/Mesh/PC_Only").GetComponent<Animation>();
+			health.m_flare = gameObject.GetChild("Content/Mesh/HealthFlare").GetComponent<LensFlare>();
 			health.xScaleSpeed = 2;
 			health.yScaleSpeed = 1;
 			health.zScaleSpeed = 1;

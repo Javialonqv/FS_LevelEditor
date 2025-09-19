@@ -15,14 +15,14 @@ namespace FS_LevelEditor
     {
         void Awake()
         {
-            gameObject.GetChildAt("Content/End").tag = "Checkpoint";
+            gameObject.GetChild("Content/End").tag = "Checkpoint";
         }
 
         public override void OnInstantiated(LEScene scene)
         {
             if (scene == LEScene.Playmode)
             {
-                gameObject.GetChildAt("Content/Mesh").SetActive(false);
+                gameObject.GetChild("Content/Mesh").SetActive(false);
             }
 
             base.OnInstantiated(scene);
@@ -30,7 +30,7 @@ namespace FS_LevelEditor
 
         public override void InitComponent()
         {
-            GameObject endTrigger = gameObject.GetChildAt("Content/End");
+            GameObject endTrigger = gameObject.GetChild("Content/End");
             endTrigger.layer = LayerMask.NameToLayer("Ignore Raycast");
 
             CheckpointController checkpoint = endTrigger.AddComponent<CheckpointController>();

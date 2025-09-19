@@ -39,8 +39,8 @@ namespace FS_LevelEditor
                 { "WhenDeactivatingEvents", new List<LE_Event>() }
             };
 
-            redPlane = gameObject.GetChildAt("Content/ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
-            greenPlane = gameObject.GetChildAt("Content/ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
+            redPlane = gameObject.GetChild("Content/ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
+            greenPlane = gameObject.GetChild("Content/ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
         }
 
         public override void ObjectStart(LEScene scene)
@@ -91,7 +91,7 @@ namespace FS_LevelEditor
             controller.allowWhenSwitchingUIContext = true;
             controller.canBeUsed = true;
             controller.controlScript = Controls.Instance;
-            controller.handleAnimator = button.GetChildAt("ButtonMesh/HandleHolder").GetComponent<Animator>();
+            controller.handleAnimator = button.GetChild("ButtonMesh/HandleHolder").GetComponent<Animator>();
             controller.iconActivationSound = t_switch.iconActivationSound;
             controller.iconDeactivationSound = t_switch.iconDeactivationSound;
             controller.IGCType = Controls.InGamePlayerKineType.MANUAL_BUTTON_INTERACTION;
@@ -103,12 +103,12 @@ namespace FS_LevelEditor
             controller.m_audioSource.outputAudioMixerGroup = t_switch.m_audioSource.outputAudioMixerGroup;
             if(!GetProperty<bool>("InvisibleMesh"))
             {
-				controller.cyanLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Cyan").GetComponent<MeshRenderer>();
-				controller.cyanPlane = button.GetChildAt("ButtonMesh/CyanPlaneButton").GetComponent<MeshRenderer>();
-				controller.greenLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Green").GetComponent<MeshRenderer>();
-				controller.greenPlane = button.GetChildAt("ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
-				controller.redLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Bottom/Lightbands_Bottom_Red").GetComponent<MeshRenderer>();
-				controller.redPlane = button.GetChildAt("ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
+				controller.cyanLightbandPlane = button.GetChild("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Cyan").GetComponent<MeshRenderer>();
+				controller.cyanPlane = button.GetChild("ButtonMesh/CyanPlaneButton").GetComponent<MeshRenderer>();
+				controller.greenLightbandPlane = button.GetChild("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Green").GetComponent<MeshRenderer>();
+				controller.greenPlane = button.GetChild("ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
+				controller.redLightbandPlane = button.GetChild("ButtonMesh/Switch_LightBands_Bottom/Lightbands_Bottom_Red").GetComponent<MeshRenderer>();
+				controller.redPlane = button.GetChild("ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
 				controller.m_meshRenderer = button.GetChild("ButtonMesh").GetComponent<MeshRenderer>();
 			} else
             {
@@ -128,7 +128,7 @@ namespace FS_LevelEditor
             controller.onColor = InterrupteurController.ColorType.GREEN;
             controller.onMaterials = t_switch.onMaterials;
             controller.unusableColor = InterrupteurController.ColorType.BLACK;
-            controller.unusableCoverAnimator = button.GetChildAt("ButtonMesh/UnusableCoverHolder").GetComponent<Animator>();
+            controller.unusableCoverAnimator = button.GetChild("ButtonMesh/UnusableCoverHolder").GetComponent<Animator>();
             controller.unusableMaterials = t_switch.unusableMaterials;
             controller.objectsToActivate = new GameObject[0];
             controller.objectsToDestroy = new GameObject[0];

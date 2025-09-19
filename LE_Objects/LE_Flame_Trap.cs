@@ -30,7 +30,7 @@ namespace FS_LevelEditor
             content.SetActive(false);
 
             trap = content.AddComponent<FlameTrapController>();
-            trap.flameLight = content.GetChildAt("VFX/FlameLight").GetComponent<Light>();
+            trap.flameLight = content.GetChild("VFX/FlameLight").GetComponent<Light>();
             trap.loopAudioSource = content.GetChild("LoopAudioSource").GetComponent<AudioSource>();
             trap.startClip = t_flameTrap.startClip;
             trap.loopClip = t_flameTrap.loopClip;
@@ -46,7 +46,7 @@ namespace FS_LevelEditor
             trap.offMaterials = t_flameTrap.offMaterials;
             trap.onMaterials = t_flameTrap.onMaterials;
             trap.particles = content.GetChild("VFX").GetComponent<ParticleSystem>();
-            trap.m_meshRenderer = content.GetChildAt("VFX/Mesh").GetComponent<MeshRenderer>();
+            trap.m_meshRenderer = content.GetChild("VFX/Mesh").GetComponent<MeshRenderer>();
             trap.noDeactivation = false;
             trap.activationTrigger = content.GetChild("ActivateTrigger").GetComponent<BoxCollider>();
             trap.reducedColliderSizeMultipliers = Vector3.one;

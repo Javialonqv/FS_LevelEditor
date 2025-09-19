@@ -22,14 +22,14 @@ namespace FS_LevelEditor
 
             jetpack = content.AddComponent<JetPack>();
             jetpack.useSave = false;
-            jetpack.jetpackMaterial = content.GetChildAt("Mesh/JetPack").GetComponent<Renderer>().material;
-            jetpack.jetpackLight = content.GetChildAt("Mesh/JetPack/JetpackPickupLight").GetComponent<Light>();
+            jetpack.jetpackMaterial = content.GetChild("Mesh/JetPack").GetComponent<Renderer>().material;
+            jetpack.jetpackLight = content.GetChild("Mesh/JetPack/JetpackPickupLight").GetComponent<Light>();
             jetpack.jetpackFlare = new GameObject().AddComponent<LensFlare>();
 
             // --------- SETUP TAGS & LAYERS ---------
 
-            content.GetChildAt("Mesh/JetPack").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
-            content.GetChildAt("Mesh/JetPack/JetpackPickupLight").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
+            content.GetChild("Mesh/JetPack").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
+            content.GetChild("Mesh/JetPack/JetpackPickupLight").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
 
             content.SetActive(true);
             initialized = true;

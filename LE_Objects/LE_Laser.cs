@@ -44,19 +44,19 @@ namespace FS_LevelEditor
             Laser_H_Controller template = t_laser;
 
             laser = gameObject.GetChild("Content").AddComponent<Laser_H_Controller>();
-            laser.laserOriginPoint = gameObject.GetChildAt("Content/LaserOriginPoint").transform;
+            laser.laserOriginPoint = gameObject.GetChild("Content/LaserOriginPoint").transform;
             laser.laserHitDamage = (int)GetProperty("Damage");
             laser.onTurnOn = new UnityEngine.Events.UnityEvent();
             laser.onTurnOff = new UnityEngine.Events.UnityEvent();
             laser.onExplode = new UnityEngine.Events.UnityEvent();
             laser.onActivate = new UnityEngine.Events.UnityEvent();
             laser.onDeactivate = new UnityEngine.Events.UnityEvent();
-            laser.safetyCollider = gameObject.GetChildAt("Content/SafetyCollider");
+            laser.safetyCollider = gameObject.GetChild("Content/SafetyCollider");
             laser.speedrunCollisionsWhenOn = true;
             laser.hasPlayerCollisionsWhenOff = true;
             laser.speedrunCollisionsWhenOff = true;
-            laser.collisionOn = gameObject.GetChildAt("Content/MeshOn").GetComponent<BoxCollider>();
-            laser.collisionOff = gameObject.GetChildAt("Content/MeshOff").GetComponent<BoxCollider>();
+            laser.collisionOn = gameObject.GetChild("Content/MeshOn").GetComponent<BoxCollider>();
+            laser.collisionOff = gameObject.GetChild("Content/MeshOff").GetComponent<BoxCollider>();
             laser.hasParticles = true;
             laser.forceDynLighting = true;
             laser.breakWindowsOnExplode = true;
@@ -73,8 +73,8 @@ namespace FS_LevelEditor
             laser.disableDistance = 300;
             laser.m_laserOn = template.m_laserOn;
             laser.m_laserOff = template.m_laserOff;
-            laser.m_currentLaserImpact = gameObject.GetChildAt("Content/LaserPointRed");
-            laser.m_currentLaserImpactT = gameObject.GetChildAt("Content/LaserPointRed").transform;
+            laser.m_currentLaserImpact = gameObject.GetChild("Content/LaserPointRed");
+            laser.m_currentLaserImpactT = gameObject.GetChild("Content/LaserPointRed").transform;
             laser.Line = laser.GetComponent<LineRenderer>();
             laser.transparentMat = template.transparentMat;
             laser.cutoutMat = template.cutoutMat;
@@ -83,15 +83,15 @@ namespace FS_LevelEditor
             laser.offDuration = GetProperty<float>("OffDuration");
             laser.onDuration = GetProperty<float>("OnDuration");
             laser.loopAudioSource = laser.GetComponent<AudioSource>();
-            laser.onOffAudioSource = gameObject.GetChildAt("Content/Audio2").GetComponent<AudioSource>();
-            laser.m_onMesh = gameObject.GetChildAt("Content/MeshOn");
-            laser.m_offMesh = gameObject.GetChildAt("Content/MeshOff");
+            laser.onOffAudioSource = gameObject.GetChild("Content/Audio2").GetComponent<AudioSource>();
+            laser.m_onMesh = gameObject.GetChild("Content/MeshOn");
+            laser.m_offMesh = gameObject.GetChild("Content/MeshOff");
             laser.firstEnableEver = true;
             laser.laserSound = template.laserSound;
             laser.unselectedColor = Color.black;
             laser.selectedColor = Color.black;
-            laser.m_light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
-            laser.m_flare = gameObject.GetChildAt("Content/Light").GetComponent<LensFlare>();
+            laser.m_light = gameObject.GetChild("Content/Light").GetComponent<Light>();
+            laser.m_flare = gameObject.GetChild("Content/Light").GetComponent<LensFlare>();
             laser.flareMultiplier = 1;
             laser.activeEditorState = true;
             laser.constantEditorState = true;
@@ -101,10 +101,10 @@ namespace FS_LevelEditor
 
             laser.loopAudioSource.outputAudioMixerGroup = template.loopAudioSource.outputAudioMixerGroup;
 
-            ObjectStateSync sync = gameObject.GetChildAt("Content").AddComponent<ObjectStateSync>();
+            ObjectStateSync sync = gameObject.GetChild("Content").AddComponent<ObjectStateSync>();
             sync.assignNewParent = true;
-            sync.objectGO = gameObject.GetChildAt("Content/LaserRailHolder");
-            sync.objectT = gameObject.GetChildAt("Content/LaserRailHolder").transform;
+            sync.objectGO = gameObject.GetChild("Content/LaserRailHolder");
+            sync.objectT = gameObject.GetChild("Content/LaserRailHolder").transform;
             sync.stateInEditor = true;
             sync.firstOnEnable = true;
 
@@ -118,12 +118,12 @@ namespace FS_LevelEditor
             pcOnly.PC_ExclusiveChild = pcOnly.gameObject.GetChild("PC_FX");
 
             LaserPoint point = laser.m_currentLaserImpact.AddComponent<LaserPoint>();
-            point.particles = point.gameObject.GetChildAt("PC_FX/Laser_Impact_PC_VFX/Sparks").GetComponent<ParticleSystem>();
+            point.particles = point.gameObject.GetChild("PC_FX/Laser_Impact_PC_VFX/Sparks").GetComponent<ParticleSystem>();
             point.particlesGO = point.particles.gameObject;
             point.hitTexture = point.gameObject.GetChild("LaserPointTexture");
             point.pcVFXHolder = point.gameObject.GetChild("PC_FX");
-            point.VFXParent = point.gameObject.GetChildAt("PC_FX/Laser_Impact_PC_VFX");
-            point.pointLight = point.gameObject.GetChildAt("PC_FX/Laser_Impact_PC_VFX/LaserImpactRedLight");
+            point.VFXParent = point.gameObject.GetChild("PC_FX/Laser_Impact_PC_VFX");
+            point.pointLight = point.gameObject.GetChild("PC_FX/Laser_Impact_PC_VFX/LaserImpactRedLight");
             point.flare = point.gameObject.GetChild("LensFlare");
             point.flareComponent = point.gameObject.GetChild("LensFlare").GetComponent<LensFlare>();
             point.flareGO = point.gameObject.GetChild("LensFlare");
@@ -270,8 +270,8 @@ namespace FS_LevelEditor
 
         void SetMeshOnEditor(bool isLaserOn)
         {
-            gameObject.GetChildAt("Content/MeshOff").GetComponent<MeshRenderer>().enabled = !isLaserOn;
-            gameObject.GetChildAt("Content/MeshOn").GetComponent<MeshRenderer>().enabled = isLaserOn;
+            gameObject.GetChild("Content/MeshOff").GetComponent<MeshRenderer>().enabled = !isLaserOn;
+            gameObject.GetChild("Content/MeshOn").GetComponent<MeshRenderer>().enabled = isLaserOn;
         }
     }
 }
