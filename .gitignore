@@ -3,3 +3,4 @@ obj/
 bin/
 level_editor_old
 LocalPaths.props
+BuildInfo.cs
