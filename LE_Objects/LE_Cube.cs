@@ -143,4 +143,17 @@ namespace FS_LevelEditor
             return base.TriggerAction(actionName);
         }
     }
+
+    // This is to force the cube to keep its colliders disabled (if you specified that way, ofc) even after respawning.
+    [HarmonyLib.HarmonyPatch(typeof(BlocScript), nameof(BlocScript.RespawnCubeNow), [typeof(bool)])]
+    public static class CubeWithoutCollisionAfterRespawnPatch
+    {
+        public static void Postfix(BlocScript __instance)
+        {
+            if (__instance.transform.parent && __instance.transform.parent.TryGetComponent<LE_Cube>(out LE_Cube cube))
+            {
+                if (!cube.currentCollisionState) cube.SetCollidersState(false);
+            }
+        }
+    }
 }
