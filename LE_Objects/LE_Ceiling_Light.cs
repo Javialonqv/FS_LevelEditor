@@ -28,11 +28,11 @@ namespace FS_LevelEditor
                 { "Range", 6f }
             };
 
-            lightObj = gameObject.GetChild("Content/Light");
-            neonOff = gameObject.GetChild("Content/Mesh/NeonOff");
-            neonOn = gameObject.GetChild("Content/Mesh/NeonOn");
+            lightObj = gameObject.GetChildAt("Content/Light");
+            neonOff = gameObject.GetChildAt("Content/Mesh/NeonOff");
+            neonOn = gameObject.GetChildAt("Content/Mesh/NeonOn");
             light = lightObj.GetComponent<Light>();
-            rangeSphere = gameObject.GetChild("Content/RangeSphere");
+            rangeSphere = gameObject.GetChildAt("Content/RangeSphere");
         }
 
         public override void OnInstantiated(LEScene scene)
@@ -43,7 +43,7 @@ namespace FS_LevelEditor
             }
             else if (scene == LEScene.Playmode)
             {
-                gameObject.GetChild("Content/ActivateTrigger").SetActive(false);
+                gameObject.GetChildAt("Content/ActivateTrigger").SetActive(false);
 
                 light.color = (Color)GetProperty("Color");
             }
@@ -58,12 +58,12 @@ namespace FS_LevelEditor
             gameObject.GetChild("Content").SetActive(false);
 
             lightComp = gameObject.GetChild("Content").AddComponent<RealtimeCeilingLight>();
-            lightComp.m_light = gameObject.GetChild("Content/Light").GetComponent<Light>();
+            lightComp.m_light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
             lightComp.active = false;
             lightComp.activeEditorState = false;
             lightComp.allLightConePlanesRenderers = new Il2CppSystem.Collections.Generic.List<MeshRenderer>();
-            lightComp.allLightConePlanesRenderers.Add(gameObject.GetChild("Content/LightConePlanes/LightConePlane").GetComponent<MeshRenderer>());
-            lightComp.allLightConePlanesRenderers.Add(gameObject.GetChild("Content/LightConePlanes/LightConePlane (1)").GetComponent<MeshRenderer>());
+            lightComp.allLightConePlanesRenderers.Add(gameObject.GetChildAt("Content/LightConePlanes/LightConePlane").GetComponent<MeshRenderer>());
+            lightComp.allLightConePlanesRenderers.Add(gameObject.GetChildAt("Content/LightConePlanes/LightConePlane (1)").GetComponent<MeshRenderer>());
             lightComp.animStateBeforeShot = true;
             lightComp.audioSource = gameObject.GetChild("Content").GetComponent<AudioSource>();
             lightComp.canBeDestroyedByHS = true;
@@ -79,26 +79,26 @@ namespace FS_LevelEditor
             lightComp.lightConePlane_default = template.lightConePlane_default;
             lightComp.lightConePlane_greenColor = template.lightConePlane_greenColor;
             lightComp.lightConePlane_redColor = template.lightConePlane_redColor;
-            lightComp.lightConePlanes = gameObject.GetChild("Content/LightConePlanes");
+            lightComp.lightConePlanes = gameObject.GetChildAt("Content/LightConePlanes");
             lightComp.m_animationComp = gameObject.GetChild("Content").GetComponent<Animation>();
             lightComp.m_defaultColor = (Color)GetProperty("Color");
             lightComp.m_defaultColorNeonMesh = template.m_defaultColorNeonMesh;
             lightComp.m_flareMultiplier = 7;
             lightComp.m_greenColor = new Color(0.3309f, 1f, 0.4186f, 1f);
             lightComp.m_greenColorNeonMesh = template.m_greenColorNeonMesh;
-            lightComp.m_lensFlare = gameObject.GetChild("Content/Flare").GetComponent<LensFlare>();
-            lightComp.m_light = gameObject.GetChild("Content/Light").GetComponent<Light>();
+            lightComp.m_lensFlare = gameObject.GetChildAt("Content/Flare").GetComponent<LensFlare>();
+            lightComp.m_light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
             lightComp.m_maxFlair = 1.5f;
             lightComp.m_redColor = new Color(1f, 0.3162f, 0.3162f, 1f);
             lightComp.m_redColorNeonMesh = template.m_redColorNeonMesh;
-            lightComp.neonOnMeshFilter = gameObject.GetChild("Content/Mesh/NeonOn").GetComponent<MeshFilter>();
+            lightComp.neonOnMeshFilter = gameObject.GetChildAt("Content/Mesh/NeonOn").GetComponent<MeshFilter>();
             lightComp.offProbeIntensity = 0.4f;
             lightComp.offProbeIntensity_shot = 0.2f;
             lightComp.onProbeIntensity = 0.7f;
             lightComp.rangeEditorValue = 15;
             lightComp.reactToTaserShot = true;
-            lightComp.rendererNeonOff = gameObject.GetChild("Content/Mesh/NeonOff").GetComponent<MeshRenderer>();
-            lightComp.rendererNeonOn = gameObject.GetChild("Content/Mesh/NeonOn").GetComponent<MeshRenderer>();
+            lightComp.rendererNeonOff = gameObject.GetChildAt("Content/Mesh/NeonOff").GetComponent<MeshRenderer>();
+            lightComp.rendererNeonOn = gameObject.GetChildAt("Content/Mesh/NeonOn").GetComponent<MeshRenderer>();
             lightComp.saveColor = true;
             lightComp.soundOff = template.soundOff;
             lightComp.soundOn = template.soundOn;
@@ -107,18 +107,18 @@ namespace FS_LevelEditor
             // LOVE YOU CHARLES FOR GIVING ME THIS VARIABLE!!!
             lightComp.stateAtStart = (bool)GetProperty("ActivateOnStart");
 
-            gameObject.GetChild("Content/ActivateTrigger").tag = "ActivateTrigger";
-            gameObject.GetChild("Content/ActivateTrigger").layer = LayerMask.NameToLayer("Ignore Raycast");
-            gameObject.GetChild("Content/Mesh/Body/LightBase").tag = "RealtimeLight";
+            gameObject.GetChildAt("Content/ActivateTrigger").tag = "ActivateTrigger";
+            gameObject.GetChildAt("Content/ActivateTrigger").layer = LayerMask.NameToLayer("Ignore Raycast");
+            gameObject.GetChildAt("Content/Mesh/Body/LightBase").tag = "RealtimeLight";
             // This thing is actually meant to use "IgnorePlayerCollision" layer, but Chris wanted me to add collision to lamps, so, fuck it.
-            gameObject.GetChild("Content/Mesh/Body/LightBase").layer = LayerMask.NameToLayer("Default");
+            gameObject.GetChildAt("Content/Mesh/Body/LightBase").layer = LayerMask.NameToLayer("Default");
 
-            foreach (var flareCollider in gameObject.GetChild("Content/Mesh/Body/LightBase").GetChilds()) flareCollider.layer = LayerMask.NameToLayer("AllExceptPlayer");
+            foreach (var flareCollider in gameObject.GetChildAt("Content/Mesh/Body/LightBase").GetChilds()) flareCollider.layer = LayerMask.NameToLayer("AllExceptPlayer");
 
-            gameObject.GetChild("Content/Mesh/NeonOff").layer = LayerMask.NameToLayer("IgnoreLighting");
-            gameObject.GetChild("Content/Mesh/NeonOn").layer = LayerMask.NameToLayer("IgnoreLighting");
-            gameObject.GetChild("Content/LightConePlanes/LightConePlane").layer = LayerMask.NameToLayer("TransparentFX");
-            gameObject.GetChild("Content/LightConePlanes/LightConePlane (1)").layer = LayerMask.NameToLayer("TransparentFX");
+            gameObject.GetChildAt("Content/Mesh/NeonOff").layer = LayerMask.NameToLayer("IgnoreLighting");
+            gameObject.GetChildAt("Content/Mesh/NeonOn").layer = LayerMask.NameToLayer("IgnoreLighting");
+            gameObject.GetChildAt("Content/LightConePlanes/LightConePlane").layer = LayerMask.NameToLayer("TransparentFX");
+            gameObject.GetChildAt("Content/LightConePlanes/LightConePlane (1)").layer = LayerMask.NameToLayer("TransparentFX");
 
             // Add ceiling lights animations.
             foreach (var state in template.GetComponent<Animation>())

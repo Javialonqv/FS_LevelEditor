@@ -81,10 +81,10 @@ namespace FS_LevelEditor
 			wall.manualExplosionVFXIsBefore = true;
 
 			//layers
-			content.GetChild("OriginalMesh").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
-			content.GetChild("OriginalMesh/PlayerCollisionOnly").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
-			content.GetChild("OriginalMesh/PreciseWallDetection").layer = LayerMask.NameToLayer("LaserObstructionOnly");
-			foreach(GameObject walldetect in content.GetChild("OriginalMesh/PreciseWallDetection").GetChilds(true))
+			content.GetChildAt("OriginalMesh").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+			content.GetChildAt("OriginalMesh/PlayerCollisionOnly").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+			content.GetChildAt("OriginalMesh/PreciseWallDetection").layer = LayerMask.NameToLayer("LaserObstructionOnly");
+			foreach(GameObject walldetect in content.GetChildAt("OriginalMesh/PreciseWallDetection").GetChilds(true))
 			{
 				walldetect.tag = "OriginalMesh_Destructible";
 				walldetect.layer = LayerMask.NameToLayer("LaserObstructionOnly");

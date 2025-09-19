@@ -29,10 +29,10 @@ namespace FS_LevelEditor
                 { "InitialStateAuto", InitialStateAuto.LOCKED }
             };
 
-            leftPartRed = gameObject.GetChild("Content/Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
-            leftPartBlue = gameObject.GetChild("Content/Mesh/porte1/gauche").GetComponent<MeshRenderer>();
-            rightPartRed = gameObject.GetChild("Content/Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
-            rightPartBlue = gameObject.GetChild("Content/Mesh/porte1/droite").GetComponent<MeshRenderer>();
+            leftPartRed = gameObject.GetChildAt("Content/Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
+            leftPartBlue = gameObject.GetChildAt("Content/Mesh/porte1/gauche").GetComponent<MeshRenderer>();
+            rightPartRed = gameObject.GetChildAt("Content/Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
+            rightPartBlue = gameObject.GetChildAt("Content/Mesh/porte1/droite").GetComponent<MeshRenderer>();
         }
 
         public override void OnInstantiated(LEScene scene)
@@ -49,7 +49,7 @@ namespace FS_LevelEditor
             if (scene == LEScene.Playmode)
             {
                 // To avoid bugs, the trigger is disabled if it's NOT auto.
-                gameObject.GetChild("Content/ActivateTrigger").SetActive(GetProperty<bool>("IsAuto"));
+                gameObject.GetChildAt("Content/ActivateTrigger").SetActive(GetProperty<bool>("IsAuto"));
 
                 if (GetProperty<bool>("IsAuto"))
                 {
@@ -93,7 +93,7 @@ namespace FS_LevelEditor
             doorScript.doorEditorVisibleState = false;
             doorScript.doorMesh = content.GetChild("Mesh").transform;
             //script.doorMeshV2 = content.GetChildWithName("Mesh_V2").transform;
-            doorScript.forceTeleportGO = content.GetChild("Mesh/porte1/ForceTeleport_Holder/ForceTeleport_Vent");
+            doorScript.forceTeleportGO = content.GetChildAt("Mesh/porte1/ForceTeleport_Holder/ForceTeleport_Vent");
             //script.forceTeleportGO_MeshV2 = content.GetChildAt("Mesh_V2/portev2/ForceTeleport_Holder/ForceTeleport_Vent");
             doorScript.instantCollider = content.GetChild("InstantCollider").GetComponent<BoxCollider>();
             doorScript.isRed = true;
@@ -109,8 +109,8 @@ namespace FS_LevelEditor
             //script.m_greenRenderers = new Il2CppSystem.Collections.Generic.List<GameObject>();
             //script.m_greenRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Cyan"));
             //script.m_greenRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Cyan"));
-            doorScript.m_leftDoorRedRenderer = content.GetChild("Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
-            doorScript.m_leftDoorRenderer = content.GetChild("Mesh/porte1/gauche").GetComponent<MeshRenderer>();
+            doorScript.m_leftDoorRedRenderer = content.GetChildAt("Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
+            doorScript.m_leftDoorRenderer = content.GetChildAt("Mesh/porte1/gauche").GetComponent<MeshRenderer>();
             doorScript.m_onClose = new UnityEngine.Events.UnityEvent();
             doorScript.m_onLock = new UnityEngine.Events.UnityEvent();
             doorScript.m_onOpen = new UnityEngine.Events.UnityEvent();
@@ -119,8 +119,8 @@ namespace FS_LevelEditor
             //script.m_redRenderers = new Il2CppSystem.Collections.Generic.List<GameObject>();
             //script.m_redRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Red"));
             //script.m_redRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Red"));
-            doorScript.m_rightDoorRedRenderer = content.GetChild("Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
-            doorScript.m_rightDoorRenderer = content.GetChild("Mesh/porte1/droite").GetComponent<MeshRenderer>();
+            doorScript.m_rightDoorRedRenderer = content.GetChildAt("Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
+            doorScript.m_rightDoorRenderer = content.GetChildAt("Mesh/porte1/droite").GetComponent<MeshRenderer>();
             doorScript.m_switchList = new InterrupteurController[0];
             doorScript.openSound = t_door.openSound;
             doorScript.open = false;

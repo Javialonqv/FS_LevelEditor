@@ -21,7 +21,7 @@ namespace FS_LevelEditor
                 { "InvisibleEdges", false }
             };
 
-            edgesParent = gameObject.GetChild("Content/Edges");
+            edgesParent = gameObject.GetChildAt("Content/Edges");
         }
 
         public override void ObjectStart(LEScene scene)
@@ -57,8 +57,8 @@ namespace FS_LevelEditor
             content.GetChild("KillPlane_Mesh").layer = LayerMask.NameToLayer("TransparentFX");
             content.GetChild("KillZone").tag = "KillZone";
             content.GetChild("KillZone").layer = LayerMask.NameToLayer("Ignore Raycast");
-            content.GetChild("KillZone/InteractionOccluder1").tag = "InteractionOccluder_ALL";
-            content.GetChild("KillZone/InteractionOccluder1").layer = LayerMask.NameToLayer("ActivableCheck");
+            content.GetChildAt("KillZone/InteractionOccluder1").tag = "InteractionOccluder_ALL";
+            content.GetChildAt("KillZone/InteractionOccluder1").layer = LayerMask.NameToLayer("ActivableCheck");
 
             content.SetActive(true);
 

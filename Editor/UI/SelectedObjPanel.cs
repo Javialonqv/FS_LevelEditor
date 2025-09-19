@@ -144,7 +144,7 @@ namespace FS_LevelEditor.Editor.UI
 			expandPanelButton.onClick += ExpandButtonClick;
 			expandPanelButton.GetComponent<UISprite>().depth = 1;
 
-			expandPanelButtonSprite = expandPanelButton.gameObject.GetChild("Background/Label").GetComponent<UISprite>();
+			expandPanelButtonSprite = expandPanelButton.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>();
 
 			expandPanelButton.gameObject.SetActive(false);
 		}
@@ -602,7 +602,7 @@ namespace FS_LevelEditor.Editor.UI
 			SetCurrentParentToCreateAttributes(switchAttributes);
 
 			CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
-			var initiaStateButton = switchAttributes.GetChild("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var initiaStateButton = switchAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			initiaStateButton.AddOption("DEACTIVATED", new Color(0.8f, 0f, 0f));
 			initiaStateButton.AddOption("ACTIVATED", Color.green);
 			initiaStateButton.AddOption("UNUSABLE", Color.black);
@@ -725,7 +725,7 @@ namespace FS_LevelEditor.Editor.UI
 			SetCurrentParentToCreateAttributes(screenAttributes);
 
 			CreateObjectAttribute("ScreenColor", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
-			var screenColorButton = screenAttributes.GetChild("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var screenColorButton = screenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			screenColorButton.AddOption("CYAN", null); // Use the default button color.
 			screenColorButton.AddOption("GREEN", Color.green);
 			screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
@@ -748,7 +748,7 @@ namespace FS_LevelEditor.Editor.UI
 			SetCurrentParentToCreateAttributes(smallScreenAttributes);
 
 			CreateObjectAttribute("ScreenColor", AttributeType.BUTTON_MULTIPLE, 0, null, "ColorType");
-			var screenColorButton = smallScreenAttributes.GetChild("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var screenColorButton = smallScreenAttributes.GetChildAt("ColorType/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			screenColorButton.AddOption("CYAN", null); // Use the default button color.
 			screenColorButton.AddOption("GREEN", Color.green);
 			screenColorButton.AddOption("RED", new Color(0.8f, 0f, 0f));
@@ -770,7 +770,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			SetCurrentParentToCreateAttributes(triggerAttributes);
 			CreateObjectAttribute("TriggerMode", AttributeType.BUTTON_MULTIPLE, 0, null, "TriggerMode");
-			var triggerModeButton = triggerAttributes.GetChild("TriggerMode/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var triggerModeButton = triggerAttributes.GetChildAt("TriggerMode/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			triggerModeButton.AddOption("Once", new Color(0.8f, 0.8f, 0.8f)); // Light gray for Once (default)
 			triggerModeButton.AddOption("Multiple", Color.green);              // Green for Multiple
 			triggerModeButton.AddOption("Cube-only", Color.cyan);             // Cyan for Cube-only
@@ -791,12 +791,12 @@ namespace FS_LevelEditor.Editor.UI
 			CreateObjectAttribute("IsAutomatic", AttributeType.TOGGLE, false, null, "IsAuto");
 
 			CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
-			var initialStateButton = doorAttributes.GetChild("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var initialStateButton = doorAttributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
 			initialStateButton.AddOption("OPEN", Color.green);
 
 			CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialStateAuto", dontChangeYPos: true);
-			var initialStateAutoButton = doorAttributes.GetChild("InitialStateAuto/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var initialStateAutoButton = doorAttributes.GetChildAt("InitialStateAuto/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			initialStateAutoButton.AddOption("LOCKED", new Color(0.8f, 0f, 0f));
 			initialStateAutoButton.AddOption("UNLOCKED", Color.green);
 
@@ -815,12 +815,12 @@ namespace FS_LevelEditor.Editor.UI
 			CreateObjectAttribute("IsAutomatic", AttributeType.TOGGLE, false, null, "IsAuto");
 
 			CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
-			var initialStateButton = doorV2Attributes.GetChild("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var initialStateButton = doorV2Attributes.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			initialStateButton.AddOption("CLOSED", new Color(0.8f, 0f, 0f));
 			initialStateButton.AddOption("OPEN", Color.green);
 
 			CreateObjectAttribute("Initial State", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialStateAuto", dontChangeYPos: true);
-			var initialStateAutoButton = doorV2Attributes.GetChild("InitialStateAuto/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var initialStateAutoButton = doorV2Attributes.GetChildAt("InitialStateAuto/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			initialStateAutoButton.AddOption("LOCKED", new Color(0.8f, 0f, 0f));
 			initialStateAutoButton.AddOption("UNLOCKED", Color.green);
 
@@ -837,7 +837,7 @@ namespace FS_LevelEditor.Editor.UI
 			SetCurrentParentToCreateAttributes(deathTriggerAttributes);
 
 			CreateObjectAttribute("DeathTriggerType", AttributeType.BUTTON_MULTIPLE, null, null, "Type");
-			var typeButton = deathTriggerAttributes.GetChild("Type/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var typeButton = deathTriggerAttributes.GetChildAt("Type/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			typeButton.AddOption("DeathRelocation", new Color(0.8f, 0f, 0f));
 			typeButton.AddOption("DeathImminent", Color.black);
 			CreateObjectAttribute("CustomCoordinates", AttributeType.TOGGLE, false, null, "CustomCoordinates");
@@ -930,7 +930,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			// Add InitialState property as a BUTTON_MULTIPLE
 			CreateObjectAttribute("InitialState", AttributeType.BUTTON_MULTIPLE, 0, null, "InitialState");
-			var initialStateButton = bridge.GetChild("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var initialStateButton = bridge.GetChildAt("InitialState/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			initialStateButton.AddOption("RETRACTED", new Color(0.8f, 0f, 0f));
 			initialStateButton.AddOption("DEPLOYED", Color.green);
 
@@ -951,7 +951,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateObjectAttribute("MovingSpeed", AttributeType.INPUT_FIELD, "5", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "MoveSpeed");
 
 			CreateObjectAttribute("MovementMode", AttributeType.BUTTON_MULTIPLE, 0, null, "MovementMode");
-			var movementModeButton = movingPlatformAttributes.GetChild("MovementMode/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
+			var movementModeButton = movingPlatformAttributes.GetChildAt("MovementMode/ButtonMultiple").GetComponent<UISmallButtonMultiple>();
 			movementModeButton.AddOption("None_Mayus", Color.black);
 			movementModeButton.AddOption("TravelBack_Mayus", Color.red);
 			movementModeButton.AddOption("Loop_Mayus", Color.blue);
@@ -1261,14 +1261,14 @@ namespace FS_LevelEditor.Editor.UI
 			if (setActiveStateInObjects != null)
 			{
 				setActiveAtStartToggle.Set((bool)setActiveStateInObjects);
-				setActiveAtStartToggle.gameObject.GetChild("Background/Line").SetActive(false);
+				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 			}
 			else
 			{
 				executeSetActiveAtStartToggleActions = false;
 				setActiveAtStartToggle.Set(false);
 				executeSetActiveAtStartToggleActions = true;
-				setActiveAtStartToggle.gameObject.GetChild("Background/Line").SetActive(true);
+				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
 			}
 			#endregion
 
@@ -1326,7 +1326,7 @@ namespace FS_LevelEditor.Editor.UI
 			{
 				setActiveAtStartToggle.gameObject.SetActive(true);
 				setActiveAtStartToggle.Set(objComponent.setActiveAtStart);
-				setActiveAtStartToggle.gameObject.GetChild("Background/Line").SetActive(false);
+				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 			}
 			else
 			{
@@ -1452,7 +1452,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
-				setActiveAtStartToggle.gameObject.GetChild("Background/Line").SetActive(false);
+				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 				foreach (var obj in EditorController.Instance.currentSelectedObjects)
 				{
 					LE_Object comp = obj.GetComponent<LE_Object>();
@@ -1474,7 +1474,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
-				collisionToggle.gameObject.GetChild("Background/Line").SetActive(false);
+				collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 				foreach (var obj in EditorController.Instance.currentSelectedObjects)
 				{
 					LE_Object comp = obj.GetComponent<LE_Object>();
@@ -1579,20 +1579,20 @@ namespace FS_LevelEditor.Editor.UI
 				if (collisionStateInObjects != null)
 				{
 					collisionToggle.Set((bool)collisionStateInObjects);
-					collisionToggle.gameObject.GetChild("Background/Line").SetActive(false);
+					collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 				}
 				else
 				{
 					executeCollisionToggleActions = false;
 					collisionToggle.Set(false);
 					executeCollisionToggleActions = true;
-					collisionToggle.gameObject.GetChild("Background/Line").SetActive(true);
+					collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
 				}
 			}
 			else
 			{
 				collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
-				collisionToggle.gameObject.GetChild("Background/Line").SetActive(false);
+				collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 			}
 			#endregion
 
@@ -1886,8 +1886,8 @@ namespace FS_LevelEditor.Editor.UI
 			// This is to always enable one or the other, but NEVER both of the toggles, only one or the other.
 			// To avoid bugs, only change the values when at least one of the bools is true.
 
-			var travelBackToggle = attributesPanels["Saw"].GetChild("TravelBack/Toggle").GetComponent<UIToggle>();
-			var loopToggle = attributesPanels["Saw"].GetChild("Loop/Toggle").GetComponent<UIToggle>();
+			var travelBackToggle = attributesPanels["Saw"].GetChildAt("TravelBack/Toggle").GetComponent<UIToggle>();
+			var loopToggle = attributesPanels["Saw"].GetChildAt("Loop/Toggle").GetComponent<UIToggle>();
 
 			if (travelBack && !loop)
 			{

@@ -28,10 +28,10 @@ namespace FS_LevelEditor
 			gameObject.GetChild("Content").SetActive(false);
 			gameObject.GetChild("Content").tag = "AmmoPack";
 
-			DisolveOnEnable disolve = gameObject.GetChild("Content/Mesh/PC_Only").AddComponent<DisolveOnEnable>();
+			DisolveOnEnable disolve = gameObject.GetChildAt("Content/Mesh/PC_Only").AddComponent<DisolveOnEnable>();
 
-			disolve.m_renderer = gameObject.GetChild("Content/Mesh").GetComponent<MeshRenderer>();
-			disolve.dissolveMaterials = t_ammoPack.gameObject.GetChild("Mesh/PC_Only").GetComponent<DisolveOnEnable>().dissolveMaterials;
+			disolve.m_renderer = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
+			disolve.dissolveMaterials = t_ammoPack.gameObject.GetChildAt("Mesh/PC_Only").GetComponent<DisolveOnEnable>().dissolveMaterials;
 			disolve.finalMaterials = new Material[] { disolve.m_renderer.sharedMaterial };
 			disolve.appearSpeed = 3;
 			disolve.startOffset = -0.6f;
@@ -40,19 +40,19 @@ namespace FS_LevelEditor
 
 			ammo = gameObject.GetChild("Content").AddComponent<Ammo>();
 
-			ammo.preciseCollider = gameObject.GetChild("Content/Mesh/PreciseCollider").GetComponent<MeshCollider>();
-			ammo.preciseCollider2 = gameObject.GetChild("Content/Mesh/PreciseCollider").GetComponent<CapsuleCollider>();
+			ammo.preciseCollider = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<MeshCollider>();
+			ammo.preciseCollider2 = gameObject.GetChildAt("Content/Mesh/PreciseCollider").GetComponent<CapsuleCollider>();
 			ammo.m_animComp = gameObject.GetChild("Content").GetComponent<Animation>();
 			ammo.m_boxCollider = gameObject.GetChild("Content").GetComponent<BoxCollider>();
-			ammo.mesh = gameObject.GetChild("Content/Mesh").GetComponent<MeshRenderer>();
+			ammo.mesh = gameObject.GetChildAt("Content/Mesh").GetComponent<MeshRenderer>();
 			ammo.timerBeforeRespawn = -1;
 			Invoke("SetRespawnTime", 0.1f);
 			ammo.generalGrowSpeed = 3;
 			ammo.xScaleSpeed = 2;
 			ammo.yScaleSpeed = 1;
 			ammo.zScaleSpeed = 1;
-			ammo.m_light = gameObject.GetChild("Content/Mesh/PC_Only").GetComponent<Light>();
-			ammo.m_flare = gameObject.GetChild("Content/Mesh/AmmoFlare").GetComponent<LensFlare>();
+			ammo.m_light = gameObject.GetChildAt("Content/Mesh/PC_Only").GetComponent<Light>();
+			ammo.m_flare = gameObject.GetChildAt("Content/Mesh/AmmoFlare").GetComponent<LensFlare>();
 			ammo.m_dissolve = disolve;
 
 			gameObject.GetChild("Content").SetActive(true);

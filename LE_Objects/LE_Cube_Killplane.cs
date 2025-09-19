@@ -25,7 +25,7 @@ namespace FS_LevelEditor
 		{
 			if (scene == LEScene.Playmode)
 			{
-				gameObject.GetChild("Content/Mesh").SetActive(false);
+				gameObject.GetChildAt("Content/Mesh").SetActive(false);
 			}
 
 			base.OnInstantiated(scene);

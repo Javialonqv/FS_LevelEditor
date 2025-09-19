@@ -45,10 +45,10 @@ namespace FS_LevelEditor
                 { "Text", "<color=#FFFFFF>\n</color>" }
             };
 
-            wholeMesh = gameObject.GetChild("Content/Mesh");
-            greenMesh = gameObject.GetChild("Content/Mesh/GreenPlane");
-            redMesh = gameObject.GetChild("Content/Mesh/RedPlane");
-            screenText = gameObject.GetChild("Content/Content/Label/MainLabel").GetComponent<TextMeshPro>();
+            wholeMesh = gameObject.GetChildAt("Content/Mesh");
+            greenMesh = gameObject.GetChildAt("Content/Mesh/GreenPlane");
+            redMesh = gameObject.GetChildAt("Content/Mesh/RedPlane");
+            screenText = gameObject.GetChildAt("Content/Content/Label/MainLabel").GetComponent<TextMeshPro>();
 
             screenText.gameObject.AddComponent<ScaleScreenText>().relativeTo = transform;
             screenText.gameObject.GetComponent<ScaleScreenText>().enabled = false; // Disabled by default.
@@ -76,14 +76,14 @@ namespace FS_LevelEditor
             screen.m_content = content.GetChild("Content").transform;
             screen.m_contentAnim = content.GetChild("Content").GetComponent<Animation>();
             screen.m_screenRenderer = content.GetChild("Mesh").GetComponent<MeshRenderer>();
-            screen.redColorPlane = content.GetChild("Mesh/RedPlane");
-            screen.greenColorPlane = content.GetChild("Mesh/GreenPlane");
-            screen.m_mainLabelTMP = content.GetChild("Content/Label/MainLabel").GetComponent<TextMeshPro>();
-            screen.m_mainLabelRenderer = content.GetChild("Content/Label/MainLabel").GetComponent<MeshRenderer>();
-            screen.m_secondaryLabelTMP = content.GetChild("Content/Label/SecondaryLabel").GetComponent<TextMeshPro>();
-            screen.m_secondaryLabelRenderer = content.GetChild("Content/Label/SecondaryLabel").GetComponent<MeshRenderer>();
-            screen.m_lockdownLabelTMP = content.GetChild("Content/Label/LockdownLabel").GetComponent<TextMeshPro>();
-            screen.m_lockdownLabelRenderer = content.GetChild("Content/Label/LockdownLabel").GetComponent<MeshRenderer>();
+            screen.redColorPlane = content.GetChildAt("Mesh/RedPlane");
+            screen.greenColorPlane = content.GetChildAt("Mesh/GreenPlane");
+            screen.m_mainLabelTMP = content.GetChildAt("Content/Label/MainLabel").GetComponent<TextMeshPro>();
+            screen.m_mainLabelRenderer = content.GetChildAt("Content/Label/MainLabel").GetComponent<MeshRenderer>();
+            screen.m_secondaryLabelTMP = content.GetChildAt("Content/Label/SecondaryLabel").GetComponent<TextMeshPro>();
+            screen.m_secondaryLabelRenderer = content.GetChildAt("Content/Label/SecondaryLabel").GetComponent<MeshRenderer>();
+            screen.m_lockdownLabelTMP = content.GetChildAt("Content/Label/LockdownLabel").GetComponent<TextMeshPro>();
+            screen.m_lockdownLabelRenderer = content.GetChildAt("Content/Label/LockdownLabel").GetComponent<MeshRenderer>();
             screen.firstEnableEver = true;
             screen.redColor = t_screen.redColor;
             screen.greenColor = t_screen.greenColor;

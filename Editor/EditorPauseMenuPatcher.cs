@@ -66,9 +66,9 @@ namespace FS_LevelEditor.Editor
 
             popup = uiParentObj.GetChild("Popup");
             popupController = popup.GetComponent<PopupController>();
-            popupTitle = popup.GetChild("PopupHolder/Title/Label");
-            popupContentLabel = popup.GetChild("PopupHolder/Content/Label");
-            popupSmallButtonsParent = popup.GetChild("PopupHolder/SmallButtons");
+            popupTitle = popup.GetChildAt("PopupHolder/Title/Label");
+            popupContentLabel = popup.GetChildAt("PopupHolder/Content/Label");
+            popupSmallButtonsParent = popup.GetChildAt("PopupHolder/SmallButtons");
         }
         // If for some reason the pause menu already has the buttons, destroy them, just in case something bad happens.
         void CheckForExistingButtons()
@@ -153,7 +153,7 @@ namespace FS_LevelEditor.Editor
             PatchPlayLevelButton();
             PatchSaveLevelButton();
 
-            pauseMenu.GetChild("LargeButtons").GetComponent<UITable>().Reposition();
+            pauseMenu.GetChildAt("LargeButtons").GetComponent<UITable>().Reposition();
             #endregion
 
             // The logic for changing the navigation bar buttons and their "on click" actions it's in Patches.cs ;)
@@ -224,7 +224,7 @@ namespace FS_LevelEditor.Editor
 
             #region Back Button
             // Make a copy of the yess button since for some reason the yes button is red as the no button should, that's doesn't make any sense lol.
-            onExitPopupBackButton = Instantiate(popupSmallButtonsParent.GetChild("3_Yes"), popupSmallButtonsParent.transform);
+            onExitPopupBackButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
             onExitPopupBackButton.name = "1_Back";
             onExitPopupBackButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
             onExitPopupBackButton.RemoveComponent<ButtonController>();
@@ -236,7 +236,7 @@ namespace FS_LevelEditor.Editor
             #endregion
 
             #region Save and Exit Button
-            onExitPopupSaveAndExitButton = Instantiate(popupSmallButtonsParent.GetChild("3_Yes"), popupSmallButtonsParent.transform);
+            onExitPopupSaveAndExitButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
             onExitPopupSaveAndExitButton.name = "2_SaveAndExit";
             onExitPopupSaveAndExitButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
             onExitPopupSaveAndExitButton.RemoveComponent<ButtonController>();
@@ -249,7 +249,7 @@ namespace FS_LevelEditor.Editor
 
             #region Exit Without Saving Button
             // Same with exit button.
-            onExitPopupExitButton = Instantiate(popupSmallButtonsParent.GetChild("1_No"), popupSmallButtonsParent.transform);
+            onExitPopupExitButton = Instantiate(popupSmallButtonsParent.GetChildAt("1_No"), popupSmallButtonsParent.transform);
             onExitPopupExitButton.name = "3_ExitWithoutSaving";
             onExitPopupExitButton.transform.localPosition = new Vector3(200f, 0f, 0f);
             onExitPopupExitButton.RemoveComponent<ButtonController>();

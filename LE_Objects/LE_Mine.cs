@@ -47,7 +47,7 @@ namespace FS_LevelEditor
 			mine = gameObject.GetChild("Content").AddComponent<Laser_H_Controller>();
 			#region Rotate
 			Rotate mine_rot = gameObject.GetChild("Content").AddComponent<Rotate>();
-			mine_rot.objectToRotate = gameObject.GetChild("Content/MeshOn").transform;
+			mine_rot.objectToRotate = gameObject.GetChildAt("Content/MeshOn").transform;
 			mine_rot.world = false;
 			mine_rot.speed = new Vector3(0, .5f, 0);
 			mine_rot.reactToTaser = false;
@@ -83,14 +83,14 @@ namespace FS_LevelEditor
 			mine.onDeactivate = new UnityEngine.Events.UnityEvent();
 			mine.currentWaypointIndex = 0;
 			mine.rb = null;
-			mine.laserOriginPoint = gameObject.GetChild("Content/LaserOriginPoint").transform;
+			mine.laserOriginPoint = gameObject.GetChildAt("Content/LaserOriginPoint").transform;
 			mine.rotateCom = mine_rot;
 			mine.useBoxCast = false;
 			mine.hasOnMaterials = false;
 			mine.controlScript = Controls.Instance;
-			mine.safetyCollider = gameObject.GetChild("Content/SafetyCollider");
-			mine.collisionOn = gameObject.GetChild("Content/MeshOn").GetComponent<BoxCollider>();
-			mine.collisionOff = gameObject.GetChild("Content/MeshOff").GetComponent<BoxCollider>();
+			mine.safetyCollider = gameObject.GetChildAt("Content/SafetyCollider");
+			mine.collisionOn = gameObject.GetChildAt("Content/MeshOn").GetComponent<BoxCollider>();
+			mine.collisionOff = gameObject.GetChildAt("Content/MeshOff").GetComponent<BoxCollider>();
 			mine.currentKine = null;
 			mine.explodeWithInvalidPosObj = true;
 			mine.cachedGO = mine.gameObject;
@@ -98,16 +98,16 @@ namespace FS_LevelEditor
 			mine.currentForward = Vector3.zero;
 			mine.positionWithLaserStartPointOffset = Vector3.zero;
 			mine.mineExplosion = t_mine.mineExplosion;
-			mine.explosionHolder = gameObject.GetChild("Content/ExplosionHolder").transform;
+			mine.explosionHolder = gameObject.GetChildAt("Content/ExplosionHolder").transform;
 			mine.explosionSound = t_mine.explosionSound;
 			mine.proximityLayer = t_mine.proximityLayer;
 			mine.explosionCheckLayer = t_mine.explosionCheckLayer;
 			mine.disableDistance = 300;
 			mine.m_laserOn = t_mine.m_laserOn;
 			mine.m_laserOff = t_mine.m_laserOff;
-			mine.m_currentLaserImpact = gameObject.GetChild("Content/LaserPointRed");
-			mine.m_currentLaserImpactT = gameObject.GetChild("Content/LaserPointRed").transform;
-			mine.m_currentLaserImpactScript = gameObject.GetChild("Content/LaserPointRed").GetComponent<LaserPoint>();
+			mine.m_currentLaserImpact = gameObject.GetChildAt("Content/LaserPointRed");
+			mine.m_currentLaserImpactT = gameObject.GetChildAt("Content/LaserPointRed").transform;
+			mine.m_currentLaserImpactScript = gameObject.GetChildAt("Content/LaserPointRed").GetComponent<LaserPoint>();
 			mine.Line = mine.GetComponent<LineRenderer>();
 			mine.transparentMat = t_mine.transparentMat;
 			mine.cutoutMat = t_mine.cutoutMat;
@@ -118,10 +118,10 @@ namespace FS_LevelEditor
 			mine.firstTempDelay = 0;
 			mine.firstTempDelayIsOff = false;
 			mine.loopAudioSource = mine.GetComponent<AudioSource>();
-			mine.onOffAudioSource = gameObject.GetChild("Content/Audio2").GetComponent<AudioSource>();
-			mine.explosionAudioSource = gameObject.GetChild("Content/ExplosionHolder").GetComponent<AudioSource>();
-			mine.m_onMesh = gameObject.GetChild("Content/MeshOn");
-			mine.m_offMesh = gameObject.GetChild("Content/MeshOff");
+			mine.onOffAudioSource = gameObject.GetChildAt("Content/Audio2").GetComponent<AudioSource>();
+			mine.explosionAudioSource = gameObject.GetChildAt("Content/ExplosionHolder").GetComponent<AudioSource>();
+			mine.m_onMesh = gameObject.GetChildAt("Content/MeshOn");
+			mine.m_offMesh = gameObject.GetChildAt("Content/MeshOff");
 			mine.timer = 0;
 			mine.tempOff = false;
 			mine.timerBeforeNextWaypoint = 0;
@@ -132,8 +132,8 @@ namespace FS_LevelEditor
 			mine.unselectedColor = Color.black;
 			mine.selectedColor = Color.black;
 			mine.isGodray = false;
-			mine.m_light = gameObject.GetChild("Content/Light").GetComponent<Light>();
-			mine.m_flare = gameObject.GetChild("Content/Light").GetComponent<LensFlare>();
+			mine.m_light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
+			mine.m_flare = gameObject.GetChildAt("Content/Light").GetComponent<LensFlare>();
 			mine.flareMultiplier = 1;
 			mine.activeEditorState = true;
 			mine.constantEditorState = true;
@@ -141,22 +141,22 @@ namespace FS_LevelEditor
 			mine.checkpoints = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GameObject>(0);
 			#endregion
 			#region OSS
-			ObjectStateSync sync = gameObject.GetChild("Content").AddComponent<ObjectStateSync>();
+			ObjectStateSync sync = gameObject.GetChildAt("Content").AddComponent<ObjectStateSync>();
 			sync.assignNewParent = true;
-			sync.objectGO = gameObject.GetChild("Content/LaserRailHolder");
-			sync.objectT = gameObject.GetChild("Content/LaserRailHolder").transform;
+			sync.objectGO = gameObject.GetChildAt("Content/LaserRailHolder");
+			sync.objectT = gameObject.GetChildAt("Content/LaserRailHolder").transform;
 			sync.stateInEditor = true;
 			sync.firstOnEnable = true;
 			#endregion
 			#region Layers
 			gameObject.GetChild("Content").tag = "Laser";
-			gameObject.GetChild("Content/MeshOn").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
-			gameObject.GetChild("Content/MeshOff").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
-			gameObject.GetChild("Content/SafetyCollider").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
-			gameObject.GetChild("Content/AutoAimCollider").tag = "AutoAim";
-			gameObject.GetChild("Content/AutoAimCollider").layer = LayerMask.NameToLayer("Water");
-			gameObject.GetChild("Content/AutoAimOverridePoint").tag = "AutoAim";
-			gameObject.GetChild("Content/AutoAimOverridePoint").layer = LayerMask.NameToLayer("Water");
+			gameObject.GetChildAt("Content/MeshOn").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+			gameObject.GetChildAt("Content/MeshOff").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+			gameObject.GetChildAt("Content/SafetyCollider").layer = LayerMask.NameToLayer("IgnorePlayerCollision");
+			gameObject.GetChildAt("Content/AutoAimCollider").tag = "AutoAim";
+			gameObject.GetChildAt("Content/AutoAimCollider").layer = LayerMask.NameToLayer("Water");
+			gameObject.GetChildAt("Content/AutoAimOverridePoint").tag = "AutoAim";
+			gameObject.GetChildAt("Content/AutoAimOverridePoint").layer = LayerMask.NameToLayer("Water");
 			#endregion
 			bool activateOnStart = (bool)GetProperty("ActivateOnStart");
 			if (activateOnStart)
@@ -291,8 +291,8 @@ namespace FS_LevelEditor
 
 		void SetMeshOnEditor(bool isLaserOn)
 		{
-			gameObject.GetChild("Content/MeshOff").GetComponent<MeshRenderer>().enabled = !isLaserOn;
-			gameObject.GetChild("Content/MeshOn").GetComponent<MeshRenderer>().enabled = isLaserOn;
+			gameObject.GetChildAt("Content/MeshOff").GetComponent<MeshRenderer>().enabled = !isLaserOn;
+			gameObject.GetChildAt("Content/MeshOn").GetComponent<MeshRenderer>().enabled = isLaserOn;
 		}
 	}
 }

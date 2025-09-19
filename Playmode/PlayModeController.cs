@@ -389,7 +389,7 @@ namespace FS_LevelEditor.Playmode
 				StatsManager.totalUpgradesCount = 0; // Ensure it's exactly 0 if no upgrades
 
 			//For now, let's ignore that bitch
-			MenuController.GetInstance().pausePlayerStats.GetChild("Always/CharacterStats/CharacterStatsTitle").SetActive(false);
+			MenuController.GetInstance().pausePlayerStats.GetChildAt("Always/CharacterStats/CharacterStatsTitle").SetActive(false);
 			UpgradePatches.Init();
 		}
 

@@ -40,7 +40,7 @@ namespace FS_LevelEditor.UI_Related
         {
             get
             {
-                if (!_buttonLabel) _buttonLabel = gameObject.GetChild("Background/Label").GetComponent<UILabel>();
+                if (!_buttonLabel) _buttonLabel = gameObject.GetChildAt("Background/Label").GetComponent<UILabel>();
                 return _buttonLabel;
             }
         }

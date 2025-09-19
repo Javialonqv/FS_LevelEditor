@@ -68,20 +68,36 @@ namespace FS_LevelEditor
             return children.ToArray();
         }
 
-        public static Transform GetChild(this Transform tr, string path)
+        public static Transform GetChild(this Transform tr, string name)
         {
-            return GetChild(tr.gameObject, path).transform;
-        }
-        public static GameObject GetChild(this GameObject obj, string path)
-        {
-            if (!path.Contains('/'))
+            foreach (GameObject child in GetChilds(tr.gameObject))
             {
-                foreach (GameObject child in GetChilds(obj))
-                {
-                    if (child.name == path) return child;
-                }
+                if (child.name == name) return child.transform;
             }
 
+            return null;
+        }
+        public static GameObject GetChild(this GameObject obj, string name)
+        {
+            foreach (GameObject child in GetChilds(obj))
+            {
+                if (child.name == name) return child;
+            }
+
+            return null;
+        }
+        public static bool ExistsChild(this GameObject obj, string name)
+        {
+            foreach (GameObject child in GetChilds(obj))
+            {
+                if (child.name == name) return true;
+            }
+
+            return false;
+        }
+
+        public static GameObject GetChildAt(this GameObject obj, string path)
+        {
             string[] childNames = path.Split('/');
             GameObject currentChild = obj;
 
@@ -93,27 +109,11 @@ namespace FS_LevelEditor
                 }
                 else
                 {
-                    foreach (GameObject child in GetChilds(currentChild))
-                    {
-                        if (child.name == name)
-                        {
-                            currentChild = child;
-                            break;
-                        }
-                    }
+                    currentChild = GetChild(currentChild, name);
                 }
             }
 
             return currentChild;
-        }
-        public static bool ExistsChild(this GameObject obj, string name)
-        {
-            foreach (GameObject child in GetChilds(obj))
-            {
-                if (child.name == name) return true;
-            }
-
-            return false;
         }
 
         public static void DeleteAllChildren(this GameObject obj, bool immediate = false)
@@ -274,8 +274,8 @@ namespace FS_LevelEditor
                 notificationPanel.GetComponent<UIPanel>().enabled = true;
 
                 // Set the red color in the sprites.
-                notificationPanel.GetChild("Holder/Background").GetComponent<UISprite>().color = new Color32(255, 120, 120, 160);
-                notificationPanel.GetChild("Holder/BorderLines").GetComponent<UISprite>().color = new Color32(255, 120, 120, 255);
+                notificationPanel.GetChildAt("Holder/Background").GetComponent<UISprite>().color = new Color32(255, 120, 120, 160);
+                notificationPanel.GetChildAt("Holder/BorderLines").GetComponent<UISprite>().color = new Color32(255, 120, 120, 255);
 
                 // Play the notification sound.
                 InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.m_notificationSound_bad);
@@ -284,9 +284,9 @@ namespace FS_LevelEditor
                 notificationPanel.SetActive(true);
                 TweenAlpha.Begin(notificationPanel, 0.2f, 1f);
                 // Set the text and start the typing effect while the fade is occurring.
-                notificationPanel.GetChild("Holder/Label").GetComponent<UILabel>().text = "";
-                notificationPanel.GetChild("Holder/Label").GetComponent<UILabel>().text = msg;
-                notificationPanel.GetChild("Holder/Label").GetComponent<TypewriterEffect>().ResetToBeginning();
+                notificationPanel.GetChildAt("Holder/Label").GetComponent<UILabel>().text = "";
+                notificationPanel.GetChildAt("Holder/Label").GetComponent<UILabel>().text = msg;
+                notificationPanel.GetChildAt("Holder/Label").GetComponent<TypewriterEffect>().ResetToBeginning();
 
                 // Wait the delay and then fade out the panel again.
                 yield return new WaitForSecondsRealtime(delay);

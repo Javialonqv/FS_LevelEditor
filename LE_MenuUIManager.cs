@@ -137,9 +137,9 @@ namespace FS_LevelEditor
 
             popup = GameObject.Find("MainMenu/Camera/Holder/Popup");
             popupController = popup.GetComponent<PopupController>();
-            popupTitle = popup.GetChild("PopupHolder/Title/Label");
-            popupContentLabel = popup.GetChild("PopupHolder/Content/Label");
-            popupSmallButtonsParent = popup.GetChild("PopupHolder/SmallButtons");
+            popupTitle = popup.GetChildAt("PopupHolder/Title/Label");
+            popupContentLabel = popup.GetChildAt("PopupHolder/Content/Label");
+            popupSmallButtonsParent = popup.GetChildAt("PopupHolder/SmallButtons");
         }
 
         // LE stands for "Level Editor" lmao.
@@ -204,7 +204,7 @@ namespace FS_LevelEditor
             // Do I even need to explain WHAT this does?
             leMenuPanel.GetChild("Window").GetComponent<UISprite>().depth = -1;
             leMenuPanel.GetChild("Window").AddComponent<TweenAlpha>().duration = 0.2f;
-            leMenuPanel.GetChild("Window/Window2").GetComponent<UISprite>().depth = -1;
+            leMenuPanel.GetChildAt("Window/Window2").GetComponent<UISprite>().depth = -1;
         }
 
         public void CreateBackButton()
@@ -224,10 +224,10 @@ namespace FS_LevelEditor
             backButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
 
             // Destroy the FUCKING UILocalize component, I hate it.
-            GameObject.Destroy(backButton.GetChild("Background/Label").GetComponent<UILocalize>());
+            GameObject.Destroy(backButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
 
             // Set the label data.
-            UILabel label = backButton.GetChild("Background/Label").GetComponent<UILabel>();
+            UILabel label = backButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.SetAnchor((Transform)null);
             label.CheckAnchors();
             label.pivot = UIWidget.Pivot.Left;
@@ -273,10 +273,10 @@ namespace FS_LevelEditor
             addButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
 
             // Destroy the FUCKING UILocalize component, I hate it.
-            GameObject.Destroy(addButton.GetChild("Background/Label").GetComponent<UILocalize>());
+            GameObject.Destroy(addButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
 
             // Set the label data.
-            UILabel label = addButton.GetChild("Background/Label").GetComponent<UILabel>();
+            UILabel label = addButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.SetAnchor((Transform)null);
             label.CheckAnchors();
             label.pivot = UIWidget.Pivot.Left;
@@ -319,10 +319,10 @@ namespace FS_LevelEditor
             folderButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
 
             // Remove UILocalize component
-            GameObject.Destroy(folderButton.GetChild("Background/Label").GetComponent<UILocalize>());
+            GameObject.Destroy(folderButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
 
             // Set the label data.
-            UILabel label = folderButton.GetChild("Background/Label").GetComponent<UILabel>();
+            UILabel label = folderButton.GetChildAt("Background/Label").GetComponent<UILabel>();
             label.SetAnchor((Transform)null);
             label.CheckAnchors();
             label.pivot = UIWidget.Pivot.Left;
@@ -740,7 +740,7 @@ namespace FS_LevelEditor
             popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(130f, 0f);
 
             // Make a copy of the yes button since for some reason the yes button is red as the no button should, that's doesn't make any sense lol.
-            onDeletePopupBackButton = Instantiate(popupSmallButtonsParent.GetChild("3_Yes"), popupSmallButtonsParent.transform);
+            onDeletePopupBackButton = Instantiate(popupSmallButtonsParent.GetChildAt("3_Yes"), popupSmallButtonsParent.transform);
             onDeletePopupBackButton.name = "1_Back";
             onDeletePopupBackButton.transform.localPosition = new Vector3(-400f, 0f, 0f);
             Destroy(onDeletePopupBackButton.GetComponent<ButtonController>());
@@ -751,7 +751,7 @@ namespace FS_LevelEditor
             onDeletePopupBackButton.SetActive(true);
 
             // Same with delete button.
-            onDeletePopupDeleteButton = Instantiate(popupSmallButtonsParent.GetChild("1_No"), popupSmallButtonsParent.transform);
+            onDeletePopupDeleteButton = Instantiate(popupSmallButtonsParent.GetChildAt("1_No"), popupSmallButtonsParent.transform);
             onDeletePopupDeleteButton.name = "2_Delete";
             onDeletePopupDeleteButton.transform.localPosition = new Vector3(200f, 0f, 0f);
             Destroy(onDeletePopupDeleteButton.GetComponent<ButtonController>());

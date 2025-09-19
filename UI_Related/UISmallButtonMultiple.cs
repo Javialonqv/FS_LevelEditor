@@ -28,7 +28,7 @@ namespace FS_LevelEditor.UI_Related
             instances.Add(this);
 
             button = GetComponent<UIButton>();
-            buttonLabel = gameObject.GetChild("Background/Label").GetComponent<UILabel>();
+            buttonLabel = gameObject.GetChildAt("Background/Label").GetComponent<UILabel>();
             buttonColor = GetComponent<UIButtonColor>();
         }
         void OnDestroy()
@@ -41,7 +41,7 @@ namespace FS_LevelEditor.UI_Related
             if (!button)
             {
                 button = GetComponent<UIButton>();
-                buttonLabel = gameObject.GetChild("Background/Label").GetComponent<UILabel>();
+                buttonLabel = gameObject.GetChildAt("Background/Label").GetComponent<UILabel>();
                 buttonColor = GetComponent<UIButtonColor>();
             }
 

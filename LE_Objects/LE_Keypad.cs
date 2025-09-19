@@ -31,13 +31,13 @@ namespace FS_LevelEditor
 			};
 			if(EditorController.Instance)
 			{
-				gameObject.GetChild("LE_Keypad/AdditionalInteractionCollider").SetActive(false);
-				gameObject.GetChild("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(false);
+				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(false);
+				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(false);
 			}
 			else
 			{
-				gameObject.GetChild("LE_Keypad/AdditionalInteractionCollider").SetActive(true);
-				gameObject.GetChild("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(true);
+				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(true);
+				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(true);
 			}
 		}
 
@@ -49,12 +49,12 @@ namespace FS_LevelEditor
 			button.GetChild("Mesh").tag = "Interrupteur";
 			button.SetActive(false);
 
-			button.GetChild("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
-			button.GetChild("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
-			button.GetChild("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
-			button.GetChild("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
-			button.GetChild("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
-			button.GetChild("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
+			button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
+			button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
+			button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
+			button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
+			button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
+			button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
 
 			InterrupteurController controller = button.AddComponent<InterrupteurController>();
 
@@ -83,9 +83,9 @@ namespace FS_LevelEditor
 			controller.objectToActivate = new GameObject();
 			controller.messagesOnActivate = new Messenger[0];
 			controller.dialogToActivate = new string[0];
-			controller.currentInGameInputTMPLabel = button.GetChild("TMP_Display/KeypadInputInGame_TMP").GetComponent<TextMeshPro>();
-			controller.titleInGameInputTMPLabel = button.GetChild("TMP_Display/KeypadTitle_TMP").GetComponent<TextMeshPro>();
-			controller.resetInGameInputTMPLabel = button.GetChild("TMP_Display/KeypadReset_TMP").GetComponent<TextMeshPro>();
+			controller.currentInGameInputTMPLabel = button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TextMeshPro>();
+			controller.titleInGameInputTMPLabel = button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TextMeshPro>();
+			controller.resetInGameInputTMPLabel = button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TextMeshPro>();
 			controller.useManualInteractionSystem = false;
 
 			controller.usableOnce = false;
@@ -124,7 +124,7 @@ namespace FS_LevelEditor
 				il2cppDigits.Add(d);
 
 			keycode.keycode.combination = il2cppDigits;
-			keycode.keycode.label = keycode.gameObject.GetChild("Screen/Label/Label.Label").GetComponent<UILabel>();
+			keycode.keycode.label = keycode.gameObject.GetChildAt("Screen/Label/Label.Label").GetComponent<UILabel>();
 			keycode.keycode.keycodeController = keycode;
 			keycode.keycode.birthdayInput = GetProperty<bool>("allCorrect");	
 

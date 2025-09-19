@@ -176,7 +176,7 @@ namespace FS_LevelEditor
 
         void SetMeshOnEditor(bool isPlatformActive)
         {
-            gameObject.GetChild("Content/OnMesh_MovingPlatform").SetActive(isPlatformActive);
+            gameObject.GetChildAt("Content/OnMesh_MovingPlatform").SetActive(isPlatformActive);
         }
     }
 }

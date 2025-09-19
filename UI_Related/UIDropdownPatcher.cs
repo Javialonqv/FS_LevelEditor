@@ -87,13 +87,13 @@ namespace FS_LevelEditor
 
             popupScript.selection = optionName;
             // Doesn't matter if the optionName is not a valid key.
-            popupScript.gameObject.GetChild("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text = Loc.Get(optionName, false);
+            popupScript.gameObject.GetChildAt("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text = Loc.Get(optionName, false);
         }
         public void SelectOption(string optionName)
         {
             popupScript.selection = optionName;
             // Doesn't matter if the optionName is not a valid key.
-            popupScript.gameObject.GetChild("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text = Loc.Get(optionName, false);
+            popupScript.gameObject.GetChildAt("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text = Loc.Get(optionName, false);
         }
 
         public void ClearOnChangeOptions()
@@ -126,7 +126,7 @@ namespace FS_LevelEditor
             popupScript.gameObject.GetChild("LanguageTite").GetComponent<UILabel>().text = Loc.Get(titleLocKey, false);
 
             // Doesn't matter if the optionName is not a valid key.
-            popupScript.gameObject.GetChild("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text =
+            popupScript.gameObject.GetChildAt("CurrentLanguageBG/CurrentLanguageLabel").GetComponent<UILabel>().text =
                 Loc.Get(optionsLocKeys[currentlySelectedID], false);
         }
 
