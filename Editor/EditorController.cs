@@ -2389,8 +2389,19 @@ namespace FS_LevelEditor.Editor
 				{
 					LE_Object objComponent = obj.GetComponent<LE_Object>();
 
-					GameObject placedObj = PlaceObject(objComponent.objectType, objComponent.transform.position, objComponent.transform.eulerAngles,
-						objComponent.transform.localScale, false);
+					GameObject placedObj = null;
+					if (LE_Object.IsWaypoint(objComponent.objectType.Value))
+					{
+						// Weird shit happends when duplicating waypoints + multiple objects, and I'm not mentally stable enough to see why. - Jav.
+                        Utils.ShowCustomNotificationRed("Duplicating waypoints while selecting multiple objects is not supported.", 3f);
+						return;
+                    }
+					else
+					{
+                        placedObj = PlaceObject(objComponent.objectType, objComponent.transform.position, objComponent.transform.eulerAngles,
+                        objComponent.transform.localScale, false);
+                    }
+
 					if (!placedObj)
 					{
 						Logger.Log($"PlaceObject when duplicating \"{objComponent.objectType}\" returned null. It probably reached its max object limit.");
@@ -2411,11 +2422,20 @@ namespace FS_LevelEditor.Editor
 			else
 			{
 				Logger.Log("Duplicating one single object...");
-
 				isDuplicatingObj = true;
+
 				LE_Object objComponent = currentSelectedObj.GetComponent<LE_Object>();
-				GameObject placedObj = PlaceObject(objComponent.objectType, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
-					objComponent.transform.localScale, false);
+				GameObject placedObj = null;
+				if (LE_Object.IsWaypoint(objComponent.objectType.Value))
+				{
+					placedObj = ((LE_Waypoint)objComponent).AddWaypoint(false).gameObject;
+                }
+				else
+				{
+                    placedObj = PlaceObject(objComponent.objectType, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
+                    objComponent.transform.localScale, false);
+                }
+
 				if (!placedObj)
 				{
 					Logger.Log($"PlaceObject when duplicating \"{objComponent.objectType}\" returned null. It probably reached its max object limit.");

@@ -296,7 +296,7 @@ namespace FS_LevelEditor
                 waypoint.gameObject.SetTransparentMaterials();
             }
         }
-        public LE_Waypoint AddWaypoint(bool fromSave = false)
+        public LE_Waypoint AddWaypoint(bool fromSave = false, bool selectIfNotFromSave = true)
         {
             GameObject waypoint = null;
             if (EditorController.Instance)
@@ -353,7 +353,7 @@ namespace FS_LevelEditor
                 waypointComp.attachedData = data;
                 targetWaypointsData.Add(data);
 
-                if (EditorController.Instance)
+                if (EditorController.Instance && selectIfNotFromSave)
                 {
                     EditorController.Instance.SetSelectedObj(waypoint);
                 }
