@@ -41,6 +41,7 @@ namespace FS_LevelEditor.Playmode
 		public List<LE_Small_Screen> smallScreensOnTheLevel = new List<LE_Small_Screen>();
 
 		public bool endTriggerReached = false;
+		int totalUpgradeCount = 0;
 
 		void Awake()
 		{
@@ -286,6 +287,8 @@ namespace FS_LevelEditor.Playmode
 			if (upgrades == null)
 			{
 				UpgradePatches.Init();
+				// Set StatsManager.totalUpgradesCount to 0 when no upgrades
+				StatsManager.totalUpgradesCount = 0;
 				return;
 			}
 
@@ -375,8 +378,18 @@ namespace FS_LevelEditor.Playmode
 						Controls.m_currentScannerLevel = upgrade.level;
 						break;
 				}
+				if (upgrade.IsEnabled)
+				{
+					totalUpgradeCount += upgrade.level;
+					Debug.Log(totalUpgradeCount);	
+				}
 			}
+			StatsManager.totalUpgradesCount = totalUpgradeCount;
+			if (totalUpgradeCount <= 0)
+				StatsManager.totalUpgradesCount = 0; // Ensure it's exactly 0 if no upgrades
 
+			//For now, let's ignore that bitch
+			MenuController.GetInstance().pausePlayerStats.GetChildAt("Always/CharacterStats/CharacterStatsTitle").SetActive(false);
 			UpgradePatches.Init();
 		}
 

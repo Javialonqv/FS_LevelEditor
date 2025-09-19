@@ -160,4 +160,18 @@ namespace FS_LevelEditor.Playmode.Patches
 			return true;
 		}
 	}
+
+	[HarmonyPatch(typeof(Controls), nameof(Controls.HasAtLeastOneUpgrade))]
+	public static class HasOneUpgrade
+	{
+		public static bool Prefix( bool __result)
+		{
+			if(PlayModeController.Instance)
+			{
+				__result = true;
+				return false;
+			}
+			return true;
+		}
+	}
 }
