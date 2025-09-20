@@ -66,6 +66,7 @@
 		<Compile Include="LE_Objects\LE_Waypoint.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Moving_Platform_Waypoint.cs" />
 		<Compile Include="Logger.cs" />
+		<Compile Include="Misc\GlobalScaleChanger.cs" />
 		<Compile Include="Misc\RotationTweener.cs" />
 		<Compile Include="Misc\ScaleScreenText.cs" />
 		<Compile Include="Patches.cs" />

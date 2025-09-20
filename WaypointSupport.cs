@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Misc;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
@@ -72,6 +73,7 @@ namespace FS_LevelEditor
             waypointsParent.localPosition = Vector3.zero;
             waypointsParent.localEulerAngles = Vector3.zero;
             waypointsParent.localScale = Vector3.one;
+            GlobalScaleChanger.AddTo(waypointsParent.gameObject, waypointsParent.parent, Vector3.one, true); // Avoid inheriting scale from parent.
             if (EditorController.Instance)
             {
                 waypointsParent.gameObject.SetActive(false); // Disabled by default, until the user selects it.
