@@ -20,6 +20,7 @@ namespace FS_LevelEditor
     {
         public Vector3Serializable position { get; set; }
         public Vector3Serializable rotation { get; set; }
+        public Vector3Serializable scale { get; set; } = Vector3.one;
 
         [JsonConverter(typeof(LEPropertiesConverterNew))]
         public Dictionary<string, object> properties { get; set; } = new Dictionary<string, object>();
@@ -29,6 +30,7 @@ namespace FS_LevelEditor
         {
             position = original.position;
             rotation = original.rotation;
+            scale = original.scale;
             properties = new Dictionary<string, object>(properties);
         }
     }
@@ -123,6 +125,7 @@ namespace FS_LevelEditor
 
                 createdWaypoint.transform.localPosition = waypointData.position;
                 createdWaypoint.transform.localEulerAngles = waypointData.rotation;
+                createdWaypoint.transform.localScale = waypointData.scale;
                 foreach (var property in waypointData.properties)
                 {
                     createdWaypoint.SetProperty(property.Key, property.Value);
@@ -138,6 +141,7 @@ namespace FS_LevelEditor
             // Waypoints positions are relative to the main object position, Vector3.zero means the waypoint will be in the same positions as the main object.
             firstWaypoint.position = Vector3.zero;
             firstWaypoint.rotation = Vector3.zero;
+            firstWaypoint.scale = transform.localScale; // Same as the object at start.
             if (targetObject.waypointMode == WaypointMode.TRAVEL_BACK)
             {
                 firstWaypoint.properties["WaitTime"] = targetObject.waitTime;
@@ -155,6 +159,7 @@ namespace FS_LevelEditor
             // Waypoints positions are relative to the main object position, Vector3.zero means the waypoint will be in the same positions as the main object.
             finalWaypoint.position = Vector3.zero;
             finalWaypoint.rotation = Vector3.zero;
+            finalWaypoint.scale = transform.localScale; // Same as the object at start.
             // Use the original object's "Wait Time" attribute since the user won't be able to select/change this final waypoint.
             finalWaypoint.properties["WaitTime"] = targetObject.waitTime;
 
@@ -167,6 +172,7 @@ namespace FS_LevelEditor
                 WaypointData data = new WaypointData();
                 data.position = originalList[i].position;
                 data.rotation = originalList[i].rotation;
+                data.scale = originalList[i].scale;
                 foreach (var property in originalList[i].properties) data.properties[property.Key] = property.Value;
 
                 originalList.Add(data);
@@ -178,6 +184,7 @@ namespace FS_LevelEditor
                 WaypointData lastWaypoint = new WaypointData();
                 lastWaypoint.position = Vector3.zero;
                 lastWaypoint.rotation = Vector3.zero;
+                lastWaypoint.scale = transform.localScale; // Same as the object at start.
                 // Use the original object's "Wait Time" attribute since the user won't be able to select/change this last waypoint.
                 lastWaypoint.properties["WaitTime"] = targetObject.waitTime;
                 originalList.Add(lastWaypoint);
@@ -210,6 +217,7 @@ namespace FS_LevelEditor
         {
             Vector3[] cachedWaypointPositions = spawnedWaypoints.Select(x => x.transform.position).ToArray();
             Vector3[] cachedWaypointRotations = spawnedWaypoints.Select(x => x.transform.eulerAngles).ToArray();
+            Vector3[] cachedWaypointScales = spawnedWaypoints.Select(x => x.transform.localScale).ToArray();
 
             yield return new WaitForSeconds(targetObject.startDelay);
 
@@ -226,8 +234,10 @@ namespace FS_LevelEditor
 
                 RotationTweener tweenRotation = RotationTweener.RotateTo(gameObject, cachedWaypointRotations[i], duration, RotationPath.Shortest);
 
-                yield return new WaitForSeconds(duration);
+                TweenScale tweenScale = TweenScale.Begin(gameObject, duration, cachedWaypointScales[i]);
+                tweenScale.ignoreTimeScale = false; // Avoid object scaling while the game's paused.
 
+                yield return new WaitForSeconds(duration);
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
 
                 if (i == spawnedWaypoints.Count - 1 && (targetObject.waypointMode == WaypointMode.LOOP || targetObject.waypointMode == WaypointMode.TRAVEL_BACK))

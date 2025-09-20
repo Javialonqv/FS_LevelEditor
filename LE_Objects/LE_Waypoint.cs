@@ -99,6 +99,7 @@ namespace FS_LevelEditor
 
             attachedData.position = transform.localPosition;
             attachedData.rotation = transform.localEulerAngles;
+            attachedData.scale = transform.localScale;
             attachedData.properties = properties;
         }
 
