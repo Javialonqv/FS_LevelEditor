@@ -23,6 +23,13 @@ namespace FS_LevelEditor
                 { "MoveSpeed", 5f },
                 { "waypoints", new List<WaypointData>() }
             };
+
+            if (EditorController.Instance)
+            {
+                // Even thought MP RigidBody doesn't affect us in editor (in gravity), it causes a visual bug where the Content obj is misplaced.
+                // PD: Repeat after me, I HATE PHYSICS. - Jav.
+                Destroy(gameObject.GetChild("Content").GetComponent<Rigidbody>());
+            }
         }
 
 
