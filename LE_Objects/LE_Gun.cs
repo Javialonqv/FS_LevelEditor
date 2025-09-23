@@ -16,6 +16,8 @@ namespace FS_LevelEditor
         public int ammo;
         public bool rot;
 
+        public static bool isCurrentlyInfinite = false;
+
         void Awake()
         {
             properties = new Dictionary<string, object>
@@ -120,57 +122,78 @@ namespace FS_LevelEditor
             };
         }
     }
-}
-[HarmonyLib.HarmonyPatch(typeof(Controls), nameof(Controls.OnTriggerEnter))]
-public static class TazerTutModeFix
-{
-    public static bool Prefix(Collider collider, Controls __instance)
-    {
-        if (PlayModeController.Instance)
-        {
-            GameObject gameObject;
-            gameObject = collider ? collider.gameObject : null;
-            if(__instance.alive && gameObject)
-            {
-                if (gameObject.CompareTag("Gun") && gameObject.transform.parent && gameObject.transform.parent.TryGetComponent<LE_Gun>(out var gun))
-                {
-                    FS_LevelEditor.Logger.Log("Player just picked up Taser, patching the hell out!");
 
-                    __instance.gunController.RefreshTaserModules();
-                    gameObject.SendMessage("Pickup", SendMessageOptions.DontRequireReceiver);
-                    Controls.inGameUI.ShowNotification(InGameUIManager.NotificationType.GunPickup, InGameUIManager.NotificationColor.Blue, 0f, 1.7f, false, true);
-                    __instance.SetTazerInTutorialMode(gun.infTaser);
-					__instance.gunController.tmpAmmoDefaultFontSize = 45;
-					__instance.gunController.screenTextTMPLabel.gameObject.SetActive(false);
-					__instance.gunController.screenTextTMPLabel.fontSizeMin = 45;
-					__instance.gunController.screenTextTMPLabel.fontSize = 45;
-					__instance.gunController.screenTextTMPLabel.gameObject.SetActive(true);
-					__instance.gunController.SetAmmos(gun.ammo);
-					return false;
+    // Awful patches to force the player to pickup the damn Tazer.
+    [HarmonyLib.HarmonyPatch(typeof(Controls), nameof(Controls.OnTriggerEnter))]
+    public static class TazerTutModeFix
+    {
+        public static bool Prefix(Collider collider, Controls __instance)
+        {
+            if (PlayModeController.Instance)
+            {
+                GameObject gameObject;
+                gameObject = collider ? collider.gameObject : null;
+                if (__instance.alive && gameObject)
+                {
+                    if (gameObject.CompareTag("Gun") && gameObject.transform.parent && gameObject.transform.parent.TryGetComponent<LE_Gun>(out var gun))
+                    {
+                        Logger.Log("Player just picked up Taser, patching the hell out!");
+
+                        __instance.gunController.RefreshTaserModules();
+                        gameObject.SendMessage("Pickup", SendMessageOptions.DontRequireReceiver);
+                        Controls.inGameUI.ShowNotification(InGameUIManager.NotificationType.GunPickup, InGameUIManager.NotificationColor.Blue, 0f, 1.7f, false, true);
+                        __instance.SetTazerInTutorialMode(gun.infTaser);
+                        LE_Gun.isCurrentlyInfinite = gun.infTaser;
+                        __instance.gunController.tmpAmmoDefaultFontSize = 45;
+                        __instance.gunController.screenTextTMPLabel.gameObject.SetActive(false);
+                        __instance.gunController.screenTextTMPLabel.fontSizeMin = 45;
+                        __instance.gunController.screenTextTMPLabel.fontSize = 45;
+                        __instance.gunController.screenTextTMPLabel.gameObject.SetActive(true);
+                        __instance.gunController.SetAmmos(gun.ammo);
+                        return false;
+                    }
+                }
+
+            }
+            return true;
+
+        }
+    }
+
+    // Avoid Tazer object from rotating if "Rotate" checkbox is off
+    [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.Update))]
+    public static class TazerRotFix
+    {
+        public static bool Prefix(Gun __instance)
+        {
+            if (PlayModeController.Instance && __instance.transform.parent && __instance.transform.parent.TryGetComponent<LE_Gun>(out var gun))
+            {
+                if (!gun.rot)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
                 }
             }
-
+            return true;
         }
-        return true;
-
     }
-}
-[HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.Update))]
-public static class TazerRotFix
-{
-    public static bool Prefix(Gun __instance)
+
+    [HarmonyLib.HarmonyPatch(typeof(GunController), nameof(GunController.AddAmmo))]
+    public static class TazerReloadWhenInfiniteFix
     {
-        if (PlayModeController.Instance && __instance.transform.parent && __instance.transform.parent.TryGetComponent<LE_Gun>(out var gun))
+        public static void Postfix(GunController __instance)
         {
-            if(!gun.rot)
+            if (PlayModeController.Instance)
             {
-                return false;
-            }
-            else
-            {
-                return true;
+                if (LE_Gun.isCurrentlyInfinite)
+                {
+                    // For some reason, GunController needs this to be 1, otherwise the infinite symbol won't appear in the ammo count.
+                    __instance.SetAmmos(1);
+                }
             }
         }
-        return true;
     }
 }
