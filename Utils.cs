@@ -757,7 +757,7 @@ namespace FS_LevelEditor
                 Logger.Error($"An error occured while trying to start the invoke coroutine. (Delay: {delay}, ID: \"{id}\").");
                 return;
             }
-            if (string.IsNullOrEmpty(id))
+            if (!string.IsNullOrEmpty(id))
             {
                 invokeCoroutines.Add(id, coroutine);
             }
