@@ -27,6 +27,8 @@ namespace FS_LevelEditor
         static Material propsNoSpecMat, propsTransNoSpecMat;
         static Material newPropsv1Mat, newPropsv1TransMat;
 
+        static Dictionary<string, Coroutine> invokeCoroutines = new Dictionary<string, Coroutine>();
+
         public static bool theresAnInputFieldSelected
         {
             get
@@ -746,5 +748,41 @@ namespace FS_LevelEditor
 
 			return string.Join(separator, pathParts);
 		}
+
+        public static void Invoke(Action action, float delay, string id = "")
+        {
+            Coroutine coroutine = (Coroutine)MelonCoroutines.Start(InvokeCoroutine(action, delay, id));
+            if (coroutine == null)
+            {
+                Logger.Error($"An error occured while trying to start the invoke coroutine. (Delay: {delay}, ID: \"{id}\").");
+                return;
+            }
+            if (string.IsNullOrEmpty(id))
+            {
+                invokeCoroutines.Add(id, coroutine);
+            }
+        }
+        public static void CancelInvoke(string id)
+        {
+            if (invokeCoroutines.ContainsKey(id))
+            {
+                MelonCoroutines.Stop(invokeCoroutines[id]);
+                invokeCoroutines.Remove(id);
+            }
+            else
+            {
+                Logger.Warning($"Couldn't find any invoking coroutine with id \"{id}\".");
+            }
+        }
+        static IEnumerator InvokeCoroutine(Action action, float delay, string id)
+        {
+            yield return new WaitForSeconds(delay);
+            action.Invoke();
+
+            if (!string.IsNullOrEmpty(id) && invokeCoroutines.ContainsKey(id))
+            {
+                invokeCoroutines.Remove(id);
+            }
+        }
 	}
 }
