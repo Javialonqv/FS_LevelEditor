@@ -36,6 +36,7 @@ namespace FS_LevelEditor
         GameObject popupTitle;
         GameObject popupContentLabel;
         GameObject popupSmallButtonsParent;
+        GameObject noLevelsMessageLabel;
 
         // Variables for objects/things related to LE menu.
         GameObject levelEditorUIButton;
@@ -465,6 +466,33 @@ namespace FS_LevelEditor
             {
                 lvlButtonsParent.DeleteAllChildren();
                 lvlButtonsGrids.Clear();
+            }
+
+            if(levels.Count <=0)
+            {
+                if(!noLevelsMessageLabel)
+                {
+                    GameObject labelTemplate = leMenuPanel.GetChild("Title");
+                    noLevelsMessageLabel = Instantiate(labelTemplate, leMenuPanel.transform);
+                    noLevelsMessageLabel.name = "NoLevelsMessage";
+                }
+
+                // Configure the message
+                UILabel messageLabel = noLevelsMessageLabel.GetComponent<UILabel>();
+                messageLabel.text = "[c][b][ff6666]No levels found![/c][/b]\n[c][33ff88]Click [b]'New'[/b] to create one[-][/c]";
+                messageLabel.fontSize = 35;
+                messageLabel.alignment = NGUIText.Alignment.Center;
+                messageLabel.pivot = UIWidget.Pivot.Center;
+                messageLabel.width = 800;
+                messageLabel.height = 200;
+                noLevelsMessageLabel.transform.localPosition = new Vector3(0f, 0f, 0f);
+                noLevelsMessageLabel.SetActive(true);
+
+                // Ensure level buttons parent is hidden
+                lvlButtonsParent.SetActive(false);
+                previousPageButton?.gameObject.SetActive(false);
+                nextPageButton?.gameObject.SetActive(false);
+                return;
             }
 
             List<string> keys = new List<string>(levels.Keys);

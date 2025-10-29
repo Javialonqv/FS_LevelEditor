@@ -129,7 +129,6 @@ namespace FS_LevelEditor.Editor
 		private const float MAX_GRID_SIZE = 8f;
 		private const float GRID_SIZE_MULTIPLIER = 2f;
 		private float gridHeight = 121.7324f; // Default to correct Y
-		private int gridExtent = 256; // Larger for infinite look
 		private bool gridVisible = true;
 		private bool gridEnabled = true;
 		private Material gridLineMaterial;
@@ -1469,12 +1468,14 @@ namespace FS_LevelEditor.Editor
 		}
 		public void IncreaseGridSize()
 		{
-			SetGridSize(gridSize * GRID_SIZE_MULTIPLIER);
-		}
+            int level = Mathf.RoundToInt(Mathf.Log(gridSize, GRID_SIZE_MULTIPLIER)) + 1;
+            SetGridSize(Mathf.Pow(GRID_SIZE_MULTIPLIER, level));
+        }
 		public void DecreaseGridSize()
 		{
-			SetGridSize(gridSize / GRID_SIZE_MULTIPLIER);
-		}
+            int level = Mathf.RoundToInt(Mathf.Log(gridSize, GRID_SIZE_MULTIPLIER)) - 1;
+            SetGridSize(Mathf.Pow(GRID_SIZE_MULTIPLIER, level));
+        }
 		public void SetGridHeight(float newHeight)
 		{
 			gridHeight = newHeight;
