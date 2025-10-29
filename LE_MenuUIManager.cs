@@ -468,9 +468,9 @@ namespace FS_LevelEditor
                 lvlButtonsGrids.Clear();
             }
 
-            if(levels.Count <=0)
+            if (levels.Count <= 0)
             {
-                if(!noLevelsMessageLabel)
+                if (!noLevelsMessageLabel)
                 {
                     GameObject labelTemplate = leMenuPanel.GetChild("Title");
                     noLevelsMessageLabel = Instantiate(labelTemplate, leMenuPanel.transform);
@@ -514,12 +514,12 @@ namespace FS_LevelEditor
                 {
                     currentGrid = new GameObject($"Grid {(int)(i / 7)}");
                     currentGrid.transform.parent = lvlButtonsParent.transform;
-                    currentGrid.transform.localPosition = new Vector3(0f, 170f, 0f);
+                    currentGrid.transform.localPosition = new Vector3(205f, 170f, 0f); // Shifted right for 75% width
                     currentGrid.transform.localScale = Vector3.one;
 
                     UIGrid grid = currentGrid.AddComponent<UIGrid>();
                     grid.arrangement = UIGrid.Arrangement.Vertical;
-                    grid.cellWidth = 1640f;
+                    grid.cellWidth = 1340f; // Increased from 1230f for wider buttons
                     grid.cellHeight = 80f;
 
                     // Initially set all grids inactive
@@ -534,7 +534,7 @@ namespace FS_LevelEditor
                 lvlButtonParent.transform.localScale = Vector3.one;
 
                 #region Create Level Button
-                UIButtonPatcher lvlButton = NGUI_Utils.CreateButton(lvlButtonParent.transform, new Vector3(-170, 0), new Vector3Int(1300, 70, 0), "");
+                UIButtonPatcher lvlButton = NGUI_Utils.CreateButton(lvlButtonParent.transform, new Vector3(30, 0), new Vector3Int(1240, 70, 0), "");
                 lvlButton.name = "Button";
 
                 // If the data is null that means this .lvl file isn't a valid level file, put the sprite color red.
@@ -546,14 +546,14 @@ namespace FS_LevelEditor
                 // Change the label text.
                 lvlButton.buttonLabel.SetAnchor((Transform)null);
                 lvlButton.buttonLabel.CheckAnchors();
-                lvlButton.buttonLabel.width = 1370;
+                lvlButton.buttonLabel.width = 1120;
                 lvlButton.buttonLabel.height = 67;
                 lvlButton.buttonLabel.alignment = NGUIText.Alignment.Left;
                 lvlButton.buttonLabel.pivot = UIWidget.Pivot.Left;
                 // If the data is null put a warning in the beginning of the text, followed by the name of the file without extension, otherwise, put the real level name as usually.
                 lvlButton.buttonLabel.text = data != null ? data.levelName : $"[c][ffff00][INVALID LEVEL FILE][-][/c] {levelFileNameWithoutExtension}";
                 lvlButton.buttonLabel.fontSize = 40;
-                lvlButton.buttonLabel.transform.localPosition = new Vector3(-620f, 0f, 0f);
+                lvlButton.buttonLabel.transform.localPosition = new Vector3(-515f, 0f, 0f);
 
                 // Only setup UIButtonScale and UIButton when is a valid level file, otherwise destroy the UIButton, UIButtonScale and UIButtonColor.
                 if (data != null)
@@ -591,8 +591,12 @@ namespace FS_LevelEditor
 
                 #region Create Delete Button
                 // Create the button and set its name and positon.
-                UIButtonPatcher deleteBtn = NGUI_Utils.CreateButtonWithSprite(lvlButtonParent.transform, new Vector3(750, 0), new Vector3Int(70, 70, 0), 1, "Trash", new Vector2Int(40, 50));
+                UIButtonPatcher deleteBtn = NGUI_Utils.CreateButtonWithSprite(lvlButtonParent.transform, new Vector3(605, 0, 5), new Vector3Int(60, 60, 0), 1, "Trash", new Vector2Int(35, 45));
                 deleteBtn.name = "DeleteBtn";
+
+                // Set depth for button sprite and icon to appear on top
+                deleteBtn.GetComponent<UISprite>().depth = 2;
+                deleteBtn.buttonSprite.depth = 3;
 
                 // Adjust the button color with red color variants.
                 UIButtonColor deleteButtonColor = deleteBtn.GetComponent<UIButtonColor>();
@@ -609,8 +613,12 @@ namespace FS_LevelEditor
                 if (data != null)
                 {
                     #region Create Edit Button
-                    UIButtonPatcher renameBtn = NGUI_Utils.CreateButtonWithSprite(lvlButtonParent.transform, new Vector3(650, 0), new Vector3Int(70, 70, 0), 1, "Pencil", new Vector2Int(40, 50));
+                    UIButtonPatcher renameBtn = NGUI_Utils.CreateButtonWithSprite(lvlButtonParent.transform, new Vector3(515, 0, 5), new Vector3Int(60, 60, 0), 1, "Pencil", new Vector2Int(35, 45));
                     renameBtn.name = "EditBtn";
+
+                    // Set depth for button sprite and icon to appear on top
+                    renameBtn.GetComponent<UISprite>().depth = 2;
+                    renameBtn.buttonSprite.depth = 3;
 
                     // Adjust the button color with blue color variants.
                     UIButtonColor renameButtonColor = renameBtn.GetComponent<UIButtonColor>();
@@ -626,15 +634,19 @@ namespace FS_LevelEditor
                     // --- Create Play Button (Green, First) ---
                     UIButtonPatcher playBtn = NGUI_Utils.CreateButtonWithSprite(
                         lvlButtonParent.transform,
-                        new Vector3(550, 0), // leftmost, adjust as needed
-                        new Vector3Int(70, 70, 0),
+                        new Vector3(425, 0, 5), // leftmost, adjust as needed
+                        new Vector3Int(60, 60, 0),
                         1,
                         "Triangle", // Use your play icon sprite name
-                        new Vector2Int(40, 50)
+                        new Vector2Int(35, 45)
                     );
                     playBtn.name = "PlayBtn";
 
                     playBtn.buttonSprite.transform.localEulerAngles = new Vector3(0, 0, -90);
+
+                    // Set depth for button sprite and icon to appear on top
+                    playBtn.GetComponent<UISprite>().depth = 2;
+                    playBtn.buttonSprite.depth = 3;
 
                     // Set green color
                     UIButtonColor playButtonColor = playBtn.GetComponent<UIButtonColor>();
@@ -981,14 +993,14 @@ namespace FS_LevelEditor
                 // Reset the flag so this doesn't trigger again unintentionally.
                 trackIfComingBack = false;
 
-				CreateLevelsList();
+                CreateLevelsList();
             }
         }
     }
-	//It's in the name, go figure.
-	public static class PlayFromMenuHelper
-	{
-		public static bool PlayImmediatelyOnEditorLoad = false;
-		public static string LevelToPlay = null;
-	}
+    //It's in the name, go figure.
+    public static class PlayFromMenuHelper
+    {
+        public static bool PlayImmediatelyOnEditorLoad = false;
+        public static string LevelToPlay = null;
+    }
 }
