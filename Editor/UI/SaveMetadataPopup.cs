@@ -165,11 +165,13 @@ namespace FS_LevelEditor.Editor.UI
 			}
 
 			Logger.Log("Showing SaveMetadataPopup");
-			isShowing = true;
-
+			
 			// Store pause state and temporarily disable it to allow button interaction
 			wasPausedBeforeShow = InGameUIManager.Instance.isInPauseMode;
 			InGameUIManager.Instance.isInPauseMode = false;
+			
+			// Set showing flag AFTER storing pause state
+			isShowing = true;
 
 			// Load existing metadata if it exists
 			LevelData existingData = LevelData.GetLevelData(EditorController.Instance.levelFileNameWithoutExtension);
@@ -201,6 +203,15 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			if (!isShowing) return;
 
+			// Restore pause state IMMEDIATELY before animation starts
+			if (wasPausedBeforeShow)
+			{
+				InGameUIManager.Instance.isInPauseMode = true;
+			}
+
+			// Set isShowing to false immediately to prevent double-hiding
+			isShowing = false;
+
 			popupPanel.GetComponent<TweenScale>().PlayReverse();
 			MelonLoader.MelonCoroutines.Start(HideAfterAnimation());
 
@@ -212,15 +223,6 @@ namespace FS_LevelEditor.Editor.UI
 			yield return new WaitForSecondsRealtime(0.2f);
 			popupPanel.SetActive(false);
 			transform.GetChild(0).gameObject.SetActive(false); // Overlay
-			
-			// Restore pause state if we were paused before showing
-			if (wasPausedBeforeShow)
-			{
-				InGameUIManager.Instance.isInPauseMode = true;
-			}
-			
-			// Only set isShowing to false AFTER the overlay is deactivated
-			isShowing = false;
 		}
 
 		void OnSaveButtonClicked()

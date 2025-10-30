@@ -605,7 +605,7 @@ namespace FS_LevelEditor
                 // Set depth for button sprite and icon to appear on top
                 deleteBtn.GetComponent<UISprite>().depth = 2;
                 deleteBtn.buttonSprite.depth = 3;
-
+                deleteBtn.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>().depth = 4;
                 // Adjust the button color with red color variants.
                 UIButtonColor deleteButtonColor = deleteBtn.GetComponent<UIButtonColor>();
                 deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
@@ -627,6 +627,7 @@ namespace FS_LevelEditor
                     // Set depth for button sprite and icon to appear on top
                     renameBtn.GetComponent<UISprite>().depth = 2;
                     renameBtn.buttonSprite.depth = 3;
+                    renameBtn.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>().depth = 4;
 
                     // Adjust the button color with blue color variants.
                     UIButtonColor renameButtonColor = renameBtn.GetComponent<UIButtonColor>();
@@ -653,8 +654,9 @@ namespace FS_LevelEditor
                     playBtn.buttonSprite.transform.localEulerAngles = new Vector3(0, 0, -90);
 
                     // Set depth for button sprite and icon to appear on top
-                    playBtn.GetComponent<UISprite>().depth = 2;
+                    playBtn.GetComponent<UISprite>().depth = 4;
                     playBtn.buttonSprite.depth = 3;
+                    playBtn.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>().depth = 4;
 
                     // Set green color
                     UIButtonColor playButtonColor = playBtn.GetComponent<UIButtonColor>();
@@ -1025,10 +1027,10 @@ namespace FS_LevelEditor
             bgSprite.height = 550;
             bgSprite.depth = 0;
 
-            // Thumbnail placeholder (larger for new layout)
+            // Thumbnail placeholder (moved down from border with proper padding)
             GameObject thumbnailObj = new GameObject("Thumbnail");
             thumbnailObj.transform.parent = metadataPreviewPanel.transform;
-            thumbnailObj.transform.localPosition = new Vector3(0f, 185f, 0f);
+            thumbnailObj.transform.localPosition = new Vector3(0f, 165f, 0f); // Lowered from 185f
             thumbnailObj.transform.localScale = Vector3.one;
 
             previewThumbnailSprite = thumbnailObj.AddComponent<UISprite>();
@@ -1046,8 +1048,8 @@ namespace FS_LevelEditor
             noPreviewLabel.fontSize = 22;
             noPreviewLabel.depth = 2;
 
-            // Level Name (moved below thumbnail)
-            previewLevelNameLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(0f, 70f, 0f),
+            // Level Name (moved below thumbnail with proper spacing)
+            previewLevelNameLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(0f, 50f, 0f),
            new Vector3Int(340, 35, 0), "", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
             previewLevelNameLabel.fontSize = 26;
             previewLevelNameLabel.depth = 1;
@@ -1055,50 +1057,51 @@ namespace FS_LevelEditor
             previewLevelNameLabel.maxLineCount = 1;
 
             // Object Count (smaller, below name)
-            previewObjectCountLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(0f, 40f, 0f),
+            previewObjectCountLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(0f, 20f, 0f),
                new Vector3Int(340, 25, 0), "", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
             previewObjectCountLabel.fontSize = 20;
             previewObjectCountLabel.depth = 1;
             previewObjectCountLabel.color = new Color(0.7f, 0.7f, 0.7f, 1f);
 
-            // Author section
-            UILabel authorTitleLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-165f, 5f, 0f),
+            // Author section - title and value aligned on same line
+            UILabel authorTitleLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-165f, -15f, 0f),
          new Vector3Int(70, 25, 0), "[ffff00]Author:[-]", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
             authorTitleLabel.fontSize = 19;
             authorTitleLabel.depth = 1;
 
-            previewAuthorLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-85f, 5f, 0f),
+            previewAuthorLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-85f, -15f, 0f),
        new Vector3Int(255, 25, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
             previewAuthorLabel.fontSize = 19;
             previewAuthorLabel.depth = 1;
             previewAuthorLabel.overflowMethod = UILabel.Overflow.ClampContent;
             previewAuthorLabel.maxLineCount = 1;
 
-            // Tags section
-            UILabel tagsTitleLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-165f, -25f, 0f),
+            // Tags section - properly spaced below author
+            UILabel tagsTitleLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-165f, -45f, 0f),
       new Vector3Int(70, 25, 0), "[ffff00]Tags:[-]", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
             tagsTitleLabel.fontSize = 19;
             tagsTitleLabel.depth = 1;
 
-            previewTagsLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-85f, -25f, 0f),
+            previewTagsLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-85f, -45f, 0f),
            new Vector3Int(255, 25, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
             previewTagsLabel.fontSize = 19;
             previewTagsLabel.depth = 1;
             previewTagsLabel.overflowMethod = UILabel.Overflow.ClampContent;
             previewTagsLabel.maxLineCount = 1;
 
-            // Description section (larger area)
-            UILabel descTitleLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-165f, -60f, 0f),
+            // Description section - title properly spaced
+            UILabel descTitleLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-165f, -80f, 0f),
      new Vector3Int(110, 25, 0), "[ffff00]Description:[-]", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
             descTitleLabel.fontSize = 19;
             descTitleLabel.depth = 1;
 
-            previewDescriptionLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(0f, -170f, 0f),
-             new Vector3Int(340, 180, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Center);
+            // Description text - properly positioned below title with adequate spacing
+            previewDescriptionLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(0f, -130f, 0f),
+                       new Vector3Int(340, 120, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Center);
             previewDescriptionLabel.fontSize = 17;
             previewDescriptionLabel.depth = 1;
             previewDescriptionLabel.overflowMethod = UILabel.Overflow.ClampContent;
-            previewDescriptionLabel.maxLineCount = 10;
+            previewDescriptionLabel.maxLineCount = 8;
             previewDescriptionLabel.color = new Color(0.85f, 0.85f, 0.85f, 1f);
 
             // Initially hide the panel
