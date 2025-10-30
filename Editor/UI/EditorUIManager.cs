@@ -121,6 +121,7 @@ namespace FS_LevelEditor.Editor.UI
 			EventsUIPageManager.Create();
 			TextEditorUI.Create();
 			UpgradesPanel.Create();
+			SaveMetadataPopup.Create();
 
 			CreateHittenTargetObjPanel();
 

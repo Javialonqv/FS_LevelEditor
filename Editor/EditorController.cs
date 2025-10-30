@@ -364,6 +364,9 @@ namespace FS_LevelEditor.Editor
 
 			ManageEscAction();
 
+			// Block all editor input when save popup is active
+			if (SaveMetadataPopup.IsPopupActive()) return;
+
 			if (IsCurrentState(EditorState.PAUSED) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL) ||
 				EditorUIManager.IsCurrentUIContext(EditorUIContext.TEXT_EDITOR)) return;
 
@@ -853,6 +856,10 @@ namespace FS_LevelEditor.Editor
 			{
 				return;
 			}
+
+			// Don't handle ESC if save popup is active (it handles its own ESC)
+			if (SaveMetadataPopup.IsPopupActive()) return;
+
 			if (Input.GetKeyDown(KeyCode.Escape))
 			{
 				if (EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL))
@@ -988,9 +995,14 @@ namespace FS_LevelEditor.Editor
 			// Shortcut for saving level data.
 			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S) && levelHasBeenModified)
 			{
-				LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
-				EditorUIManager.Instance.PlaySavingLevelLabel();
-				levelHasBeenModified = false;
+				if (SaveMetadataPopup.Instance != null)
+				{
+					SaveMetadataPopup.Instance.ShowPopup();
+				}
+				else
+				{
+					Logger.Error("SaveMetadataPopup.Instance is null! Cannot show save popup.");
+				}
 			}
 			if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.W))
 			{
@@ -2395,7 +2407,7 @@ namespace FS_LevelEditor.Editor
 					{
 						// Weird shit happends when duplicating waypoints + multiple objects, and I'm not mentally stable enough to see why. - Jav.
                         Utils.ShowCustomNotificationRed("Duplicating waypoints while selecting multiple objects is not supported.", 3f);
-						return;
+                        return;
                     }
 					else
 					{

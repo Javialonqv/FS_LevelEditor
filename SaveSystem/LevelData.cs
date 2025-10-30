@@ -124,6 +124,9 @@ namespace FS_LevelEditor.SaveSystem
     public class LevelData
     {
         public string levelName { get; set; }
+        public string authorName { get; set; }
+        public string tags { get; set; }
+        public string description { get; set; }
         public Vector3Serializable cameraPosition { get; set; }
         public Vector3Serializable cameraRotation { get; set; }
         public long createdTime { get; set; }

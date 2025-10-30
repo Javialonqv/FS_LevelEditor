@@ -7,6 +7,7 @@ using Il2Cpp;
 using Il2CppInControl;
 using MelonLoader;
 using UnityEngine;
+using FS_LevelEditor.Editor.UI;
 
 namespace FS_LevelEditor.Editor
 {
@@ -71,6 +72,9 @@ namespace FS_LevelEditor.Editor
         {
             if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ)) return;
 
+            // Don't allow camera movement when save popup is active
+            if (SaveMetadataPopup.IsPopupActive()) return;
+
             #region Define Camera Mode To Use
             if (!Input.GetMouseButton(0) && Input.GetMouseButton(1) && currentCameraMove == CameraMove.NONE)
             {
@@ -80,34 +84,34 @@ namespace FS_LevelEditor.Editor
             {
                 currentCameraMove = CameraMove.MOUSE_DRAG;
             }
-            if (Input.GetMouseButtonUp(1) && currentCameraMove == CameraMove.NORMAL) currentCameraMove = CameraMove.NONE;
-            if (Input.GetMouseButtonUp(2) && currentCameraMove == CameraMove.MOUSE_DRAG) currentCameraMove = CameraMove.NONE;
-            #endregion
+    if (Input.GetMouseButtonUp(1) && currentCameraMove == CameraMove.NORMAL) currentCameraMove = CameraMove.NONE;
+     if (Input.GetMouseButtonUp(2) && currentCameraMove == CameraMove.MOUSE_DRAG) currentCameraMove = CameraMove.NONE;
+ #endregion
 
-            // Camera speed can be changed at any time
+  // Camera speed can be changed at any time
             ManageMoveSpeed();
 
-            if (currentCameraMove == CameraMove.NORMAL)
+   if (currentCameraMove == CameraMove.NORMAL)
             {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-                RotateCamera();
-                MoveCamera();
-            }
+   Cursor.lockState = CursorLockMode.Locked;
+         Cursor.visible = false;
+       RotateCamera();
+       MoveCamera();
+   }
             else if (currentCameraMove == CameraMove.MOUSE_DRAG)
             {
-                MoveCameraWithMouseDrag();
+         MoveCameraWithMouseDrag();
             }
-            else
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+   else
+         {
+    Cursor.lockState = CursorLockMode.None;
+             Cursor.visible = true;
             }
             
-            if (currentCameraMove != CameraMove.MOUSE_DRAG)
+   if (currentCameraMove != CameraMove.MOUSE_DRAG)
             {
-                ManageDownAndUp();
-            }
+      ManageDownAndUp();
+ }
         }
         void MoveCamera()
         {
