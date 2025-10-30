@@ -52,10 +52,18 @@ namespace FS_LevelEditor
         bool isGoingBackToLE = false;
         string levelFileNameWithoutExtensionWhileGoingBackToLE = "";
         string levelNameWhileGoingBackToLE = "";
-        public GameObject levelNameLabel;
-        public GameObject levelObjectsLabel;
         UIButtonPatcher previousPageButton, nextPageButton;
         bool trackIfComingBack = false;
+
+        // Metadata preview panel
+        GameObject metadataPreviewPanel;
+        UILabel previewLevelNameLabel;
+        UILabel previewObjectCountLabel;
+        UILabel previewAuthorLabel;
+        UILabel previewTagsLabel;
+        UILabel previewDescriptionLabel;
+        UISprite previewThumbnailSprite;
+        string currentHoveredLevel = null;
 
         void Awake()
         {
@@ -72,9 +80,9 @@ namespace FS_LevelEditor
             CreateBackButton();
             CreateAddButton();
             CreateOpenFolderButton();
-            CreateTopLevelInfo();
             CreateCurrentModVersionLabel();
             CreateCreditsLabel();
+            CreateMetadataPreviewPanel();
         }
 
         void Update()
@@ -401,25 +409,6 @@ namespace FS_LevelEditor
             creditsLabel.transform.localPosition = new Vector3(-830f, -368f, 0f);
         }
 
-        public void CreateTopLevelInfo()
-        {
-            GameObject labelTemplate = leMenuPanel.GetChild("Title");
-            levelNameLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
-            levelNameLabel.name = "LevelName";
-            levelNameLabel.SetActive(false);
-
-            levelNameLabel.transform.localPosition = new Vector3(0f, 330f, 0f);
-            levelNameLabel.GetComponent<UILabel>().text = "Name Test";
-
-            levelObjectsLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
-            levelObjectsLabel.name = "LevelObjectsCount";
-            levelObjectsLabel.SetActive(false);
-
-            levelObjectsLabel.transform.localPosition = new Vector3(0f, 280f, 0f);
-            levelObjectsLabel.GetComponent<UILabel>().text = "Objects: 0";
-            levelObjectsLabel.GetComponent<UILabel>().fontSize = 30;
-        }
-
         public void CreatePreviousListButton()
         {
             // Create the button.
@@ -570,6 +559,25 @@ namespace FS_LevelEditor
                     btnController.levelName = data.levelName;
                     btnController.objectsCount = data.objects.Count;
 
+                    // Add hover events for metadata preview
+                    UIEventListener hoverListener = UIEventListener.Get(lvlButton.gameObject);
+      string capturedFileName = levelFileNameWithoutExtension;
+       LevelData capturedData = data;
+     hoverListener.onHover = (Action<GameObject, bool>)((go, state) =>
+         {
+    if (state)
+       {
+   ShowMetadataPreview(capturedFileName, capturedData);
+          }
+     else
+       {
+       if (currentHoveredLevel == capturedFileName)
+       {
+         HideMetadataPreview();
+    }
+ }
+          });
+
                     // Create tooltip for the button.
                     FractalTooltip tooltip = lvlButton.gameObject.AddComponent<FractalTooltip>();
                     string levelCreationDate = DateTimeOffset.FromUnixTimeSeconds(data.createdTime).ToLocalTime().DateTime + "";
@@ -707,7 +715,7 @@ namespace FS_LevelEditor
         }
         IEnumerator EnterEditorRoutine(bool isLoadingLevel = false, string levelFileNameWithoutExtension = "", string levelName = "")
         {
-            // We don't need to close any menu if we're going back to LE, since we aren't going to see the main menu.
+            // We don't need to close any menu if we're going back to LE, since we arent going to see the main menu.
             if (!isGoingBackToLE) SwitchBetweenMenuAndLEMenu(false);
 
             if (isLoadingLevel && isGoingBackToLE)
@@ -859,148 +867,272 @@ namespace FS_LevelEditor
             EventDelegate onSubmit = new EventDelegate(this, nameof(LE_MenuUIManager.RenameLevel));
             EventDelegate.Parameter parameter1 = new EventDelegate.Parameter
             {
-                field = "levelFileNameWithoutExtension",
-                value = levelFileNameWithoutExtension,
-                obj = this
-            };
+  field = "levelFileNameWithoutExtension",
+      value = levelFileNameWithoutExtension,
+            obj = this
+       };
             EventDelegate.Parameter parameter2 = new EventDelegate.Parameter
-            {
-                field = "input",
-                value = input,
-                obj = this
+       {
+          field = "input",
+  value = input,
+        obj = this
             };
             onSubmit.mParameters = new EventDelegate.Parameter[] { parameter1, parameter2 };
             input.onSubmit.Add(onSubmit);
 
             // So.... for some reason the damn NGUI doesn't call the OnSubmit function when it should, so I had to create my own fix... FUCK!
-            lvlButtonLabelObj.AddComponent<UIInputSubmitFix>();
-        }
-        void RenameLevel(string levelFileNameWithoutExtension, UIInput input)
+  lvlButtonLabelObj.AddComponent<UIInputSubmitFix>();
+    }
+      void RenameLevel(string levelFileNameWithoutExtension, UIInput input)
         {
-            // Trim the text.
-            input.text = input.text.Trim();
+      // Trim the text.
+ input.text = input.text.Trim();
 
-            // Rename the level.
-            LevelData.RenameLevel(levelFileNameWithoutExtension, input.text);
-            CreateLevelsList();
+       // Rename the level.
+   LevelData.RenameLevel(levelFileNameWithoutExtension, input.text);
+ CreateLevelsList();
         }
 
 
         public void SwitchBetweenMenuAndLEMenu(bool showMainMenu = true)
         {
-            // Switch!
+    // Switch!
             inLEMenu = !inLEMenu;
 
 
-            if (inLEMenu)
-            {
+    if (inLEMenu)
+      {
                 Logger.Log("Switching from main menu to LE Menu!");
-                CreateLevelsList();
-            }
-            else
+     CreateLevelsList();
+          }
+      else
             {
-                Logger.Log("Switching from LE Menu to main menu!");
-            }
+     Logger.Log("Switching from LE Menu to main menu!");
+}
 
-            NavigationBarController.Instance.RefreshNavigationBarActions();
+      NavigationBarController.Instance.RefreshNavigationBarActions();
 
-            MelonCoroutines.Start(Animation());
+      MelonCoroutines.Start(Animation());
 
-            IEnumerator Animation()
-            {
-                if (inLEMenu)
-                {
-                    isInMidTransition = true;
+      IEnumerator Animation()
+       {
+  if (inLEMenu)
+  {
+         isInMidTransition = true;
 
-                    uiSoundSource.clip = okSound;
-                    uiSoundSource.Play();
+               uiSoundSource.clip = okSound;
+        uiSoundSource.Play();
 
-                    mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(true);
-                    leMenuPanel.SetActive(true);
-                    leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
-                    leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
-                    yield return new WaitForSecondsRealtime(0.2f);
+ mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(true);
+            leMenuPanel.SetActive(true);
+          leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
+         leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
+  yield return new WaitForSecondsRealtime(0.2f);
 
-                    mainMenu.SetActive(false);
-                    isInMidTransition = false;
-                }
-                else
-                {
-                    isInMidTransition = true;
+          mainMenu.SetActive(false);
+         isInMidTransition = false;
+         }
+       else
+     {
+    isInMidTransition = true;
 
-                    uiSoundSource.clip = hidePageSound;
-                    uiSoundSource.Play();
+           uiSoundSource.clip = hidePageSound;
+        uiSoundSource.Play();
 
-                    if (showMainMenu)
-                    {
-                        mainMenu.SetActive(true);
-                        mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
-                    }
-                    leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(true);
-                    leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
-                    yield return new WaitForSecondsRealtime(0.2f);
-                    leMenuPanel.SetActive(false);
+           if (showMainMenu)
+          {
+       mainMenu.SetActive(true);
+           mainMenu.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(false);
+   }
+      leMenuPanel.GetComponent<TweenAlpha>().PlayIgnoringTimeScale(true);
+       leMenuPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
+      yield return new WaitForSecondsRealtime(0.2f);
+     leMenuPanel.SetActive(false);
 
-                    isInMidTransition = false;
-                }
-            }
+          isInMidTransition = false;
+       }
+   }
         }
 
         public void PreviousLevelsList()
-        {
+   {
             if (currentLevelsGridID <= 0) return;
             currentLevelsGridID--;
 
-            lvlButtonsGrids.ForEach(grid => grid.SetActive(false));
+     lvlButtonsGrids.ForEach(grid => grid.SetActive(false));
 
             lvlButtonsGrids[currentLevelsGridID].SetActive(true);
 
-            RefreshChangePageButtons();
+            HideMetadataPreview();
+     RefreshChangePageButtons();
         }
         public void NextLevelsList()
         {
             if (currentLevelsGridID >= lvlButtonsGrids.Count - 1) return;
-            currentLevelsGridID++;
+     currentLevelsGridID++;
 
             lvlButtonsGrids.ForEach(grid => grid.SetActive(false));
 
-            lvlButtonsGrids[currentLevelsGridID].SetActive(true);
+     lvlButtonsGrids[currentLevelsGridID].SetActive(true);
 
-            RefreshChangePageButtons();
+      HideMetadataPreview();
+    RefreshChangePageButtons();
         }
         void RefreshChangePageButtons()
-        {
+   {
             if (!previousPageButton || !nextPageButton) return;
 
             // Only enable both of the buttons when we have more than one page.
-            previousPageButton.gameObject.SetActive(lvlButtonsGrids.Count > 1);
-            nextPageButton.gameObject.SetActive(lvlButtonsGrids.Count > 1);
+          previousPageButton.gameObject.SetActive(lvlButtonsGrids.Count > 1);
+     nextPageButton.gameObject.SetActive(lvlButtonsGrids.Count > 1);
 
             // Enable or disable the buttons depending on the current page.
             previousPageButton.button.isEnabled = currentLevelsGridID > 0;
             nextPageButton.button.isEnabled = currentLevelsGridID < lvlButtonsGrids.Count - 1;
 
-            //Why leave them on the screen if you're on the first or last page?
+         //Why leave them on the screen if you're on the first or last page?
             previousPageButton.gameObject.SetActive(previousPageButton.button.isEnabled);
             nextPageButton.gameObject.SetActive(nextPageButton.button.isEnabled);
         }
-        private void OnApplicationFocus(bool hasFocus)
+    private void OnApplicationFocus(bool hasFocus)
         {
-            // We only care when the application GAINS focus
-            if (hasFocus && trackIfComingBack)
+          // We only care when the application GAINS focus
+    if (hasFocus && trackIfComingBack)
             {
-                // The user has returned to the application after we opened the folder.
-                // Reset the flag so this doesn't trigger again unintentionally.
-                trackIfComingBack = false;
+     // The user has returned to the application after we opened the folder.
+           // Reset the flag so this doesn't trigger again unintentionally.
+         trackIfComingBack = false;
 
-                CreateLevelsList();
-            }
+     CreateLevelsList();
+          }
+        }
+
+        void CreateMetadataPreviewPanel()
+        {
+        // Create the panel container
+  metadataPreviewPanel = new GameObject("MetadataPreviewPanel");
+   metadataPreviewPanel.transform.parent = leMenuPanel.transform;
+            metadataPreviewPanel.transform.localPosition = new Vector3(-630f, -70f, 0f);
+    metadataPreviewPanel.transform.localScale = Vector3.one;
+
+  // Background
+  UISprite bgSprite = metadataPreviewPanel.AddComponent<UISprite>();
+     bgSprite.atlas = NGUI_Utils.UITexturesAtlas;
+     bgSprite.spriteName = "Square_Border_Beveled_HighOpacity";
+       bgSprite.type = UIBasicSprite.Type.Sliced;
+     bgSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+      bgSprite.width = 360;
+       bgSprite.height = 550;
+bgSprite.depth = 0;
+
+ // Thumbnail placeholder (larger for new layout)
+  GameObject thumbnailObj = new GameObject("Thumbnail");
+  thumbnailObj.transform.parent = metadataPreviewPanel.transform;
+  thumbnailObj.transform.localPosition = new Vector3(0f, 185f, 0f);
+            thumbnailObj.transform.localScale = Vector3.one;
+
+    previewThumbnailSprite = thumbnailObj.AddComponent<UISprite>();
+    previewThumbnailSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
+            previewThumbnailSprite.spriteName = "Square";
+    previewThumbnailSprite.type = UIBasicSprite.Type.Sliced;
+        previewThumbnailSprite.color = new Color(0.1f, 0.1f, 0.1f, 1f);
+     previewThumbnailSprite.width = 330;
+    previewThumbnailSprite.height = 185;
+    previewThumbnailSprite.depth = 1;
+
+        // "No Preview" label on thumbnail
+    UILabel noPreviewLabel = NGUI_Utils.CreateLabel(thumbnailObj.transform, Vector3.zero, new Vector3Int(330, 185, 0),
+     "[aaaaaa]No Preview Available[-]", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+    noPreviewLabel.fontSize = 22;
+      noPreviewLabel.depth = 2;
+
+            // Level Name (moved below thumbnail)
+         previewLevelNameLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(0f, 70f, 0f),
+        new Vector3Int(340, 35, 0), "", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+    previewLevelNameLabel.fontSize = 26;
+  previewLevelNameLabel.depth = 1;
+ previewLevelNameLabel.overflowMethod = UILabel.Overflow.ClampContent;
+       previewLevelNameLabel.maxLineCount = 1;
+
+ // Object Count (smaller, below name)
+    previewObjectCountLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(0f, 40f, 0f),
+       new Vector3Int(340, 25, 0), "", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+previewObjectCountLabel.fontSize = 20;
+            previewObjectCountLabel.depth = 1;
+ previewObjectCountLabel.color = new Color(0.7f, 0.7f, 0.7f, 1f);
+
+ // Author section
+         UILabel authorTitleLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-165f, 5f, 0f),
+      new Vector3Int(70, 25, 0), "[ffff00]Author:[-]", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+            authorTitleLabel.fontSize = 19;
+   authorTitleLabel.depth = 1;
+
+         previewAuthorLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-85f, 5f, 0f),
+    new Vector3Int(255, 25, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+  previewAuthorLabel.fontSize = 19;
+     previewAuthorLabel.depth = 1;
+            previewAuthorLabel.overflowMethod = UILabel.Overflow.ClampContent;
+     previewAuthorLabel.maxLineCount = 1;
+
+   // Tags section
+          UILabel tagsTitleLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-165f, -25f, 0f),
+    new Vector3Int(70, 25, 0), "[ffff00]Tags:[-]", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+  tagsTitleLabel.fontSize = 19;
+  tagsTitleLabel.depth = 1;
+
+      previewTagsLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-85f, -25f, 0f),
+     new Vector3Int(255, 25, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+    previewTagsLabel.fontSize = 19;
+previewTagsLabel.depth = 1;
+        previewTagsLabel.overflowMethod = UILabel.Overflow.ClampContent;
+        previewTagsLabel.maxLineCount = 1;
+
+// Description section (larger area)
+        UILabel descTitleLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(-165f, -60f, 0f),
+ new Vector3Int(110, 25, 0), "[ffff00]Description:[-]", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+          descTitleLabel.fontSize = 19;
+      descTitleLabel.depth = 1;
+
+ previewDescriptionLabel = NGUI_Utils.CreateLabel(metadataPreviewPanel.transform, new Vector3(0f, -170f, 0f),
+  new Vector3Int(340, 180, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Center);
+         previewDescriptionLabel.fontSize = 17;
+      previewDescriptionLabel.depth = 1;
+            previewDescriptionLabel.overflowMethod = UILabel.Overflow.ClampContent;
+     previewDescriptionLabel.maxLineCount = 10;
+    previewDescriptionLabel.color = new Color(0.85f, 0.85f, 0.85f, 1f);
+
+            // Initially hide the panel
+  metadataPreviewPanel.SetActive(false);
+    }
+
+        public void ShowMetadataPreview(string levelFileNameWithoutExtension, LevelData data)
+        {
+         if (data == null || metadataPreviewPanel == null) return;
+
+            currentHoveredLevel = levelFileNameWithoutExtension;
+
+            // Update labels
+     previewLevelNameLabel.text = data.levelName;
+      previewObjectCountLabel.text = $"Objects: {data.objects.Count}";
+   previewAuthorLabel.text = string.IsNullOrWhiteSpace(data.authorName) ? "[888888]Unknown[-]" : data.authorName;
+         previewTagsLabel.text = string.IsNullOrWhiteSpace(data.tags) ? "[888888]None[-]" : data.tags;
+      previewDescriptionLabel.text = string.IsNullOrWhiteSpace(data.description) ? "[888888]No description provided.[-]" : data.description;
+
+            // Show panel
+   metadataPreviewPanel.SetActive(true);
+        }
+
+    public void HideMetadataPreview()
+        {
+          if (metadataPreviewPanel == null) return;
+       currentHoveredLevel = null;
+ metadataPreviewPanel.SetActive(false);
         }
     }
     //It's in the name, go figure.
     public static class PlayFromMenuHelper
     {
-        public static bool PlayImmediatelyOnEditorLoad = false;
+  public static bool PlayImmediatelyOnEditorLoad = false;
         public static string LevelToPlay = null;
     }
 }

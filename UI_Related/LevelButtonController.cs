@@ -19,22 +19,5 @@ namespace FS_LevelEditor
         {
             LE_MenuUIManager.Instance.EnterEditor(true, levelFileNameWithoutExtension, levelName);
         }
-
-        public void OnHover(bool _isHovered)
-        {
-            if (_isHovered)
-            {
-                LE_MenuUIManager.Instance.levelNameLabel.GetComponent<UILabel>().text = levelName;
-                LE_MenuUIManager.Instance.levelNameLabel.SetActive(true);
-
-                LE_MenuUIManager.Instance.levelObjectsLabel.GetComponent<UILabel>().text = $"Objects: {objectsCount}";
-                LE_MenuUIManager.Instance.levelObjectsLabel.SetActive(true);
-            }
-            else
-            {
-                LE_MenuUIManager.Instance.levelNameLabel.SetActive(false);
-                LE_MenuUIManager.Instance.levelObjectsLabel.SetActive(false);
-            }
-        }
     }
 }
