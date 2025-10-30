@@ -1243,16 +1243,18 @@ namespace FS_LevelEditor.Editor
 					{
 						newOffset = Vector3.zero;
 					}
-					else
-					{
-						newOffset = oldOffset;
-						if (rotateX) newOffset.x = Mathf.Repeat(oldOffset.x + angleStep, 360f);
-						else if (rotateZ) newOffset.z = Mathf.Repeat(oldOffset.z + angleStep, 360f);
-						else /* Y */ newOffset.y = Mathf.Repeat(oldOffset.y + angleStep, 360f);
-					}
+                    else
+                    {
+                        // FIXED: Don't wrap angles during rotation - let them accumulate
+                        // Only wrap during the final application in PreviewObject()
+                        newOffset = oldOffset;
+                        if (rotateX) newOffset.x = oldOffset.x + angleStep;
+                        else if (rotateZ) newOffset.z = oldOffset.z + angleStep;
+                        else /* Y */ newOffset.y = oldOffset.y + angleStep;
+                    }
 
-					// Start smooth rotation for preview
-					StartPreviewRotationCoroutine(oldOffset, newOffset);
+                    // Start smooth rotation for preview
+                    StartPreviewRotationCoroutine(oldOffset, newOffset);
 					return;
 				}
 
@@ -1340,39 +1342,52 @@ namespace FS_LevelEditor.Editor
 			}
 			rotationCoroutine = (Coroutine)MelonCoroutines.Start(SmoothRotate(obj, oldRot, newRot));
 		}
-		IEnumerator SmoothRotate(GameObject obj, Quaternion oldRotation, Quaternion newRotation)
-		{
-			// Adaptive duration based on angle (consistent speed across frame rates)
-			float angle = Quaternion.Angle(oldRotation, newRotation);
-			float degreesPerSecond = 720f; // fast but still visible
-			float duration = angle / degreesPerSecond;
-			duration = Mathf.Clamp(duration, 0.08f, 0.25f); // Keep within reasonable bounds
+        IEnumerator SmoothRotate(GameObject obj, Quaternion oldRotation, Quaternion newRotation)
+        {
+            // Adaptive duration based on angle
+            float angle = Quaternion.Angle(oldRotation, newRotation);
+            float degreesPerSecond = 720f;
+            float duration = angle / degreesPerSecond;
+            duration = Mathf.Clamp(duration, 0.08f, 0.25f);
 
-			float elapsed = 0f;
-			while (elapsed < duration)
-			{
-				float dt = Time.unscaledDeltaTime;
-				// Prevent large jumps at very low FPS but still progress
-				if (dt > 0.05f) dt = 0.05f;
-				elapsed += dt;
-				float t = Mathf.Clamp01(elapsed / duration);
-				// Smoothstep
-				t = t * t * (3f - 2f * t);
-				obj.transform.rotation = Quaternion.Slerp(oldRotation, newRotation, t);
-				yield return null;
-			}
-			obj.transform.rotation = newRotation;
+            float elapsed = 0f;
 
-			if (currentMode != Mode.Building && currentSelectedObj != null)
-			{
-				SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(obj.transform);
-				RegisterLEAction(LEAction.LEActionType.RotateObject, obj, multipleObjectsSelected, null, null, oldRotation, newRotation);
-			}
-			rotationCoroutine = null;
-		}
+            while (elapsed < duration)
+            {
+                float dt = Time.unscaledDeltaTime;
 
-		// Helper to rotate waypoints with their parent object
-		void RotateWaypointsWithObject(GameObject parentObj, Quaternion oldRot, Quaternion newRot)
+                // At very low FPS, still allow reasonable progress
+                // but don't let a single frame complete the entire animation
+                dt = Mathf.Min(dt, duration * 0.5f);
+
+                elapsed += dt;
+                float t = Mathf.Clamp01(elapsed / duration);
+
+                // Smoothstep
+                t = t * t * (3f - 2f * t);
+
+                // CRITICAL: Slerp from CURRENT rotation to target
+                // This prevents jumps if the coroutine restarts
+                obj.transform.rotation = Quaternion.Slerp(obj.transform.rotation, newRotation, t);
+
+                yield return null;
+            }
+
+            // Ensure we end exactly at target
+            obj.transform.rotation = newRotation;
+
+            if (currentMode != Mode.Building && currentSelectedObj != null)
+            {
+                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(obj.transform);
+                RegisterLEAction(LEAction.LEActionType.RotateObject, obj, multipleObjectsSelected,
+                                 null, null, oldRotation, newRotation);
+            }
+
+            rotationCoroutine = null;
+        }
+
+        // Helper to rotate waypoints with their parent object
+        void RotateWaypointsWithObject(GameObject parentObj, Quaternion oldRot, Quaternion newRot)
 		{
 			var leObj = parentObj.GetComponent<LE_Object>();
 			if (leObj == null || leObj.waypoints == null || leObj.waypoints.Count == 0)
