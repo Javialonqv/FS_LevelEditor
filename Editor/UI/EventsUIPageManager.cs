@@ -1563,8 +1563,8 @@ namespace FS_LevelEditor.Editor.UI
             respawnCubeToggle.onChange.Clear();
             respawnCubeToggle.onChange.Add(new EventDelegate(this, nameof(OnRespawnCubeChanged)));
         }
-        // -----------------------------------------
-        void CreateLaserObjectSettings()
+		// -----------------------------------------
+		void CreateLaserObjectSettings()
         {
             laserObjectsSettings = new GameObject("Laser");
             laserObjectsSettings.transform.parent = eventOptionsParent.transform;
@@ -2149,15 +2149,24 @@ namespace FS_LevelEditor.Editor.UI
             {
                 globalObjectsSettings.SetActive(true);
                 if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(false);
+ 
+     // Show globe icon when global options are expanded
+   expandDefaultOptionsButtonSprite.SetExternalSprite("Global");
+        expandDefaultOptionsButtonSprite.width = 40;
+        expandDefaultOptionsButtonSprite.height = 40;
+        expandDefaultOptionsButtonSprite.transform.localScale = Vector3.one;
             }
             else
             {
                 globalObjectsSettings.SetActive(false);
-                if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(true);
+  if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(true);
+        
+        // Show arrow pointing up when collapsed
+        expandDefaultOptionsButtonSprite.SetExternalSprite("Triangle");
+        expandDefaultOptionsButtonSprite.width = 35;
+        expandDefaultOptionsButtonSprite.height = 25;
+  expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, -1, 1);
             }
-
-            // Change the scale of the button sprite so it seems inverted or no.
-            expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, globalOptionsExpanded ? 1 : -1, 1);
         }
         // -----------------------------------------
         void OnStartMovingObjectToggleChanged()
