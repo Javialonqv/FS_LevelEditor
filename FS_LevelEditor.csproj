@@ -49,6 +49,7 @@
 		<Compile Include="Editor\UI\EventsUIPageManager.cs" />
 		<Compile Include="LE_MenuUIManager.cs" />
 		<Compile Include="ExternalSpriteLoader.cs" />
+		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="LE_Objects\LE_Bridge.cs" />
 		<Compile Include="LE_Objects\LE_Cube_Killplane.cs" />
 		<Compile Include="LE_Objects\LE_Death_Trigger.cs" />
@@ -130,9 +131,9 @@
 		<Compile Include="UI_Related\UITogglePatcher.cs" />
 		<Compile Include="Utils.cs" />
 		<Compile Include="Utils\ScreenTemplateExpander.cs" />
-		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="WaypointSupports\MovingPlatformWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\SawWaypointSupport.cs" />
+		<Compile Include="WaypointSupports\WaypointRotationApplier.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

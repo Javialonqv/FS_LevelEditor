@@ -569,12 +569,11 @@ namespace FS_LevelEditor.Editor.UI
 			CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
 			CreateObjectAttribute("TravelBack", AttributeType.TOGGLE, true, null, "TravelBack", tooltip: "TravelBackTooltip");
 			CreateObjectAttribute("Loop", AttributeType.TOGGLE, false, null, "Loop", tooltip: "LoopTooltip");
-			CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
-			CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
-			CreateObjectAttribute("Rotate", AttributeType.TOGGLE, false, null, "Rotate");
-			CreateObjectAttribute("RotateSpeed", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "RotateSpeed");
+            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+            CreateObjectAttribute("MovingSpeed", AttributeType.INPUT_FIELD, "10", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "MovingSpeed");
+            CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
-			sawAttributes.SetActive(false);
+            sawAttributes.SetActive(false);
 			attributesPanels.Add("Saw", sawAttributes);
 		}
 		void CreateSawWaypointAttributesPanel()

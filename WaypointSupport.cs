@@ -1,4 +1,4 @@
-﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor;
 using FS_LevelEditor.Misc;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem.Converters;
