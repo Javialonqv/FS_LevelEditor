@@ -288,8 +288,23 @@ namespace FS_LevelEditor.Editor
         public void SaveLevelWithPauseMenuButton()
         {
             Logger.Log("Saving Level Data from pause menu...");
+            
+            // Check if level has metadata - if not, show metadata popup
+            if (!LevelData.HasMetadata(EditorController.Instance.levelFileNameWithoutExtension))
+            {
+              Logger.Log("No metadata found - showing metadata popup for first save");
+                // Close pause menu and show metadata popup instead
+                EditorUIManager.Instance.Resume();
+          if (SaveMetadataPopup.Instance != null)
+              {
+              SaveMetadataPopup.Instance.ShowPopup();
+                }
+              return;
+            }
+          
+            // Has metadata - just save directly, preserving existing metadata
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
-            EditorUIManager.Instance.PlaySavingLevelLabel();
+          EditorUIManager.Instance.PlaySavingLevelLabel();
             EditorController.Instance.levelHasBeenModified = false;
 
             // Refresh the pause menu patch after saving...

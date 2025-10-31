@@ -165,6 +165,9 @@ namespace FS_LevelEditor.Editor.UI
             fontSizeField.SetText(targetObj.GetProperty<float>("FontSize"));
             minFontSizeField.SetText(targetObj.GetProperty<float>("MinFontSize"));
             maxFontSizeField.SetText(targetObj.GetProperty<float>("MaxFontSize"));
+
+            // Update the visibility of fields based on the AutoFontSize toggle state
+            OnAutoFontSizeToggleChanged();
         }
 
         void OnTextFieldSubmited()

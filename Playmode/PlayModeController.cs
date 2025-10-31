@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Text.RegularExpressions;
 
 namespace FS_LevelEditor.Playmode
 {
@@ -243,7 +244,16 @@ namespace FS_LevelEditor.Playmode
 			string skyboxMatName = $"Skybox_CH{skyboxID + 1}";
 			Material skyboxMat = LEBundle.Load<Material>(skyboxMatName);
 
-			skyboxMat.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+			// Apply the same shader logic as the editor
+			if (Regex.Match(skyboxMatName, @"(?:9|10|11|12|13)$").Success)
+			{
+				skyboxMat.shader = Shader.Find("Skybox/6 Sided");
+			}
+			else
+			{
+				skyboxMat.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+			}
+			
 			RenderSettings.skybox = skyboxMat;
 		}
 

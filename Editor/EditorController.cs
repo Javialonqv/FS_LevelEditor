@@ -995,19 +995,39 @@ namespace FS_LevelEditor.Editor
 			// Shortcut for saving level data.
 			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S) && levelHasBeenModified)
 			{
-				if (SaveMetadataPopup.Instance != null)
+				// Check if level has metadata - if not, show metadata popup
+				if (!LevelData.HasMetadata(levelFileNameWithoutExtension))
 				{
-					SaveMetadataPopup.Instance.ShowPopup();
+					if (SaveMetadataPopup.Instance != null)
+	 {
+	 SaveMetadataPopup.Instance.ShowPopup();
+					}
+					else
+					{
+   Logger.Error("SaveMetadataPopup.Instance is null! Cannot show save popup.");
+					}
 				}
-				else
+   else
 				{
-					Logger.Error("SaveMetadataPopup.Instance is null! Cannot show save popup.");
+				// Has metadata - just save directly, preserving existing metadata
+					LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
+					EditorUIManager.Instance.PlaySavingLevelLabel();
+					levelHasBeenModified = false;
 				}
 			}
-			if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.W))
-			{
-				EditorUIManager.Instance.SwitchToNextBulkSelectionMode();
-			}
+			
+			// Key 5: Force show metadata popup (for editing existing metadata)
+			if (Input.GetKeyDown(KeyCode.Alpha5) && !Input.GetKey(KeyCode.LeftShift))
+  {
+        if (SaveMetadataPopup.Instance != null)
+        {
+         SaveMetadataPopup.Instance.ShowPopup();
+        }
+        else
+        {
+         Logger.Error("SaveMetadataPopup.Instance is null! Cannot show save popup.");
+        }
+    }
 
 			// Shortcut for duplicating current selected object.
 			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.D))
@@ -2459,7 +2479,7 @@ namespace FS_LevelEditor.Editor
 					placedObj = ((LE_Waypoint)objComponent).AddWaypoint(false).gameObject;
                 }
 				else
-				{
+                {
                     placedObj = PlaceObject(objComponent.objectType, objComponent.transform.localPosition, objComponent.transform.localEulerAngles,
                     objComponent.transform.localScale, false);
                 }

@@ -26,7 +26,6 @@ namespace FS_LevelEditor
 				{ "Keycode", 1234 },
 				{ "onWinEvents", new List<LE_Event>() },
 				{ "onFailEvents", new List<LE_Event>() },
-				{ "leaveOnIncorrect", false },
 				{ "allCorrect", false }
 			};
 			if(EditorController.Instance)
@@ -141,10 +140,6 @@ namespace FS_LevelEditor
 
 			ConfigureEvents(keycode);
 
-			if (GetProperty<bool>("leaveOnIncorrect"))
-			{
-				keycode.onFailEvents.AddListener((UnityEngine.Events.UnityAction)delegate { keycode.OnLeaveButton(); });
-			}
 			keycode.onFailEvents.AddListener((UnityEngine.Events.UnityAction)delegate { keycode.onFailEvents = new UnityEvent(); });
 
 			initialized = true;
@@ -173,14 +168,6 @@ namespace FS_LevelEditor
 						properties["Keycode"] = result;
 						return true;
 					}
-				}
-			}
-			else if (name == "leaveOnIncorrect")
-			{
-				if (value is bool)
-				{
-					properties["leaveOnIncorrect"] = (bool)value;
-					return true;
 				}
 			}
 			else if (name == "allCorrect")

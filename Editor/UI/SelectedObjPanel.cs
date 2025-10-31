@@ -986,7 +986,6 @@ namespace FS_LevelEditor.Editor.UI
 			SetCurrentParentToCreateAttributes(keypad);
 
 			CreateObjectAttribute("Keycode", AttributeType.INPUT_FIELD, "1234", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Keycode", maxLength: 4);
-			CreateObjectAttribute("leaveOnIncorrect", AttributeType.TOGGLE, false, null, "leaveOnIncorrect");
 			CreateObjectAttribute("allCorrect", AttributeType.TOGGLE, false, null, "allCorrect");
 			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
