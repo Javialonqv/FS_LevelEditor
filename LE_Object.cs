@@ -133,7 +133,9 @@ namespace FS_LevelEditor
         public readonly static Dictionary<ObjectType?, Vector3> defaultScalesForObjects = new Dictionary<ObjectType?, Vector3>()
         {
             { ObjectType.TRIGGER, new Vector3(3.8f, 3.8f, 0.01f) },
-            { ObjectType.DOOR, new Vector3(1f, 1.05f, 1f) }
+            { ObjectType.DOOR, new Vector3(1f, 1.05f, 1f) },
+            { ObjectType.BREAKABLE_WINDOW, new Vector3(1, 1.065f, 1) },
+            { ObjectType.DESTRUCTIBLE_WALL, new Vector3(1, 1.065f, 1) }
         };
 
         public static Dictionary<ObjectType, int> alreadyUsedObjectIDs = new Dictionary<ObjectType, int>();

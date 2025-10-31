@@ -26,7 +26,7 @@ namespace FS_LevelEditor
 			};
 			if(EditorController.Instance)
 			{
-				Transform debrisParent = gameObject.GetChild("Content/Debris").transform;
+				Transform debrisParent = gameObject.GetChildAt("Content/Debris").transform;
 				for (int i = 0; i < debrisParent.childCount; i++)
 				{
 					Transform child = debrisParent.GetChild(i);
