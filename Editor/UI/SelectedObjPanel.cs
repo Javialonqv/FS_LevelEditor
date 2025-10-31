@@ -62,7 +62,7 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			GameObject root = new GameObject("CurrentSelectedObjPanel");
 			root.transform.parent = editorUIParent;
-			root.transform.localPosition = new Vector3(-700f, -220f, 0f);
+			root.transform.localPosition = new Vector3(-690f, -220f, 0f); // Changed from -700f to -690f
 			root.transform.localScale = Vector3.one;
 
 			root.AddComponent<SelectedObjPanel>();
@@ -1141,12 +1141,15 @@ namespace FS_LevelEditor.Editor.UI
 
 			if (show)
 			{
+				// Show both header and body when panel is active
+				header.SetActive(true);
+				
 				// Ensure button is visible when panel is shown
 				expandPanelButton.gameObject.SetActive(true);
 
 				if (!expand) // Normal selection
 				{
-					gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
+					gameObject.transform.localPosition = new Vector3(-690f, -220, 0f); // Changed from -700f to -690f
 					headerTitle.width = 300;
 					body.SetActive(true);
 					body.GetComponent<UISprite>().height = 300;
@@ -1156,7 +1159,7 @@ namespace FS_LevelEditor.Editor.UI
 				}
 				else // EXPANDED PANEL
 				{
-					gameObject.transform.localPosition = new Vector3(-700f, 500, 0f);
+					gameObject.transform.localPosition = new Vector3(-690f, 500, 0f); // Changed from -700f to -690f
 					headerTitle.width = 300;
 					body.SetActive(true);
 					body.GetComponent<UISprite>().height = 1020;
@@ -1169,8 +1172,8 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			else
 			{
-				gameObject.transform.localPosition = new Vector3(-700f, -505f, 0f);
-				headerTitle.width = 520;
+				// Hide both header and body when nothing is selected
+				header.SetActive(false);
 				body.SetActive(false);
 				setActiveAtStartToggle.gameObject.SetActive(false);
 				expandPanelButton.gameObject.SetActive(false);
