@@ -251,6 +251,17 @@ namespace FS_LevelEditor.Editor.UI
 			data.authorName = authorName;
 			data.tags = tags;
 			data.description = description;
+			
+			// Capture and encode thumbnail
+			try
+			{
+				data.thumbnailBase64 = CaptureThumbnail();
+			}
+			catch (Exception ex)
+			{
+				Logger.Warning($"Failed to capture thumbnail: {ex.Message}");
+				data.thumbnailBase64 = null;
+			}
 
 			// Check if level name changed - need to rename the file
 			if (levelName != oldLevelName)
@@ -324,6 +335,60 @@ namespace FS_LevelEditor.Editor.UI
 		public static bool IsPopupActive()
 		{
 			return Instance != null && Instance.isShowing;
+		}
+		
+		/// <summary>
+		/// Captures a thumbnail of the current editor view and returns it as a base64-encoded PNG string
+		/// </summary>
+		string CaptureThumbnail()
+		{
+			Camera camera = Camera.main;
+			if (camera == null)
+			{
+				Logger.Warning("No main camera found for thumbnail capture");
+				return null;
+			}
+
+			// Define thumbnail dimensions (16:9 aspect ratio)
+			int thumbnailWidth = 320;
+			int thumbnailHeight = 180;
+
+			// Create a temporary render texture
+			RenderTexture currentRT = RenderTexture.active;
+			RenderTexture tempRT = RenderTexture.GetTemporary(thumbnailWidth, thumbnailHeight, 24);
+			RenderTexture.active = tempRT;
+
+			// Temporarily set camera to render to our texture
+			RenderTexture previousCameraRT = camera.targetTexture;
+			camera.targetTexture = tempRT;
+			
+			// Render the camera view
+			camera.Render();
+
+			// Read pixels from the render texture
+			Texture2D thumbnail = new Texture2D(thumbnailWidth, thumbnailHeight, TextureFormat.RGB24, false);
+			thumbnail.ReadPixels(new Rect(0, 0, thumbnailWidth, thumbnailHeight), 0, 0);
+			thumbnail.Apply();
+
+			// Restore camera settings
+			camera.targetTexture = previousCameraRT;
+			RenderTexture.active = currentRT;
+			RenderTexture.ReleaseTemporary(tempRT);
+
+			// Encode to PNG and convert to base64
+			byte[] pngBytes = thumbnail.EncodeToPNG();
+			GameObject.Destroy(thumbnail);
+			
+			if (pngBytes == null || pngBytes.Length == 0)
+			{
+				Logger.Warning("Failed to encode thumbnail to PNG");
+				return null;
+			}
+
+			string base64String = Convert.ToBase64String(pngBytes);
+			Logger.Log($"Thumbnail captured successfully ({pngBytes.Length} bytes, {base64String.Length} chars)");
+			
+			return base64String;
 		}
 	}
 }

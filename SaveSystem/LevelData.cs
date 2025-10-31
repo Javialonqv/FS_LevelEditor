@@ -127,6 +127,7 @@ namespace FS_LevelEditor.SaveSystem
         public string authorName { get; set; }
         public string tags { get; set; }
         public string description { get; set; }
+        public string thumbnailBase64 { get; set; }
         public Vector3Serializable cameraPosition { get; set; }
         public Vector3Serializable cameraRotation { get; set; }
         public long createdTime { get; set; }
