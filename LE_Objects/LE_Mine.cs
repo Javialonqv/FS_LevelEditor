@@ -294,6 +294,59 @@ namespace FS_LevelEditor
 			gameObject.GetChildAt("Content/MeshOff").GetComponent<MeshRenderer>().enabled = !isLaserOn;
 			gameObject.GetChildAt("Content/MeshOn").GetComponent<MeshRenderer>().enabled = isLaserOn;
 		}
+
+		void OnDestroy()
+		{
+			// Clean up mine component reference
+			if (mine != null)
+			{
+				// Clear Unity Events to prevent memory leaks
+				if (mine.onTurnOn != null)
+				{
+					mine.onTurnOn.RemoveAllListeners();
+				}
+				if (mine.onTurnOff != null)
+				{
+					mine.onTurnOff.RemoveAllListeners();
+				}
+				if (mine.onExplode != null)
+				{
+					mine.onExplode.RemoveAllListeners();
+				}
+				if (mine.onActivate != null)
+				{
+					mine.onActivate.RemoveAllListeners();
+				}
+				if (mine.onDeactivate != null)
+				{
+					mine.onDeactivate.RemoveAllListeners();
+				}
+
+				// Clear references
+				mine.rotateCom = null;
+				mine.laserOriginPoint = null;
+				mine.safetyCollider = null;
+				mine.collisionOn = null;
+				mine.collisionOff = null;
+				mine.explosionHolder = null;
+				mine.m_currentLaserImpact = null;
+				mine.m_currentLaserImpactT = null;
+				mine.m_currentLaserImpactScript = null;
+				mine.Line = null;
+				mine.loopAudioSource = null;
+				mine.onOffAudioSource = null;
+				mine.explosionAudioSource = null;
+				mine.m_onMesh = null;
+				mine.m_offMesh = null;
+				mine.m_light = null;
+				mine.m_flare = null;
+
+				mine = null;
+			}
+
+			// Cancel any pending invokes
+			CancelInvoke("ActivateMineDelayed");
+		}
 	}
 }
 

@@ -312,6 +312,15 @@ namespace FS_LevelEditor
                             break;
                     }
                 }
+                else if (targetObj is LE_Mine)
+                {
+                    if (@event.mineState == LE_Event.MineState.Activate)
+                        targetObj.TriggerAction("Activate");
+                    else if (@event.mineState == LE_Event.MineState.Deactivate)
+                        targetObj.TriggerAction("Deactivate");
+                    else if (@event.mineState == LE_Event.MineState.Toggle_State)
+                        targetObj.TriggerAction("ToggleActivated");
+                }
                 else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
                 {
                     if (@event.changeLightColor)

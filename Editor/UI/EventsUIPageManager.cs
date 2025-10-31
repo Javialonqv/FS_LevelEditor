@@ -74,6 +74,9 @@ namespace FS_LevelEditor.Editor.UI
         GameObject laserObjectsSettings;
         UIButtonMultiple laserStateButton;
         //-----------------------------------
+        GameObject mineObjectsSettings;
+        UIButtonMultiple mineStateButton;
+        //-----------------------------------
         GameObject lightObjectsSettings;
         UIToggle changeLightColorToggle;
         UILabel newLightColorTitleLabel;
@@ -153,6 +156,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreatePlayerSettings();
                 Instance.CreateCubeObjectSettings();
                 Instance.CreateLaserObjectSettings();
+                Instance.CreateMineObjectSettings();
                 Instance.CreateLightObjectSettings();
                 Instance.CreateCeilingLightObjectSettings();
                 Instance.CreateHealthAndAmmoPacksObjectSettings();
@@ -1132,6 +1136,7 @@ namespace FS_LevelEditor.Editor.UI
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
             respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
             laserStateButton.SelectOption((int)currentSelectedEvent.laserState);
+            mineStateButton.SelectOption((int)currentSelectedEvent.mineState);
             changeLightColorToggle.Set(currentSelectedEvent.changeLightColor);
             newLightColorTitleLabel.gameObject.SetActive(currentSelectedEvent.changeLightColor);
             newLightColorInputField.gameObject.SetActive(currentSelectedEvent.changeLightColor);
@@ -1228,6 +1233,10 @@ namespace FS_LevelEditor.Editor.UI
                 else if (targetObj is LE_Laser)
                 {
                     currentActiveObjectPanel = laserObjectsSettings;
+                }
+                else if (targetObj is LE_Mine)
+                {
+                    currentActiveObjectPanel = mineObjectsSettings;
                 }
                 else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
                 {
@@ -1603,6 +1612,56 @@ namespace FS_LevelEditor.Editor.UI
             button.gameObject.SetActive(true);
         }
         // -----------------------------------------
+        #region Mine Object Settings
+        void CreateMineObjectSettings()
+        {
+            mineObjectsSettings = new GameObject("Mine");
+            mineObjectsSettings.transform.parent = eventOptionsParent.transform;
+            mineObjectsSettings.transform.localPosition = Vector3.zero;
+            mineObjectsSettings.transform.localScale = Vector3.one;
+            mineObjectsSettings.SetActive(false);
+
+            CreateMineObjectsTitleLabel();
+            CreateMineStateDropdown();
+        }
+
+        void CreateMineObjectsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, mineObjectsSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "MINE OPTIONS";
+
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+
+        void CreateMineStateDropdown()
+        {
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(mineObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+            button.Init();
+            button.SetTitle("Mine State");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Activate", false);
+            button.AddOption("Deactivate", false);
+            button.AddOption("Toggle State", false);
+            button.onClick += (option) => OnMineStateDropdownChanged();
+
+            mineStateButton = button;
+            button.gameObject.SetActive(true);
+        }
+        #endregion
         void CreateLightObjectSettings()
         {
             lightObjectsSettings = new GameObject("Light");
@@ -2141,8 +2200,13 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.laserState = (LE_Event.LaserState)laserStateButton.currentSelectedID;
         }
-		// -----------------------------------------
-		void OnBridgeStateButtonChanged()
+        // -----------------------------------------
+        void OnMineStateDropdownChanged()
+        {
+            currentSelectedEvent.mineState = (LE_Event.MineState)mineStateButton.currentSelectedID;
+        }
+        // -----------------------------------------
+        void OnBridgeStateButtonChanged()
 		{
 			currentSelectedEvent.bridgeState = (LE_Event.BridgeState)bridgeStateButton.currentSelectedID;
 		}
@@ -2358,6 +2422,11 @@ public class LE_Event
     #region Laser Options
     public enum LaserState { Do_Nothing, Activate, Deactivate, Toggle_State }
     public LaserState laserState { get; set; } = LaserState.Toggle_State;
+    #endregion
+
+    #region Mine Options
+    public enum MineState { Do_Nothing, Activate, Deactivate, Toggle_State }
+    public MineState mineState { get; set; } = MineState.Toggle_State;
     #endregion
 
     #region Light Options
