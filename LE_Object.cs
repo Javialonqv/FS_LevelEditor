@@ -89,7 +89,8 @@ namespace FS_LevelEditor
             CUBE_KILLPLANE,
             KEYPAD,
             MINE,
-		}
+            RGB_WALL,
+        }
 
         // This is used to specify the objects that use the same snap triggers.
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -108,7 +109,8 @@ namespace FS_LevelEditor
                 ObjectType.X_WALL,
                 ObjectType.WINDOW,
                 ObjectType.BREAKABLE_WINDOW,
-                ObjectType.DESTRUCTIBLE_WALL
+                ObjectType.DESTRUCTIBLE_WALL,
+                ObjectType.RGB_WALL,
                 } },
             { "LIGHT", new List<ObjectType>(){
                 ObjectType.DIRECTIONAL_LIGHT,

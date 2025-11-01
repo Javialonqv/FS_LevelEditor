@@ -523,6 +523,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateBridgeAttributesPanel();
 			CreateCubeKillplaneAttributePanel();
 			CreateKeypadAttributesPanel();
+			CreateRGBWallAttributesPanel();
 		}
 		#region Create Object Specific Panels
 		void CreateDirectionalLightAttributesPanel()
@@ -663,8 +664,9 @@ namespace FS_LevelEditor.Editor.UI
 			CreateObjectAttribute("ContactRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ContactRadius");
 			CreateObjectAttribute("RemoteRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RemoteRadius");
 			CreateObjectAttribute("ProximityRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ProximityRadius");
+            CreateObjectAttribute("DamageThroughWalls", AttributeType.TOGGLE, true, null, "DamageThroughWalls");
 
-			mineAttributes.SetActive(false);
+            mineAttributes.SetActive(false);
 			attributesPanels.Add("Mine", mineAttributes);
 		}
 		void CreateCeilingLightPanel()
@@ -991,8 +993,22 @@ namespace FS_LevelEditor.Editor.UI
 			keypad.SetActive(false);
 			attributesPanels.Add("Keypad", keypad);
 		}
+		void CreateRGBWallAttributesPanel()
+		{
+			GameObject rgbWallAttributes = new GameObject("RGB_Wall");
+			rgbWallAttributes.transform.parent = objectSpecificPanelsParent;
+			rgbWallAttributes.transform.localPosition = Vector3.zero;
+			rgbWallAttributes.transform.localScale = Vector3.one;
 
-		enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE, VECTOR }
+			SetCurrentParentToCreateAttributes(rgbWallAttributes);
+
+            CreateObjectAttribute("Color", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+
+            rgbWallAttributes.SetActive(false);
+			attributesPanels.Add("RGB_Wall", rgbWallAttributes);
+		}
+
+        enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE, VECTOR }
 		void SetCurrentParentToCreateAttributes(GameObject newParent)
 		{
 			whereToCreateObjAttributesParent = newParent.transform;

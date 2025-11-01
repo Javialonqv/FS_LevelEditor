@@ -87,9 +87,31 @@ namespace FS_LevelEditor
                 foreach (var @event in (List<LE_Event>)originalObject.properties[evenKey])
                 {
                     bool isPlayer = string.Equals(@event.targetObjName, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase);
+                    bool isTaser = string.Equals(@event.targetObjName, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase);
+                    bool isJetpack = string.Equals(@event.targetObjName, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase);
                     if (!@event.isForPlayer && isPlayer) // If the targetObjName is "Player" but the BOOL is false, it's using the old system.
                     {
                         @event.isForPlayer = true;
+                        @event.isForTaser = false;
+                        @event.isForJetpack = false;
+                        @event.targetObjType = null;
+                        @event.targetObjID = 0;
+                        @event.targetObjName = "";
+                    }
+                    if(!@event.isForTaser && isTaser) // If the targetObjName is "Taser" but the BOOL is false, it's using the old system.
+                    {
+                        @event.isForTaser = true;
+                        @event.isForPlayer = false;
+                        @event.isForJetpack = false;
+                        @event.targetObjType = null;
+                        @event.targetObjID = 0;
+                        @event.targetObjName = "";
+                    }
+                    if(!@event.isForJetpack && isJetpack) // If the targetObjName is "Jetpack" but the BOOL is false, it's using the old system.
+                    {
+                        @event.isForJetpack = true;
+                        @event.isForPlayer = false;
+                        @event.isForTaser = false;
                         @event.targetObjType = null;
                         @event.targetObjID = 0;
                         @event.targetObjName = "";
@@ -141,7 +163,7 @@ namespace FS_LevelEditor
                     // ALSO, don't create editor links for the player related events.
                     // UPDATE: CREATE links even for INVALID objects, what if the user adds an object and the event becomes valid?
                     var objData = (@event.targetObjType, @event.targetObjID);
-                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer) continue;
+                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer || @event.isForTaser || @event.isForJetpack) continue;
 
                     GameObject linkObj = Instantiate(Core.LoadOtherObjectInBundle("EditorLine"), editorLinksParent.transform);
                     LineRenderer linkRender = linkObj.GetComponent<LineRenderer>();
@@ -218,6 +240,62 @@ namespace FS_LevelEditor
                     else if (@event.invertGravity)
                     {
                         PlayModeController.Instance.InvertPlayerGravity();
+                    }
+                    continue;
+                }
+                if (@event.isForTaser)
+                {
+                    if (@event.isForTaser)
+                    {
+                        // Handle giving/taking the taser
+                        switch (@event.taserState)
+                        {
+                            case LE_Event.TaserState.Give:
+                                if (!Controls.Instance.gunActivated)
+                                {
+                                    Controls.Instance.ActivateWeapon();
+                                }
+                                break;
+
+                            case LE_Event.TaserState.Take_Away:
+                                if (Controls.Instance.gunActivated)
+                                {
+                                    Controls.Instance.DeactivateWeaponInstant();
+                                }
+                                break;
+                        }
+
+                        // Handle ammo changes (only if gun is activated)
+                        if (Controls.Instance.gunActivated)
+                        {
+                            if (@event.infiniteTaser)
+                            {
+                                GunController.Instance.SetTutorialMode(true);
+                            }
+                            else
+                            {
+                                GunController.Instance.SetTutorialMode(false);
+
+                                if (@event.changeAmmo)
+                                {
+                                    GunController.Instance.SetAmmos(@event.newAmmo);
+                                }
+                            }
+                        }
+
+                        continue;
+                    }
+                }
+                if (@event.isForJetpack)
+                {
+                    switch(@event.jetpackState)
+                    {
+                        case LE_Event.JetpackState.Give:
+                            Controls.Instance.ActivateJetPack(true, false);
+                            break;
+                        case LE_Event.JetpackState.Take_Away:
+                            Controls.Instance.BreakJetPack();
+                            break;
                     }
                     continue;
                 }

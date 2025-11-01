@@ -26,6 +26,7 @@ namespace FS_LevelEditor
 				{ "ContactRadius", 1f },
 				{ "RemoteRadius", 1f },
 				{ "ProximityRadius", 1f },
+				{ "DamageThroughWalls", true }
 			};
 		}
 
@@ -59,8 +60,8 @@ namespace FS_LevelEditor
 			mine.explosionDamage = GetProperty<int>("ExplosionDamage");
 			mine.contactExplosionRadius = GetProperty<float>("ContactRadius");
 			mine.remoteExplosionRadius = GetProperty<float>("RemoteRadius");
-			mine.contactExplosionThroughWalls = true;
-			mine.remoteExplosionThroughWalls = true;
+			mine.contactExplosionThroughWalls = GetProperty<bool>("DamageThroughWalls");
+			mine.remoteExplosionThroughWalls = GetProperty<bool>("DamageThroughWalls");
 			mine.explodeProximityMines = true;
 			mine.proximityRadius = GetProperty<float>("ProximityRadius");
 			mine.explodeByProximity = true;
@@ -258,7 +259,15 @@ namespace FS_LevelEditor
 					return true;
 				}
 			}
-			return base.SetProperty(name, value);
+            else if (name == "DamageThroughWalls")
+            {
+                if (value is bool)
+                {
+                    properties["DamageThroughWalls"] = (bool)value;
+                    return true;
+                }
+            }
+            return base.SetProperty(name, value);
 		}
 
 		public override bool TriggerAction(string actionName)

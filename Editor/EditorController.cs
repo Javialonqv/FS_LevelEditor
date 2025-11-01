@@ -995,24 +995,35 @@ namespace FS_LevelEditor.Editor
 			// Shortcut for saving level data.
 			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S) && levelHasBeenModified)
 			{
+				// Show "Saving..." notification immediately
+				if (NotificationSystem.Instance != null)
+				{
+					NotificationSystem.Instance.ShowNotification("Saving level...", "WhiteSquare");
+				}
+				
 				// Check if level has metadata - if not, show metadata popup
 				if (!LevelData.HasMetadata(levelFileNameWithoutExtension))
 				{
 					if (SaveMetadataPopup.Instance != null)
-	 {
-	 SaveMetadataPopup.Instance.ShowPopup();
+					{
+						SaveMetadataPopup.Instance.ShowPopup();
 					}
 					else
 					{
-   Logger.Error("SaveMetadataPopup.Instance is null! Cannot show save popup.");
+						Logger.Error("SaveMetadataPopup.Instance is null! Cannot show save popup.");
 					}
 				}
-   else
+				else
 				{
-				// Has metadata - just save directly, preserving existing metadata
+					// Has metadata - just save directly, preserving existing metadata
 					LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
-					EditorUIManager.Instance.PlaySavingLevelLabel();
 					levelHasBeenModified = false;
+					
+					// Show "Saved!" notification after save completes
+					if (NotificationSystem.Instance != null)
+					{
+						NotificationSystem.Instance.ShowNotification("Level saved!", "WhiteSquare");
+					}
 				}
 			}
 			
@@ -1512,6 +1523,12 @@ namespace FS_LevelEditor.Editor
 		{
 			gridSize = Mathf.Clamp(newSize, MIN_GRID_SIZE, MAX_GRID_SIZE);
 			UpdateGridCenter();
+			
+			// Show notification
+			if (NotificationSystem.Instance != null)
+			{
+				NotificationSystem.Instance.ShowNotification($"Grid size: {gridSize:0.###}", "WhiteSquare");
+			}
 		}
 		public void IncreaseGridSize()
 		{
@@ -1521,17 +1538,29 @@ namespace FS_LevelEditor.Editor
 		public void DecreaseGridSize()
 		{
             int level = Mathf.RoundToInt(Mathf.Log(gridSize, GRID_SIZE_MULTIPLIER)) - 1;
-            SetGridSize(Mathf.Pow(GRID_SIZE_MULTIPLIER, level));
+   SetGridSize(Mathf.Pow(GRID_SIZE_MULTIPLIER, level));
         }
 		public void SetGridHeight(float newHeight)
 		{
 			gridHeight = newHeight;
 			UpdateGridCenter();
+			
+			// Show notification
+			if (NotificationSystem.Instance != null)
+			{
+				NotificationSystem.Instance.ShowNotification($"Grid height: {gridHeight:0.###}", "WhiteSquare");
+			}
 		}
 		public void AdjustGridHeight(float delta, bool precise)
 		{
 			gridHeight += precise ? delta * 0.1f : delta;
 			UpdateGridCenter();
+			
+			// Show notification
+			if (NotificationSystem.Instance != null)
+			{
+				NotificationSystem.Instance.ShowNotification($"Grid height: {gridHeight:0.###}", "WhiteSquare");
+			}
 		}
 		public void SetGridEnabled(bool enabled)
 		{

@@ -193,7 +193,13 @@ namespace FS_LevelEditor.Editor.UI
 			// Show overlay and popup
 			transform.GetChild(0).gameObject.SetActive(true); // Overlay
 			popupPanel.SetActive(true);
-			popupPanel.GetComponent<TweenScale>().PlayForward();
+			
+			// Reset scale before playing animation to prevent flickering
+			popupPanel.transform.localScale = Vector3.zero;
+			TweenScale tweenScale = popupPanel.GetComponent<TweenScale>();
+			tweenScale.ResetToBeginning();
+			tweenScale.PlayForward();
+			
 			Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
 			
 			Logger.Log("SaveMetadataPopup shown successfully");
@@ -212,7 +218,9 @@ namespace FS_LevelEditor.Editor.UI
 			// Set isShowing to false immediately to prevent double-hiding
 			isShowing = false;
 
-			popupPanel.GetComponent<TweenScale>().PlayReverse();
+			TweenScale tweenScale = popupPanel.GetComponent<TweenScale>();
+			tweenScale.PlayReverse();
+			
 			MelonLoader.MelonCoroutines.Start(HideAfterAnimation());
 
 			Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
@@ -305,10 +313,16 @@ namespace FS_LevelEditor.Editor.UI
 				LevelData.SaveLevelData(levelName, oldFileNameWithoutExtension, data);
 			}
 
-			EditorUIManager.Instance.PlaySavingLevelLabel();
 			EditorController.Instance.levelHasBeenModified = false;
 
+			// Hide popup first, then show notification to avoid visual conflicts
 			HidePopup();
+
+			// Show "Saved!" notification after popup is hidden
+			if (NotificationSystem.Instance != null)
+			{
+				NotificationSystem.Instance.ShowNotification("Level saved!", "WhiteSquare");
+			}
 
 			Logger.Log($"Level saved with metadata - Name: {levelName}, Author: {authorName}, Tags: {tags}");
 		}

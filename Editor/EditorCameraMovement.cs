@@ -134,24 +134,36 @@ namespace FS_LevelEditor.Editor
                     moveSpeed += SPEED_CHANGE_RATE;
                     moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
                     Logger.DebugLog("New move speed: " + moveSpeed);
-                }
-                else if (scrollDelta < 0)
-                {
-                    moveSpeed -= SPEED_CHANGE_RATE;
-                    moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
-                    Logger.DebugLog("New move speed: " + moveSpeed);
-                }
-            }
+    
+     // Show notification
+     if (NotificationSystem.Instance != null)
+        {
+     NotificationSystem.Instance.ShowNotification($"Camera speed: {moveSpeed:0.###}", "WhiteSquare");
+      }
+       }
+            else if (scrollDelta < 0)
+            {
+                moveSpeed -= SPEED_CHANGE_RATE;
+                moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
+                Logger.DebugLog("New move speed: " + moveSpeed);
+         
+           // Show notification
+if (NotificationSystem.Instance != null)
+   {
+      NotificationSystem.Instance.ShowNotification($"Camera speed: {moveSpeed:0.###}", "WhiteSquare");
+              }
+    }
+   }
             // Restore Shift speed doubling logic
-            if (Input.GetKey(KeyCode.LeftShift))
+   if (Input.GetKey(KeyCode.LeftShift))
             {
-                downAndUpSpeed = moveSpeed * 2f;
+       downAndUpSpeed = moveSpeed * 2f;
             }
-            else
-            {
+      else
+       {
                 downAndUpSpeed = moveSpeed;
-            }
-        }
+         }
+    }
 
         void MoveCameraWithMouseDrag()
         {

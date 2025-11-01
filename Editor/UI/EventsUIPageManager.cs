@@ -68,6 +68,15 @@ namespace FS_LevelEditor.Editor.UI
         UIToggle zeroGToggle;
         UIToggle invertGravityToggle;
         //-----------------------------------
+        GameObject taserSettings;
+        UIButtonMultiple taserStateButton;
+        UIToggle changeAmmoToggle;
+        UICustomInputField newAmmoInputField;
+        UIToggle infiniteTaserToggle;
+        //-----------------------------------
+        GameObject jetpackSettings;
+        UIButtonMultiple jetpackStateButton;
+        //-----------------------------------
         GameObject cubeObjectsSettings;
         UIToggle respawnCubeToggle;
         //-----------------------------------
@@ -109,13 +118,13 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject doorObjectsSettings;
         UIButtonMultiple setDoorStateButton;
-		//-----------------------------------
-		GameObject bridgeObjectsSettings;
-		UIButtonMultiple bridgeStateButton;
-		#endregion
+        //-----------------------------------
+        GameObject bridgeObjectsSettings;
+        UIButtonMultiple bridgeStateButton;
+        #endregion
 
 
-		List<string> eventsListsNames = new List<string>();
+        List<string> eventsListsNames = new List<string>();
         int currentEventsListID;
         string currentEventsListName;
         bool eventSelected;
@@ -154,6 +163,8 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateGlobalObjectsSettings();
                 Instance.CreateSawObjectSettings();
                 Instance.CreatePlayerSettings();
+                Instance.CreateTaserSettings();
+                Instance.CreateJetpackSettings();
                 Instance.CreateCubeObjectSettings();
                 Instance.CreateLaserObjectSettings();
                 Instance.CreateMineObjectSettings();
@@ -164,9 +175,9 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateFlameTrapObjectSettings();
                 Instance.CreateScreenObjectSettings();
                 Instance.CreateDoorObjectSettings();
-				Instance.CreateBridgeObjectSettings();
+                Instance.CreateBridgeObjectSettings();
 
-				Instance.CreateDetails();
+                Instance.CreateDetails();
             }
         }
 
@@ -275,7 +286,7 @@ namespace FS_LevelEditor.Editor.UI
 
             UIButton button = eventsListBg.AddComponent<UIButton>();
             button.defaultColor = new Color(0.0509f, 0.3333f, 0.3764f);
-            button.hover = new Color(0.0509f, 0.3333f, 0.3764f);        
+            button.hover = new Color(0.0509f, 0.3333f, 0.3764f);
             button.pressed = new Color(0.0509f, 0.3333f, 0.3764f);
             BoxCollider collider = eventsListBg.AddComponent<BoxCollider>();
             collider.center = Vector3.zero;
@@ -1122,6 +1133,14 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     targetObjInputField.SetText(Loc.Get("Player"));
                 }
+                else if (currentSelectedEvent.isForTaser)
+                {
+                    targetObjInputField.SetText(Loc.Get("Taser"));
+                }
+                else if (currentSelectedEvent.isForJetpack)
+                {
+                    targetObjInputField.SetText(Loc.Get("Jetpack"));
+                }
                 else
                 {
                     targetObjInputField.SetText(currentSelectedEvent.targetObjName);
@@ -1134,6 +1153,13 @@ namespace FS_LevelEditor.Editor.UI
             sawStateButton.SelectOption((int)currentSelectedEvent.sawState);
             zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
             invertGravityToggle.Set(currentSelectedEvent.invertGravity);
+            taserStateButton.SelectOption((int)currentSelectedEvent.taserState);
+            changeAmmoToggle.Set(currentSelectedEvent.changeAmmo);
+            newAmmoInputField.gameObject.SetActive(currentSelectedEvent.changeAmmo && !currentSelectedEvent.infiniteTaser);
+            newAmmoInputField.SetText(currentSelectedEvent.newAmmo);
+            infiniteTaserToggle.gameObject.SetActive(currentSelectedEvent.changeAmmo);
+            infiniteTaserToggle.Set(currentSelectedEvent.infiniteTaser);
+            jetpackStateButton.SelectOption((int)currentSelectedEvent.jetpackState);
             respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
             laserStateButton.SelectOption((int)currentSelectedEvent.laserState);
             mineStateButton.SelectOption((int)currentSelectedEvent.mineState);
@@ -1158,9 +1184,9 @@ namespace FS_LevelEditor.Editor.UI
             changeScreenTextToggle.Set(currentSelectedEvent.changeScreenText);
             screenNewTextField.SetText(currentSelectedEvent.screenNewText);
             setDoorStateButton.SelectOption((int)currentSelectedEvent.doorState);
-			bridgeStateButton.SelectOption((int)currentSelectedEvent.bridgeState);
+            bridgeStateButton.SelectOption((int)currentSelectedEvent.bridgeState);
 
-			eventSettingsPanel.SetActive(true);
+            eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
             OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
@@ -1177,6 +1203,14 @@ namespace FS_LevelEditor.Editor.UI
 
             #region Check if the object is valid
             if (string.Equals(inputText, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase))
+            {
+                objIsValid = true;
+            }
+            if (string.Equals(inputText, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase))
+            {
+                objIsValid = true;
+            }
+            if(string.Equals(inputText, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase))
             {
                 objIsValid = true;
             }
@@ -1205,6 +1239,26 @@ namespace FS_LevelEditor.Editor.UI
                 if (string.Equals(inputText, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase))
                 {
                     currentSelectedEvent.isForPlayer = true;
+                    currentSelectedEvent.isForTaser = false;
+                    currentSelectedEvent.isForJetpack = false;
+                    currentSelectedEvent.targetObjType = null;
+                    currentSelectedEvent.targetObjID = 0;
+                    currentSelectedEvent.targetObjName = "";
+                }
+                else if (string.Equals(inputText, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSelectedEvent.isForPlayer = false;
+                    currentSelectedEvent.isForTaser = true;
+                    currentSelectedEvent.isForJetpack = false;
+                    currentSelectedEvent.targetObjType = null;
+                    currentSelectedEvent.targetObjID = 0;
+                    currentSelectedEvent.targetObjName = "";
+                }
+                else if (string.Equals(inputText, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSelectedEvent.isForPlayer = false;
+                    currentSelectedEvent.isForTaser = false;
+                    currentSelectedEvent.isForJetpack = true;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1212,15 +1266,24 @@ namespace FS_LevelEditor.Editor.UI
                 else
                 {
                     currentSelectedEvent.isForPlayer = false;
+                    currentSelectedEvent.isForTaser = false;
                     currentSelectedEvent.targetObjType = targetObj.objectType;
                     currentSelectedEvent.targetObjID = targetObj.objectID;
                     currentSelectedEvent.targetObjName = ""; // While the object is valid, don't use the name, use the type and ID instead.
                 }
 
-                if (!currentSelectedEvent.isForPlayer) defaultObjectsSettings.SetActive(true);
+                if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack) defaultObjectsSettings.SetActive(true);
                 if (currentSelectedEvent.isForPlayer)
                 {
                     currentActiveObjectPanel = playerSettings;
+                } 
+                if(currentSelectedEvent.isForTaser)
+                {
+                    currentActiveObjectPanel = taserSettings;
+                }
+                if (currentSelectedEvent.isForJetpack)
+                {
+                    currentActiveObjectPanel = jetpackSettings;
                 }
                 else if (targetObj is LE_Saw)
                 {
@@ -1266,12 +1329,15 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     currentActiveObjectPanel = doorObjectsSettings;
                 }
-				else if (targetObj is LE_Bridge)
-				{
-					currentActiveObjectPanel = bridgeObjectsSettings;
-				}
-
-				if (currentActiveObjectPanel && !globalOptionsExpanded) currentActiveObjectPanel.SetActive(true);
+                else if (targetObj is LE_Bridge)
+                {
+                    currentActiveObjectPanel = bridgeObjectsSettings;
+                }
+                if (currentSelectedEvent.isForPlayer)
+                {
+                    currentActiveObjectPanel = playerSettings;
+                }
+                if (currentActiveObjectPanel && !globalOptionsExpanded) currentActiveObjectPanel.SetActive(true);
             }
             else
             {
@@ -1280,6 +1346,7 @@ namespace FS_LevelEditor.Editor.UI
                 eventOptionsParent.DisableAllChildren();
 
                 currentSelectedEvent.isForPlayer = false;
+                currentSelectedEvent.isForTaser = false;
                 currentSelectedEvent.targetObjType = null;
                 currentSelectedEvent.targetObjID = 0;
                 currentSelectedEvent.targetObjName = inputText;
@@ -1294,7 +1361,7 @@ namespace FS_LevelEditor.Editor.UI
 
             targetObj.TriggerAction("OnSelectTargetObjWithClickBtnClick");
         }
-        
+
         public void SetTargetObjectWithLE_Object(LE_Object obj)
         {
             targetObjInputField.SetText(obj.objectFullNameWithID);
@@ -1499,6 +1566,132 @@ namespace FS_LevelEditor.Editor.UI
             invertGravityToggle.onChange.Add(new EventDelegate(this, nameof(OnInvertGravityToggleChanged)));
         }
         // -----------------------------------------
+        void CreateTaserSettings()
+        {
+            taserSettings = new GameObject("Taser");
+            taserSettings.transform.parent = eventOptionsParent.transform;
+            taserSettings.transform.localPosition = Vector3.zero;
+            taserSettings.transform.localScale = Vector3.one;
+            taserSettings.SetActive(false);
+
+            CreateTaserSettingsTitleLabel();
+            CreateTaserStateButton();
+            CreateChangeAmmoToggle();
+            CreateNewAmmoInputField();
+            CreateInfiniteTaserToggle();
+        }
+        void CreateTaserSettingsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, taserSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "TASER OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 120f, 0f);
+        }
+        void CreateTaserStateButton()
+        {
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(taserSettings.transform, new Vector3(-200, 50), Vector3.one * 0.8f);
+            button.Init();
+            button.SetTitle("Taser");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Give", false);
+            button.AddOption("Take Away", false);
+            button.onClick += (option) => OnTaserStateButtonChanged();
+
+            taserStateButton = button;
+            button.gameObject.SetActive(true);
+        }
+        void CreateChangeAmmoToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(taserSettings.transform, new Vector3(54f, 50f, 0f),
+                new Vector3Int(250, 48, 1), "Change Ammo");
+            toggle.name = "ChangeAmmoToggle";
+            changeAmmoToggle = toggle.GetComponent<UIToggle>();
+            changeAmmoToggle.onChange.Clear();
+            changeAmmoToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeAmmoToggleChanged)));
+        }
+        void CreateNewAmmoInputField()
+        {
+            newAmmoInputField = NGUI_Utils.CreateInputField(taserSettings.transform, new Vector3(203f, -35f, 0f),
+                new Vector3Int(250, 40, 1), 27, "10", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_INT);
+            newAmmoInputField.name = "NewAmmoInputField";
+            newAmmoInputField.onChange += OnNewAmmoInputFieldChanged;
+            newAmmoInputField.gameObject.SetActive(false);
+        }
+        void CreateInfiniteTaserToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(taserSettings.transform, new Vector3(-300f, -35f, 0f),
+                new Vector3Int(250, 48, 1), "Infinite Ammo");
+            toggle.name = "InfiniteTaserToggle";
+            infiniteTaserToggle = toggle.GetComponent<UIToggle>();
+            infiniteTaserToggle.onChange.Clear();
+            infiniteTaserToggle.onChange.Add(new EventDelegate(this, nameof(OnInfiniteTaserToggleChanged)));
+            infiniteTaserToggle.gameObject.SetActive(false);
+        }
+        // -----------------------------------------
+        void CreateJetpackSettings()
+        {
+            jetpackSettings = new GameObject("Jetpack");
+            jetpackSettings.transform.parent = eventOptionsParent.transform;
+            jetpackSettings.transform.localPosition = Vector3.zero;
+            jetpackSettings.transform.localScale = Vector3.one;
+            jetpackSettings.SetActive(false);
+
+            CreateJetpackSettingsTitleLabel();
+            CreateJetpackStateButton();
+        }
+
+        void CreateJetpackSettingsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, jetpackSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "JETPACK OPTIONS";
+
+            // Change the label position AFTER changing the pivot.
+            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+        }
+
+        void CreateJetpackStateButton()
+        {
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(jetpackSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+            button.Init();
+            button.SetTitle("Jetpack");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Give", false);
+            button.AddOption("Take Away", false);
+            button.onClick += (option) => OnJetpackStateButtonChanged();
+
+            jetpackStateButton = button;
+            button.gameObject.SetActive(true);
+        }
+        // -----------------------------------------
         void CreateCubeObjectSettings()
         {
             cubeObjectsSettings = new GameObject("Cube");
@@ -1510,19 +1703,19 @@ namespace FS_LevelEditor.Editor.UI
             CreateCubeObjectsTitleLabel();
             CreateRespawnCubeToggle();
         }
-		void CreateBridgeObjectSettings()
-		{
-			bridgeObjectsSettings = new GameObject("Bridge");
-			bridgeObjectsSettings.transform.parent = eventOptionsParent.transform;
-			bridgeObjectsSettings.transform.localPosition = Vector3.zero;
-			bridgeObjectsSettings.transform.localScale = Vector3.one;
-			bridgeObjectsSettings.SetActive(false);
+        void CreateBridgeObjectSettings()
+        {
+            bridgeObjectsSettings = new GameObject("Bridge");
+            bridgeObjectsSettings.transform.parent = eventOptionsParent.transform;
+            bridgeObjectsSettings.transform.localPosition = Vector3.zero;
+            bridgeObjectsSettings.transform.localScale = Vector3.one;
+            bridgeObjectsSettings.SetActive(false);
 
-			CreateBridgeObjectsTitleLabel();
-			CreateBridgeStateButton();
-		}
+            CreateBridgeObjectsTitleLabel();
+            CreateBridgeStateButton();
+        }
 
-		void CreateCubeObjectsTitleLabel()
+        void CreateCubeObjectsTitleLabel()
         {
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
 
@@ -1543,16 +1736,16 @@ namespace FS_LevelEditor.Editor.UI
             // Change the label position AFTER changing the pivot.
             titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
         }
-		void CreateBridgeObjectsTitleLabel()
-		{
-			UILabel titleLabel = NGUI_Utils.CreateLabel(bridgeObjectsSettings.transform, Vector3.up * 40, new Vector3Int(700, 40, 0), "BRIDGE OPTIONS",
-				NGUIText.Alignment.Center, UIWidget.Pivot.Center);
-			titleLabel.name = "TitleLabel";
-			titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
-			titleLabel.fontSize = 35;
-		}
+        void CreateBridgeObjectsTitleLabel()
+        {
+            UILabel titleLabel = NGUI_Utils.CreateLabel(bridgeObjectsSettings.transform, Vector3.up * 40, new Vector3Int(700, 40, 0), "BRIDGE OPTIONS",
+                NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "TitleLabel";
+            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            titleLabel.fontSize = 35;
+        }
 
-		void CreateRespawnCubeToggle()
+        void CreateRespawnCubeToggle()
         {
             GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
 
@@ -1563,8 +1756,8 @@ namespace FS_LevelEditor.Editor.UI
             respawnCubeToggle.onChange.Clear();
             respawnCubeToggle.onChange.Add(new EventDelegate(this, nameof(OnRespawnCubeChanged)));
         }
-		// -----------------------------------------
-		void CreateLaserObjectSettings()
+        // -----------------------------------------
+        void CreateLaserObjectSettings()
         {
             laserObjectsSettings = new GameObject("Laser");
             laserObjectsSettings.transform.parent = eventOptionsParent.transform;
@@ -2074,25 +2267,25 @@ namespace FS_LevelEditor.Editor.UI
 
             screenNewTextField.onChange += OnNewScreenTextFieldChanged;
         }
-		void CreateBridgeStateButton()
-		{
-			UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(bridgeObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-			button.name = "BridgeStateButton";
-			button.Init();
-			button.SetTitle("Set Bridge State");
-			button.ClearOptions();
-			button.AddOption("Do Nothing", true);
-			button.AddOption("Extend", false);
-			button.AddOption("Retract", false);
-			button.AddOption("Toggle", false);
-			button.onClick += (option) => OnBridgeStateButtonChanged();
-			button.SetTooltip("EventsBridgeStateTooltip"); // Optional: add tooltip
+        void CreateBridgeStateButton()
+        {
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(bridgeObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+            button.name = "BridgeStateButton";
+            button.Init();
+            button.SetTitle("Set Bridge State");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Extend", false);
+            button.AddOption("Retract", false);
+            button.AddOption("Toggle", false);
+            button.onClick += (option) => OnBridgeStateButtonChanged();
+            button.SetTooltip("EventsBridgeStateTooltip"); // Optional: add tooltip
 
-			bridgeStateButton = button;
-			button.gameObject.SetActive(true);
-		}
-		// -----------------------------------------
-		void CreateDoorObjectSettings()
+            bridgeStateButton = button;
+            button.gameObject.SetActive(true);
+        }
+        // -----------------------------------------
+        void CreateDoorObjectSettings()
         {
             doorObjectsSettings = new GameObject("Door");
             doorObjectsSettings.transform.parent = eventOptionsParent.transform;
@@ -2149,23 +2342,23 @@ namespace FS_LevelEditor.Editor.UI
             {
                 globalObjectsSettings.SetActive(true);
                 if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(false);
- 
-     // Show globe icon when global options are expanded
-   expandDefaultOptionsButtonSprite.SetExternalSprite("Global");
-        expandDefaultOptionsButtonSprite.width = 40;
-        expandDefaultOptionsButtonSprite.height = 40;
-        expandDefaultOptionsButtonSprite.transform.localScale = Vector3.one;
+
+                // Show globe icon when global options are expanded
+                expandDefaultOptionsButtonSprite.SetExternalSprite("Global");
+                expandDefaultOptionsButtonSprite.width = 40;
+                expandDefaultOptionsButtonSprite.height = 40;
+                expandDefaultOptionsButtonSprite.transform.localScale = Vector3.one;
             }
             else
             {
                 globalObjectsSettings.SetActive(false);
-  if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(true);
-        
-        // Show arrow pointing up when collapsed
-        expandDefaultOptionsButtonSprite.SetExternalSprite("Triangle");
-        expandDefaultOptionsButtonSprite.width = 35;
-        expandDefaultOptionsButtonSprite.height = 25;
-  expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, -1, 1);
+                if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(true);
+
+                // Show arrow pointing up when collapsed
+                expandDefaultOptionsButtonSprite.SetExternalSprite("Triangle");
+                expandDefaultOptionsButtonSprite.width = 35;
+                expandDefaultOptionsButtonSprite.height = 25;
+                expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, -1, 1);
             }
         }
         // -----------------------------------------
@@ -2200,6 +2393,45 @@ namespace FS_LevelEditor.Editor.UI
             }
         }
         // -----------------------------------------
+        void OnTaserStateButtonChanged()
+        {
+            currentSelectedEvent.taserState = (LE_Event.TaserState)taserStateButton.currentSelectedID;
+        }
+        void OnChangeAmmoToggleChanged()
+        {
+            currentSelectedEvent.changeAmmo = changeAmmoToggle.isChecked;
+            newAmmoInputField.gameObject.SetActive(changeAmmoToggle.isChecked && !infiniteTaserToggle.isChecked);
+            infiniteTaserToggle.gameObject.SetActive(changeAmmoToggle.isChecked);
+
+            if (!changeAmmoToggle.isChecked)
+            {
+                infiniteTaserToggle.Set(false);
+            }
+        }
+        void OnNewAmmoInputFieldChanged()
+        {
+            int value = int.Parse(newAmmoInputField.GetText());
+            // Clamp the value between 1 and 10
+            value = (value >= 10 || newAmmoInputField.GetText()=="") ? 10 : value;
+            // If the value was clamped, update the input field to show the clamped value
+            if (value.ToString() != newAmmoInputField.GetText())
+            {
+                newAmmoInputField.SetText(value.ToString());
+            }
+            currentSelectedEvent.newAmmo = value;
+        }
+        void OnInfiniteTaserToggleChanged()
+        {
+            currentSelectedEvent.infiniteTaser = infiniteTaserToggle.isChecked;
+            newAmmoInputField.gameObject.SetActive(!infiniteTaserToggle.isChecked && changeAmmoToggle.isChecked);
+        }
+        // -----------------------------------------
+        void OnJetpackStateButtonChanged()
+        {
+            currentSelectedEvent.jetpackState = (LE_Event.JetpackState)jetpackStateButton.currentSelectedID;
+        }
+
+        // -----------------------------------------
         void OnRespawnCubeChanged()
         {
             currentSelectedEvent.respawnCube = respawnCubeToggle.isChecked;
@@ -2216,11 +2448,11 @@ namespace FS_LevelEditor.Editor.UI
         }
         // -----------------------------------------
         void OnBridgeStateButtonChanged()
-		{
-			currentSelectedEvent.bridgeState = (LE_Event.BridgeState)bridgeStateButton.currentSelectedID;
-		}
-		// -----------------------------------------
-		void OnChangeLightColorToggleChanged()
+        {
+            currentSelectedEvent.bridgeState = (LE_Event.BridgeState)bridgeStateButton.currentSelectedID;
+        }
+        // -----------------------------------------
+        void OnChangeLightColorToggleChanged()
         {
             currentSelectedEvent.changeLightColor = changeLightColorToggle.isChecked;
             newLightColorTitleLabel.gameObject.SetActive(changeLightColorToggle.isChecked);
@@ -2341,7 +2573,7 @@ namespace FS_LevelEditor.Editor.UI
 
             // Change the title of the panel.
             eventsWindowTitle.text = "Events for " + targetObj.objectFullNameWithID;
-            
+
             EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED); // Just to stop camera movement and such.
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
 
@@ -2371,17 +2603,17 @@ namespace FS_LevelEditor.Editor.UI
     }
 
     [RegisterTypeInIl2Cpp]
-    public class EventButton : MonoBehaviour
-    {
-        public EventsUIPageManager eventsManager;
-        public int eventTypeID;
-        public int eventID;
+public class EventButton : MonoBehaviour
+{
+    public EventsUIPageManager eventsManager;
+    public int eventTypeID;
+    public int eventID;
 
-        public void OnClick()
-        {
-            eventsManager.OnEventSelect(eventID);
-        }
+    public void OnClick()
+    {
+        eventsManager.OnEventSelect(eventID);
     }
+}
 }
 
 public class LE_Event
@@ -2403,6 +2635,9 @@ public class LE_Event
     public string eventName { get; set; } = "New Event";
 
     public bool isForPlayer { get; set; } = false;
+    public bool isForTaser { get; set; } = false;
+
+    public bool isForJetpack { get; set; } = false;
 
     public string targetObjName { get; set; } = "";
     public LE_Object.ObjectType? targetObjType { get; set; } = null;
@@ -2422,6 +2657,19 @@ public class LE_Event
     #region Player Options
     public bool enableOrDisableZeroG { get; set; } = false;
     public bool invertGravity { get; set; } = false;
+    #endregion
+
+    #region Taser Options
+    public enum TaserState { Do_Nothing, Give, Take_Away }
+    public TaserState taserState { get; set; } = TaserState.Do_Nothing;
+    public bool changeAmmo { get; set; } = false;
+    public int newAmmo { get; set; } = 8;
+    public bool infiniteTaser { get; set; } = false;
+    #endregion
+
+    #region Jetpack Options
+    public enum JetpackState { Do_Nothing, Give, Take_Away }
+    public JetpackState jetpackState { get; set; } = JetpackState.Do_Nothing;
     #endregion
 
     #region Cube Options
@@ -2479,10 +2727,10 @@ public class LE_Event
     #region Door Options
     public enum DoorState { Do_Nothing, Closed, ClosedFast, Open, Toggle }
     public DoorState doorState { get; set; } = DoorState.Toggle;
-	#endregion
+    #endregion
 
-	#region Bridge Options
-	public enum BridgeState { Do_Nothing, Extend, Retract, Toggle }
-	public BridgeState bridgeState { get; set; } = BridgeState.Toggle;
-	#endregion
+    #region Bridge Options
+    public enum BridgeState { Do_Nothing, Extend, Retract, Toggle }
+    public BridgeState bridgeState { get; set; } = BridgeState.Toggle;
+    #endregion
 }
