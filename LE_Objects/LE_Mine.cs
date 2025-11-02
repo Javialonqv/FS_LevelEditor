@@ -268,6 +268,14 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "BreakWindows")
+            {
+                if (value is bool)
+                {
+                    properties["BreakWindows"] = (bool)value;
+                    return true;
+                }
+            }
             return base.SetProperty(name, value);
 		}
 

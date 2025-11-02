@@ -73,6 +73,7 @@ namespace FS_LevelEditor.Editor.UI
 			notificationBg.height = 70;
 			notificationBg.pivot = UIWidget.Pivot.Right;
 			notificationBg.depth = 100;
+			notificationBg.autoResizeBoxCollider = true; // Auto-resize collider with sprite
 
 			// Icon sprite (on the left inside the notification)
 			GameObject iconObj = new GameObject("Icon");
@@ -95,8 +96,8 @@ namespace FS_LevelEditor.Editor.UI
 				new Vector3Int(260, 60, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Center);
 			notificationLabel.fontSize = 24;
 			notificationLabel.depth = 101;
-			notificationLabel.overflowMethod = UILabel.Overflow.ResizeFreely;
-			notificationLabel.multiLine = false;
+			notificationLabel.overflowMethod = UILabel.Overflow.ResizeFreely; // Allow label to resize freely
+			notificationLabel.multiLine = true; // Enable multi-line support for welcome message
 
 			// Start hidden
 			notificationPanel.SetActive(false);
@@ -118,6 +119,9 @@ namespace FS_LevelEditor.Editor.UI
 				notificationIcon.spriteName = iconSpriteName;
 				currentMessage = message;
 				
+				// Update background height based on label content
+				UpdateNotificationHeight();
+				
 				// Stop and restart the timer
 				if (currentNotificationCoroutine != null)
 				{
@@ -138,9 +142,30 @@ namespace FS_LevelEditor.Editor.UI
 			notificationLabel.text = message;
 			notificationIcon.spriteName = iconSpriteName;
 			currentMessage = message;
+			
+			// Update background height based on label content
+			UpdateNotificationHeight();
 
 			// Start the notification coroutine
 			currentNotificationCoroutine = (Coroutine)MelonCoroutines.Start(ShowNotificationCoroutine());
+		}
+		
+		void UpdateNotificationHeight()
+		{
+			// Force label to recalculate its size
+			notificationLabel.UpdateNGUIText();
+			
+			// Get the actual rendered height of the label (printedSize is a Vector2)
+			Vector2 labelSize = notificationLabel.printedSize;
+			
+			// Add padding (20 pixels top and bottom)
+			int totalHeight = Mathf.Max(70, Mathf.RoundToInt(labelSize.y + 40));
+			
+			// Update background height
+			notificationBg.height = totalHeight;
+			
+			// Reposition icon to be centered vertically
+			notificationIcon.transform.localPosition = new Vector3(-315f, 0f, 0f);
 		}
 
 		IEnumerator ShowNotificationCoroutine()

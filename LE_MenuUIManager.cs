@@ -235,6 +235,7 @@ namespace FS_LevelEditor
 
             // Destroy the FUCKING UILocalize component, I hate it.
             GameObject.Destroy(backButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            GameObject.Destroy(backButton.GetComponent<UIEventTrigger>()); // Also destroy the UIEventTrigger component.
 
             // Set the label data.
             UILabel label = backButton.GetChildAt("Background/Label").GetComponent<UILabel>();
@@ -284,6 +285,7 @@ namespace FS_LevelEditor
 
             // Destroy the FUCKING UILocalize component, I hate it.
             GameObject.Destroy(addButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            GameObject.Destroy(addButton.GetComponent<UIEventTrigger>()); // Also destroy the UIEventTrigger component.
 
             // Set the label data.
             UILabel label = addButton.GetChildAt("Background/Label").GetComponent<UILabel>();
@@ -776,6 +778,27 @@ namespace FS_LevelEditor
 
             yield return new WaitForSecondsRealtime(1.5f);
             InGameUIManager.Instance.StartTotalFadeIn(3, true);
+            
+            // Wait for fade-in to complete before showing welcome notification
+            yield return new WaitForSecondsRealtime(3f);
+    
+            // Show welcome notification after fade-in completes
+            if (NotificationSystem.Instance != null && EditorController.Instance != null)
+ {
+                float camSpeed = EditorCameraMovement.Instance != null ? EditorCameraMovement.Instance.moveSpeed : 10f;
+                float gridSize = EditorController.Instance.GetGridSize();
+      
+    // Access gridHeight through reflection since it's private
+        var gridHeightField = typeof(EditorController).GetField("gridHeight", BindingFlags.NonPublic | BindingFlags.Instance);
+   float gridHeight = gridHeightField != null ? (float)gridHeightField.GetValue(EditorController.Instance) : 121.7324f;
+     
+           // Use proper line breaks for NGUI - each value on its own line
+      string message = "Welcome back!\n" +
+              $"Camera speed: {camSpeed:0.###}\n" +
+    $"Grid size: {gridSize:0.###}\n" +
+           $"Grid height: {gridHeight:0.###}";
+            NotificationSystem.Instance.ShowNotification(message, "WhiteSquare");
+ }
         }
 
         public void GoBackToLEWhileInPlayMode(string levelFileNameWithoutExtension, string levelName)
