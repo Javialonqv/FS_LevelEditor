@@ -22,11 +22,12 @@ namespace FS_LevelEditor
 			{
 				{ "ActivateOnStart", true },
 				{ "InstaKill", false },
-				{ "ExplosionDamage", 34 },
+                { "DamageThroughWalls", true },
+				{ "BreakWindows", false },
+                { "ExplosionDamage", 34 },
 				{ "ContactRadius", 1f },
 				{ "RemoteRadius", 1f },
 				{ "ProximityRadius", 1f },
-				{ "DamageThroughWalls", true }
 			};
 		}
 
@@ -65,7 +66,7 @@ namespace FS_LevelEditor
 			mine.explodeProximityMines = true;
 			mine.proximityRadius = GetProperty<float>("ProximityRadius");
 			mine.explodeByProximity = true;
-			mine.breakWindowsOnExplode = false;
+			mine.breakWindowsOnExplode = GetProperty<bool>("BreakWindows");
 			mine.constant = true;
 			#endregion
 			#region Rendering

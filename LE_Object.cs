@@ -137,7 +137,8 @@ namespace FS_LevelEditor
             { ObjectType.TRIGGER, new Vector3(3.8f, 3.8f, 0.01f) },
             { ObjectType.DOOR, new Vector3(1f, 1.05f, 1f) },
             { ObjectType.BREAKABLE_WINDOW, new Vector3(1, 1.065f, 1) },
-            { ObjectType.DESTRUCTIBLE_WALL, new Vector3(1, 1.065f, 1) }
+            { ObjectType.DESTRUCTIBLE_WALL, new Vector3(1, 1.065f, 1) },
+            { ObjectType.MINE, new Vector3(0.6f, 0.5f, 0.6f) }
         };
 
         public static Dictionary<ObjectType, int> alreadyUsedObjectIDs = new Dictionary<ObjectType, int>();

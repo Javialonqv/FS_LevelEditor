@@ -660,11 +660,12 @@ namespace FS_LevelEditor.Editor.UI
 
 			CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
 			CreateObjectAttribute("InstantKill", AttributeType.TOGGLE, false, null, "InstaKill");
-			CreateObjectAttribute("ExplosionDamage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ExplosionDamage");
+            CreateObjectAttribute("DamageThroughWalls", AttributeType.TOGGLE, true, null, "DamageThroughWalls");
+            CreateObjectAttribute("BreakWindows", AttributeType.TOGGLE, false, null, "BreakWindows");
+            CreateObjectAttribute("ExplosionDamage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ExplosionDamage");
 			CreateObjectAttribute("ContactRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ContactRadius");
 			CreateObjectAttribute("RemoteRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RemoteRadius");
 			CreateObjectAttribute("ProximityRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ProximityRadius");
-            CreateObjectAttribute("DamageThroughWalls", AttributeType.TOGGLE, true, null, "DamageThroughWalls");
 
             mineAttributes.SetActive(false);
 			attributesPanels.Add("Mine", mineAttributes);
