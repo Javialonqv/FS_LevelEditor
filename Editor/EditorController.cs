@@ -721,7 +721,6 @@ namespace FS_LevelEditor.Editor
 			}
 
 			Camera cam = Camera.main;
-			Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(cam);
 			var selectedObjects = new List<GameObject>();
 
 			foreach (var obj in currentInstantiatedObjects)
@@ -741,59 +740,62 @@ namespace FS_LevelEditor.Editor
 						break;
 				}
 
+				// Get all renderers for this object
 				var renderers = obj.gameObject.GetComponentsInChildren<Renderer>(true);
 				if (renderers.Length == 0) continue;
 
-				// Calculate the world AABB for the object
-				Bounds bounds = renderers[0].bounds;
-				for (int i = 1; i < renderers.Length; i++)
+				// Frustum culling first
+				Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(cam);
+				Bounds? combinedBounds = null;
+				foreach (var renderer in renderers)
 				{
-					if (renderers[i].gameObject.activeSelf)
-						bounds.Encapsulate(renderers[i].bounds);
+					if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
+						continue;
+					if (combinedBounds == null)
+						combinedBounds = renderer.bounds;
+					else
+						combinedBounds.Value.Encapsulate(renderer.bounds);
 				}
-
-				// Frustum culling
-				if (!GeometryUtility.TestPlanesAABB(frustumPlanes, bounds))
+				if (combinedBounds == null || !GeometryUtility.TestPlanesAABB(frustumPlanes, combinedBounds.Value))
 					continue;
 
-				// Project all 8 corners to screen space
-				Vector3[] corners = new Vector3[8];
-				corners[0] = new Vector3(bounds.min.x, bounds.min.y, bounds.min.z);
-				corners[1] = new Vector3(bounds.min.x, bounds.min.y, bounds.max.z);
-				corners[2] = new Vector3(bounds.min.x, bounds.max.y, bounds.min.z);
-				corners[3] = new Vector3(bounds.min.x, bounds.max.y, bounds.max.z);
-				corners[4] = new Vector3(bounds.max.x, bounds.min.y, bounds.min.z);
-				corners[5] = new Vector3(bounds.max.x, bounds.min.y, bounds.max.z);
-				corners[6] = new Vector3(bounds.max.x, bounds.max.y, bounds.min.z);
-				corners[7] = new Vector3(bounds.max.x, bounds.max.y, bounds.max.z);
-
-				bool anyCornerInSelection = false;
-				float objMinX = float.MaxValue, objMaxX = float.MinValue;
-				float objMinY = float.MaxValue, objMaxY = float.MinValue;
-
-				foreach (var corner in corners)
+				// Sample mesh vertices and project to screen space
+				bool isInSelection = false;
+				foreach (var renderer in renderers)
 				{
-					Vector3 screenPos = cam.WorldToScreenPoint(corner);
-					if (screenPos.z < 0) continue; // Behind camera
+					if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
+						continue;
 
-					objMinX = Mathf.Min(objMinX, screenPos.x);
-					objMaxX = Mathf.Max(objMaxX, screenPos.x);
-					objMinY = Mathf.Min(objMinY, screenPos.y);
-					objMaxY = Mathf.Max(objMaxY, screenPos.y);
+					MeshFilter meshFilter = renderer.GetComponent<MeshFilter>();
+					if (meshFilter == null || meshFilter.sharedMesh == null)
+						continue;
 
-					if (screenPos.x >= minX && screenPos.x <= maxX &&
-						screenPos.y >= minY && screenPos.y <= maxY)
+					Mesh mesh = meshFilter.sharedMesh;
+					Transform transform = renderer.transform;
+					Vector3[] vertices = mesh.vertices;
+
+					// Sample vertices (use step for performance on large meshes)
+					int step = Mathf.Max(1, vertices.Length / 100);
+					for (int i = 0; i < vertices.Length; i += step)
 					{
-						anyCornerInSelection = true;
-						break;
+						Vector3 worldPos = transform.TransformPoint(vertices[i]);
+						Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
+
+						// Check if vertex is in front of camera and inside rectangle
+						if (screenPos.z > 0 &&
+							screenPos.x >= minX && screenPos.x <= maxX &&
+							screenPos.y >= minY && screenPos.y <= maxY)
+						{
+							isInSelection = true;
+							break;
+						}
 					}
+
+					if (isInSelection)
+						break;
 				}
 
-				bool containsSelectionRect =
-					objMinX <= minX && objMaxX >= maxX &&
-					objMinY <= minY && objMaxY >= maxY;
-
-				if ((anyCornerInSelection || containsSelectionRect) && obj.gameObject.activeSelf)
+				if (isInSelection)
 				{
 					selectedObjects.Add(obj.gameObject);
 				}
@@ -2515,7 +2517,7 @@ namespace FS_LevelEditor.Editor
 
 				if (!placedObj)
 				{
-					Logger.Log($"PlaceObject when duplicating \"{objComponent.objectType}\" returned null. It probably reached its max object limit.");
+					Logger.Log($"PlaceObject when duplicaing \"{objComponent.objectType}\" returned null. It probably reached its max object limit.");
 					return;
 				}
 
