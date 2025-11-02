@@ -522,7 +522,22 @@ namespace FS_LevelEditor
                             break;
                     }
                 }
-				else if (targetObj is LE_Bridge)
+                else if (targetObj is LE_Moving_Platform)
+                {
+                    switch (@event.movingPlatformState)
+                    {
+                        case LE_Event.MovingPlatformState.Activate:
+                            targetObj.TriggerAction("Activate");
+                            break;
+                        case LE_Event.MovingPlatformState.Deactivate:
+                            targetObj.TriggerAction("Deactivate");
+                            break;
+                        case LE_Event.MovingPlatformState.Toggle:
+                            targetObj.TriggerAction("InvertState");
+                            break;
+                    }
+                }
+                else if (targetObj is LE_Bridge)
 				{
 					switch (@event.bridgeState)
 					{

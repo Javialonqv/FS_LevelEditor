@@ -119,6 +119,9 @@ namespace FS_LevelEditor.Editor.UI
         GameObject doorObjectsSettings;
         UIButtonMultiple setDoorStateButton;
         //-----------------------------------
+        GameObject movingPlatformObjectsSettings;
+        UIButtonMultiple movingPlatformStateButton;
+        //-----------------------------------
         GameObject bridgeObjectsSettings;
         UIButtonMultiple bridgeStateButton;
         #endregion
@@ -175,6 +178,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateFlameTrapObjectSettings();
                 Instance.CreateScreenObjectSettings();
                 Instance.CreateDoorObjectSettings();
+                Instance.CreateMovingPlatformObjectSettings();
                 Instance.CreateBridgeObjectSettings();
 
                 Instance.CreateDetails();
@@ -1185,6 +1189,7 @@ namespace FS_LevelEditor.Editor.UI
             screenNewTextField.SetText(currentSelectedEvent.screenNewText);
             setDoorStateButton.SelectOption((int)currentSelectedEvent.doorState);
             bridgeStateButton.SelectOption((int)currentSelectedEvent.bridgeState);
+            movingPlatformStateButton.SelectOption((int)currentSelectedEvent.movingPlatformState, executeOnChange: false);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -1332,6 +1337,10 @@ namespace FS_LevelEditor.Editor.UI
                 else if (targetObj is LE_Bridge)
                 {
                     currentActiveObjectPanel = bridgeObjectsSettings;
+                }
+                else if (targetObj is LE_Moving_Platform)
+                {
+                    currentActiveObjectPanel = movingPlatformObjectsSettings;
                 }
                 if (currentSelectedEvent.isForPlayer)
                 {
@@ -2324,6 +2333,47 @@ namespace FS_LevelEditor.Editor.UI
         }
         #endregion
 
+        #region MPs
+        void CreateMovingPlatformObjectSettings()
+        {
+            movingPlatformObjectsSettings = new GameObject("MovingPlatform");
+            movingPlatformObjectsSettings.transform.parent = eventOptionsParent.transform;
+            movingPlatformObjectsSettings.transform.localPosition = Vector3.zero;
+            movingPlatformObjectsSettings.transform.localScale = Vector3.one;
+            movingPlatformObjectsSettings.SetActive(false);
+
+            CreateMovingPlatformObjectsTitleLabel();
+            CreateMovingPlatformStateButton();
+        }
+
+        void CreateMovingPlatformObjectsTitleLabel()
+        {
+            UILabel titleLabel = NGUI_Utils.CreateLabel(movingPlatformObjectsSettings.transform, Vector3.up * 40,
+                new Vector3Int(700, 40, 0), "MOVING PLATFORM OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "TitleLabel";
+            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            titleLabel.fontSize = 35;
+        }
+
+        void CreateMovingPlatformStateButton()
+        {
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(movingPlatformObjectsSettings.transform,
+                new Vector3(0, -10), Vector3.one * 0.8f);
+            button.name = "MovingPlatformStateButton";
+            button.Init();
+            button.SetTitle("Set Platform State");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Activate", false);
+            button.AddOption("Deactivate", false);
+            button.AddOption("Toggle", false);
+            button.onClick += (option) => OnMovingPlatformStateButtonChanged();
+            button.SetTooltip("EventsMovingPlatformStateTooltip"); // Optional: add tooltip
+
+            movingPlatformStateButton = button;
+            button.gameObject.SetActive(true);
+        }
+        #endregion
 
         #region Logic For Objects UI Options
         void OnSpawnOptionsDropdownChanged()
@@ -2561,7 +2611,12 @@ namespace FS_LevelEditor.Editor.UI
             currentSelectedEvent.doorState = (LE_Event.DoorState)setDoorStateButton.currentSelectedID;
         }
         #endregion
-
+        //------------------------------------------
+        void OnMovingPlatformStateButtonChanged()
+        {
+            currentSelectedEvent.movingPlatformState = (LE_Event.MovingPlatformState)movingPlatformStateButton.currentSelectedID;
+        }
+        //------------------------------------------
         public void ShowEventsPage(LE_Object targetObj)
         {
             if (targetObj.GetAvailableEventsIDs().Count <= 0)
@@ -2727,6 +2782,17 @@ public class LE_Event
     #region Door Options
     public enum DoorState { Do_Nothing, Closed, ClosedFast, Open, Toggle }
     public DoorState doorState { get; set; } = DoorState.Toggle;
+    #endregion
+
+    #region MPs Options
+    public enum MovingPlatformState
+    {
+        Do_Nothing,
+        Activate,
+        Deactivate,
+        Toggle
+    }
+    public MovingPlatformState movingPlatformState { get; set; } = MovingPlatformState.Do_Nothing;
     #endregion
 
     #region Bridge Options

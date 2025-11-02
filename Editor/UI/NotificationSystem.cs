@@ -63,6 +63,10 @@ namespace FS_LevelEditor.Editor.UI
 			notificationPanel.transform.localPosition = new Vector3(HIDDEN_X, Y_POSITION, 0f); // Start hidden off-screen
 			notificationPanel.layer = LayerMask.NameToLayer("2D GUI");
 
+			// Add UIPanel with negative depth so other panels render on top
+			UIPanel panel = notificationPanel.AddComponent<UIPanel>();
+			panel.depth = -1;
+
 			// Background sprite
 			notificationBg = notificationPanel.AddComponent<UISprite>();
 			notificationBg.atlas = NGUI_Utils.UITexturesAtlas;
@@ -72,7 +76,7 @@ namespace FS_LevelEditor.Editor.UI
 			notificationBg.width = 350;
 			notificationBg.height = 70;
 			notificationBg.pivot = UIWidget.Pivot.Right;
-			notificationBg.depth = 100;
+			notificationBg.depth = 0;
 			notificationBg.autoResizeBoxCollider = true; // Auto-resize collider with sprite
 
 			// Icon sprite (on the left inside the notification)
@@ -88,14 +92,14 @@ namespace FS_LevelEditor.Editor.UI
 			notificationIcon.width = 40;
 			notificationIcon.height = 40;
 			notificationIcon.pivot = UIWidget.Pivot.Center;
-			notificationIcon.depth = 101;
+			notificationIcon.depth = 1;
 			notificationIcon.color = Color.white;
 
 			// Text label (on the right of the icon)
 			notificationLabel = NGUI_Utils.CreateLabel(notificationPanel.transform, new Vector3(-150f, 0f, 0f), 
 				new Vector3Int(260, 60, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Center);
 			notificationLabel.fontSize = 24;
-			notificationLabel.depth = 101;
+			notificationLabel.depth = 1;
 			notificationLabel.overflowMethod = UILabel.Overflow.ResizeFreely; // Allow label to resize freely
 			notificationLabel.multiLine = true; // Enable multi-line support for welcome message
 
