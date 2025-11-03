@@ -64,6 +64,12 @@ namespace FS_LevelEditor.Editor.UI
         GameObject sawObjectsSettings;
         UIButtonMultiple sawStateButton;
         //-----------------------------------
+        GameObject objectiveSettings;
+        UIButtonMultiple objectiveStateButton;
+        UIToggle createObjectiveToggle;
+        UICustomInputField objectiveNameInputField;
+        UIButtonPatcher setObjectiveMarkerButton;
+        //-----------------------------------
         GameObject playerSettings;
         UIToggle zeroGToggle;
         UIToggle invertGravityToggle;
@@ -168,6 +174,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreatePlayerSettings();
                 Instance.CreateTaserSettings();
                 Instance.CreateJetpackSettings();
+                Instance.CreateObjectiveSettings();
                 Instance.CreateCubeObjectSettings();
                 Instance.CreateLaserObjectSettings();
                 Instance.CreateMineObjectSettings();
@@ -1145,6 +1152,10 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     targetObjInputField.SetText(Loc.Get("Jetpack"));
                 }
+                else if (currentSelectedEvent.isForObjective)
+                {
+                    targetObjInputField.SetText("Objective_" + currentSelectedEvent.objectiveName);
+                }
                 else
                 {
                     targetObjInputField.SetText(currentSelectedEvent.targetObjName);
@@ -1190,6 +1201,11 @@ namespace FS_LevelEditor.Editor.UI
             setDoorStateButton.SelectOption((int)currentSelectedEvent.doorState);
             bridgeStateButton.SelectOption((int)currentSelectedEvent.bridgeState);
             movingPlatformStateButton.SelectOption((int)currentSelectedEvent.movingPlatformState, executeOnChange: false);
+            objectiveStateButton.SelectOption((int)currentSelectedEvent.objectiveState);
+            createObjectiveToggle.Set(currentSelectedEvent.createObjective);
+            objectiveNameInputField.gameObject.SetActive(currentSelectedEvent.createObjective);
+            objectiveNameInputField.SetText(currentSelectedEvent.objectiveName);
+            setObjectiveMarkerButton.gameObject.SetActive(currentSelectedEvent.createObjective);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -1215,7 +1231,12 @@ namespace FS_LevelEditor.Editor.UI
             {
                 objIsValid = true;
             }
-            if(string.Equals(inputText, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(inputText, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase))
+            {
+                objIsValid = true;
+            }
+            // Check if input starts with "Objective_"
+            if (inputText.StartsWith("Objective_", StringComparison.OrdinalIgnoreCase))
             {
                 objIsValid = true;
             }
@@ -1246,6 +1267,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForPlayer = true;
                     currentSelectedEvent.isForTaser = false;
                     currentSelectedEvent.isForJetpack = false;
+                    currentSelectedEvent.isForObjective = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1255,6 +1277,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForPlayer = false;
                     currentSelectedEvent.isForTaser = true;
                     currentSelectedEvent.isForJetpack = false;
+                    currentSelectedEvent.isForObjective = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1264,31 +1287,52 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForPlayer = false;
                     currentSelectedEvent.isForTaser = false;
                     currentSelectedEvent.isForJetpack = true;
+                    currentSelectedEvent.isForObjective = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
+                }
+                else if (inputText.StartsWith("Objective_", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSelectedEvent.isForPlayer = false;
+                    currentSelectedEvent.isForTaser = false;
+                    currentSelectedEvent.isForJetpack = false;
+                    currentSelectedEvent.isForObjective = true;
+                    currentSelectedEvent.targetObjType = null;
+                    currentSelectedEvent.targetObjID = 0;
+                    currentSelectedEvent.targetObjName = "";
+
+                    // Extract the objective name after "Objective_"
+                    string objectiveName = inputText.Substring(10); // "Objective_" is 10 characters
+                    currentSelectedEvent.objectiveName = objectiveName;
                 }
                 else
                 {
                     currentSelectedEvent.isForPlayer = false;
                     currentSelectedEvent.isForTaser = false;
+                    currentSelectedEvent.isForJetpack = false;
+                    currentSelectedEvent.isForObjective = false;
                     currentSelectedEvent.targetObjType = targetObj.objectType;
                     currentSelectedEvent.targetObjID = targetObj.objectID;
                     currentSelectedEvent.targetObjName = ""; // While the object is valid, don't use the name, use the type and ID instead.
                 }
 
-                if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack) defaultObjectsSettings.SetActive(true);
+                if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack && !currentSelectedEvent.isForObjective) defaultObjectsSettings.SetActive(true);
                 if (currentSelectedEvent.isForPlayer)
                 {
                     currentActiveObjectPanel = playerSettings;
-                } 
-                if(currentSelectedEvent.isForTaser)
+                }
+                if (currentSelectedEvent.isForTaser)
                 {
                     currentActiveObjectPanel = taserSettings;
                 }
                 if (currentSelectedEvent.isForJetpack)
                 {
                     currentActiveObjectPanel = jetpackSettings;
+                }
+                if (currentSelectedEvent.isForObjective)
+                {
+                    currentActiveObjectPanel = objectiveSettings;
                 }
                 else if (targetObj is LE_Saw)
                 {
@@ -1342,10 +1386,7 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     currentActiveObjectPanel = movingPlatformObjectsSettings;
                 }
-                if (currentSelectedEvent.isForPlayer)
-                {
-                    currentActiveObjectPanel = playerSettings;
-                }
+
                 if (currentActiveObjectPanel && !globalOptionsExpanded) currentActiveObjectPanel.SetActive(true);
             }
             else
@@ -1356,6 +1397,8 @@ namespace FS_LevelEditor.Editor.UI
 
                 currentSelectedEvent.isForPlayer = false;
                 currentSelectedEvent.isForTaser = false;
+                currentSelectedEvent.isForJetpack = false;
+                currentSelectedEvent.isForObjective = false;
                 currentSelectedEvent.targetObjType = null;
                 currentSelectedEvent.targetObjID = 0;
                 currentSelectedEvent.targetObjName = inputText;
@@ -1699,6 +1742,86 @@ namespace FS_LevelEditor.Editor.UI
 
             jetpackStateButton = button;
             button.gameObject.SetActive(true);
+        }
+        // -----------------------------------------
+        void CreateObjectiveSettings()
+        {
+            objectiveSettings = new GameObject("Objective");
+            objectiveSettings.transform.parent = eventOptionsParent.transform;
+            objectiveSettings.transform.localPosition = Vector3.zero;
+            objectiveSettings.transform.localScale = Vector3.one;
+            objectiveSettings.SetActive(false);
+
+            CreateObjectiveSettingsTitleLabel();
+            CreateObjectiveStateButton();
+            CreateCreateObjectiveToggle();
+            CreateObjectiveNameInputField();
+            CreateSetObjectiveMarkerButton();
+        }
+
+        void CreateObjectiveSettingsTitleLabel()
+        {
+            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
+
+            GameObject titleLabel = Instantiate(labelTemplate, objectiveSettings.transform);
+            titleLabel.name = "TitleLabel";
+            titleLabel.transform.localScale = Vector3.one;
+
+            Destroy(titleLabel.GetComponent<UILocalize>());
+
+            UILabel label = titleLabel.GetComponent<UILabel>();
+            label.pivot = UIWidget.Pivot.Center;
+            label.alignment = NGUIText.Alignment.Center;
+            label.height = 40;
+            label.width = 700;
+            label.fontSize = 35;
+            label.text = "OBJECTIVE OPTIONS";
+
+            titleLabel.transform.localPosition = new Vector3(0f, 120f, 0f);
+        }
+
+        void CreateObjectiveStateButton()
+        {
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(objectiveSettings.transform, new Vector3(-200, 50), Vector3.one * 0.8f);
+            button.Init();
+            button.SetTitle("Objective");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Create", false);
+            button.AddOption("Accomplish", false);
+            button.AddOption("Fail", false);
+            button.onClick += (option) => OnObjectiveStateButtonChanged();
+
+            objectiveStateButton = button;
+            button.gameObject.SetActive(true);
+        }
+
+        void CreateCreateObjectiveToggle()
+        {
+            GameObject toggle = NGUI_Utils.CreateToggle(objectiveSettings.transform, new Vector3(54f, 50f, 0f),
+                new Vector3Int(250, 48, 1), "Create New");
+            toggle.name = "CreateObjectiveToggle";
+            createObjectiveToggle = toggle.GetComponent<UIToggle>();
+            createObjectiveToggle.onChange.Clear();
+            createObjectiveToggle.onChange.Add(new EventDelegate(this, nameof(OnCreateObjectiveToggleChanged)));
+        }
+
+        void CreateObjectiveNameInputField()
+        {
+            objectiveNameInputField = NGUI_Utils.CreateInputField(objectiveSettings.transform, new Vector3(-120f, -35f, 0f),
+                new Vector3Int(350, 40, 1), 27, "Objective_Name", inputType: UICustomInputField.UIInputType.PLAIN_TEXT);
+            objectiveNameInputField.name = "ObjectiveNameInputField";
+            objectiveNameInputField.onChange += OnObjectiveNameInputFieldChanged;
+            objectiveNameInputField.gameObject.SetActive(false);
+        }
+
+        void CreateSetObjectiveMarkerButton()
+        {
+            setObjectiveMarkerButton = NGUI_Utils.CreateButton(objectiveSettings.transform, new Vector3(200f, -35f, 0f),
+                new Vector3Int(200, 40, 0), "Set Marker");
+            setObjectiveMarkerButton.name = "SetObjectiveMarkerButton";
+            setObjectiveMarkerButton.onClick += OnSetObjectiveMarkerButtonClick;
+            setObjectiveMarkerButton.gameObject.SetActive(false);
         }
         // -----------------------------------------
         void CreateCubeObjectSettings()
@@ -2482,6 +2605,40 @@ namespace FS_LevelEditor.Editor.UI
         }
 
         // -----------------------------------------
+        void OnObjectiveStateButtonChanged()
+        {
+            currentSelectedEvent.objectiveState = (LE_Event.ObjectiveState)objectiveStateButton.currentSelectedID;
+
+            // Show/hide relevant UI based on state
+            bool showCreateOptions = currentSelectedEvent.objectiveState == LE_Event.ObjectiveState.Create;
+            bool showResultOptions = currentSelectedEvent.objectiveState != LE_Event.ObjectiveState.Do_Nothing && !showCreateOptions;
+
+            createObjectiveToggle.gameObject.SetActive(showCreateOptions);
+            objectiveNameInputField.gameObject.SetActive(showCreateOptions && createObjectiveToggle.isChecked);
+            setObjectiveMarkerButton.gameObject.SetActive(showCreateOptions && createObjectiveToggle.isChecked);
+        }
+
+        void OnCreateObjectiveToggleChanged()
+        {
+            currentSelectedEvent.createObjective = createObjectiveToggle.isChecked;
+            objectiveNameInputField.gameObject.SetActive(createObjectiveToggle.isChecked);
+            setObjectiveMarkerButton.gameObject.SetActive(createObjectiveToggle.isChecked);
+        }
+
+        void OnObjectiveNameInputFieldChanged()
+        {
+            currentSelectedEvent.objectiveName = objectiveNameInputField.GetText();
+        }
+
+        void OnSetObjectiveMarkerButtonClick()
+        {
+            // Store current objective marker position or trigger marker selection mode
+            EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.SELECTING_TARGET_OBJ);
+            EditorController.Instance.SetCurrentEditorState(EditorState.SELECTING_TARGET_OBJ);
+
+            targetObj.TriggerAction("OnSelectObjectiveMarkerClick");
+        }
+        // -----------------------------------------
         void OnRespawnCubeChanged()
         {
             currentSelectedEvent.respawnCube = respawnCubeToggle.isChecked;
@@ -2757,6 +2914,17 @@ public class LE_Event
     public bool changePackRespawnTime { get; set; } = false;
     public float packRespawnTime { get; set; } = 60;
     public bool spawnPackNow { get; set; } = false;
+    #endregion
+
+    #region Objective Options
+    public bool isForObjective { get; set; } = false;
+    public enum ObjectiveState { Do_Nothing, Create, Accomplish, Fail }
+    public ObjectiveState objectiveState { get; set; } = ObjectiveState.Do_Nothing;
+    public bool createObjective { get; set; } = false;
+    public string objectiveName { get; set; } = "Objective_Name";
+    public Vector3 objectiveMarkerPosition { get; set; } = Vector3.zero;
+    public enum ObjectiveResult { None, Accomplish, Fail }
+    public ObjectiveResult objectiveResult { get; set; } = ObjectiveResult.None;
     #endregion
 
     #region Switch Options

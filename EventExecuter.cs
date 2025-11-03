@@ -9,6 +9,7 @@ using UnityEngine;
 using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
+using System.Collections;
 
 namespace FS_LevelEditor
 {
@@ -48,6 +49,9 @@ namespace FS_LevelEditor
         GameObject editorLinksParent;
         List<EditorLink> editorLinks = new();
         bool dontDisableLinksParentWhenCreating;
+
+        private static Dictionary<string, ObjectiveController> activeObjectives = new Dictionary<string, ObjectiveController>();
+
 
         void Awake()
         {
@@ -89,31 +93,47 @@ namespace FS_LevelEditor
                     bool isPlayer = string.Equals(@event.targetObjName, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase);
                     bool isTaser = string.Equals(@event.targetObjName, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase);
                     bool isJetpack = string.Equals(@event.targetObjName, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase);
+                    bool isObjective = @event.targetObjName.StartsWith("Objective_", StringComparison.OrdinalIgnoreCase);
+
                     if (!@event.isForPlayer && isPlayer) // If the targetObjName is "Player" but the BOOL is false, it's using the old system.
                     {
                         @event.isForPlayer = true;
                         @event.isForTaser = false;
                         @event.isForJetpack = false;
+                        @event.isForObjective = false;
                         @event.targetObjType = null;
                         @event.targetObjID = 0;
                         @event.targetObjName = "";
                     }
-                    if(!@event.isForTaser && isTaser) // If the targetObjName is "Taser" but the BOOL is false, it's using the old system.
+                    else if (!@event.isForTaser && isTaser) // If the targetObjName is "Taser" but the BOOL is false, it's using the old system.
                     {
                         @event.isForTaser = true;
                         @event.isForPlayer = false;
                         @event.isForJetpack = false;
+                        @event.isForObjective = false;
                         @event.targetObjType = null;
                         @event.targetObjID = 0;
                         @event.targetObjName = "";
                     }
-                    if(!@event.isForJetpack && isJetpack) // If the targetObjName is "Jetpack" but the BOOL is false, it's using the old system.
+                    else if (!@event.isForJetpack && isJetpack) // If the targetObjName is "Jetpack" but the BOOL is false, it's using the old system.
                     {
                         @event.isForJetpack = true;
                         @event.isForPlayer = false;
                         @event.isForTaser = false;
+                        @event.isForObjective = false;
                         @event.targetObjType = null;
                         @event.targetObjID = 0;
+                        @event.targetObjName = "";
+                    }
+                    else if (!@event.isForObjective && isObjective) // If the targetObjName starts with "Objective_" but the BOOL is false, it's using the old system.
+                    {
+                        @event.isForObjective = true;
+                        @event.isForPlayer = false;
+                        @event.isForTaser = false;
+                        @event.isForJetpack = false;
+                        @event.targetObjType = null;
+                        @event.targetObjID = 0;
+                        @event.objectiveName = @event.targetObjName.Substring(10);
                         @event.targetObjName = "";
                     }
                     else if (@event.targetObjType == null && @event.isValid && !string.IsNullOrEmpty(@event.targetObjName) && !isPlayer)
@@ -163,7 +183,7 @@ namespace FS_LevelEditor
                     // ALSO, don't create editor links for the player related events.
                     // UPDATE: CREATE links even for INVALID objects, what if the user adds an object and the event becomes valid?
                     var objData = (@event.targetObjType, @event.targetObjID);
-                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer || @event.isForTaser || @event.isForJetpack) continue;
+                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer || @event.isForTaser || @event.isForJetpack || @event.isForObjective) continue;
 
                     GameObject linkObj = Instantiate(Core.LoadOtherObjectInBundle("EditorLine"), editorLinksParent.transform);
                     LineRenderer linkRender = linkObj.GetComponent<LineRenderer>();
@@ -295,6 +315,62 @@ namespace FS_LevelEditor
                             break;
                         case LE_Event.JetpackState.Take_Away:
                             Controls.Instance.BreakJetPack();
+                            break;
+                    }
+                    continue;
+                }
+                if (@event.isForObjective)
+                {
+                    switch (@event.objectiveState)
+                    {
+                        case LE_Event.ObjectiveState.Create:
+                            // Create a new GameObject with ObjectiveController
+                            GameObject objectiveObj = new GameObject("Objective_" + @event.objectiveName);
+                            ObjectiveController objectiveController = objectiveObj.AddComponent<ObjectiveController>();
+
+                            objectiveController.objective = @event.objectiveName;
+                            objectiveController.Activate();
+                            objectiveController.currentlyActive = true;
+
+                            // Track this objective
+                            if (activeObjectives.ContainsKey(@event.objectiveName))
+                            {
+                                Logger.Warning($"Objective '{@event.objectiveName}' already exists. Replacing it.");
+                                activeObjectives[@event.objectiveName] = objectiveController;
+                            }
+                            else
+                            {
+                                activeObjectives.Add(@event.objectiveName, objectiveController);
+                            }
+
+                            break;
+
+                        case LE_Event.ObjectiveState.Accomplish:
+                            // Check if objective exists in our tracked list
+                            if (activeObjectives.TryGetValue(@event.objectiveName, out var accomplishController))
+                            {
+                                accomplishController.AccomplishIfActive();
+                                activeObjectives.Remove(@event.objectiveName);
+                            }
+                            else
+                            {
+                                // Start coroutine to wait for it
+                                MelonCoroutines.Start(WaitForObjectiveAndAccomplish(@event.objectiveName));
+                            }
+                            break;
+
+                        case LE_Event.ObjectiveState.Fail:
+                            // Check if objective exists in our tracked list
+                            if (activeObjectives.TryGetValue(@event.objectiveName, out var failController))
+                            {
+                                failController.CancelIfActive();
+                                activeObjectives.Remove(@event.objectiveName);
+                            }
+                            else
+                            {
+                                // Start coroutine to wait for it
+                                MelonCoroutines.Start(WaitForObjectiveAndFail(@event.objectiveName));
+                            }
                             break;
                     }
                     continue;
@@ -553,6 +629,55 @@ namespace FS_LevelEditor
 					}
 				}
 			}
+        }
+        IEnumerator WaitForObjectiveAndAccomplish(string objectiveName)
+        {
+            float timeout = 10f;
+            float elapsed = 0f;
+
+            while (elapsed < timeout)
+            {
+                // Check our tracked objectives instead of searching
+                if (activeObjectives.TryGetValue(objectiveName, out var objectiveController))
+                {
+                    objectiveController.AccomplishIfActive();
+                    activeObjectives.Remove(objectiveName);
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            Logger.Warning($"Objective '{objectiveName}' was not found within {timeout} seconds. Cannot accomplish.");
+        }
+
+        IEnumerator WaitForObjectiveAndFail(string objectiveName)
+        {
+            float timeout = 10f;
+            float elapsed = 0f;
+
+            while (elapsed < timeout)
+            {
+                // Check our tracked objectives instead of searching
+                if (activeObjectives.TryGetValue(objectiveName, out var objectiveController))
+                {
+                    objectiveController.CancelIfActive();
+                    activeObjectives.Remove(objectiveName);
+                    yield break;
+                }
+
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            Logger.Warning($"Objective '{objectiveName}' was not found within {timeout} seconds. Cannot fail.");
+        }
+
+        // Clean up when the game restarts or level is reloaded
+        void OnDestroy()
+        {
+            activeObjectives.Clear();
         }
     }
 }

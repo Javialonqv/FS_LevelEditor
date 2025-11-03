@@ -16,6 +16,11 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Configurations>Debug;Release;Visible T bonds</Configurations>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Remove="Il2Cpp\**" />
+	  <None Remove="Il2Cpp\**" />
+	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="KeybindsList.txt" />
 	  <None Remove="leveleditoricons" />
