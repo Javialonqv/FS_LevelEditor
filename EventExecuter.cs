@@ -324,6 +324,16 @@ namespace FS_LevelEditor
                     switch (@event.objectiveState)
                     {
                         case LE_Event.ObjectiveState.Create:
+                            // Destroy any existing objective with the same name first
+                            if (activeObjectives.TryGetValue(@event.objectiveName, out var existingController))
+                            {
+                                if (existingController != null && existingController.gameObject != null)
+                                {
+                                    Destroy(existingController.gameObject);
+                                }
+                                activeObjectives.Remove(@event.objectiveName);
+                            }
+
                             // Create a new GameObject with ObjectiveController
                             GameObject objectiveObj = new GameObject("Objective_" + @event.objectiveName);
                             ObjectiveController objectiveController = objectiveObj.AddComponent<ObjectiveController>();
@@ -333,29 +343,19 @@ namespace FS_LevelEditor
                             objectiveController.currentlyActive = true;
 
                             // Track this objective
-                            if (activeObjectives.ContainsKey(@event.objectiveName))
-                            {
-                                Logger.Warning($"Objective '{@event.objectiveName}' already exists. Replacing it.");
-                                activeObjectives[@event.objectiveName] = objectiveController;
-                            }
-                            else
-                            {
-                                activeObjectives.Add(@event.objectiveName, objectiveController);
-                            }
-
+                            activeObjectives[@event.objectiveName] = objectiveController;
                             break;
 
                         case LE_Event.ObjectiveState.Accomplish:
                             // Check if objective exists in our tracked list
                             if (activeObjectives.TryGetValue(@event.objectiveName, out var accomplishController))
                             {
-                                accomplishController.AccomplishIfActive();
+                                accomplishController.Accomplish();
                                 activeObjectives.Remove(@event.objectiveName);
                             }
                             else
                             {
-                                // Start coroutine to wait for it
-                                MelonCoroutines.Start(WaitForObjectiveAndAccomplish(@event.objectiveName));
+                                Logger.Warning($"Objective '{@event.objectiveName}' does not exist or was already accomplished/failed.");
                             }
                             break;
 
@@ -363,13 +363,12 @@ namespace FS_LevelEditor
                             // Check if objective exists in our tracked list
                             if (activeObjectives.TryGetValue(@event.objectiveName, out var failController))
                             {
-                                failController.CancelIfActive();
+                                failController.Cancel();
                                 activeObjectives.Remove(@event.objectiveName);
                             }
                             else
                             {
-                                // Start coroutine to wait for it
-                                MelonCoroutines.Start(WaitForObjectiveAndFail(@event.objectiveName));
+                                Logger.Warning($"Objective '{@event.objectiveName}' does not exist or was already accomplished/failed.");
                             }
                             break;
                     }

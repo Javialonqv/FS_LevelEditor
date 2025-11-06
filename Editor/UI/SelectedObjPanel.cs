@@ -524,6 +524,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateCubeKillplaneAttributePanel();
 			CreateKeypadAttributesPanel();
 			CreateRGBWallAttributesPanel();
+			CreateHealValueAttributesPanel();
 		}
 		#region Create Object Specific Panels
 		void CreateDirectionalLightAttributesPanel()
@@ -1008,6 +1009,22 @@ namespace FS_LevelEditor.Editor.UI
             rgbWallAttributes.SetActive(false);
 			attributesPanels.Add("RGB_Wall", rgbWallAttributes);
 		}
+        void CreateHealValueAttributesPanel()
+        {
+            GameObject healValueAttributes = new GameObject("Heal_Area");
+            healValueAttributes.transform.parent = objectSpecificPanelsParent;
+            healValueAttributes.transform.localPosition = Vector3.zero;
+            healValueAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(healValueAttributes);
+
+            CreateObjectAttribute("HealValue", AttributeType.INPUT_FIELD, "3", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "HealValue");
+            CreateObjectAttribute("HealInterval", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "HealInterval");
+            CreateObjectAttribute("MaxHealth", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "MaxHealth");
+
+            healValueAttributes.SetActive(false);
+            attributesPanels.Add("Heal_Area", healValueAttributes);
+        }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE, VECTOR }
 		void SetCurrentParentToCreateAttributes(GameObject newParent)

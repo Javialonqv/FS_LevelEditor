@@ -1205,7 +1205,7 @@ namespace FS_LevelEditor.Editor.UI
             createObjectiveToggle.Set(currentSelectedEvent.createObjective);
             objectiveNameInputField.gameObject.SetActive(currentSelectedEvent.createObjective);
             objectiveNameInputField.SetText(currentSelectedEvent.objectiveName);
-            setObjectiveMarkerButton.gameObject.SetActive(currentSelectedEvent.createObjective);
+            //setObjectiveMarkerButton.gameObject.SetActive(currentSelectedEvent.createObjective);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -1756,7 +1756,6 @@ namespace FS_LevelEditor.Editor.UI
             CreateObjectiveStateButton();
             CreateCreateObjectiveToggle();
             CreateObjectiveNameInputField();
-            CreateSetObjectiveMarkerButton();
         }
 
         void CreateObjectiveSettingsTitleLabel()
@@ -2615,14 +2614,14 @@ namespace FS_LevelEditor.Editor.UI
 
             createObjectiveToggle.gameObject.SetActive(showCreateOptions);
             objectiveNameInputField.gameObject.SetActive(showCreateOptions && createObjectiveToggle.isChecked);
-            setObjectiveMarkerButton.gameObject.SetActive(showCreateOptions && createObjectiveToggle.isChecked);
+            //setObjectiveMarkerButton.gameObject.SetActive(showCreateOptions && createObjectiveToggle.isChecked);
         }
 
         void OnCreateObjectiveToggleChanged()
         {
             currentSelectedEvent.createObjective = createObjectiveToggle.isChecked;
             objectiveNameInputField.gameObject.SetActive(createObjectiveToggle.isChecked);
-            setObjectiveMarkerButton.gameObject.SetActive(createObjectiveToggle.isChecked);
+            //setObjectiveMarkerButton.gameObject.SetActive(createObjectiveToggle.isChecked);
         }
 
         void OnObjectiveNameInputFieldChanged()

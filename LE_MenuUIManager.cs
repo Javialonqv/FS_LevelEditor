@@ -547,7 +547,7 @@ namespace FS_LevelEditor
                 // Change the label text.
                 lvlButton.buttonLabel.SetAnchor((Transform)null);
                 lvlButton.buttonLabel.CheckAnchors();
-                lvlButton.buttonLabel.width = 980; // Adjusted for new button width
+                lvlButton.buttonLabel.width = 700; // Adjusted for new button width
                 lvlButton.buttonLabel.height = 67;
                 lvlButton.buttonLabel.alignment = NGUIText.Alignment.Left;
                 lvlButton.buttonLabel.pivot = UIWidget.Pivot.Left;
@@ -1166,14 +1166,22 @@ namespace FS_LevelEditor
             GameObject contentContainer = metadataPreviewPanel.transform.Find("ContentContainer").gameObject;
             contentContainer.SetActive(true);
 
-            // Update labels
-            previewLevelNameLabel.text = data.levelName;
-            previewObjectCountLabel.text = $"Objects: {data.objects.Count}";
-            previewAuthorLabel.text = string.IsNullOrWhiteSpace(data.authorName) ? "[888888]Unknown[-]" : data.authorName;
-            previewTagsLabel.text = string.IsNullOrWhiteSpace(data.tags) ? "[888888]None[-]" : data.tags;
-            previewDescriptionLabel.text = string.IsNullOrWhiteSpace(data.description) ? "[888888]No description provided.[-]" : data.description;
+            // Truncate level name if too long (max 20 characters)
+     const int maxLevelNameLength = 20;
+     string displayName = data.levelName;
+      if (displayName.Length > maxLevelNameLength)
+      {
+       displayName = displayName.Substring(0, maxLevelNameLength) + "...";
+      }
 
-            // Load thumbnail if available
+            // Update labels
+      previewLevelNameLabel.text = displayName;
+    previewObjectCountLabel.text = $"Objects: {data.objects.Count}";
+    previewAuthorLabel.text = string.IsNullOrWhiteSpace(data.authorName) ? "[888888]Unknown[-]" : data.authorName;
+  previewTagsLabel.text = string.IsNullOrWhiteSpace(data.tags) ? "[888888]None[-]" : data.tags;
+         previewDescriptionLabel.text = string.IsNullOrWhiteSpace(data.description) ? "[888888]No description provided.[-]" : data.description;
+
+          // Load thumbnail if available
             if (!string.IsNullOrEmpty(data.thumbnailBase64))
             {
                 try

@@ -90,6 +90,7 @@ namespace FS_LevelEditor
             KEYPAD,
             MINE,
             RGB_WALL,
+            HEAL_AREA,
         }
 
         // This is used to specify the objects that use the same snap triggers.
@@ -227,8 +228,9 @@ namespace FS_LevelEditor
 		public static KeycodeController t_keycodeM;
 		public static InterrupteurController t_keycode;
 		public static BridgeController t_bridge;
+        public static PowerCoreBlocController t_powerCoreBloc;
 
-		public static void GetTemplatesReferences()
+        public static void GetTemplatesReferences()
 		{
 			t_ammoPack = FindObjectOfType<Ammo>();
 			t_healthPack = FindObjectOfType<Health>();
@@ -249,7 +251,8 @@ namespace FS_LevelEditor
 			t_keycodeM = Utils.FindObjectOfType<KeycodeController>(x => x.gameObject.layer == LayerMask.NameToLayer("MiniGames"));
 			t_keycode = Utils.FindObjectOfType<InterrupteurController>(x => x.CompareTag("Keypad"));
 			t_bridge = FindObjectOfType<BridgeController>();
-		}
+            t_powerCoreBloc = FindObjectOfType<PowerCoreBlocController>();
+        }
 		#endregion
 
 		public virtual void Start()
