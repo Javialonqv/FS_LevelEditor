@@ -1136,19 +1136,54 @@ namespace FS_LevelEditor.Editor
             Vector3 toMove = Vector3.zero;
             bool moved = false;
 
+            // Track which axis is being moved - ONLY Y for mouse buttons
+            bool movingY = false;
+
             // Define movement plane based on mode
             Vector3 planeNormal = globalGizmosArrowsEnabled || gridEnabled ? Vector3.up : targetObj.transform.up;
             Vector3 forward = Vector3.ProjectOnPlane(Camera.main.transform.forward, planeNormal).normalized;
             Vector3 right = Vector3.ProjectOnPlane(Camera.main.transform.right, planeNormal).normalized;
 
-            // Arrow keys
-            if (Input.GetKeyDown(KeyCode.LeftArrow)) { Logger.DebugLog("LeftArrow pressed"); toMove -= right * moveAmount; moved = true; }
-            else if (Input.GetKeyDown(KeyCode.RightArrow)) { Logger.DebugLog("RightArrow pressed"); toMove += right * moveAmount; moved = true; }
-            else if (Input.GetKeyDown(KeyCode.UpArrow)) { Logger.DebugLog("UpArrow pressed"); toMove += forward * moveAmount; moved = true; }
-            else if (Input.GetKeyDown(KeyCode.DownArrow)) { Logger.DebugLog("DownArrow pressed"); toMove -= forward * moveAmount; moved = true; }
-            // Mouse 4/5 for up/down
-            else if (Input.GetKeyDown(KeyCode.Mouse4)) { Logger.DebugLog("Mouse4 pressed"); toMove += Vector3.up * moveAmount; moved = true; }
-            else if (Input.GetKeyDown(KeyCode.Mouse3)) { Logger.DebugLog("Mouse5 pressed"); toMove -= Vector3.up * moveAmount; moved = true; }
+            // Arrow keys - move in camera-relative XZ plane (both X and Z will change)
+            if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                Logger.DebugLog("LeftArrow pressed");
+                toMove -= right * moveAmount;
+                moved = true;
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                Logger.DebugLog("RightArrow pressed");
+                toMove += right * moveAmount;
+                moved = true;
+            }
+            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                Logger.DebugLog("UpArrow pressed");
+                toMove += forward * moveAmount;
+                moved = true;
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                Logger.DebugLog("DownArrow pressed");
+                toMove -= forward * moveAmount;
+                moved = true;
+            }
+            // Mouse 4/5 for up/down - only Y axis
+            else if (Input.GetKeyDown(KeyCode.Mouse4))
+            {
+                Logger.DebugLog("Mouse4 pressed");
+                toMove += Vector3.up * moveAmount;
+                moved = true;
+                movingY = true;
+            }
+            else if (Input.GetKeyDown(KeyCode.Mouse3))
+            {
+                Logger.DebugLog("Mouse3 pressed");
+                toMove -= Vector3.up * moveAmount;
+                moved = true;
+                movingY = true;
+            }
             else { return; }
 
             Logger.DebugLog($"MoveObjectShortcuts: moved={moved}, toMove={toMove}");
@@ -1157,21 +1192,37 @@ namespace FS_LevelEditor.Editor
 
             if (gridEnabled)
             {
-                Vector3 newPos = targetObj.transform.localPosition + toMove;
-                // Maintain Y position when grid is enabled, except for up/down
-                if (toMove.y == 0)
+                Vector3 currentPos = targetObj.transform.localPosition;
+                Vector3 newPos = currentPos + toMove;
+
+                // For Y-only movement (mouse buttons), only round Y
+                if (movingY)
                 {
-                    float currentY = targetObj.transform.localPosition.y;
-                    newPos.x = Mathf.Round(newPos.x / gridSize) * gridSize;
-                    newPos.y = currentY;
-                    newPos.z = Mathf.Round(newPos.z / gridSize) * gridSize;
+                    newPos.x = currentPos.x; // Keep original X
+                    newPos.y = Mathf.Round(newPos.y / gridSize) * gridSize;
+                    newPos.z = currentPos.z; // Keep original Z
                 }
                 else
                 {
-                    newPos.x = Mathf.Round(newPos.x / gridSize) * gridSize;
-                    newPos.y = Mathf.Round(newPos.y / gridSize) * gridSize;
-                    newPos.z = Mathf.Round(newPos.z / gridSize) * gridSize;
+                    // For arrow keys: snap only the dominant axis, preserve the other
+                    float absX = Mathf.Abs(toMove.x);
+                    float absZ = Mathf.Abs(toMove.z);
+
+                    if (absX > absZ)
+                    {
+                        // Moving mostly in X direction - only snap X, preserve Z
+                        newPos.x = Mathf.Round(newPos.x / gridSize) * gridSize;
+                        newPos.z = currentPos.z + toMove.z; // Keep exact Z movement
+                    }
+                    else
+                    {
+                        // Moving mostly in Z direction - only snap Z, preserve X
+                        newPos.x = currentPos.x + toMove.x; // Keep exact X movement
+                        newPos.z = Mathf.Round(newPos.z / gridSize) * gridSize;
+                    }
+                    newPos.y = currentPos.y; // Always preserve Y for horizontal movement
                 }
+
                 Vector3 oldPos = targetObj.transform.localPosition;
                 targetObj.transform.localPosition = newPos;
                 Logger.DebugLog($"Moved object to {newPos} (grid enabled)");
