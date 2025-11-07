@@ -1774,19 +1774,19 @@ namespace FS_LevelEditor.Editor.UI
 
         void CreateObjectiveStateButton()
         {
-        UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(objectiveSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-     button.Init();
-       button.SetTitle("Objective");
-     button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-      button.AddOption("Create", false);
- button.AddOption("Accomplish", false);
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(objectiveSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+            button.Init();
+            button.SetTitle("Objective");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", false);
+            button.AddOption("Create", true);
+            button.AddOption("Accomplish", false);
             button.AddOption("Fail", false);
             button.onClick += (option) => OnObjectiveStateButtonChanged();
 
-          objectiveStateButton = button;
-     button.gameObject.SetActive(true);
-    }
+            objectiveStateButton = button;
+            button.gameObject.SetActive(true);
+        }
         // -----------------------------------------
         void CreateCubeObjectSettings()
         {
@@ -2548,7 +2548,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             int value = int.Parse(newAmmoInputField.GetText());
             // Clamp the value between 1 and 10
-            value = (value >= 10 || newAmmoInputField.GetText()=="") ? 10 : value;
+            value = (value >= 10 || newAmmoInputField.GetText() == "") ? 10 : value;
             // If the value was clamped, update the input field to show the clamped value
             if (value.ToString() != newAmmoInputField.GetText())
             {
@@ -2749,17 +2749,17 @@ namespace FS_LevelEditor.Editor.UI
     }
 
     [RegisterTypeInIl2Cpp]
-public class EventButton : MonoBehaviour
-{
-    public EventsUIPageManager eventsManager;
-    public int eventTypeID;
-    public int eventID;
-
-    public void OnClick()
+    public class EventButton : MonoBehaviour
     {
-        eventsManager.OnEventSelect(eventID);
+        public EventsUIPageManager eventsManager;
+        public int eventTypeID;
+        public int eventID;
+
+        public void OnClick()
+        {
+            eventsManager.OnEventSelect(eventID);
+        }
     }
-}
 }
 
 public class LE_Event
@@ -2853,7 +2853,7 @@ public class LE_Event
     #region Objective Options
     public bool isForObjective { get; set; } = false;
     public enum ObjectiveState { Do_Nothing, Create, Accomplish, Fail }
-    public ObjectiveState objectiveState { get; set; } = ObjectiveState.Do_Nothing;
+    public ObjectiveState objectiveState { get; set; } = ObjectiveState.Create;
     public string objectiveName { get; set; } = "Objective_Name";
     public enum ObjectiveResult { None, Accomplish, Fail }
     public ObjectiveResult objectiveResult { get; set; } = ObjectiveResult.None;

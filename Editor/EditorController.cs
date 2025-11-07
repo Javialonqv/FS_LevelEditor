@@ -125,14 +125,15 @@ namespace FS_LevelEditor.Editor
 
         // --- GRID FIELDS ---
         private float gridSize = 1f;
-        private const float MIN_GRID_SIZE = 0.0001f; // Infinite precision
+        private const float MIN_GRID_SIZE = 0.0001f;
         private const float MAX_GRID_SIZE = 8f;
         private const float GRID_SIZE_MULTIPLIER = 2f;
-        private float gridHeight = 121.7324f; // Default to correct Y
+        private float gridHeight = 121.7324f;
         private bool gridVisible = true;
         private bool gridEnabled = true;
         private Material gridLineMaterial;
         private Vector3 gridCenter = Vector3.zero;
+        private Texture2D gridTexture;
 
         // ESC Fix
         private bool _isInitialized = false;
@@ -1650,6 +1651,42 @@ namespace FS_LevelEditor.Editor
             RaycastHit rayToUseWithSnap = new RaycastHit();
             bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
             Quaternion baseRotation = previewObjectToBuildObj ? previewObjectToBuildObj.transform.rotation : Quaternion.identity;
+
+            // Check if grid plane should take priority
+            bool shouldUseGrid = false;
+            float gridPlaneDistance = float.MaxValue;
+            if (gridEnabled && gridVisible)
+            {
+                Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0));
+                float enter = 0f;
+                if (gridPlane.Raycast(ray, out enter))
+                {
+                    gridPlaneDistance = enter;
+                    // If grid is closer than any object hit, or if grid is above the closest hit point, use grid
+                    if (hits.Count == 0 || gridPlaneDistance < hits[0].distance || gridHeight > hits[0].point.y)
+                    {
+                        shouldUseGrid = true;
+                    }
+                }
+            }
+
+            // If grid should take priority, place on grid immediately
+            if (shouldUseGrid)
+            {
+                previewObjectToBuildObj.SetActive(true);
+                Vector3 gridPoint = ray.GetPoint(gridPlaneDistance);
+                gridPoint.x = Mathf.Round(gridPoint.x / gridSize) * gridSize;
+                gridPoint.y = gridHeight;
+                gridPoint.z = Mathf.Round(gridPoint.z / gridSize) * gridSize;
+                previewObjectToBuildObj.transform.position = gridPoint;
+                baseRotation = Quaternion.identity;
+                currentHittenSnapTrigger = null;
+
+                // Apply user rotation offset
+                previewObjectToBuildObj.transform.rotation = baseRotation * Quaternion.Euler(previewRotationOffsetEuler);
+                return;
+            }
+
             if (hits.Count > 0)
             {
                 // Handle snap triggers first
@@ -3036,10 +3073,52 @@ namespace FS_LevelEditor.Editor
                 };
                 gridLineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
                 gridLineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                gridLineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+                gridLineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off); // ✅ Render both sides
                 gridLineMaterial.SetInt("_ZWrite", 0);
-                gridLineMaterial.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.LessEqual); // Enable depth test
+                gridLineMaterial.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.LessEqual);
             }
+
+            // Create grid texture (once)
+            if (gridTexture == null)
+            {
+                CreateGridTexture();
+            }
+        }
+        void CreateGridTexture()
+        {
+            // Create a small texture with grid lines
+            int texSize = 64; // Power of 2 for proper tiling
+            gridTexture = new Texture2D(texSize, texSize, TextureFormat.RGBA32, false);
+            gridTexture.filterMode = FilterMode.Bilinear;
+            gridTexture.wrapMode = TextureWrapMode.Repeat;
+
+            Color transparent = new Color(1f, 0.5f, 0.2f, 0f);
+            Color gridLine = new Color(1f, 1f, 1f, 0.15f);
+
+            // Fill texture
+            for (int y = 0; y < texSize; y++)
+            {
+                for (int x = 0; x < texSize; x++)
+                {
+                    // Draw grid lines on edges (2 pixel width for visibility)
+                    if (x < 2 || y < 2)
+                    {
+                        gridTexture.SetPixel(x, y, gridLine);
+                    }
+                    else
+                    {
+                        gridTexture.SetPixel(x, y, transparent);
+                    }
+                }
+            }
+
+            gridTexture.Apply();
+
+            gridLineMaterial.shader = Shader.Find("Unlit/Transparent");
+            gridLineMaterial.mainTexture = gridTexture;
+            gridLineMaterial.color = Color.white;
+
+            gridLineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
         }
         void ToggleLighting()
         {
@@ -3076,112 +3155,61 @@ namespace FS_LevelEditor.Editor
                 Utils.ShowCustomNotificationRed($"{state} mode enabled", 1.5f);
             }
         }
+
         void OnRenderObject()
         {
-            if (!gridVisible || !gridLineMaterial) return;
+            if (!gridVisible || !gridLineMaterial || gridTexture == null) return;
             if (Camera.current != Camera.main) return;
+
+            Camera cam = Camera.main;
+            Vector3 camPos = cam.transform.position;
+            float y = gridHeight + 0.001f; // Slight offset to prevent Z-fighting
+
+            // Calculate grid size based on current setting
+            float worldGridSize = Mathf.Max(gridSize, 0.1f);
+
+            // Calculate view distance (adaptive based on grid size)
+            float viewDistance = Mathf.Max(256f, worldGridSize * 512f);
+
+            // Create large quad centered on camera
+            float quadSize = viewDistance;
+            Vector3 center = new Vector3(camPos.x, y, camPos.z);
+
+            // Calculate UV tiling based on grid size
+            // Each texture tile = one grid cell
+            float uvScale = quadSize / worldGridSize;
+
+            // Offset UVs to align with world grid
+            float uvOffsetX = (center.x % worldGridSize) / worldGridSize;
+            float uvOffsetZ = (center.z % worldGridSize) / worldGridSize;
 
             gridLineMaterial.SetPass(0);
             GL.PushMatrix();
-            GL.MultMatrix(Matrix4x4.identity);
-            GL.Begin(GL.LINES);
+            GL.LoadIdentity();
+            GL.MultMatrix(cam.worldToCameraMatrix);
+            GL.LoadProjectionMatrix(cam.projectionMatrix);
 
-            // Grid colors
-            Color gridColor = new Color(1f, 1f, 1f, 0.10f);
-            Color axisColorX = new Color(1f, 0.3f, 0.3f, 0.25f);
-            Color axisColorZ = new Color(0.3f, 0.6f, 1f, 0.25f);
-            float y = gridHeight;
-            Vector3 center = gridCenter;
-            Camera cam = Camera.main;
+            GL.Begin(GL.QUADS);
+            GL.Color(Color.white);
 
-            // Optimization: Use adaptive rendering based on grid size
-            float renderGridSize = Mathf.Max(gridSize, 0.1f);
-            bool isVerySmallGrid = gridSize < 0.01f; // When original grid is very small
+            // Render single quad with tiled texture
+            float halfSize = quadSize * 0.5f;
 
-            // For very small grids, reduce render distance and line count significantly
-            float baseRange = Vector3.Distance(cam.transform.position, center) * 2f;
-            float minRange = isVerySmallGrid ? 16f * renderGridSize : 32f * renderGridSize;
-            float maxRange = isVerySmallGrid ? 64f * renderGridSize : 256f * renderGridSize;
+            // Bottom-RIGHT (was bottom-left)
+            GL.TexCoord2(uvScale * 0.5f + uvOffsetX, -uvScale * 0.5f + uvOffsetZ);
+            GL.Vertex3(center.x + halfSize, y, center.z - halfSize);
 
-            float minRegion = isVerySmallGrid ? 50f * renderGridSize : 100f * renderGridSize;
-            float camRange = Mathf.Max(Mathf.Clamp(baseRange, minRange, maxRange), minRegion);
-            float maxWorldRange = camRange;
+            // Bottom-LEFT (was bottom-right)
+            GL.TexCoord2(-uvScale * 0.5f + uvOffsetX, -uvScale * 0.5f + uvOffsetZ);
+            GL.Vertex3(center.x - halfSize, y, center.z - halfSize);
 
-            // Reduce maximum lines for very small grids to prevent performance issues
-            int maxLines = isVerySmallGrid ? 128 : 512;
-            int halfLines = Mathf.Clamp(Mathf.CeilToInt(maxWorldRange / renderGridSize), 1, maxLines);
+            // Top-left (unchanged)
+            GL.TexCoord2(-uvScale * 0.5f + uvOffsetX, uvScale * 0.5f + uvOffsetZ);
+            GL.Vertex3(center.x - halfSize, y, center.z + halfSize);
 
-            float minAlpha = isVerySmallGrid ? 0.05f : 0.03f; // Slightly higher alpha for visibility
-
-            // Calculate visible grid bounds in world space
-            Vector3 camPos = cam.transform.position;
-            float gridY = y;
-
-            // Use renderGridSize consistently for calculations to avoid precision issues
-            float minX = Mathf.Floor((camPos.x - maxWorldRange) / renderGridSize) * renderGridSize;
-            float maxX = Mathf.Ceil((camPos.x + maxWorldRange) / renderGridSize) * renderGridSize;
-            float minZ = Mathf.Floor((camPos.z - maxWorldRange) / renderGridSize) * renderGridSize;
-            float maxZ = Mathf.Ceil((camPos.z + maxWorldRange) / renderGridSize) * renderGridSize;
-
-            // Tighter fade region for small grids to reduce overdraw
-            float fadeStart = maxWorldRange * (isVerySmallGrid ? 0.8f : 0.7f);
-            float fadeEnd = maxWorldRange;
-
-            // For very small grids, use coarser step size to reduce line count
-            float stepSize = isVerySmallGrid ? renderGridSize * 2f : renderGridSize;
-
-            // Draw regular grid lines (skip axes)
-            for (float x = minX; x <= maxX; x += stepSize)
-            {
-                if (Mathf.Approximately(x, center.x)) continue;
-                float camDist = Mathf.Abs(x - camPos.x);
-
-                // Early skip for very distant lines in small grids
-                if (isVerySmallGrid && camDist > maxWorldRange * 0.9f) continue;
-
-                float fade = 1f;
-                if (camDist > fadeStart)
-                    fade = Mathf.InverseLerp(fadeEnd, fadeStart, camDist);
-
-                // Skip lines that would be nearly invisible
-                float alpha = Mathf.Lerp(minAlpha, gridColor.a, fade);
-                if (alpha < 0.02f) continue;
-
-                Color fadedColor = new Color(gridColor.r, gridColor.g, gridColor.b, alpha);
-                GL.Color(fadedColor);
-                GL.Vertex3(x, gridY, minZ);
-                GL.Vertex3(x, gridY, maxZ);
-            }
-
-            for (float z = minZ; z <= maxZ; z += stepSize)
-            {
-                if (Mathf.Approximately(z, center.z)) continue;
-                float camDist = Mathf.Abs(z - camPos.z);
-
-                // Early skip for very distant lines in small grids
-                if (isVerySmallGrid && camDist > maxWorldRange * 0.9f) continue;
-
-                float fade = 1f;
-                if (camDist > fadeStart)
-                    fade = Mathf.InverseLerp(fadeEnd, fadeStart, camDist);
-
-                // Skip lines that would be nearly invisible
-                float alpha = Mathf.Lerp(minAlpha, gridColor.a, fade);
-                if (alpha < 0.02f) continue;
-
-                Color fadedColor = new Color(gridColor.r, gridColor.g, gridColor.b, alpha);
-                GL.Color(fadedColor);
-                GL.Vertex3(minX, gridY, z);
-                GL.Vertex3(maxX, gridY, z);
-            }
-
-            // Draw axes last (always visible regardless of grid size)
-            GL.Color(axisColorX);
-            GL.Vertex3(center.x, y, minZ);
-            GL.Vertex3(center.x, y, maxZ);
-            GL.Color(axisColorZ);
-            GL.Vertex3(minX, y, center.z);
-            GL.Vertex3(maxX, y, center.z);
+            // Top-right (unchanged)
+            GL.TexCoord2(uvScale * 0.5f + uvOffsetX, uvScale * 0.5f + uvOffsetZ);
+            GL.Vertex3(center.x + halfSize, y, center.z + halfSize);
 
             GL.End();
             GL.PopMatrix();
