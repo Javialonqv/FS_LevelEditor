@@ -66,9 +66,6 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject objectiveSettings;
         UIButtonMultiple objectiveStateButton;
-        UIToggle createObjectiveToggle;
-        UICustomInputField objectiveNameInputField;
-        UIButtonPatcher setObjectiveMarkerButton;
         //-----------------------------------
         GameObject playerSettings;
         UIToggle zeroGToggle;
@@ -1202,9 +1199,6 @@ namespace FS_LevelEditor.Editor.UI
             bridgeStateButton.SelectOption((int)currentSelectedEvent.bridgeState);
             movingPlatformStateButton.SelectOption((int)currentSelectedEvent.movingPlatformState, executeOnChange: false);
             objectiveStateButton.SelectOption((int)currentSelectedEvent.objectiveState);
-            createObjectiveToggle.Set(currentSelectedEvent.createObjective);
-            objectiveNameInputField.gameObject.SetActive(currentSelectedEvent.createObjective);
-            objectiveNameInputField.SetText(currentSelectedEvent.objectiveName);
             //setObjectiveMarkerButton.gameObject.SetActive(currentSelectedEvent.createObjective);
 
             eventSettingsPanel.SetActive(true);
@@ -1507,7 +1501,9 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateStartMovingObjectToggle()
         {
-            GameObject toggle = NGUI_Utils.CreateToggle(globalObjectsSettings.transform, new Vector3(-150f, -50f, 0f),
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+
+            GameObject toggle = NGUI_Utils.CreateToggle(globalObjectsSettings.transform, new Vector3(-150f, 50f, 0f),
                 new Vector3Int(250, 48, 1), "Start Moving Object");
             toggle.name = "StartMovingObjectToggle";
             startMovingObjectToggle = toggle.GetComponent<UIToggle>();
@@ -1754,10 +1750,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateObjectiveSettingsTitleLabel();
             CreateObjectiveStateButton();
-            CreateCreateObjectiveToggle();
-            CreateObjectiveNameInputField();
         }
-
         void CreateObjectiveSettingsTitleLabel()
         {
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
@@ -1781,47 +1774,19 @@ namespace FS_LevelEditor.Editor.UI
 
         void CreateObjectiveStateButton()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(objectiveSettings.transform, new Vector3(-200, 50), Vector3.one * 0.8f);
-            button.Init();
-            button.SetTitle("Objective");
-            button.ClearOptions();
+        UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(objectiveSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+     button.Init();
+       button.SetTitle("Objective");
+     button.ClearOptions();
             button.AddOption("Do Nothing", true);
-            button.AddOption("Create", false);
-            button.AddOption("Accomplish", false);
+      button.AddOption("Create", false);
+ button.AddOption("Accomplish", false);
             button.AddOption("Fail", false);
             button.onClick += (option) => OnObjectiveStateButtonChanged();
 
-            objectiveStateButton = button;
-            button.gameObject.SetActive(true);
-        }
-
-        void CreateCreateObjectiveToggle()
-        {
-            GameObject toggle = NGUI_Utils.CreateToggle(objectiveSettings.transform, new Vector3(54f, 50f, 0f),
-                new Vector3Int(250, 48, 1), "Create New");
-            toggle.name = "CreateObjectiveToggle";
-            createObjectiveToggle = toggle.GetComponent<UIToggle>();
-            createObjectiveToggle.onChange.Clear();
-            createObjectiveToggle.onChange.Add(new EventDelegate(this, nameof(OnCreateObjectiveToggleChanged)));
-        }
-
-        void CreateObjectiveNameInputField()
-        {
-            objectiveNameInputField = NGUI_Utils.CreateInputField(objectiveSettings.transform, new Vector3(-120f, -35f, 0f),
-                new Vector3Int(350, 40, 1), 27, "Objective_Name", inputType: UICustomInputField.UIInputType.PLAIN_TEXT);
-            objectiveNameInputField.name = "ObjectiveNameInputField";
-            objectiveNameInputField.onChange += OnObjectiveNameInputFieldChanged;
-            objectiveNameInputField.gameObject.SetActive(false);
-        }
-
-        void CreateSetObjectiveMarkerButton()
-        {
-            setObjectiveMarkerButton = NGUI_Utils.CreateButton(objectiveSettings.transform, new Vector3(200f, -35f, 0f),
-                new Vector3Int(200, 40, 0), "Set Marker");
-            setObjectiveMarkerButton.name = "SetObjectiveMarkerButton";
-            setObjectiveMarkerButton.onClick += OnSetObjectiveMarkerButtonClick;
-            setObjectiveMarkerButton.gameObject.SetActive(false);
-        }
+          objectiveStateButton = button;
+     button.gameObject.SetActive(true);
+    }
         // -----------------------------------------
         void CreateCubeObjectSettings()
         {
@@ -2254,7 +2219,6 @@ namespace FS_LevelEditor.Editor.UI
         void CreateSwitchStateSettings()
         {
             UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(switchObjectsSettings.transform, new Vector3(-200, -10), Vector3.one * 0.8f);
-            button.Init();
             button.SetTitle("Set Active State");
             button.ClearOptions();
             button.AddOption("Do Nothing", true);
@@ -2607,35 +2571,6 @@ namespace FS_LevelEditor.Editor.UI
         void OnObjectiveStateButtonChanged()
         {
             currentSelectedEvent.objectiveState = (LE_Event.ObjectiveState)objectiveStateButton.currentSelectedID;
-
-            // Show/hide relevant UI based on state
-            bool showCreateOptions = currentSelectedEvent.objectiveState == LE_Event.ObjectiveState.Create;
-            bool showResultOptions = currentSelectedEvent.objectiveState != LE_Event.ObjectiveState.Do_Nothing && !showCreateOptions;
-
-            createObjectiveToggle.gameObject.SetActive(showCreateOptions);
-            objectiveNameInputField.gameObject.SetActive(showCreateOptions && createObjectiveToggle.isChecked);
-            //setObjectiveMarkerButton.gameObject.SetActive(showCreateOptions && createObjectiveToggle.isChecked);
-        }
-
-        void OnCreateObjectiveToggleChanged()
-        {
-            currentSelectedEvent.createObjective = createObjectiveToggle.isChecked;
-            objectiveNameInputField.gameObject.SetActive(createObjectiveToggle.isChecked);
-            //setObjectiveMarkerButton.gameObject.SetActive(createObjectiveToggle.isChecked);
-        }
-
-        void OnObjectiveNameInputFieldChanged()
-        {
-            currentSelectedEvent.objectiveName = objectiveNameInputField.GetText();
-        }
-
-        void OnSetObjectiveMarkerButtonClick()
-        {
-            // Store current objective marker position or trigger marker selection mode
-            EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.SELECTING_TARGET_OBJ);
-            EditorController.Instance.SetCurrentEditorState(EditorState.SELECTING_TARGET_OBJ);
-
-            targetObj.TriggerAction("OnSelectObjectiveMarkerClick");
         }
         // -----------------------------------------
         void OnRespawnCubeChanged()
@@ -2889,12 +2824,12 @@ public class LE_Event
 
     #region Laser Options
     public enum LaserState { Do_Nothing, Activate, Deactivate, Toggle_State }
-    public LaserState laserState { get; set; } = LaserState.Toggle_State;
+    public LaserState laserState = LaserState.Toggle_State;
     #endregion
 
     #region Mine Options
     public enum MineState { Do_Nothing, Activate, Deactivate, Toggle_State }
-    public MineState mineState { get; set; } = MineState.Toggle_State;
+    public MineState mineState = MineState.Toggle_State;
     #endregion
 
     #region Light Options
@@ -2919,9 +2854,7 @@ public class LE_Event
     public bool isForObjective { get; set; } = false;
     public enum ObjectiveState { Do_Nothing, Create, Accomplish, Fail }
     public ObjectiveState objectiveState { get; set; } = ObjectiveState.Do_Nothing;
-    public bool createObjective { get; set; } = false;
     public string objectiveName { get; set; } = "Objective_Name";
-    public Vector3 objectiveMarkerPosition { get; set; } = Vector3.zero;
     public enum ObjectiveResult { None, Accomplish, Fail }
     public ObjectiveResult objectiveResult { get; set; } = ObjectiveResult.None;
     #endregion
@@ -2929,7 +2862,7 @@ public class LE_Event
     #region Switch Options
     public enum SwitchState { Do_Nothing, Activated, Deactivated, Toggle }
     public SwitchState switchState { get; set; } = SwitchState.Do_Nothing;
-    public bool executeSwitchActions { get; set; } = true;
+    public bool executeSwitchActions = true;
     public enum SwitchUsableState { Do_Nothing, Usable, Unusable, Toggle }
     public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Do_Nothing;
     #endregion

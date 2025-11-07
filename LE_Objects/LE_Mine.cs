@@ -61,12 +61,12 @@ namespace FS_LevelEditor
 			mine.explosionDamage = GetProperty<int>("ExplosionDamage");
 			mine.contactExplosionRadius = GetProperty<float>("ContactRadius");
 			mine.remoteExplosionRadius = GetProperty<float>("RemoteRadius");
-			mine.contactExplosionThroughWalls = GetProperty<bool>("DamageThroughWalls");
+			mine.contactExplosionThroughWalls = true;
 			mine.remoteExplosionThroughWalls = GetProperty<bool>("DamageThroughWalls");
 			mine.explodeProximityMines = true;
 			mine.proximityRadius = GetProperty<float>("ProximityRadius");
 			mine.explodeByProximity = true;
-			mine.breakWindowsOnExplode = GetProperty<bool>("BreakWindows");
+			mine.breakWindowsOnExplode = true;
 			mine.constant = true;
 			#endregion
 			#region Rendering

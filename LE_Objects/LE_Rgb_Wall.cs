@@ -16,33 +16,40 @@ namespace FS_LevelEditor
 
             properties = new Dictionary<string, object>()
             {
-            { "Color", "FFFFFF" } // Default white color
+                { "Color", Color.white } // Default white color as Color object
             };
+        }
+        public override void OnInstantiated(LEScene scene)
+        {
+            if (scene == LEScene.Playmode)
+            {
+                Logger.Log(GetProperty<Color>("Color").ToString());
+            }
+            base.OnInstantiated(scene);
         }
 
         public override bool SetProperty(string name, object value)
         {
-            // Handle both "Color" and "ColorHex" property names
             if (name == "Color")
             {
-                if (value is Color color)
+                if (value is Color)
                 {
-                    SetEmissionColor(color);
-                    properties["Color"] = color;
+                    SetEmissionColor((Color)value);
+                    properties["Color"] = (Color)value;
                     return true;
                 }
-                else if (value is string hexString)
+                else if (value is string)
                 {
-                    Color? parsedColor = Utils.HexToColor(hexString, false, null);
-                    if (parsedColor != null)
+                    Color? color = Utils.HexToColor((string)value, false, null);
+                    if (color != null)
                     {
-                        Color colorValue = parsedColor.Value;
-                        SetEmissionColor(colorValue);
-                        properties["Color"] = colorValue;
+                        SetEmissionColor((Color)color);
+                        properties["Color"] = (Color)color;
                         return true;
                     }
                 }
             }
+            Debug.Log($"{name}, {value}");
             return base.SetProperty(name, value);
         }
 
@@ -59,6 +66,7 @@ namespace FS_LevelEditor
                 // Multiply by 2 to make it brighter and more visible
                 Color emissionColor = color * 2f;
                 mat.SetColor("_EmissionColor", emissionColor);
+                Debug.Log(emissionColor.ToString());
 
                 // Also set the base color to white to prevent color mixing
                 if (mat.HasProperty("_Color"))
@@ -66,28 +74,6 @@ namespace FS_LevelEditor
                     mat.SetColor("_Color", Color.white);
                 }
             }
-        }
-
-        public override object GetProperty(string name)
-        {
-            // Handle the ColorHex property name by returning the Color property
-            if (name == "Color")
-            {
-                return base.GetProperty("Color");
-            }
-
-            return base.GetProperty(name);
-        }
-
-        public override T GetProperty<T>(string name)
-        {
-            // Handle the ColorHex property name by returning the Color property
-            if (name == "Color")
-            {
-                return base.GetProperty<T>("Color");
-            }
-
-            return base.GetProperty<T>(name);
         }
     }
 }

@@ -662,7 +662,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
 			CreateObjectAttribute("InstantKill", AttributeType.TOGGLE, false, null, "InstaKill");
             CreateObjectAttribute("DamageThroughWalls", AttributeType.TOGGLE, true, null, "DamageThroughWalls");
-            CreateObjectAttribute("BreakWindows", AttributeType.TOGGLE, false, null, "BreakWindows");
+            //CreateObjectAttribute("BreakWindows", AttributeType.TOGGLE, false, null, "BreakWindows"); left here in case they work (ch5+)
             CreateObjectAttribute("ExplosionDamage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ExplosionDamage");
 			CreateObjectAttribute("ContactRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ContactRadius");
 			CreateObjectAttribute("RemoteRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RemoteRadius");
@@ -997,17 +997,17 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		void CreateRGBWallAttributesPanel()
 		{
-			GameObject rgbWallAttributes = new GameObject("RGB_Wall");
+			GameObject rgbWallAttributes = new GameObject("Rgb Wall");
 			rgbWallAttributes.transform.parent = objectSpecificPanelsParent;
 			rgbWallAttributes.transform.localPosition = Vector3.zero;
 			rgbWallAttributes.transform.localScale = Vector3.one;
 
 			SetCurrentParentToCreateAttributes(rgbWallAttributes);
 
-            CreateObjectAttribute("Color", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+            CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
 
             rgbWallAttributes.SetActive(false);
-			attributesPanels.Add("RGB_Wall", rgbWallAttributes);
+			attributesPanels.Add("Rgb Wall", rgbWallAttributes);
 		}
         void CreateHealValueAttributesPanel()
         {
