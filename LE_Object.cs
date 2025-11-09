@@ -803,6 +803,7 @@ namespace FS_LevelEditor
 			} 
             else if(objectType == ObjectType.AMMO_PACK || objectType == ObjectType.HEALTH_PACK)
             {
+                gameObject.GetChildAt("Content").GetComponent<BoxCollider>().enabled = newEnabledState;
                 gameObject.GetChildAt("Content/Mesh/PreciseCollider").SetActive(newEnabledState);
             }
             else if (objectType == ObjectType.VENT_WITH_SMOKE_GREEN || objectType == ObjectType.VENT_WITH_SMOKE_CYAN)

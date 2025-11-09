@@ -50,9 +50,6 @@ namespace FS_LevelEditor
         List<EditorLink> editorLinks = new();
         bool dontDisableLinksParentWhenCreating;
 
-        private static Dictionary<string, ObjectiveController> activeObjectives = new Dictionary<string, ObjectiveController>();
-
-
         void Awake()
         {
             originalObject = GetComponent<LE_Object>();
@@ -70,7 +67,7 @@ namespace FS_LevelEditor
         void Start()
         {
             ReValidateEditorLinks();
-        }
+        } 
         public void OnSelect()
         {
             ReValidateEditorLinks();
@@ -93,7 +90,7 @@ namespace FS_LevelEditor
                     bool isPlayer = string.Equals(@event.targetObjName, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase);
                     bool isTaser = string.Equals(@event.targetObjName, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase);
                     bool isJetpack = string.Equals(@event.targetObjName, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase);
-                    bool isObjective = @event.targetObjName.StartsWith("Objective_", StringComparison.OrdinalIgnoreCase);
+                    bool isObjective = @event.targetObjName.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase);
 
                     if (!@event.isForPlayer && isPlayer) // If the targetObjName is "Player" but the BOOL is false, it's using the old system.
                     {
@@ -291,6 +288,7 @@ namespace FS_LevelEditor
                             if (@event.infiniteTaser)
                             {
                                 GunController.Instance.SetTutorialMode(true);
+                                GunController.Instance.RequestLaserOnNow();
                             }
                             else
                             {
@@ -299,6 +297,11 @@ namespace FS_LevelEditor
                                 if (@event.changeAmmo)
                                 {
                                     GunController.Instance.SetAmmos(@event.newAmmo);
+                                    if(@event.newAmmo > 0)
+                                    {
+                                        GunController.Instance.RequestLaserOnNow();
+                                    }
+                                    
                                 }
                             }
                         }
@@ -308,7 +311,7 @@ namespace FS_LevelEditor
                 }
                 if (@event.isForJetpack)
                 {
-                    switch(@event.jetpackState)
+                    switch (@event.jetpackState)
                     {
                         case LE_Event.JetpackState.Give:
                             Controls.Instance.ActivateJetPack(true, false);
@@ -323,55 +326,18 @@ namespace FS_LevelEditor
                 {
                     switch (@event.objectiveState)
                     {
-                        case LE_Event.ObjectiveState.Create:
-                            // Destroy any existing objective with the same name first
-                            if (activeObjectives.TryGetValue(@event.objectiveName, out var existingController))
-                            {
-                                if (existingController != null && existingController.gameObject != null)
-                                {
-                                    Destroy(existingController.gameObject);
-                                }
-                                activeObjectives.Remove(@event.objectiveName);
-                            }
+                       case LE_Event.ObjectiveState.Create:
+                           PlayModeController.Instance.CreateObjective(@event.objectiveName);
+                           break;
 
-                            // Create a new GameObject with ObjectiveController
-                            GameObject objectiveObj = new GameObject("Objective_" + @event.objectiveName);
-                            ObjectiveController objectiveController = objectiveObj.AddComponent<ObjectiveController>();
-
-                            objectiveController.objective = @event.objectiveName;
-                            objectiveController.Activate();
-                            objectiveController.currentlyActive = true;
-
-                            // Track this objective
-                            activeObjectives[@event.objectiveName] = objectiveController;
-                            break;
-
-                        case LE_Event.ObjectiveState.Accomplish:
-                            // Check if objective exists in our tracked list
-                            if (activeObjectives.TryGetValue(@event.objectiveName, out var accomplishController))
-                            {
-                                accomplishController.Accomplish();
-                                activeObjectives.Remove(@event.objectiveName);
-                            }
-                            else
-                            {
-                                Logger.Warning($"Objective '{@event.objectiveName}' does not exist or was already accomplished/failed.");
-                            }
+                       case LE_Event.ObjectiveState.Accomplish:
+                           PlayModeController.Instance.AccomplishObjective(@event.objectiveName);
                             break;
 
                         case LE_Event.ObjectiveState.Fail:
-                            // Check if objective exists in our tracked list
-                            if (activeObjectives.TryGetValue(@event.objectiveName, out var failController))
-                            {
-                                failController.Cancel();
-                                activeObjectives.Remove(@event.objectiveName);
-                            }
-                            else
-                            {
-                                Logger.Warning($"Objective '{@event.objectiveName}' does not exist or was already accomplished/failed.");
-                            }
-                            break;
-                    }
+                           PlayModeController.Instance.FailObjective(@event.objectiveName);
+                           break;
+                     }
                     continue;
                 }
                 LE_Object targetObj =
@@ -613,70 +579,21 @@ namespace FS_LevelEditor
                     }
                 }
                 else if (targetObj is LE_Bridge)
-				{
-					switch (@event.bridgeState)
-					{
-						case LE_Event.BridgeState.Extend:
-							targetObj.TriggerAction("Deploy");
-							break;
-						case LE_Event.BridgeState.Retract:
-							targetObj.TriggerAction("Retract");
-							break;
-						case LE_Event.BridgeState.Toggle:
-							targetObj.TriggerAction("Toggle");
-							break;
-					}
-				}
-			}
-        }
-        IEnumerator WaitForObjectiveAndAccomplish(string objectiveName)
-        {
-            float timeout = 10f;
-            float elapsed = 0f;
-
-            while (elapsed < timeout)
-            {
-                // Check our tracked objectives instead of searching
-                if (activeObjectives.TryGetValue(objectiveName, out var objectiveController))
                 {
-                    objectiveController.AccomplishIfActive();
-                    activeObjectives.Remove(objectiveName);
-                    yield break;
+                    switch (@event.bridgeState)
+                    {
+                        case LE_Event.BridgeState.Extend:
+                            targetObj.TriggerAction("Deploy");
+                            break;
+                        case LE_Event.BridgeState.Retract:
+                            targetObj.TriggerAction("Retract");
+                            break;
+                        case LE_Event.BridgeState.Toggle:
+                            targetObj.TriggerAction("Toggle");
+                            break;
+                    }
                 }
-
-                elapsed += Time.deltaTime;
-                yield return null;
             }
-
-            Logger.Warning($"Objective '{objectiveName}' was not found within {timeout} seconds. Cannot accomplish.");
-        }
-
-        IEnumerator WaitForObjectiveAndFail(string objectiveName)
-        {
-            float timeout = 10f;
-            float elapsed = 0f;
-
-            while (elapsed < timeout)
-            {
-                // Check our tracked objectives instead of searching
-                if (activeObjectives.TryGetValue(objectiveName, out var objectiveController))
-                {
-                    objectiveController.CancelIfActive();
-                    activeObjectives.Remove(objectiveName);
-                    yield break;
-                }
-
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-
-            Logger.Warning($"Objective '{objectiveName}' was not found within {timeout} seconds. Cannot fail.");
-        }
-
-        // Clean up when the game restarts or level is reloaded
-        void OnDestroy()
-        {
-            activeObjectives.Clear();
         }
     }
 }

@@ -555,6 +555,7 @@ namespace FS_LevelEditor
                 lvlButton.buttonLabel.text = data != null ? data.levelName : $"[c][ffff00][INVALID LEVEL FILE][-][/c] {levelFileNameWithoutExtension}";
                 lvlButton.buttonLabel.fontSize = 40;
                 lvlButton.buttonLabel.transform.localPosition = new Vector3(-515f, 0f, 0f);
+                lvlButton.buttonLabel.color = Color.white;
 
                 // Only setup UIButtonScale and UIButton when is a valid level file, otherwise destroy the UIButton, UIButtonScale and UIButtonColor.
                 if (data != null)

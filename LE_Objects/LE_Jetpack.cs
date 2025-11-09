@@ -24,7 +24,7 @@ namespace FS_LevelEditor
             jetpack.useSave = false;
             jetpack.jetpackMaterial = content.GetChildAt("Mesh/JetPack").GetComponent<Renderer>().material;
             jetpack.jetpackLight = content.GetChildAt("Mesh/JetPack/JetpackPickupLight").GetComponent<Light>();
-            jetpack.jetpackFlare = new GameObject().AddComponent<LensFlare>();
+            jetpack.jetpackFlare = new GameObject("ShouldBeSaved").AddComponent<LensFlare>();
 
             // --------- SETUP TAGS & LAYERS ---------
 

@@ -102,6 +102,7 @@ namespace FS_LevelEditor.Editor
         Plane movementPlane;
         bool globalGizmosArrowsEnabled = false;
 
+
         // SNAP
         GameObject snapToGridCube;
         Vector3 objPositionWhenStartToSnap;
@@ -128,7 +129,7 @@ namespace FS_LevelEditor.Editor
         private const float MIN_GRID_SIZE = 0.0001f;
         private const float MAX_GRID_SIZE = 8f;
         private const float GRID_SIZE_MULTIPLIER = 2f;
-        private float gridHeight = 121.7324f;
+        private float gridHeight = 121.31f;
         private bool gridVisible = true;
         private bool gridEnabled = true;
         private Material gridLineMaterial;
@@ -211,7 +212,6 @@ namespace FS_LevelEditor.Editor
             ui.HideFuelBarRoutine(0);
 
             CreateGridLineMaterial();
-            gridHeight = 121.7324f;
             gridCenter = new Vector3(0, gridHeight, 0); // Always start centered at origin
             UpdateGridCenter(); // Ensure gridCenter is correct at start
             currentEditorState = EditorState.NORMAL; // Ensure state is initialized
@@ -1291,8 +1291,7 @@ namespace FS_LevelEditor.Editor
 
         private float lastRotationTime = 0f;
         private float rotationRepeatDelay = 0.12f;
-        private object currentRotationCoroutine;
-        private bool isRotatingWithR = false;
+        private float rotationHoldDelay = 0.3f;
 
         private Coroutine rotationCoroutine;
         private Coroutine previewRotationCoroutine;
@@ -1305,15 +1304,53 @@ namespace FS_LevelEditor.Editor
             // Prevent rotation when snapping to a trigger in building mode
             if (currentMode == Mode.Building && currentHittenSnapTrigger != null)
             {
-                return; // Don't allow rotation when snapping to a trigger
+                return;
             }
 
-            // Prevent starting a new rotation while one is in progress for placed objects
-            if (currentMode != Mode.Building && rotationCoroutine != null) return;
-            if (currentMode != Mode.Building && previewRotationCoroutine != null) return;
+            // Check if R is being held (not just pressed once)
+            bool isRotating = Input.GetKey(KeyCode.R);
 
-            if (Input.GetKeyDown(KeyCode.R))
+            // Reset timing when key is released
+            if (!isRotating)
             {
+                return;
+            }
+
+            // For initial press, always trigger immediately
+            bool shouldRotate = Input.GetKeyDown(KeyCode.R);
+
+            // For continuous rotation while holding, apply the delay
+            if (!shouldRotate && isRotating)
+            {
+                float timeSinceFirstPress = Time.unscaledTime - lastRotationTime;
+
+                // Only start auto-rotating after the hold delay has passed
+                if (timeSinceFirstPress >= rotationHoldDelay)
+                {
+                    // Check if enough time has passed since last rotation for the repeat
+                    float timeSinceLastRotation = (Time.unscaledTime - lastRotationTime) - rotationHoldDelay;
+                    if (timeSinceLastRotation >= rotationRepeatDelay)
+                    {
+                        if (currentMode == Mode.Building)
+                        {
+                            shouldRotate = previewRotationCoroutine == null;
+                        }
+                        else
+                        {
+                            shouldRotate = rotationCoroutine == null;
+                        }
+                    }
+                }
+            }
+
+            if (shouldRotate)
+            {
+                // Only reset time on the FIRST press, not during auto-rotation
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    lastRotationTime = Time.unscaledTime;
+                }
+
                 bool reset = Input.GetKey(KeyCode.LeftControl);
                 float angleStep = 15f * (Input.GetKey(KeyCode.T) ? -1f : 1f);
 
@@ -1324,7 +1361,7 @@ namespace FS_LevelEditor.Editor
 
                 if (currentMode == Mode.Building)
                 {
-                    // PREVIEW MODE: now use smooth rotation too
+                    // PREVIEW MODE: smooth rotation
                     Vector3 oldOffset = previewRotationOffsetEuler;
                     Vector3 newOffset;
 
@@ -1334,8 +1371,6 @@ namespace FS_LevelEditor.Editor
                     }
                     else
                     {
-                        // FIXED: Don't wrap angles during rotation - let them accumulate
-                        // Only wrap during the final application in PreviewObject()
                         newOffset = oldOffset;
                         if (rotateX) newOffset.x = oldOffset.x + angleStep;
                         else if (rotateZ) newOffset.z = oldOffset.z + angleStep;
@@ -1347,34 +1382,27 @@ namespace FS_LevelEditor.Editor
                     return;
                 }
 
-
                 // SELECTION MODE (actual placed objects) -> smooth rotate
                 Quaternion oldRotation = targetObj.transform.rotation;
                 Quaternion delta;
 
                 if (reset)
                 {
-                    // Reset keeps world upright orientation on Y only (no tilt)
                     Quaternion upright = Quaternion.identity;
                     StartRotationCoroutine(targetObj, oldRotation, upright);
                     RotateWaypointsWithObject(targetObj, oldRotation, upright);
                     return;
                 }
 
-                // Axis logic:
-                //  - Y rotations always around world up to avoid gimbal issues when object is pitched
-                //  - X & Z rotations around LOCAL axes to produce intuitive behavior
                 if (rotateY)
                 {
                     delta = Quaternion.AngleAxis(angleStep, Vector3.up);
-                    // Pre-multiply for world axis rotation
                     StartRotationCoroutine(targetObj, oldRotation, delta * oldRotation);
                     RotateWaypointsWithObject(targetObj, oldRotation, delta * oldRotation);
                 }
                 else if (rotateX)
                 {
                     delta = Quaternion.AngleAxis(angleStep, Vector3.right);
-                    // Post-multiply for local axis rotation
                     StartRotationCoroutine(targetObj, oldRotation, oldRotation * delta);
                     RotateWaypointsWithObject(targetObj, oldRotation, oldRotation * delta);
                 }
@@ -2884,6 +2912,12 @@ namespace FS_LevelEditor.Editor
             Destroy(previewObjectToBuildObj);
             previewObjectToBuildObj = Instantiate(currentObjectToBuild);
 
+            //Preview scale enforcement
+            if (LE_Object.defaultScalesForObjects.ContainsKey(objectType))
+            {
+                previewObjectToBuildObj.transform.localScale = LE_Object.defaultScalesForObjects[objectType.Value];
+            }
+
             // Disable collision of the preview object.
             foreach (var collider in previewObjectToBuildObj.TryGetComponents<Collider>())
             {
@@ -2931,39 +2965,96 @@ namespace FS_LevelEditor.Editor
 
         /// <summary>
         /// Returns if a ray from the mouse position to real world is colliding with a gizmos arrow of an object.
+        /// Uses prioritization to select the most appropriate axis when multiple colliders overlap.
         /// </summary>
         /// <returns></returns>
         GizmosArrow GetCollidingWithAnArrow()
         {
-            // Check for collision with new EditorGizmo arrows/cones
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
+
+            // Track hits with scoring
+            var arrowHits = new System.Collections.Generic.List<(GizmosArrow arrow, bool isCone, float distance, float score)>();
 
             foreach (var hit in hits)
             {
                 if (hit.collider != null && hit.collider.gameObject != null && hit.collider.transform.parent != null)
                 {
                     var parent = hit.collider.transform.parent.gameObject;
-                    if (parent == gizmo.XArrow || parent == gizmo.YArrow || parent == gizmo.ZArrow)
+                    GizmosArrow arrow = GizmosArrow.None;
+                    bool isCone = false;
+
+                    // Check cones first (higher priority)
+                    if (parent == gizmo.XCone)
                     {
-                        string arrowName = parent.name;
-                        StartMovingObject(arrowName, ray);
-                        if (arrowName == "X") return GizmosArrow.X;
-                        if (arrowName == "Y") return GizmosArrow.Y;
-                        if (arrowName == "Z") return GizmosArrow.Z;
+                        arrow = GizmosArrow.X;
+                        isCone = true;
                     }
-                    // Also check for cones
-                    if (parent == gizmo.XCone || parent == gizmo.YCone || parent == gizmo.ZCone)
+                    else if (parent == gizmo.YCone)
                     {
-                        string coneName = parent.name;
-                        // Cones are named X_Cone, Y_Cone, Z_Cone
-                        if (coneName.StartsWith("X")) { StartMovingObject("X", ray); return GizmosArrow.X; }
-                        if (coneName.StartsWith("Y")) { StartMovingObject("Y", ray); return GizmosArrow.Y; }
-                        if (coneName.StartsWith("Z")) { StartMovingObject("Z", ray); return GizmosArrow.Z; }
+                        arrow = GizmosArrow.Y;
+                        isCone = true;
+                    }
+                    else if (parent == gizmo.ZCone)
+                    {
+                        arrow = GizmosArrow.Z;
+                        isCone = true;
+                    }
+                    // Then check arrows
+                    else if (parent == gizmo.XArrow)
+                    {
+                        arrow = GizmosArrow.X;
+                    }
+                    else if (parent == gizmo.YArrow)
+                    {
+                        arrow = GizmosArrow.Y;
+                    }
+                    else if (parent == gizmo.ZArrow)
+                    {
+                        arrow = GizmosArrow.Z;
+                    }
+
+                    if (arrow != GizmosArrow.None)
+                    {
+                        // Calculate view-perpendicularity score
+                        // Higher score = axis is more perpendicular to view = better to select
+                        Vector3 axisDir = GetAxisDirection(arrow, currentSelectedObj);
+                        Vector3 viewDir = MainCam.transform.forward;
+
+                        // Score based on how perpendicular the axis is to the view direction
+                        // When dot product is close to 0, axis is perpendicular to view (good)
+                        // When dot product is close to 1 or -1, axis is parallel to view (bad)
+                        float dotProduct = Mathf.Abs(Vector3.Dot(axisDir.normalized, viewDir.normalized));
+                        float perpendicularityScore = 1f - dotProduct; // 0 = parallel, 1 = perpendicular
+
+                        // Cone hits get significant bonus
+                        float coneBonus = isCone ? 0.5f : 0f;
+
+                        // Distance penalty (closer is slightly better)
+                        float distanceFactor = 1f / (1f + hit.distance * 0.05f);
+
+                        // Final score combines perpendicularity, cone bonus, and distance
+                        float finalScore = perpendicularityScore * 2f + coneBonus + distanceFactor * 0.2f;
+
+                        arrowHits.Add((arrow, isCone, hit.distance, finalScore));
                     }
                 }
             }
-            return GizmosArrow.None;
+
+            if (arrowHits.Count == 0)
+                return GizmosArrow.None;
+
+            // Sort by score (descending), then by distance (ascending)
+            arrowHits.Sort((a, b) =>
+         {
+             int scoreCompare = b.score.CompareTo(a.score);
+             if (scoreCompare != 0) return scoreCompare;
+             return a.distance.CompareTo(b.distance);
+         });
+
+            GizmosArrow selectedArrow = arrowHits[0].arrow;
+            StartMovingObject(selectedArrow.ToString(), ray);
+            return selectedArrow;
         }
 
         Vector3 GetAxisDirection(GizmosArrow arrow, GameObject obj)
@@ -2977,7 +3068,6 @@ namespace FS_LevelEditor.Editor
             }
             else
             {
-                // Local axes need to account for object's current orientation
                 switch (arrow)
                 {
                     case GizmosArrow.X: return obj.transform.right;
@@ -3073,7 +3163,7 @@ namespace FS_LevelEditor.Editor
                 };
                 gridLineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
                 gridLineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                gridLineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off); // ✅ Render both sides
+                gridLineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
                 gridLineMaterial.SetInt("_ZWrite", 0);
                 gridLineMaterial.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.LessEqual);
             }
@@ -3092,8 +3182,8 @@ namespace FS_LevelEditor.Editor
             gridTexture.filterMode = FilterMode.Bilinear;
             gridTexture.wrapMode = TextureWrapMode.Repeat;
 
-            Color transparent = new Color(1f, 0.5f, 0.2f, 0f);
-            Color gridLine = new Color(1f, 1f, 1f, 0.15f);
+            Color transparent = new Color(1f, 1f, 1f, 0.025f);
+            Color gridLine = new Color(1f, 1f, 1f, 0.25f);
 
             // Fill texture
             for (int y = 0; y < texSize; y++)

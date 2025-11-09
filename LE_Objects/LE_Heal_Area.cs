@@ -39,10 +39,10 @@ namespace FS_LevelEditor
             areaObj.layer = LayerMask.NameToLayer("Ignore Raycast");
 
             HealArea script = areaObj.AddComponent<HealArea>();
-            script.halfStatusObj = new GameObject();
-            script.emptyStatusObj = new GameObject();
-            script.vfx = new GameObject().AddComponent<ParticleSystem>();
-            script.m_light = new GameObject().AddComponent<Light>();
+            script.halfStatusObj = new GameObject("ShouldBeSaved");
+            script.emptyStatusObj = new GameObject("ShouldBeSaved");
+            script.vfx = new GameObject("ShouldBeSaved").AddComponent<ParticleSystem>();
+            script.m_light = new GameObject("ShouldBeSaved").AddComponent<Light>();
             script.healValue = GetProperty<int>("HealValue");
             script.healInterval = GetProperty<float>("HealInterval");
             script.maxHealthToGive = GetProperty<int>("MaxHealth");

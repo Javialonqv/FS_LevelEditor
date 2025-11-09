@@ -66,7 +66,6 @@ namespace FS_LevelEditor
                 // Multiply by 2 to make it brighter and more visible
                 Color emissionColor = color * 2f;
                 mat.SetColor("_EmissionColor", emissionColor);
-                Debug.Log(emissionColor.ToString());
 
                 // Also set the base color to white to prevent color mixing
                 if (mat.HasProperty("_Color"))

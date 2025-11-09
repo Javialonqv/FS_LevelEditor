@@ -1151,7 +1151,7 @@ namespace FS_LevelEditor.Editor.UI
                 }
                 else if (currentSelectedEvent.isForObjective)
                 {
-                    targetObjInputField.SetText("Objective_" + currentSelectedEvent.objectiveName);
+                    targetObjInputField.SetText("Obj_" + currentSelectedEvent.objectiveName);
                 }
                 else
                 {
@@ -1230,7 +1230,7 @@ namespace FS_LevelEditor.Editor.UI
                 objIsValid = true;
             }
             // Check if input starts with "Objective_"
-            if (inputText.StartsWith("Objective_", StringComparison.OrdinalIgnoreCase))
+            if (inputText.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase))
             {
                 objIsValid = true;
             }
@@ -1286,7 +1286,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
                 }
-                else if (inputText.StartsWith("Objective_", StringComparison.OrdinalIgnoreCase))
+                else if (inputText.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase))
                 {
                     currentSelectedEvent.isForPlayer = false;
                     currentSelectedEvent.isForTaser = false;
@@ -1503,7 +1503,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
 
-            GameObject toggle = NGUI_Utils.CreateToggle(globalObjectsSettings.transform, new Vector3(-150f, 50f, 0f),
+            GameObject toggle = NGUI_Utils.CreateToggle(globalObjectsSettings.transform, new Vector3(-150f, -25f, 0f),
                 new Vector3Int(250, 48, 1), "Start Moving Object");
             toggle.name = "StartMovingObjectToggle";
             startMovingObjectToggle = toggle.GetComponent<UIToggle>();
@@ -1941,10 +1941,10 @@ namespace FS_LevelEditor.Editor.UI
             button.Init();
             button.SetTitle("Mine State");
             button.ClearOptions();
-            button.AddOption("Do Nothing", true);
+            button.AddOption("Do Nothing", false);
             button.AddOption("Activate", false);
             button.AddOption("Deactivate", false);
-            button.AddOption("Toggle State", false);
+            button.AddOption("Toggle State", true);
             button.onClick += (option) => OnMineStateDropdownChanged();
 
             mineStateButton = button;
@@ -2829,7 +2829,7 @@ public class LE_Event
 
     #region Mine Options
     public enum MineState { Do_Nothing, Activate, Deactivate, Toggle_State }
-    public MineState mineState = MineState.Toggle_State;
+    public MineState mineState { get; set; } = MineState.Toggle_State;
     #endregion
 
     #region Light Options
@@ -2854,7 +2854,7 @@ public class LE_Event
     public bool isForObjective { get; set; } = false;
     public enum ObjectiveState { Do_Nothing, Create, Accomplish, Fail }
     public ObjectiveState objectiveState { get; set; } = ObjectiveState.Create;
-    public string objectiveName { get; set; } = "Objective_Name";
+    public string objectiveName { get; set; } = "Obj_Name";
     public enum ObjectiveResult { None, Accomplish, Fail }
     public ObjectiveResult objectiveResult { get; set; } = ObjectiveResult.None;
     #endregion

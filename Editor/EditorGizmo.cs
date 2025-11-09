@@ -15,9 +15,9 @@ namespace FS_LevelEditor.Editor
 		private float coneHeight = 0.45f;
 		private float coneRadius = 0.16f;
 
-		// Constants for improved collider behavior
-		private const float minWorldColliderRadius = 0.25f; // Minimum world-space hit radius
-		private const float colliderRadiusMultiplier = 3.0f; // Increase hit area significantly
+		// Constants for improved collider behavior - REDUCED for better precision
+		private const float minWorldColliderRadius = 0.15f; // Reduced from 0.25f
+		private const float colliderRadiusMultiplier = 1.5f; // Reduced from 3.0f for less overlap
 
 		public GameObject Root => root;
 		public GameObject XArrow => xArrow;
@@ -210,11 +210,11 @@ namespace FS_LevelEditor.Editor
 					var capsule = axisCollider.GetComponent<CapsuleCollider>();
 					if (capsule != null)
 					{
-						// Ensure minimum world-space picking radius
+						// Ensure minimum world-space picking radius (reduced for precision)
 						float desiredWorldRadius = Mathf.Max(minWorldColliderRadius, baseRadius * colliderRadiusMultiplier);
 						// Convert to local space - divide by scale
 						capsule.radius = desiredWorldRadius / scale;
-						capsule.height = (arrowLength + coneHeight * 0.9f) / scale;
+						capsule.height = (arrowLength + coneHeight * 0.5f) / scale; // Reduced cone overlap
 					}
 				}
 			}
@@ -229,8 +229,8 @@ namespace FS_LevelEditor.Editor
 					var sphereCol = coneCollider.GetComponent<SphereCollider>();
 					if (sphereCol != null)
 					{
-						// Larger sphere for easier tip selection
-						float desiredWorldRadius = Mathf.Max(minWorldColliderRadius * 1.5f, coneRadius * colliderRadiusMultiplier);
+						// Larger sphere for easier tip selection, but not too large
+						float desiredWorldRadius = Mathf.Max(minWorldColliderRadius * 1.2f, coneRadius * colliderRadiusMultiplier);
 						sphereCol.radius = desiredWorldRadius / scale;
 					}
 				}
@@ -262,10 +262,10 @@ namespace FS_LevelEditor.Editor
 			if (old) UnityEngine.Object.DestroyImmediate(old.gameObject);
 			GameObject colObj = new GameObject("AxisCollider");
 			colObj.transform.SetParent(arrow.transform, false);
-			float totalLength = arrowLength + coneHeight * 0.9f;
+			float totalLength = arrowLength + coneHeight * 0.5f; // Reduced overlap with cone
 			colObj.transform.localPosition = dir * (totalLength / 2f);
 			var capsule = colObj.AddComponent<CapsuleCollider>();
-			// Start with larger radius - will be adjusted dynamically in UpdateScaleByCamera
+			// Start with smaller radius - will be adjusted dynamically in UpdateScaleByCamera
 			capsule.radius = arrowThickness * 0.5f * colliderRadiusMultiplier;
 			capsule.height = totalLength;
 			capsule.isTrigger = false;
@@ -284,7 +284,7 @@ namespace FS_LevelEditor.Editor
 			var sphereCol = colObj.AddComponent<SphereCollider>();
 			// Positioned at tip of cone
 			colObj.transform.localPosition = Vector3.zero;
-			// Larger sphere for better picking
+			// Moderately sized sphere for better picking (not too large)
 			sphereCol.radius = coneRadius * colliderRadiusMultiplier;
 			sphereCol.isTrigger = false;
 		}

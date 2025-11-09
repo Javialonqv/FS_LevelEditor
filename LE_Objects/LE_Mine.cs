@@ -15,19 +15,28 @@ namespace FS_LevelEditor
 	public class LE_Mine : LE_Object
 	{
 		Laser_H_Controller mine;
+		GameObject contactRangeSphere;
+		GameObject proximityRangeSphere;
+		GameObject remoteRangeSphere;
+		GameObject sphereRange;
 
 		void Awake()
 		{
-			properties = new Dictionary<string, object>()
+			contactRangeSphere = gameObject.GetChildAt("Content/SphereRange/Contact");
+			proximityRangeSphere = gameObject.GetChildAt("Content/SphereRange/Proximity");
+			remoteRangeSphere = gameObject.GetChildAt("Content/SphereRange/Remote");
+			sphereRange = remoteRangeSphere.transform.parent.gameObject;
+
+            properties = new Dictionary<string, object>()
 			{
 				{ "ActivateOnStart", true },
 				{ "InstaKill", false },
                 { "DamageThroughWalls", true },
 				{ "BreakWindows", false },
                 { "ExplosionDamage", 34 },
-				{ "ContactRadius", 1f },
+				{ "ContactRadius", 3f },
 				{ "RemoteRadius", 1f },
-				{ "ProximityRadius", 1f },
+				{ "ProximityRadius", 5f },
 			};
 		}
 
@@ -36,6 +45,14 @@ namespace FS_LevelEditor
 			if (scene == LEScene.Editor)
 			{
 				SetMeshOnEditor((bool)GetProperty("ActivateOnStart"));
+                SetContactRangeSphereScale(GetProperty<float>("ContactRadius"));
+                SetProximityRangeSphereScale(GetProperty<float>("ProximityRadius"));
+                SetRemoteRangeSphereScale(GetProperty<float>("RemoteRadius"));
+            }
+
+			if (scene == LEScene.Playmode)
+			{
+				if (contactRangeSphere != null) Destroy(contactRangeSphere.transform.parent.gameObject);
 			}
 
 			base.OnInstantiated(scene);
@@ -219,12 +236,14 @@ namespace FS_LevelEditor
 					if (Utils.TryParseFloat((string)value, out float result))
 					{
 						properties["ContactRadius"] = result;
+						SetContactRangeSphereScale(result);
 						return true;
 					}
 				}
 				else if (value is float)
 				{
 					properties["ContactRadius"] = (float)value;
+					SetContactRangeSphereScale((float)value);
 					return true;
 				}
 			}
@@ -235,12 +254,14 @@ namespace FS_LevelEditor
 					if (Utils.TryParseFloat((string)value, out float result))
 					{
 						properties["RemoteRadius"] = result;
+						SetRemoteRangeSphereScale(result);
 						return true;
 					}
 				}
 				else if (value is float)
 				{
 					properties["RemoteRadius"] = (float)value;
+					SetRemoteRangeSphereScale((float)value);
 					return true;
 				}
 			}
@@ -251,12 +272,14 @@ namespace FS_LevelEditor
 					if (Utils.TryParseFloat((string)value, out float result))
 					{
 						properties["ProximityRadius"] = result;
+						SetProximityRangeSphereScale(result);
 						return true;
 					}
 				}
 				else if (value is float)
 				{
 					properties["ProximityRadius"] = (float)value;
+					SetProximityRangeSphereScale((float)value);
 					return true;
 				}
 			}
@@ -313,6 +336,92 @@ namespace FS_LevelEditor
 			gameObject.GetChildAt("Content/MeshOn").GetComponent<MeshRenderer>().enabled = isLaserOn;
 		}
 
+        void SetContactRangeSphereScale(float range)
+        {
+            if (contactRangeSphere != null)
+            {
+                // Divide by parent scale to compensate for the mine's default scale
+                Vector3 parentScale = gameObject.transform.localScale;
+                Vector3 rangeSphereScale = new Vector3(
+                    (range * 2) / parentScale.x,
+                    (range * 2) / parentScale.y,
+                    (range * 2) / parentScale.z
+                );
+                contactRangeSphere.transform.localScale = rangeSphereScale;
+            }
+        }
+
+        void SetProximityRangeSphereScale(float range)
+        {
+            if (proximityRangeSphere != null)
+            {
+                // Divide by parent scale to compensate for the mine's default scale
+                Vector3 parentScale = gameObject.transform.localScale;
+                Vector3 rangeSphereScale = new Vector3(
+                    (range * 2) / parentScale.x,
+                    (range * 2) / parentScale.y,
+                    (range * 2) / parentScale.z
+                );
+                proximityRangeSphere.transform.localScale = rangeSphereScale;
+            }
+        }
+
+        void SetRemoteRangeSphereScale(float range)
+        {
+            if (remoteRangeSphere != null)
+            {
+                // Divide by parent scale to compensate for the mine's default scale
+                Vector3 parentScale = gameObject.transform.localScale;
+                Vector3 rangeSphereScale = new Vector3(
+                    (range * 2) / parentScale.x,
+                    (range * 2) / parentScale.y,
+                    (range * 2) / parentScale.z
+                );
+                remoteRangeSphere.transform.localScale = rangeSphereScale;
+            }
+        }
+
+        public override void OnSelect()
+		{
+			sphereRange.SetActive(true);
+			sphereRange.SetActiveRecursively(true);
+            base.OnSelect();
+		}
+
+		public override void OnDeselect(GameObject nextSelectedObj)
+		{
+			sphereRange.SetActive(false);
+			sphereRange.SetActiveRecursively(false);
+            base.OnDeselect(nextSelectedObj);
+		}
+
+		// Skip the range spheres when setting object color (same pattern as LE_Ceiling_Light)
+		public override void SetObjectColor(LEObjectContext context)
+		{
+			foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
+			{
+				// Skip the range spheres
+				if (sphereRange != null && renderer.transform.IsChildOf(sphereRange.transform))
+					continue;
+
+				// Skip waypoints
+				if (canHaveWaypoints)
+				{
+					if (waypointSupport && renderer.transform.IsChildOf(waypointSupport.waypointsParent)) continue;
+					if (customWaypointSupport && renderer.transform.IsChildOf(customWaypointSupport.waypointsParent)) continue;
+				}
+
+				foreach (var material in renderer.materials)
+				{
+					if (!material.HasProperty("_Color")) continue;
+
+					Color toSet = LE_Object.GetObjectColorForObject(objectType.Value, context);
+					toSet.a = material.color.a;
+					material.color = toSet;
+				}
+			}
+		}
+
 		void OnDestroy()
 		{
 			// Clean up mine component reference
@@ -364,6 +473,11 @@ namespace FS_LevelEditor
 
 			// Cancel any pending invokes
 			CancelInvoke("ActivateMineDelayed");
+
+			// Clear range sphere references
+			contactRangeSphere = null;
+			proximityRangeSphere = null;
+			remoteRangeSphere = null;
 		}
 	}
 }
