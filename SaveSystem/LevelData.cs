@@ -472,6 +472,7 @@ namespace FS_LevelEditor.SaveSystem
             spawnedObject.gameObject.name = spawnedObject.objectFullNameWithID;
             spawnedObject.setActiveAtStart = objectData.setActiveAtStart;
             spawnedObject.collision = objectData.collision;
+            spawnedObject.invisibleMesh = objectData.invisibleMesh;
             spawnedObject.waypoints = objectData.waypoints;
             spawnedObject.startMovingAtStart = objectData.moveStart;
             spawnedObject.movingSpeed = objectData.movingSpeed;

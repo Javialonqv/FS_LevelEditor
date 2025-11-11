@@ -130,7 +130,7 @@ namespace FS_LevelEditor
                         @event.isForJetpack = false;
                         @event.targetObjType = null;
                         @event.targetObjID = 0;
-                        @event.objectiveName = @event.targetObjName.Substring(10);
+                        @event.objectiveName = @event.targetObjName.Substring(4);
                         @event.targetObjName = "";
                     }
                     else if (@event.targetObjType == null && @event.isValid && !string.IsNullOrEmpty(@event.targetObjName) && !isPlayer)

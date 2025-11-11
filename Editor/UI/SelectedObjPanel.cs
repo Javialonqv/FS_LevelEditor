@@ -33,7 +33,8 @@ namespace FS_LevelEditor.Editor.UI
 		UICustomInputField rotXField, rotYField, rotZField;
 		UICustomInputField scaleXField, scaleYField, scaleZField;
 		UIToggle collisionToggle;
-		UIButtonPatcher addWaypointButton;
+        UIToggle invisibleMeshToggle;
+        UIButtonPatcher addWaypointButton;
 		UIToggle startMovingAtStartToggle;
 		UICustomInputField movingSpeedField;
 		UICustomInputField startDelayField;
@@ -53,8 +54,9 @@ namespace FS_LevelEditor.Editor.UI
 		LE_Object currentSelectedObj;
 		bool executeSetActiveAtStartToggleActions = true;
 		bool executeCollisionToggleActions = true;
+        bool executeInvisibleMeshToggleActions = true;
 
-		Vector3 objPositionWhenSelectedField;
+        Vector3 objPositionWhenSelectedField;
 		Quaternion objRotationWhenSelectedField;
 		Vector3 objScaleWhenSelectedField;
 
@@ -209,6 +211,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateObjectRotationUIElements();
 			CreateObjectScaleUIElements();
 			CreateCollisionToggle();
+			CreateInvisibleMeshToggle();
 			CreateAddWaypointButton();
 			CreateStartMovingAtStartToggle();
 			CreateMovingSpeedField();
@@ -384,7 +387,41 @@ namespace FS_LevelEditor.Editor.UI
 
 			yPosForGlobalProps -= 55;
 		}
-		void CreateAddWaypointButton()
+
+        void CreateInvisibleMeshToggle()
+        {
+            Transform invisibleMeshToggleParent = new GameObject("InvisibleMesh").transform;
+            invisibleMeshToggleParent.parent = globalObjectPanelsParent;
+            invisibleMeshToggleParent.localPosition = Vector3.zero;
+            invisibleMeshToggleParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(invisibleMeshToggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "InvisibleMesh");
+            title.name = "Title";
+
+            GameObject toggle = NGUI_Utils.CreateToggle(invisibleMeshToggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
+            toggle.name = "Toggle";
+            toggle.GetComponent<UIToggle>().onChange.Clear();
+            var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetInvisibleMeshToggle));
+            toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
+            invisibleMeshToggle = toggle.GetComponent<UIToggle>();
+            invisibleMeshToggle.instantTween = true;
+
+            GameObject line = new GameObject("Line");
+            line.transform.parent = toggle.GetChild("Background").transform;
+            line.transform.localPosition = Vector3.zero;
+            line.transform.localScale = Vector3.one;
+
+            UISprite lineSprite = line.AddComponent<UISprite>();
+            lineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
+            lineSprite.spriteName = "Square";
+            lineSprite.width = 35;
+            lineSprite.height = 6;
+            lineSprite.depth = 8;
+            line.SetActive(false);
+
+            yPosForGlobalProps -= 55;
+        }
+        void CreateAddWaypointButton()
 		{
 			addWaypointButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "AddGlobalWaypoint");
 			addWaypointButton.name = "AddWaypointButton";
@@ -1522,7 +1559,27 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			EditorController.Instance.levelHasBeenModified = true;
 		}
-		public void AddWaypointForObject()
+
+        public void SetInvisibleMeshToggle()
+        {
+            if (!executeInvisibleMeshToggleActions) return;
+
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+                foreach (var obj in EditorController.Instance.currentSelectedObjects)
+                {
+                    LE_Object comp = obj.GetComponent<LE_Object>();
+                    comp.invisibleMesh = invisibleMeshToggle.isChecked;
+                }
+            }
+            else
+            {
+                EditorController.Instance.currentSelectedObjComponent.invisibleMesh = invisibleMeshToggle.isChecked;
+            }
+            EditorController.Instance.levelHasBeenModified = true;
+        }
+        public void AddWaypointForObject()
 		{
 			if (!EditorController.Instance.multipleObjectsSelected)
 			{
@@ -1629,10 +1686,58 @@ namespace FS_LevelEditor.Editor.UI
 				collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
 				collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 			}
-			#endregion
+            #endregion
 
-			#region Add Waypoint Button
-			if (EditorController.Instance.multipleObjectsSelected)
+            // Add this section in UpdateGlobalObjectAttributes() after the Collision Toggle region (around line 910)
+            #region Invisible Mesh Toggle
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                // If this is null, that means the "InvisibleMesh" in the current selected objects is different in at least one of them.
+                // If it's true or false, then ALL of them are true or false.
+                bool? invisibleMeshStateInObjects = null;
+                foreach (var @object in EditorController.Instance.currentSelectedObjects)
+                {
+                    LE_Object comp = @object.GetComponent<LE_Object>();
+
+                    if (invisibleMeshStateInObjects == null)
+                    {
+                        invisibleMeshStateInObjects = comp.invisibleMesh; // Direct field access
+                        continue;
+                    }
+
+                    if (invisibleMeshStateInObjects == comp.invisibleMesh)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        invisibleMeshStateInObjects = null;
+                        break;
+                    }
+                }
+
+                if (invisibleMeshStateInObjects != null)
+                {
+                    invisibleMeshToggle.Set((bool)invisibleMeshStateInObjects);
+                    invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+                }
+                else
+                {
+                    executeInvisibleMeshToggleActions = false;
+                    invisibleMeshToggle.Set(false);
+                    executeInvisibleMeshToggleActions = true;
+                    invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
+                }
+            }
+            else
+            {
+                invisibleMeshToggle.Set(obj.GetComponent<LE_Object>().invisibleMesh); // Direct field access
+                invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+            }
+            #endregion
+
+            #region Add Waypoint Button
+            if (EditorController.Instance.multipleObjectsSelected)
 			{
 				// Only enable the button when ALL of the selected objects allow waypoints.
 				addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjects.All(x => x.GetComponent<LE_Object>().canHaveWaypoints));

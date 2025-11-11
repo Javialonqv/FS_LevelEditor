@@ -61,7 +61,6 @@ namespace FS_LevelEditor.Playmode
 			deathsInCurrentLevel = Melon<Core>.Instance.totalDeathsInCurrentPlaymodeSession;
 
 			Invoke("DisableTheCurrentScene", 0.2f);
-			Invoke("GetTemplateReferencesAndCleanupScene", 0.202f);
         }
 
 		void LoadAssetBundle()
@@ -166,74 +165,6 @@ namespace FS_LevelEditor.Playmode
 				obj.SetActive(false);
 			}
 		}
-        private void GetTemplateReferencesAndCleanupScene()
-        {
-            // First, get all template references
-            LE_Object.GetTemplatesReferences();
-
-            // Collect all template root GameObjects
-            List<GameObject> templateRoots = new List<GameObject>();
-            if (LE_Object.t_ammoPack != null) templateRoots.Add(LE_Object.t_ammoPack.gameObject);
-            if (LE_Object.t_healthPack != null) templateRoots.Add(LE_Object.t_healthPack.gameObject);
-            if (LE_Object.t_saw != null) templateRoots.Add(LE_Object.t_saw.gameObject);
-            if (LE_Object.t_switch != null) templateRoots.Add(LE_Object.t_switch.gameObject);
-            if (LE_Object.t_cube != null) templateRoots.Add(LE_Object.t_cube.gameObject);
-            if (LE_Object.t_laser != null) templateRoots.Add(LE_Object.t_laser.gameObject);
-            if (LE_Object.t_mine != null) templateRoots.Add(LE_Object.t_mine.gameObject);
-            if (LE_Object.t_ceilingLight != null) templateRoots.Add(LE_Object.t_ceilingLight.gameObject);
-            if (LE_Object.t_flameTrap != null) templateRoots.Add(LE_Object.t_flameTrap.gameObject);
-            if (LE_Object.t_pressurePlate != null) templateRoots.Add(LE_Object.t_pressurePlate.gameObject);
-            if (LE_Object.t_screen != null) templateRoots.Add(LE_Object.t_screen.gameObject);
-            if (LE_Object.t_window != null) templateRoots.Add(LE_Object.t_window.gameObject);
-            if (LE_Object.t_breakableWall != null) templateRoots.Add(LE_Object.t_breakableWall.gameObject);
-            if (LE_Object.t_door != null) templateRoots.Add(LE_Object.t_door.gameObject);
-            if (LE_Object.t_doorV2 != null) templateRoots.Add(LE_Object.t_doorV2.gameObject);
-            if (LE_Object.t_movingPlatform != null) templateRoots.Add(LE_Object.t_movingPlatform.gameObject);
-            if (LE_Object.t_keycodeM != null) templateRoots.Add(LE_Object.t_keycodeM.gameObject);
-            if (LE_Object.t_keycode != null) templateRoots.Add(LE_Object.t_keycode.gameObject);
-            if (LE_Object.t_bridge != null) templateRoots.Add(LE_Object.t_bridge.gameObject);
-            if (LE_Object.t_powerCoreBloc != null) templateRoots.Add(LE_Object.t_powerCoreBloc.gameObject);
-
-            // Find all root objects in the current scene
-            GameObject[] sceneObjects = SceneManager.GetActiveScene().GetRootGameObjects();
-
-            foreach (GameObject obj in sceneObjects)
-            {
-                // Skip essential objects
-                if (obj.name == "Character") continue;
-                if (obj.name == "FootStepController") continue;
-                if (obj.name == "Checkpoints") continue;
-                if (obj.name == "LevelObjects") continue;
-                if (obj.name == "Player") continue;
-                if (obj.name == "GUI") continue;
-                if (obj.name == "2DGUI") continue;
-                if (obj.name == "PlayModeController") continue;
-				if (obj.name == "LaserPointRed") continue;
-				if (obj.name == "LaserRailHolder") continue;
-				if (obj.name == "ShouldBeSaved") continue;
-
-                // Check if this object is a template root OR a child of any template
-                bool isTemplateOrChild = false;
-                foreach (GameObject templateRoot in templateRoots)
-                {
-                    if (obj == templateRoot || obj.transform.IsChildOf(templateRoot.transform))
-                    {
-                        isTemplateOrChild = true;
-                        break;
-                    }
-                }
-
-                if (isTemplateOrChild)
-                {
-                    Logger.Log($"Preserving template object or child: {obj.name}");
-                    continue;
-                }
-
-                // Destroy all other CH4 objects
-                Logger.DebugLog($"Destroying CH4 object: {obj.name}");
-                Destroy(obj);
-            }
-        }
         void TeleportPlayer()
 		{
 			LE_Player_Spawn spawn = FindObjectOfType<LE_Player_Spawn>();
@@ -561,14 +492,10 @@ namespace FS_LevelEditor.Playmode
 
 		public void CreateObjective(string objectiveName)
 		{
-			// Destroy any existing objective with the same name first
+
 			if (activeObjectives.TryGetValue(objectiveName, out var existingController))
 			{
-				if (existingController != null && existingController.gameObject != null)
-				{
-					Destroy(existingController.gameObject);
-				}
-				activeObjectives.Remove(objectiveName);
+				return;
 			}
 
 			// Create a new GameObject with ObjectiveController
@@ -578,15 +505,6 @@ namespace FS_LevelEditor.Playmode
 			objectiveController.objective = objectiveName;
 			objectiveController.Activate();
 			objectiveController.currentlyActive = true;
-			if(activeObjectives.Count>0)
-			{
-                lastObj = objectiveName;
-				objectiveController.previousObjective = lastObj;
-            }
-			else
-			{
-                objectiveController.previousObjective = "placeholder";
-            }
 
 			// Track this objective
 			activeObjectives[objectiveName] = objectiveController;
@@ -597,9 +515,7 @@ namespace FS_LevelEditor.Playmode
 		{
 			if (activeObjectives.TryGetValue(objectiveName, out var controller))
 			{
-				controller.AccomplishIfActive();
-				// Remove from tracking after accomplishment
-				activeObjectives.Remove(objectiveName);
+				controller.Accomplish();
 				return true;
 			}
 			
@@ -610,13 +526,18 @@ namespace FS_LevelEditor.Playmode
 		{
 			if (activeObjectives.TryGetValue(objectiveName, out var controller))
 			{
-				controller.CancelIfActive();
-				// Remove from tracking after cancellation
-				activeObjectives.Remove(objectiveName);
+				controller.Cancel();
 				return true;
 			}
 			
 			return false;
 		}
-	}
+        public bool DoesObjectiveExist(string objectiveName)
+        {
+            // Check if the objective exists in your objectives list/dictionary
+            // Return true if it exists, false otherwise
+            // This depends on how you're tracking objectives in your PlayModeController
+            return activeObjectives.ContainsKey(objectiveName); // Adjust this based on your actual implementation
+        }
+    }
 }

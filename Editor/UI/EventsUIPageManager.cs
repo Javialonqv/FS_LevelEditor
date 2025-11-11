@@ -1297,7 +1297,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.targetObjName = "";
 
                     // Extract the objective name after "Objective_"
-                    string objectiveName = inputText.Substring(10); // "Objective_" is 10 characters
+                    string objectiveName = inputText.Substring(4); // "Objective_" is 10 characters
                     currentSelectedEvent.objectiveName = objectiveName;
                 }
                 else
