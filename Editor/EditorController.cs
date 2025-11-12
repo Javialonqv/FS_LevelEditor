@@ -87,7 +87,7 @@ namespace FS_LevelEditor.Editor
         private const float minDragDistance = 5f; // pixels
         private GameObject selectionBox;
         private UISprite selectionBoxSprite;
-
+        public bool statsLabelsVisible = false;
 
         // Gizmos arrows to move objects.
         //GameObject gizmosArrows;
@@ -372,6 +372,33 @@ namespace FS_LevelEditor.Editor
             if (IsCurrentState(EditorState.PAUSED) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL) ||
                 EditorUIManager.IsCurrentUIContext(EditorUIContext.TEXT_EDITOR)) return;
 
+            // --- GIZMO HOVER FEEDBACK ---
+            if (currentMode == Mode.Selection && currentSelectedObj != null && gizmosArrows.activeSelf && !Input.GetMouseButton(0))
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                string hoveredAxis = gizmo.GetHoveredAxis(ray, out _);
+                if (hoveredAxis != null)
+                {
+                    gizmo.HighlightAxis(hoveredAxis);
+                }
+                else
+                {
+                    gizmo.ResetColors();
+                }
+            }
+            else if (gizmosArrows.activeSelf && Input.GetMouseButton(0))
+            {
+                // Keep highlighting the current arrow being dragged
+                if (collidingArrow != GizmosArrow.None)
+                {
+                    gizmo.HighlightAxis(collidingArrow.ToString());
+                }
+            }
+            else
+            {
+                gizmo.ResetColors();
+            }
+
             #region Select Target Object For Events
             if (IsCurrentState(EditorState.SELECTING_TARGET_OBJ))
             {
@@ -625,9 +652,12 @@ namespace FS_LevelEditor.Editor
             if (!Utils.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
 
             // Update camera speed and grid size labels
-            if (EditorUIManager.Instance != null && EditorUIManager.Instance.cameraSpeedLabel != null && EditorUIManager.Instance.gridSizeLabel != null)
+            if (statsLabelsVisible && EditorUIManager.Instance != null &&
+                EditorUIManager.Instance.cameraSpeedLabel != null &&
+                EditorUIManager.Instance.gridSizeLabel != null)
             {
-                float camSpeed = FS_LevelEditor.Editor.EditorCameraMovement.Instance != null ? FS_LevelEditor.Editor.EditorCameraMovement.Instance.moveSpeed : 0f;
+                float camSpeed = FS_LevelEditor.Editor.EditorCameraMovement.Instance != null ?
+                    FS_LevelEditor.Editor.EditorCameraMovement.Instance.moveSpeed : 0f;
                 float gridSizeVal = GetGridSize();
                 EditorUIManager.Instance.cameraSpeedLabel.text = $"Camera Speed: {camSpeed:0.###}";
                 EditorUIManager.Instance.gridSizeLabel.text = $"Grid Size: {gridSizeVal:0.###}";
@@ -902,6 +932,18 @@ namespace FS_LevelEditor.Editor
                 return;
             }
 
+            if (Input.GetKeyDown(KeyCode.Alpha7))
+            {
+                statsLabelsVisible = !statsLabelsVisible;
+                if (EditorUIManager.Instance != null)
+                {
+                    if (EditorUIManager.Instance.cameraSpeedLabel != null)
+                        EditorUIManager.Instance.cameraSpeedLabel.gameObject.SetActive(statsLabelsVisible);
+                    if (EditorUIManager.Instance.gridSizeLabel != null)
+                        EditorUIManager.Instance.gridSizeLabel.gameObject.SetActive(statsLabelsVisible);
+                }
+            }
+
             // --- GRID SHORTCUTS ---
             float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
             if (!Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.RightAlt))
@@ -1135,138 +1177,136 @@ namespace FS_LevelEditor.Editor
 
             float moveAmount = gridEnabled ? gridSize : 0.01f;
             Vector3 toMove = Vector3.zero;
-            bool moved = false;
 
-            // Track which axis is being moved - ONLY Y for mouse buttons
+            // Track which axis for movement
             bool movingY = false;
+            GizmosArrow axisToUse = GizmosArrow.None;
 
-            // Define movement plane based on mode
-            Vector3 planeNormal = globalGizmosArrowsEnabled || gridEnabled ? Vector3.up : targetObj.transform.up;
-            Vector3 forward = Vector3.ProjectOnPlane(Camera.main.transform.forward, planeNormal).normalized;
-            Vector3 right = Vector3.ProjectOnPlane(Camera.main.transform.right, planeNormal).normalized;
+            // Get camera-relative directions (projected onto XZ plane for horizontal movement)
+            Vector3 cameraForward = Camera.main.transform.forward;
+            Vector3 cameraRight = Camera.main.transform.right;
 
-            // Arrow keys - move in camera-relative XZ plane (both X and Z will change)
+            // Project onto horizontal plane (XZ)
+            cameraForward.y = 0f;
+            cameraRight.y = 0f;
+            cameraForward.Normalize();
+            cameraRight.Normalize();
+
+            // Arrow keys - move in camera-relative directions
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
-                Logger.DebugLog("LeftArrow pressed");
-                toMove -= right * moveAmount;
-                moved = true;
+                toMove = -cameraRight * moveAmount;
+                // Determine dominant axis for grid snapping
+                axisToUse = Mathf.Abs(cameraRight.x) > Mathf.Abs(cameraRight.z) ? GizmosArrow.X : GizmosArrow.Z;
             }
             else if (Input.GetKeyDown(KeyCode.RightArrow))
             {
-                Logger.DebugLog("RightArrow pressed");
-                toMove += right * moveAmount;
-                moved = true;
+                toMove = cameraRight * moveAmount;
+                axisToUse = Mathf.Abs(cameraRight.x) > Mathf.Abs(cameraRight.z) ? GizmosArrow.X : GizmosArrow.Z;
             }
             else if (Input.GetKeyDown(KeyCode.UpArrow))
             {
-                Logger.DebugLog("UpArrow pressed");
-                toMove += forward * moveAmount;
-                moved = true;
+                toMove = cameraForward * moveAmount;
+                axisToUse = Mathf.Abs(cameraForward.x) > Mathf.Abs(cameraForward.z) ? GizmosArrow.X : GizmosArrow.Z;
             }
             else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
-                Logger.DebugLog("DownArrow pressed");
-                toMove -= forward * moveAmount;
-                moved = true;
+                toMove = -cameraForward * moveAmount;
+                axisToUse = Mathf.Abs(cameraForward.x) > Mathf.Abs(cameraForward.z) ? GizmosArrow.X : GizmosArrow.Z;
             }
-            // Mouse 4/5 for up/down - only Y axis
+            // Mouse 4/5 for vertical movement (Y axis only)
             else if (Input.GetKeyDown(KeyCode.Mouse4))
             {
-                Logger.DebugLog("Mouse4 pressed");
-                toMove += Vector3.up * moveAmount;
-                moved = true;
+                toMove = Vector3.up * moveAmount;
                 movingY = true;
+                axisToUse = GizmosArrow.Y;
             }
             else if (Input.GetKeyDown(KeyCode.Mouse3))
             {
-                Logger.DebugLog("Mouse3 pressed");
-                toMove -= Vector3.up * moveAmount;
-                moved = true;
+                toMove = Vector3.down * moveAmount;
                 movingY = true;
-            }
-            else { return; }
-
-            Logger.DebugLog($"MoveObjectShortcuts: moved={moved}, toMove={toMove}");
-
-            if (!moved) return;
-
-            if (gridEnabled)
-            {
-                Vector3 currentPos = targetObj.transform.localPosition;
-                Vector3 newPos = currentPos + toMove;
-
-                // For Y-only movement (mouse buttons), only round Y
-                if (movingY)
-                {
-                    newPos.x = currentPos.x; // Keep original X
-                    newPos.y = Mathf.Round(newPos.y / gridSize) * gridSize;
-                    newPos.z = currentPos.z; // Keep original Z
-                }
-                else
-                {
-                    // For arrow keys: snap only the dominant axis, preserve the other
-                    float absX = Mathf.Abs(toMove.x);
-                    float absZ = Mathf.Abs(toMove.z);
-
-                    if (absX > absZ)
-                    {
-                        // Moving mostly in X direction - only snap X, preserve Z
-                        newPos.x = Mathf.Round(newPos.x / gridSize) * gridSize;
-                        newPos.z = currentPos.z + toMove.z; // Keep exact Z movement
-                    }
-                    else
-                    {
-                        // Moving mostly in Z direction - only snap Z, preserve X
-                        newPos.x = currentPos.x + toMove.x; // Keep exact X movement
-                        newPos.z = Mathf.Round(newPos.z / gridSize) * gridSize;
-                    }
-                    newPos.y = currentPos.y; // Always preserve Y for horizontal movement
-                }
-
-                Vector3 oldPos = targetObj.transform.localPosition;
-                targetObj.transform.localPosition = newPos;
-                Logger.DebugLog($"Moved object to {newPos} (grid enabled)");
-                if (currentSelectedObj)
-                {
-                    RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition, null, null);
-                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
-                }
+                axisToUse = GizmosArrow.Y;
             }
             else
             {
-                Vector3 oldPos = targetObj.transform.localPosition;
-                if (globalGizmosArrowsEnabled)
+                return;
+            }
+
+            // For Selection mode, use gizmo movement system
+            if (currentMode == Mode.Selection && currentSelectedObj != null)
+            {
+                Vector3 oldPos = currentSelectedObj.transform.localPosition;
+
+                // Simulate the gizmo movement system
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                collidingArrow = axisToUse;
+                StartMovingObject(axisToUse.ToString(), ray);
+                SetCurrentEditorState(EditorState.MOVING_OBJECT);
+
+                // Apply movement - always in world space
+                Vector3 newWorldPos = currentSelectedObj.transform.position + toMove;
+
+                if (gridEnabled)
                 {
-                    // In global mode, maintain absolute Y position except for up/down
-                    if (toMove.y == 0)
+                    // Convert to parent's local space for snapping
+                    Vector3 localPos = currentSelectedObj.transform.parent.InverseTransformPoint(newWorldPos);
+
+                    // Snap to grid based on the dominant axis
+                    if (movingY)
                     {
-                        float currentY = targetObj.transform.position.y;
-                        targetObj.transform.Translate(toMove, Space.World);
-                        Vector3 pos = targetObj.transform.position;
-                        pos.y = currentY;
-                        targetObj.transform.position = pos;
+                        // Vertical movement - only snap Y
+                        localPos.y = Mathf.Round(localPos.y / gridSize) * gridSize;
+                        localPos.x = oldPos.x;
+                        localPos.z = oldPos.z;
                     }
                     else
                     {
-                        targetObj.transform.Translate(toMove, Space.World);
+                        // Horizontal movement - snap both X and Z to grid
+                        localPos.x = Mathf.Round(localPos.x / gridSize) * gridSize;
+                        localPos.z = Mathf.Round(localPos.z / gridSize) * gridSize;
+                        localPos.y = oldPos.y; // Preserve Y
                     }
-                    Logger.DebugLog($"Moved object (global) to {targetObj.transform.position}");
+
+                    currentSelectedObj.transform.localPosition = localPos;
                 }
                 else
                 {
-                    // In local mode, move along the object's XZ plane, but allow Y for up/down
-                    Vector3 localMove = targetObj.transform.InverseTransformDirection(toMove);
-                    if (toMove.y == 0)
-                        localMove.y = 0f; // Zero out vertical movement in local space for arrow keys
-                    targetObj.transform.Translate(localMove, Space.Self);
-                    Logger.DebugLog($"Moved object (local) to {targetObj.transform.position}");
+                    // No grid - just apply the world movement
+                    currentSelectedObj.transform.position = newWorldPos;
                 }
-                if (currentSelectedObj)
+
+                // Register the action and cleanup
+                RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected,
+                    oldPos, currentSelectedObj.transform.localPosition, null, null);
+
+                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+
+                // Reset state
+                SetCurrentEditorState(EditorState.NORMAL);
+                collidingArrow = GizmosArrow.None;
+                levelHasBeenModified = true;
+            }
+            else if (currentMode == Mode.Building && previewObjectToBuildObj != null)
+            {
+                // Building mode - camera-relative movement
+                Vector3 newPos = previewObjectToBuildObj.transform.localPosition + toMove;
+
+                if (gridEnabled)
                 {
-                    RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected, oldPos, currentSelectedObj.transform.localPosition, null, null);
-                    SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+                    // Snap to grid
+                    if (movingY)
+                    {
+                        newPos.y = Mathf.Round(newPos.y / gridSize) * gridSize;
+                    }
+                    else
+                    {
+                        // Horizontal movement - snap both X and Z
+                        newPos.x = Mathf.Round(newPos.x / gridSize) * gridSize;
+                        newPos.z = Mathf.Round(newPos.z / gridSize) * gridSize;
+                    }
                 }
+
+                previewObjectToBuildObj.transform.localPosition = newPos;
             }
         }
 
@@ -2735,6 +2775,18 @@ namespace FS_LevelEditor.Editor
                     }
                 }
             }
+            else // If nothing is hit, place on grid
+            {
+                if (gridEnabled && gridVisible)
+                {
+                    Plane gridPlane = new Plane(Vector3.up, new Vector3(0, gridHeight, 0));
+                    float enter = 0f;
+                    if (gridPlane.Raycast(ray, out enter))
+                    {
+                        currentSelectedObj.transform.position = ray.GetPoint(enter);
+                    }
+                }
+            }
         }
 
         // This method is called when the scale of the object is changed, this is to adjust the gizmos scale in case the current selected object's scale is smaller than 1.
@@ -2946,15 +2998,21 @@ namespace FS_LevelEditor.Editor
 
             if (Physics.Raycast(ray, out hit, Mathf.Infinity, -1, QueryTriggerInteraction.Ignore))
             {
-                if (hit.collider.transform.parent == null)
+                // Search up the hierarchy for a GameObject with LE_Object component
+                Transform current = hit.collider.transform;
+                while (current != null)
                 {
-                    Logger.Warning($"For some reason, the object you just tried to select ({hit.collider.name}) doesn't have a parent.");
-                    obj = null;
-                    return false;
+                    if (current.GetComponent<LE_Object>() != null)
+                    {
+                        obj = current.gameObject;
+                        return true;
+                    }
+                    current = current.parent;
                 }
 
-                obj = hit.collider.transform.parent.gameObject;
-                return true;
+                Logger.Warning($"For some reason, the object you just tried to select ({hit.collider.name}) doesn't have a LE_Object component in its hierarchy.");
+                obj = null;
+                return false;
             }
             else
             {
@@ -2964,97 +3022,31 @@ namespace FS_LevelEditor.Editor
         }
 
         /// <summary>
-        /// Returns if a ray from the mouse position to real world is colliding with a gizmos arrow of an object.
+     /// Returns if a ray from the mouse position to real world is colliding with a gizmos arrow of an object.
         /// Uses prioritization to select the most appropriate axis when multiple colliders overlap.
         /// </summary>
         /// <returns></returns>
         GizmosArrow GetCollidingWithAnArrow()
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hits = Physics.RaycastAll(ray, Mathf.Infinity, -1, QueryTriggerInteraction.Collide);
+      Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            
+   // Use new gizmo API for improved axis detection
+   string hoveredAxis = gizmo.GetHoveredAxis(ray, out float hitDistance);
+            
+            if (hoveredAxis == null)
+           return GizmosArrow.None;
 
-            // Track hits with scoring
-            var arrowHits = new System.Collections.Generic.List<(GizmosArrow arrow, bool isCone, float distance, float score)>();
-
-            foreach (var hit in hits)
-            {
-                if (hit.collider != null && hit.collider.gameObject != null && hit.collider.transform.parent != null)
-                {
-                    var parent = hit.collider.transform.parent.gameObject;
-                    GizmosArrow arrow = GizmosArrow.None;
-                    bool isCone = false;
-
-                    // Check cones first (higher priority)
-                    if (parent == gizmo.XCone)
-                    {
-                        arrow = GizmosArrow.X;
-                        isCone = true;
-                    }
-                    else if (parent == gizmo.YCone)
-                    {
-                        arrow = GizmosArrow.Y;
-                        isCone = true;
-                    }
-                    else if (parent == gizmo.ZCone)
-                    {
-                        arrow = GizmosArrow.Z;
-                        isCone = true;
-                    }
-                    // Then check arrows
-                    else if (parent == gizmo.XArrow)
-                    {
-                        arrow = GizmosArrow.X;
-                    }
-                    else if (parent == gizmo.YArrow)
-                    {
-                        arrow = GizmosArrow.Y;
-                    }
-                    else if (parent == gizmo.ZArrow)
-                    {
-                        arrow = GizmosArrow.Z;
-                    }
-
-                    if (arrow != GizmosArrow.None)
-                    {
-                        // Calculate view-perpendicularity score
-                        // Higher score = axis is more perpendicular to view = better to select
-                        Vector3 axisDir = GetAxisDirection(arrow, currentSelectedObj);
-                        Vector3 viewDir = MainCam.transform.forward;
-
-                        // Score based on how perpendicular the axis is to the view direction
-                        // When dot product is close to 0, axis is perpendicular to view (good)
-                        // When dot product is close to 1 or -1, axis is parallel to view (bad)
-                        float dotProduct = Mathf.Abs(Vector3.Dot(axisDir.normalized, viewDir.normalized));
-                        float perpendicularityScore = 1f - dotProduct; // 0 = parallel, 1 = perpendicular
-
-                        // Cone hits get significant bonus
-                        float coneBonus = isCone ? 0.5f : 0f;
-
-                        // Distance penalty (closer is slightly better)
-                        float distanceFactor = 1f / (1f + hit.distance * 0.05f);
-
-                        // Final score combines perpendicularity, cone bonus, and distance
-                        float finalScore = perpendicularityScore * 2f + coneBonus + distanceFactor * 0.2f;
-
-                        arrowHits.Add((arrow, isCone, hit.distance, finalScore));
-                    }
-                }
-            }
-
-            if (arrowHits.Count == 0)
-                return GizmosArrow.None;
-
-            // Sort by score (descending), then by distance (ascending)
-            arrowHits.Sort((a, b) =>
-         {
-             int scoreCompare = b.score.CompareTo(a.score);
-             if (scoreCompare != 0) return scoreCompare;
-             return a.distance.CompareTo(b.distance);
-         });
-
-            GizmosArrow selectedArrow = arrowHits[0].arrow;
-            StartMovingObject(selectedArrow.ToString(), ray);
-            return selectedArrow;
+       GizmosArrow arrow;
+            switch (hoveredAxis)
+       {
+          case "X": arrow = GizmosArrow.X; break;
+       case "Y": arrow = GizmosArrow.Y; break;
+      case "Z": arrow = GizmosArrow.Z; break;
+ default: return GizmosArrow.None;
+   }
+            
+    StartMovingObject(arrow.ToString(), ray);
+            return arrow;
         }
 
         Vector3 GetAxisDirection(GizmosArrow arrow, GameObject obj)

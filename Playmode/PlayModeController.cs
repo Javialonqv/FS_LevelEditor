@@ -461,7 +461,12 @@ namespace FS_LevelEditor.Playmode
 			// again...
 			Destroy(backToLEButton);
 
-			LE_Object.ResetStaticVariablesInObjects();
+            if (levelObjectsParent != null)
+            {
+                Destroy(levelObjectsParent);
+            }
+
+            LE_Object.ResetStaticVariablesInObjects();
 
 			PlaymodePauseMenuPatcher.DestroyPatcher();
 			UpgradePatches.Unpatch();
@@ -500,9 +505,25 @@ namespace FS_LevelEditor.Playmode
 
 			// Create a new GameObject with ObjectiveController
 			GameObject objectiveObj = new GameObject("Obj_" + objectiveName);
-			ObjectiveController objectiveController = objectiveObj.AddComponent<ObjectiveController>();
+			objectiveObj.tag = "Objective";
+			objectiveObj.layer = LayerMask.NameToLayer("Ignore Raycast");
+            ObjectiveController objectiveController = objectiveObj.AddComponent<ObjectiveController>();
 
-			objectiveController.objective = objectiveName;
+            objectiveController.hasMarker = false;
+			objectiveController.markerDelay = 0;
+			objectiveController.markerObj = null;
+			objectiveController.onActivated = new UnityEngine.Events.UnityEvent();
+			objectiveController.onAccomplished = new UnityEngine.Events.UnityEvent();
+			objectiveController.BlocSwitchs = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GameObject>(0);
+			objectiveController.dialogToActivate = false;
+			objectiveController.dialogTimeStart = 0;
+			objectiveController.objectiveDelay = 0;
+			objectiveController.currentKine = null;
+			objectiveController.onMarkerDisplayed = new UnityEngine.Events.UnityEvent();
+			objectiveController.useActivationConditions = false;
+			objectiveController.doorsToBeOpen = new Il2CppSystem.Collections.Generic.List<PorteScript>(0);
+			objectiveController.killPlanesToBeDisabled = new Il2CppSystem.Collections.Generic.List<KillPlaneController>(0);
+            objectiveController.objective = objectiveName;
 			objectiveController.Activate();
 			objectiveController.currentlyActive = true;
 

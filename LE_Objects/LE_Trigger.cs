@@ -148,7 +148,7 @@ namespace FS_LevelEditor
             }
 
             // For Once and Multiple modes, trigger the events
-            if (mode == TriggerMode.Once || mode == TriggerMode.Multiple)
+            if ((mode == TriggerMode.Once && !hasBeenTriggered) || mode == TriggerMode.Multiple)
             {
                 eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnEnter"]);
 

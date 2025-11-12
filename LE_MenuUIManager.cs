@@ -1027,8 +1027,9 @@ namespace FS_LevelEditor
             nextPageButton.button.isEnabled = currentLevelsGridID < lvlButtonsGrids.Count - 1;
 
             //Why leave them on the screen if you're on the first or last page?
-            previousPageButton.gameObject.SetActive(previousPageButton.button.isEnabled);
-            nextPageButton.gameObject.SetActive(nextPageButton.button.isEnabled);
+            // Cuz it will look MUCH better with them on screen - Gray from future.
+            //previousPageButton.gameObject.SetActive(previousPageButton.button.isEnabled);
+            //nextPageButton.gameObject.SetActive(nextPageButton.button.isEnabled);
         }
         private void OnApplicationFocus(bool hasFocus)
         {

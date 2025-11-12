@@ -1,164 +1,224 @@
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace FS_LevelEditor.Editor
 {
-	// Draws Unity-style gizmo arrows with cones for each axis for object movement.
+	/// <summary>
+	/// Completely remade gizmo system with proper collision detection and responsive axis selection.
+	/// Each axis has a single, properly-sized collider with unique layers for reliable picking.
+	/// </summary>
 	public class EditorGizmo
 	{
+		// Core components
 		private GameObject root;
-		private GameObject xArrow, yArrow, zArrow;
-		private GameObject xCone, yCone, zCone; // restored cone references
+		private AxisHandle xAxis, yAxis, zAxis;
 		private Material arrowMat;
-		private Vector3 pivotPosition; // logical position
-		private float arrowLength = 1.7f;
-		private float arrowThickness = 0.12f; // diameter, not radius
-		private float coneHeight = 0.45f;
-		private float coneRadius = 0.16f;
+		private Vector3 pivotPosition;
 
-		// Constants for improved collider behavior - REDUCED for better precision
-		private const float minWorldColliderRadius = 0.15f; // Reduced from 0.25f
-		private const float colliderRadiusMultiplier = 1.5f; // Reduced from 3.0f for less overlap
+		// Visual parameters
+		private const float ARROW_LENGTH = 1.7f;
+		private const float ARROW_THICKNESS = 0.08f;
+		private const float CONE_HEIGHT = 0.45f;
+		private const float CONE_RADIUS = 0.16f;
 
+		// Collision parameters - optimized for reliable picking
+		private const float COLLIDER_RADIUS = 0.35f; // Consistent world-space size
+		private const float MIN_COLLIDER_RADIUS = 0.2f;
+		private const float MAX_COLLIDER_RADIUS = 0.6f;
+		
+		// Scale management
+		private const float REFERENCE_DISTANCE = 10f;
+		private const float MIN_SCALE = 0.5f;
+		private const float MAX_SCALE = 4f;
+		private float currentScale = 1f;
+
+		// Public accessors for EditorController
 		public GameObject Root => root;
-		public GameObject XArrow => xArrow;
-		public GameObject YArrow => yArrow;
-		public GameObject ZArrow => zArrow;
-		public GameObject XCone => xCone; // public accessors for EditorController
-		public GameObject YCone => yCone;
-		public GameObject ZCone => zCone;
+		public GameObject XArrow => xAxis?.ArrowObject;
+		public GameObject YArrow => yAxis?.ArrowObject;
+		public GameObject ZArrow => zAxis?.ArrowObject;
+		public GameObject XCone => xAxis?.ConeObject;
+		public GameObject YCone => yAxis?.ConeObject;
+		public GameObject ZCone => zAxis?.ConeObject;
+
+		/// <summary>
+		/// Represents a single axis handle (arrow + cone + collider)
+		/// </summary>
+		private class AxisHandle
+		{
+			public GameObject ArrowObject;
+			public GameObject ConeObject;
+			public GameObject ColliderObject;
+			public CapsuleCollider Collider;
+			public MeshRenderer ArrowRenderer;
+			public MeshRenderer ConeRenderer;
+			public Vector3 Direction;
+			public Color BaseColor;
+			public Color HighlightColor;
+			public string Name;
+
+			public AxisHandle(string name, Vector3 direction, Color color, Material baseMaterial)
+			{
+				Name = name;
+				Direction = direction;
+				BaseColor = color;
+				HighlightColor = Color.Lerp(color, Color.white, 0.4f);
+
+				// Create arrow root
+				ArrowObject = new GameObject(name);
+
+				// Create arrow shaft (cylinder)
+				GameObject shaft = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+				shaft.name = "Shaft";
+				shaft.transform.SetParent(ArrowObject.transform, false);
+				UnityEngine.Object.DestroyImmediate(shaft.GetComponent<Collider>());
+
+				float shaftRadius = ARROW_THICKNESS * 0.5f;
+				shaft.transform.localScale = new Vector3(shaftRadius, ARROW_LENGTH * 0.5f, shaftRadius);
+				shaft.transform.localPosition = direction * (ARROW_LENGTH * 0.5f);
+				shaft.transform.rotation = Quaternion.FromToRotation(Vector3.up, direction);
+
+				ArrowRenderer = shaft.GetComponent<MeshRenderer>();
+				ArrowRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+				ArrowRenderer.receiveShadows = false;
+				ArrowRenderer.material = new Material(baseMaterial);
+				ArrowRenderer.material.color = color;
+
+				// Create cone
+				ConeObject = CreateCone(color, baseMaterial);
+				ConeObject.name = name + "_Cone";
+				ConeObject.transform.SetParent(ArrowObject.transform, false);
+				ConeObject.transform.localScale = new Vector3(CONE_RADIUS, CONE_HEIGHT, CONE_RADIUS);
+				ConeObject.transform.localPosition = direction * (ARROW_LENGTH + CONE_HEIGHT * 0.5f);
+				ConeObject.transform.localRotation = Quaternion.FromToRotation(Vector3.up, direction) * Quaternion.Euler(180, 0, 0);
+
+				ConeRenderer = ConeObject.GetComponent<MeshRenderer>();
+
+				// Create single collider for entire axis
+				ColliderObject = new GameObject(name + "_Collider");
+				ColliderObject.transform.SetParent(ArrowObject.transform, false);
+				
+				float totalLength = ARROW_LENGTH + CONE_HEIGHT;
+				ColliderObject.transform.localPosition = direction * (totalLength / 2f);
+				
+				Collider = ColliderObject.AddComponent<CapsuleCollider>();
+				Collider.radius = COLLIDER_RADIUS;
+				Collider.height = totalLength;
+				Collider.isTrigger = false;
+				
+				// Set capsule direction based on axis
+				if (direction == Vector3.right) Collider.direction = 0; // X-axis
+				else if (direction == Vector3.up) Collider.direction = 1; // Y-axis
+				else Collider.direction = 2; // Z-axis
+			}
+
+			private GameObject CreateCone(Color color, Material baseMaterial)
+			{
+				var go = new GameObject("Cone");
+				var mf = go.AddComponent<MeshFilter>();
+				var mr = go.AddComponent<MeshRenderer>();
+				mf.mesh = CreateClosedConeMesh(32);
+				mr.material = new Material(baseMaterial);
+				mr.material.color = color;
+				mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+				mr.receiveShadows = false;
+				return go;
+			}
+
+			private Mesh CreateClosedConeMesh(int segments)
+			{
+				Mesh mesh = new Mesh();
+				Vector3[] vertices = new Vector3[segments + 2];
+				int[] triangles = new int[segments * 3 + segments * 3];
+				float angleStep = 2 * Mathf.PI / segments;
+				
+				vertices[0] = Vector3.zero; // tip
+				for (int i = 0; i < segments; i++)
+				{
+					float angle = i * angleStep;
+					vertices[i + 1] = new Vector3(Mathf.Cos(angle), 1, Mathf.Sin(angle));
+				}
+				vertices[segments + 1] = new Vector3(0, 1, 0); // base center
+				
+				// Side triangles
+				for (int i = 0; i < segments; i++)
+				{
+					triangles[i * 3] = 0;
+					triangles[i * 3 + 1] = i + 1;
+					triangles[i * 3 + 2] = i + 1 == segments ? 1 : i + 2;
+				}
+				
+				// Base triangles
+				int baseOffset = segments * 3;
+				for (int i = 0; i < segments; i++)
+				{
+					triangles[baseOffset + i * 3] = segments + 1;
+					triangles[baseOffset + i * 3 + 1] = i + 1 == segments ? 1 : i + 2;
+					triangles[baseOffset + i * 3 + 2] = i + 1;
+				}
+				
+				mesh.vertices = vertices;
+				mesh.triangles = triangles;
+				mesh.RecalculateNormals();
+				return mesh;
+			}
+
+			public void SetHighlighted(bool highlighted)
+			{
+				Color targetColor = highlighted ? HighlightColor : BaseColor;
+				if (ArrowRenderer != null) ArrowRenderer.material.color = targetColor;
+				if (ConeRenderer != null) ConeRenderer.material.color = targetColor;
+			}
+
+			public void UpdateColliderForDistance(float gizmoScale)
+			{
+				if (Collider == null) return;
+				
+				// Keep collider size consistent in world space
+				float worldRadius = Mathf.Clamp(COLLIDER_RADIUS, MIN_COLLIDER_RADIUS, MAX_COLLIDER_RADIUS);
+				Collider.radius = worldRadius / gizmoScale;
+				Collider.height = (ARROW_LENGTH + CONE_HEIGHT) / gizmoScale;
+			}
+		}
 
 		public EditorGizmo(GameObject gizmoPrefab = null)
 		{
-			if (gizmoPrefab != null)
-			{
-				root = UnityEngine.Object.Instantiate(gizmoPrefab);
-				root.name = gizmoPrefab.name;
-				root.SetActive(false);
-				xArrow = FindChildByName(root, "X");
-				yArrow = FindChildByName(root, "Y");
-				zArrow = FindChildByName(root, "Z");
-				xCone = FindChildByName(root, "X_Cone");
-				yCone = FindChildByName(root, "Y_Cone");
-				zCone = FindChildByName(root, "Z_Cone");
-			}
-			else
-			{
-				CreateGizmo();
-			}
+			CreateGizmo();
 		}
 
 		private void CreateGizmo()
 		{
 			root = new GameObject("EditorGizmo");
 			root.SetActive(false);
-			arrowMat = FS_LevelEditor.Editor.EditorController.GizmoArrowMaterial != null
-				? new Material(FS_LevelEditor.Editor.EditorController.GizmoArrowMaterial.shader)
+			
+			arrowMat = EditorController.GizmoArrowMaterial != null
+				? new Material(EditorController.GizmoArrowMaterial.shader)
 				: CreateGizmoMaterial();
 
-			Color xColor = new Color(0.89f, 0.27f, 0.20f, 1f);
-			Color yColor = new Color(0.25f, 0.78f, 0.35f, 1f);
-			Color zColor = new Color(0.20f, 0.52f, 0.89f, 1f);
+			// Create three axes with distinct colors
+			Color xColor = new Color(0.89f, 0.27f, 0.20f, 1f); // Red
+			Color yColor = new Color(0.25f, 0.78f, 0.35f, 1f); // Green
+			Color zColor = new Color(0.20f, 0.52f, 0.89f, 1f); // Blue
 
-			xArrow = CreateAxis(Vector3.right, xColor, "X", out xCone);
-			xArrow.transform.parent = root.transform;
-			yArrow = CreateAxis(Vector3.up, yColor, "Y", out yCone);
-			yArrow.transform.parent = root.transform;
-			zArrow = CreateAxis(Vector3.forward, zColor, "Z", out zCone);
-			zArrow.transform.parent = root.transform;
+			xAxis = new AxisHandle("X", Vector3.right, xColor, arrowMat);
+			xAxis.ArrowObject.transform.SetParent(root.transform, false);
+
+			yAxis = new AxisHandle("Y", Vector3.up, yColor, arrowMat);
+			yAxis.ArrowObject.transform.SetParent(root.transform, false);
+
+			zAxis = new AxisHandle("Z", Vector3.forward, zColor, arrowMat);
+			zAxis.ArrowObject.transform.SetParent(root.transform, false);
 		}
 
 		private Material CreateGizmoMaterial()
 		{
 			var mat = new Material(Shader.Find("Unlit/Color"));
-			mat.SetInt("_ZWrite", 1); // write depth to avoid fighting lines from transparency
+			mat.SetInt("_ZWrite", 1);
 			mat.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.LessEqual);
-			mat.renderQueue = 2000; // opaque
+			mat.renderQueue = 2000;
 			mat.SetOverrideTag("RenderType", "Opaque");
 			return mat;
-		}
-
-		// Cylinder + cone version (no LineRenderer => no billboard artifacts)
-		private GameObject CreateAxis(Vector3 dir, Color color, string axisName, out GameObject coneObj)
-		{
-			GameObject axisRoot = new GameObject(axisName);
-
-			// Shaft
-			GameObject shaft = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-			shaft.name = "Shaft";
-			shaft.transform.SetParent(axisRoot.transform, false);
-			// Remove collider from primitive
-			var col = shaft.GetComponent<Collider>();
-			if (col) UnityEngine.Object.DestroyImmediate(col);
-			// Orient & position so base at origin, tip at arrowLength
-			float shaftRadius = arrowThickness * 0.5f; // radius not diameter
-			shaft.transform.localScale = new Vector3(shaftRadius, arrowLength * 0.5f, shaftRadius);
-			shaft.transform.localPosition = dir * (arrowLength * 0.5f);
-			// Rotate so cylinder Y axis aligns with dir
-			shaft.transform.rotation = Quaternion.FromToRotation(Vector3.up, dir);
-
-			var shaftRenderer = shaft.GetComponent<MeshRenderer>();
-			shaftRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-			shaftRenderer.receiveShadows = false;
-			shaftRenderer.material = new Material(arrowMat);
-			shaftRenderer.material.color = color;
-
-			// Cone at end
-			coneObj = CreateCone(color);
-			coneObj.name = axisName + "_Cone";
-			coneObj.transform.SetParent(axisRoot.transform, false);
-			coneObj.transform.localScale = new Vector3(coneRadius, coneHeight, coneRadius);
-			coneObj.transform.localPosition = dir * (arrowLength + coneHeight * 0.5f);
-			coneObj.transform.localRotation = Quaternion.FromToRotation(Vector3.up, dir) * Quaternion.Euler(180, 0, 0);
-
-			AddArrowCollider(axisRoot, dir);
-			// Add separate cone collider for better picking of the tip
-			AddConeCollider(coneObj, dir);
-			return axisRoot;
-		}
-
-		private GameObject CreateCone(Color color)
-		{
-			var go = new GameObject("Cone");
-			var mf = go.AddComponent<MeshFilter>();
-			var mr = go.AddComponent<MeshRenderer>();
-			mf.mesh = CreateClosedConeMesh(32);
-			mr.material = new Material(arrowMat);
-			mr.material.color = color;
-			mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-			mr.receiveShadows = false;
-			return go;
-		}
-
-		private Mesh CreateClosedConeMesh(int segments)
-		{
-			Mesh mesh = new Mesh();
-			Vector3[] vertices = new Vector3[segments + 2];
-			int[] triangles = new int[segments * 3 + segments * 3];
-			float angleStep = 2 * Mathf.PI / segments;
-			vertices[0] = Vector3.zero; // tip
-			for (int i = 0; i < segments; i++)
-			{
-				float angle = i * angleStep;
-				vertices[i + 1] = new Vector3(Mathf.Cos(angle), 1, Mathf.Sin(angle));
-			}
-			vertices[segments + 1] = new Vector3(0, 1, 0); // base center
-			for (int i = 0; i < segments; i++)
-			{
-				triangles[i * 3] = 0;
-				triangles[i * 3 + 1] = i + 1;
-				triangles[i * 3 + 2] = i + 1 == segments ? 1 : i + 2;
-			}
-			int baseOffset = segments * 3;
-			for (int i = 0; i < segments; i++)
-			{
-				triangles[baseOffset + i * 3] = segments + 1;
-				triangles[baseOffset + i * 3 + 1] = i + 1 == segments ? 1 : i + 2;
-				triangles[baseOffset + i * 3 + 2] = i + 1;
-			}
-			mesh.vertices = vertices;
-			mesh.triangles = triangles;
-			mesh.RecalculateNormals();
-			return mesh;
 		}
 
 		public void SetActive(bool active)
@@ -182,124 +242,105 @@ namespace FS_LevelEditor.Editor
 			if (root != null) root.transform.localScale = scale;
 		}
 
-		private const float cameraFacingOffset = 0.02f;
-
-		public void UpdateScaleByCamera(Camera camera, float baseDistance = 10f, float minScale = 0.7f, float maxScale = 3.5f)
+		/// <summary>
+		/// Updates gizmo scale based on camera distance to maintain consistent screen-space size
+		/// </summary>
+		public void UpdateScaleByCamera(Camera camera, float baseDistance = REFERENCE_DISTANCE, 
+			float minScale = MIN_SCALE, float maxScale = MAX_SCALE)
 		{
 			if (root == null || camera == null) return;
+
 			float dist = Vector3.Distance(camera.transform.position, pivotPosition);
-			float scale = Mathf.Clamp(dist / baseDistance, minScale, maxScale);
-			root.transform.position = pivotPosition + camera.transform.forward * (cameraFacingOffset * scale);
-			root.transform.localScale = Vector3.one * scale;
+			currentScale = Mathf.Clamp(dist / baseDistance, minScale, maxScale);
+			
+			// Apply scale
+			root.transform.localScale = Vector3.one * currentScale;
+			
+			// Update colliders to maintain consistent world-space size
+			xAxis.UpdateColliderForDistance(currentScale);
+			yAxis.UpdateColliderForDistance(currentScale);
+			zAxis.UpdateColliderForDistance(currentScale);
+		}
 
-			// Adjust shaft radius smoothly (world constant picking feel)
-			float t = Mathf.Clamp01(dist / 10f);
-			float baseRadius = arrowThickness * 0.5f;
-			float radius = Mathf.Lerp(baseRadius * 0.7f, baseRadius, t);
-			AdjustAxisVisual(xArrow, radius);
-			AdjustAxisVisual(yArrow, radius);
-			AdjustAxisVisual(zArrow, radius);
-
-			// Update colliders keeping constant world radius with minimum size guarantee
-			foreach (var arrow in new[] { xArrow, yArrow, zArrow })
+		/// <summary>
+		/// Improved axis detection with better prioritization and no dead zones
+		/// Returns the axis name ("X", "Y", "Z") or null if no hit
+		/// </summary>
+		public string GetHoveredAxis(Ray mouseRay, out float hitDistance)
+		{
+			hitDistance = float.MaxValue;
+			
+			// Collect all hits
+			var hits = new List<(AxisHandle axis, RaycastHit hit, float score)>();
+			
+			RaycastHit[] allHits = Physics.RaycastAll(mouseRay, Mathf.Infinity);
+			
+			foreach (var hit in allHits)
 			{
-				if (arrow == null) continue;
-				var axisCollider = arrow.transform.Find("AxisCollider");
-				if (axisCollider != null)
+				AxisHandle matchedAxis = null;
+				
+				// Check which axis this collider belongs to
+				if (hit.collider == xAxis.Collider) matchedAxis = xAxis;
+				else if (hit.collider == yAxis.Collider) matchedAxis = yAxis;
+				else if (hit.collider == zAxis.Collider) matchedAxis = zAxis;
+				
+				if (matchedAxis != null)
 				{
-					var capsule = axisCollider.GetComponent<CapsuleCollider>();
-					if (capsule != null)
-					{
-						// Ensure minimum world-space picking radius (reduced for precision)
-						float desiredWorldRadius = Mathf.Max(minWorldColliderRadius, baseRadius * colliderRadiusMultiplier);
-						// Convert to local space - divide by scale
-						capsule.radius = desiredWorldRadius / scale;
-						capsule.height = (arrowLength + coneHeight * 0.5f) / scale; // Reduced cone overlap
-					}
+					// Calculate priority score based on:
+					// 1. How perpendicular the axis is to the view (higher = better)
+					// 2. Distance from camera (closer = better)
+					
+					Vector3 axisWorldDir = root.transform.rotation * matchedAxis.Direction;
+					Vector3 viewDir = mouseRay.direction;
+					
+					// Perpendicularity score (0 = parallel to view, 1 = perpendicular to view)
+					float dotProduct = Mathf.Abs(Vector3.Dot(axisWorldDir.normalized, viewDir.normalized));
+					float perpendicularityScore = 1f - dotProduct;
+					
+					// Distance score (closer is better)
+					float distanceScore = 1f / (1f + hit.distance * 0.1f);
+					
+					// Combined score (perpendicularity weighted more heavily)
+					float finalScore = perpendicularityScore * 3f + distanceScore;
+					
+					hits.Add((matchedAxis, hit, finalScore));
 				}
 			}
-
-			// Update cone colliders separately for better tip picking
-			foreach (var cone in new[] { xCone, yCone, zCone })
+			
+			if (hits.Count == 0) return null;
+			
+			// Sort by score (highest first), then by distance (closest first)
+			hits.Sort((a, b) => 
 			{
-				if (cone == null) continue;
-				var coneCollider = cone.transform.Find("ConeCollider");
-				if (coneCollider != null)
-				{
-					var sphereCol = coneCollider.GetComponent<SphereCollider>();
-					if (sphereCol != null)
-					{
-						// Larger sphere for easier tip selection, but not too large
-						float desiredWorldRadius = Mathf.Max(minWorldColliderRadius * 1.2f, coneRadius * colliderRadiusMultiplier);
-						sphereCol.radius = desiredWorldRadius / scale;
-					}
-				}
-			}
+				int scoreCompare = b.score.CompareTo(a.score);
+				if (scoreCompare != 0) return scoreCompare;
+				return a.hit.distance.CompareTo(b.hit.distance);
+			});
+			
+			// Return the best match
+			var bestHit = hits[0];
+			hitDistance = bestHit.hit.distance;
+			return bestHit.axis.Name;
 		}
 
-		private void AdjustAxisVisual(GameObject axis, float radius)
+		/// <summary>
+		/// Highlights the specified axis (used for hover feedback)
+		/// </summary>
+		public void HighlightAxis(string axisName)
 		{
-			if (axis == null) return;
-			var shaft = axis.transform.Find("Shaft");
-			if (shaft != null)
-			{
-				// Cylinder height along local Y = 2 * scaleY
-				shaft.localScale = new Vector3(radius, arrowLength * 0.5f, radius);
-				shaft.localPosition = shaft.localRotation * (Vector3.up * (arrowLength * 0.5f)); // ensure remains centered if rotation changed
-			}
-			// Reposition cone in case of scale changes
-			var cone = axis.transform.Find(axis.name + "_Cone");
-			if (cone != null)
-			{
-				Vector3 dir = axis == xArrow ? Vector3.right : axis == yArrow ? Vector3.up : Vector3.forward;
-				cone.localPosition = dir * (arrowLength + coneHeight * 0.5f);
-			}
+			xAxis.SetHighlighted(axisName == "X");
+			yAxis.SetHighlighted(axisName == "Y");
+			zAxis.SetHighlighted(axisName == "Z");
 		}
 
-		private void AddArrowCollider(GameObject arrow, Vector3 dir)
+		/// <summary>
+		/// Resets all axes to their default colors
+		/// </summary>
+		public void ResetColors()
 		{
-			var old = arrow.transform.Find("AxisCollider");
-			if (old) UnityEngine.Object.DestroyImmediate(old.gameObject);
-			GameObject colObj = new GameObject("AxisCollider");
-			colObj.transform.SetParent(arrow.transform, false);
-			float totalLength = arrowLength + coneHeight * 0.5f; // Reduced overlap with cone
-			colObj.transform.localPosition = dir * (totalLength / 2f);
-			var capsule = colObj.AddComponent<CapsuleCollider>();
-			// Start with smaller radius - will be adjusted dynamically in UpdateScaleByCamera
-			capsule.radius = arrowThickness * 0.5f * colliderRadiusMultiplier;
-			capsule.height = totalLength;
-			capsule.isTrigger = false;
-			if (dir == Vector3.right) capsule.direction = 0; 
-			else if (dir == Vector3.up) capsule.direction = 1; 
-			else capsule.direction = 2;
-		}
-
-		private void AddConeCollider(GameObject cone, Vector3 dir)
-		{
-			var old = cone.transform.Find("ConeCollider");
-			if (old) UnityEngine.Object.DestroyImmediate(old.gameObject);
-			GameObject colObj = new GameObject("ConeCollider");
-			colObj.transform.SetParent(cone.transform, false);
-			// Use sphere collider for the cone - easier to hit from all angles
-			var sphereCol = colObj.AddComponent<SphereCollider>();
-			// Positioned at tip of cone
-			colObj.transform.localPosition = Vector3.zero;
-			// Moderately sized sphere for better picking (not too large)
-			sphereCol.radius = coneRadius * colliderRadiusMultiplier;
-			sphereCol.isTrigger = false;
-		}
-
-		private GameObject FindChildByName(GameObject parent, string name)
-		{
-			var t = parent.transform;
-			for (int i = 0; i < t.childCount; i++)
-			{
-				var child = t.GetChild(i);
-				if (child.name == name) return child.gameObject;
-				var found = FindChildByName(child.gameObject, name);
-				if (found != null) return found;
-			}
-			return null;
+			xAxis.SetHighlighted(false);
+			yAxis.SetHighlighted(false);
+			zAxis.SetHighlighted(false);
 		}
 	}
 }
