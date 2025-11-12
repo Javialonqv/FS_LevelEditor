@@ -112,7 +112,7 @@ namespace FS_LevelEditor
 				controller.m_meshRenderer = button.GetChild("ButtonMesh").GetComponent<MeshRenderer>();
 			} else
             {
-                var nofuckingthing = new GameObject().AddComponent<MeshRenderer>();
+                var nofuckingthing = new GameObject("ShouldBeSaved").AddComponent<MeshRenderer>();
 				controller.m_meshRenderer = nofuckingthing;
 				controller.cyanLightbandPlane = nofuckingthing;
 				controller.cyanPlane = nofuckingthing;

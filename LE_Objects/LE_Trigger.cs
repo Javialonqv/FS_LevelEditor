@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.Playmode;
 using Il2Cpp;
 using System;
 using System.Collections.Generic;
@@ -124,33 +125,66 @@ namespace FS_LevelEditor
 			eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnExit"]);
 		}
 
-		void ExecuteOnEnterEvents()
-		{
-			TriggerMode mode = (TriggerMode)properties["TriggerMode"];
+        void ExecuteOnEnterEvents()
+        {
+            TriggerMode mode = (TriggerMode)properties["TriggerMode"];
 
-			// Skip player triggers when in cube-only mode (cubes are handled by OnCubeEnter)
-			if (mode == TriggerMode.CubeOnly) return;
+            // Skip player triggers when in cube-only mode (cubes are handled by OnCubeEnter)
+            if (mode == TriggerMode.CubeOnly) return;
 
-			// Check if this is Once mode and already triggered
-			if (mode == TriggerMode.Once && hasBeenTriggered)
-			{
-				return; // Don't trigger again
-			}
+            // Check if this is Once mode and already triggered
+            if (mode == TriggerMode.Once && hasBeenTriggered)
+            {
+                // Special case: If this trigger creates an objective, check if the objective still exists
+                // If it doesn't exist (was failed/completed), allow re-triggering
+                if (ShouldAllowRetriggerForObjective())
+                {
+                    hasBeenTriggered = false; // Reset so it can trigger again
+                }
+                else
+                {
+                    return; // Don't trigger again
+                }
+            }
 
-			// For Once and Multiple modes, trigger the events
-			if (mode == TriggerMode.Once || mode == TriggerMode.Multiple)
-			{
-				eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnEnter"]);
+            // For Once and Multiple modes, trigger the events
+            if ((mode == TriggerMode.Once && !hasBeenTriggered) || mode == TriggerMode.Multiple)
+            {
+                eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnEnter"]);
 
-				// Mark as triggered for Once mode
-				if (mode == TriggerMode.Once)
-				{
-					hasBeenTriggered = true;
-				}
-			}
-		}
+                // Mark as triggered for Once mode
+                if (mode == TriggerMode.Once)
+                {
+                    hasBeenTriggered = true;
+                }
+            }
+        }
 
-		void ExecuteOnExitEvents()
+        private bool ShouldAllowRetriggerForObjective()
+        {
+            var onEnterEvents = (List<LE_Event>)properties["OnEnter"];
+
+            foreach (var evt in onEnterEvents)
+            {
+                // If this event creates an objective, check if it exists
+                if (evt.isForObjective && evt.objectiveState == LE_Event.ObjectiveState.Create)
+                {
+                    // Check if the objective still exists in PlayModeController
+                    if (PlayModeController.Instance != null)
+                    {
+                        bool objectiveExists = PlayModeController.Instance.DoesObjectiveExist(evt.objectiveName);
+                        if (!objectiveExists)
+                        {
+                            return true; // Allow re-trigger since objective no longer exists
+                        }
+                    }
+                }
+            }
+
+            return false; // Don't allow re-trigger
+        }
+
+        void ExecuteOnExitEvents()
 		{
 			TriggerMode mode = (TriggerMode)properties["TriggerMode"];
 

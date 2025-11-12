@@ -1,6 +1,6 @@
 ﻿using FS_LevelEditor;
+using FS_LevelEditor.WaypointSupports;
 using Il2Cpp;
-using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using UnityEngine;
 using FS_LevelEditor.Editor;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
-using FS_LevelEditor.WaypointSupports;
 
 namespace FS_LevelEditor
 {

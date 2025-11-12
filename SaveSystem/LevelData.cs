@@ -17,113 +17,117 @@ using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor.SaveSystem
 {
-	public enum UpgradeType
-	{
-		DODGE,
-		SPRINT,
-		HYPER_SPEED,
-		JETPACK,
-		HEALTH,
-		SPEED,
-		TASER_CAPACITY,
-		HEALTH_BACKPACK,
-		TASER_BACKPACK,
-		TASER_POWER,
-		STEALTH,
-		AIM_STABILIZER,
-		HOVER,
-		SCOPE,
-		SAFE_LANDING,
-		UV_FLASHLIGHT,
-		SCANNER
-	}
-	public class UpgradeSaveData
-	{
-		public UpgradeType type { get; set; }
-		public bool active { get; set; }
-		public int level { get; set; }
+    public enum UpgradeType
+    {
+        DODGE,
+        SPRINT,
+        HYPER_SPEED,
+        JETPACK,
+        HEALTH,
+        SPEED,
+        TASER_CAPACITY,
+        HEALTH_BACKPACK,
+        TASER_BACKPACK,
+        TASER_POWER,
+        STEALTH,
+        AIM_STABILIZER,
+        HOVER,
+        SCOPE,
+        SAFE_LANDING,
+        UV_FLASHLIGHT,
+        SCANNER
+    }
+    public class UpgradeSaveData
+    {
+        public UpgradeType type { get; set; }
+        public bool active { get; set; }
+        public int level { get; set; }
 
-		public UpgradeSaveData() { }
-		public UpgradeSaveData(UpgradeType _type, bool _active, int _level)
-		{
-			type = _type;
-			active = _active;
-			level = _level;
-		}
+        public UpgradeSaveData() { }
+        public UpgradeSaveData(UpgradeType _type, bool _active, int _level)
+        {
+            type = _type;
+            active = _active;
+            level = _level;
+        }
 
-		/// <summary>
-		/// Returns true if this upgrade is effectively enabled (active and level > 0)
-		/// </summary>
-		public bool IsEnabled => active && level > 0;
+        /// <summary>
+        /// Returns true if this upgrade is effectively enabled (active and level > 0)
+        /// </summary>
+        public bool IsEnabled => active && level > 0;
 
-		/// <summary>
-		/// Sets the upgrade to disabled state (active = false, level = 0)
-		/// </summary>
-		public void SetDisabled()
-		{
-			active = false;
-			level = 0;
-		}
+        /// <summary>
+        /// Sets the upgrade to disabled state (active = false, level = 0)
+        /// </summary>
+        public void SetDisabled()
+        {
+            active = false;
+            level = 0;
+        }
 
-		/// <summary>
-		/// Sets the upgrade to enabled with specified level
-		/// </summary>
-		public void SetEnabled(int targetLevel)
-		{
-			active = true;
-			level = Math.Max(1, targetLevel); // Ensure level is at least 1 when enabled
-		}
+        /// <summary>
+        /// Sets the upgrade to enabled with specified level
+        /// </summary>
+        public void SetEnabled(int targetLevel)
+        {
+            active = true;
+            level = Math.Max(1, targetLevel); // Ensure level is at least 1 when enabled
+        }
 
-		public static UpgradePageController.UpgradeType? ConvertTypeToFSType(UpgradeType type)
-		{
-			switch (type)
-			{
-				case UpgradeType.DODGE:
-					return UpgradePageController.UpgradeType.DODGE;
-				case UpgradeType.SPRINT:
-					return UpgradePageController.UpgradeType.SPRINT;
-				case UpgradeType.HYPER_SPEED:
-					return UpgradePageController.UpgradeType.CONCENTRATION;
-				case UpgradeType.JETPACK:
-					return UpgradePageController.UpgradeType.JETPACK;
-				case UpgradeType.HEALTH:
-					return UpgradePageController.UpgradeType.HEALTH;
-				case UpgradeType.SPEED:
-					return UpgradePageController.UpgradeType.SPEED;
-				case UpgradeType.STEALTH:
-					return UpgradePageController.UpgradeType.STEALTH;
-				case UpgradeType.TASER_CAPACITY:
-					return UpgradePageController.UpgradeType.TASER;
-				case UpgradeType.HEALTH_BACKPACK:
-					return UpgradePageController.UpgradeType.HEALTHBACKPACK;
-				case UpgradeType.TASER_BACKPACK:
-					return UpgradePageController.UpgradeType.TASERBACKPACK;
-				case UpgradeType.TASER_POWER:
-					return UpgradePageController.UpgradeType.TASER_POWER;
-				case UpgradeType.AIM_STABILIZER:
-					return UpgradePageController.UpgradeType.AIM_STABILIZER;
-				case UpgradeType.HOVER:
-					return UpgradePageController.UpgradeType.HOVER;
-				case UpgradeType.SCOPE:
-					return UpgradePageController.UpgradeType.SCOPE;
-				case UpgradeType.SAFE_LANDING:
-					return UpgradePageController.UpgradeType.SAFE_LANDING;
-				case UpgradeType.UV_FLASHLIGHT:
-					return UpgradePageController.UpgradeType.INFRARED_FLASHLIGHT;
-				case UpgradeType.SCANNER:
-					return UpgradePageController.UpgradeType.SCANNER;
+        public static UpgradePageController.UpgradeType? ConvertTypeToFSType(UpgradeType type)
+        {
+            switch (type)
+            {
+                case UpgradeType.DODGE:
+                    return UpgradePageController.UpgradeType.DODGE;
+                case UpgradeType.SPRINT:
+                    return UpgradePageController.UpgradeType.SPRINT;
+                case UpgradeType.HYPER_SPEED:
+                    return UpgradePageController.UpgradeType.CONCENTRATION;
+                case UpgradeType.JETPACK:
+                    return UpgradePageController.UpgradeType.JETPACK;
+                case UpgradeType.HEALTH:
+                    return UpgradePageController.UpgradeType.HEALTH;
+                case UpgradeType.SPEED:
+                    return UpgradePageController.UpgradeType.SPEED;
+                case UpgradeType.STEALTH:
+                    return UpgradePageController.UpgradeType.STEALTH;
+                case UpgradeType.TASER_CAPACITY:
+                    return UpgradePageController.UpgradeType.TASER;
+                case UpgradeType.HEALTH_BACKPACK:
+                    return UpgradePageController.UpgradeType.HEALTHBACKPACK;
+                case UpgradeType.TASER_BACKPACK:
+                    return UpgradePageController.UpgradeType.TASERBACKPACK;
+                case UpgradeType.TASER_POWER:
+                    return UpgradePageController.UpgradeType.TASER_POWER;
+                case UpgradeType.AIM_STABILIZER:
+                    return UpgradePageController.UpgradeType.AIM_STABILIZER;
+                case UpgradeType.HOVER:
+                    return UpgradePageController.UpgradeType.HOVER;
+                case UpgradeType.SCOPE:
+                    return UpgradePageController.UpgradeType.SCOPE;
+                case UpgradeType.SAFE_LANDING:
+                    return UpgradePageController.UpgradeType.SAFE_LANDING;
+                case UpgradeType.UV_FLASHLIGHT:
+                    return UpgradePageController.UpgradeType.INFRARED_FLASHLIGHT;
+                case UpgradeType.SCANNER:
+                    return UpgradePageController.UpgradeType.SCANNER;
 
-				default:
-					return null;
-			}
-		}
-	}
+                default:
+                    return null;
+            }
+        }
+    }
 
 
-	[Serializable]
+    [Serializable]
     public class LevelData
     {
         public string levelName { get; set; }
+        public string authorName { get; set; }
+        public string tags { get; set; }
+        public string description { get; set; }
+        public string thumbnailBase64 { get; set; }
         public Vector3Serializable cameraPosition { get; set; }
         public Vector3Serializable cameraRotation { get; set; }
         public long createdTime { get; set; }
@@ -210,6 +214,19 @@ namespace FS_LevelEditor.SaveSystem
                 if (oldLevelData.createdTime != 0)
                 {
                     data.createdTime = oldLevelData.createdTime;
+                }
+
+                // Preserve metadata if it exists and we're not explicitly providing new data
+                if (oldLevelData != data)
+                {
+                    if (!string.IsNullOrWhiteSpace(oldLevelData.authorName) && string.IsNullOrWhiteSpace(data.authorName))
+                        data.authorName = oldLevelData.authorName;
+                    if (!string.IsNullOrWhiteSpace(oldLevelData.tags) && string.IsNullOrWhiteSpace(data.tags))
+                        data.tags = oldLevelData.tags;
+                    if (!string.IsNullOrWhiteSpace(oldLevelData.description) && string.IsNullOrWhiteSpace(data.description))
+                        data.description = oldLevelData.description;
+                    if (!string.IsNullOrWhiteSpace(oldLevelData.thumbnailBase64) && string.IsNullOrWhiteSpace(data.thumbnailBase64))
+                        data.thumbnailBase64 = oldLevelData.thumbnailBase64;
                 }
             }
 
@@ -304,157 +321,158 @@ namespace FS_LevelEditor.SaveSystem
 
             return data;
         }
-		public static void LoadLevelDataInEditor(string levelFileNameWithoutExtension)
-		{
-			LevelData data = LoadLevelData(levelFileNameWithoutExtension);
+        public static void LoadLevelDataInEditor(string levelFileNameWithoutExtension)
+        {
+            LevelData data = LoadLevelData(levelFileNameWithoutExtension);
 
-			// Set camera properties in batch
-			var cam = Camera.main;
-			cam.transform.position = data.cameraPosition;
-			cam.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
+            // Set camera properties in batch
+            var cam = Camera.main;
+            cam.transform.position = data.cameraPosition;
+            cam.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
 
-			// Pre-allocate capacity for better performance
-			var objectsToInstantiate = new List<(LE_Object.ObjectType type, Vector3 pos, Vector3 rot, Vector3 scale)>(data.objects.Count);
+            // Pre-allocate capacity for better performance
+            var objectsToInstantiate = new List<(LE_Object.ObjectType type, Vector3 pos, Vector3 rot, Vector3 scale)>(data.objects.Count);
 
-			// Batch collect object data
-			foreach (LE_ObjectData obj in data.objects)
-			{
-				objectsToInstantiate.Add(((LE_Object.ObjectType type, Vector3 pos, Vector3 rot, Vector3 scale))(
-					obj.objectType,
-					obj.objPosition,
-					obj.objRotation,
-					obj.objScale
-				));
-			}
+            // Batch collect object data
+            foreach (LE_ObjectData obj in data.objects)
+            {
+                objectsToInstantiate.Add(((LE_Object.ObjectType type, Vector3 pos, Vector3 rot, Vector3 scale))(
+                    obj.objectType,
+                    obj.objPosition,
+                    obj.objRotation,
+                    obj.objScale
+                ));
+            }
 
-			// Clear existing objects
-			GameObject objectsParent = EditorController.Instance.levelObjectsParent;
-			objectsParent.DeleteAllChildren();
+            // Clear existing objects
+            GameObject objectsParent = EditorController.Instance.levelObjectsParent;
+            objectsParent.DeleteAllChildren();
 
-			// Batch instantiate objects
-			var instantiatedObjects = new List<(GameObject obj, LE_ObjectData data)>(data.objects.Count);
-			foreach (var objData in objectsToInstantiate)
-			{
-				var objInstance = EditorController.Instance.PlaceObject(
-					objData.type,
-					objData.pos,
-					objData.rot,
-					objData.scale,
-					false
-				);
-				if (objInstance != null)
-				{
-					instantiatedObjects.Add((objInstance, data.objects[instantiatedObjects.Count]));
-				}
-			}
+            // Batch instantiate objects
+            var instantiatedObjects = new List<(GameObject obj, LE_ObjectData data)>(data.objects.Count);
+            foreach (var objData in objectsToInstantiate)
+            {
+                var objInstance = EditorController.Instance.PlaceObject(
+                    objData.type,
+                    objData.pos,
+                    objData.rot,
+                    objData.scale,
+                    false
+                );
+                if (objInstance != null)
+                {
+                    instantiatedObjects.Add((objInstance, data.objects[instantiatedObjects.Count]));
+                }
+            }
 
-			// Batch configure objects
-			foreach (var (obj, objData) in instantiatedObjects)
-			{
-				var objClassInstance = obj.GetComponent<LE_Object>();
-				SetInstantiatedObjectProperties(objClassInstance, objData);
+            // Batch configure objects
+            foreach (var (obj, objData) in instantiatedObjects)
+            {
+                var objClassInstance = obj.GetComponent<LE_Object>();
+                SetInstantiatedObjectProperties(objClassInstance, objData);
 
-				if (!objClassInstance.setActiveAtStart)
-				{
-					obj.SetTransparentMaterials();
-				}
-			}
+                if (!objClassInstance.setActiveAtStart)
+                {
+                    obj.SetTransparentMaterials();
+                }
+            }
 
-			// Batch apply global properties
-			foreach (var keyPair in data.globalProperties)
-			{
-				if (EditorController.Instance.globalProperties.ContainsKey(keyPair.Key))
-				{
-					if (keyPair.Value is List<UpgradeSaveData>)
-					{
-						BatchApplyUpgradeData(keyPair, EditorController.Instance.globalProperties);
-					}
-					else
-					{
-						EditorController.Instance.globalProperties[keyPair.Key] = keyPair.Value;
-					}
-				}
-			}
+            // Batch apply global properties
+            foreach (var keyPair in data.globalProperties)
+            {
+                if (EditorController.Instance.globalProperties.ContainsKey(keyPair.Key))
+                {
+                    if (keyPair.Value is List<UpgradeSaveData>)
+                    {
+                        BatchApplyUpgradeData(keyPair, EditorController.Instance.globalProperties);
+                    }
+                    else
+                    {
+                        EditorController.Instance.globalProperties[keyPair.Key] = keyPair.Value;
+                    }
+                }
+            }
 
-			EditorController.Instance.AfterFinishedLoadingLevel();
-		}
+            EditorController.Instance.AfterFinishedLoadingLevel();
+        }
 
-		public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
-		{
-			// Initialize essential components first
-			LE_Object.GetTemplatesReferences();
-			PlayModeController playModeCtrl = new GameObject("PlayModeController").AddComponent<PlayModeController>();
+        public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
+        {
+            // Initialize essential components first
+            LE_Object.GetTemplatesReferences();
+            PlayModeController playModeCtrl = new GameObject("PlayModeController").AddComponent<PlayModeController>();
 
-			// Pre-load level data before any instantiation
-			LevelData data = LoadLevelData(levelFileNameWithoutExtension);
+            // Pre-load level data before any instantiation
+            LevelData data = LoadLevelData(levelFileNameWithoutExtension);
 
-			// Clear existing objects in one operation
-			GameObject objectsParent = playModeCtrl.levelObjectsParent;
-			objectsParent.DeleteAllChildren();
+            // Clear existing objects in one operation
+            GameObject objectsParent = playModeCtrl.levelObjectsParent;
+            objectsParent.DeleteAllChildren();
 
-			// Pre-allocate collections and batch object creation
-			int objectCount = data.objects.Count;
-			var objectsToInstantiate = new List<(LE_ObjectData data, GameObject obj)>(objectCount);
+            // Pre-allocate collections and batch object creation
+            int objectCount = data.objects.Count;
+            var objectsToInstantiate = new List<(LE_ObjectData data, GameObject obj)>(objectCount);
 
-			// First pass: Create all GameObjects without configuring them
-			foreach (LE_ObjectData obj in data.objects)
-			{
-				var objInstance = playModeCtrl.PlaceObject(
-					obj.objectType,
-					obj.objPosition,
-					obj.objRotation,
-					obj.objScale,
-					false
-				);
+            // First pass: Create all GameObjects without configuring them
+            foreach (LE_ObjectData obj in data.objects)
+            {
+                var objInstance = playModeCtrl.PlaceObject(
+                    obj.objectType,
+                    obj.objPosition,
+                    obj.objRotation,
+                    obj.objScale,
+                    false
+                );
 
-				if (objInstance != null)
-				{
-					objectsToInstantiate.Add((obj, objInstance));
-				}
-			}
+                if (objInstance != null)
+                {
+                    objectsToInstantiate.Add((obj, objInstance));
+                }
+            }
 
-			// Second pass: Configure all objects in batch
-			foreach (var (objData, objInstance) in objectsToInstantiate)
-			{
-				var objClassInstance = objInstance.GetComponent<LE_Object>();
-				SetInstantiatedObjectProperties(objClassInstance, objData);
+            // Second pass: Configure all objects in batch
+            foreach (var (objData, objInstance) in objectsToInstantiate)
+            {
+                var objClassInstance = objInstance.GetComponent<LE_Object>();
+                SetInstantiatedObjectProperties(objClassInstance, objData);
 
-				// Only handle inactive objects - active ones will initialize naturally
-				if (!objData.setActiveAtStart)
-				{
-					objInstance.SetActive(false);
-					objClassInstance.Start();
-				}
-			}
+                // Only handle inactive objects - active ones will initialize naturally
+                if (!objData.setActiveAtStart)
+                {
+                    objInstance.SetActive(false);
+                    objClassInstance.Start();
+                }
+            }
 
-			// Set controller properties once
-			playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
-			playModeCtrl.levelName = data.levelName;
+            // Set controller properties once
+            playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
+            playModeCtrl.levelName = data.levelName;
 
-			// Batch apply global properties
-			foreach (var keyPair in data.globalProperties)
-			{
-				if (playModeCtrl.globalProperties.ContainsKey(keyPair.Key))
-				{
-					// Handle JsonElement conversion in batch
-					if (keyPair.Value is JsonElement jsonElement)
-					{
-						var targetType = playModeCtrl.globalProperties[keyPair.Key].GetType();
-						playModeCtrl.globalProperties[keyPair.Key] = LEPropertiesConverterNew.NewDeserealize(targetType, jsonElement);
-					}
-					else
-					{
-						playModeCtrl.globalProperties[keyPair.Key] = keyPair.Value;
-					}
-				}
-			}
-		}
-		static void SetInstantiatedObjectProperties(LE_Object spawnedObject, LE_ObjectData objectData)
+            // Batch apply global properties
+            foreach (var keyPair in data.globalProperties)
+            {
+                if (playModeCtrl.globalProperties.ContainsKey(keyPair.Key))
+                {
+                    // Handle JsonElement conversion in batch
+                    if (keyPair.Value is JsonElement jsonElement)
+                    {
+                        var targetType = playModeCtrl.globalProperties[keyPair.Key].GetType();
+                        playModeCtrl.globalProperties[keyPair.Key] = LEPropertiesConverterNew.NewDeserealize(targetType, jsonElement);
+                    }
+                    else
+                    {
+                        playModeCtrl.globalProperties[keyPair.Key] = keyPair.Value;
+                    }
+                }
+            }
+        }
+        static void SetInstantiatedObjectProperties(LE_Object spawnedObject, LE_ObjectData objectData)
         {
             spawnedObject.objectID = objectData.objectID;
             spawnedObject.gameObject.name = spawnedObject.objectFullNameWithID;
             spawnedObject.setActiveAtStart = objectData.setActiveAtStart;
             spawnedObject.collision = objectData.collision;
+            spawnedObject.invisibleMesh = objectData.invisibleMesh;
             spawnedObject.waypoints = objectData.waypoints;
             spawnedObject.startMovingAtStart = objectData.moveStart;
             spawnedObject.movingSpeed = objectData.movingSpeed;
@@ -499,6 +517,20 @@ namespace FS_LevelEditor.SaveSystem
 
             Logger.Log("New level file path is: " + newPath);
             File.Move(oldPath, newPath);
+        }
+
+        /// <summary>
+        /// Checks if a level has metadata (author, tags, or description) set
+        /// </summary>
+        public static bool HasMetadata(string levelFileNameWithoutExtension)
+        {
+            LevelData data = GetLevelData(levelFileNameWithoutExtension);
+            if (data == null) return false;
+
+            return !string.IsNullOrWhiteSpace(data.authorName) ||
+                   !string.IsNullOrWhiteSpace(data.tags) ||
+         !string.IsNullOrWhiteSpace(data.description) ||
+      !string.IsNullOrWhiteSpace(data.thumbnailBase64);
         }
 
         // This method was generated by Grok AI LOL, I kinda understand it, but not at all LOL.
@@ -553,61 +585,61 @@ namespace FS_LevelEditor.SaveSystem
                 { "Upgrades", GetDefaultUpgradeSaveData() }
             };
         }
-		public static List<UpgradeSaveData> GetDefaultUpgradeSaveData()
-		{
-			return new List<UpgradeSaveData>()
-			{
+        public static List<UpgradeSaveData> GetDefaultUpgradeSaveData()
+        {
+            return new List<UpgradeSaveData>()
+            {
                 // Jetpack now disabled by default; enabled only if HasJetpack global property is true
                 new (UpgradeType.JETPACK, false, 0),
-				new (UpgradeType.HEALTH, true, 1),
-				new (UpgradeType.SPEED, true, 1),
-				new (UpgradeType.TASER_CAPACITY, true, 1),
-				new (UpgradeType.STEALTH, true, 1),
+                new (UpgradeType.HEALTH, true, 1),
+                new (UpgradeType.SPEED, true, 1),
+                new (UpgradeType.TASER_CAPACITY, true, 1),
+                new (UpgradeType.STEALTH, true, 1),
                 // Remaining upgrades start disabled / level 0
                 new (UpgradeType.DODGE, false, 0),
-				new (UpgradeType.SPRINT, false, 0),
-				new (UpgradeType.HYPER_SPEED, false, 0),
-				new (UpgradeType.HEALTH_BACKPACK, false, 0),
-				new (UpgradeType.TASER_BACKPACK, false, 0),
-				new (UpgradeType.TASER_POWER, false, 0),
-				new (UpgradeType.AIM_STABILIZER, false, 0),
-				new (UpgradeType.HOVER, false, 0),
-				new (UpgradeType.SCOPE, false, 0),
-				new (UpgradeType.SAFE_LANDING, false, 0),
-				new (UpgradeType.UV_FLASHLIGHT, false, 0),
-				new (UpgradeType.SCANNER, false, 0)
-			};
-		}
-		/// <summary>
-		/// Returns the maximum allowed level for an upgrade type based on base game limits.
-		/// Screenshot reference: most upgrades 3, some capped at 2.
-		/// </summary>
-		public static int GetUpgradeMaxLevel(UpgradeType type)
-		{
-			return type switch
-			{
-				UpgradeType.TASER_POWER => 2,
-				UpgradeType.AIM_STABILIZER => 2,
-				UpgradeType.SCOPE => 2,
-				UpgradeType.SAFE_LANDING => 2,
-				UpgradeType.UV_FLASHLIGHT => 2,
-				UpgradeType.SCANNER => 2,
-				_ => 3
-			};
-		}
+                new (UpgradeType.SPRINT, false, 0),
+                new (UpgradeType.HYPER_SPEED, false, 0),
+                new (UpgradeType.HEALTH_BACKPACK, false, 0),
+                new (UpgradeType.TASER_BACKPACK, false, 0),
+                new (UpgradeType.TASER_POWER, false, 0),
+                new (UpgradeType.AIM_STABILIZER, false, 0),
+                new (UpgradeType.HOVER, false, 0),
+                new (UpgradeType.SCOPE, false, 0),
+                new (UpgradeType.SAFE_LANDING, false, 0),
+                new (UpgradeType.UV_FLASHLIGHT, false, 0),
+                new (UpgradeType.SCANNER, false, 0)
+            };
+        }
+        /// <summary>
+        /// Returns the maximum allowed level for an upgrade type based on base game limits.
+        /// Screenshot reference: most upgrades 3, some capped at 2.
+        /// </summary>
+        public static int GetUpgradeMaxLevel(UpgradeType type)
+        {
+            return type switch
+            {
+                UpgradeType.TASER_POWER => 2,
+                UpgradeType.AIM_STABILIZER => 2,
+                UpgradeType.SCOPE => 2,
+                UpgradeType.SAFE_LANDING => 2,
+                UpgradeType.UV_FLASHLIGHT => 2,
+                UpgradeType.SCANNER => 2,
+                _ => 3
+            };
+        }
 
-		static void BatchApplyUpgradeData(KeyValuePair<string, object> keyPair, Dictionary<string, object> targetProperties)
-		{
-			if (keyPair.Value is not List<UpgradeSaveData> savedList) return;
-			if (targetProperties[keyPair.Key] is not List<UpgradeSaveData> defaultList) return;
-			var upgradeMap = savedList.ToDictionary(x => x.type);
-			for (int i = 0; i < defaultList.Count; i++)
-			{
-				if (upgradeMap.TryGetValue(defaultList[i].type, out var savedData))
-				{
-					defaultList[i] = savedData;
-				}
-			}
-		}
-	}
+        static void BatchApplyUpgradeData(KeyValuePair<string, object> keyPair, Dictionary<string, object> targetProperties)
+        {
+            if (keyPair.Value is not List<UpgradeSaveData> savedList) return;
+            if (targetProperties[keyPair.Key] is not List<UpgradeSaveData> defaultList) return;
+            var upgradeMap = savedList.ToDictionary(x => x.type);
+            for (int i = 0; i < defaultList.Count; i++)
+            {
+                if (upgradeMap.TryGetValue(defaultList[i].type, out var savedData))
+                {
+                    defaultList[i] = savedData;
+                }
+            }
+        }
+    }
 }

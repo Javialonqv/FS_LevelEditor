@@ -1,4 +1,4 @@
-﻿using FS_LevelEditor.UI_Related;
+using FS_LevelEditor.UI_Related;
 using Il2Cpp;
 using Il2CppInControl;
 using MelonLoader;
@@ -52,10 +52,19 @@ namespace FS_LevelEditor
         bool isGoingBackToLE = false;
         string levelFileNameWithoutExtensionWhileGoingBackToLE = "";
         string levelNameWhileGoingBackToLE = "";
-        public GameObject levelNameLabel;
-        public GameObject levelObjectsLabel;
         UIButtonPatcher previousPageButton, nextPageButton;
         bool trackIfComingBack = false;
+
+        // Metadata preview panel
+        GameObject metadataPreviewPanel;
+        UILabel previewLevelNameLabel;
+        UILabel previewObjectCountLabel;
+        UILabel previewAuthorLabel;
+        UILabel previewTagsLabel;
+        UILabel previewDescriptionLabel;
+        UITexture previewThumbnailTexture;
+        UILabel noPreviewLabel;
+        string currentHoveredLevel = null;
 
         void Awake()
         {
@@ -72,9 +81,9 @@ namespace FS_LevelEditor
             CreateBackButton();
             CreateAddButton();
             CreateOpenFolderButton();
-            CreateTopLevelInfo();
             CreateCurrentModVersionLabel();
             CreateCreditsLabel();
+            CreateMetadataPreviewPanel();
         }
 
         void Update()
@@ -226,6 +235,7 @@ namespace FS_LevelEditor
 
             // Destroy the FUCKING UILocalize component, I hate it.
             GameObject.Destroy(backButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            GameObject.Destroy(backButton.GetComponent<UIEventTrigger>()); // Also destroy the UIEventTrigger component.
 
             // Set the label data.
             UILabel label = backButton.GetChildAt("Background/Label").GetComponent<UILabel>();
@@ -275,6 +285,7 @@ namespace FS_LevelEditor
 
             // Destroy the FUCKING UILocalize component, I hate it.
             GameObject.Destroy(addButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
+            GameObject.Destroy(addButton.GetComponent<UIEventTrigger>()); // Also destroy the UIEventTrigger component.
 
             // Set the label data.
             UILabel label = addButton.GetChildAt("Background/Label").GetComponent<UILabel>();
@@ -401,29 +412,10 @@ namespace FS_LevelEditor
             creditsLabel.transform.localPosition = new Vector3(-830f, -368f, 0f);
         }
 
-        public void CreateTopLevelInfo()
-        {
-            GameObject labelTemplate = leMenuPanel.GetChild("Title");
-            levelNameLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
-            levelNameLabel.name = "LevelName";
-            levelNameLabel.SetActive(false);
-
-            levelNameLabel.transform.localPosition = new Vector3(0f, 330f, 0f);
-            levelNameLabel.GetComponent<UILabel>().text = "Name Test";
-
-            levelObjectsLabel = Instantiate(labelTemplate, labelTemplate.transform.parent);
-            levelObjectsLabel.name = "LevelObjectsCount";
-            levelObjectsLabel.SetActive(false);
-
-            levelObjectsLabel.transform.localPosition = new Vector3(0f, 280f, 0f);
-            levelObjectsLabel.GetComponent<UILabel>().text = "Objects: 0";
-            levelObjectsLabel.GetComponent<UILabel>().fontSize = 30;
-        }
-
         public void CreatePreviousListButton()
         {
-            // Create the button.
-            UIButtonPatcher btnPrevious = NGUI_Utils.CreateButton(leMenuPanel.transform, new Vector3(-840, -70), new Vector3Int(30, 100, 0), "<");
+            // Create the button - positioned after the metadata panel (which is at -630f with width 360)
+            UIButtonPatcher btnPrevious = NGUI_Utils.CreateButton(leMenuPanel.transform, new Vector3(-324, -70), new Vector3Int(30, 100, 0), "<");
             btnPrevious.name = "BtnPrevious";
 
             btnPrevious.onClick += PreviousLevelsList;
@@ -460,6 +452,7 @@ namespace FS_LevelEditor
                 lvlButtonsParent = new GameObject("LevelButtons");
                 lvlButtonsParent.transform.parent = leMenuPanel.transform;
                 lvlButtonsParent.transform.localScale = Vector3.one;
+                lvlButtonsParent.transform.localPosition = new Vector3(-54, 0, 0);
                 currentLevelsGridID = 0; // Initialize only on first creation
             }
             else
@@ -468,16 +461,16 @@ namespace FS_LevelEditor
                 lvlButtonsGrids.Clear();
             }
 
-            if(levels.Count <=0)
+            if (levels.Count <= 0)
             {
-                if(!noLevelsMessageLabel)
+                if (!noLevelsMessageLabel)
                 {
                     GameObject labelTemplate = leMenuPanel.GetChild("Title");
                     noLevelsMessageLabel = Instantiate(labelTemplate, leMenuPanel.transform);
                     noLevelsMessageLabel.name = "NoLevelsMessage";
                 }
 
-                // Configure the message
+                // Configure the message - position it where the level list would be
                 UILabel messageLabel = noLevelsMessageLabel.GetComponent<UILabel>();
                 messageLabel.text = "[c][b][ff6666]No levels found![/c][/b]\n[c][33ff88]Click [b]'New'[/b] to create one[-][/c]";
                 messageLabel.fontSize = 35;
@@ -485,13 +478,21 @@ namespace FS_LevelEditor
                 messageLabel.pivot = UIWidget.Pivot.Center;
                 messageLabel.width = 800;
                 messageLabel.height = 200;
-                noLevelsMessageLabel.transform.localPosition = new Vector3(0f, 0f, 0f);
+                noLevelsMessageLabel.transform.localPosition = new Vector3(280f, 0f, 0f); // Match level list position - shifted more right
                 noLevelsMessageLabel.SetActive(true);
 
                 // Ensure level buttons parent is hidden
                 lvlButtonsParent.SetActive(false);
                 previousPageButton?.gameObject.SetActive(false);
                 nextPageButton?.gameObject.SetActive(false);
+
+                // Keep metadata panel background visible but hide content
+                if (metadataPreviewPanel != null)
+                {
+                    metadataPreviewPanel.SetActive(true);
+                    HideMetadataPreview(); // This will hide the content container
+                }
+
                 return;
             }
 
@@ -514,12 +515,12 @@ namespace FS_LevelEditor
                 {
                     currentGrid = new GameObject($"Grid {(int)(i / 7)}");
                     currentGrid.transform.parent = lvlButtonsParent.transform;
-                    currentGrid.transform.localPosition = new Vector3(0f, 170f, 0f);
+                    currentGrid.transform.localPosition = new Vector3(280f, 170f, 0f); // Shifted more right to avoid arrow overlap
                     currentGrid.transform.localScale = Vector3.one;
 
                     UIGrid grid = currentGrid.AddComponent<UIGrid>();
                     grid.arrangement = UIGrid.Arrangement.Vertical;
-                    grid.cellWidth = 1640f;
+                    grid.cellWidth = 1200f; // Reduced width to prevent right edge overlap
                     grid.cellHeight = 80f;
 
                     // Initially set all grids inactive
@@ -534,7 +535,7 @@ namespace FS_LevelEditor
                 lvlButtonParent.transform.localScale = Vector3.one;
 
                 #region Create Level Button
-                UIButtonPatcher lvlButton = NGUI_Utils.CreateButton(lvlButtonParent.transform, new Vector3(-170, 0), new Vector3Int(1300, 70, 0), "");
+                UIButtonPatcher lvlButton = NGUI_Utils.CreateButton(lvlButtonParent.transform, new Vector3(30, 0), new Vector3Int(1100, 70, 0), ""); // Reduced button width
                 lvlButton.name = "Button";
 
                 // If the data is null that means this .lvl file isn't a valid level file, put the sprite color red.
@@ -546,14 +547,15 @@ namespace FS_LevelEditor
                 // Change the label text.
                 lvlButton.buttonLabel.SetAnchor((Transform)null);
                 lvlButton.buttonLabel.CheckAnchors();
-                lvlButton.buttonLabel.width = 1370;
+                lvlButton.buttonLabel.width = 700; // Adjusted for new button width
                 lvlButton.buttonLabel.height = 67;
                 lvlButton.buttonLabel.alignment = NGUIText.Alignment.Left;
                 lvlButton.buttonLabel.pivot = UIWidget.Pivot.Left;
                 // If the data is null put a warning in the beginning of the text, followed by the name of the file without extension, otherwise, put the real level name as usually.
                 lvlButton.buttonLabel.text = data != null ? data.levelName : $"[c][ffff00][INVALID LEVEL FILE][-][/c] {levelFileNameWithoutExtension}";
                 lvlButton.buttonLabel.fontSize = 40;
-                lvlButton.buttonLabel.transform.localPosition = new Vector3(-620f, 0f, 0f);
+                lvlButton.buttonLabel.transform.localPosition = new Vector3(-515f, 0f, 0f);
+                lvlButton.buttonLabel.color = Color.white;
 
                 // Only setup UIButtonScale and UIButton when is a valid level file, otherwise destroy the UIButton, UIButtonScale and UIButtonColor.
                 if (data != null)
@@ -569,6 +571,25 @@ namespace FS_LevelEditor
                     btnController.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
                     btnController.levelName = data.levelName;
                     btnController.objectsCount = data.objects.Count;
+
+                    // Add hover events for metadata preview
+                    UIEventListener hoverListener = UIEventListener.Get(lvlButton.gameObject);
+                    string capturedFileName = levelFileNameWithoutExtension;
+                    LevelData capturedData = data;
+                    hoverListener.onHover = (Action<GameObject, bool>)((go, state) =>
+                        {
+                            if (state)
+                            {
+                                ShowMetadataPreview(capturedFileName, capturedData);
+                            }
+                            else
+                            {
+                                if (currentHoveredLevel == capturedFileName)
+                                {
+                                    HideMetadataPreview();
+                                }
+                            }
+                        });
 
                     // Create tooltip for the button.
                     FractalTooltip tooltip = lvlButton.gameObject.AddComponent<FractalTooltip>();
@@ -590,10 +611,14 @@ namespace FS_LevelEditor
                 #endregion
 
                 #region Create Delete Button
-                // Create the button and set its name and positon.
-                UIButtonPatcher deleteBtn = NGUI_Utils.CreateButtonWithSprite(lvlButtonParent.transform, new Vector3(750, 0), new Vector3Int(70, 70, 0), 1, "Trash", new Vector2Int(40, 50));
+                // Create the button and set its name and positon - adjusted X position to avoid right edge overlap
+                UIButtonPatcher deleteBtn = NGUI_Utils.CreateButtonWithSprite(lvlButtonParent.transform, new Vector3(520, 0, 5), new Vector3Int(60, 60, 0), 1, "Trash", new Vector2Int(35, 45));
                 deleteBtn.name = "DeleteBtn";
 
+                // Set depth for button sprite and icon to appear on top
+                deleteBtn.GetComponent<UISprite>().depth = 2;
+                deleteBtn.buttonSprite.depth = 3;
+                deleteBtn.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>().depth = 4;
                 // Adjust the button color with red color variants.
                 UIButtonColor deleteButtonColor = deleteBtn.GetComponent<UIButtonColor>();
                 deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
@@ -609,8 +634,13 @@ namespace FS_LevelEditor
                 if (data != null)
                 {
                     #region Create Edit Button
-                    UIButtonPatcher renameBtn = NGUI_Utils.CreateButtonWithSprite(lvlButtonParent.transform, new Vector3(650, 0), new Vector3Int(70, 70, 0), 1, "Pencil", new Vector2Int(40, 50));
+                    UIButtonPatcher renameBtn = NGUI_Utils.CreateButtonWithSprite(lvlButtonParent.transform, new Vector3(440, 0, 5), new Vector3Int(60, 60, 0), 1, "Pencil", new Vector2Int(35, 45));
                     renameBtn.name = "EditBtn";
+
+                    // Set depth for button sprite and icon to appear on top
+                    renameBtn.GetComponent<UISprite>().depth = 2;
+                    renameBtn.buttonSprite.depth = 3;
+                    renameBtn.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>().depth = 4;
 
                     // Adjust the button color with blue color variants.
                     UIButtonColor renameButtonColor = renameBtn.GetComponent<UIButtonColor>();
@@ -626,15 +656,20 @@ namespace FS_LevelEditor
                     // --- Create Play Button (Green, First) ---
                     UIButtonPatcher playBtn = NGUI_Utils.CreateButtonWithSprite(
                         lvlButtonParent.transform,
-                        new Vector3(550, 0), // leftmost, adjust as needed
-                        new Vector3Int(70, 70, 0),
+                        new Vector3(360, 0, 5), // adjusted position
+                        new Vector3Int(60, 60, 0),
                         1,
                         "Triangle", // Use your play icon sprite name
-                        new Vector2Int(40, 50)
+                        new Vector2Int(35, 45)
                     );
                     playBtn.name = "PlayBtn";
 
                     playBtn.buttonSprite.transform.localEulerAngles = new Vector3(0, 0, -90);
+
+                    // Set depth for button sprite and icon to appear on top
+                    playBtn.GetComponent<UISprite>().depth = 4;
+                    playBtn.buttonSprite.depth = 3;
+                    playBtn.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>().depth = 4;
 
                     // Set green color
                     UIButtonColor playButtonColor = playBtn.GetComponent<UIButtonColor>();
@@ -695,7 +730,7 @@ namespace FS_LevelEditor
         }
         IEnumerator EnterEditorRoutine(bool isLoadingLevel = false, string levelFileNameWithoutExtension = "", string levelName = "")
         {
-            // We don't need to close any menu if we're going back to LE, since we aren't going to see the main menu.
+            // We don't need to close any menu if we're going back to LE, since we arent going to see the main menu.
             if (!isGoingBackToLE) SwitchBetweenMenuAndLEMenu(false);
 
             if (isLoadingLevel && isGoingBackToLE)
@@ -744,6 +779,27 @@ namespace FS_LevelEditor
 
             yield return new WaitForSecondsRealtime(1.5f);
             InGameUIManager.Instance.StartTotalFadeIn(3, true);
+            
+            // Wait for fade-in to complete before showing welcome notification
+            yield return new WaitForSecondsRealtime(3f);
+    
+            // Show welcome notification after fade-in completes
+            if (NotificationSystem.Instance != null && EditorController.Instance != null)
+ {
+                float camSpeed = EditorCameraMovement.Instance != null ? EditorCameraMovement.Instance.moveSpeed : 10f;
+                float gridSize = EditorController.Instance.GetGridSize();
+      
+    // Access gridHeight through reflection since it's private
+        var gridHeightField = typeof(EditorController).GetField("gridHeight", BindingFlags.NonPublic | BindingFlags.Instance);
+   float gridHeight = gridHeightField != null ? (float)gridHeightField.GetValue(EditorController.Instance) : 121.7324f;
+     
+           // Use proper line breaks for NGUI - each value on its own line
+      string message = "Welcome back!\n" +
+              $"Camera speed: {camSpeed:0.###}\n" +
+    $"Grid size: {gridSize:0.###}\n" +
+           $"Grid height: {gridHeight:0.###}";
+            NotificationSystem.Instance.ShowNotification(message, "WhiteSquare");
+ }
         }
 
         public void GoBackToLEWhileInPlayMode(string levelFileNameWithoutExtension, string levelName)
@@ -863,7 +919,7 @@ namespace FS_LevelEditor
             // So.... for some reason the damn NGUI doesn't call the OnSubmit function when it should, so I had to create my own fix... FUCK!
             lvlButtonLabelObj.AddComponent<UIInputSubmitFix>();
         }
-        void RenameLevel(string levelFileNameWithoutExtension, UIInput input)
+        void RenameLevel(String levelFileNameWithoutExtension, UIInput input)
         {
             // Trim the text.
             input.text = input.text.Trim();
@@ -943,6 +999,7 @@ namespace FS_LevelEditor
 
             lvlButtonsGrids[currentLevelsGridID].SetActive(true);
 
+            HideMetadataPreview();
             RefreshChangePageButtons();
         }
         public void NextLevelsList()
@@ -954,6 +1011,7 @@ namespace FS_LevelEditor
 
             lvlButtonsGrids[currentLevelsGridID].SetActive(true);
 
+            HideMetadataPreview();
             RefreshChangePageButtons();
         }
         void RefreshChangePageButtons()
@@ -969,8 +1027,9 @@ namespace FS_LevelEditor
             nextPageButton.button.isEnabled = currentLevelsGridID < lvlButtonsGrids.Count - 1;
 
             //Why leave them on the screen if you're on the first or last page?
-            previousPageButton.gameObject.SetActive(previousPageButton.button.isEnabled);
-            nextPageButton.gameObject.SetActive(nextPageButton.button.isEnabled);
+            // Cuz it will look MUCH better with them on screen - Gray from future.
+            //previousPageButton.gameObject.SetActive(previousPageButton.button.isEnabled);
+            //nextPageButton.gameObject.SetActive(nextPageButton.button.isEnabled);
         }
         private void OnApplicationFocus(bool hasFocus)
         {
@@ -981,14 +1040,215 @@ namespace FS_LevelEditor
                 // Reset the flag so this doesn't trigger again unintentionally.
                 trackIfComingBack = false;
 
-				CreateLevelsList();
+                CreateLevelsList();
+            }
+        }
+
+        void CreateMetadataPreviewPanel()
+        {
+            // Create the panel container
+            metadataPreviewPanel = new GameObject("MetadataPreviewPanel");
+            metadataPreviewPanel.transform.parent = leMenuPanel.transform;
+            metadataPreviewPanel.transform.localPosition = new Vector3(-630f, -70f, 0f);
+            metadataPreviewPanel.transform.localScale = Vector3.one;
+
+            // Background
+            UISprite bgSprite = metadataPreviewPanel.AddComponent<UISprite>();
+            bgSprite.atlas = NGUI_Utils.UITexturesAtlas;
+            bgSprite.spriteName = "Square_Border_Beveled_HighOpacity";
+            bgSprite.type = UIBasicSprite.Type.Sliced;
+            bgSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            bgSprite.width = 360;
+            bgSprite.height = 550;
+            bgSprite.depth = 0;
+
+            // Create a content container that will be hidden/shown
+            GameObject contentContainer = new GameObject("ContentContainer");
+            contentContainer.transform.parent = metadataPreviewPanel.transform;
+            contentContainer.transform.localPosition = Vector3.zero;
+            contentContainer.transform.localScale = Vector3.one;
+
+            // Thumbnail container with background
+            GameObject thumbnailObj = new GameObject("Thumbnail");
+            thumbnailObj.transform.parent = contentContainer.transform;
+            thumbnailObj.transform.localPosition = new Vector3(0f, 165f, 0f);
+            thumbnailObj.transform.localScale = Vector3.one;
+
+            // Background sprite for thumbnail area
+            UISprite thumbnailBg = thumbnailObj.AddComponent<UISprite>();
+            thumbnailBg.atlas = NGUI_Utils.fractalSpaceAtlas;
+            thumbnailBg.spriteName = "Square";
+            thumbnailBg.type = UIBasicSprite.Type.Sliced;
+            thumbnailBg.color = new Color(0.1f, 0.1f, 0.1f, 1f);
+            thumbnailBg.width = 330;
+            thumbnailBg.height = 185;
+            thumbnailBg.depth = 1;
+
+            // UITexture for actual thumbnail display
+            previewThumbnailTexture = thumbnailObj.AddComponent<UITexture>();
+            previewThumbnailTexture.width = 330;
+            previewThumbnailTexture.height = 185;
+            previewThumbnailTexture.depth = 2;
+            previewThumbnailTexture.color = Color.white;
+
+            // "No Preview" label on thumbnail
+            noPreviewLabel = NGUI_Utils.CreateLabel(thumbnailObj.transform, Vector3.zero, new Vector3Int(330, 185, 0),
+              "[aaaaaa]No Preview Available[-]", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            noPreviewLabel.fontSize = 22;
+            noPreviewLabel.depth = 3;
+
+            // Level Name (moved below thumbnail with proper spacing)
+            previewLevelNameLabel = NGUI_Utils.CreateLabel(contentContainer.transform, new Vector3(0f, 50f, 0f),
+        new Vector3Int(340, 35, 0), "", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            previewLevelNameLabel.fontSize = 26;
+            previewLevelNameLabel.depth = 1;
+            previewLevelNameLabel.overflowMethod = UILabel.Overflow.ClampContent;
+            previewLevelNameLabel.maxLineCount = 1;
+
+            // Object Count (smaller, below name)
+            previewObjectCountLabel = NGUI_Utils.CreateLabel(contentContainer.transform, new Vector3(0f, 20f, 0f),
+           new Vector3Int(340, 25, 0), "", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            previewObjectCountLabel.fontSize = 20;
+            previewObjectCountLabel.depth = 1;
+            previewObjectCountLabel.color = new Color(0.7f, 0.7f, 0.7f, 1f);
+
+            // Author section - title and value aligned on same line
+            UILabel authorTitleLabel = NGUI_Utils.CreateLabel(contentContainer.transform, new Vector3(-165f, -15f, 0f),
+                  new Vector3Int(70, 25, 0), "[ffff00]Author:[-]", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+            authorTitleLabel.fontSize = 19;
+            authorTitleLabel.depth = 1;
+
+            previewAuthorLabel = NGUI_Utils.CreateLabel(contentContainer.transform, new Vector3(-85f, -15f, 0f),
+       new Vector3Int(255, 25, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+            previewAuthorLabel.fontSize = 19;
+            previewAuthorLabel.depth = 1;
+            previewAuthorLabel.overflowMethod = UILabel.Overflow.ClampContent;
+            previewAuthorLabel.maxLineCount = 1;
+
+            // Tags section - properly spaced below author
+            UILabel tagsTitleLabel = NGUI_Utils.CreateLabel(contentContainer.transform, new Vector3(-165f, -45f, 0f),
+        new Vector3Int(70, 25, 0), "[ffff00]Tags:[-]", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+            tagsTitleLabel.fontSize = 19;
+            tagsTitleLabel.depth = 1;
+
+            previewTagsLabel = NGUI_Utils.CreateLabel(contentContainer.transform, new Vector3(-85f, -45f, 0f),
+           new Vector3Int(255, 25, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+            previewTagsLabel.fontSize = 19;
+            previewTagsLabel.depth = 1;
+            previewTagsLabel.overflowMethod = UILabel.Overflow.ClampContent;
+            previewTagsLabel.maxLineCount = 1;
+
+            // Description section - title properly spaced
+            UILabel descTitleLabel = NGUI_Utils.CreateLabel(contentContainer.transform, new Vector3(-165f, -80f, 0f),
+     new Vector3Int(110, 25, 0), "[ffff00]Description:[-]", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+            descTitleLabel.fontSize = 19;
+            descTitleLabel.depth = 1;
+
+            // Description text - properly positioned below title with adequate spacing
+            previewDescriptionLabel = NGUI_Utils.CreateLabel(contentContainer.transform, new Vector3(0f, -130f, 0f),
+    new Vector3Int(340, 120, 0), "", NGUIText.Alignment.Left, UIWidget.Pivot.Center);
+            previewDescriptionLabel.fontSize = 17;
+            previewDescriptionLabel.depth = 1;
+            previewDescriptionLabel.overflowMethod = UILabel.Overflow.ClampContent;
+            previewDescriptionLabel.maxLineCount = 8;
+            previewDescriptionLabel.color = new Color(0.85f, 0.85f, 0.85f, 1f);
+
+            // Initially show the panel background but hide the content
+            metadataPreviewPanel.SetActive(true);
+            contentContainer.SetActive(false);
+        }
+
+        public void ShowMetadataPreview(string levelFileNameWithoutExtension, LevelData data)
+        {
+            if (data == null || metadataPreviewPanel == null) return;
+
+            currentHoveredLevel = levelFileNameWithoutExtension;
+
+            // Show the content container
+            GameObject contentContainer = metadataPreviewPanel.transform.Find("ContentContainer").gameObject;
+            contentContainer.SetActive(true);
+
+            // Truncate level name if too long (max 20 characters)
+     const int maxLevelNameLength = 20;
+     string displayName = data.levelName;
+      if (displayName.Length > maxLevelNameLength)
+      {
+       displayName = displayName.Substring(0, maxLevelNameLength) + "...";
+      }
+
+            // Update labels
+      previewLevelNameLabel.text = displayName;
+    previewObjectCountLabel.text = $"Objects: {data.objects.Count}";
+    previewAuthorLabel.text = string.IsNullOrWhiteSpace(data.authorName) ? "[888888]Unknown[-]" : data.authorName;
+  previewTagsLabel.text = string.IsNullOrWhiteSpace(data.tags) ? "[888888]None[-]" : data.tags;
+         previewDescriptionLabel.text = string.IsNullOrWhiteSpace(data.description) ? "[888888]No description provided.[-]" : data.description;
+
+          // Load thumbnail if available
+            if (!string.IsNullOrEmpty(data.thumbnailBase64))
+            {
+                try
+                {
+                    byte[] imageBytes = Convert.FromBase64String(data.thumbnailBase64);
+                    Texture2D thumbnailTexture = new Texture2D(2, 2);
+                    thumbnailTexture.LoadImage(imageBytes);
+
+                    // Set the texture
+                    previewThumbnailTexture.mainTexture = thumbnailTexture;
+                    previewThumbnailTexture.enabled = true;
+                    noPreviewLabel.enabled = false;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Failed to load thumbnail: {ex.Message}");
+                    // Show "No Preview" fallback
+                    previewThumbnailTexture.mainTexture = null;
+                    previewThumbnailTexture.enabled = false;
+                    noPreviewLabel.enabled = true;
+                }
+            }
+            else
+            {
+                // No thumbnail available - show "No Preview"
+                previewThumbnailTexture.mainTexture = null;
+                previewThumbnailTexture.enabled = false;
+                noPreviewLabel.enabled = true;
+            }
+        }
+
+        public void HideMetadataPreview()
+        {
+            if (metadataPreviewPanel == null) return;
+
+            // Clean up any loaded thumbnail texture
+            if (previewThumbnailTexture.mainTexture != null)
+            {
+                Texture2D texture = previewThumbnailTexture.mainTexture as Texture2D;
+                previewThumbnailTexture.mainTexture = null;
+
+                if (texture != null)
+                {
+                    GameObject.Destroy(texture);
+                }
+            }
+
+            // Reset to show "No Preview" state
+            previewThumbnailTexture.enabled = false;
+            noPreviewLabel.enabled = true;
+
+            currentHoveredLevel = null;
+
+            // Hide the content container but keep the panel background visible
+            GameObject contentContainer = metadataPreviewPanel.transform.Find("ContentContainer")?.gameObject;
+            if (contentContainer != null)
+            {
+                contentContainer.SetActive(false);
             }
         }
     }
-	//It's in the name, go figure.
-	public static class PlayFromMenuHelper
-	{
-		public static bool PlayImmediatelyOnEditorLoad = false;
-		public static string LevelToPlay = null;
-	}
+    public static class PlayFromMenuHelper
+    {
+        public static bool PlayImmediatelyOnEditorLoad = false;
+        public static string LevelToPlay = null;
+    }
 }
+

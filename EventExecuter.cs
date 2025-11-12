@@ -9,6 +9,7 @@ using UnityEngine;
 using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
+using System.Collections;
 
 namespace FS_LevelEditor
 {
@@ -66,7 +67,7 @@ namespace FS_LevelEditor
         void Start()
         {
             ReValidateEditorLinks();
-        }
+        } 
         public void OnSelect()
         {
             ReValidateEditorLinks();
@@ -87,11 +88,49 @@ namespace FS_LevelEditor
                 foreach (var @event in (List<LE_Event>)originalObject.properties[evenKey])
                 {
                     bool isPlayer = string.Equals(@event.targetObjName, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase);
+                    bool isTaser = string.Equals(@event.targetObjName, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase);
+                    bool isJetpack = string.Equals(@event.targetObjName, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase);
+                    bool isObjective = @event.targetObjName.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase);
+
                     if (!@event.isForPlayer && isPlayer) // If the targetObjName is "Player" but the BOOL is false, it's using the old system.
                     {
                         @event.isForPlayer = true;
+                        @event.isForTaser = false;
+                        @event.isForJetpack = false;
+                        @event.isForObjective = false;
                         @event.targetObjType = null;
                         @event.targetObjID = 0;
+                        @event.targetObjName = "";
+                    }
+                    else if (!@event.isForTaser && isTaser) // If the targetObjName is "Taser" but the BOOL is false, it's using the old system.
+                    {
+                        @event.isForTaser = true;
+                        @event.isForPlayer = false;
+                        @event.isForJetpack = false;
+                        @event.isForObjective = false;
+                        @event.targetObjType = null;
+                        @event.targetObjID = 0;
+                        @event.targetObjName = "";
+                    }
+                    else if (!@event.isForJetpack && isJetpack) // If the targetObjName is "Jetpack" but the BOOL is false, it's using the old system.
+                    {
+                        @event.isForJetpack = true;
+                        @event.isForPlayer = false;
+                        @event.isForTaser = false;
+                        @event.isForObjective = false;
+                        @event.targetObjType = null;
+                        @event.targetObjID = 0;
+                        @event.targetObjName = "";
+                    }
+                    else if (!@event.isForObjective && isObjective) // If the targetObjName starts with "Objective_" but the BOOL is false, it's using the old system.
+                    {
+                        @event.isForObjective = true;
+                        @event.isForPlayer = false;
+                        @event.isForTaser = false;
+                        @event.isForJetpack = false;
+                        @event.targetObjType = null;
+                        @event.targetObjID = 0;
+                        @event.objectiveName = @event.targetObjName.Substring(4);
                         @event.targetObjName = "";
                     }
                     else if (@event.targetObjType == null && @event.isValid && !string.IsNullOrEmpty(@event.targetObjName) && !isPlayer)
@@ -141,7 +180,7 @@ namespace FS_LevelEditor
                     // ALSO, don't create editor links for the player related events.
                     // UPDATE: CREATE links even for INVALID objects, what if the user adds an object and the event becomes valid?
                     var objData = (@event.targetObjType, @event.targetObjID);
-                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer) continue;
+                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer || @event.isForTaser || @event.isForJetpack || @event.isForObjective) continue;
 
                     GameObject linkObj = Instantiate(Core.LoadOtherObjectInBundle("EditorLine"), editorLinksParent.transform);
                     LineRenderer linkRender = linkObj.GetComponent<LineRenderer>();
@@ -219,6 +258,86 @@ namespace FS_LevelEditor
                     {
                         PlayModeController.Instance.InvertPlayerGravity();
                     }
+                    continue;
+                }
+                if (@event.isForTaser)
+                {
+                    if (@event.isForTaser)
+                    {
+                        // Handle giving/taking the taser
+                        switch (@event.taserState)
+                        {
+                            case LE_Event.TaserState.Give:
+                                if (!Controls.Instance.gunActivated)
+                                {
+                                    Controls.Instance.ActivateWeapon();
+                                }
+                                break;
+
+                            case LE_Event.TaserState.Take_Away:
+                                if (Controls.Instance.gunActivated)
+                                {
+                                    Controls.Instance.DeactivateWeaponInstant();
+                                }
+                                break;
+                        }
+
+                        // Handle ammo changes (only if gun is activated)
+                        if (Controls.Instance.gunActivated)
+                        {
+                            if (@event.infiniteTaser)
+                            {
+                                GunController.Instance.SetTutorialMode(true);
+                                GunController.Instance.RequestLaserOnNow();
+                            }
+                            else
+                            {
+                                GunController.Instance.SetTutorialMode(false);
+
+                                if (@event.changeAmmo)
+                                {
+                                    GunController.Instance.SetAmmos(@event.newAmmo);
+                                    if(@event.newAmmo > 0)
+                                    {
+                                        GunController.Instance.RequestLaserOnNow();
+                                    }
+                                    
+                                }
+                            }
+                        }
+
+                        continue;
+                    }
+                }
+                if (@event.isForJetpack)
+                {
+                    switch (@event.jetpackState)
+                    {
+                        case LE_Event.JetpackState.Give:
+                            Controls.Instance.ActivateJetPack(true, false);
+                            break;
+                        case LE_Event.JetpackState.Take_Away:
+                            Controls.Instance.BreakJetPack();
+                            break;
+                    }
+                    continue;
+                }
+                if (@event.isForObjective)
+                {
+                    switch (@event.objectiveState)
+                    {
+                       case LE_Event.ObjectiveState.Create:
+                           PlayModeController.Instance.CreateObjective(@event.objectiveName);
+                           break;
+
+                       case LE_Event.ObjectiveState.Accomplish:
+                           PlayModeController.Instance.AccomplishObjective(@event.objectiveName);
+                            break;
+
+                        case LE_Event.ObjectiveState.Fail:
+                           PlayModeController.Instance.FailObjective(@event.objectiveName);
+                           break;
+                     }
                     continue;
                 }
                 LE_Object targetObj =
@@ -311,6 +430,15 @@ namespace FS_LevelEditor
                             targetObj.TriggerAction("ToggleActivated");
                             break;
                     }
+                }
+                else if (targetObj is LE_Mine)
+                {
+                    if (@event.mineState == LE_Event.MineState.Activate)
+                        targetObj.TriggerAction("Activate");
+                    else if (@event.mineState == LE_Event.MineState.Deactivate)
+                        targetObj.TriggerAction("Deactivate");
+                    else if (@event.mineState == LE_Event.MineState.Toggle_State)
+                        targetObj.TriggerAction("ToggleActivated");
                 }
                 else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
                 {
@@ -435,22 +563,37 @@ namespace FS_LevelEditor
                             break;
                     }
                 }
-				else if (targetObj is LE_Bridge)
-				{
-					switch (@event.bridgeState)
-					{
-						case LE_Event.BridgeState.Extend:
-							targetObj.TriggerAction("Deploy");
-							break;
-						case LE_Event.BridgeState.Retract:
-							targetObj.TriggerAction("Retract");
-							break;
-						case LE_Event.BridgeState.Toggle:
-							targetObj.TriggerAction("Toggle");
-							break;
-					}
-				}
-			}
+                else if (targetObj is LE_Moving_Platform)
+                {
+                    switch (@event.movingPlatformState)
+                    {
+                        case LE_Event.MovingPlatformState.Activate:
+                            targetObj.TriggerAction("Activate");
+                            break;
+                        case LE_Event.MovingPlatformState.Deactivate:
+                            targetObj.TriggerAction("Deactivate");
+                            break;
+                        case LE_Event.MovingPlatformState.Toggle:
+                            targetObj.TriggerAction("InvertState");
+                            break;
+                    }
+                }
+                else if (targetObj is LE_Bridge)
+                {
+                    switch (@event.bridgeState)
+                    {
+                        case LE_Event.BridgeState.Extend:
+                            targetObj.TriggerAction("Deploy");
+                            break;
+                        case LE_Event.BridgeState.Retract:
+                            targetObj.TriggerAction("Retract");
+                            break;
+                        case LE_Event.BridgeState.Toggle:
+                            targetObj.TriggerAction("Toggle");
+                            break;
+                    }
+                }
+            }
         }
     }
 }

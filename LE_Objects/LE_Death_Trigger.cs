@@ -50,7 +50,7 @@ namespace FS_LevelEditor
             content.GetChild("Spawn").transform.position = content.transform.position;
             if(GetProperty<bool>("CustomCoordinates"))
             {
-				GameObject target = new GameObject();
+				GameObject target = new GameObject("ShouldBeSaved");
 				target.transform.position = GetProperty<Vector3>("TeleportCoordinates");
 				target.transform.eulerAngles = GetProperty<Vector3>("TeleportRotation");
 				target.transform.localScale = Vector3.one;

@@ -20,11 +20,10 @@ namespace FS_LevelEditor
                 { "ActivateOnStart", true },
                 { "TravelBack", true },
                 { "Loop", false },
-                { "waypoints", new List<WaypointData>() },
                 { "Damage", 50 },
                 { "WaitTime", 0f },
-                { "Rotate", false },
-                { "RotateSpeed", 1 }
+                { "MovingSpeed", 10f },
+                { "waypoints", new List<WaypointData>() }
             };
         }
 
@@ -78,16 +77,10 @@ namespace FS_LevelEditor
             script.m_damageCollider = content.GetComponent<BoxCollider>();
             script.m_audioSource = content.GetComponent<AudioSource>();
             script.movingSaw = false;
-            script.movingSpeed = 10;
+            script.movingSpeed = (float)GetProperty("MovingSpeed");
             script.forcedHeading = true;
             script.allowSideRotation = false;
             script.sideSpeedMultiplier = 5;
-            if(GetProperty<bool>("Rotate"))
-            {
-                script.allowSideRotation = true;
-                script.forcedHeading = true;
-                script.sideSpeedMultiplier = GetProperty<int>("RotateSpeed");
-            }
             script.scieSound = t_saw.scieSound;
             script.offMesh = content.GetChild("Scie_OFF").GetComponent<MeshRenderer>();
             script.onMesh = content.GetChildAt("Scie_OFF/Scie_ON").GetComponent<MeshRenderer>();
@@ -207,27 +200,19 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-            else if (name == "Rotate")
-            {
-                if (value is bool)
-                {
-                    properties["Rotate"] = (bool)value;
-                    return true;
-                }
-            }
-            else if (name == "RotateSpeed")
+            else if (name == "MovingSpeed")
             {
                 if (value is string)
                 {
-                    if (int.TryParse((string)value, out int result))
+                    if (Utils.TryParseFloat((string)value, out float result))
                     {
-                        properties["RotateSpeed"] = result;
+                        properties["MovingSpeed"] = result;
                         return true;
                     }
                 }
-                else if (value is int)
+                else if (value is float)
                 {
-                    properties["RotateSpeed"] = (int)value;
+                    properties["MovingSpeed"] = (float)value;
                     return true;
                 }
             }

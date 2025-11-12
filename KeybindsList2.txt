@@ -4,11 +4,12 @@
 /Keyboard_Left Control\ + /Keyboard_H\ to hide/show object categories buttons.
 /Keyboard_Left Control\ + /Keyboard_Z\ to undo the last executed action (move/rotate/delete).
 
-/Keyboard_G\ to switch between global/local move arrow gizmos.
-/Keyboard_Left Control\ + /Keyboard_O\ to open the Global Properties Panel.
+/Keyboard_Num 4\ to switch between global/local move arrow gizmos.
+/Keyboard_Num 5\ to open Metadata popup.
+/Keyboard_Num 6\ to switch between lit/unlit modes.
+/Keyboard_O\ to open the Global Properties Panel.
 /Keyboard_Space\ (while selecting an object) to change the "Set Active At Start" toggle.
 
 /Keyboard_Left Control\ + /Keyboard_A\ to select all objects (in selection mode).
-/Keyboard_4\ to toggle global/local gizmo mode (Selection mode only).
-/Mouse4\ to move selected object up.
-/Mouse5\ to move selected object down.
+/Keyboard_Black_Mouse_Next\ to move selected object up.
+/Keyboard_Black_Mouse_Previous\ to move selected object down.

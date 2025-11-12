@@ -37,14 +37,14 @@ namespace FS_LevelEditor
 
             content.tag = "Gun";
             gun = content.AddComponent<Gun>();
-            gun.aimStabilizerModule = new GameObject();
-            gun.powerRail1Module = new GameObject();
-            gun.powerRail2Module = new GameObject();
-            gun.scopeModule = new GameObject();
-            gun.hoverModule = new GameObject();
+            gun.aimStabilizerModule = new GameObject("ShouldBeSaved");
+            gun.powerRail1Module = new GameObject("ShouldBeSaved");
+            gun.powerRail2Module = new GameObject("ShouldBeSaved");
+            gun.scopeModule = new GameObject("ShouldBeSaved");
+            gun.hoverModule = new GameObject("ShouldBeSaved");
             gun.battery1 = content.GetChildAt("Taser_PC/Battery/Battery1");
-            gun.battery2 = new GameObject();
-            gun.battery3 = new GameObject();
+            gun.battery2 = new GameObject("ShouldBeSaved");
+            gun.battery3 = new GameObject("ShouldBeSaved");
             infTaser = (bool)properties["InfiniteTaser"];
             ammo = (int)properties["Ammo"];
             rot = (bool)properties["Rotate"];

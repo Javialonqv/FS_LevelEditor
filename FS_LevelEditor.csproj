@@ -16,6 +16,11 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Configurations>Debug;Release;Visible T bonds</Configurations>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Remove="Il2Cpp\**" />
+	  <None Remove="Il2Cpp\**" />
+	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="KeybindsList.txt" />
 	  <None Remove="leveleditoricons" />
@@ -38,6 +43,8 @@
 		<Compile Include="Editor\UI\ContextMenu.cs" />
 		<Compile Include="Editor\UI\EditorObjectsToBuildUI.cs" />
 		<Compile Include="Editor\UI\GlobalPropertiesPanel.cs" />
+		<Compile Include="Editor\UI\NotificationSystem.cs" />
+		<Compile Include="Editor\UI\SaveMetadataPopup.cs" />
 		<Compile Include="Editor\UI\SelectedObjPanel.cs" />
 		<Compile Include="Editor\UI\TextEditorUI.cs" />
 		<Compile Include="Editor\UI\UpgradesPanel.cs" />
@@ -48,6 +55,9 @@
 		<Compile Include="Editor\UI\EventsUIPageManager.cs" />
 		<Compile Include="LE_MenuUIManager.cs" />
 		<Compile Include="ExternalSpriteLoader.cs" />
+		<Compile Include="LE_Objects\LE_Heal_Area.cs" />
+		<Compile Include="LE_Objects\LE_Rgb_Wall.cs" />
+		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="LE_Objects\LE_Bridge.cs" />
 		<Compile Include="LE_Objects\LE_Cube_Killplane.cs" />
 		<Compile Include="LE_Objects\LE_Death_Trigger.cs" />
@@ -129,9 +139,9 @@
 		<Compile Include="UI_Related\UITogglePatcher.cs" />
 		<Compile Include="Utils.cs" />
 		<Compile Include="Utils\ScreenTemplateExpander.cs" />
-		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="WaypointSupports\MovingPlatformWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\SawWaypointSupport.cs" />
+		<Compile Include="WaypointSupports\WaypointRotationApplier.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

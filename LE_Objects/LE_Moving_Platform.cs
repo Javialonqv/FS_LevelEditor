@@ -177,6 +177,30 @@ namespace FS_LevelEditor
                 customWaypointSupport.AddWaypoint();
                 return true;
             }
+            else if (actionName == "Activate")
+            {
+                script.Activate();
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                script.Deactivate();
+                return true;
+            }
+            else if (actionName == "InvertState")
+            {
+                // Check if the platform is currently active
+                bool isActive = script.activated;
+                if (isActive)
+                {
+                    TriggerAction("Deactivate");
+                }
+                else
+                {
+                    TriggerAction("Activate");
+                }
+                return true;
+            }
 
             return base.TriggerAction(actionName);
         }

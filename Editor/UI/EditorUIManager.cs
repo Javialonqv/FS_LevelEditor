@@ -64,7 +64,7 @@ namespace FS_LevelEditor.Editor.UI
 		public UILabel cameraSpeedLabel;
 		public UILabel gridSizeLabel;
 
-		public EditorUIManager(IntPtr ptr) : base(ptr) { }
+        public EditorUIManager(IntPtr ptr) : base(ptr) { }
 
 		void Awake()
 		{
@@ -112,20 +112,24 @@ namespace FS_LevelEditor.Editor.UI
 			EditorObjectsToBuildUI.Create(editorUIParent.transform);
 			SelectedObjPanel.Create(editorUIParent.transform);
 			GlobalPropertiesPanel.Create(editorUIParent.transform);
-			CreateSavingLevelLabel();
 			CreateModeNavigationPanel();
 			CreateHelpPanel();
 			CreateBulkSelectionPanel();
-			CreateStatusLabels();
 
 			EventsUIPageManager.Create();
 			TextEditorUI.Create();
 			UpgradesPanel.Create();
+			SaveMetadataPopup.Create();
 
 			CreateHittenTargetObjPanel();
 
-			// To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
-			GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
+			// Create the notification system
+			NotificationSystem.Create(editorUIParent.transform);
+
+            CreateStatsLabels();
+
+            // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
+            GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
 		}
 		void DisableFuckingPauseMenu() => pauseMenu.SetActive(false);
 
@@ -136,51 +140,6 @@ namespace FS_LevelEditor.Editor.UI
 			occluderForWhenPaused = uiParentObj.GetChild("Occluder");
 			pauseMenu = uiParentObj.GetChild("Main");
 			navigation = uiParentObj.GetChild("Navigation");
-		}
-
-		void CreateSavingLevelLabel()
-		{
-			savingLevelLabel = NGUI_Utils.CreateLabel(editorUIParent.transform, new Vector3(0, 510), new Vector3Int(150, 50, 0), "Saving...", NGUIText.Alignment.Center,
-				UIWidget.Pivot.Center);
-			savingLevelLabel.name = "SavingLevelLabel";
-			savingLevelLabel.fontSize = 32;
-
-			TweenAlpha tween = savingLevelLabel.gameObject.AddComponent<TweenAlpha>();
-			tween.from = 1f;
-			tween.to = 0f;
-			tween.duration = 2f;
-
-			savingLevelLabel.gameObject.SetActive(false);
-
-			savingLevelLabelInPauseMenu = Instantiate(savingLevelLabel.gameObject, pauseMenu.transform).GetComponent<UILabel>();
-			savingLevelLabelInPauseMenu.name = "SavingLevelInPauseMenuLabel";
-			savingLevelLabelInPauseMenu.transform.localPosition = new Vector3(0f, -425f, 0f);
-			savingLevelLabelInPauseMenu.gameObject.SetActive(false);
-		}
-		public void PlaySavingLevelLabel()
-		{
-			// If the coroutine was already played, stop it if it's currently playing to "restart" it.
-			if (savingLevelLabelRoutine != null) MelonCoroutines.Stop(savingLevelLabelRoutine);
-
-			// Execute the coroutine.
-			savingLevelLabelRoutine = (Coroutine)MelonCoroutines.Start(Coroutine());
-			IEnumerator Coroutine()
-			{
-				savingLevelLabel.gameObject.SetActive(true);
-				savingLevelLabelInPauseMenu.gameObject.SetActive(true);
-
-				TweenAlpha tween = savingLevelLabel.GetComponent<TweenAlpha>();
-				TweenAlpha tweenInPauseMenu = savingLevelLabelInPauseMenu.GetComponent<TweenAlpha>();
-				tween.ResetToBeginning();
-				tween.PlayForward();
-				tweenInPauseMenu.ResetToBeginning();
-				tweenInPauseMenu.PlayForward();
-
-				yield return new WaitForSecondsRealtime(2f);
-
-				savingLevelLabel.gameObject.SetActive(false);
-				savingLevelLabelInPauseMenu.gameObject.SetActive(false);
-			}
 		}
 
 
@@ -307,7 +266,38 @@ namespace FS_LevelEditor.Editor.UI
 
 			bulkSelectionPanel.SetActive(true);
 		}
-		void SwitchToPreviousBulkSelectionMode()
+
+        void CreateStatsLabels()
+        {
+            // Create camera speed label
+            cameraSpeedLabel = NGUI_Utils.CreateLabel(
+                editorUIParent.transform,
+                new Vector3(0f, -470f, 0f),
+                new Vector3Int(400, 30, 0),
+                "Camera Speed: 0",
+                NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center
+            );
+            cameraSpeedLabel.fontSize = 24;
+            cameraSpeedLabel.color = Color.white;
+            cameraSpeedLabel.name = "CameraSpeedLabel";
+            cameraSpeedLabel.gameObject.SetActive(false); // Hidden by default
+
+            // Create grid size label
+            gridSizeLabel = NGUI_Utils.CreateLabel(
+                editorUIParent.transform,
+                new Vector3(0f, -504f, 0f),
+                new Vector3Int(400, 30, 0),
+                "Grid Size: 0",
+                NGUIText.Alignment.Center,
+                UIWidget.Pivot.Center
+            );
+            gridSizeLabel.fontSize = 24;
+            gridSizeLabel.color = Color.white;
+            gridSizeLabel.name = "GridSizeLabel";
+            gridSizeLabel.gameObject.SetActive(false); // Hidden by default
+        }
+        void SwitchToPreviousBulkSelectionMode()
 		{
 			var modes = (BulkSelectionMode[])Enum.GetValues(typeof(BulkSelectionMode));
 			int currentIndex = Array.IndexOf(modes, EditorController.Instance.GetBulkSelectionMode());
@@ -547,9 +537,10 @@ namespace FS_LevelEditor.Editor.UI
 			currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			nextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			previousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			if (cameraSpeedLabel != null) cameraSpeedLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			if (gridSizeLabel != null) gridSizeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			if (context == EditorUIContext.HELP_PANEL)
+            bool shouldShowStats = context == EditorUIContext.NORMAL && EditorController.Instance.statsLabelsVisible;
+            if (cameraSpeedLabel != null) cameraSpeedLabel.gameObject.SetActive(shouldShowStats);
+            if (gridSizeLabel != null) gridSizeLabel.gameObject.SetActive(shouldShowStats);
+            if (context == EditorUIContext.HELP_PANEL)
 			{
 				helpPanel.SetActive(true);
 
@@ -705,24 +696,6 @@ namespace FS_LevelEditor.Editor.UI
 				// Revert this just in case it breaks something LOL.
 				MenuController.GetInstance().m_uiCamera.submitKey0 = KeyCode.None;
 			}
-		}
-
-		void CreateStatusLabels()
-		{
-			// Create status labels root
-			GameObject statusLabelsRoot = new GameObject("EditorStatusLabels");
-			statusLabelsRoot.transform.SetParent(editorUIParent.transform);
-			statusLabelsRoot.transform.localScale = Vector3.one;
-			statusLabelsRoot.transform.localPosition = Vector3.zero;
-			float yBase = -470f;
-			cameraSpeedLabel = NGUI_Utils.CreateLabel(statusLabelsRoot.transform, new Vector3(0f, yBase, 0f), new Vector3Int(400, 30, 0), "Camera Speed: 0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
-			cameraSpeedLabel.fontSize = 24;
-			cameraSpeedLabel.color = Color.white;
-			cameraSpeedLabel.name = "CameraSpeedLabel";
-			gridSizeLabel = NGUI_Utils.CreateLabel(statusLabelsRoot.transform, new Vector3(0f, yBase - 34f, 0f), new Vector3Int(400, 30, 0), "Grid Size: 0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
-			gridSizeLabel.fontSize = 24;
-			gridSizeLabel.color = Color.white;
-			gridSizeLabel.name = "GridSizeLabel";
 		}
 	}
 }

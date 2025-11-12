@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Text.RegularExpressions;
 
 namespace FS_LevelEditor.Playmode
 {
@@ -43,6 +44,10 @@ namespace FS_LevelEditor.Playmode
 		public bool endTriggerReached = false;
 		int totalUpgradeCount = 0;
 
+		// Objectives management
+		public Dictionary<string, ObjectiveController> activeObjectives = new Dictionary<string, ObjectiveController>();
+		private string lastObj = null;
+
 		void Awake()
 		{
 			Instance = this;
@@ -56,7 +61,7 @@ namespace FS_LevelEditor.Playmode
 			deathsInCurrentLevel = Melon<Core>.Instance.totalDeathsInCurrentPlaymodeSession;
 
 			Invoke("DisableTheCurrentScene", 0.2f);
-		}
+        }
 
 		void LoadAssetBundle()
 		{
@@ -160,7 +165,7 @@ namespace FS_LevelEditor.Playmode
 				obj.SetActive(false);
 			}
 		}
-		void TeleportPlayer()
+        void TeleportPlayer()
 		{
 			LE_Player_Spawn spawn = FindObjectOfType<LE_Player_Spawn>();
 
@@ -243,7 +248,16 @@ namespace FS_LevelEditor.Playmode
 			string skyboxMatName = $"Skybox_CH{skyboxID + 1}";
 			Material skyboxMat = LEBundle.Load<Material>(skyboxMatName);
 
-			skyboxMat.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+			// Apply the same shader logic as the editor
+			if (Regex.Match(skyboxMatName, @"(?:9|10|11|12|13)$").Success)
+			{
+				skyboxMat.shader = Shader.Find("Skybox/6 Sided");
+			}
+			else
+			{
+				skyboxMat.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
+			}
+			
 			RenderSettings.skybox = skyboxMat;
 		}
 
@@ -386,11 +400,13 @@ namespace FS_LevelEditor.Playmode
 			}
 			StatsManager.totalUpgradesCount = totalUpgradeCount;
 			if (totalUpgradeCount <= 0)
-				StatsManager.totalUpgradesCount = 0; // Ensure it's exactly 0 if no upgrades
+			{
+                StatsManager.totalUpgradesCount = 0; // Ensure it's exactly 0 if no upgrades
+            }
 
-			//For now, let's ignore that bitch
-			MenuController.GetInstance().pausePlayerStats.GetChildAt("Always/CharacterStats/CharacterStatsTitle").SetActive(false);
-			UpgradePatches.Init();
+
+            //For now, let's ignore that bitch
+            UpgradePatches.Init();
 		}
 
 		// Other stuff...
@@ -445,10 +461,104 @@ namespace FS_LevelEditor.Playmode
 			// again...
 			Destroy(backToLEButton);
 
-			LE_Object.ResetStaticVariablesInObjects();
+            if (levelObjectsParent != null)
+            {
+                Destroy(levelObjectsParent);
+            }
+
+            LE_Object.ResetStaticVariablesInObjects();
 
 			PlaymodePauseMenuPatcher.DestroyPatcher();
 			UpgradePatches.Unpatch();
+			CleanupAllObjectives();
 		}
-	}
+
+		// Objectives management methods
+		public void CleanupAllObjectives()
+		{
+			// First destroy all tracked objective GameObjects
+			foreach (var kvp in activeObjectives)
+			{
+				if (kvp.Value != null && kvp.Value.gameObject != null)
+				{
+					Destroy(kvp.Value.gameObject);
+				}
+			}
+			activeObjectives.Clear();
+			
+			// Then cleanup any remaining UI elements (should already be cleaned by ObjectiveController.Cancel/Accomplish)
+			if (InGameUIManager.Instance != null)
+			{
+				InGameUIManager.Instance.DestroyAllObjectives();
+				InGameUIManager.Instance.DestroyAllObjectiveMarkers();
+			}
+			lastObj = null;
+		}
+
+		public void CreateObjective(string objectiveName)
+		{
+
+			if (activeObjectives.TryGetValue(objectiveName, out var existingController))
+			{
+				return;
+			}
+
+			// Create a new GameObject with ObjectiveController
+			GameObject objectiveObj = new GameObject("Obj_" + objectiveName);
+			objectiveObj.tag = "Objective";
+			objectiveObj.layer = LayerMask.NameToLayer("Ignore Raycast");
+            ObjectiveController objectiveController = objectiveObj.AddComponent<ObjectiveController>();
+
+            objectiveController.hasMarker = false;
+			objectiveController.markerDelay = 0;
+			objectiveController.markerObj = null;
+			objectiveController.onActivated = new UnityEngine.Events.UnityEvent();
+			objectiveController.onAccomplished = new UnityEngine.Events.UnityEvent();
+			objectiveController.BlocSwitchs = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GameObject>(0);
+			objectiveController.dialogToActivate = false;
+			objectiveController.dialogTimeStart = 0;
+			objectiveController.objectiveDelay = 0;
+			objectiveController.currentKine = null;
+			objectiveController.onMarkerDisplayed = new UnityEngine.Events.UnityEvent();
+			objectiveController.useActivationConditions = false;
+			objectiveController.doorsToBeOpen = new Il2CppSystem.Collections.Generic.List<PorteScript>(0);
+			objectiveController.killPlanesToBeDisabled = new Il2CppSystem.Collections.Generic.List<KillPlaneController>(0);
+            objectiveController.objective = objectiveName;
+			objectiveController.Activate();
+			objectiveController.currentlyActive = true;
+
+			// Track this objective
+			activeObjectives[objectiveName] = objectiveController;
+			
+        }
+
+		public bool AccomplishObjective(string objectiveName)
+		{
+			if (activeObjectives.TryGetValue(objectiveName, out var controller))
+			{
+				controller.Accomplish();
+				return true;
+			}
+			
+			return false;
+		}
+
+		public bool FailObjective(string objectiveName)
+		{
+			if (activeObjectives.TryGetValue(objectiveName, out var controller))
+			{
+				controller.Cancel();
+				return true;
+			}
+			
+			return false;
+		}
+        public bool DoesObjectiveExist(string objectiveName)
+        {
+            // Check if the objective exists in your objectives list/dictionary
+            // Return true if it exists, false otherwise
+            // This depends on how you're tracking objectives in your PlayModeController
+            return activeObjectives.ContainsKey(objectiveName); // Adjust this based on your actual implementation
+        }
+    }
 }

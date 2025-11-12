@@ -89,7 +89,9 @@ namespace FS_LevelEditor
             CUBE_KILLPLANE,
             KEYPAD,
             MINE,
-		}
+            RGB_WALL,
+            HEAL_AREA,
+        }
 
         // This is used to specify the objects that use the same snap triggers.
         public static Dictionary<string, List<ObjectType>> classifiedObjectTypes = new Dictionary<string, List<ObjectType>>()
@@ -108,7 +110,8 @@ namespace FS_LevelEditor
                 ObjectType.X_WALL,
                 ObjectType.WINDOW,
                 ObjectType.BREAKABLE_WINDOW,
-                ObjectType.DESTRUCTIBLE_WALL
+                ObjectType.DESTRUCTIBLE_WALL,
+                ObjectType.RGB_WALL,
                 } },
             { "LIGHT", new List<ObjectType>(){
                 ObjectType.DIRECTIONAL_LIGHT,
@@ -133,7 +136,10 @@ namespace FS_LevelEditor
         public readonly static Dictionary<ObjectType?, Vector3> defaultScalesForObjects = new Dictionary<ObjectType?, Vector3>()
         {
             { ObjectType.TRIGGER, new Vector3(3.8f, 3.8f, 0.01f) },
-            { ObjectType.DOOR, new Vector3(1f, 1.05f, 1f) }
+            { ObjectType.DOOR, new Vector3(1f, 1.05f, 1f) },
+            { ObjectType.BREAKABLE_WINDOW, new Vector3(1, 1.065f, 1) },
+            { ObjectType.DESTRUCTIBLE_WALL, new Vector3(1, 1.065f, 1) },
+            { ObjectType.MINE, new Vector3(0.6f, 0.5f, 0.6f) }
         };
 
         public static Dictionary<ObjectType, int> alreadyUsedObjectIDs = new Dictionary<ObjectType, int>();
@@ -165,6 +171,7 @@ namespace FS_LevelEditor
 
         public bool setActiveAtStart = true;
         public bool collision = true;
+        public bool invisibleMesh = false;
         public bool startMovingAtStart = true;
         public float movingSpeed = 5f;
         public float startDelay = 0f;
@@ -222,8 +229,9 @@ namespace FS_LevelEditor
 		public static KeycodeController t_keycodeM;
 		public static InterrupteurController t_keycode;
 		public static BridgeController t_bridge;
+        public static PowerCoreBlocController t_powerCoreBloc;
 
-		public static void GetTemplatesReferences()
+        public static void GetTemplatesReferences()
 		{
 			t_ammoPack = FindObjectOfType<Ammo>();
 			t_healthPack = FindObjectOfType<Health>();
@@ -244,7 +252,8 @@ namespace FS_LevelEditor
 			t_keycodeM = Utils.FindObjectOfType<KeycodeController>(x => x.gameObject.layer == LayerMask.NameToLayer("MiniGames"));
 			t_keycode = Utils.FindObjectOfType<InterrupteurController>(x => x.CompareTag("Keypad"));
 			t_bridge = FindObjectOfType<BridgeController>();
-		}
+            t_powerCoreBloc = FindObjectOfType<PowerCoreBlocController>();
+        }
 		#endregion
 
 		public virtual void Start()
@@ -449,6 +458,7 @@ namespace FS_LevelEditor
             {
                 SetCollidersState(false);
                 SetEditorCollider(true);
+                SetMeshRenderersState(true);
             }
             else if (scene == LEScene.Playmode)
             {
@@ -460,6 +470,10 @@ namespace FS_LevelEditor
             if (!collision && scene == LEScene.Playmode)
             {
                 SetCollidersState(false);
+            }
+            if(invisibleMesh && scene == LEScene.Playmode)
+            {
+                SetMeshRenderersState(false);
             }
 
             if (eventExecuter) eventExecuter.OnInstantiated(scene);
@@ -483,6 +497,10 @@ namespace FS_LevelEditor
         {
             if (waypointSupport) waypointSupport.ObjectStart(scene);
             if (customWaypointSupport) customWaypointSupport.ObjectStart(scene);
+            if (invisibleMesh && scene == LEScene.Playmode)
+            {
+                SetMeshRenderersState(false);
+            }
         }
 
         /// <summary>
@@ -530,7 +548,6 @@ namespace FS_LevelEditor
                 waypointMode = (WaypointMode)value;
                 return true;
             }
-           
 
             return false;
         }
@@ -795,16 +812,22 @@ namespace FS_LevelEditor
 			} 
             else if(objectType == ObjectType.AMMO_PACK || objectType == ObjectType.HEALTH_PACK)
             {
+                gameObject.GetChildAt("Content").GetComponent<BoxCollider>().enabled = newEnabledState;
                 gameObject.GetChildAt("Content/Mesh/PreciseCollider").SetActive(newEnabledState);
             }
             else if (objectType == ObjectType.VENT_WITH_SMOKE_GREEN || objectType == ObjectType.VENT_WITH_SMOKE_CYAN)
             {
                 gameObject.GetChildAt("Content/Mesh").GetComponent<MeshCollider>().enabled = newEnabledState;
 			}
-            else if(objectType == ObjectType.KEYPAD)
+            else if (objectType == ObjectType.KEYPAD)
             {
-				gameObject.GetChild("LE_Keypad").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
-			}
+                gameObject.GetChild("LE_Keypad").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
+            }
+            else if (objectType == ObjectType.MINE)
+            {
+                gameObject.GetChildAt("Mine/MeshOn").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
+                gameObject.GetChildAt("Mine/MeshOff").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
+            }
             else
             {
                 foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>(true))
@@ -828,6 +851,118 @@ namespace FS_LevelEditor
             }
         }
 
+        public void SetMeshRenderersState(bool newEnabledState)
+        {
+            // Early return for waypoints
+            if (objectType.HasValue && IsWaypoint(objectType.Value))
+            {
+                return;
+            }
+            if(objectType == ObjectType.SCREEN || objectType == ObjectType.SMALL_SCREEN)
+            {
+                return;
+            }
+
+            // Determine the content object
+            GameObject content = null;
+            if (objectType == ObjectType.KEYPAD)
+            {
+                if (gameObject.ExistsChild("LE_Keypad"))
+                {
+                    content = gameObject.GetChild("LE_Keypad");
+                }
+            }
+            else if (objectType == ObjectType.MINE)
+            {
+                if (gameObject.ExistsChild("Mine"))
+                {
+                    content = gameObject.GetChild("Mine");
+                }
+            }
+            else
+            {
+                if (gameObject.ExistsChild("Content"))
+                {
+                    content = gameObject.GetChild("Content");
+                }
+                else
+                {
+                    Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
+                    return;
+                }
+            }
+
+            // Safety check
+            if (content == null)
+            {
+                return;
+            }
+
+            // Get all mesh renderers recursively from content
+            MeshRenderer[] renderers = content.TryGetComponents<MeshRenderer>(true);
+            if (renderers == null || renderers.Length == 0)
+            {
+                return; // No renderers to modify
+            }
+
+            foreach (var renderer in renderers)
+            {
+                if (renderer == null) continue; // Skip null renderers
+
+                // Skip waypoint renderers if this object has waypoints
+                if (canHaveWaypoints)
+                {
+                    if (waypointSupport != null && waypointSupport.waypointsParent != null &&
+                        renderer.transform.IsChildOf(waypointSupport.waypointsParent))
+                    {
+                        continue;
+                    }
+
+                    if (customWaypointSupport != null && customWaypointSupport.waypointsParent != null &&
+                        renderer.transform.IsChildOf(customWaypointSupport.waypointsParent))
+                    {
+                        continue;
+                    }
+                }
+
+                // If disabling, remove all materials
+                if (!newEnabledState)
+                {
+                    // Set materials to an empty array
+                    renderer.materials = new Material[0];
+
+                    // Add enforcer component using GetComponent instead of TryGetComponent
+                    if (renderer.gameObject != null)
+                    {
+                        var existingEnforcer = renderer.gameObject.GetComponent<DisabledMeshEnforcer>();
+                        if (existingEnforcer == null)
+                        {
+                            var enforcer = renderer.gameObject.AddComponent<DisabledMeshEnforcer>();
+                            if (enforcer != null)
+                            {
+                                enforcer.targetRenderer = renderer;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // If enabling, remove the enforcer component if it exists using GetComponent
+                    if (renderer.gameObject != null)
+                    {
+                        var enforcer = renderer.gameObject.GetComponent<DisabledMeshEnforcer>();
+                        if (enforcer != null)
+                        {
+                            Destroy(enforcer);
+                        }
+                    }
+                }
+
+                // Set the renderer enabled state
+                renderer.enabled = newEnabledState;
+            }
+        }
+
         public static void ResetStaticVariablesInObjects()
         {
             LE_Breakable_Window.staticVariablesInitialized = false;
@@ -836,6 +971,30 @@ namespace FS_LevelEditor
         public static bool IsWaypoint(ObjectType type)
         {
             return type.ToString().Contains("Waypoint", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [MelonLoader.RegisterTypeInIl2Cpp]
+    public class DisabledMeshEnforcer : MonoBehaviour
+    {
+        public MeshRenderer targetRenderer;
+
+        public DisabledMeshEnforcer(IntPtr ptr) : base(ptr) { }
+
+        void LateUpdate()
+        {
+            // Safety check: if component or renderer is destroyed, destroy this enforcer
+            if (targetRenderer == null)
+            {
+                Destroy(this);
+                return;
+            }
+
+            // If the renderer somehow got enabled, force it back to disabled
+            if (targetRenderer.enabled)
+            {
+                targetRenderer.enabled = false;
+            }
         }
     }
 }

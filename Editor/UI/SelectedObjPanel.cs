@@ -33,7 +33,8 @@ namespace FS_LevelEditor.Editor.UI
 		UICustomInputField rotXField, rotYField, rotZField;
 		UICustomInputField scaleXField, scaleYField, scaleZField;
 		UIToggle collisionToggle;
-		UIButtonPatcher addWaypointButton;
+        UIToggle invisibleMeshToggle;
+        UIButtonPatcher addWaypointButton;
 		UIToggle startMovingAtStartToggle;
 		UICustomInputField movingSpeedField;
 		UICustomInputField startDelayField;
@@ -53,8 +54,9 @@ namespace FS_LevelEditor.Editor.UI
 		LE_Object currentSelectedObj;
 		bool executeSetActiveAtStartToggleActions = true;
 		bool executeCollisionToggleActions = true;
+        bool executeInvisibleMeshToggleActions = true;
 
-		Vector3 objPositionWhenSelectedField;
+        Vector3 objPositionWhenSelectedField;
 		Quaternion objRotationWhenSelectedField;
 		Vector3 objScaleWhenSelectedField;
 
@@ -62,7 +64,7 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			GameObject root = new GameObject("CurrentSelectedObjPanel");
 			root.transform.parent = editorUIParent;
-			root.transform.localPosition = new Vector3(-700f, -220f, 0f);
+			root.transform.localPosition = new Vector3(-690f, -220f, 0f); // Changed from -700f to -690f
 			root.transform.localScale = Vector3.one;
 
 			root.AddComponent<SelectedObjPanel>();
@@ -209,6 +211,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateObjectRotationUIElements();
 			CreateObjectScaleUIElements();
 			CreateCollisionToggle();
+			CreateInvisibleMeshToggle();
 			CreateAddWaypointButton();
 			CreateStartMovingAtStartToggle();
 			CreateMovingSpeedField();
@@ -384,7 +387,41 @@ namespace FS_LevelEditor.Editor.UI
 
 			yPosForGlobalProps -= 55;
 		}
-		void CreateAddWaypointButton()
+
+        void CreateInvisibleMeshToggle()
+        {
+            Transform invisibleMeshToggleParent = new GameObject("InvisibleMesh").transform;
+            invisibleMeshToggleParent.parent = globalObjectPanelsParent;
+            invisibleMeshToggleParent.localPosition = Vector3.zero;
+            invisibleMeshToggleParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(invisibleMeshToggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "InvisibleMesh");
+            title.name = "Title";
+
+            GameObject toggle = NGUI_Utils.CreateToggle(invisibleMeshToggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
+            toggle.name = "Toggle";
+            toggle.GetComponent<UIToggle>().onChange.Clear();
+            var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetInvisibleMeshToggle));
+            toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
+            invisibleMeshToggle = toggle.GetComponent<UIToggle>();
+            invisibleMeshToggle.instantTween = true;
+
+            GameObject line = new GameObject("Line");
+            line.transform.parent = toggle.GetChild("Background").transform;
+            line.transform.localPosition = Vector3.zero;
+            line.transform.localScale = Vector3.one;
+
+            UISprite lineSprite = line.AddComponent<UISprite>();
+            lineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
+            lineSprite.spriteName = "Square";
+            lineSprite.width = 35;
+            lineSprite.height = 6;
+            lineSprite.depth = 8;
+            line.SetActive(false);
+
+            yPosForGlobalProps -= 55;
+        }
+        void CreateAddWaypointButton()
 		{
 			addWaypointButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "AddGlobalWaypoint");
 			addWaypointButton.name = "AddWaypointButton";
@@ -523,6 +560,8 @@ namespace FS_LevelEditor.Editor.UI
 			CreateBridgeAttributesPanel();
 			CreateCubeKillplaneAttributePanel();
 			CreateKeypadAttributesPanel();
+			CreateRGBWallAttributesPanel();
+			CreateHealValueAttributesPanel();
 		}
 		#region Create Object Specific Panels
 		void CreateDirectionalLightAttributesPanel()
@@ -569,12 +608,11 @@ namespace FS_LevelEditor.Editor.UI
 			CreateObjectAttribute("Damage", AttributeType.INPUT_FIELD, "50", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Damage");
 			CreateObjectAttribute("TravelBack", AttributeType.TOGGLE, true, null, "TravelBack", tooltip: "TravelBackTooltip");
 			CreateObjectAttribute("Loop", AttributeType.TOGGLE, false, null, "Loop", tooltip: "LoopTooltip");
-			CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
-			CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
-			CreateObjectAttribute("Rotate", AttributeType.TOGGLE, false, null, "Rotate");
-			CreateObjectAttribute("RotateSpeed", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "RotateSpeed");
+            CreateObjectAttribute("WaitTime", AttributeType.INPUT_FIELD, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "WaitTime");
+            CreateObjectAttribute("MovingSpeed", AttributeType.INPUT_FIELD, "10", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "MovingSpeed");
+            CreateObjectAttribute("AddSawWaypoint", AttributeType.BUTTON, null, null, "AddWaypoint");
 
-			sawAttributes.SetActive(false);
+            sawAttributes.SetActive(false);
 			attributesPanels.Add("Saw", sawAttributes);
 		}
 		void CreateSawWaypointAttributesPanel()
@@ -660,12 +698,14 @@ namespace FS_LevelEditor.Editor.UI
 
 			CreateObjectAttribute("ActivateOnStart", AttributeType.TOGGLE, true, null, "ActivateOnStart");
 			CreateObjectAttribute("InstantKill", AttributeType.TOGGLE, false, null, "InstaKill");
-			CreateObjectAttribute("ExplosionDamage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ExplosionDamage");
+            CreateObjectAttribute("DamageThroughWalls", AttributeType.TOGGLE, true, null, "DamageThroughWalls");
+            //CreateObjectAttribute("BreakWindows", AttributeType.TOGGLE, false, null, "BreakWindows"); left here in case they work (ch5+)
+            CreateObjectAttribute("ExplosionDamage", AttributeType.INPUT_FIELD, "34", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ExplosionDamage");
 			CreateObjectAttribute("ContactRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ContactRadius");
 			CreateObjectAttribute("RemoteRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "RemoteRadius");
 			CreateObjectAttribute("ProximityRadius", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "ProximityRadius");
 
-			mineAttributes.SetActive(false);
+            mineAttributes.SetActive(false);
 			attributesPanels.Add("Mine", mineAttributes);
 		}
 		void CreateCeilingLightPanel()
@@ -986,15 +1026,44 @@ namespace FS_LevelEditor.Editor.UI
 			SetCurrentParentToCreateAttributes(keypad);
 
 			CreateObjectAttribute("Keycode", AttributeType.INPUT_FIELD, "1234", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "Keycode", maxLength: 4);
-			CreateObjectAttribute("leaveOnIncorrect", AttributeType.TOGGLE, false, null, "leaveOnIncorrect");
 			CreateObjectAttribute("allCorrect", AttributeType.TOGGLE, false, null, "allCorrect");
 			CreateObjectAttribute("ManageEvents", AttributeType.BUTTON, null, null, "ManageEvents");
 
 			keypad.SetActive(false);
 			attributesPanels.Add("Keypad", keypad);
 		}
+		void CreateRGBWallAttributesPanel()
+		{
+			GameObject rgbWallAttributes = new GameObject("Rgb Wall");
+			rgbWallAttributes.transform.parent = objectSpecificPanelsParent;
+			rgbWallAttributes.transform.localPosition = Vector3.zero;
+			rgbWallAttributes.transform.localScale = Vector3.one;
 
-		enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE, VECTOR }
+			SetCurrentParentToCreateAttributes(rgbWallAttributes);
+
+            CreateObjectAttribute("ColorHex", AttributeType.INPUT_FIELD, "FFFFFF", UICustomInputField.UIInputType.HEX_COLOR, "Color", true);
+
+            rgbWallAttributes.SetActive(false);
+			attributesPanels.Add("Rgb Wall", rgbWallAttributes);
+		}
+        void CreateHealValueAttributesPanel()
+        {
+            GameObject healValueAttributes = new GameObject("Heal_Area");
+            healValueAttributes.transform.parent = objectSpecificPanelsParent;
+            healValueAttributes.transform.localPosition = Vector3.zero;
+            healValueAttributes.transform.localScale = Vector3.one;
+
+            SetCurrentParentToCreateAttributes(healValueAttributes);
+
+            CreateObjectAttribute("HealValue", AttributeType.INPUT_FIELD, "3", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "HealValue");
+            CreateObjectAttribute("HealInterval", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, "HealInterval");
+            CreateObjectAttribute("MaxHealth", AttributeType.INPUT_FIELD, "1", UICustomInputField.UIInputType.NON_NEGATIVE_INT, "MaxHealth");
+
+            healValueAttributes.SetActive(false);
+            attributesPanels.Add("Heal_Area", healValueAttributes);
+        }
+
+        enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE, VECTOR }
 		void SetCurrentParentToCreateAttributes(GameObject newParent)
 		{
 			whereToCreateObjAttributesParent = newParent.transform;
@@ -1142,12 +1211,15 @@ namespace FS_LevelEditor.Editor.UI
 
 			if (show)
 			{
+				// Show both header and body when panel is active
+				header.SetActive(true);
+				
 				// Ensure button is visible when panel is shown
 				expandPanelButton.gameObject.SetActive(true);
 
 				if (!expand) // Normal selection
 				{
-					gameObject.transform.localPosition = new Vector3(-700f, -220, 0f);
+					gameObject.transform.localPosition = new Vector3(-690f, -220, 0f); // Changed from -700f to -690f
 					headerTitle.width = 300;
 					body.SetActive(true);
 					body.GetComponent<UISprite>().height = 300;
@@ -1157,7 +1229,7 @@ namespace FS_LevelEditor.Editor.UI
 				}
 				else // EXPANDED PANEL
 				{
-					gameObject.transform.localPosition = new Vector3(-700f, 500, 0f);
+					gameObject.transform.localPosition = new Vector3(-690f, 500, 0f); // Changed from -700f to -690f
 					headerTitle.width = 300;
 					body.SetActive(true);
 					body.GetComponent<UISprite>().height = 1020;
@@ -1170,8 +1242,8 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			else
 			{
-				gameObject.transform.localPosition = new Vector3(-700f, -505f, 0f);
-				headerTitle.width = 520;
+				// Hide both header and body when nothing is selected
+				header.SetActive(false);
 				body.SetActive(false);
 				setActiveAtStartToggle.gameObject.SetActive(false);
 				expandPanelButton.gameObject.SetActive(false);
@@ -1487,7 +1559,27 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			EditorController.Instance.levelHasBeenModified = true;
 		}
-		public void AddWaypointForObject()
+
+        public void SetInvisibleMeshToggle()
+        {
+            if (!executeInvisibleMeshToggleActions) return;
+
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+                foreach (var obj in EditorController.Instance.currentSelectedObjects)
+                {
+                    LE_Object comp = obj.GetComponent<LE_Object>();
+                    comp.invisibleMesh = invisibleMeshToggle.isChecked;
+                }
+            }
+            else
+            {
+                EditorController.Instance.currentSelectedObjComponent.invisibleMesh = invisibleMeshToggle.isChecked;
+            }
+            EditorController.Instance.levelHasBeenModified = true;
+        }
+        public void AddWaypointForObject()
 		{
 			if (!EditorController.Instance.multipleObjectsSelected)
 			{
@@ -1594,10 +1686,58 @@ namespace FS_LevelEditor.Editor.UI
 				collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
 				collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 			}
-			#endregion
+            #endregion
 
-			#region Add Waypoint Button
-			if (EditorController.Instance.multipleObjectsSelected)
+            // Add this section in UpdateGlobalObjectAttributes() after the Collision Toggle region (around line 910)
+            #region Invisible Mesh Toggle
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                // If this is null, that means the "InvisibleMesh" in the current selected objects is different in at least one of them.
+                // If it's true or false, then ALL of them are true or false.
+                bool? invisibleMeshStateInObjects = null;
+                foreach (var @object in EditorController.Instance.currentSelectedObjects)
+                {
+                    LE_Object comp = @object.GetComponent<LE_Object>();
+
+                    if (invisibleMeshStateInObjects == null)
+                    {
+                        invisibleMeshStateInObjects = comp.invisibleMesh; // Direct field access
+                        continue;
+                    }
+
+                    if (invisibleMeshStateInObjects == comp.invisibleMesh)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        invisibleMeshStateInObjects = null;
+                        break;
+                    }
+                }
+
+                if (invisibleMeshStateInObjects != null)
+                {
+                    invisibleMeshToggle.Set((bool)invisibleMeshStateInObjects);
+                    invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+                }
+                else
+                {
+                    executeInvisibleMeshToggleActions = false;
+                    invisibleMeshToggle.Set(false);
+                    executeInvisibleMeshToggleActions = true;
+                    invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
+                }
+            }
+            else
+            {
+                invisibleMeshToggle.Set(obj.GetComponent<LE_Object>().invisibleMesh); // Direct field access
+                invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
+            }
+            #endregion
+
+            #region Add Waypoint Button
+            if (EditorController.Instance.multipleObjectsSelected)
 			{
 				// Only enable the button when ALL of the selected objects allow waypoints.
 				addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjects.All(x => x.GetComponent<LE_Object>().canHaveWaypoints));
