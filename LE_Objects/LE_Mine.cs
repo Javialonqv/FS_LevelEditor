@@ -157,7 +157,7 @@ namespace FS_LevelEditor
 			mine.activeEditorState = true;
 			mine.constantEditorState = true;
 			mine.showIfTouchesNothing = true;
-			mine.checkpoints = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GameObject>(0);
+			mine.checkpoints = new GameObject[0];
 			#endregion
 			#region OSS
 			ObjectStateSync sync = gameObject.GetChildAt("Mine").AddComponent<ObjectStateSync>();

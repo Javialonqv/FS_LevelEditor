@@ -594,7 +594,7 @@ namespace FS_LevelEditor
 
         public static T FindObjectOfType<T>(Func<T, bool> predicate = null) where T : Component
         {
-            Il2CppReferenceArray<UnityEngine.Object> array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
+            Object[] array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
             if (predicate == null)
             {
                 return array[0].Cast<T>();

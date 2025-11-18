@@ -514,7 +514,7 @@ namespace FS_LevelEditor.Playmode
 			objectiveController.markerObj = null;
 			objectiveController.onActivated = new UnityEngine.Events.UnityEvent();
 			objectiveController.onAccomplished = new UnityEngine.Events.UnityEvent();
-			objectiveController.BlocSwitchs = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppReferenceArray<GameObject>(0);
+			objectiveController.BlocSwitchs = new GameObject[0];
 			objectiveController.dialogToActivate = false;
 			objectiveController.dialogTimeStart = 0;
 			objectiveController.objectiveDelay = 0;
