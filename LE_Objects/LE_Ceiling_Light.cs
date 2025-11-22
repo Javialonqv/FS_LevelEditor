@@ -266,5 +266,12 @@ namespace FS_LevelEditor
                 }
             }
         }
+
+        public override void SetCollidersState(bool newEnabledState)
+        {
+            contentObject.GetComponent<BoxCollider>().isTrigger = !newEnabledState;
+
+            currentCollisionState = newEnabledState;
+        }
     }
 }

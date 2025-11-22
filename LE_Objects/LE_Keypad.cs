@@ -18,6 +18,8 @@ namespace FS_LevelEditor
 	[MelonLoader.RegisterTypeInIl2Cpp]
 	public class LE_Keypad : LE_Object
 	{
+        public override string contentObjectName => "LE_Keypad";
+
 		private int keycodeValue = 0;
 		public void Awake()
 		{
@@ -205,5 +207,12 @@ namespace FS_LevelEditor
 				"onFailEvents"
 			};
 		}
+
+        public override void SetCollidersState(bool newEnabledState)
+        {
+            contentObject.GetComponent<BoxCollider>().isTrigger = !newEnabledState;
+
+            currentCollisionState = newEnabledState;
+        }
 	}
 }

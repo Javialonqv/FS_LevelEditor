@@ -194,6 +194,14 @@ namespace FS_LevelEditor
                 return null;
             }
         }
+        public virtual string contentObjectName => "Content";
+        public GameObject contentObject
+        {
+            get
+            {
+                return gameObject.GetChild(contentObjectName);
+            }
+        }
         public bool canUndoDeletion { get; protected set; }  = true;
         public bool canBeUsedInEventsTab { get; protected set; } = true;
         public bool canBeDisabledAtStart { get; protected set; } = true;
@@ -799,42 +807,20 @@ namespace FS_LevelEditor
             }
         }
 
-        public void SetCollidersState(bool newEnabledState)
+        // Default implementation of SetCollidersState, should work like 99% of the time, except for some edge cases where it doesn't work for some objects for some stupid reason.
+        public virtual void SetCollidersState(bool newEnabledState)
         {
-            if (!gameObject.ExistsChild("Content") && objectType != ObjectType.KEYPAD && objectType != ObjectType.MINE)
+            if (!gameObject.ExistsChild(contentObjectName))
             {
                 if (!IsWaypoint(objectType.Value)) Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
                 return;
             }
-            if(objectType == ObjectType.SWITCH || objectType == ObjectType.CEILING_LIGHT)
+
+            foreach (var collider in contentObject.TryGetComponents<Collider>(true))
             {
-				gameObject.GetChild("Content").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
-			} 
-            else if(objectType == ObjectType.AMMO_PACK || objectType == ObjectType.HEALTH_PACK)
-            {
-                gameObject.GetChildAt("Content").GetComponent<BoxCollider>().enabled = newEnabledState;
-                gameObject.GetChildAt("Content/Mesh/PreciseCollider").SetActive(newEnabledState);
+                collider.enabled = newEnabledState;
             }
-            else if (objectType == ObjectType.VENT_WITH_SMOKE_GREEN || objectType == ObjectType.VENT_WITH_SMOKE_CYAN)
-            {
-                gameObject.GetChildAt("Content/Mesh").GetComponent<MeshCollider>().enabled = newEnabledState;
-			}
-            else if (objectType == ObjectType.KEYPAD)
-            {
-                gameObject.GetChild("LE_Keypad").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
-            }
-            else if (objectType == ObjectType.MINE)
-            {
-                gameObject.GetChildAt("Mine/MeshOn").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
-                gameObject.GetChildAt("Mine/MeshOff").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
-            }
-            else
-            {
-                foreach (var collider in gameObject.GetChild("Content").TryGetComponents<Collider>(true))
-                {
-                    collider.enabled = newEnabledState;
-                }
-            }
+
             currentCollisionState = newEnabledState;
         }
         public void SetEditorCollider(bool newEnabledState)

@@ -10,5 +10,12 @@ namespace FS_LevelEditor
 		{
 			gameObject.AddComponent<VentWithSmokeController>().m_particles = gameObject.GetChildAt("Content/Particles");
 		}
-	}
+
+        public override void SetCollidersState(bool newEnabledState)
+        {
+            contentObject.GetChild("Mesh").GetComponent<MeshCollider>().enabled = newEnabledState;
+
+            currentCollisionState = newEnabledState;
+        }
+    }
 }

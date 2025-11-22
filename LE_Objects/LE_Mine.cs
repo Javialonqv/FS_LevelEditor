@@ -20,6 +20,8 @@ namespace FS_LevelEditor
 		GameObject remoteRangeSphere;
 		GameObject sphereRange;
 
+        public override string contentObjectName => "Mine";
+
 		void Awake()
 		{
 			contactRangeSphere = gameObject.GetChildAt("Mine/SphereRange/Contact");
@@ -478,6 +480,14 @@ namespace FS_LevelEditor
 			proximityRangeSphere = null;
 			remoteRangeSphere = null;
 		}
+
+        public override void SetCollidersState(bool newEnabledState)
+        {
+            contentObject.GetChildAt("MeshOn").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
+            contentObject.GetChildAt("MeshOff").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
+
+            currentCollisionState = newEnabledState;
+        }
 
 	}
 }

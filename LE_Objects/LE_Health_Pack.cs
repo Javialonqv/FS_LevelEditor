@@ -99,5 +99,13 @@ namespace FS_LevelEditor
 
 			return base.TriggerAction(actionName);
 		}
-	}
+
+        public override void SetCollidersState(bool newEnabledState)
+        {
+            contentObject.GetComponent<BoxCollider>().enabled = newEnabledState;
+            contentObject.GetChildAt("Mesh/PreciseCollider").SetActive(newEnabledState);
+
+            currentCollisionState = newEnabledState;
+        }
+    }
 }
