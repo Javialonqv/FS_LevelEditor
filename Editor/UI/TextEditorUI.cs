@@ -113,6 +113,7 @@ namespace FS_LevelEditor.Editor.UI
             textField.name = "TextField";
             textField.input.mPivot = UIWidget.Pivot.TopLeft;
             textField.input.onReturnKey = UIInput.OnReturnKey.NewLine;
+            textField.input.selectAllTextOnFocus = false;
 
             textField.onSubmit += OnTextFieldSubmited;
         }
