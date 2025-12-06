@@ -1225,7 +1225,7 @@ namespace FS_LevelEditor.Editor.UI
 					body.GetComponent<UISprite>().height = 300;
 					body.GetComponent<BoxCollider>().center = new Vector3(0, -150f);
 					body.GetComponent<BoxCollider>().size = new Vector3(500, 300);
-					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -150f, 500, 280);
+					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -150f, 500, 260);
 				}
 				else // EXPANDED PANEL
 				{
