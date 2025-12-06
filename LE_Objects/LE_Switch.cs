@@ -349,11 +349,9 @@ namespace FS_LevelEditor
             eventExecuter.ExecuteEvents((List<LE_Event>)properties["WhenInvertingEvents"]);
         }
 
-        public override void SetCollidersState(bool newEnabledState)
+        public override void SetCollidersStateForEdgeCase(bool newEnabledState)
         {
             contentObject.GetComponent<BoxCollider>().isTrigger = !newEnabledState;
-
-            currentCollisionState = newEnabledState;
         }
     }
 }

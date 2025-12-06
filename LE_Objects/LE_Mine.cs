@@ -481,14 +481,11 @@ namespace FS_LevelEditor
 			remoteRangeSphere = null;
 		}
 
-        public override void SetCollidersState(bool newEnabledState)
+        public override void SetCollidersStateForEdgeCase(bool newEnabledState)
         {
             contentObject.GetChildAt("MeshOn").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
             contentObject.GetChildAt("MeshOff").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
-
-            currentCollisionState = newEnabledState;
         }
-
 	}
 }
 

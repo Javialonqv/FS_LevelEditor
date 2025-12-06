@@ -807,8 +807,8 @@ namespace FS_LevelEditor
             }
         }
 
-        // Default implementation of SetCollidersState, should work like 99% of the time, except for some edge cases where it doesn't work for some objects for some stupid reason.
-        public virtual void SetCollidersState(bool newEnabledState)
+        // Default implementation of SetCollidersState.
+        public void SetCollidersState(bool newEnabledState)
         {
             if (!gameObject.ExistsChild(contentObjectName))
             {
@@ -816,12 +816,28 @@ namespace FS_LevelEditor
                 return;
             }
 
-            foreach (var collider in contentObject.TryGetComponents<Collider>(true))
+            if (hasItsOwnClass && Utils.IsOverridingMethod(GetType(), nameof(SetCollidersStateForEdgeCase)))
             {
-                collider.enabled = newEnabledState;
+                SetCollidersStateForEdgeCase(newEnabledState);
+            }
+            else // Default implementation.
+            {
+                foreach (var collider in contentObject.TryGetComponents<Collider>(true))
+                {
+                    collider.enabled = newEnabledState;
+                }
             }
 
             currentCollisionState = newEnabledState;
+        }
+        /// <summary>
+        /// SetCollidersState should work like 99% of the time, except for some edge cases where it doesn't work for some objects for some stupid reason.
+        /// DON'T CALL THIS FUNCTION DIRECTLY, CALL SetCollidersState INSTEAD!
+        /// </summary>
+        /// <param name="newEnabledState"></param>
+        public virtual void SetCollidersStateForEdgeCase(bool newEnabledState)
+        {
+            Logger.Warning($"SetCollidersStateForEdgeCase BASE function was called for object of type: \"{objectType}\". This shouldn't happend!");
         }
         public void SetEditorCollider(bool newEnabledState)
         {

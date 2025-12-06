@@ -100,12 +100,10 @@ namespace FS_LevelEditor
 			return base.TriggerAction(actionName);
 		}
 
-        public override void SetCollidersState(bool newEnabledState)
+        public override void SetCollidersStateForEdgeCase(bool newEnabledState)
         {
             contentObject.GetComponent<BoxCollider>().enabled = newEnabledState;
             contentObject.GetChildAt("Mesh/PreciseCollider").SetActive(newEnabledState);
-
-            currentCollisionState = newEnabledState;
         }
     }
 }
