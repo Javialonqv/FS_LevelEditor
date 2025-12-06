@@ -466,7 +466,7 @@ namespace FS_LevelEditor
             {
                 SetCollidersState(false);
                 SetEditorCollider(true);
-                SetMeshRenderersState(true);
+                // No need to call SetMeshRenderersState since they're ok by default.
             }
             else if (scene == LEScene.Playmode)
             {
@@ -865,43 +865,14 @@ namespace FS_LevelEditor
                 return;
             }
 
-            // Determine the content object
-            GameObject content = null;
-            if (objectType == ObjectType.KEYPAD)
+            if (!contentObject)
             {
-                if (gameObject.ExistsChild("LE_Keypad"))
-                {
-                    content = gameObject.GetChild("LE_Keypad");
-                }
-            }
-            else if (objectType == ObjectType.MINE)
-            {
-                if (gameObject.ExistsChild("Mine"))
-                {
-                    content = gameObject.GetChild("Mine");
-                }
-            }
-            else
-            {
-                if (gameObject.ExistsChild("Content"))
-                {
-                    content = gameObject.GetChild("Content");
-                }
-                else
-                {
-                    Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
-                    return;
-                }
-            }
-
-            // Safety check
-            if (content == null)
-            {
+                Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
                 return;
             }
 
             // Get all mesh renderers recursively from content
-            MeshRenderer[] renderers = content.TryGetComponents<MeshRenderer>(true);
+            MeshRenderer[] renderers = contentObject.TryGetComponents<MeshRenderer>(true);
             if (renderers == null || renderers.Length == 0)
             {
                 return; // No renderers to modify
@@ -930,9 +901,6 @@ namespace FS_LevelEditor
                 // If disabling, remove all materials
                 if (!newEnabledState)
                 {
-                    // Set materials to an empty array
-                    renderer.materials = new Material[0];
-
                     // Add enforcer component using GetComponent instead of TryGetComponent
                     if (renderer.gameObject != null)
                     {
