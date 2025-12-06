@@ -48,16 +48,16 @@ object.GUN,Taser,Taser,Тазер
 object.MOVING_PLATFORM,Moving Platform,Plataforma Movil,Рухома платформа
 object.MOVING_PLATFORM_WAYPOINT,Moving Platform  Waypoint,Waypoint de Plataforma Movil,Точка переміщення рухомої платформа
 object.CROW,Crow,Cuervo,Ворона
-object.DESTRUCTIBLE_WALL,Fragile Wall,,Крихка стіна
-object.BRIDGE,Bridge,,Міст
-object.CUBE_KILLPLANE,Unauthorized Object,,Неавторизований об'єкт
-object.KEYPAD,Keypad,,Циферблат
-object.HEAL_AREA,Heal Area,,Лікувальна зона
-object.RGB_WALL,Color Wall,,Кольорова стіна
-object.MINE,Mine,,Міна
+object.DESTRUCTIBLE_WALL,Fragile Wall,Pared Frágil,Крихка стіна
+object.BRIDGE,Bridge,Puente,Міст
+object.CUBE_KILLPLANE,Unauthorized Object,Objeto No Autorizado,Неавторизований об'єкт
+object.KEYPAD,Keypad,Teclado,Циферблат
+object.HEAL_AREA,Heal Area,Area de Curación,Лікувальна зона
+object.RGB_WALL,Color Wall,Pared de Color,Кольорова стіна
+object.MINE,Mine,Mina,Міна
 Player,Player,Jugador,Гравець
-Jetpack,Jetpack,,Джетпак
-Taser,Taser,,Тазер
+Jetpack,Jetpack,Mochila Propulsora,Джетпак
+Taser,Taser,Taser,Тазер
 events.WhenActivatingEvents,When Activating,Cuando Se Activa,Коли активне
 events.WhenDeactivatingEvents,When Deactivating,Cuando Se Desactiva,Коли неактивне
 events.WhenInvertingEvents,When Inverting,Cuando Se Invierte,Коли навпаки
@@ -67,11 +67,11 @@ events.OnBoth,On Both,Ambos Casos,На обох
 events.OnEnter,On Enter,Al Entrar,При вході
 events.OnExit,On Exit,Al Salir,При виході
 events.OnPickup,On Pickup,Al Recoger,При піднятті
-events.OnBreak,On Break,,При розваленні
-events.OnDeploy,On Deploy,,При розкритті
-events.OnRetract,On Retract,,При скритті
-events.onWinEvents,On Win,,При правильній комбінації
-events.onFailEvents,On Lose,,При неправильній комбінації
+events.OnBreak,On Break,Al Romper,При розваленні
+events.OnDeploy,On Deploy,Al Desplegar,При розкритті
+events.OnRetract,On Retract,Al Retraer,При скритті
+events.onWinEvents,On Win,Al Ganar,При правильній комбінації
+events.onFailEvents,On Lose,Al Perder,При неправильній комбінації
 pause.PlayLevel,Play Level,Jugar Nivel,Грати рівень
 pause.NoSpawnObject,There isn't any player spawn obj in the scene.,No hay ningún spawn del jugador en la escena.,В сцені немає точки появи гравця.
 pause.SaveLevel,Save Level,Guardar Nivel,Зберегти рівень
@@ -94,9 +94,9 @@ Range,Range,Rango,Діапазон
 ActivateOnStart,Start Enabled,Activar Al Inicio,Активувати на старті
 Damage,Damage,Daño,Шкода
 TravelBack,Travel Back,Regresarse,Повернутись назад
-AddGlobalWaypoint,+ Add Global Waypoint,+ Añadir Waypoint Global,+ Додати глобальну точку руху
-AddSawWaypoint,+ Add Saw Waypoint,+ Añadir Waypoint de Sierra,+ Додати точку руху пили
-AddMovingPlatformWaypoint,+ Add Platform Waypoint,+ Añadir Waypoint de Plataforma,+ Додати точку руху платформи
+AddGlobalWaypoint,+ Add Global Waypoint,+ Añadir Waypoint Global,+ Додати глобальну точку переміщення
+AddSawWaypoint,+ Add Saw Waypoint,+ Añadir Waypoint de Sierra,+ Додати точку переміщення пили
+AddMovingPlatformWaypoint,+ Add Moving Platform Waypoint,+ Añadir Waypoint de Plataforma,+ Додати точку переміщення платформ
 WaitTime,Wait Time,Tiempo de Espera,Час очікування
 InitialState,Initial State,Estado Inicial,Початковий стан
 DEACTIVATED,DEACTIVATED,DESACTIVADO,ДЕАКТИВОВАНИЙ
@@ -144,14 +144,14 @@ Rotate,Rotate?,¿Rotar?,Повертати?
 RotateSpeed,Rotate speed,Velocidad de Rotación,Швидкість повертання
 Ammo,Ammo,Munición,Патрони
 InfiniteTaser,Infinite Taser,Taser infinito,Бескінечний тазер
-InvisibleEdges,Invisible Edges,Border Invisibles,Невидимі бортики
+InvisibleEdges,Invisible Edges,Bordes Invisibles,Невидимі бортики
 StartMovingAtStart,Move At Start,Mover Al Inicio,Почати рух при старті
 MovingSpeed,Moving Speed,Velocidad de Movimiento,Швидкість руху
 StartDelay,Start Delay,Espera al Inicio,Затримка початку
 MovementMode,Movement Mode,Modo de Movimiento,Тип руху
 None_Mayus,NONE,NINGUNO,НІЧОГО
-Keycode,Keycode,,Код
-IgnoreIfInHands,Ignore if currently picked up,,"Ігнорувати, якщо піднято"
+Keycode,Keycode,Código,Код
+IgnoreIfInHands,Ignore if currently picked up,Ignorar si ya está recogido,"Ігнорувати, якщо піднято"
 TravelBack_Mayus,TRAVEL BACK,REGRESARSE,ПОВЕРНУТИСЯ
 Loop_Mayus,LOOP,BUCLE,ЗАЦИКЛЕНО
 IsAutomatic,Is Automatic?,¿Es Automática?,Автоматичні?
@@ -159,13 +159,13 @@ CLOSED,CLOSED,CERRADA,ЗАКРИТІ
 OPEN,OPEN,ABIERTA,ВІДКРИТІ
 LOCKED,LOCKED,BLOQUEADA,ЗАБЛОКОВАНІ
 UNLOCKED,UNLOCKED,DESBLOQUEADA,РОЗБЛОКОВАНІ
-DamageThroughWalls,Damage through walls,,
-BreakWindows,Break Windows on explosion,,
-ExplosionDamage,Explosion Damage,,
-ContactRadius,Contact Radius,,
-RemoteRadius,Remote Radius,,
-ProximityRadius,Proximity Radius,,
-HealValue,Heal Value,,
-HealInterval,Heal Interval,,
-MaxHealth,Max Health,,
-TriggerMode,Trigger Mode,,
+DamageThroughWalls,Damage through walls,Daño a través de las paredes,
+BreakWindows,Break Windows on explosion,Romper Ventanas al explotar,
+ExplosionDamage,Explosion Damage,Daño de Explosión,
+ContactRadius,Contact Radius,Radio de Contacto,
+RemoteRadius,Remote Radius,Radio Remoto,
+ProximityRadius,Proximity Radius,Radio de Proximidad,
+HealValue,Heal Value,Valor de Curación,
+HealInterval,Heal Interval,Intervalo de Curación,
+MaxHealth,Max Health,Máxima Salud,
+TriggerMode,Trigger Mode,Modo del Trigger,
