@@ -3028,6 +3028,8 @@ namespace FS_LevelEditor.Editor
         /// <returns></returns>
         GizmosArrow GetCollidingWithAnArrow()
         {
+            if (!gizmo.Root.activeSelf) return GizmosArrow.None;
+
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             
             // Use new gizmo API for improved axis detection
