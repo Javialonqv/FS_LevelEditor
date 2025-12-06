@@ -3028,24 +3028,23 @@ namespace FS_LevelEditor.Editor
         /// <returns></returns>
         GizmosArrow GetCollidingWithAnArrow()
         {
-      Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             
-   // Use new gizmo API for improved axis detection
-   string hoveredAxis = gizmo.GetHoveredAxis(ray, out float hitDistance);
+            // Use new gizmo API for improved axis detection
+            string hoveredAxis = gizmo.GetHoveredAxis(ray, out float hitDistance);
             
-            if (hoveredAxis == null)
-           return GizmosArrow.None;
+            if (hoveredAxis == null) return GizmosArrow.None;
 
-       GizmosArrow arrow;
+            GizmosArrow arrow;
             switch (hoveredAxis)
-       {
-          case "X": arrow = GizmosArrow.X; break;
-       case "Y": arrow = GizmosArrow.Y; break;
-      case "Z": arrow = GizmosArrow.Z; break;
- default: return GizmosArrow.None;
-   }
+            {
+                case "X": arrow = GizmosArrow.X; break;
+                case "Y": arrow = GizmosArrow.Y; break;
+                case "Z": arrow = GizmosArrow.Z; break;
+                default: return GizmosArrow.None;
+            }
             
-    StartMovingObject(arrow.ToString(), ray);
+            StartMovingObject(arrow.ToString(), ray);
             return arrow;
         }
 
