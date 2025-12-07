@@ -19,9 +19,10 @@ namespace FS_LevelEditor
         public static ExternalSpriteLoader Instance;
 
         Il2CppAssetBundle assetBundle;
-        Sprite[] bundleSprites;
-        Texture spriteTexture;
-        public UIAtlas spriteAtlas;
+        Sprite[] allBundleSprites;
+
+        Dictionary<Texture2D, List<Sprite>> sprites = new Dictionary<Texture2D, List<Sprite>>();
+        public List<UIAtlas> spriteAtlases = new List<UIAtlas>();
 
         void Awake()
         {
@@ -29,7 +30,10 @@ namespace FS_LevelEditor
             DontDestroyOnLoad(gameObject);
             LoadAssetBundle();
 
-            spriteAtlas = CreateAtlas(spriteTexture, bundleSprites);
+            foreach (var texture in sprites)
+            {
+                spriteAtlases.Add(CreateAtlas(texture.Key, texture.Value.ToArray()));
+            }
         }
 
         void LoadAssetBundle()
@@ -40,12 +44,15 @@ namespace FS_LevelEditor
 
             assetBundle = Il2CppAssetBundleManager.LoadFromMemory(assetBytes);
 
-            bundleSprites = assetBundle.LoadAll<Sprite>();
-            foreach (var sprite in bundleSprites)
+            allBundleSprites = assetBundle.LoadAll<Sprite>();
+            foreach (var sprite in allBundleSprites)
             {
                 sprite.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                if (!sprites.ContainsKey(sprite.texture)) sprites.Add(sprite.texture, new List<Sprite>()); // Add the sprite main texture if not detected yet.
+
+                sprites[sprite.texture].Add(sprite); // Add the sprite itself.
             }
-            spriteTexture = bundleSprites[0].texture;
 
             assetStream.Close();
             assetBundle.Unload(false);
@@ -104,9 +111,19 @@ namespace FS_LevelEditor
                 return;
             }
 
-            if (ExternalSpriteLoader.Instance.spriteAtlas.GetSprite(spriteName) != null)
+            UIAtlas atlasToUse = null;
+            foreach (var atlas in ExternalSpriteLoader.Instance.spriteAtlases)
             {
-                sprite.atlas = ExternalSpriteLoader.Instance.spriteAtlas;
+                if (atlas.GetSprite(spriteName) != null)
+                {
+                    atlasToUse = atlas;
+                    break;
+                }
+            }
+
+            if (atlasToUse)
+            {
+                sprite.atlas = atlasToUse;
                 sprite.spriteName = spriteName;
             }
             else
