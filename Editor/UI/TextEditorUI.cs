@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Il2Cpp.NGUIText;
 
 namespace FS_LevelEditor.Editor.UI
 {
@@ -27,7 +28,12 @@ namespace FS_LevelEditor.Editor.UI
         UICustomInputField minFontSizeField;
         UILabel maxFontSizeLabel;
         UICustomInputField maxFontSizeField;
-        UIDropdownPatcher textAlignDropdown;
+
+
+        GameObject textAlignButtonsContainer;
+        UIButtonAsToggle textTopLeft, textTop, textTopRight;
+        UIButtonAsToggle textLeft, textCenter, textRight;
+        UIButtonAsToggle textBottomLeft, textBottom, textBottomRight;
 
         public static void Create()
         {
@@ -49,7 +55,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateFontSizeField();
             CreateMinFontSizeField();
             CreateMaxFontSizeField();
-            CreateTextAlignmentDropdown();
+            CreateTextAlignmentStuff();
         }
 
         void CreateTextEditorPanel()
@@ -161,22 +167,58 @@ namespace FS_LevelEditor.Editor.UI
             maxFontSizeField.name = "MaxFontSizeField";
             maxFontSizeField.onChange = OnMaxFontSizeFieldChanged;
         }
-        void CreateTextAlignmentDropdown()
+
+        void CreateTextAlignmentStuff()
         {
-            textAlignDropdown = NGUI_Utils.CreateDropdown(editorPanel.transform, new Vector3(650, 225), Vector3.one * 0.8f);
-            textAlignDropdown.name = "TextAlignmentButton";
-            textAlignDropdown.Init();
-            textAlignDropdown.SetTitle("Alignment");
-            textAlignDropdown.AddOption("TopLeft", false);
-            textAlignDropdown.AddOption("Top", false);
-            textAlignDropdown.AddOption("TopRight", false);
-            textAlignDropdown.AddOption("Left", false);
-            textAlignDropdown.AddOption("Center", true);
-            textAlignDropdown.AddOption("Right", false);
-            textAlignDropdown.AddOption("BottomLeft", false);
-            textAlignDropdown.AddOption("BottomCenter", false);
-            textAlignDropdown.AddOption("BottomRight", false);
-            textAlignDropdown.AddOnChangeOption(OnTextAlignmentButtonClicked);
+            CreateTextAlignmentButtonsContainer();
+            CreateTextAlignmentButtons();
+        }
+        void CreateTextAlignmentButtonsContainer()
+        {
+            textAlignButtonsContainer = new GameObject("TextAlignButtons");
+            textAlignButtonsContainer.transform.parent = editorPanel.transform;
+            textAlignButtonsContainer.transform.localPosition = new Vector3(600, 240);
+            textAlignButtonsContainer.transform.localScale = Vector3.one;
+        }
+        void CreateTextAlignmentButtons()
+        {
+            textTopLeft = NGUI_Utils.CreateButtonAsToggleWithSprite(textAlignButtonsContainer.transform, new Vector3(-70, 70), Vector3Int.one * 50, 1, "Text_TopLeft", Vector2Int.one * 40);
+            textTopLeft.name = "TopLeft";
+            textTopLeft.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.TopLeft);
+            //-----------------------------------
+            textTop = NGUI_Utils.CreateButtonAsToggleWithSprite(textAlignButtonsContainer.transform, new Vector3(0, 70), Vector3Int.one * 50, 1, "Text_Top", Vector2Int.one * 40);
+            textTop.name = "Top";
+            textTop.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.Top);
+            //-----------------------------------
+            textTopRight = NGUI_Utils.CreateButtonAsToggleWithSprite(textAlignButtonsContainer.transform, new Vector3(70, 70), Vector3Int.one * 50, 1, "Text_TopRight", Vector2Int.one * 40);
+            textTopRight.name = "TopRight";
+            textTopRight.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.TopRight);
+
+            
+            textLeft = NGUI_Utils.CreateButtonAsToggleWithSprite(textAlignButtonsContainer.transform, new Vector3(-70, 0), Vector3Int.one * 50, 1, "Text_Left", Vector2Int.one * 40);
+            textLeft.name = "Left";
+            textLeft.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.Left);
+            //-----------------------------------
+            textCenter = NGUI_Utils.CreateButtonAsToggleWithSprite(textAlignButtonsContainer.transform, new Vector3(0, 0), Vector3Int.one * 50, 1, "Text_Center", Vector2Int.one * 40);
+            textCenter.name = "Center";
+            textCenter.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.Center);
+            //-----------------------------------
+            textRight = NGUI_Utils.CreateButtonAsToggleWithSprite(textAlignButtonsContainer.transform, new Vector3(70, 0), Vector3Int.one * 50, 1, "Text_Right", Vector2Int.one * 40);
+            textRight.name = "Right";
+            textRight.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.Right);
+
+
+            textBottomLeft = NGUI_Utils.CreateButtonAsToggleWithSprite(textAlignButtonsContainer.transform, new Vector3(-70, -70), Vector3Int.one * 50, 1, "Text_BottomLeft", Vector2Int.one * 40);
+            textBottomLeft.name = "Left";
+            textBottomLeft.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.BottomLeft);
+            //-----------------------------------
+            textBottom = NGUI_Utils.CreateButtonAsToggleWithSprite(textAlignButtonsContainer.transform, new Vector3(0, -70), Vector3Int.one * 50, 1, "Text_Bottom", Vector2Int.one * 40);
+            textBottom.name = "Center";
+            textBottom.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.Bottom);
+            //-----------------------------------
+            textBottomRight = NGUI_Utils.CreateButtonAsToggleWithSprite(textAlignButtonsContainer.transform, new Vector3(70, -70), Vector3Int.one * 50, 1, "Text_BottomRight", Vector2Int.one * 40);
+            textBottomRight.name = "Right";
+            textBottomRight.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.BottomRight);
         }
 
         void UpdateTextEditorUIValues()
@@ -186,7 +228,7 @@ namespace FS_LevelEditor.Editor.UI
             fontSizeField.SetText(targetObj.GetProperty<float>("FontSize"));
             minFontSizeField.SetText(targetObj.GetProperty<float>("MinFontSize"));
             maxFontSizeField.SetText(targetObj.GetProperty<float>("MaxFontSize"));
-            textAlignDropdown.SelectOption(targetObj.GetProperty<TextAlignmentOptions>("TextAlign").ToString());
+            UpdateTextAlignmentButtons(targetObj.GetProperty<TextAlignmentOptions>("TextAlign"));
 
             // Update the visibility of fields based on the AutoFontSize toggle state
             OnAutoFontSizeToggleChanged();
@@ -235,10 +277,24 @@ namespace FS_LevelEditor.Editor.UI
         {
             targetObj.SetProperty("MaxFontSize", maxFontSizeField.GetText());
         }
-        void OnTextAlignmentButtonClicked(int option)
+        void OnTextAlignmentButtonClicked(TextAlignmentOptions alignment)
         {
-            TextAlignmentOptions align = Enum.Parse<TextAlignmentOptions>(textAlignDropdown.currentlySelected);
-            targetObj.SetProperty("TextAlign", align);
+            targetObj.SetProperty("TextAlign", alignment);
+
+            UpdateTextAlignmentButtons(alignment);
+        }
+
+        void UpdateTextAlignmentButtons(TextAlignmentOptions alignment)
+        {
+            textTopLeft.SetToggleState(alignment == TextAlignmentOptions.TopLeft);
+            textTop.SetToggleState(alignment == TextAlignmentOptions.Top);
+            textTopRight.SetToggleState(alignment == TextAlignmentOptions.TopRight);
+            textLeft.SetToggleState(alignment == TextAlignmentOptions.Left);
+            textCenter.SetToggleState(alignment == TextAlignmentOptions.Center);
+            textRight.SetToggleState(alignment == TextAlignmentOptions.Right);
+            textBottomLeft.SetToggleState(alignment == TextAlignmentOptions.BottomLeft);
+            textBottom.SetToggleState(alignment == TextAlignmentOptions.Bottom);
+            textBottomRight.SetToggleState(alignment == TextAlignmentOptions.BottomRight);
         }
 
         public void ShowTextEditor(LE_Object targetObj)
