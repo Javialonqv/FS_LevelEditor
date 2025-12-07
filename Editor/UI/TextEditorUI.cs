@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.UI_Related;
 using Il2Cpp;
+using Il2CppTMPro;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,7 @@ namespace FS_LevelEditor.Editor.UI
         UICustomInputField minFontSizeField;
         UILabel maxFontSizeLabel;
         UICustomInputField maxFontSizeField;
+        UIDropdownPatcher textAlignDropdown;
 
         public static void Create()
         {
@@ -47,6 +49,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateFontSizeField();
             CreateMinFontSizeField();
             CreateMaxFontSizeField();
+            CreateTextAlignmentDropdown();
         }
 
         void CreateTextEditorPanel()
@@ -158,6 +161,23 @@ namespace FS_LevelEditor.Editor.UI
             maxFontSizeField.name = "MaxFontSizeField";
             maxFontSizeField.onChange = OnMaxFontSizeFieldChanged;
         }
+        void CreateTextAlignmentDropdown()
+        {
+            textAlignDropdown = NGUI_Utils.CreateDropdown(editorPanel.transform, new Vector3(650, 225), Vector3.one * 0.8f);
+            textAlignDropdown.name = "TextAlignmentButton";
+            textAlignDropdown.Init();
+            textAlignDropdown.SetTitle("Alignment");
+            textAlignDropdown.AddOption("TopLeft", false);
+            textAlignDropdown.AddOption("Top", false);
+            textAlignDropdown.AddOption("TopRight", false);
+            textAlignDropdown.AddOption("Left", false);
+            textAlignDropdown.AddOption("Center", true);
+            textAlignDropdown.AddOption("Right", false);
+            textAlignDropdown.AddOption("BottomLeft", false);
+            textAlignDropdown.AddOption("BottomCenter", false);
+            textAlignDropdown.AddOption("BottomRight", false);
+            textAlignDropdown.AddOnChangeOption(OnTextAlignmentButtonClicked);
+        }
 
         void UpdateTextEditorUIValues()
         {
@@ -166,6 +186,7 @@ namespace FS_LevelEditor.Editor.UI
             fontSizeField.SetText(targetObj.GetProperty<float>("FontSize"));
             minFontSizeField.SetText(targetObj.GetProperty<float>("MinFontSize"));
             maxFontSizeField.SetText(targetObj.GetProperty<float>("MaxFontSize"));
+            textAlignDropdown.SelectOption(targetObj.GetProperty<TextAlignmentOptions>("TextAlign").ToString());
 
             // Update the visibility of fields based on the AutoFontSize toggle state
             OnAutoFontSizeToggleChanged();
@@ -213,6 +234,11 @@ namespace FS_LevelEditor.Editor.UI
         void OnMaxFontSizeFieldChanged()
         {
             targetObj.SetProperty("MaxFontSize", maxFontSizeField.GetText());
+        }
+        void OnTextAlignmentButtonClicked(int option)
+        {
+            TextAlignmentOptions align = Enum.Parse<TextAlignmentOptions>(textAlignDropdown.currentlySelected);
+            targetObj.SetProperty("TextAlign", align);
         }
 
         public void ShowTextEditor(LE_Object targetObj)

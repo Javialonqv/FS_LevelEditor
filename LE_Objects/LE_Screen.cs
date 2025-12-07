@@ -49,6 +49,7 @@ namespace FS_LevelEditor
                 { "FontSize", 185f },
                 { "MinFontSize", 60f },
                 { "MaxFontSize", 185f },
+                { "TextAlign", TextAlignmentOptions.Center },
                 { "Text", "<color=#FFFFFF>\n</color>" }
             };
 
@@ -222,11 +223,26 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "TextAlign")
+            {
+                if (value is int)
+                {
+                    properties["TextAlign"] = (TextAlignmentOptions)value;
+                    SetScreenTextAlignment((TextAlignmentOptions)value);
+                    return true;
+                }
+                else if (value is TextAlignmentOptions)
+                {
+                    properties["TextAlign"] = value;
+                    SetScreenTextAlignment((TextAlignmentOptions)value);
+                    return true;
+                }
+            }
             else if (name == "Text")
             {
                 properties["Text"] = value.ToString();
                 _rawTemplateText = value.ToString();
-				if (PlayModeController.Instance)
+                if (PlayModeController.Instance)
                 {
                     SetScreenText(_rawTemplateText); // Only requires manually update in playmode.
                 }
@@ -353,6 +369,10 @@ namespace FS_LevelEditor
             {
                 screenText.fontSize = GetProperty<float>("FontSize");
             }
+        }
+        void SetScreenTextAlignment(TextAlignmentOptions alignment)
+        {
+            screenText.alignment = alignment;
         }
         void SetScreenText(string raw)
         {
