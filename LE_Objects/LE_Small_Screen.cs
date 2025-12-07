@@ -42,6 +42,7 @@ namespace FS_LevelEditor
                 { "FontSize", 170f },
                 { "MinFontSize", 60f },
                 { "MaxFontSize", 170f },
+                { "TextAlign", TextAlignmentOptions.Center },
                 { "Text", "<color=#FFFFFF>\n</color>" }
             };
 
@@ -215,7 +216,22 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-			else if (name == "Text")
+            else if (name == "TextAlign")
+            {
+                if (value is int)
+                {
+                    properties["TextAlign"] = (TextAlignmentOptions)value;
+                    SetScreenTextAlignment((TextAlignmentOptions)value);
+                    return true;
+                }
+                else if (value is TextAlignmentOptions)
+                {
+                    properties["TextAlign"] = value;
+                    SetScreenTextAlignment((TextAlignmentOptions)value);
+                    return true;
+                }
+            }
+            else if (name == "Text")
 			{
 				properties["Text"] = value.ToString();
 				_rawTemplateText = value.ToString();
@@ -347,7 +363,11 @@ namespace FS_LevelEditor
                 screenText.fontSize = GetProperty<float>("FontSize");
             }
         }
-		void SetScreenText(string raw)
+        void SetScreenTextAlignment(TextAlignmentOptions alignment)
+        {
+            screenText.alignment = alignment;
+        }
+        void SetScreenText(string raw)
 		{
 			string expanded = ScreenTemplateExpander.Expand(raw);
 			screenText.text = expanded;
