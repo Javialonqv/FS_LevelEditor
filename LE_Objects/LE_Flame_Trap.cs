@@ -66,9 +66,17 @@ namespace FS_LevelEditor
 
             content.SetActive(true);
 
-            if (GetProperty<bool>("ActivateOnStart")) trap.Activate();
-
             initialized = true;
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Playmode)
+            {
+                if (GetProperty<bool>("ActivateOnStart")) trap.Activate();
+            }
+
+            base.ObjectStart(scene);
         }
 
         public override bool SetProperty(string name, object value)
