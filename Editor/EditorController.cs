@@ -2906,6 +2906,7 @@ namespace FS_LevelEditor.Editor
         void OnDestroy()
         {
             MenuController.isInLevelEditor = false;
+            Destroy(editorObjectsRootFromBundle);
         }
 
         #region Current Editor State Methods

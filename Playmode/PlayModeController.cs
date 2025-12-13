@@ -471,7 +471,9 @@ namespace FS_LevelEditor.Playmode
 			PlaymodePauseMenuPatcher.DestroyPatcher();
 			UpgradePatches.Unpatch();
 			CleanupAllObjectives();
-		}
+
+            Destroy(editorObjectsRootFromBundle);
+        }
 
 		// Objectives management methods
 		public void CleanupAllObjectives()
