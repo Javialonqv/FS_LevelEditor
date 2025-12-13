@@ -60,6 +60,21 @@ namespace FS_LevelEditor
 			base.OnInstantiated(scene);
 		}
 
+        public override void ObjectStart(LEScene scene)
+        {
+			// Force the mine colliders to be disabled after 0.3s since mine's original script enabled them again depending of current SM state.
+			if (scene == LEScene.Playmode && !collision)
+			{
+				Invoke(nameof(ForceDisableCollidersDelayed), 0.3f);
+			}
+
+            base.ObjectStart(scene);
+        }
+		void ForceDisableCollidersDelayed()
+		{
+            SetCollidersState(false);
+        }
+
 		public override void InitComponent()
 		{
 			Laser_H_Controller template = t_mine;
@@ -481,11 +496,11 @@ namespace FS_LevelEditor
 			remoteRangeSphere = null;
 		}
 
-        public override void SetCollidersStateForEdgeCase(bool newEnabledState)
-        {
-            contentObject.GetChildAt("MeshOn").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
-            contentObject.GetChildAt("MeshOff").GetComponent<BoxCollider>().isTrigger = !newEnabledState;
-        }
+        //public override void SetCollidersStateForEdgeCase(bool newEnabledState)
+        //{
+        //    contentObject.GetChildAt("MeshOn").GetComponent<BoxCollider>().enabled = newEnabledState;
+        //    contentObject.GetChildAt("MeshOff").GetComponent<BoxCollider>().enabled = newEnabledState;
+        //}
 	}
 }
 
