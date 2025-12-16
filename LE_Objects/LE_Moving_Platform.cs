@@ -58,8 +58,9 @@ namespace FS_LevelEditor
             GameObject content = gameObject.GetChild("Content");
 
             script = content.AddComponent<MovingPlatformController>();
-            script.accelerationDuration = 0.3f;
-            script.accelerationMultiplier = 0.0554f;
+            script.accelerationDuration = 0f;
+            script.accelerationMultiplier = 1;
+            script.decelerationStartDistance = 0;
             script.activated = false;
             script.activeDuringKine = true;
             script.additionalMeshFilters = new MeshFilter[0];
