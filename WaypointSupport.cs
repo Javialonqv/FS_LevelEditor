@@ -31,7 +31,7 @@ namespace FS_LevelEditor
             position = original.position;
             rotation = original.rotation;
             scale = original.scale;
-            properties = new Dictionary<string, object>(properties);
+            properties = new Dictionary<string, object>(original.properties);
         }
     }
     public enum WaypointMode

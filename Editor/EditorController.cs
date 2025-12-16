@@ -1,7 +1,6 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
-using Harmony;
 using Il2Cpp;
 using MelonLoader;
 using System;
@@ -2647,9 +2646,23 @@ namespace FS_LevelEditor.Editor
                         continue;
                     }
                     LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
+
+                    // Copy every property from the origin to the copied obj.
+                    newPlacedObjComp.setActiveAtStart = objComponent.setActiveAtStart;
+                    newPlacedObjComp.collision = objComponent.collision;
+                    newPlacedObjComp.invisibleMesh = objComponent.invisibleMesh;
+                    newPlacedObjComp.startMovingAtStart = objComponent.startMovingAtStart;
+                    newPlacedObjComp.movingSpeed = objComponent.movingSpeed;
+                    newPlacedObjComp.startDelay = objComponent.startDelay;
+                    newPlacedObjComp.waitTime = objComponent.waitTime;
+                    newPlacedObjComp.waypointMode = objComponent.waypointMode;
                     foreach (var property in objComponent.properties)
                     {
                         newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
+                    }
+                    foreach (var waypoint in objComponent.waypoints)
+                    {
+                        newPlacedObjComp.waypoints.Add((WaypointData)Utils.CreateCopyOf(waypoint));
                     }
 
                     newSelectedObjectsList.Add(placedObj);
@@ -2682,9 +2695,23 @@ namespace FS_LevelEditor.Editor
                 }
 
                 LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
+
+                // Copy every property from the origin to the copied obj.
+                newPlacedObjComp.setActiveAtStart = objComponent.setActiveAtStart;
+                newPlacedObjComp.collision = objComponent.collision;
+                newPlacedObjComp.invisibleMesh = objComponent.invisibleMesh;
+                newPlacedObjComp.startMovingAtStart = objComponent.startMovingAtStart;
+                newPlacedObjComp.movingSpeed = objComponent.movingSpeed;
+                newPlacedObjComp.startDelay = objComponent.startDelay;
+                newPlacedObjComp.waitTime = objComponent.waitTime;
+                newPlacedObjComp.waypointMode = objComponent.waypointMode;
                 foreach (var property in objComponent.properties)
                 {
                     newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
+                }
+                foreach (var waypoint in objComponent.waypoints)
+                {
+                    newPlacedObjComp.waypoints.Add((WaypointData)Utils.CreateCopyOf(waypoint));
                 }
 
                 SetSelectedObj(placedObj);
