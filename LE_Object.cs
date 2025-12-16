@@ -3,22 +3,12 @@ using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.SaveSystem.Converters;
-using FS_LevelEditor.UI_Related;
 using FS_LevelEditor.WaypointSupports;
 using Il2Cpp;
-using Il2CppAmazingAssets.TerrainToMesh;
 using Il2CppInterop.Runtime;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor
 {
