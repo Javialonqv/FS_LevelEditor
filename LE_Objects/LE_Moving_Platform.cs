@@ -48,6 +48,10 @@ namespace FS_LevelEditor
             if (scene == LEScene.Playmode)
             {
                 if (GetProperty<bool>("ActivateOnStart")) script.Activate();
+
+                // Deceleration set to -1 will disable it completely.
+                // Do this on ObjectStart 'cause MPs seem to be reseting it on start or something, idk. - Jav.
+                script.decelerationStartDistance = -1f;
             }
 
             base.ObjectStart(scene);
@@ -60,7 +64,7 @@ namespace FS_LevelEditor
             script = content.AddComponent<MovingPlatformController>();
             script.accelerationDuration = 0f;
             script.accelerationMultiplier = 1;
-            script.decelerationStartDistance = 0;
+            script.decelerationStartDistance = -1f;
             script.activated = false;
             script.activeDuringKine = true;
             script.additionalMeshFilters = new MeshFilter[0];
