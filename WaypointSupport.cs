@@ -58,6 +58,7 @@ namespace FS_LevelEditor
         public virtual List<WaypointData> targetWaypointsData => targetObject.waypoints;
         public virtual LE_Object.ObjectType waypointTypeToUse => LE_Object.ObjectType.WAYPOINT;
         public virtual bool needsEmptyWaypointAtStart => false;
+        public virtual Vector3 waypointsPositionOffsetInPlaymode => Vector3.zero;
         public virtual bool usesCustomMoveSystem => false;
         public virtual Color editorLineColor => Color.white;
         public virtual GameObject waypointTemplate => null; // If null (by default), it'll create a copy of the main object.
@@ -124,6 +125,7 @@ namespace FS_LevelEditor
                 LE_Waypoint createdWaypoint = AddWaypoint(true);
 
                 createdWaypoint.transform.localPosition = waypointData.position;
+                if (PlayModeController.Instance) createdWaypoint.transform.localPosition += waypointsPositionOffsetInPlaymode;
                 createdWaypoint.transform.localEulerAngles = waypointData.rotation;
                 createdWaypoint.transform.localScale = waypointData.scale;
                 foreach (var property in waypointData.properties)
