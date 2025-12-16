@@ -55,6 +55,7 @@ namespace FS_LevelEditor
         Coroutine moveObjectCoroutine;
         int currentWaypointID;
         LE_Waypoint currentWaypoint;
+        bool currentlyMoving = false;
 
         public virtual List<WaypointData> targetWaypointsData => targetObject.waypoints;
         public virtual LE_Object.ObjectType waypointTypeToUse => LE_Object.ObjectType.WAYPOINT;
@@ -64,7 +65,11 @@ namespace FS_LevelEditor
         public virtual Color editorLineColor => Color.white;
         public virtual GameObject waypointTemplate => null; // If null (by default), it'll create a copy of the main object.
 
+        bool playerIsAbove = false;
+        public static WaypointSupport objectWithPlayerAbove = null;
         List<GameObject> objectsToMove = new List<GameObject>();
+
+        public Vector3 currentVelocity;
 
         void Awake()
         {
@@ -241,11 +246,13 @@ namespace FS_LevelEditor
                 tweenScale.ignoreTimeScale = false; // Avoid object scaling while the game's paused.
 
                 // Do the movement by steps, so we can also apply the position to the objects to move (cubes).
+                currentlyMoving = true;
                 while (Vector3.Distance(cachedWaypointPositions[i], transform.position) > 0.01f)
                 {
                     Vector3 oldPos = transform.position;
                     Vector3 newPos = Vector3.MoveTowards(transform.position, cachedWaypointPositions[i], Time.deltaTime * targetObject.movingSpeed);
                     Vector3 difference = newPos - oldPos;
+                    currentVelocity = difference;
 
                     transform.position = newPos;
 
@@ -258,8 +265,17 @@ namespace FS_LevelEditor
                         }
                     }
 
-                    yield return null; // Skip frame.
+                    if (playerIsAbove)
+                    {
+                        Controls.Instance.m_currentMovingPlatformMovement = difference;
+                        Controls.Instance.transform.position += new Vector3(0, difference.y, 0);
+                    }
+
+                    yield return new WaitForEndOfFrame(); // Skip frame.
                 }
+                currentlyMoving = false;
+                currentVelocity = Vector3.zero;
+                Controls.Instance.m_currentMovingPlatformMovement = Vector3.zero;
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
 
@@ -445,6 +461,7 @@ namespace FS_LevelEditor
             if (proxy && !objectsToMove.Contains(proxy.gameObject))
             {
                 objectsToMove.Add(proxy.gameObject);
+                proxy.hasActivePlatform = true;
             }
         }
         public void OnPlatformProxyExited(MovingPlatformProxy proxy)
@@ -452,7 +469,75 @@ namespace FS_LevelEditor
             if (proxy && objectsToMove.Contains(proxy.gameObject))
             {
                 objectsToMove.Remove(proxy.gameObject);
+                proxy.hasActivePlatform = false;
             }
+        }
+
+        public static void SetPlayerAbove(WaypointSupport newObjectWithPlayerAbove)
+        {
+            bool isOnObjectNow = newObjectWithPlayerAbove;
+            bool thereWasOldObject = objectWithPlayerAbove;
+            bool newObjIsDifferent = newObjectWithPlayerAbove != objectWithPlayerAbove;
+
+            if (newObjIsDifferent)
+            {
+                if (isOnObjectNow && thereWasOldObject && newObjIsDifferent)
+                {
+                    Controls.Instance.m_currentMovingPlatformMovement = Vector3.zero;
+                    objectWithPlayerAbove.playerIsAbove = false;
+                    Controls.Instance.currentMovingPlatform = null;
+                    newObjectWithPlayerAbove.playerIsAbove = true;
+                    Controls.Instance.playerOnMovingPlatform = true;
+                    Controls.Instance.m_currentWalkingDeceleration = Controls.Instance.m_groundedDeceleration;
+                    Controls.Instance.m_currentWalkingAcceleration = Controls.Instance.m_groundedAcceleration;
+                    Controls.Instance.m_movingPlatformMomentumMovement = Vector3.zero;
+                    Controls.Instance.m_isJumping = false;
+                }
+                if (isOnObjectNow && newObjIsDifferent)
+                {
+                    Controls.Instance.playerOnMovingPlatform = true;
+                    newObjectWithPlayerAbove.playerIsAbove = true;
+                    Controls.Instance.currentMovingPlatform = null;
+                    Controls.Instance.m_movingPlatformMomentumMovement = Vector3.zero;
+                    Controls.Instance.m_currentWalkingDeceleration = Controls.Instance.m_groundedDeceleration;
+                    Controls.Instance.m_currentWalkingAcceleration = Controls.Instance.m_groundedAcceleration;
+                    Controls.Instance.m_isJumping = false;
+                }
+                else if (thereWasOldObject && !isOnObjectNow)
+                {
+                    Controls.Instance.m_currentMovingPlatformMovement = Vector3.zero;
+                    Controls.Instance.CurrentPlatformVelocity = Vector3.zero;
+                    if (Controls.Instance.currentGround == null)
+                    {
+                        Controls.Instance.m_currentWalkingDeceleration = Controls.Instance.m_airDeceleration;
+                        Controls.Instance.m_currentWalkingAcceleration = Controls.Instance.m_airAcceleration;
+                        if (objectWithPlayerAbove.currentlyMoving && Controls.Instance.m_movingPlatformMomentumMovement == Vector3.zero)
+                        {
+                            Controls.Instance.m_movingPlatformMomentumMovement = objectWithPlayerAbove.currentVelocity.normalized * 0.8f;
+                            Controls.Instance.m_movingPlatformMomentumMovement.Set(Controls.Instance.m_movingPlatformMomentumMovement.x, 0f, Controls.Instance.m_movingPlatformMomentumMovement.z);
+                            if (TimeManipulator.Exists && TimeManipulator.Instance.m_inPlayerPosession && TimeManipulator.Instance.IsCurrentlyActive())
+                            {
+                                Controls.Instance.m_movingPlatformMomentumMovement *= TimeManipulator.Instance.m_slowDownTimeValue;
+                            }
+                        }
+                    }
+                    objectWithPlayerAbove.playerIsAbove = false;
+                    Controls.Instance.playerOnMovingPlatform = false;
+                    Controls.Instance.currentMovingPlatform = null;
+                    Controls.Instance.m_currentControllerColliderHit = null;
+                }
+            }
+            else if (Controls.Instance.playerOnMovingPlatform && !isOnObjectNow)
+            {
+                Controls.Instance.playerOnMovingPlatform = false;
+                Controls.Instance.currentMovingPlatform = null;
+                Controls.Instance.m_currentControllerColliderHit = null;
+                Controls.Instance.m_currentMovingPlatformMovement = Vector3.zero;
+                Controls.Instance.m_movingPlatformMomentumMovement = Vector3.zero;
+                Controls.Instance.CurrentPlatformVelocity = Vector3.zero;
+            }
+
+            objectWithPlayerAbove = newObjectWithPlayerAbove;
         }
     }
 
@@ -477,7 +562,6 @@ namespace FS_LevelEditor
             }
         }
     }
-
     [HarmonyPatch(typeof(MovingPlatformProxy), nameof(MovingPlatformProxy.OnCollisionExit))]
     public static class OnCollisionExitForPlatformProxyPatch
     {
@@ -495,6 +579,44 @@ namespace FS_LevelEditor
                 if (waypointSupport)
                 {
                     waypointSupport.OnPlatformProxyExited(__instance);
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(Controls), nameof(Controls.OnControllerColliderHit))]
+    public static class OnControllerColliderHitForPlayerInWaypointsObjPatch
+    {
+        public static void Prefix(Controls __instance, ControllerColliderHit hit)
+        {
+            if (PlayModeController.Instance && Controls.PlayerAtFinalSavedPos && Controls.QuickloadFinished && Time.timeSinceLevelLoad > 0.5f)
+            {
+                LE_Object editorObjectComp = hit.collider.gameObject.GetComponentInParent<LE_Object>();
+                if (!editorObjectComp) return;
+                if (editorObjectComp.objectType == LE_Object.ObjectType.MOVING_PLATFORM) return;
+                WaypointSupport waypointSupport = null;
+
+                if (editorObjectComp.customWaypointSupport && editorObjectComp.customWaypointSupport.targetWaypointsData.Count > 0) waypointSupport = editorObjectComp.customWaypointSupport;
+                else if (editorObjectComp.waypointSupport && editorObjectComp.waypointSupport.targetWaypointsData.Count > 0) waypointSupport = editorObjectComp.waypointSupport;
+
+                if (waypointSupport)
+                {
+                    WaypointSupport.SetPlayerAbove(waypointSupport);
+                }
+            }
+        }
+    }
+    [HarmonyPatch(typeof(Controls), nameof(Controls.UngroundInstantly))]
+    public static class OnUngroundInstantlyForPlayerInWaypointsObjPatch
+    {
+        public static void Prefix()
+        {
+            if (PlayModeController.Instance)
+            {
+                if (!Controls.Instance.IsInZeroGravity() && WaypointSupport.objectWithPlayerAbove)
+                {
+                    Controls.Instance.currentGround = null;
+                    WaypointSupport.SetPlayerAbove(null);
                 }
             }
         }
