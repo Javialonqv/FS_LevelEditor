@@ -15,6 +15,7 @@ namespace FS_LevelEditor.WaypointSupports
         public override List<WaypointData> targetWaypointsData => targetObject.GetProperty<List<WaypointData>>("waypoints");
         public override LE_Object.ObjectType waypointTypeToUse => LE_Object.ObjectType.MOVING_PLATFORM_WAYPOINT;
         public override bool needsEmptyWaypointAtStart => true;
+        public override Vector3 waypointsPositionOffsetInPlaymode => new Vector3(0, 0.135f, 0); // Match every waypoint with the offset needed for MPs.
         public override bool usesCustomMoveSystem => true;
         public override Color editorLineColor => Color.yellow;
         public override GameObject waypointTemplate => Core.LoadOtherObjectInBundle("Moving Platform Waypoint");
@@ -23,7 +24,7 @@ namespace FS_LevelEditor.WaypointSupports
         {
             MovingPlatformController platformScript = gameObject.GetChild("Content").GetComponent<MovingPlatformController>();
 
-            // Make the first waypoint match with the start position of the platform.
+            // 
             spawnedWaypoints[0].transform.localPosition = new Vector3(0, 0.135f, 0);
 
             platformScript.currentWaypoint = spawnedWaypoints[0].gameObject;
