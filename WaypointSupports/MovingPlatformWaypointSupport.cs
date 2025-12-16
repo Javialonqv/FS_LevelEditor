@@ -24,9 +24,6 @@ namespace FS_LevelEditor.WaypointSupports
         {
             MovingPlatformController platformScript = gameObject.GetChild("Content").GetComponent<MovingPlatformController>();
 
-            // 
-            spawnedWaypoints[0].transform.localPosition = new Vector3(0, 0.135f, 0);
-
             platformScript.currentWaypoint = spawnedWaypoints[0].gameObject;
             platformScript.currentWaypointScript = spawnedWaypoints[0].GetComponent<Waypoint>();
 
