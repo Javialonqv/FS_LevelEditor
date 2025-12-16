@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using UnityEngine;
+using HarmonyLib;
 
 namespace FS_LevelEditor
 {
@@ -62,6 +63,8 @@ namespace FS_LevelEditor
         public virtual bool usesCustomMoveSystem => false;
         public virtual Color editorLineColor => Color.white;
         public virtual GameObject waypointTemplate => null; // If null (by default), it'll create a copy of the main object.
+
+        List<GameObject> objectsToMove = new List<GameObject>();
 
         void Awake()
         {
@@ -228,18 +231,36 @@ namespace FS_LevelEditor
                 currentWaypointID = i;
                 currentWaypoint = spawnedWaypoints[i];
 
-                Vector3 distance = cachedWaypointPositions[i] - transform.position;
-                float duration = distance.magnitude / targetObject.movingSpeed;
+                Vector3 totalDistance = cachedWaypointPositions[i] - transform.position;
+                float totalDuration = totalDistance.magnitude / targetObject.movingSpeed;
 
-                TweenPosition tween = TweenPosition.Begin(gameObject, duration, cachedWaypointPositions[i]);
-                tween.ignoreTimeScale = false; // Avoid object moving while the game's paused.
+                // Start rotation and scale tween now, so they keep running on background.
+                RotationTweener tweenRotation = RotationTweener.RotateTo(gameObject, cachedWaypointRotations[i], totalDuration, RotationPath.Shortest);
 
-                RotationTweener tweenRotation = RotationTweener.RotateTo(gameObject, cachedWaypointRotations[i], duration, RotationPath.Shortest);
-
-                TweenScale tweenScale = TweenScale.Begin(gameObject, duration, cachedWaypointScales[i]);
+                TweenScale tweenScale = TweenScale.Begin(gameObject, totalDuration, cachedWaypointScales[i]);
                 tweenScale.ignoreTimeScale = false; // Avoid object scaling while the game's paused.
 
-                yield return new WaitForSeconds(duration);
+                // Do the movement by steps, so we can also apply the position to the objects to move (cubes).
+                while (Vector3.Distance(cachedWaypointPositions[i], transform.position) > 0.01f)
+                {
+                    Vector3 oldPos = transform.position;
+                    Vector3 newPos = Vector3.MoveTowards(transform.position, cachedWaypointPositions[i], Time.deltaTime * targetObject.movingSpeed);
+                    Vector3 difference = newPos - oldPos;
+
+                    transform.position = newPos;
+
+                    foreach (var obj in objectsToMove)
+                    {
+                        if (obj.TryGetComponent<Rigidbody>(out var rb))
+                        {
+                            obj.transform.position += difference;
+                            rb.MovePosition(obj.transform.position);
+                        }
+                    }
+
+                    yield return null; // Skip frame.
+                }
+
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
 
                 if (i == spawnedWaypoints.Count - 1 && (targetObject.waypointMode == WaypointMode.LOOP || targetObject.waypointMode == WaypointMode.TRAVEL_BACK))
@@ -275,6 +296,8 @@ namespace FS_LevelEditor
                 editorLine.SetPosition(1, firstWaypoint.transform.position);
             }
             if (!firstWaypoint && editorLine) editorLine.enabled = false;
+
+
         }
 
         public void OnSelect()
@@ -415,6 +438,65 @@ namespace FS_LevelEditor
         void OnDestroy()
         {
             if (moveObjectCoroutine != null) StopObjectMovement();
+        }
+
+        public void OnPlatformProxyEntered(MovingPlatformProxy proxy)
+        {
+            if (proxy && !objectsToMove.Contains(proxy.gameObject))
+            {
+                objectsToMove.Add(proxy.gameObject);
+            }
+        }
+        public void OnPlatformProxyExited(MovingPlatformProxy proxy)
+        {
+            if (proxy && objectsToMove.Contains(proxy.gameObject))
+            {
+                objectsToMove.Remove(proxy.gameObject);
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(MovingPlatformProxy), nameof(MovingPlatformProxy.OnCollisionEnter))]
+    public static class OnCollisionEnterForPlatformProxyPatch
+    {
+        public static void Prefix(MovingPlatformProxy __instance, Collision collision)
+        {
+            if (PlayModeController.Instance)
+            {
+                LE_Object editorObjectComp = collision.gameObject.GetComponentInParent<LE_Object>();
+                if (!editorObjectComp) return;
+                WaypointSupport waypointSupport = null;
+
+                if (editorObjectComp.customWaypointSupport && editorObjectComp.customWaypointSupport.targetWaypointsData.Count > 0) waypointSupport = editorObjectComp.customWaypointSupport;
+                else if (editorObjectComp.waypointSupport && editorObjectComp.waypointSupport.targetWaypointsData.Count > 0) waypointSupport = editorObjectComp.waypointSupport;
+
+                if (waypointSupport)
+                {
+                    waypointSupport.OnPlatformProxyEntered(__instance);
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(MovingPlatformProxy), nameof(MovingPlatformProxy.OnCollisionExit))]
+    public static class OnCollisionExitForPlatformProxyPatch
+    {
+        public static void Prefix(MovingPlatformProxy __instance, Collision collision)
+        {
+            if (PlayModeController.Instance)
+            {
+                LE_Object editorObjectComp = collision.gameObject.GetComponentInParent<LE_Object>();
+                if (!editorObjectComp) return;
+                WaypointSupport waypointSupport = null;
+
+                if (editorObjectComp.customWaypointSupport && editorObjectComp.customWaypointSupport.targetWaypointsData.Count > 0) waypointSupport = editorObjectComp.customWaypointSupport;
+                else if (editorObjectComp.waypointSupport && editorObjectComp.waypointSupport.targetWaypointsData.Count > 0) waypointSupport = editorObjectComp.waypointSupport;
+
+                if (waypointSupport)
+                {
+                    waypointSupport.OnPlatformProxyExited(__instance);
+                }
+            }
         }
     }
 }
