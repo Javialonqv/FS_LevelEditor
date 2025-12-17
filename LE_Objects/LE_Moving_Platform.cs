@@ -102,7 +102,7 @@ namespace FS_LevelEditor
             script.rawUnitsPerSecond = 3;
             script.rb = content.GetComponent<Rigidbody>();
             script.revertIfMoving = false;
-            script.speedrunModeMultiplier = 4;
+            script.speedrunModeMultiplier = 1;
             script.timerBeforeNextWaypoint = 0;
             script.useMeshSwap = false;
             script.verticalBoostMultiplier = 1;
