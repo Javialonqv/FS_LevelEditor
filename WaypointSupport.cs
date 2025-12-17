@@ -462,6 +462,7 @@ namespace FS_LevelEditor
             {
                 objectsToMove.Add(proxy.gameObject);
                 proxy.hasActivePlatform = true;
+                proxy.gameObject.AddComponent<MovingPlatformProxyWithCustomPlatform>().attachedWaypointObj = this;
             }
         }
         public void OnPlatformProxyExited(MovingPlatformProxy proxy)
@@ -470,6 +471,7 @@ namespace FS_LevelEditor
             {
                 objectsToMove.Remove(proxy.gameObject);
                 proxy.hasActivePlatform = false;
+                proxy.gameObject.RemoveComponent<MovingPlatformProxyWithCustomPlatform>();
             }
         }
 
@@ -541,6 +543,14 @@ namespace FS_LevelEditor
         }
     }
 
+    #region Patches for objects with MovingPlatformProxy
+    // Small class to register when a MovingPlatformProxy contacts with a custom object waypoint system instead of a normal MP.
+    [RegisterTypeInIl2Cpp]
+    public class MovingPlatformProxyWithCustomPlatform : MonoBehaviour
+    {
+        public WaypointSupport attachedWaypointObj;
+    }
+
     [HarmonyPatch(typeof(MovingPlatformProxy), nameof(MovingPlatformProxy.OnCollisionEnter))]
     public static class OnCollisionEnterForPlatformProxyPatch
     {
@@ -583,9 +593,11 @@ namespace FS_LevelEditor
             }
         }
     }
+    #endregion
 
+    #region Patches for player when he's above of an object
     [HarmonyPatch(typeof(Controls), nameof(Controls.OnControllerColliderHit))]
-    public static class OnControllerColliderHitForPlayerInWaypointsObjPatch
+    public static class OnControllerColliderHitForPlayerInWaypointsObjPatch // Detect when player CONTACTS with an obj with waypoint support.
     {
         public static void Prefix(Controls __instance, ControllerColliderHit hit)
         {
@@ -607,7 +619,7 @@ namespace FS_LevelEditor
         }
     }
     [HarmonyPatch(typeof(Controls), nameof(Controls.UngroundInstantly))]
-    public static class OnUngroundInstantlyForPlayerInWaypointsObjPatch
+    public static class OnUngroundInstantlyForPlayerInWaypointsObjPatch // Detect when player LOSES contact with an obj with waypoint support.
     {
         public static void Prefix()
         {
@@ -621,4 +633,23 @@ namespace FS_LevelEditor
             }
         }
     }
+    [HarmonyPatch(typeof(Controls), nameof(Controls.GroundInstantly), [typeof(bool)])]
+    public static class GroundInstantlyForProxiesPatch // Detect when player CONTACTS with an object with moving MP proxy and patch it.
+    {
+        public static void Postfix(bool _considerTolerantAsGround)
+        {
+            if (PlayModeController.Instance && !Controls.Instance.IsInZeroGravity())
+            {
+                if ((Controls.Instance.m_currentControllerColliderHit != null && Controls.Instance.m_currentControllerColliderHit.collider) || (_considerTolerantAsGround && Controls.Instance.tolerantGroundBelow))
+                {
+                    MovingPlatformProxyWithCustomPlatform customProxy = Controls.Instance.m_currentControllerColliderHit.collider.gameObject.GetComponentInParent<MovingPlatformProxyWithCustomPlatform>();
+                    if (customProxy)
+                    {
+                        WaypointSupport.SetPlayerAbove(customProxy.attachedWaypointObj);
+                    }
+                }
+            }
+        }
+    }
+    #endregion
 }
