@@ -475,6 +475,7 @@ namespace FS_LevelEditor
             }
         }
 
+        // WARNING: 90% of this code is copied from Controls.SetAsMovingPlatform from 0.603's code. I can even understand it, but it works. - Jav.
         public static void SetPlayerAbove(WaypointSupport newObjectWithPlayerAbove)
         {
             bool isOnObjectNow = newObjectWithPlayerAbove;
@@ -596,10 +597,12 @@ namespace FS_LevelEditor
     #endregion
 
     #region Patches for player when he's above of an object
+    // WARNING: This is executed constantly, but only when the player is colliding with at least something.
     [HarmonyPatch(typeof(Controls), nameof(Controls.OnControllerColliderHit))]
     public static class OnControllerColliderHitForPlayerInWaypointsObjPatch // Detect when player CONTACTS with an obj with waypoint support.
     {
-        public static void Prefix(Controls __instance, ControllerColliderHit hit)
+        // Use Postfix so Controls.m_currentControllerColliderHit is already set when called.
+        public static void Postfix(Controls __instance, ControllerColliderHit hit)
         {
             if (PlayModeController.Instance && Controls.PlayerAtFinalSavedPos && Controls.QuickloadFinished && Time.timeSinceLevelLoad > 0.5f)
             {
@@ -611,15 +614,29 @@ namespace FS_LevelEditor
                 if (editorObjectComp.customWaypointSupport && editorObjectComp.customWaypointSupport.targetWaypointsData.Count > 0) waypointSupport = editorObjectComp.customWaypointSupport;
                 else if (editorObjectComp.waypointSupport && editorObjectComp.waypointSupport.targetWaypointsData.Count > 0) waypointSupport = editorObjectComp.waypointSupport;
 
-                if (waypointSupport)
+                if (waypointSupport) // Player collided with an object with waypoints.
                 {
                     WaypointSupport.SetPlayerAbove(waypointSupport);
+                }
+                else
+                {
+                    MovingPlatformProxyWithCustomPlatform customProxy = Controls.Instance.m_currentControllerColliderHit.collider.gameObject.GetComponentInParent<MovingPlatformProxyWithCustomPlatform>();
+                    if (customProxy) // But he collided wih a proxy.
+                    {
+                        WaypointSupport.SetPlayerAbove(customProxy.attachedWaypointObj);
+                    }
+                    else // Didn't collide with any platform or related.
+                    {
+                        WaypointSupport.SetPlayerAbove(null);
+                    }
                 }
             }
         }
     }
+
+    // Use this patch to also deattach the player from any platform when he's on mid air (not colliding with anything).
     [HarmonyPatch(typeof(Controls), nameof(Controls.UngroundInstantly))]
-    public static class OnUngroundInstantlyForPlayerInWaypointsObjPatch // Detect when player LOSES contact with an obj with waypoint support.
+    public static class OnUngroundInstantlyForPlayerInWaypointsObjPatch // Detect when player LOSES contact with ANY object.
     {
         public static void Prefix()
         {
@@ -629,24 +646,6 @@ namespace FS_LevelEditor
                 {
                     Controls.Instance.currentGround = null;
                     WaypointSupport.SetPlayerAbove(null);
-                }
-            }
-        }
-    }
-    [HarmonyPatch(typeof(Controls), nameof(Controls.GroundInstantly), [typeof(bool)])]
-    public static class GroundInstantlyForProxiesPatch // Detect when player CONTACTS with an object with moving MP proxy and patch it.
-    {
-        public static void Postfix(bool _considerTolerantAsGround)
-        {
-            if (PlayModeController.Instance && !Controls.Instance.IsInZeroGravity())
-            {
-                if ((Controls.Instance.m_currentControllerColliderHit != null && Controls.Instance.m_currentControllerColliderHit.collider) || (_considerTolerantAsGround && Controls.Instance.tolerantGroundBelow))
-                {
-                    MovingPlatformProxyWithCustomPlatform customProxy = Controls.Instance.m_currentControllerColliderHit.collider.gameObject.GetComponentInParent<MovingPlatformProxyWithCustomPlatform>();
-                    if (customProxy)
-                    {
-                        WaypointSupport.SetPlayerAbove(customProxy.attachedWaypointObj);
-                    }
                 }
             }
         }
