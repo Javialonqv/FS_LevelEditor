@@ -256,6 +256,7 @@ namespace FS_LevelEditor
 
                     transform.position = newPos;
 
+                    // Move every object attached to this platform.
                     foreach (var obj in objectsToMove)
                     {
                         if (obj.TryGetComponent<Rigidbody>(out var rb))
@@ -267,7 +268,11 @@ namespace FS_LevelEditor
 
                     if (playerIsAbove)
                     {
-                        Controls.Instance.m_currentMovingPlatformMovement = difference;
+                        // Move the player directly using character.Move instead of setting m_currentMovingPlatformMovement, since this coroutine is not syncted with the Update() function, which can cause some mismovement issues.
+
+                        // Only move the player in the X and Z axis, Y axis is managed differently.
+                        Vector3 differenceForPlayer = new Vector3(difference.x, 0f, difference.z);
+                        Controls.Instance.character.Move(differenceForPlayer);
                         Controls.Instance.transform.position += new Vector3(0, difference.y, 0);
                     }
 
@@ -275,7 +280,6 @@ namespace FS_LevelEditor
                 }
                 currentlyMoving = false;
                 currentVelocity = Vector3.zero;
-                Controls.Instance.m_currentMovingPlatformMovement = Vector3.zero;
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
 
