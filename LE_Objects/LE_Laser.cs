@@ -39,6 +39,21 @@ namespace FS_LevelEditor
             base.OnInstantiated(scene);
         }
 
+        public override void ObjectStart(LEScene scene)
+        {
+            // Force the laser colliders to be enabled/disabled after 0.3s since laser's original script sets them again depending of current SM state.
+            if (scene == LEScene.Playmode)
+            {
+                Invoke(nameof(ForceSetCollidersDelayed), 0.3f);
+            }
+
+            base.ObjectStart(scene);
+        }
+        void ForceSetCollidersDelayed()
+        {
+            SetCollidersState(collision);
+        }
+
         public override void InitComponent()
         {
             Laser_H_Controller template = t_laser;
