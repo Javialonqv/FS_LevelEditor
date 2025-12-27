@@ -237,7 +237,7 @@ namespace FS_LevelEditor.Editor.UI
 				maxDecimals: 3);
 			posXField.name = "XField";
 			posXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
-			posXField.onChange += (() => SetPropertyWithInput("XPosition", posXField));
+			posXField.onChange += (() => SetPropertyWithInput("XPosition", posXField, true));
 			posXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
 
 			UILabel yTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
@@ -248,7 +248,7 @@ namespace FS_LevelEditor.Editor.UI
 				maxDecimals: 3);
 			posYField.name = "YField";
 			posYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
-			posYField.onChange += (() => SetPropertyWithInput("YPosition", posYField));
+			posYField.onChange += (() => SetPropertyWithInput("YPosition", posYField, true));
 			posYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
 
 			UILabel zTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
@@ -259,7 +259,7 @@ namespace FS_LevelEditor.Editor.UI
 				maxDecimals: 3);
 			posZField.name = "ZField";
 			posZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
-			posZField.onChange += (() => SetPropertyWithInput("ZPosition", posZField));
+			posZField.onChange += (() => SetPropertyWithInput("ZPosition", posZField, true));
 			posZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
 
 			yPosForGlobalProps -= 50;
@@ -282,7 +282,7 @@ namespace FS_LevelEditor.Editor.UI
 				maxDecimals: 3);
 			rotXField.name = "XField";
 			rotXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
-			rotXField.onChange += (() => SetPropertyWithInput("XRotation", rotXField));
+			rotXField.onChange += (() => SetPropertyWithInput("XRotation", rotXField, true));
 			rotXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
 
 			UILabel yTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
@@ -293,7 +293,7 @@ namespace FS_LevelEditor.Editor.UI
 				maxDecimals: 3);
 			rotYField.name = "YField";
 			rotYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
-			rotYField.onChange += (() => SetPropertyWithInput("YRotation", rotYField));
+			rotYField.onChange += (() => SetPropertyWithInput("YRotation", rotYField, true));
 			rotYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
 
 			UILabel zTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
@@ -304,7 +304,7 @@ namespace FS_LevelEditor.Editor.UI
 				maxDecimals: 3);
 			rotZField.name = "ZField";
 			rotZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
-			rotZField.onChange += (() => SetPropertyWithInput("ZRotation", rotZField));
+			rotZField.onChange += (() => SetPropertyWithInput("ZRotation", rotZField, true));
 			rotZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
 
 			yPosForGlobalProps -= 50;
@@ -327,7 +327,7 @@ namespace FS_LevelEditor.Editor.UI
 				maxDecimals: 3);
 			scaleXField.name = "XField";
 			scaleXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
-			scaleXField.onChange += (() => SetPropertyWithInput("XScale", scaleXField));
+			scaleXField.onChange += (() => SetPropertyWithInput("XScale", scaleXField, true));
 			scaleXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
 
 			UILabel yTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
@@ -338,7 +338,7 @@ namespace FS_LevelEditor.Editor.UI
 				maxDecimals: 3);
 			scaleYField.name = "YField";
 			scaleYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
-			scaleYField.onChange += (() => SetPropertyWithInput("YScale", scaleYField));
+			scaleYField.onChange += (() => SetPropertyWithInput("YScale", scaleYField, true));
 			scaleYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
 
 			UILabel zTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
@@ -349,7 +349,7 @@ namespace FS_LevelEditor.Editor.UI
 				maxDecimals: 3);
 			scaleZField.name = "ZField";
 			scaleZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
-			scaleZField.onChange += (() => SetPropertyWithInput("ZScale", scaleZField));
+			scaleZField.onChange += (() => SetPropertyWithInput("ZScale", scaleZField, true));
 			scaleZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
 
 			yPosForGlobalProps -= 50;
@@ -463,7 +463,7 @@ namespace FS_LevelEditor.Editor.UI
 			movingSpeedField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "5", false,
 				inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
 			movingSpeedField.name = "Field";
-			movingSpeedField.onChange += () => SetPropertyWithInput("MovingSpeed", movingSpeedField);
+			movingSpeedField.onChange += () => SetPropertyWithInput("MovingSpeed", movingSpeedField, true);
 
 			yPosForGlobalProps -= 50;
 		}
@@ -480,7 +480,7 @@ namespace FS_LevelEditor.Editor.UI
 			startDelayField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "0", false,
 				inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
 			startDelayField.name = "Field";
-			startDelayField.onChange += () => SetPropertyWithInput("StartDelay", startDelayField);
+			startDelayField.onChange += () => SetPropertyWithInput("StartDelay", startDelayField, true);
 
 			yPosForGlobalProps -= 50;
 		}
@@ -497,7 +497,7 @@ namespace FS_LevelEditor.Editor.UI
 			waitTimeField = NGUI_Utils.CreateInputField(fieldParent, new Vector3(140, yPosForGlobalProps), new Vector3Int(200, 38, 0), 27, "0", false,
 				inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
 			waitTimeField.name = "Field";
-			waitTimeField.onChange += () => SetPropertyWithInput("WaitTime", waitTimeField);
+			waitTimeField.onChange += () => SetPropertyWithInput("WaitTime", waitTimeField, true);
 
 			yPosForGlobalProps -= 50;
 		}
@@ -1835,7 +1835,7 @@ namespace FS_LevelEditor.Editor.UI
 			// Set the property using the editor's reliable SetProperty method
 			objComponent.SetProperty(propertyName, newVector);
 		}
-		public void SetPropertyWithInput(string propertyName, UICustomInputField inputField)
+		public void SetPropertyWithInput(string propertyName, UICustomInputField inputField, bool isGlobalProp = false)
 		{
 			// Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
 			if ((propertyName.Contains("Position") || propertyName.Contains("Rotation") || propertyName.Contains("Scale")) &&
@@ -1915,7 +1915,9 @@ namespace FS_LevelEditor.Editor.UI
 				return;
 			}
 
-			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.GetText()))
+			bool setPropResult = isGlobalProp ? EditorController.Instance.currentSelectedObjComponent.SetPropertyBase(propertyName, inputField.GetText())
+				: EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.GetText());
+            if (setPropResult)
 			{
 				EditorController.Instance.levelHasBeenModified = true;
 				inputField.Set(true);

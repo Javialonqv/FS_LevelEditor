@@ -503,26 +503,8 @@ namespace FS_LevelEditor
             }
         }
 
-        /// <summary>
-        /// Sets a property inside of the object properties list if it exists.
-        /// </summary>
-        /// <param name="name">The name of the property to set.</param>
-        /// <param name="value">The value of the property, it need to be the same as the expected depending of the property name. It also can manage some conversions.</param>
-        /// <returns>True ff the property was setted correctly or false if there's some invalid value.</returns>
-        public virtual bool SetProperty(string name, object value)
+        public bool SetPropertyBase(string name, object value)
         {
-            if (properties.ContainsKey(name) && value is JsonElement)
-            {
-                Type toConvert = properties[name].GetType();
-                object converted = LEPropertiesConverterNew.NewDeserealize(toConvert, (JsonElement)value);
-                if (converted != null)
-                {
-                    // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
-                    Utils.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatches.ConvertFromSerializableValue(converted));
-                    return true;
-                }
-            }
-
             if (name == "StartMovingAtStart")
             {
                 startMovingAtStart = (bool)value;
@@ -550,6 +532,28 @@ namespace FS_LevelEditor
             }
 
             return false;
+        }
+        /// <summary>
+        /// Sets a property inside of the object properties list if it exists.
+        /// </summary>
+        /// <param name="name">The name of the property to set.</param>
+        /// <param name="value">The value of the property, it need to be the same as the expected depending of the property name. It also can manage some conversions.</param>
+        /// <returns>True ff the property was setted correctly or false if there's some invalid value.</returns>
+        public virtual bool SetProperty(string name, object value)
+        {
+            if (properties.ContainsKey(name) && value is JsonElement)
+            {
+                Type toConvert = properties[name].GetType();
+                object converted = LEPropertiesConverterNew.NewDeserealize(toConvert, (JsonElement)value);
+                if (converted != null)
+                {
+                    // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
+                    Utils.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatches.ConvertFromSerializableValue(converted));
+                    return true;
+                }
+            }
+
+            return SetPropertyBase(name, value);
         }
         /// <summary>
         /// Gets a property from the object properties list.
