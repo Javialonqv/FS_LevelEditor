@@ -92,7 +92,6 @@ namespace FS_LevelEditor
             doorScript.defaultIsRed = false;
             doorScript.defaultTriggerState = true;
             doorScript.doorEditorState = false;
-            doorScript.doorEditorVisibleState = false;
             doorScript.doorMesh = content.GetChild("Mesh").transform;
             doorScript.doorMeshV2 = content.GetChild("Mesh_V2").transform;
             //doorScript.forceTeleportGO = content.GetChildAt("Mesh/porte1/ForceTeleport_Holder/ForceTeleport_Vent");
