@@ -1176,11 +1176,9 @@ namespace FS_LevelEditor.Editor
 
             float moveAmount = gridEnabled ? gridSize : 0.01f;
             Vector3 toMove = Vector3.zero;
-
-            // Track which axis for movement
             bool movingY = false;
-            GizmosArrow axisToUse = GizmosArrow.None;
 
+            #region Get Camera Directions
             // Get camera-relative directions (projected onto XZ plane for horizontal movement)
             Vector3 cameraForward = Camera.main.transform.forward;
             Vector3 cameraRight = Camera.main.transform.right;
@@ -1190,123 +1188,76 @@ namespace FS_LevelEditor.Editor
             cameraRight.y = 0f;
             cameraForward.Normalize();
             cameraRight.Normalize();
+            #endregion
 
+            #region Get Moving Vector By Input
             // Arrow keys - move in camera-relative directions
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 toMove = -cameraRight * moveAmount;
-                // Determine dominant axis for grid snapping
-                axisToUse = Mathf.Abs(cameraRight.x) > Mathf.Abs(cameraRight.z) ? GizmosArrow.X : GizmosArrow.Z;
             }
             else if (Input.GetKeyDown(KeyCode.RightArrow))
             {
                 toMove = cameraRight * moveAmount;
-                axisToUse = Mathf.Abs(cameraRight.x) > Mathf.Abs(cameraRight.z) ? GizmosArrow.X : GizmosArrow.Z;
             }
             else if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 toMove = cameraForward * moveAmount;
-                axisToUse = Mathf.Abs(cameraForward.x) > Mathf.Abs(cameraForward.z) ? GizmosArrow.X : GizmosArrow.Z;
             }
             else if (Input.GetKeyDown(KeyCode.DownArrow))
             {
                 toMove = -cameraForward * moveAmount;
-                axisToUse = Mathf.Abs(cameraForward.x) > Mathf.Abs(cameraForward.z) ? GizmosArrow.X : GizmosArrow.Z;
             }
             // Mouse 4/5 for vertical movement (Y axis only)
             else if (Input.GetKeyDown(KeyCode.Mouse4))
             {
                 toMove = Vector3.up * moveAmount;
                 movingY = true;
-                axisToUse = GizmosArrow.Y;
             }
             else if (Input.GetKeyDown(KeyCode.Mouse3))
             {
                 toMove = Vector3.down * moveAmount;
                 movingY = true;
-                axisToUse = GizmosArrow.Y;
             }
             else
             {
                 return;
             }
+            #endregion
 
-            // For Selection mode, use gizmo movement system
-            if (currentMode == Mode.Selection && currentSelectedObj != null)
+            #region Move The Object
+            Vector3 oldPosition = targetObj.transform.localPosition;
+            Vector3 newPosition = targetObj.transform.localPosition + toMove;
+
+            if (gridEnabled)
             {
-                Vector3 oldPos = currentSelectedObj.transform.localPosition;
-
-                // Simulate the gizmo movement system
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                collidingArrow = axisToUse;
-                StartMovingObject(axisToUse.ToString(), ray);
-                SetCurrentEditorState(EditorState.MOVING_OBJECT);
-
-                // Apply movement - always in world space
-                Vector3 newWorldPos = currentSelectedObj.transform.position + toMove;
-
-                if (gridEnabled)
+                if (movingY)
                 {
-                    // Convert to parent's local space for snapping
-                    Vector3 localPos = currentSelectedObj.transform.parent.InverseTransformPoint(newWorldPos);
-
-                    // Snap to grid based on the dominant axis
-                    if (movingY)
-                    {
-                        // Vertical movement - only snap Y
-                        localPos.y = Mathf.Round(localPos.y / gridSize) * gridSize;
-                        localPos.x = oldPos.x;
-                        localPos.z = oldPos.z;
-                    }
-                    else
-                    {
-                        // Horizontal movement - snap both X and Z to grid
-                        localPos.x = Mathf.Round(localPos.x / gridSize) * gridSize;
-                        localPos.z = Mathf.Round(localPos.z / gridSize) * gridSize;
-                        localPos.y = oldPos.y; // Preserve Y
-                    }
-
-                    currentSelectedObj.transform.localPosition = localPos;
+                    newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
                 }
                 else
                 {
-                    // No grid - just apply the world movement
-                    currentSelectedObj.transform.position = newWorldPos;
+                    newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
+                    newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
                 }
+            }
 
+            targetObj.transform.localPosition = newPosition;
+            #endregion
+
+            #region Register Action If A Selected Object
+            // The moving object is an already instantiated obj, which is selected.
+            if (targetObj == currentSelectedObj)
+            {
                 // Register the action and cleanup
-                RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected,
-                    oldPos, currentSelectedObj.transform.localPosition, null, null);
+                RegisterLEAction(LEAction.LEActionType.MoveObject, targetObj, multipleObjectsSelected,
+                    oldPosition, newPosition);
 
-                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
+                SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(targetObj.transform);
 
-                // Reset state
-                SetCurrentEditorState(EditorState.NORMAL);
-                collidingArrow = GizmosArrow.None;
                 levelHasBeenModified = true;
             }
-            else if (currentMode == Mode.Building && previewObjectToBuildObj != null)
-            {
-                // Building mode - camera-relative movement
-                Vector3 newPos = previewObjectToBuildObj.transform.localPosition + toMove;
-
-                if (gridEnabled)
-                {
-                    // Snap to grid
-                    if (movingY)
-                    {
-                        newPos.y = Mathf.Round(newPos.y / gridSize) * gridSize;
-                    }
-                    else
-                    {
-                        // Horizontal movement - snap both X and Z
-                        newPos.x = Mathf.Round(newPos.x / gridSize) * gridSize;
-                        newPos.z = Mathf.Round(newPos.z / gridSize) * gridSize;
-                    }
-                }
-
-                previewObjectToBuildObj.transform.localPosition = newPos;
-            }
+            #endregion
         }
 
         // --- Snap Euler Angles Helper ---
