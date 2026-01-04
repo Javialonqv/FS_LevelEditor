@@ -833,17 +833,7 @@ namespace FS_LevelEditor.Editor
                     gizmo.SetRotation(currentSelectedObj.transform.rotation);
                 }
 
-                // Improved infinite scaling for arrows and cones
-                float distance = Vector3.Distance(MainCam.transform.position, currentSelectedObj.transform.position);
-                float baseArrowScale = 2f;
-                float scaleFactor = Mathf.Max(0.1f, distance * 0.15f);
-                float highestAxis = Utils.HighestValueOfVector(currentSelectedObj.transform.localScale);
-                if (highestAxis < 1f)
-                    scaleFactor *= highestAxis;
-                // Set arrows and cones scale
-                //gizmo.SetScale(Vector3.one * baseArrowScale * scaleFactor);
-                // Make cones always a bit larger than arrows, and thickness grow with distance
-                //gizmo.UpdateScaleByCamera(MainCam, 10f, 0.01f, 1000f);
+                gizmo.ScaleRelativeToCamera(currentSelectedObj.transform);
             }
             if (snapToGridCube.activeSelf && currentSelectedObj)
             {
