@@ -89,11 +89,8 @@ namespace FS_LevelEditor.Editor
         public bool statsLabelsVisible = false;
 
         // Gizmos arrows to move objects.
-        //GameObject gizmosArrows;
+        GameObject gizmosRoot;
         EditorGizmo gizmo;
-        GameObject gizmoPrefab; // <-- Add this as a private field
-        GameObject gizmosArrows => gizmo?.Root;
-        enum GizmosArrow { None, X, Y, Z }
         GizmosArrow collidingArrow;
         Vector3 objPositionWhenArrowClick;
         Vector3 objLocalPositionWhenStartedMoving;
@@ -173,22 +170,6 @@ namespace FS_LevelEditor.Editor
             MenuController.isInLevelEditor = true;
             LoadAssetBundle();
 
-            // --- Extract old gizmo material and destroy old gizmo ---
-            if (gizmoPrefab != null)
-            {
-                GameObject oldGizmo = Instantiate(gizmoPrefab);
-                var xObj = oldGizmo.transform.Find("X");
-                if (xObj != null)
-                {
-                    var renderer = xObj.GetComponent<Renderer>();
-                    if (renderer != null)
-                    {
-                        _gizmoArrowMaterial = new Material(renderer.material); // Copy material
-                    }
-                }
-                Destroy(oldGizmo);
-            }
-
             levelObjectsParent = new GameObject("LevelObjects");
             levelObjectsParent.transform.position = Vector3.zero;
 
@@ -214,9 +195,6 @@ namespace FS_LevelEditor.Editor
             gridCenter = new Vector3(0, gridHeight, 0); // Always start centered at origin
             UpdateGridCenter(); // Ensure gridCenter is correct at start
             currentEditorState = EditorState.NORMAL; // Ensure state is initialized
-
-            // --- Initialize new gizmo ---
-            gizmo = new EditorGizmo(); // Use the new line-renderer based gizmo, not the prefab
 
             // Create status labels root
             /*statusLabelsRoot = new GameObject("EditorStatusLabels");
@@ -272,17 +250,11 @@ namespace FS_LevelEditor.Editor
                 allCategoriesObjectsSorted.Add(categoryObjects);
             }
 
-            // REMOVE old gizmosArrows instantiation
-            // gizmosArrows = Instantiate(bundle.Load<GameObject>("MoveObjectArrows"));
-            // gizmosArrows.name = "MoveObjectArrows";
-            // gizmosArrows.transform.localPosition = Vector3.zero;
-            // gizmosArrows.SetActive(false);
-
-            // --- Load old gizmo prefab for EditorGizmo ---
-            if (bundle.Contains("MoveObjectArrows"))
-            {
-                gizmoPrefab = bundle.Load<GameObject>("MoveObjectArrows");
-            }
+            gizmosRoot = Instantiate(bundle.Load<GameObject>("MoveObjectArrowsNew"));
+            gizmosRoot.name = "MoveObjectArrows";
+            gizmosRoot.transform.localPosition = Vector3.zero;
+            gizmo = gizmosRoot.AddComponent<EditorGizmo>();
+            gizmosRoot.SetActive(false);
 
             snapToGridCube = Instantiate(bundle.Load<GameObject>("SnapToGridCube"));
             snapToGridCube.name = "SnapToGridCube";
@@ -371,32 +343,32 @@ namespace FS_LevelEditor.Editor
             if (IsCurrentState(EditorState.PAUSED) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL) ||
                 EditorUIManager.IsCurrentUIContext(EditorUIContext.TEXT_EDITOR)) return;
 
-            // --- GIZMO HOVER FEEDBACK ---
-            if (currentMode == Mode.Selection && currentSelectedObj != null && gizmosArrows.activeSelf && !Input.GetMouseButton(0))
+            #region Gizmos Arrows Hover Color Feedback
+            if (currentMode == Mode.Selection && currentSelectedObj && gizmosRoot.activeSelf && !Input.GetMouseButton(0))
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                string hoveredAxis = gizmo.GetHoveredAxis(ray, out _);
-                if (hoveredAxis != null)
+                GizmosArrow hoveredArrow = gizmo.GetHoveredArrow(out _);
+                if (hoveredArrow != GizmosArrow.None)
                 {
-                    gizmo.HighlightAxis(hoveredAxis);
+                    gizmo.HighlightArrow(hoveredArrow);
                 }
                 else
                 {
-                    gizmo.ResetColors();
+                    gizmo.UnhighlightAllArrows();
                 }
             }
-            else if (gizmosArrows.activeSelf && Input.GetMouseButton(0))
+            else if (gizmosRoot.activeSelf && Input.GetMouseButton(0))
             {
                 // Keep highlighting the current arrow being dragged
                 if (collidingArrow != GizmosArrow.None)
                 {
-                    gizmo.HighlightAxis(collidingArrow.ToString());
+                    gizmo.HighlightArrow(collidingArrow);
                 }
             }
             else
             {
-                gizmo.ResetColors();
+                gizmo.UnhighlightAllArrows();
             }
+            #endregion
 
             #region Select Target Object For Events
             if (IsCurrentState(EditorState.SELECTING_TARGET_OBJ))
@@ -455,7 +427,7 @@ namespace FS_LevelEditor.Editor
             if (Input.GetKey(KeyCode.F) && currentSelectedObj != null && currentMode == Mode.Selection && !Utils.theresAnInputFieldSelected)
             {
                 snapToGridCube.SetActive(true);
-                gizmosArrows.SetActive(false);
+                gizmosRoot.SetActive(false);
 
                 if (Input.GetMouseButtonDown(0))
                 {
@@ -489,7 +461,7 @@ namespace FS_LevelEditor.Editor
 
                 if (currentSelectedObj != null && currentMode == Mode.Selection)
                 {
-                    gizmosArrows.SetActive(true);
+                    gizmosRoot.SetActive(true);
                 }
 
                 if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.SNAPPING_TO_GRID))
@@ -848,9 +820,10 @@ namespace FS_LevelEditor.Editor
 
         void LateUpdate()
         {
-            if (gizmosArrows.activeSelf && currentSelectedObj)
+            if (gizmosRoot.activeSelf && currentSelectedObj)
             {
                 gizmo.SetPosition(currentSelectedObj.transform.position);
+
                 if (globalGizmosArrowsEnabled)
                 {
                     gizmo.SetRotation(Quaternion.identity);
@@ -859,6 +832,7 @@ namespace FS_LevelEditor.Editor
                 {
                     gizmo.SetRotation(currentSelectedObj.transform.rotation);
                 }
+
                 // Improved infinite scaling for arrows and cones
                 float distance = Vector3.Distance(MainCam.transform.position, currentSelectedObj.transform.position);
                 float baseArrowScale = 2f;
@@ -867,9 +841,9 @@ namespace FS_LevelEditor.Editor
                 if (highestAxis < 1f)
                     scaleFactor *= highestAxis;
                 // Set arrows and cones scale
-                gizmo.SetScale(Vector3.one * baseArrowScale * scaleFactor);
+                //gizmo.SetScale(Vector3.one * baseArrowScale * scaleFactor);
                 // Make cones always a bit larger than arrows, and thickness grow with distance
-                gizmo.UpdateScaleByCamera(MainCam, 10f, 0.01f, 1000f);
+                //gizmo.UpdateScaleByCamera(MainCam, 10f, 0.01f, 1000f);
             }
             if (snapToGridCube.activeSelf && currentSelectedObj)
             {
@@ -1583,11 +1557,11 @@ namespace FS_LevelEditor.Editor
             if (currentMode == Mode.Selection)
             {
                 // Only enable gizmos if there's a selected object.
-                if (currentSelectedObj) gizmosArrows.SetActive(true);
+                if (currentSelectedObj) gizmosRoot.SetActive(true);
             }
             else
             {
-                gizmosArrows.SetActive(false);
+                gizmosRoot.SetActive(false);
             }
 
             Logger.Log("Changed LE mode to: " + currentMode);
@@ -1961,7 +1935,7 @@ namespace FS_LevelEditor.Editor
         {
             if (currentSelectedObj == obj) return;
 
-            if (obj && obj.name == gizmosArrows.name)
+            if (obj && obj.name == gizmosRoot.name)
             {
                 Logger.Error("HOW THE FUCK DID YOU MANAGE TO SELECT THE FUCKING GIZMOS ARROWS!? Anyways, this shouldn't case any trouble now :)");
                 return;
@@ -1977,7 +1951,7 @@ namespace FS_LevelEditor.Editor
                 return;
             }
 
-            gizmosArrows.SetActive(false);
+            gizmosRoot.SetActive(false);
 
             // SnapToGrid cube is adjusted in Late Update.
 
@@ -2140,8 +2114,8 @@ namespace FS_LevelEditor.Editor
                     currentSelectedObjComponent.SetObjectColor(LE_Object.LEObjectContext.SELECT);
                 }
 
-                if (currentMode == Mode.Selection) gizmosArrows.SetActive(true);
-                gizmosArrows.transform.localRotation = currentSelectedObj.transform.rotation;
+                if (currentMode == Mode.Selection) gizmosRoot.SetActive(true);
+                gizmosRoot.transform.localRotation = currentSelectedObj.transform.rotation;
 
                 if (multipleObjectsSelected)
                 {
@@ -2774,11 +2748,11 @@ namespace FS_LevelEditor.Editor
 
             if (highestAxis >= 1f)
             {
-                gizmosArrows.transform.localScale = Vector3.one * 2f;
+                gizmosRoot.transform.localScale = Vector3.one * 2f;
             }
             else
             {
-                gizmosArrows.transform.localScale = Vector3.one * 2f * highestAxis;
+                gizmosRoot.transform.localScale = Vector3.one * 2f * highestAxis;
             }
         }
 
@@ -3007,25 +2981,9 @@ namespace FS_LevelEditor.Editor
         /// <returns></returns>
         GizmosArrow GetCollidingWithAnArrow()
         {
-            if (!gizmo.Root.activeSelf) return GizmosArrow.None;
-
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            GizmosArrow arrow = gizmo.GetHoveredArrow(out Ray ray);
             
-            // Use new gizmo API for improved axis detection
-            string hoveredAxis = gizmo.GetHoveredAxis(ray, out float hitDistance);
-            
-            if (hoveredAxis == null) return GizmosArrow.None;
-
-            GizmosArrow arrow;
-            switch (hoveredAxis)
-            {
-                case "X": arrow = GizmosArrow.X; break;
-                case "Y": arrow = GizmosArrow.Y; break;
-                case "Z": arrow = GizmosArrow.Z; break;
-                default: return GizmosArrow.None;
-            }
-            
-            StartMovingObject(arrow.ToString(), ray);
+            if (arrow != GizmosArrow.None) StartMovingObject(arrow.ToString(), ray);
             return arrow;
         }
 
