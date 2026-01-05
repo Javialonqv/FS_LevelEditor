@@ -562,7 +562,8 @@ namespace FS_LevelEditor.Editor.UI
 			CreateKeypadAttributesPanel();
 			CreateRGBWallAttributesPanel();
 			CreateHealValueAttributesPanel();
-		}
+			CreateVentWithSmokeAttributesPanel();
+        }
 		#region Create Object Specific Panels
 		void CreateDirectionalLightAttributesPanel()
 		{
@@ -1061,6 +1062,19 @@ namespace FS_LevelEditor.Editor.UI
 
             healValueAttributes.SetActive(false);
             attributesPanels.Add("Heal_Area", healValueAttributes);
+        }
+		void CreateVentWithSmokeAttributesPanel()
+		{
+            GameObject ventWithSmokeAttributes = new GameObject("Vent With Smoke Cyan | Vent With Smoke Green");
+            ventWithSmokeAttributes.transform.parent = objectSpecificPanelsParent;
+            ventWithSmokeAttributes.transform.localPosition = Vector3.zero;
+            ventWithSmokeAttributes.transform.localScale = Vector3.one;
+
+			SetCurrentParentToCreateAttributes(ventWithSmokeAttributes);
+
+			CreateObjectAttribute("Particles", AttributeType.TOGGLE, true, null, "Particles");
+
+			attributesPanels.Add("Vent With Smoke Cyan | Vent With Smoke Green", ventWithSmokeAttributes);
         }
 
         enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE, VECTOR }
