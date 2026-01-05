@@ -139,6 +139,13 @@ namespace FS_LevelEditor
                 blocScript.RespawnCubeNow();
                 return true;
             }
+            else if (actionName == "RespawnCubeFromStartPoint")
+            {
+                blocScript.useSwitchPosRespawn = false;
+                blocScript.RespawnCubeNow();
+                blocScript.useSwitchPosRespawn = true;
+                return true;
+            }
 
             return base.TriggerAction(actionName);
         }

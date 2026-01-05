@@ -82,6 +82,7 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject cubeObjectsSettings;
         UIToggle respawnCubeToggle;
+        UIToggle respawnOnLastSwitchToggle;
         //-----------------------------------
         GameObject laserObjectsSettings;
         UIButtonMultiple laserStateButton;
@@ -1173,6 +1174,7 @@ namespace FS_LevelEditor.Editor.UI
             infiniteTaserToggle.Set(currentSelectedEvent.infiniteTaser);
             jetpackStateButton.SelectOption((int)currentSelectedEvent.jetpackState);
             respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
+            respawnOnLastSwitchToggle.Set(currentSelectedEvent.respawnCubeOnLastSwitch);
             laserStateButton.SelectOption((int)currentSelectedEvent.laserState);
             mineStateButton.SelectOption((int)currentSelectedEvent.mineState);
             changeLightColorToggle.Set(currentSelectedEvent.changeLightColor);
@@ -1702,7 +1704,6 @@ namespace FS_LevelEditor.Editor.UI
             CreateJetpackSettingsTitleLabel();
             CreateJetpackStateButton();
         }
-
         void CreateJetpackSettingsTitleLabel()
         {
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
@@ -1724,7 +1725,6 @@ namespace FS_LevelEditor.Editor.UI
             // Change the label position AFTER changing the pivot.
             titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
         }
-
         void CreateJetpackStateButton()
         {
             UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(jetpackSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
@@ -1771,7 +1771,6 @@ namespace FS_LevelEditor.Editor.UI
 
             titleLabel.transform.localPosition = new Vector3(0f, 120f, 0f);
         }
-
         void CreateObjectiveStateButton()
         {
             UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(objectiveSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
@@ -1798,19 +1797,8 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateCubeObjectsTitleLabel();
             CreateRespawnCubeToggle();
+            CreateRespawnCubeOnLastSwitchToggle();
         }
-        void CreateBridgeObjectSettings()
-        {
-            bridgeObjectsSettings = new GameObject("Bridge");
-            bridgeObjectsSettings.transform.parent = eventOptionsParent.transform;
-            bridgeObjectsSettings.transform.localPosition = Vector3.zero;
-            bridgeObjectsSettings.transform.localScale = Vector3.one;
-            bridgeObjectsSettings.SetActive(false);
-
-            CreateBridgeObjectsTitleLabel();
-            CreateBridgeStateButton();
-        }
-
         void CreateCubeObjectsTitleLabel()
         {
             GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
@@ -1832,25 +1820,27 @@ namespace FS_LevelEditor.Editor.UI
             // Change the label position AFTER changing the pivot.
             titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
         }
-        void CreateBridgeObjectsTitleLabel()
-        {
-            UILabel titleLabel = NGUI_Utils.CreateLabel(bridgeObjectsSettings.transform, Vector3.up * 40, new Vector3Int(700, 40, 0), "BRIDGE OPTIONS",
-                NGUIText.Alignment.Center, UIWidget.Pivot.Center);
-            titleLabel.name = "TitleLabel";
-            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
-            titleLabel.fontSize = 35;
-        }
-
         void CreateRespawnCubeToggle()
         {
             GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
 
-            GameObject toggle = NGUI_Utils.CreateToggle(cubeObjectsSettings.transform, new Vector3(-140f, -30f, 0f),
+            GameObject toggle = NGUI_Utils.CreateToggle(cubeObjectsSettings.transform, new Vector3(-340f, -30f, 0f),
                 new Vector3Int(250, 48, 1), "Respawn Cube");
             toggle.name = "RespawnCubeToggle";
             respawnCubeToggle = toggle.GetComponent<UIToggle>();
             respawnCubeToggle.onChange.Clear();
             respawnCubeToggle.onChange.Add(new EventDelegate(this, nameof(OnRespawnCubeChanged)));
+        }
+        void CreateRespawnCubeOnLastSwitchToggle()
+        {
+            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
+
+            GameObject toggle = NGUI_Utils.CreateToggle(cubeObjectsSettings.transform, new Vector3(0f, -30f, 0f),
+                new Vector3Int(250, 48, 1), "On Last Activated Switch");
+            toggle.name = "OnLastActivatedSwitchToggle";
+            respawnOnLastSwitchToggle = toggle.GetComponent<UIToggle>();
+            respawnOnLastSwitchToggle.onChange.Clear();
+            respawnOnLastSwitchToggle.onChange.Add(new EventDelegate(this, nameof(OnRespawnCubeOnLastActivatedSwitchChanged)));
         }
         // -----------------------------------------
         void CreateLaserObjectSettings()
@@ -2362,23 +2352,6 @@ namespace FS_LevelEditor.Editor.UI
 
             screenNewTextField.onChange += OnNewScreenTextFieldChanged;
         }
-        void CreateBridgeStateButton()
-        {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(bridgeObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-            button.name = "BridgeStateButton";
-            button.Init();
-            button.SetTitle("Set Bridge State");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Extend", false);
-            button.AddOption("Retract", false);
-            button.AddOption("Toggle", false);
-            button.onClick += (option) => OnBridgeStateButtonChanged();
-            button.SetTooltip("EventsBridgeStateTooltip"); // Optional: add tooltip
-
-            bridgeStateButton = button;
-            button.gameObject.SetActive(true);
-        }
         // -----------------------------------------
         void CreateDoorObjectSettings()
         {
@@ -2415,6 +2388,43 @@ namespace FS_LevelEditor.Editor.UI
             button.SetTooltip("EventsDoorStateTooltip");
 
             setDoorStateButton = button;
+            button.gameObject.SetActive(true);
+        }
+        // -----------------------------------------
+        void CreateBridgeObjectSettings()
+        {
+            bridgeObjectsSettings = new GameObject("Bridge");
+            bridgeObjectsSettings.transform.parent = eventOptionsParent.transform;
+            bridgeObjectsSettings.transform.localPosition = Vector3.zero;
+            bridgeObjectsSettings.transform.localScale = Vector3.one;
+            bridgeObjectsSettings.SetActive(false);
+
+            CreateBridgeObjectsTitleLabel();
+            CreateBridgeStateButton();
+        }
+        void CreateBridgeObjectsTitleLabel()
+        {
+            UILabel titleLabel = NGUI_Utils.CreateLabel(bridgeObjectsSettings.transform, Vector3.up * 40, new Vector3Int(700, 40, 0), "BRIDGE OPTIONS",
+                NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "TitleLabel";
+            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            titleLabel.fontSize = 35;
+        }
+        void CreateBridgeStateButton()
+        {
+            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(bridgeObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
+            button.name = "BridgeStateButton";
+            button.Init();
+            button.SetTitle("Set Bridge State");
+            button.ClearOptions();
+            button.AddOption("Do Nothing", true);
+            button.AddOption("Extend", false);
+            button.AddOption("Retract", false);
+            button.AddOption("Toggle", false);
+            button.onClick += (option) => OnBridgeStateButtonChanged();
+            button.SetTooltip("EventsBridgeStateTooltip"); // Optional: add tooltip
+
+            bridgeStateButton = button;
             button.gameObject.SetActive(true);
         }
         #endregion
@@ -2576,6 +2586,11 @@ namespace FS_LevelEditor.Editor.UI
         void OnRespawnCubeChanged()
         {
             currentSelectedEvent.respawnCube = respawnCubeToggle.isChecked;
+            respawnOnLastSwitchToggle.gameObject.SetActive(respawnCubeToggle.isChecked);
+        }
+        void OnRespawnCubeOnLastActivatedSwitchChanged()
+        {
+            currentSelectedEvent.respawnCubeOnLastSwitch = respawnOnLastSwitchToggle.isChecked;
         }
         // -----------------------------------------
         void OnLaserStateDropdownChanged()
@@ -2820,6 +2835,7 @@ public class LE_Event
 
     #region Cube Options
     public bool respawnCube { get; set; } = false;
+    public bool respawnCubeOnLastSwitch { get; set; } = true;
     #endregion
 
     #region Laser Options

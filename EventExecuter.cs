@@ -411,7 +411,14 @@ namespace FS_LevelEditor
                 {
                     if (@event.respawnCube)
                     {
-                        targetObj.TriggerAction("RespawnCube");
+                        if (@event.respawnCubeOnLastSwitch)
+                        {
+                            targetObj.TriggerAction("RespawnCube");
+                        }
+                        else
+                        {
+                            targetObj.TriggerAction("RespawnCubeFromStartPoint");
+                        }
                     }
                 }
                 else if (targetObj is LE_Laser)
