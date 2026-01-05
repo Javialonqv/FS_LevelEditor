@@ -12,15 +12,17 @@ public enum RotationPath
 public class RotationTweener : MonoBehaviour
 {
     Coroutine rotationCoroutine;
+    string test;
 
     public static RotationTweener RotateTo(GameObject obj, Vector3 targetEuler, float duration, RotationPath path = RotationPath.Shortest)
     {
         // Stop previous rotation if exists.
         RotationTweener existing = obj.GetComponent<RotationTweener>();
-        if (existing != null)
+        if (existing)
         {
-            existing.StopAllCoroutines();
-            DestroyImmediate(existing);
+            if (existing.rotationCoroutine != null) MelonCoroutines.Stop(existing.rotationCoroutine);
+            existing.rotationCoroutine = (Coroutine)MelonCoroutines.Start(existing.DoRotation(targetEuler, duration, path));
+            return existing;
         }
 
         // Create new tweener.
@@ -59,14 +61,21 @@ public class RotationTweener : MonoBehaviour
 
             t = Mathf.SmoothStep(0f, 1f, t);
 
-            transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
+            try // To avoid a bug where this coroutine is still executing even after the object is destroyed (OnDestroy not being called propertly?)
+            {
+                transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
+            }
+            catch
+            {
+                OnDestroy();
+                yield break;
+            }
             yield return null;
         }
 
         transform.rotation = Quaternion.Euler(targetEuler);
 
         rotationCoroutine = null;
-
         DestroyImmediate(this);
     }
     void OnDestroy()
