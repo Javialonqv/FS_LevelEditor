@@ -386,7 +386,7 @@ namespace FS_LevelEditor
 
             waypoint.transform.localPosition = Vector3.zero;
             waypoint.transform.localEulerAngles = Vector3.zero;
-            waypoint.transform.localScale = Vector3.one;
+            waypoint.transform.localScale = transform.localScale;
 
             LE_Waypoint waypointComp = (LE_Waypoint)LE_Object.AddComponentToObject(waypoint, waypointTypeToUse);
             waypointComp.waypointIndex = spawnedWaypoints.Count;
