@@ -185,6 +185,9 @@ namespace FS_LevelEditor.Editor
         {
             Instance = this;
             MenuController.isInLevelEditor = true;
+
+            EnsureGameUIIsHidden();
+
             LoadAssetBundle();
 
             levelObjectsParent = new GameObject("LevelObjects");
@@ -194,41 +197,17 @@ namespace FS_LevelEditor.Editor
             multipleSelectedObjsParent.transform.position = Vector3.zero;
 
             deathYPlane = Instantiate(LoadOtherObjectInBundle("DeathYPlane")).AddComponent<DeathYPlaneCtrl>();
-            Camera.main.fieldOfView = 90f; // Set FOV to 90 by default.
-            Camera.main.nearClipPlane = 0.1f; //to prevent disappearing when near objects.
 
-            //Toensure nothing is left in our scene
-            InGameUIManager ui = InGameUIManager.Instance;
-            ui.HideHealthBarRoutine();
-            ui.HideDodgeCooldown(true);
-            ui.HideHoverGauge(true);
-            ui.ShowSprintFeedback(false);
-            ui.ShowFuelBar(false, 0, 0);
-            ui.ForceHideFuelBar();
-            ui.HideFuelBarRoutine(0);
+            Camera.main.fieldOfView = 90f; // Default FOV.
+            Camera.main.nearClipPlane = 0.1f; // To prevent disappearing when near objects.
 
             CreateGridLineMaterial();
             gridCenter = new Vector3(0, gridHeight, 0); // Always start centered at origin
             UpdateGridCenter(); // Ensure gridCenter is correct at start
-            currentEditorState = EditorState.NORMAL; // Ensure state is initialized
 
-            // Create status labels root
-            /*statusLabelsRoot = new GameObject("EditorStatusLabels");
-			statusLabelsRoot.transform.SetParent(null); // Not parented to build UI
-			statusLabelsRoot.transform.localScale = Vector3.one;
-			// Place at bottom center of screen (NGUI coordinates)
-			statusLabelsRoot.transform.position = Vector3.zero;
-			// Create labels
-			float yBase = -470f; // Lowered further
-			cameraSpeedLabel = NGUI_Utils.CreateLabel(statusLabelsRoot.transform, new Vector3(0f, yBase, 0f), new Vector3Int(400, 30, 0), "Camera Speed: 0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
-			cameraSpeedLabel.fontSize = 24; // Increased font size
-			cameraSpeedLabel.color = Color.white;
-			cameraSpeedLabel.name = "CameraSpeedLabel";
-			gridSizeLabel = NGUI_Utils.CreateLabel(statusLabelsRoot.transform, new Vector3(0f, yBase - 34f, 0f), new Vector3Int(400, 30, 0), "Grid Size: 0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
-			gridSizeLabel.fontSize = 24; // Increased font size
-			gridSizeLabel.color = Color.white;
-			gridSizeLabel.name = "GridSizeLabel";*/
+            currentEditorState = EditorState.NORMAL; // Ensure state is initialized
         }
+
         void LoadAssetBundle()
         {
             Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FS_LevelEditor.level_editor");
@@ -237,14 +216,15 @@ namespace FS_LevelEditor.Editor
 
             Il2CppAssetBundle bundle = Il2CppAssetBundleManager.LoadFromMemory(bytes);
 
+            #region Load LE Objects From Bundle
             editorObjectsRootFromBundle = bundle.Load<GameObject>("LevelObjectsRoot");
             editorObjectsRootFromBundle.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
+            // Get categories
             foreach (var child in editorObjectsRootFromBundle.GetChilds())
             {
                 categoriesNames.Add(child.name);
             }
-
             currentCategory = categoriesNames[0];
             currentCategoryID = 0;
 
@@ -265,22 +245,28 @@ namespace FS_LevelEditor.Editor
 
                 allCategoriesObjectsSorted.Add(categoryObjects);
             }
+            #endregion
 
+            #region Setup Gizmos
             gizmosRoot = Instantiate(bundle.Load<GameObject>("MoveObjectArrowsNew"));
             gizmosRoot.name = "MoveObjectArrows";
             gizmosRoot.transform.localPosition = Vector3.zero;
             gizmo = gizmosRoot.AddComponent<EditorGizmo>();
             gizmosRoot.SetActive(false);
+            #endregion
 
+            #region Setup Snap To Grid Cube
             snapToGridCube = Instantiate(bundle.Load<GameObject>("SnapToGridCube"));
             snapToGridCube.name = "SnapToGridCube";
             snapToGridCube.transform.localPosition = Vector3.zero;
             snapToGridCube.SetActive(false);
+            #endregion
 
             otherObjectsFromBundle = bundle.Load<GameObject>("OtherObjects").GetChilds();
 
-            Utils.LoadMaterials(bundle);
+            Utils.LoadMaterials(bundle); // Opaque/Transparent materials for disabled objects and such.
 
+            #region Load Skyboxes
             foreach (var material in bundle.LoadAll<Material>())
             {
                 if (material.name.StartsWith("Skybox"))
@@ -313,10 +299,11 @@ namespace FS_LevelEditor.Editor
                         .ToList();
                 }
             }
+            #endregion
 
             bundle.Unload(false);
         }
-        public GameObject LoadOtherObjectInBundle(String objectName)
+        public GameObject LoadOtherObjectInBundle(string objectName)
         {
             GameObject toReturn = otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
 
@@ -326,6 +313,18 @@ namespace FS_LevelEditor.Editor
             }
 
             return toReturn;
+        }
+
+        void EnsureGameUIIsHidden()
+        {
+            InGameUIManager ui = InGameUIManager.Instance;
+            ui.HideHealthBarRoutine();
+            ui.HideDodgeCooldown(true);
+            ui.HideHoverGauge(true);
+            ui.ShowSprintFeedback(false);
+            ui.ShowFuelBar(false, 0, 0);
+            ui.ForceHideFuelBar();
+            ui.HideFuelBarRoutine(0);
         }
 
         void Start()
