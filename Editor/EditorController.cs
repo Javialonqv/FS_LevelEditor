@@ -201,7 +201,7 @@ namespace FS_LevelEditor.Editor
             Camera.main.fieldOfView = 90f; // Default FOV.
             Camera.main.nearClipPlane = 0.1f; // To prevent disappearing when near objects.
 
-            CreateGridLineMaterial();
+            //CreateGridLineMaterial();
             gridCenter = new Vector3(0, gridHeight, 0); // Always start centered at origin
             UpdateGridCenter(); // Ensure gridCenter is correct at start
 
@@ -265,6 +265,12 @@ namespace FS_LevelEditor.Editor
             otherObjectsFromBundle = bundle.Load<GameObject>("OtherObjects").GetChilds();
 
             Utils.LoadMaterials(bundle); // Opaque/Transparent materials for disabled objects and such.
+
+            #region Load Grid Material
+            gridLineMaterial = bundle.Load<Material>("GridLine");
+            // Use the Cast function since that's the correct way to cast IL2CPP types.
+            gridTexture = gridLineMaterial.mainTexture.Cast<Texture2D>();
+            #endregion
 
             #region Load Skyboxes
             foreach (var material in bundle.LoadAll<Material>())
@@ -333,6 +339,7 @@ namespace FS_LevelEditor.Editor
             Camera.main.useOcclusionCulling = false;
 
             UpdateGridCenter(); // Ensure grid is placed correctly on editor start
+
             _isInitialized = true;
         }
         public void AfterFinishedLoadingLevel()
@@ -3087,64 +3094,6 @@ namespace FS_LevelEditor.Editor
             RenderSettings.skybox = skyboxes[skyboxID];
         }
 
-        void CreateGridLineMaterial()
-        {
-            if (!gridLineMaterial)
-            {
-                Shader shader = Shader.Find("Hidden/Internal-Colored");
-                gridLineMaterial = new Material(shader)
-                {
-                    hideFlags = HideFlags.HideAndDontSave
-                };
-                gridLineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                gridLineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                gridLineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-                gridLineMaterial.SetInt("_ZWrite", 0);
-                gridLineMaterial.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.LessEqual);
-            }
-
-            // Create grid texture (once)
-            if (gridTexture == null)
-            {
-                CreateGridTexture();
-            }
-        }
-        void CreateGridTexture()
-        {
-            // Create a small texture with grid lines
-            int texSize = 64; // Power of 2 for proper tiling
-            gridTexture = new Texture2D(texSize, texSize, TextureFormat.RGBA32, false);
-            gridTexture.filterMode = FilterMode.Bilinear;
-            gridTexture.wrapMode = TextureWrapMode.Repeat;
-
-            Color transparent = new Color(1f, 1f, 1f, 0.025f);
-            Color gridLine = new Color(1f, 1f, 1f, 0.25f);
-
-            // Fill texture
-            for (int y = 0; y < texSize; y++)
-            {
-                for (int x = 0; x < texSize; x++)
-                {
-                    // Draw grid lines on edges (2 pixel width for visibility)
-                    if (x < 2 || y < 2)
-                    {
-                        gridTexture.SetPixel(x, y, gridLine);
-                    }
-                    else
-                    {
-                        gridTexture.SetPixel(x, y, transparent);
-                    }
-                }
-            }
-
-            gridTexture.Apply();
-
-            gridLineMaterial.shader = Shader.Find("Unlit/Transparent");
-            gridLineMaterial.mainTexture = gridTexture;
-            gridLineMaterial.color = Color.white;
-
-            gridLineMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-        }
         void ToggleLighting()
         {
             lightingEnabled = !lightingEnabled;
@@ -3239,7 +3188,6 @@ namespace FS_LevelEditor.Editor
             GL.End();
             GL.PopMatrix();
         }
-
     }
 
     public struct LEAction
