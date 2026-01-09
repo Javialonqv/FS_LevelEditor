@@ -38,46 +38,80 @@ namespace FS_LevelEditor.Editor
         public string levelName = "test_level";
         public string levelFileNameWithoutExtension = "test_level";
 
-        public EditorState previousEditorState;
-        public EditorState currentEditorState;
+        EditorState previousEditorState;
+        EditorState currentEditorState;
 
-        // Avaiable objects from all of the categories.
+        #region Available Objects From Bundle
         GameObject editorObjectsRootFromBundle;
+
         public List<Dictionary<LE_Object.ObjectType, GameObject>> allCategoriesObjectsSorted = new();
         public Dictionary<LE_Object.ObjectType, GameObject> allCategoriesObjects = new();
+
         GameObject[] otherObjectsFromBundle;
 
-        // Available categories related variables.
+        // ------------------------------------
+
         public List<string> categoriesNames = new List<string>();
         public string currentCategory = "";
         public int currentCategoryID = 0;
+        #endregion
 
-        public LE_Object.ObjectType? currentObjectToBuildType = null;
+        #region Editor Objects Parents
+        public GameObject levelObjectsParent;
+        public GameObject multipleSelectedObjsParent;
+        #endregion
+
+        #region Current Object To Build
+        LE_Object.ObjectType? currentObjectToBuildType = null;
         GameObject currentObjectToBuild;
         GameObject previewObjectToBuildObj = null;
+        #endregion
+
+        #region Object Placement
         Vector3 previewRotationOffsetEuler = Vector3.zero;
-        // Related to object placement? Dunno how to call this.
         Vector3? lastHittenNormalByPreviewRay = null;
         GameObject currentHittenSnapTrigger = null;
+        #endregion
 
-        // Related to current selected object for level building.
-        public GameObject levelObjectsParent;
+        #region Current Selected Object
         public GameObject currentSelectedObj;
         public LE_Object currentSelectedObjComponent;
         // When there's just one object selected, that object in in the currentSelectedObj variable.
         // But when there are multiple objects selected, this list contains em and "currentSelectedObj" is "multipleSelectedObjsParent".
         public List<GameObject> currentSelectedObjects = new List<GameObject>();
-        public bool multipleObjectsSelected = false;
-        public GameObject multipleSelectedObjsParent;
-        bool isDuplicatingObj = false;
+        #endregion
+
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
 
-        // Selected mode.
+        #region Selected Mode
         public enum Mode { Building, Selection }
         public Mode currentMode = Mode.Building;
-        private BulkSelectionMode currentBulkSelectionMode = BulkSelectionMode.Everything;
+        #endregion
 
-        //Bulk selection.
+        #region Gizmos
+        GameObject gizmosRoot;
+        EditorGizmo gizmo;
+        GizmosArrow collidingArrow;
+        Vector3 objPositionWhenArrowClick;
+        Vector3 objLocalPositionWhenStartedMoving;
+        Vector3 offsetObjPositionAndMosueWhenClick;
+        Plane movementPlane;
+        bool globalGizmosArrowsEnabled = false;
+        #endregion
+
+        #region Snap To Grid
+        GameObject snapToGridCube;
+        Vector3 objPositionWhenStartToSnap;
+        Vector3 objLocalPositionWhenStartToSnap;
+        Quaternion objLocalRotationWhenStartToSnap;
+        #endregion
+
+        #region Editor Registered Actions For Undo
+        public List<LEAction> actionsMade = new List<LEAction>();
+        public LEAction currentExecutingAction;
+        #endregion
+
+        #region Bulk Selection
         private bool isSelecting = false;
         private Vector2 selectionStartScreen;
         private Vector2 selectionEndScreen;
@@ -87,40 +121,10 @@ namespace FS_LevelEditor.Editor
         private GameObject selectionBox;
         private UISprite selectionBoxSprite;
         public bool statsLabelsVisible = false;
+        BulkSelectionMode currentBulkSelectionMode = BulkSelectionMode.Everything;
+        #endregion
 
-        // Gizmos arrows to move objects.
-        GameObject gizmosRoot;
-        EditorGizmo gizmo;
-        GizmosArrow collidingArrow;
-        Vector3 objPositionWhenArrowClick;
-        Vector3 objLocalPositionWhenStartedMoving;
-        Vector3 offsetObjPositionAndMosueWhenClick;
-        Plane movementPlane;
-        bool globalGizmosArrowsEnabled = false;
-
-
-        // SNAP
-        GameObject snapToGridCube;
-        Vector3 objPositionWhenStartToSnap;
-        Vector3 objLocalPositionWhenStartToSnap;
-        Quaternion objLocalRotationWhenStartToSnap;
-
-        public List<LEAction> actionsMade = new List<LEAction>();
-        public LEAction currentExecutingAction;
-        public bool levelHasBeenModified = false;
-
-        // Misc?
-        public DeathYPlaneCtrl deathYPlane;
-        Camera MainCam;
-        public bool showAllWaypoints = false;
-
-        public bool enteringPlayMode = false;
-
-        // ----------------------------
-        public Dictionary<string, object> globalProperties = LevelData.GetDefaultGlobalProperties();
-        List<Material> skyboxes = new List<Material>();
-
-        // --- GRID FIELDS ---
+        #region Grid
         private float gridSize = 1f;
         private const float MIN_GRID_SIZE = 0.0001f;
         private const float MAX_GRID_SIZE = 8f;
@@ -131,11 +135,27 @@ namespace FS_LevelEditor.Editor
         private Material gridLineMaterial;
         private Vector3 gridCenter = Vector3.zero;
         private Texture2D gridTexture;
+        #endregion
+
+        #region Editor Variables
+        public bool multipleObjectsSelected = false;
+        bool isDuplicatingObj = false;
+        public bool levelHasBeenModified = false;
+        public bool showAllWaypoints = false;
+        public bool enteringPlayMode = false;
 
         // ESC Fix
         private bool _isInitialized = false;
 
         private bool lightingEnabled = true;
+        #endregion
+
+        // Misc?
+        public DeathYPlaneCtrl deathYPlane;
+
+        // ----------------------------
+        public Dictionary<string, object> globalProperties = LevelData.GetDefaultGlobalProperties();
+        List<Material> skyboxes = new List<Material>();
 
         private void UpdateGridCenter()
         {
@@ -161,9 +181,6 @@ namespace FS_LevelEditor.Editor
             gridCenter.y = gridHeight;
         }
 
-        private static Material _gizmoArrowMaterial = null;
-        public static Material GizmoArrowMaterial => _gizmoArrowMaterial;
-
         void Awake()
         {
             Instance = this;
@@ -177,9 +194,8 @@ namespace FS_LevelEditor.Editor
             multipleSelectedObjsParent.transform.position = Vector3.zero;
 
             deathYPlane = Instantiate(LoadOtherObjectInBundle("DeathYPlane")).AddComponent<DeathYPlaneCtrl>();
-            MainCam = GameObject.Find("Main Camera").GetComponent<Camera>();
-            MainCam.fieldOfView = 90f; // Set FOV to 90 by default.
-            MainCam.nearClipPlane = 0.1f; //to prevent disappearing when near objects.
+            Camera.main.fieldOfView = 90f; // Set FOV to 90 by default.
+            Camera.main.nearClipPlane = 0.1f; //to prevent disappearing when near objects.
 
             //Toensure nothing is left in our scene
             InGameUIManager ui = InGameUIManager.Instance;
