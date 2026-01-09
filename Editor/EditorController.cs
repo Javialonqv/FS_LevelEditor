@@ -157,30 +157,6 @@ namespace FS_LevelEditor.Editor
         public Dictionary<string, object> globalProperties = LevelData.GetDefaultGlobalProperties();
         List<Material> skyboxes = new List<Material>();
 
-        private void UpdateGridCenter()
-        {
-            // Center grid on all objects, or at (0, gridHeight, 0) if none
-            if (currentInstantiatedObjects.Count > 0)
-            {
-                Vector3 sum = Vector3.zero;
-                int count = 0;
-                foreach (var obj in currentInstantiatedObjects)
-                {
-                    if (obj != null && obj.gameObject.activeSelf)
-                    {
-                        sum += obj.transform.position;
-                        count++;
-                    }
-                }
-                gridCenter = (count > 0) ? (sum / count) : Vector3.zero;
-            }
-            else
-            {
-                gridCenter = Vector3.zero;
-            }
-            gridCenter.y = gridHeight;
-        }
-
         void Awake()
         {
             Instance = this;
@@ -200,10 +176,6 @@ namespace FS_LevelEditor.Editor
 
             Camera.main.fieldOfView = 90f; // Default FOV.
             Camera.main.nearClipPlane = 0.1f; // To prevent disappearing when near objects.
-
-            //CreateGridLineMaterial();
-            gridCenter = new Vector3(0, gridHeight, 0); // Always start centered at origin
-            UpdateGridCenter(); // Ensure gridCenter is correct at start
 
             currentEditorState = EditorState.NORMAL; // Ensure state is initialized
         }
@@ -338,7 +310,7 @@ namespace FS_LevelEditor.Editor
             // Disable occlusion culling.
             Camera.main.useOcclusionCulling = false;
 
-            UpdateGridCenter(); // Ensure grid is placed correctly on editor start
+            UpdateGridCenter(); // Ensure gridCenter is correct at start
 
             _isInitialized = true;
         }
@@ -1581,6 +1553,29 @@ namespace FS_LevelEditor.Editor
         }
 
         // --- GRID API ---
+        void UpdateGridCenter()
+        {
+            // Center grid on all objects, or at (0, gridHeight, 0) if none
+            if (currentInstantiatedObjects.Count > 0)
+            {
+                Vector3 sum = Vector3.zero;
+                int count = 0;
+                foreach (var obj in currentInstantiatedObjects)
+                {
+                    if (obj != null && obj.gameObject.activeSelf)
+                    {
+                        sum += obj.transform.position;
+                        count++;
+                    }
+                }
+                gridCenter = (count > 0) ? (sum / count) : Vector3.zero;
+            }
+            else
+            {
+                gridCenter = Vector3.zero;
+            }
+            gridCenter.y = gridHeight;
+        }
         public void SetGridSize(float newSize)
         {
             gridSize = Mathf.Clamp(newSize, MIN_GRID_SIZE, MAX_GRID_SIZE);
