@@ -1245,10 +1245,5 @@ namespace FS_LevelEditor
             }
         }
     }
-    public static class PlayFromMenuHelper
-    {
-        public static bool PlayImmediatelyOnEditorLoad = false;
-        public static string LevelToPlay = null;
-    }
 }
 
