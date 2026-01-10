@@ -47,28 +47,29 @@ namespace FS_LevelEditor.Editor.UI
 
 		void CreatePopupUI()
 		{
-			// Create darkened background overlay
-			GameObject overlay = new GameObject("DarkOverlay");
-			overlay.transform.parent = transform;
-			overlay.transform.localPosition = Vector3.zero;
-			overlay.transform.localScale = Vector3.one;
-			overlay.layer = LayerMask.NameToLayer("2D GUI");
+            #region Create Dark Background
+            GameObject backgroundObj = new GameObject("DarkOverlay");
+			backgroundObj.transform.parent = transform;
+			backgroundObj.transform.localPosition = Vector3.zero;
+			backgroundObj.transform.localScale = Vector3.one;
+			backgroundObj.layer = LayerMask.NameToLayer("2D GUI");
 
-			UISprite overlaySprite = overlay.AddComponent<UISprite>();
-			overlaySprite.atlas = NGUI_Utils.fractalSpaceAtlas;
-			overlaySprite.spriteName = "Square";
-			overlaySprite.type = UIBasicSprite.Type.Sliced;
-			overlaySprite.color = new Color(0f, 0f, 0f, 0.85f); // Dark semi-transparent
-			overlaySprite.width = 10000;
-			overlaySprite.height = 10000;
-			overlaySprite.depth = 499; // Just below the popup
+			UISprite backgroundSprite = backgroundObj.AddComponent<UISprite>();
+			backgroundSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
+			backgroundSprite.spriteName = "Square";
+			backgroundSprite.type = UIBasicSprite.Type.Sliced;
+			backgroundSprite.color = new Color(0f, 0f, 0f, 0.85f); // Dark semi-transparent
+			backgroundSprite.width = 10000;
+			backgroundSprite.height = 10000;
+			backgroundSprite.depth = 99; // Just below the popup
 
 			// Add collider to block clicks
-			BoxCollider overlayCollider = overlay.AddComponent<BoxCollider>();
-			overlayCollider.size = new Vector3(10000, 10000, 1);
+			BoxCollider backgroundCollider = backgroundObj.AddComponent<BoxCollider>();
+			backgroundCollider.size = new Vector3(10000, 10000, 1);
+            #endregion
 
-			// Create main popup panel
-			popupPanel = new GameObject("SaveMetadataPanel");
+            #region Create Main Popup
+            popupPanel = new GameObject("SaveMetadataPanel");
 			popupPanel.transform.parent = transform;
 			popupPanel.transform.localPosition = Vector3.zero;
 			popupPanel.transform.localScale = Vector3.one;
@@ -82,61 +83,71 @@ namespace FS_LevelEditor.Editor.UI
 			bgSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 			bgSprite.width = 550;
 			bgSprite.height = 420;
-			bgSprite.depth = 500;
+			bgSprite.depth = 100;
+            #endregion
 
-			// Title - smaller font
-			UILabel titleLabel = NGUI_Utils.CreateLabel(popupPanel.transform, new Vector3(0, 185), new Vector3Int(550, 35, 0), "Save Level", 
+            // Title - smaller font
+            UILabel titleLabel = NGUI_Utils.CreateLabel(popupPanel.transform, new Vector3(0, 180), new Vector3Int(520, 35, 0), "Save Level", 
 				NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+			titleLabel.name = "Title";
 			titleLabel.fontSize = 32;
-			titleLabel.depth = 501;
+			titleLabel.depth = 101;
 
-			// Level Name Field
-			UILabel levelNameLabel = NGUI_Utils.CreateLabel(popupPanel.transform, new Vector3(-255, 135), new Vector3Int(90, 30, 0), "Level Name:");
-			levelNameLabel.depth = 501;
+            #region Level Name
+            UILabel levelNameLabel = NGUI_Utils.CreateLabel(popupPanel.transform, new Vector3(-260, 130), new Vector3Int(100, 30, 0), "Level Name:");
+			levelNameLabel.name = "LevelNameLabel";
+			levelNameLabel.depth = 101;
 			levelNameLabel.fontSize = 20;
 			levelNameLabel.pivot = UIWidget.Pivot.Left;
 
-			levelNameField = NGUI_Utils.CreateInputField(popupPanel.transform, new Vector3(15, 135), new Vector3Int(380, 32, 0), 20, 
-				EditorController.Instance.levelName, false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.PLAIN_TEXT, depth: 501);
+			levelNameField = NGUI_Utils.CreateInputField(popupPanel.transform, new Vector3(55, 130), new Vector3Int(410, 32, 0), 20, 
+				EditorController.Instance.levelName, false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.PLAIN_TEXT, depth: 101);
 			levelNameField.name = "LevelNameField";
+            #endregion
 
-			// Author Name Field
-			UILabel authorLabel = NGUI_Utils.CreateLabel(popupPanel.transform, new Vector3(-255, 90), new Vector3Int(90, 30, 0), "Author:");
-			authorLabel.depth = 501;
+            #region Author Name
+            UILabel authorLabel = NGUI_Utils.CreateLabel(popupPanel.transform, new Vector3(-260, 90), new Vector3Int(100, 30, 0), "Author:");
+			authorLabel.name = "AuthorNameLabel";
+			authorLabel.depth = 101;
 			authorLabel.fontSize = 20;
 			authorLabel.pivot = UIWidget.Pivot.Left;
 
-			authorNameField = NGUI_Utils.CreateInputField(popupPanel.transform, new Vector3(15, 90), new Vector3Int(380, 32, 0), 20, 
-				"", false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.PLAIN_TEXT, depth: 501);
+			authorNameField = NGUI_Utils.CreateInputField(popupPanel.transform, new Vector3(55, 90), new Vector3Int(410, 32, 0), 20, 
+				"", false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.PLAIN_TEXT, depth: 101);
 			authorNameField.name = "AuthorNameField";
+            #endregion
 
-			// Tags Field
-			UILabel tagsLabel = NGUI_Utils.CreateLabel(popupPanel.transform, new Vector3(-255, 45), new Vector3Int(90, 30, 0), "Tags:");
-			tagsLabel.depth = 501;
+            #region Tags Name
+            UILabel tagsLabel = NGUI_Utils.CreateLabel(popupPanel.transform, new Vector3(-260, 50), new Vector3Int(100, 30, 0), "Tags:");
+			tagsLabel.name = "TagsLabel";
+			tagsLabel.depth = 101;
 			tagsLabel.fontSize = 20;
 			tagsLabel.pivot = UIWidget.Pivot.Left;
 
-			tagsField = NGUI_Utils.CreateInputField(popupPanel.transform, new Vector3(15, 45), new Vector3Int(380, 32, 0), 20, 
-				"", false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.PLAIN_TEXT, depth: 501);
+			tagsField = NGUI_Utils.CreateInputField(popupPanel.transform, new Vector3(55, 50), new Vector3Int(410, 32, 0), 20, 
+				"", false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.PLAIN_TEXT, depth: 101);
 			tagsField.name = "TagsField";
+            #endregion
 
-			// Description Field (multiline)
-			UILabel descLabel = NGUI_Utils.CreateLabel(popupPanel.transform, new Vector3(-255, 0), new Vector3Int(90, 30, 0), "Description:");
-			descLabel.depth = 501;
+            #region Description Field
+            UILabel descLabel = NGUI_Utils.CreateLabel(popupPanel.transform, new Vector3(-260, 10), new Vector3Int(150, 30, 0), "Description:");
+			descLabel.name = "DescriptionLabel";
+			descLabel.depth = 101;
 			descLabel.fontSize = 20;
 			descLabel.pivot = UIWidget.Pivot.Left;
 
-			descriptionField = NGUI_Utils.CreateInputField(popupPanel.transform, new Vector3(0, -55), new Vector3Int(500, 85, 0), 18, 
-				"", false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.PLAIN_TEXT, depth: 501);
+			descriptionField = NGUI_Utils.CreateInputField(popupPanel.transform, new Vector3(0, -55), new Vector3Int(520, 85, 0), 18, 
+				"", false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.PLAIN_TEXT, depth: 101);
 			descriptionField.name = "DescriptionField";
 			descriptionField.input.validation = UIInput.Validation.None;
 			descriptionField.input.characterLimit = 500;
 			// Enable multiline
 			descriptionField.input.label.maxLineCount = 4;
 			descriptionField.input.label.overflowMethod = UILabel.Overflow.ClampContent;
+            #endregion
 
-			// Save Button
-			saveButton = NGUI_Utils.CreateButton(popupPanel.transform, new Vector3(-90, -160), new Vector3Int(160, 45, 0), "Save", 502, 26);
+            // Save Button
+            saveButton = NGUI_Utils.CreateButton(popupPanel.transform, new Vector3(-90, -160), new Vector3Int(160, 45, 0), "Save", 502, 26);
 			saveButton.onClick += OnSaveButtonClicked;
 
 			// Cancel Button
@@ -151,7 +162,7 @@ namespace FS_LevelEditor.Editor.UI
 			tweenScale.ignoreTimeScale = true;
 
 			popupPanel.SetActive(false);
-			overlay.SetActive(false);
+			backgroundObj.SetActive(false);
 			
 			Logger.Log("SaveMetadataPopup UI created successfully");
 		}
