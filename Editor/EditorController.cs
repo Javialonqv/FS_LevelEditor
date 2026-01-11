@@ -1050,6 +1050,7 @@ namespace FS_LevelEditor.Editor
             );
         }
 
+        #region Rotation Shit
         private float lastRotationTime = 0f;
         private float rotationRepeatDelay = 0.12f;
         private float rotationHoldDelay = 0.3f;
@@ -1263,6 +1264,7 @@ namespace FS_LevelEditor.Editor
 
             rotationCoroutine = null;
         }
+        #endregion
 
         // Helper to rotate waypoints with their parent object
         void RotateWaypointsWithObject(GameObject parentObj, Quaternion oldRot, Quaternion newRot)
