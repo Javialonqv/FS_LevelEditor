@@ -625,189 +625,6 @@ namespace FS_LevelEditor.Editor
             }
         }
 
-        void CreateSelectionBox()
-        {
-            if (selectionBox != null) return;
-
-            selectionBox = new GameObject("SelectionBox");
-            selectionBox.transform.parent = EditorUIManager.Instance.editorUIParent.transform;
-            selectionBox.transform.localPosition = Vector3.zero;
-            selectionBox.transform.localScale = Vector3.one;
-
-            selectionBoxSprite = selectionBox.AddComponent<UISprite>();
-
-            selectionBoxSprite.atlas = NGUI_Utils.UITexturesAtlas;
-            selectionBoxSprite.spriteName = "Square_Border_HighOpacity";
-            selectionBoxSprite.type = UIBasicSprite.Type.Sliced;
-            selectionBoxSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 0.5f);
-            selectionBoxSprite.depth = 9999;
-            selectionBoxSprite.pivot = UIWidget.Pivot.TopLeft;
-            selectionBoxSprite.width = 100;
-            selectionBoxSprite.height = 100;
-
-            UICamera uiCam = UICamera.list[0];
-            if (uiCam != null)
-            {
-                selectionBox.layer = uiCam.gameObject.layer;
-            }
-
-            selectionBox.SetActive(false);
-        }
-        private void UpdateSelectionBox()
-        {
-            if (selectionBox == null) return;
-
-            // Get screen positions
-            Vector2 start = selectionStartScreen;
-            Vector2 end = selectionEndScreen;
-
-            // Calculate min/max for width/height
-            float minX = Mathf.Min(start.x, end.x);
-            float maxX = Mathf.Max(start.x, end.x);
-            float minY = Mathf.Min(start.y, end.y);
-            float maxY = Mathf.Max(start.y, end.y);
-
-            // Convert screen coordinates to NGUI world space
-            Vector3 topLeftScreen = new Vector3(minX, maxY, 0f);
-            Vector3 bottomRightScreen = new Vector3(maxX, minY, 0f);
-
-            // Use the main menu camera for NGUI
-            Camera uiCamera = NGUI_Utils.mainMenuCamera;
-            Transform uiParent = EditorUIManager.Instance.editorUIParent.transform;
-
-            Vector3 topLeftWorld = uiCamera.ScreenToWorldPoint(topLeftScreen);
-            Vector3 bottomRightWorld = uiCamera.ScreenToWorldPoint(bottomRightScreen);
-
-            Vector3 topLeftLocal = uiParent.InverseTransformPoint(topLeftWorld);
-            Vector3 bottomRightLocal = uiParent.InverseTransformPoint(bottomRightWorld);
-
-            // Set position (top-left corner)
-            selectionBox.transform.localPosition = topLeftLocal;
-
-            // Calculate and set size (do NOT apply any scale factor)
-            selectionBoxSprite.width = Mathf.RoundToInt(Mathf.Abs(bottomRightLocal.x - topLeftLocal.x));
-            selectionBoxSprite.height = Mathf.RoundToInt(Mathf.Abs(bottomRightLocal.y - topLeftLocal.y));
-        }
-        public void SetBulkSelectionMode(BulkSelectionMode mode)
-        {
-            currentBulkSelectionMode = mode;
-        }
-        public BulkSelectionMode GetBulkSelectionMode()
-        {
-            return currentBulkSelectionMode;
-        }
-        private void SelectObjectsInRectangle(Vector2 start, Vector2 end)
-        {
-            // Calculate selection rectangle boundaries
-            float minX = Mathf.Min(start.x, end.x);
-            float maxX = Mathf.Max(start.x, end.x);
-            float minY = Mathf.Min(start.y, end.y);
-            float maxY = Mathf.Max(start.y, end.y);
-
-            // Check if selection rectangle is too small
-            float width = maxX - minX;
-            float height = maxY - minY;
-            if (width < minDragDistance && height < minDragDistance)
-            {
-                SetSelectedObj(null);
-                return;
-            }
-
-            Camera cam = Camera.main;
-            var selectedObjects = new List<GameObject>();
-
-            foreach (var obj in currentInstantiatedObjects)
-            {
-                if (obj == null || obj.isDeleted || !obj.gameObject.activeSelf)
-                    continue;
-
-                // Filter by bulk selection mode
-                switch (currentBulkSelectionMode)
-                {
-                    case BulkSelectionMode.ObjectsOnly:
-                        if (obj is LE_Waypoint) continue;
-                        break;
-                    case BulkSelectionMode.WaypointsAndObjectsWithWaypoints:
-                        if (!(obj is LE_Waypoint) && (obj.waypoints == null || obj.waypoints.Count == 0))
-                            continue;
-                        break;
-                }
-
-                // Get all renderers for this object
-                var renderers = obj.gameObject.GetComponentsInChildren<Renderer>(true);
-                if (renderers.Length == 0) continue;
-
-                // Frustum culling first
-                Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(cam);
-                Bounds? combinedBounds = null;
-                foreach (var renderer in renderers)
-                {
-                    if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
-                        continue;
-                    if (combinedBounds == null)
-                        combinedBounds = renderer.bounds;
-                    else
-                        combinedBounds.Value.Encapsulate(renderer.bounds);
-                }
-                if (combinedBounds == null || !GeometryUtility.TestPlanesAABB(frustumPlanes, combinedBounds.Value))
-                    continue;
-
-                // Sample mesh vertices and project to screen space
-                bool isInSelection = false;
-                foreach (var renderer in renderers)
-                {
-                    if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
-                        continue;
-
-                    MeshFilter meshFilter = renderer.GetComponent<MeshFilter>();
-                    if (meshFilter == null || meshFilter.sharedMesh == null)
-                        continue;
-
-                    Mesh mesh = meshFilter.sharedMesh;
-                    Transform transform = renderer.transform;
-                    Vector3[] vertices = mesh.vertices;
-
-                    // Sample vertices (use step for performance on large meshes)
-                    int step = Mathf.Max(1, vertices.Length / 100);
-                    for (int i = 0; i < vertices.Length; i += step)
-                    {
-                        Vector3 worldPos = transform.TransformPoint(vertices[i]);
-                        Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
-
-                        // Check if vertex is in front of camera and inside rectangle
-                        if (screenPos.z > 0 &&
-                            screenPos.x >= minX && screenPos.x <= maxX &&
-                            screenPos.y >= minY && screenPos.y <= maxY)
-                        {
-                            isInSelection = true;
-                            break;
-                        }
-                    }
-
-                    if (isInSelection)
-                        break;
-                }
-
-                if (isInSelection)
-                {
-                    selectedObjects.Add(obj.gameObject);
-                }
-            }
-
-            if (selectedObjects.Count == 0)
-            {
-                SetSelectedObj(null);
-            }
-            else if (selectedObjects.Count == 1)
-            {
-                SetSelectedObj(selectedObjects[0]);
-            }
-            else
-            {
-                SetMultipleObjectsAsSelected(selectedObjects);
-            }
-        }
-
         void LateUpdate()
         {
             if (gizmosRoot.activeSelf && currentSelectedObj)
@@ -1548,7 +1365,192 @@ namespace FS_LevelEditor.Editor
             EditorUIManager.Instance.SetCurrentModeLabelText(currentMode);
         }
 
-        // --- GRID API ---
+        #region Bulk Selection
+        void CreateSelectionBox()
+        {
+            if (selectionBox != null) return;
+
+            selectionBox = new GameObject("SelectionBox");
+            selectionBox.transform.parent = EditorUIManager.Instance.editorUIParent.transform;
+            selectionBox.transform.localPosition = Vector3.zero;
+            selectionBox.transform.localScale = Vector3.one;
+
+            selectionBoxSprite = selectionBox.AddComponent<UISprite>();
+
+            selectionBoxSprite.atlas = NGUI_Utils.UITexturesAtlas;
+            selectionBoxSprite.spriteName = "Square_Border_HighOpacity";
+            selectionBoxSprite.type = UIBasicSprite.Type.Sliced;
+            selectionBoxSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 0.5f);
+            selectionBoxSprite.depth = 9999;
+            selectionBoxSprite.pivot = UIWidget.Pivot.TopLeft;
+            selectionBoxSprite.width = 100;
+            selectionBoxSprite.height = 100;
+
+            UICamera uiCam = UICamera.list[0];
+            if (uiCam != null)
+            {
+                selectionBox.layer = uiCam.gameObject.layer;
+            }
+
+            selectionBox.SetActive(false);
+        }
+        private void UpdateSelectionBox()
+        {
+            if (selectionBox == null) return;
+
+            // Get screen positions
+            Vector2 start = selectionStartScreen;
+            Vector2 end = selectionEndScreen;
+
+            // Calculate min/max for width/height
+            float minX = Mathf.Min(start.x, end.x);
+            float maxX = Mathf.Max(start.x, end.x);
+            float minY = Mathf.Min(start.y, end.y);
+            float maxY = Mathf.Max(start.y, end.y);
+
+            // Convert screen coordinates to NGUI world space
+            Vector3 topLeftScreen = new Vector3(minX, maxY, 0f);
+            Vector3 bottomRightScreen = new Vector3(maxX, minY, 0f);
+
+            // Use the main menu camera for NGUI
+            Camera uiCamera = NGUI_Utils.mainMenuCamera;
+            Transform uiParent = EditorUIManager.Instance.editorUIParent.transform;
+
+            Vector3 topLeftWorld = uiCamera.ScreenToWorldPoint(topLeftScreen);
+            Vector3 bottomRightWorld = uiCamera.ScreenToWorldPoint(bottomRightScreen);
+
+            Vector3 topLeftLocal = uiParent.InverseTransformPoint(topLeftWorld);
+            Vector3 bottomRightLocal = uiParent.InverseTransformPoint(bottomRightWorld);
+
+            // Set position (top-left corner)
+            selectionBox.transform.localPosition = topLeftLocal;
+
+            // Calculate and set size (do NOT apply any scale factor)
+            selectionBoxSprite.width = Mathf.RoundToInt(Mathf.Abs(bottomRightLocal.x - topLeftLocal.x));
+            selectionBoxSprite.height = Mathf.RoundToInt(Mathf.Abs(bottomRightLocal.y - topLeftLocal.y));
+        }
+        public void SetBulkSelectionMode(BulkSelectionMode mode)
+        {
+            currentBulkSelectionMode = mode;
+        }
+        public BulkSelectionMode GetBulkSelectionMode()
+        {
+            return currentBulkSelectionMode;
+        }
+        private void SelectObjectsInRectangle(Vector2 start, Vector2 end)
+        {
+            // Calculate selection rectangle boundaries
+            float minX = Mathf.Min(start.x, end.x);
+            float maxX = Mathf.Max(start.x, end.x);
+            float minY = Mathf.Min(start.y, end.y);
+            float maxY = Mathf.Max(start.y, end.y);
+
+            // Check if selection rectangle is too small
+            float width = maxX - minX;
+            float height = maxY - minY;
+            if (width < minDragDistance && height < minDragDistance)
+            {
+                SetSelectedObj(null);
+                return;
+            }
+
+            Camera cam = Camera.main;
+            var selectedObjects = new List<GameObject>();
+
+            foreach (var obj in currentInstantiatedObjects)
+            {
+                if (obj == null || obj.isDeleted || !obj.gameObject.activeSelf)
+                    continue;
+
+                // Filter by bulk selection mode
+                switch (currentBulkSelectionMode)
+                {
+                    case BulkSelectionMode.ObjectsOnly:
+                        if (obj is LE_Waypoint) continue;
+                        break;
+                    case BulkSelectionMode.WaypointsAndObjectsWithWaypoints:
+                        if (!(obj is LE_Waypoint) && (obj.waypoints == null || obj.waypoints.Count == 0))
+                            continue;
+                        break;
+                }
+
+                // Get all renderers for this object
+                var renderers = obj.gameObject.GetComponentsInChildren<Renderer>(true);
+                if (renderers.Length == 0) continue;
+
+                // Frustum culling first
+                Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(cam);
+                Bounds? combinedBounds = null;
+                foreach (var renderer in renderers)
+                {
+                    if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
+                        continue;
+                    if (combinedBounds == null)
+                        combinedBounds = renderer.bounds;
+                    else
+                        combinedBounds.Value.Encapsulate(renderer.bounds);
+                }
+                if (combinedBounds == null || !GeometryUtility.TestPlanesAABB(frustumPlanes, combinedBounds.Value))
+                    continue;
+
+                // Sample mesh vertices and project to screen space
+                bool isInSelection = false;
+                foreach (var renderer in renderers)
+                {
+                    if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
+                        continue;
+
+                    MeshFilter meshFilter = renderer.GetComponent<MeshFilter>();
+                    if (meshFilter == null || meshFilter.sharedMesh == null)
+                        continue;
+
+                    Mesh mesh = meshFilter.sharedMesh;
+                    Transform transform = renderer.transform;
+                    Vector3[] vertices = mesh.vertices;
+
+                    // Sample vertices (use step for performance on large meshes)
+                    int step = Mathf.Max(1, vertices.Length / 100);
+                    for (int i = 0; i < vertices.Length; i += step)
+                    {
+                        Vector3 worldPos = transform.TransformPoint(vertices[i]);
+                        Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
+
+                        // Check if vertex is in front of camera and inside rectangle
+                        if (screenPos.z > 0 &&
+                            screenPos.x >= minX && screenPos.x <= maxX &&
+                            screenPos.y >= minY && screenPos.y <= maxY)
+                        {
+                            isInSelection = true;
+                            break;
+                        }
+                    }
+
+                    if (isInSelection)
+                        break;
+                }
+
+                if (isInSelection)
+                {
+                    selectedObjects.Add(obj.gameObject);
+                }
+            }
+
+            if (selectedObjects.Count == 0)
+            {
+                SetSelectedObj(null);
+            }
+            else if (selectedObjects.Count == 1)
+            {
+                SetSelectedObj(selectedObjects[0]);
+            }
+            else
+            {
+                SetMultipleObjectsAsSelected(selectedObjects);
+            }
+        }
+        #endregion
+
+        #region Grid
         void UpdateGridCenter()
         {
             // Center grid on all objects, or at (0, gridHeight, 0) if none
@@ -1636,6 +1638,7 @@ namespace FS_LevelEditor.Editor
         {
             return gridSize;
         }
+        #endregion
 
         void PreviewObject()
         {
