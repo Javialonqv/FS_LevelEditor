@@ -68,6 +68,8 @@ namespace FS_LevelEditor.Editor
         #endregion
 
         #region Object Placement
+        const string SNAP_TRIGGERS_NAME = "StaticPos";
+
         Vector3 previewRotationOffsetEuler = Vector3.zero;
         Vector3? lastHittenNormalByPreviewRay = null;
         GameObject currentHittenSnapTrigger = null;
@@ -1642,7 +1644,7 @@ namespace FS_LevelEditor.Editor
             hits.Sort((hit1, hit2) => hit1.distance.CompareTo(hit2.distance));
             bool snapWithTrigger = false;
             RaycastHit rayToUseWithSnap = new RaycastHit();
-            bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+            bool theyAreAllSnapTriggers = hits.All(hit => hit.collider.gameObject.name.StartsWith(SNAP_TRIGGERS_NAME));
             Quaternion baseRotation = previewObjectToBuildObj ? previewObjectToBuildObj.transform.rotation : Quaternion.identity;
 
             // Check if grid plane should take priority
@@ -1685,25 +1687,25 @@ namespace FS_LevelEditor.Editor
                 // Handle snap triggers first
                 if (hits.Count == 1 || theyAreAllSnapTriggers)
                 {
-                    if (hits[0].collider.gameObject.name.StartsWith("StaticPos"))
+                    if (hits[0].collider.gameObject.name.StartsWith(SNAP_TRIGGERS_NAME))
                     {
                         if (currentObjectToBuildType.HasValue && CanUseCaughtSnapToGridTrigger(currentObjectToBuildType.Value, hits[0].collider.gameObject))
                         {
                             snapWithTrigger = true;
                             rayToUseWithSnap = hits[0];
                         }
-                        hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+                        hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith(SNAP_TRIGGERS_NAME));
                     }
                     else
                     {
-                        hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+                        hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith(SNAP_TRIGGERS_NAME));
                     }
                 }
                 else
                 {
                     foreach (var hit in hits.ToList())
                     {
-                        if (hit.collider.gameObject.name.StartsWith("StaticPos") && Input.GetKey(KeyCode.LeftControl))
+                        if (hit.collider.gameObject.name.StartsWith(SNAP_TRIGGERS_NAME) && Input.GetKey(KeyCode.LeftControl))
                         {
                             if (currentObjectToBuildType.HasValue && CanUseCaughtSnapToGridTrigger(currentObjectToBuildType.Value, hit.collider.gameObject))
                             {
@@ -1714,7 +1716,7 @@ namespace FS_LevelEditor.Editor
                         }
                         else
                         {
-                            hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith("StaticPos"));
+                            hits.RemoveAll(hit => hit.collider.gameObject.name.StartsWith(SNAP_TRIGGERS_NAME));
                             break;
                         }
                     }
@@ -2673,7 +2675,7 @@ namespace FS_LevelEditor.Editor
                     if (hitIsFromTheCurrentSelectedObj) continue;
                     #endregion
 
-                    if (hit.collider.gameObject.name.StartsWith("StaticPos"))
+                    if (hit.collider.gameObject.name.StartsWith(SNAP_TRIGGERS_NAME))
                     {
                         #region Skip trigger if it's from the current selected object
                         bool triggerIsFromTheCurrentSelectedObj = false;
