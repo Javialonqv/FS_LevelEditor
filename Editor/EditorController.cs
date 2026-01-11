@@ -468,8 +468,7 @@ namespace FS_LevelEditor.Editor
 
             #region Select Object
             // For object selection...
-            if (Input.GetMouseButtonDown(0) && currentMode == Mode.Selection &&
-                !Utils.IsMouseOverUIElement() && !IsCurrentState(EditorState.SNAPPING_TO_GRID))
+            if (Input.GetMouseButtonDown(0) && !Input.GetMouseButton(1) && currentMode == Mode.Selection && !Utils.IsMouseOverUIElement() && !IsCurrentState(EditorState.SNAPPING_TO_GRID))
             {
                 // Don't handle selection if we're starting to use gizmo
                 if (GetCollidingWithAnArrow() == GizmosArrow.None)
