@@ -88,30 +88,30 @@ namespace FS_LevelEditor.Editor
      if (Input.GetMouseButtonUp(2) && currentCameraMove == CameraMove.MOUSE_DRAG) currentCameraMove = CameraMove.NONE;
  #endregion
 
-  // Camera speed can be changed at any time
+            // Camera speed can be changed at any time
             ManageMoveSpeed();
 
-   if (currentCameraMove == CameraMove.NORMAL)
+            if (currentCameraMove == CameraMove.NORMAL)
             {
-   Cursor.lockState = CursorLockMode.Locked;
-         Cursor.visible = false;
-       RotateCamera();
-       MoveCamera();
-   }
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                RotateCamera();
+                MoveCamera();
+            }
             else if (currentCameraMove == CameraMove.MOUSE_DRAG)
             {
-         MoveCameraWithMouseDrag();
+                MoveCameraWithMouseDrag();
             }
-   else
-         {
-    Cursor.lockState = CursorLockMode.None;
-             Cursor.visible = true;
-            }
-            
-   if (currentCameraMove != CameraMove.MOUSE_DRAG)
+            else
             {
-      ManageDownAndUp();
- }
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+
+            if (currentCameraMove != CameraMove.MOUSE_DRAG)
+            {
+                ManageDownAndUp();
+            }
         }
         void MoveCamera()
         {
@@ -134,36 +134,38 @@ namespace FS_LevelEditor.Editor
                     moveSpeed += SPEED_CHANGE_RATE;
                     moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
                     Logger.DebugLog("New move speed: " + moveSpeed);
-    
-     // Show notification
-     if (NotificationSystem.Instance != null)
-        {
-     NotificationSystem.Instance.ShowNotification($"Camera speed: {moveSpeed:0.###}", "WhiteSquare");
-      }
-       }
-            else if (scrollDelta < 0)
-            {
-                moveSpeed -= SPEED_CHANGE_RATE;
-                moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
-                Logger.DebugLog("New move speed: " + moveSpeed);
-         
-           // Show notification
-if (NotificationSystem.Instance != null)
-   {
-      NotificationSystem.Instance.ShowNotification($"Camera speed: {moveSpeed:0.###}", "WhiteSquare");
-              }
-    }
-   }
-            // Restore Shift speed doubling logic
-   if (Input.GetKey(KeyCode.LeftShift))
-            {
-       downAndUpSpeed = moveSpeed * 2f;
+
+                    // Show notification
+                    if (NotificationSystem.Instance != null)
+                    {
+                        NotificationSystem.Instance.ShowNotification($"Camera speed: {moveSpeed:0.###}", "WhiteSquare");
+                    }
+                }
+                else if (scrollDelta < 0)
+                {
+                    moveSpeed -= SPEED_CHANGE_RATE;
+                    moveSpeed = Mathf.Clamp(moveSpeed, MIN_MOVE_SPEED, MAX_MOVE_SPEED);
+                    Logger.DebugLog("New move speed: " + moveSpeed);
+
+                    // Show notification
+                    if (NotificationSystem.Instance != null)
+                    {
+                        NotificationSystem.Instance.ShowNotification($"Camera speed: {moveSpeed:0.###}", "WhiteSquare");
+                    }
+                }
+
+                EditorUIManager.Instance.UpdateStatsLabel();
             }
-      else
-       {
+            // Restore Shift speed doubling logic
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                downAndUpSpeed = moveSpeed * 2f;
+            }
+            else
+            {
                 downAndUpSpeed = moveSpeed;
-         }
-    }
+            }
+        }
 
         void MoveCameraWithMouseDrag()
         {
