@@ -2221,16 +2221,18 @@ namespace FS_LevelEditor.Editor
                 centeredPosition += obj.transform.position;
             centeredPosition /= filtered.Count;
             multipleSelectedObjsParent.transform.position = centeredPosition;
-            multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
+            if (!isForUndo) multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
 
             currentSelectedObjects = new List<GameObject>();
             foreach (var obj in filtered)
             {
                 var leObj = obj.GetComponent<LE_Object>();
-                leObj.SetObjectColor(LE_Object.LEObjectContext.SELECT);
+
                 obj.transform.parent = multipleSelectedObjsParent.transform;
-                currentSelectedObjects.Add(obj);
+                leObj.SetObjectColor(LE_Object.LEObjectContext.SELECT);
                 leObj.OnSelect();
+
+                currentSelectedObjects.Add(obj);
             }
 
             multipleObjectsSelected = true;
