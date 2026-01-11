@@ -333,7 +333,7 @@ namespace FS_LevelEditor.Editor
                 EditorUIManager.IsCurrentUIContext(EditorUIContext.TEXT_EDITOR)) return;
 
             #region Gizmos Arrows Hover Color Feedback
-            if (currentMode == Mode.Selection && currentSelectedObj && gizmosRoot.activeSelf && !Input.GetMouseButton(0))
+            if (currentMode == Mode.Selection && currentSelectedObj && gizmosRoot.activeSelf && !Input.GetMouseButton(0) && !Input.GetMouseButton(1))
             {
                 GizmosArrow hoveredArrow = gizmo.GetHoveredArrow(out _);
                 if (hoveredArrow != GizmosArrow.None)
@@ -345,7 +345,7 @@ namespace FS_LevelEditor.Editor
                     gizmo.UnhighlightAllArrows();
                 }
             }
-            else if (gizmosRoot.activeSelf && Input.GetMouseButton(0))
+            else if (gizmosRoot.activeSelf && Input.GetMouseButton(0) && !Input.GetMouseButton(1))
             {
                 // Keep highlighting the current arrow being dragged
                 if (collidingArrow != GizmosArrow.None)
@@ -386,7 +386,7 @@ namespace FS_LevelEditor.Editor
             #endregion
 
             // When click, check if it's clicking a gizmos arrow.
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && !Input.GetMouseButton(1))
             {
                 collidingArrow = GetCollidingWithAnArrow();
             }
