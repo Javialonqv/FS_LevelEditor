@@ -61,8 +61,7 @@ namespace FS_LevelEditor.Editor.UI
 		UIButtonPatcher bulkPreviousButtonObj, bulkNextButtonObj;
 		UILabel bulkSelectionLabel;
 
-		public UILabel cameraSpeedLabel;
-		public UILabel gridSizeLabel;
+		public UILabel statsLabel;
 
         public EditorUIManager(IntPtr ptr) : base(ptr) { }
 
@@ -89,9 +88,9 @@ namespace FS_LevelEditor.Editor.UI
 			{
 				hittenTargetObjPanel.SetActive(!EditorCameraMovement.isRotatingCamera && IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ));
 			}
-		}
+        }
 
-		void SetupEditorUI()
+        void SetupEditorUI()
 		{
 			GetReferences();
 
@@ -126,7 +125,7 @@ namespace FS_LevelEditor.Editor.UI
 			// Create the notification system
 			NotificationSystem.Create(editorUIParent.transform);
 
-            CreateStatsLabels();
+            CreateStatsLabel();
 
             // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
@@ -267,36 +266,6 @@ namespace FS_LevelEditor.Editor.UI
 			bulkSelectionPanel.SetActive(true);
 		}
 
-        void CreateStatsLabels()
-        {
-            // Create camera speed label
-            cameraSpeedLabel = NGUI_Utils.CreateLabel(
-                editorUIParent.transform,
-                new Vector3(0f, -470f, 0f),
-                new Vector3Int(400, 30, 0),
-                "Camera Speed: 0",
-                NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center
-            );
-            cameraSpeedLabel.fontSize = 24;
-            cameraSpeedLabel.color = Color.white;
-            cameraSpeedLabel.name = "CameraSpeedLabel";
-            cameraSpeedLabel.gameObject.SetActive(false); // Hidden by default
-
-            // Create grid size label
-            gridSizeLabel = NGUI_Utils.CreateLabel(
-                editorUIParent.transform,
-                new Vector3(0f, -504f, 0f),
-                new Vector3Int(400, 30, 0),
-                "Grid Size: 0",
-                NGUIText.Alignment.Center,
-                UIWidget.Pivot.Center
-            );
-            gridSizeLabel.fontSize = 24;
-            gridSizeLabel.color = Color.white;
-            gridSizeLabel.name = "GridSizeLabel";
-            gridSizeLabel.gameObject.SetActive(false); // Hidden by default
-        }
         void SwitchToPreviousBulkSelectionMode()
 		{
 			var modes = (BulkSelectionMode[])Enum.GetValues(typeof(BulkSelectionMode));
@@ -406,8 +375,36 @@ namespace FS_LevelEditor.Editor.UI
 			else { SetEditorUIContext(EditorUIContext.NORMAL); }
 		}
 
+        void CreateStatsLabel()
+        {
+            // Create grid size label
+            statsLabel = NGUI_Utils.CreateLabel(
+                editorUIParent.transform,
+                new Vector3(0f, -540f, 0f),
+                new Vector3Int(400, 90, 0),
+                "Stats",
+                NGUIText.Alignment.Center,
+                UIWidget.Pivot.Bottom
+            );
+            statsLabel.fontSize = 22;
+            statsLabel.color = Color.white;
+            statsLabel.name = "StatsLabel";
 
-		public void ShowPause()
+			UpdateStatsLabel();
+        }
+		public void UpdateStatsLabel()
+		{
+			StringBuilder stats = new StringBuilder();
+
+			stats.AppendLine($"Camera Speed: {EditorCameraMovement.Instance.moveSpeed:0.###}");
+			stats.AppendLine($"Grid Size: {EditorController.Instance.GetGridSize():0.###}");
+			stats.AppendLine("Waypoint Rotation: " + (EditorController.Instance.waypointRotation ? "[c][00FF00]Enabled[-][/c]" : "[c][FF0000]Disabled[-][/c]"));
+
+			statsLabel.text = stats.ToString();
+		}
+
+
+        public void ShowPause()
 		{
 			// Disable the editor UI and enable the navigation bar.
 			editorUIParent.SetActive(false);
@@ -522,8 +519,7 @@ namespace FS_LevelEditor.Editor.UI
 			Destroy(editorUIParent);
 			Destroy(pauseMenu.GetChild("SavingLevelInPauseMenu"));
 
-			if (cameraSpeedLabel != null) Destroy(cameraSpeedLabel.gameObject);
-			if (gridSizeLabel != null) Destroy(gridSizeLabel.gameObject);
+			if (statsLabel) Destroy(statsLabel.gameObject);
 
 			Logger.Log("LE UI deleted!");
 		}
@@ -537,9 +533,7 @@ namespace FS_LevelEditor.Editor.UI
 			currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			nextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			previousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
-            bool shouldShowStats = context == EditorUIContext.NORMAL && EditorController.Instance.statsLabelsVisible;
-            if (cameraSpeedLabel != null) cameraSpeedLabel.gameObject.SetActive(shouldShowStats);
-            if (gridSizeLabel != null) gridSizeLabel.gameObject.SetActive(shouldShowStats);
+            statsLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
             if (context == EditorUIContext.HELP_PANEL)
 			{
 				helpPanel.SetActive(true);
@@ -664,8 +658,7 @@ namespace FS_LevelEditor.Editor.UI
 			currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			nextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
 			previousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			if (cameraSpeedLabel != null) cameraSpeedLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			if (gridSizeLabel != null) gridSizeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
+            statsLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
 
 			previousUIContext = currentUIContext;
 			currentUIContext = context;

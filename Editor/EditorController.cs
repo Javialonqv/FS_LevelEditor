@@ -122,7 +122,6 @@ namespace FS_LevelEditor.Editor
         private const float minDragDistance = 5f; // pixels
         private GameObject selectionBox;
         private UISprite selectionBoxSprite;
-        public bool statsLabelsVisible = false;
         BulkSelectionMode currentBulkSelectionMode = BulkSelectionMode.Everything;
         #endregion
 
@@ -150,6 +149,7 @@ namespace FS_LevelEditor.Editor
         private bool _isInitialized = false;
 
         private bool lightingEnabled = true;
+        public bool waypointRotation = true;
         #endregion
 
         // Misc?
@@ -611,18 +611,6 @@ namespace FS_LevelEditor.Editor
             // If the user's typing and then he uses an arrow key to navigate to another character of the field... well... the arrow also moves the object LOL.
             // We need to avoid that.
             if (!Utils.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
-
-            // Update camera speed and grid size labels
-            if (statsLabelsVisible && EditorUIManager.Instance != null &&
-                EditorUIManager.Instance.cameraSpeedLabel != null &&
-                EditorUIManager.Instance.gridSizeLabel != null)
-            {
-                float camSpeed = FS_LevelEditor.Editor.EditorCameraMovement.Instance != null ?
-                    FS_LevelEditor.Editor.EditorCameraMovement.Instance.moveSpeed : 0f;
-                float gridSizeVal = GetGridSize();
-                EditorUIManager.Instance.cameraSpeedLabel.text = $"Camera Speed: {camSpeed:0.###}";
-                EditorUIManager.Instance.gridSizeLabel.text = $"Grid Size: {gridSizeVal:0.###}";
-            }
         }
 
         void LateUpdate()
@@ -793,17 +781,12 @@ namespace FS_LevelEditor.Editor
             {
                 ToggleLighting();
             }
-            // 7: Show/Hide some starts.
-            if (EditorKeybinds.ToggleStatsVisibility)
+            // 7: Toggle waypoints rotation.
+            if (EditorKeybinds.ToggleWaypointRotation)
             {
-                statsLabelsVisible = !statsLabelsVisible;
-                if (EditorUIManager.Instance != null)
-                {
-                    if (EditorUIManager.Instance.cameraSpeedLabel != null)
-                        EditorUIManager.Instance.cameraSpeedLabel.gameObject.SetActive(statsLabelsVisible);
-                    if (EditorUIManager.Instance.gridSizeLabel != null)
-                        EditorUIManager.Instance.gridSizeLabel.gameObject.SetActive(statsLabelsVisible);
-                }
+                waypointRotation = !waypointRotation;
+
+                EditorUIManager.Instance.UpdateStatsLabel();
             }
             #endregion
 
@@ -944,6 +927,8 @@ namespace FS_LevelEditor.Editor
                         DecreaseGridSize(); // Finer
                     else if (scrollDelta > 0)
                         IncreaseGridSize(); // Coarser
+
+                    EditorUIManager.Instance.UpdateStatsLabel();
                 }
                 if (EditorKeybinds.ChangeGridHeight(out scrollDelta))
                 {
@@ -1166,7 +1151,7 @@ namespace FS_LevelEditor.Editor
                 {
                     Quaternion upright = Quaternion.identity;
                     StartRotationCoroutine(targetObj, oldRotation, upright);
-                    RotateWaypointsWithObject(targetObj, oldRotation, upright);
+                    //RotateWaypointsWithObject(targetObj, oldRotation, upright);
                     return;
                 }
 
@@ -1174,19 +1159,19 @@ namespace FS_LevelEditor.Editor
                 {
                     delta = Quaternion.AngleAxis(angleStep, Vector3.up);
                     StartRotationCoroutine(targetObj, oldRotation, delta * oldRotation);
-                    RotateWaypointsWithObject(targetObj, oldRotation, delta * oldRotation);
+                    //RotateWaypointsWithObject(targetObj, oldRotation, delta * oldRotation);
                 }
                 else if (rotateX)
                 {
                     delta = Quaternion.AngleAxis(angleStep, Vector3.right);
                     StartRotationCoroutine(targetObj, oldRotation, oldRotation * delta);
-                    RotateWaypointsWithObject(targetObj, oldRotation, oldRotation * delta);
+                    //RotateWaypointsWithObject(targetObj, oldRotation, oldRotation * delta);
                 }
                 else if (rotateZ)
                 {
                     delta = Quaternion.AngleAxis(angleStep, Vector3.forward);
                     StartRotationCoroutine(targetObj, oldRotation, oldRotation * delta);
-                    RotateWaypointsWithObject(targetObj, oldRotation, oldRotation * delta);
+                    //RotateWaypointsWithObject(targetObj, oldRotation, oldRotation * delta);
                 }
             }
         }
@@ -1237,6 +1222,8 @@ namespace FS_LevelEditor.Editor
         }
         IEnumerator SmoothRotate(GameObject obj, Quaternion oldRotation, Quaternion newRotation)
         {
+            if (!waypointRotation) AttachWaypointsFromObject(obj, false);
+
             // Adaptive duration based on angle
             float angle = Quaternion.Angle(oldRotation, newRotation);
             float degreesPerSecond = 720f;
@@ -1273,8 +1260,10 @@ namespace FS_LevelEditor.Editor
             {
                 SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(obj.transform);
                 RegisterLEAction(LEAction.LEActionType.RotateObject, obj, multipleObjectsSelected,
-                                 null, null, oldRotation, newRotation);
+                                 null, null, oldRotation, newRotation, waypointRotation: waypointRotation);
             }
+
+            if (!waypointRotation) AttachWaypointsFromObject(obj, true);
 
             rotationCoroutine = null;
         }
@@ -1308,6 +1297,35 @@ namespace FS_LevelEditor.Editor
                     // Add delta to current waypoint rotation
                     Vector3 newEuler = oldEuler + deltaEuler;
                     t.localEulerAngles = newEuler;
+                }
+            }
+        }
+
+        public void AttachWaypointsFromObject(GameObject mainObj, bool attach)
+        {
+            if (mainObj == multipleSelectedObjsParent)
+            {
+                foreach (var obj in currentSelectedObjects)
+                {
+                    foreach (var support in obj.GetComponents<WaypointSupport>())
+                    {
+                        foreach (var waypoint in support.spawnedWaypoints)
+                        {
+                            waypoint.transform.parent = attach ? waypoint.objectParent : null;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (!mainObj.TryGetComponent<LE_Object>(out _)) return;
+
+                foreach (var support in mainObj.GetComponents<WaypointSupport>())
+                {
+                    foreach (var waypoint in support.spawnedWaypoints)
+                    {
+                        waypoint.transform.parent = attach ? waypoint.objectParent : null;
+                    }
                 }
             }
         }
@@ -2779,12 +2797,13 @@ namespace FS_LevelEditor.Editor
         }
 
         public void RegisterLEAction(LEAction.LEActionType type, GameObject targetObj, bool forMultipleObjs, Vector3? oldPos = null, Vector3? newPos = null,
-            Quaternion? oldRot = null, Quaternion? newRot = null, Vector3? oldScale = null, Vector3? newScale = null)
+            Quaternion? oldRot = null, Quaternion? newRot = null, Vector3? oldScale = null, Vector3? newScale = null, bool waypointRotation = true)
         {
             if (!targetObj) return;
 
             currentExecutingAction = new LEAction();
             currentExecutingAction.forMultipleObjects = forMultipleObjs;
+            currentExecutingAction.waypointRotation = waypointRotation;
 
             currentExecutingAction.actionType = type;
 
@@ -3212,6 +3231,7 @@ namespace FS_LevelEditor.Editor
         }
 
         public bool forMultipleObjects;
+        public bool waypointRotation;
 
         public GameObject targetObj;
         public List<GameObject> targetObjs;
@@ -3282,14 +3302,21 @@ namespace FS_LevelEditor.Editor
                 editor.SetMultipleObjectsAsSelected(null); // Not needed (I think) but looks good for when reading the code LOL.
                 editor.multipleSelectedObjsParent.transform.localRotation = newRot; // Set to the newest rotation.
                 editor.SetMultipleObjectsAsSelected(targetObjs, true);
+
+                if (!waypointRotation) editor.AttachWaypointsFromObject(editor.multipleSelectedObjsParent, false);
                 // Rotate the parent so the whole selection is rotated too.
                 editor.multipleSelectedObjsParent.transform.localRotation = oldRot;
+                if (!waypointRotation) editor.AttachWaypointsFromObject(editor.multipleSelectedObjsParent, true);
 
                 SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(editor.multipleSelectedObjsParent.transform);
             }
             else
             {
+                if (!waypointRotation) editor.AttachWaypointsFromObject(targetObj, false);
                 targetObj.transform.localRotation = oldRot;
+                if (!waypointRotation) editor.AttachWaypointsFromObject(targetObj, true);
+
+
                 // In case the selected object is already the object to undo, update its global attributes manually:
                 if (editor.currentSelectedObj == targetObj)
                 {

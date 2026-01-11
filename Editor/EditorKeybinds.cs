@@ -16,7 +16,7 @@ namespace FS_LevelEditor.Editor
         public static bool ToggleGlobalGizmos => Input.GetKeyDown(KeyCode.Alpha4);                                          // 4
         public static bool ShowLevelMetadataPopup => Input.GetKeyDown(KeyCode.Alpha5) && !Input.GetKey(KeyCode.LeftShift);  // 5
         public static bool ToggleEditorLighting => Input.GetKeyDown(KeyCode.Alpha6);                                        // 6
-        public static bool ToggleStatsVisibility => Input.GetKeyDown(KeyCode.Alpha7);                                       // 7
+        public static bool ToggleWaypointRotation => Input.GetKeyDown(KeyCode.Alpha7);                                       // 7
 
         // In-Editor shortcuts (object manipulation).
         public static bool DuplicateCurrentObject => Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.D);
