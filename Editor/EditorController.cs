@@ -702,60 +702,19 @@ namespace FS_LevelEditor.Editor
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.Alpha7))
-            {
-                statsLabelsVisible = !statsLabelsVisible;
-                if (EditorUIManager.Instance != null)
-                {
-                    if (EditorUIManager.Instance.cameraSpeedLabel != null)
-                        EditorUIManager.Instance.cameraSpeedLabel.gameObject.SetActive(statsLabelsVisible);
-                    if (EditorUIManager.Instance.gridSizeLabel != null)
-                        EditorUIManager.Instance.gridSizeLabel.gameObject.SetActive(statsLabelsVisible);
-                }
-            }
-
-            // --- GRID SHORTCUTS ---
-            float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
-            if (!Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.RightAlt))
-            {
-                if (Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
-                {
-                    if (scrollDelta < 0)
-                        DecreaseGridSize(); // Finer
-                    else if (scrollDelta > 0)
-                        IncreaseGridSize(); // Coarser
-                }
-                // MouseWheel: Change grid height
-                if (!Input.GetKey(KeyCode.LeftControl) && Mathf.Abs(scrollDelta) > 0.0001f)
-                {
-                    AdjustGridHeight(scrollDelta, Input.GetKey(KeyCode.LeftShift));
-                }
-            }
-            // G: Toggle grid visibility
-            if (Input.GetKeyDown(KeyCode.G) && !Input.GetKey(KeyCode.LeftShift))
-            {
-                SetGridVisible(!gridVisible);
-            }
-            // Shift+G: Toggle grid enabled AND visibility
-            if (Input.GetKeyDown(KeyCode.G) && Input.GetKey(KeyCode.LeftShift))
-            {
-                bool newState = !gridEnabled;
-                SetGridEnabled(newState);
-                SetGridVisible(newState);
-            }
-
-            // Shortcuts for changing between editor modes.
-            if (Input.GetKeyDown(KeyCode.Alpha1))
+            #region Number Keys Shortcuts
+            // 1: Enter building mode.
+            if (EditorKeybinds.BuildingMode)
             {
                 ChangeMode(Mode.Building);
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            // 2: Enter selection mode.
+            else if (EditorKeybinds.SelectionMode)
             {
                 ChangeMode(Mode.Selection);
             }
-
-            // Shortcut to show all waypoints.
-            if (Input.GetKeyDown(KeyCode.Alpha3))
+            // 3: Show/Hide all level waypoints.
+            if (EditorKeybinds.ToggleWaypointsVisibility)
             {
                 showAllWaypoints = !showAllWaypoints;
                 if (multipleObjectsSelected)
@@ -807,9 +766,97 @@ namespace FS_LevelEditor.Editor
                     }
                 }
             }
+            // 4: Enable/disable global gizmos.
+            if (EditorKeybinds.ToggleGlobalGizmos && currentMode == Mode.Selection && currentSelectedObj != null)
+            {
+                globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
+                gizmo.SetRotation(globalGizmosArrowsEnabled ? Quaternion.identity : currentSelectedObj.transform.rotation);
 
-            // Shortcut for saving level data.
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S) && levelHasBeenModified)
+                // Show feedback to user
+                string mode = globalGizmosArrowsEnabled ? "Global" : "Local";
+                Utils.ShowCustomNotificationRed($"Switched to {mode} Gizmo Mode", 1.5f);
+            }
+            // 5: Exit existing level metadata.
+            if (EditorKeybinds.ShowLevelMetadataPopup)
+            {
+                if (SaveMetadataPopup.Instance != null)
+                {
+                    SaveMetadataPopup.Instance.ShowPopup();
+                }
+                else
+                {
+                    Logger.Error("SaveMetadataPopup.Instance is null! Cannot show save popup.");
+                }
+            }
+            // 6: Switch between Lit/Unlit lighting. EDITOR ONLY.
+            if (EditorKeybinds.ToggleEditorLighting)
+            {
+                ToggleLighting();
+            }
+            // 7: Show/Hide some starts.
+            if (EditorKeybinds.ToggleStatsVisibility)
+            {
+                statsLabelsVisible = !statsLabelsVisible;
+                if (EditorUIManager.Instance != null)
+                {
+                    if (EditorUIManager.Instance.cameraSpeedLabel != null)
+                        EditorUIManager.Instance.cameraSpeedLabel.gameObject.SetActive(statsLabelsVisible);
+                    if (EditorUIManager.Instance.gridSizeLabel != null)
+                        EditorUIManager.Instance.gridSizeLabel.gameObject.SetActive(statsLabelsVisible);
+                }
+            }
+            #endregion
+
+            #region In-Editor Shortcuts (Object Manipulation)
+            // Duplicate current selected object.
+            if (EditorKeybinds.DuplicateCurrentObject)
+            {
+                DuplicateSelectedObject();
+            }
+
+            // Select all objects in the level.
+            if (EditorKeybinds.SelectAllObjects && currentMode == Mode.Selection)
+            {
+                // Only select objects based on bulk selection mode, preserving active states
+                var objectsToSelect = new List<GameObject>(currentInstantiatedObjects.Count);
+                foreach (var obj in currentInstantiatedObjects)
+                {
+                    if (obj == null || obj.isDeleted)
+                        continue;
+
+                    if (obj.objectType == LE_Object.ObjectType.PLAYER_SPAWN)
+                        continue;
+
+                    switch (currentBulkSelectionMode)
+                    {
+                        case BulkSelectionMode.ObjectsOnly:
+                            if (obj is LE_Waypoint) continue;
+                            break;
+                        case BulkSelectionMode.WaypointsAndObjectsWithWaypoints:
+                            if (!(obj is LE_Waypoint) && (obj.waypoints == null || obj.waypoints.Count == 0))
+                                continue;
+                            break;
+                    }
+
+                    objectsToSelect.Add(obj.gameObject);
+                }
+
+                if (objectsToSelect.Count > 0)
+                    SetMultipleObjectsAsSelected(objectsToSelect);
+                else
+                    SetSelectedObj(null);
+            }
+
+            // Switch start spawn state for select object(s).
+            if (EditorKeybinds.ToggleStartSpawnState && currentSelectedObj)
+            {
+                SelectedObjPanel.Instance.setActiveAtStartToggle.Set(!SelectedObjPanel.Instance.setActiveAtStartToggle.isChecked);
+            }
+            #endregion
+
+            #region In-Editor Shortcuts
+            // Save level data.
+            if (EditorKeybinds.SaveLevel && levelHasBeenModified)
             {
                 // Show "Saving..." notification immediately
                 if (NotificationSystem.Instance != null)
@@ -843,102 +890,69 @@ namespace FS_LevelEditor.Editor
                 }
             }
 
-            // Key 5: Force show metadata popup (for editing existing metadata)
-            if (Input.GetKeyDown(KeyCode.Alpha5) && !Input.GetKey(KeyCode.LeftShift))
-            {
-                if (SaveMetadataPopup.Instance != null)
-                {
-                    SaveMetadataPopup.Instance.ShowPopup();
-                }
-                else
-                {
-                    Logger.Error("SaveMetadataPopup.Instance is null! Cannot show save popup.");
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.Alpha6))
-            {
-                ToggleLighting();
-            }
-            // Shortcut for duplicating current selected object.
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.D))
-            {
-                DuplicateSelectedObject();
-            }
-
-            ManageObjectRotationShortcuts();
-
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P) && !enteringPlayMode)
+            // Enter playmode.
+            if (EditorKeybinds.EnterPlaymode && !enteringPlayMode)
             {
                 // Save data automatically.
                 LevelData.SaveLevelData(levelName, levelFileNameWithoutExtension);
 
                 EnterPlayMode();
             }
+            #endregion
 
-            // Shortcut for hide/show category button in UI.
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H) && currentMode == Mode.Building)
-            {
-                EditorObjectsToBuildUI.Instance.HideOrShowCategoryButtons();
-            }
-
-            // Shortcut for toggling gizmo mode (4 key)
-            if (Input.GetKeyDown(KeyCode.Alpha4) && currentMode == Mode.Selection && currentSelectedObj != null)
-            {
-                globalGizmosArrowsEnabled = !globalGizmosArrowsEnabled;
-                gizmo.SetRotation(globalGizmosArrowsEnabled ? Quaternion.identity : currentSelectedObj.transform.rotation);
-
-                // Show feedback to user
-                string mode = globalGizmosArrowsEnabled ? "Global" : "Local";
-                Utils.ShowCustomNotificationRed($"Switched to {mode} Gizmo Mode", 1.5f);
-            }
-
-            if (Input.GetKeyDown(KeyCode.Space) && currentSelectedObj)
-            {
-                SelectedObjPanel.Instance.setActiveAtStartToggle.Set(!SelectedObjPanel.Instance.setActiveAtStartToggle.isChecked);
-            }
-
-            // Shortcut to show keybinds help panel.
-            if (Input.GetKeyDown(KeyCode.F1))
+            #region UI Shortcuts
+            // Show/Hide Help Panel.
+            if (EditorKeybinds.ToggleHelpPanel)
             {
                 EditorUIManager.Instance.ShowOrHideHelpPanel();
             }
 
-            if (Input.GetKeyDown(KeyCode.O))
+            // Show/Hide category buttons in building UI.
+            if (EditorKeybinds.HideOrShowCategoryButtons && currentMode == Mode.Building)
+            {
+                EditorObjectsToBuildUI.Instance.HideOrShowCategoryButtons();
+            }
+
+            // Show/Hide Global Properties Panel.
+            if (EditorKeybinds.ToggleGlobalProperties)
             {
                 GlobalPropertiesPanel.Instance.ShowOrHideGlobalPropertiesPanel();
             }
+            #endregion
 
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.A) && currentMode == Mode.Selection)
+            #region Grid Shortcuts
+            // Toggle grid visibility.
+            if (EditorKeybinds.ToggleGridVisibility)
             {
-                // Only select objects based on bulk selection mode, preserving active states
-                var objectsToSelect = new List<GameObject>(currentInstantiatedObjects.Count);
-                foreach (var obj in currentInstantiatedObjects)
-                {
-                    if (obj == null || obj.isDeleted)
-                        continue;
-
-                    if (obj.objectType == LE_Object.ObjectType.PLAYER_SPAWN)
-                        continue;
-
-                    switch (currentBulkSelectionMode)
-                    {
-                        case BulkSelectionMode.ObjectsOnly:
-                            if (obj is LE_Waypoint) continue;
-                            break;
-                        case BulkSelectionMode.WaypointsAndObjectsWithWaypoints:
-                            if (!(obj is LE_Waypoint) && (obj.waypoints == null || obj.waypoints.Count == 0))
-                                continue;
-                            break;
-                    }
-
-                    objectsToSelect.Add(obj.gameObject);
-                }
-
-                if (objectsToSelect.Count > 0)
-                    SetMultipleObjectsAsSelected(objectsToSelect);
-                else
-                    SetSelectedObj(null);
+                SetGridVisible(!gridVisible);
             }
+
+            // Toggle grid enabled AND visibility
+            if (EditorKeybinds.ToggleGridState)
+            {
+                bool newState = !gridEnabled;
+                SetGridEnabled(newState);
+                SetGridVisible(newState);
+            }
+
+            // Adjust grid size/height.
+            if (EditorKeybinds.AllowedToAdjustGrid)
+            {
+                if (EditorKeybinds.ChangeGridSize(out float scrollDelta))
+                {
+                    if (scrollDelta < 0)
+                        DecreaseGridSize(); // Finer
+                    else if (scrollDelta > 0)
+                        IncreaseGridSize(); // Coarser
+                }
+                if (EditorKeybinds.ChangeGridHeight(out scrollDelta))
+                {
+                    AdjustGridHeight(scrollDelta, EditorKeybinds.AdjustGridSizePrecisly);
+                }
+            }
+            #endregion
+
+            ManageObjectRotationShortcuts();
         }
         void ManageMoveObjectShortcuts()
         {
