@@ -1,26 +1,26 @@
 /Keyboard_F1\ Open this menu.
 
-/Keyboard_Right Click\ (Hold) to rotate the editor camera.
+/Keyboard_Right Click\ Rotate the editor camera.
+/Keyboard_W\ /Keyboard_A\ /Keyboard_S\ /Keyboard_D\ + /Keyboard_Right Click\ Move/Rotate around the level scene.
+/Keyboard_E\ and /Keyboard_Q\ Move camera up and down.
+/Keyboard_Left Shift\ + /Keyboard_Right Click\ Move camera faster.
+/Keyboard_Left Alt\ + /Keyboard_Black_PositiveScrollWheel\ Increase camera move speed.
+/Keyboard_Left Alt\ + /Keyboard_Black_NegativeScrollWheel\ Decrease camera move speed.
 
-/Keyboard_W\ /Keyboard_A\ /Keyboard_S\ /Keyboard_D\ while pressing /Keyboard_Right Click\ to MOVE around the level scene.
-/Keyboard_Left Shift\ (Hold) while moving editor camera to move faster.
-/Keyboard_Left Control\ + /Keyboard_Black_PositiveScrollWheel\ or /Keyboard_Black_NegativeScrollWheel\ while /Keyboard_Right Click\ (Hold) to control the camera speed.
-/Keyboard_Q\ to move the editor camera up.
-/Keyboard_E\ to move the editor camera down.
+/Keyboard_Num 1\ Building mode.
+/Keyboard_Num 2\ Selection mode.
+/Keyboard_Num 3\ Toggle waypoint view.
+/Keyboard_Num 4\ Toggle local/global gizmos.
+/Keyboard_Num 5\ Show level metadata panel.
+/Keyboard_Num 6\ Toggle editor lighting.
+/Keyboard_Num 7\ Toggle editor stats.
 
-/Keyboard_Num 1\ to switch to building mode.
-/Keyboard_Num 2\ to switch to selection mode.
-/Keyboard_Num 3\ to toggle the object waypoints' visibility.
+/Keyboard_Left Click\ Use/Select.
+/Keyboard_Left Control\ + /Keyboard_Left Click\ Select multiple objects individually.
+/Keyboard_Left Shift\ + /Keyboard_Left Click\ (Hold) Bulk Selection.
 
-/Keyboard_Left Click\ to place/select/delete an object.
-/Keyboard_Left Control\ to snap to grid the object to build, before placing it.
-
-/Keyboard_Left Control\ + /Keyboard_Left Click\ to select multiple objects to edit.
-
-/Keyboard_R\ to rotate the selected object in the Y axis.
-/Keyboard_Left Shift\ + /Keyboard_R\ to rotate the selected object in the X axis.
-/Keyboard_Left Alt\ + /Keyboard_R\ to rotate the selected object in the Z axis.
-/Keyboard_Left Control\ + /Keyboard_R\ to reset the rotation of the selected object.
-/Keyboard_T\ + /Keyboard_R\ to rotate the selected object counter clockwise.
-
-/Keyboard_F\ (Hold) and select the white gizmos to snap to grid an already created object.
+/Keyboard_R\ Rotate object on the Y axis.
+/Keyboard_Left Shift\ + /Keyboard_R\ Rotate object on the X axis.
+/Keyboard_Left Alt\ + /Keyboard_R\ Rotate object on the Z axis.
+/Keyboard_Left Control\ + /Keyboard_R\ Reset object rotation.
+/Keyboard_T\ + /Keyboard_R\ Rotate object counter clockwise.
