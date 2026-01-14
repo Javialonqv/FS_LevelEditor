@@ -13,7 +13,7 @@
 /Keyboard_Num 4\ Toggle local/global gizmos.
 /Keyboard_Num 5\ Show level metadata panel.
 /Keyboard_Num 6\ Toggle editor lighting.
-/Keyboard_Num 7\ Toggle editor stats.
+/Keyboard_Num 7\ Toggle waypoint rotation.
 
 /Keyboard_Left Click\ Use/Select.
 /Keyboard_Left Control\ + /Keyboard_Left Click\ Select multiple objects individually.
