@@ -100,6 +100,9 @@ namespace FS_LevelEditor.Editor.UI
 			{ "InitialStateAuto", "InitialState" }, // InitialStateAuto also uses the InitialState loc key.
 			{ "InvertWithGravity", "InvertTextWithGravity" }, 
 			{ "ColorType", "ScreenColor" }, 
+			{ "DPS", "Damage" }, 
+			{ "MoveSpeed", "MovingSpeed" }, 
+			{ "CanUseTaser", "CanBeShotByTaser" }, 
 
 			// Yes, button options also here.
 			{ "NONE", "None_Mayus" },
