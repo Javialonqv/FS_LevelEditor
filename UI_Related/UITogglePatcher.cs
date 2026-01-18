@@ -44,7 +44,11 @@ namespace FS_LevelEditor.UI_Related
         {
             this.executeOnChange = executeOnChange;
             toggle.Set(newState);
-            this.executeOnChange = true;
+
+            // Re-enable after a small delay to avoid a bug where OnToggleChange() was called from an still unknown code, and onClick was executed when it shouldn't.
+            Utils.Invoke(() => {
+                this.executeOnChange = true;
+            }, 0.1f);
         }
     }
 }

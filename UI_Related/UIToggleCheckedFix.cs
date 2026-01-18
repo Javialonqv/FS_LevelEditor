@@ -11,16 +11,16 @@ namespace FS_LevelEditor.UI_Related
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UIToggleCheckedFix : MonoBehaviour
     {
-        UIToggle toggle;
+        UITogglePatcher toggle;
 
         void Awake()
         {
-            toggle = GetComponent<UIToggle>();
+            toggle = GetComponent<UITogglePatcher>();
         }
 
         void OnEnable()
         {
-            toggle.Set(toggle.isChecked);
+            toggle.Set(toggle.isChecked, false);
         }
     }
 }
