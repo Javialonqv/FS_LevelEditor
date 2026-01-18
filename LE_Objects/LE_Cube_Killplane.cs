@@ -14,14 +14,16 @@ namespace FS_LevelEditor
 	public class LE_Cube_Killplane : LE_Object
 	{
 		public bool Unauthorized;
-		void Awake()
-		{
-			properties = new Dictionary<string, object>
-			{
-				{ "IgnoreIfInHands", false }
-			};
-		}
-		public override void OnInstantiated(LEScene scene)
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
+            {
+                { "IgnoreIfInHands", false }
+            };
+        }
+
+        public override void OnInstantiated(LEScene scene)
 		{
 			if (scene == LEScene.Playmode)
 			{

@@ -37,17 +37,21 @@ namespace FS_LevelEditor
         {
             if (alreadyCalledAwake) return;
 
-            properties = new Dictionary<string, object>()
-            {
-                { "WaitTime", 0f }
-            };
-
             mainSupport = GetMainSupport();
 
             if (EditorController.Instance) CreateEditorLine();
 
             alreadyCalledAwake = true;
         }
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "WaitTime", 0f }
+            };
+        }
+
         void CreateEditorLine()
         {
             if (!editorLine)

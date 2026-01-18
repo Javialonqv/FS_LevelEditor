@@ -18,9 +18,9 @@ namespace FS_LevelEditor
         HealArea script;
         public Coroutine smallHealPatchCoroutine;
 
-        void Awake()
+        public static Dictionary<string, object> GetDefaultProperties()
         {
-            properties = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 { "HealValue", 3 },
                 { "HealInterval", .1f },

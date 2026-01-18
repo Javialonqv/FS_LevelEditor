@@ -28,21 +28,24 @@ namespace FS_LevelEditor
 			proximityRangeSphere = gameObject.GetChildAt("Mine/SphereRange/Proximity");
 			remoteRangeSphere = gameObject.GetChildAt("Mine/SphereRange/Remote");
 			sphereRange = remoteRangeSphere.transform.parent.gameObject;
-
-            properties = new Dictionary<string, object>()
-			{
-				{ "ActivateOnStart", true },
-				{ "InstaKill", false },
-                { "DamageThroughWalls", true },
-				{ "BreakWindows", false },
-                { "ExplosionDamage", 34 },
-				{ "ContactRadius", 3f },
-				{ "RemoteRadius", 1f },
-				{ "ProximityRadius", 5f },
-			};
 		}
 
-		public override void OnInstantiated(LEScene scene)
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "ActivateOnStart", true },
+                { "InstaKill", false },
+                { "DamageThroughWalls", true },
+                { "BreakWindows", false },
+                { "ExplosionDamage", 34 },
+                { "ContactRadius", 3f },
+                { "RemoteRadius", 1f },
+                { "ProximityRadius", 5f },
+            };
+        }
+
+        public override void OnInstantiated(LEScene scene)
 		{
 			if (scene == LEScene.Editor)
 			{

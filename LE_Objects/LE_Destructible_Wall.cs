@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Events;
+using static FS_LevelEditor.LE_Death_Trigger;
 
 namespace FS_LevelEditor
 {
@@ -19,11 +20,6 @@ namespace FS_LevelEditor
 
 		void Awake()
 		{
-			properties = new Dictionary<string, object>
-			{
-				{ "OnBreak", new List<LE_Event>() },
-				{ "Lifetime", 10f }
-			};
 			if(EditorController.Instance)
 			{
 				Transform debrisParent = gameObject.GetChildAt("Content/Debris").transform;
@@ -35,7 +31,16 @@ namespace FS_LevelEditor
 			}
 		}
 
-		public override void InitComponent()
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
+            {
+                { "Lifetime", 10f },
+                { "OnBreak", new List<LE_Event>() }
+            };
+        }
+
+        public override void InitComponent()
 		{
 			GameObject content = gameObject.GetChild("Content");
 			content.SetActive(false);

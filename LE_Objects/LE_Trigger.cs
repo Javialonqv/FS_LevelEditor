@@ -13,9 +13,9 @@ namespace FS_LevelEditor
 {
 	public enum TriggerMode
 	{
-		Once = 0,        // Default, can only be triggered once by player
-		Multiple = 1,    // Can be triggered multiple times by player
-		CubeOnly = 2     // Only triggered by cube
+		ONCE = 0,        // Default, can only be triggered once by player
+		MULTIPLE = 1,    // Can be triggered multiple times by player
+		CUBE_ONLY = 2     // Only triggered by cube
 	}
 
 	[MelonLoader.RegisterTypeInIl2Cpp]
@@ -24,17 +24,17 @@ namespace FS_LevelEditor
 		private bool hasBeenTriggered = false; // Track if trigger has been activated (for Once mode)
 		private HashSet<GameObject> cubesInTrigger = new HashSet<GameObject>(); // Track cubes currently in trigger
 
-		void Awake()
-		{
-			properties = new Dictionary<string, object>
-			{
-				{ "OnEnter", new List<LE_Event>() },
-				{ "OnExit", new List<LE_Event>() },
-				{ "TriggerMode", (int)TriggerMode.Once }  // Default to Once mode
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
+            {
+                { "TriggerMode", TriggerMode.ONCE },
+                { "OnEnter", new List<LE_Event>() },
+                { "OnExit", new List<LE_Event>() }
             };
-		}
+        }
 
-		public override void OnInstantiated(LEScene scene)
+        public override void OnInstantiated(LEScene scene)
 		{
 			if (scene == LEScene.Playmode)
 			{
@@ -109,7 +109,7 @@ namespace FS_LevelEditor
 		public void OnCubeEnter(GameObject cube)
 		{
 			TriggerMode mode = (TriggerMode)properties["TriggerMode"];
-			if (mode != TriggerMode.CubeOnly) return;
+			if (mode != TriggerMode.CUBE_ONLY) return;
 
 			cubesInTrigger.Add(cube);
 			eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnEnter"]);
@@ -119,7 +119,7 @@ namespace FS_LevelEditor
 		public void OnCubeExit(GameObject cube)
 		{
 			TriggerMode mode = (TriggerMode)properties["TriggerMode"];
-			if (mode != TriggerMode.CubeOnly) return;
+			if (mode != TriggerMode.CUBE_ONLY) return;
 
 			cubesInTrigger.Remove(cube);
 			eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnExit"]);
@@ -130,10 +130,10 @@ namespace FS_LevelEditor
             TriggerMode mode = (TriggerMode)properties["TriggerMode"];
 
             // Skip player triggers when in cube-only mode (cubes are handled by OnCubeEnter)
-            if (mode == TriggerMode.CubeOnly) return;
+            if (mode == TriggerMode.CUBE_ONLY) return;
 
             // Check if this is Once mode and already triggered
-            if (mode == TriggerMode.Once && hasBeenTriggered)
+            if (mode == TriggerMode.ONCE && hasBeenTriggered)
             {
                 // Special case: If this trigger creates an objective, check if the objective still exists
                 // If it doesn't exist (was failed/completed), allow re-triggering
@@ -148,12 +148,12 @@ namespace FS_LevelEditor
             }
 
             // For Once and Multiple modes, trigger the events
-            if ((mode == TriggerMode.Once && !hasBeenTriggered) || mode == TriggerMode.Multiple)
+            if ((mode == TriggerMode.ONCE && !hasBeenTriggered) || mode == TriggerMode.MULTIPLE)
             {
                 eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnEnter"]);
 
                 // Mark as triggered for Once mode
-                if (mode == TriggerMode.Once)
+                if (mode == TriggerMode.ONCE)
                 {
                     hasBeenTriggered = true;
                 }
@@ -189,11 +189,11 @@ namespace FS_LevelEditor
 			TriggerMode mode = (TriggerMode)properties["TriggerMode"];
 
 			// Skip player triggers when in cube-only mode (cubes are handled by OnCubeExit)
-			if (mode == TriggerMode.CubeOnly) return;
+			if (mode == TriggerMode.CUBE_ONLY) return;
 
 			// For Once and Multiple modes, trigger exit events
 			// Note: Exit events can still trigger even if OnEnter was already used in Once mode
-			if (mode == TriggerMode.Once || mode == TriggerMode.Multiple)
+			if (mode == TriggerMode.ONCE || mode == TriggerMode.MULTIPLE)
 			{
 				eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnExit"]);
 			}

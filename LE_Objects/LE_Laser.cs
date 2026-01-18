@@ -16,9 +16,9 @@ namespace FS_LevelEditor
     {
         Laser_H_Controller laser;
 
-        void Awake()
+        public static Dictionary<string, object> GetDefaultProperties()
         {
-            properties = new Dictionary<string, object>()
+            return new Dictionary<string, object>()
             {
                 { "ActivateOnStart", true },
                 { "InstaKill", false },

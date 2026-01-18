@@ -513,6 +513,28 @@ namespace FS_LevelEditor
             }
         }
 
+        public static bool CallStaticMethodIfExists(Type type, string methodName, out object result)
+        {
+            if (type == null)
+            {
+                result = null;
+                return false;
+            }
+
+            var flags = BindingFlags.Static
+                | BindingFlags.Public
+                | BindingFlags.NonPublic;
+
+            MethodInfo method = type.GetMethod(methodName, flags);
+            if (method != null)
+            {
+                result = method.Invoke(null, null);
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
         public static bool IsOverridingMethod(Type type, string methodName)
         {
             var flags = BindingFlags.Instance

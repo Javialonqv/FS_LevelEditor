@@ -32,7 +32,18 @@ namespace FS_LevelEditor
 
 		void Awake()
         {
-            properties = new Dictionary<string, object>()
+            wholeMesh = gameObject.GetChildAt("Content/Mesh");
+            greenMesh = gameObject.GetChildAt("Content/Mesh/GreenPlane");
+            redMesh = gameObject.GetChildAt("Content/Mesh/RedPlane");
+            screenText = gameObject.GetChildAt("Content/Content/Label/MainLabel").GetComponent<TextMeshPro>();
+
+            screenText.gameObject.AddComponent<ScaleScreenText>().relativeTo = transform;
+            screenText.gameObject.GetComponent<ScaleScreenText>().enabled = false; // Disabled by default.
+        }
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
             {
                 { "ColorType", ScreenColorType.CYAN },
                 { "InvisibleMesh", false },
@@ -45,14 +56,6 @@ namespace FS_LevelEditor
                 { "TextAlign", TextAlignmentOptions.Center },
                 { "Text", "<color=#FFFFFF>\n</color>" }
             };
-
-            wholeMesh = gameObject.GetChildAt("Content/Mesh");
-            greenMesh = gameObject.GetChildAt("Content/Mesh/GreenPlane");
-            redMesh = gameObject.GetChildAt("Content/Mesh/RedPlane");
-            screenText = gameObject.GetChildAt("Content/Content/Label/MainLabel").GetComponent<TextMeshPro>();
-
-            screenText.gameObject.AddComponent<ScaleScreenText>().relativeTo = transform;
-            screenText.gameObject.GetComponent<ScaleScreenText>().enabled = false; // Disabled by default.
         }
 
         public override void ObjectStart(LEScene scene)

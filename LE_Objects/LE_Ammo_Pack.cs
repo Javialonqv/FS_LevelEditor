@@ -15,15 +15,15 @@ namespace FS_LevelEditor
 	{
 		Ammo ammo;
 
-		void Awake()
-		{
-			properties = new Dictionary<string, object>()
-			{
-				{ "RespawnTime", 20f }
-			};
-		}
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+			return new Dictionary<string, object>()
+            {
+                { "RespawnTime", 20f }
+            };
+        }
 
-		public override void InitComponent()
+        public override void InitComponent()
 		{
 			gameObject.GetChild("Content").SetActive(false);
 			gameObject.GetChild("Content").tag = "AmmoPack";

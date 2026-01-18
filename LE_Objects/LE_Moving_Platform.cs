@@ -16,14 +16,6 @@ namespace FS_LevelEditor
 
         void Awake()
         {
-            properties = new Dictionary<string, object>()
-            {
-                { "ActivateOnStart", true },
-                { "MovementMode", WaypointMode.TRAVEL_BACK },
-                { "MoveSpeed", 5f },
-                { "waypoints", new List<WaypointData>() }
-            };
-
             if (EditorController.Instance)
             {
                 // Even thought MP RigidBody doesn't affect us in editor (in gravity), it causes a visual bug where the Content obj is misplaced.
@@ -32,6 +24,16 @@ namespace FS_LevelEditor
             }
         }
 
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "ActivateOnStart", true },
+                { "MovementMode", WaypointMode.TRAVEL_BACK },
+                { "MoveSpeed", 5f },
+                { "waypoints", new List<WaypointData>() }
+            };
+        }
 
         public override void OnInstantiated(LEScene scene)
         {

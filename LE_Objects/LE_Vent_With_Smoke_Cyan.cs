@@ -13,13 +13,16 @@ namespace FS_LevelEditor
 
 		void Awake()
 		{
-			properties = new Dictionary<string, object>()
-			{
-				{ "Particles", true }
-			};
-
 			particles = gameObject.GetChildAt("Content/Particles");
 		}
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "Particles", true }
+            };
+        }
 
         public override void OnInstantiated(LEScene scene)
         {

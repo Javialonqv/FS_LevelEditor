@@ -44,7 +44,7 @@ namespace FS_LevelEditor
         }
         static void ReadTranslations(string fileContent)
         {
-            translations = new Dictionary<string, List<string>>();
+            translations = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             languages = new List<string>();
 
             string[] lines = fileContent.Split('\n');

@@ -22,17 +22,20 @@ namespace FS_LevelEditor
 
         void Awake()
         {
-            properties = new Dictionary<string, object>()
+            leftPartRed = gameObject.GetChildAt("Content/Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
+            leftPartBlue = gameObject.GetChildAt("Content/Mesh/porte1/gauche").GetComponent<MeshRenderer>();
+            rightPartRed = gameObject.GetChildAt("Content/Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
+            rightPartBlue = gameObject.GetChildAt("Content/Mesh/porte1/droite").GetComponent<MeshRenderer>();
+        }
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
             {
                 { "IsAuto", false },
                 { "InitialState", InitialState.CLOSED },
                 { "InitialStateAuto", InitialStateAuto.LOCKED }
             };
-
-            leftPartRed = gameObject.GetChildAt("Content/Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
-            leftPartBlue = gameObject.GetChildAt("Content/Mesh/porte1/gauche").GetComponent<MeshRenderer>();
-            rightPartRed = gameObject.GetChildAt("Content/Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
-            rightPartBlue = gameObject.GetChildAt("Content/Mesh/porte1/droite").GetComponent<MeshRenderer>();
         }
 
         public override void OnInstantiated(LEScene scene)

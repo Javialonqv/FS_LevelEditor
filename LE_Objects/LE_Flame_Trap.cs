@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static FS_LevelEditor.LE_Door;
 
 namespace FS_LevelEditor
 {
@@ -13,9 +14,9 @@ namespace FS_LevelEditor
     {
         FlameTrapController trap;
 
-        void Awake()
+        public static Dictionary<string, object> GetDefaultProperties()
         {
-            properties = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 { "ActivateOnStart", true },
                 { "Constant", false },

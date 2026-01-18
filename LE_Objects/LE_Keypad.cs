@@ -23,13 +23,6 @@ namespace FS_LevelEditor
 		private int keycodeValue = 0;
 		public void Awake()
 		{
-			properties = new Dictionary<string, object>
-			{
-				{ "Keycode", 1234 },
-				{ "onWinEvents", new List<LE_Event>() },
-				{ "onFailEvents", new List<LE_Event>() },
-				{ "allCorrect", false }
-			};
 			if(EditorController.Instance)
 			{
 				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(false);
@@ -42,7 +35,18 @@ namespace FS_LevelEditor
 			}
 		}
 
-		public override void InitComponent()
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
+            {
+                { "Keycode", 1234 },
+                { "onWinEvents", new List<LE_Event>() },
+                { "onFailEvents", new List<LE_Event>() },
+                { "allCorrect", false }
+            };
+        }
+
+        public override void InitComponent()
 		{
 			GameObject button = gameObject.GetChild("LE_Keypad");
 

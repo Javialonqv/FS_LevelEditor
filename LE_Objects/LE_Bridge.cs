@@ -17,16 +17,17 @@ namespace FS_LevelEditor
 		private BridgeController bridgeController;
 		public enum InitialState { RETRACTED, DEPLOYED };
 
-		void Awake()
-		{
-			properties = new Dictionary<string, object>
-			{
-				{ "InitialState", InitialState.RETRACTED },
-				{ "OnDeploy", new List<LE_Event>() },
-				{ "OnRetract", new List<LE_Event>() },
-			};
-		}
-		public override void OnInstantiated(LEScene scene)
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
+            {
+                { "InitialState", InitialState.RETRACTED },
+                { "OnDeploy", new List<LE_Event>() },
+                { "OnRetract", new List<LE_Event>() },
+            };
+        }
+
+        public override void OnInstantiated(LEScene scene)
 		{
 			if (scene == LEScene.Editor)
 			{

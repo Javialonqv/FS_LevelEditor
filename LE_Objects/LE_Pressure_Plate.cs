@@ -13,9 +13,9 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Pressure_Plate : LE_Object
     {
-        void Awake()
+        public static Dictionary<string, object> GetDefaultProperties()
         {
-            properties = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 { "OnlyOnce", false },
                 { "OnDrop", new List<LE_Event>() },

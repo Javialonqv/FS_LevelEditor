@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static FS_LevelEditor.LE_Death_Trigger;
 
 namespace FS_LevelEditor
 {
@@ -22,8 +23,11 @@ namespace FS_LevelEditor
             canUndoDeletion = false;
             light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
             lightSprite = gameObject.GetChildAt("Content/Sprite");
+        }
 
-            properties = new Dictionary<string, object>()
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
             {
                 { "Color", Color.white },
                 { "Intensity", 1f }

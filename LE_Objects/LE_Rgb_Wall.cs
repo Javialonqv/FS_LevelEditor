@@ -13,12 +13,16 @@ namespace FS_LevelEditor
         {
             // Get the wall's mesh renderer to access its material
             wallRenderer = gameObject.GetChildAt("Content/SubMesh_0").GetComponent<MeshRenderer>();
+        }
 
-            properties = new Dictionary<string, object>()
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
             {
                 { "Color", Color.white } // Default white color as Color object
             };
         }
+
         public override void OnInstantiated(LEScene scene)
         {
             if (scene == LEScene.Playmode)

@@ -13,9 +13,9 @@ namespace FS_LevelEditor
 
         ScieScript sawScript;
 
-        void Awake()
+        public static Dictionary<string, object> GetDefaultProperties()
         {
-            properties = new Dictionary<string, object>()
+            return new Dictionary<string, object>()
             {
                 { "ActivateOnStart", true },
                 { "TravelBack", true },

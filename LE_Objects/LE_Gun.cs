@@ -18,13 +18,13 @@ namespace FS_LevelEditor
 
         public static bool isCurrentlyInfinite = false;
 
-        void Awake()
+        public static Dictionary<string, object> GetDefaultProperties()
         {
-            properties = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
-                { "OnPickup", new List<LE_Event>() },
                 { "InfiniteTaser", false },
                 { "Ammo", 1 },
+                { "OnPickup", new List<LE_Event>() },
                 { "Rotate", true }
             };
         }

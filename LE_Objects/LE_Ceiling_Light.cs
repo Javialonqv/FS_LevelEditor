@@ -21,18 +21,21 @@ namespace FS_LevelEditor
 
         void Awake()
         {
-            properties = new Dictionary<string, object>
-            {
-                { "ActivateOnStart", true },
-                { "Color", Color.white },
-                { "Range", 6f }
-            };
-
             lightObj = gameObject.GetChildAt("Content/Light");
             neonOff = gameObject.GetChildAt("Content/Mesh/NeonOff");
             neonOn = gameObject.GetChildAt("Content/Mesh/NeonOn");
             light = lightObj.GetComponent<Light>();
             rangeSphere = gameObject.GetChildAt("Content/RangeSphere");
+        }
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
+            {
+                { "ActivateOnStart", true },
+                { "Color", Color.white },
+                { "Range", 6f }
+            };
         }
 
         public override void OnInstantiated(LEScene scene)

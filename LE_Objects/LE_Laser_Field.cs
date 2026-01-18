@@ -16,12 +16,15 @@ namespace FS_LevelEditor
 
         void Awake()
         {
-            properties = new Dictionary<string, object>()
+            edgesParent = gameObject.GetChildAt("Content/Edges");
+        }
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
             {
                 { "InvisibleEdges", false }
             };
-
-            edgesParent = gameObject.GetChildAt("Content/Edges");
         }
 
         public override void ObjectStart(LEScene scene)

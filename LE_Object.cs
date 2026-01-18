@@ -285,7 +285,7 @@ namespace FS_LevelEditor
                 }
             }
         }
-        void Init(ObjectType objectType, bool skipIDInitialization = false)
+        void Init(ObjectType objectType, Type objectInternalType)
         {
             if (EditorController.Instance != null && PlayModeController.Instance == null)
             {
@@ -296,7 +296,13 @@ namespace FS_LevelEditor
                 PlayModeController.Instance.currentInstantiatedObjects.Add(this);
             }
 
-            SetNameAndType(objectType, skipIDInitialization);
+            // Assign object properties if it has.
+            if (Utils.CallStaticMethodIfExists(objectInternalType, "GetDefaultProperties", out var props))
+            {
+                properties = (Dictionary<string, object>)props;
+            }
+
+            SetNameAndType(objectType);
 
             if (PlayModeController.Instance != null)
             {
@@ -327,7 +333,7 @@ namespace FS_LevelEditor
         /// <param name="targetObj">The GameObject ot attach this component to.</param>
         /// <param name="originalObjName">THe "original" name of the desired object.</param>
         /// <returns>An instance of the created LE_Object component class.</returns>
-        public static LE_Object AddComponentToObject(GameObject targetObj, ObjectType objectType, bool skipIDInitialization = false)
+        public static LE_Object AddComponentToObject(GameObject targetObj, ObjectType objectType)
         {
             string className = "LE_" + Utils.ObjectTypeToFormatedName(objectType).Replace(' ', '_');
             Type classType = Type.GetType("FS_LevelEditor." + className);
@@ -341,7 +347,7 @@ namespace FS_LevelEditor
                 }
                 if (!LETypesInIL2CPP.ContainsKey(classType)) LETypesInIL2CPP.Add(classType, Il2CppType.From(classType));
                 LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(LETypesInIL2CPP[classType]);
-                instancedComponent.Init(objectType, skipIDInitialization);
+                instancedComponent.Init(objectType, classType);
                 instancedComponent.hasItsOwnClass = true;
                 return instancedComponent;
             }
@@ -353,33 +359,30 @@ namespace FS_LevelEditor
                 }
 
                 LE_Object instancedComponent = targetObj.AddComponent<LE_Object>();
-                instancedComponent.Init(objectType, skipIDInitialization);
+                instancedComponent.Init(objectType, null);
                 return instancedComponent;
             }
         }
 
-        void SetNameAndType(ObjectType objectTypeToSet, bool skipIDInitialization = false)
+        void SetNameAndType(ObjectType objectTypeToSet)
         {
             objectType = objectTypeToSet;
 
-            if (!skipIDInitialization)
+            int id = 0;
+            LE_Object[] objects = GetReferenceObjectsToGetObjID();
+
+            while (objects.Any(x => x.objectID == id && x.objectType == objectType))
             {
-                int id = 0;
-                LE_Object[] objects = GetReferenceObjectsToGetObjID();
+                id++;
+            }
+            objectID = id;
 
-                while (objects.Any(x => x.objectID == id && x.objectType == objectType))
-                {
-                    id++;
-                }
-                objectID = id;
+            gameObject.name = objectFullNameWithID;
 
-                gameObject.name = objectFullNameWithID;
-
-                // If the objects list has more than 1 object of the same type AND with the same ID, well, that's not allowed, show an error popup.
-                if (!Utils.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) &&  Utils.ListHasMultipleObjectsWithSameID(objects.ToList()))
-                {
-                    LE_CustomErrorPopups.MultipleObjectsWithSameID();
-                }
+            // If the objects list has more than 1 object of the same type AND with the same ID, well, that's not allowed, show an error popup.
+            if (!Utils.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) && Utils.ListHasMultipleObjectsWithSameID(objects.ToList()))
+            {
+                LE_CustomErrorPopups.MultipleObjectsWithSameID();
             }
         }
         // For now, this method is only used to setup the ID manually for Saw Waypoints, because the main Saw needs to setup the reference to it in the waypoint.

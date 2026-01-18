@@ -19,8 +19,11 @@ namespace FS_LevelEditor
             light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
             lightBulbSprite = gameObject.GetChildAt("Content/Sprite");
             rangeSphere = gameObject.GetChildAt("Content/RangeSphere");
+        }
 
-            properties = new Dictionary<string, object>()
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
             {
                 { "Color", Color.white },
                 { "Intensity", 1f },

@@ -12,17 +12,17 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Death_Trigger : LE_Object
     {
-        public enum TriggerType { Relocation, Imminent }
+        public enum TriggerType { RELOCATION, IMMINENT }
 
-        void Awake()
+        public static Dictionary<string, object> GetDefaultProperties()
         {
-            properties = new Dictionary<string, object>()
+            return new Dictionary<string, object>()
             {
-                { "Type", TriggerType.Relocation },
+                { "Type", TriggerType.RELOCATION },
                 { "Delay", 0f },
-				{ "CustomCoordinates", false },
-				{ "TeleportCoordinates", new Vector3(0,0,0)},
-				{ "OnTeleport", new List<LE_Event>() }
+                { "CustomCoordinates", false },
+                { "TeleportCoordinates", new Vector3(0,0,0)},
+                { "OnTeleport", new List<LE_Event>() }
             };
         }
 
@@ -63,7 +63,7 @@ namespace FS_LevelEditor
             script.playDialogs = false;
             script.selectivePlayDialogs = false;
             script.dialogsUpperLimit = false;
-            script.killPlayer = GetProperty<TriggerType>("Type") == TriggerType.Imminent;
+            script.killPlayer = GetProperty<TriggerType>("Type") == TriggerType.IMMINENT;
             script.useSeparateKillPlayer = false;
             script.isAreaDenial = false;
             script.considerPlayer = true;

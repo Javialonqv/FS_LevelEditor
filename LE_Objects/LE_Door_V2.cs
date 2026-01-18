@@ -22,19 +22,22 @@ namespace FS_LevelEditor
 
         void Awake()
         {
-            properties = new Dictionary<string, object>()
-            {
-                { "IsAuto", false },
-                { "InitialState", InitialState.CLOSED },
-                { "InitialStateAuto", InitialStateAuto.LOCKED }
-            };
-
             cyanPillars = gameObject.GetChildAt("Content/Mesh_V2/portev2/DoorPillars/Cyan");
             redPillars = gameObject.GetChildAt("Content/Mesh_V2/portev2/DoorPillars/Red");
             topPartCyan = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Cyan");
             bottomPartCyan = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Cyan");
             topPartRed = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Red");
             bottomPartRed = gameObject.GetChildAt("Content/Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Red");
+        }
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "IsAuto", false },
+                { "InitialState", InitialState.CLOSED },
+                { "InitialStateAuto", InitialStateAuto.LOCKED }
+            };
         }
 
         public override void OnInstantiated(LEScene scene)

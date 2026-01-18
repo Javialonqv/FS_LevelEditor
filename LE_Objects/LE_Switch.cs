@@ -1,4 +1,7 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
+using Il2Cpp;
+using Il2CppTMPro;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +11,6 @@ using Unity.Services.Analytics;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using FS_LevelEditor.Editor.UI;
-using FS_LevelEditor.Editor;
 
 namespace FS_LevelEditor
 {
@@ -27,20 +28,23 @@ namespace FS_LevelEditor
 
         void Awake()
         {
-            properties = new Dictionary<string, object>
+            redPlane = gameObject.GetChildAt("Content/ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
+            greenPlane = gameObject.GetChildAt("Content/ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
+        }
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
             {
                 { "InitialState", SwitchState.DEACTIVATED },
                 { "UsableOnce", false },
                 { "CanUseTaser", true },
                 { "OnlyByTaser", false },
-                { "InvisibleMesh", false },
                 { "WhenInvertingEvents", new List<LE_Event>() },
                 { "WhenActivatingEvents", new List<LE_Event>() },
-                { "WhenDeactivatingEvents", new List<LE_Event>() }
+                { "WhenDeactivatingEvents", new List<LE_Event>() },
+                { "InvisibleMesh", false }
             };
-
-            redPlane = gameObject.GetChildAt("Content/ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
-            greenPlane = gameObject.GetChildAt("Content/ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
         }
 
         public override void ObjectStart(LEScene scene)
