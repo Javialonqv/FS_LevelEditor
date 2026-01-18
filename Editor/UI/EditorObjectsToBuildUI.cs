@@ -31,6 +31,8 @@ namespace FS_LevelEditor.Editor.UI
         int currentCategoryID;
         int currentGridID;
 
+        public EditorObjectsToBuildUI(IntPtr ptr) : base (ptr) { }
+
         public static void Create(Transform editorUIParent)
         {
             GameObject root = new GameObject("ObjectsToBuildUI");
@@ -105,8 +107,8 @@ namespace FS_LevelEditor.Editor.UI
 
                 // It seems it's a bug, I need to create a copy of 'i'. Otherwise ALL of the toggles will end using the same value.
                 int index = i;
-                categoryButton.onClick += () => EditorController.Instance.ChangeCategory(index);
-                categoryButton.onClick += () => ChangeCategory(index);
+                categoryButton.onClick += (state) => EditorController.Instance.ChangeCategory(index);
+                categoryButton.onClick += (state) => ChangeCategory(index);
 
                 currentCategoryButtonXPos += 250f;
                 if (currentCategoryButtonXPos >= 700f)

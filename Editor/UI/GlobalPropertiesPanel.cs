@@ -17,8 +17,8 @@ namespace FS_LevelEditor.Editor.UI
 		public static GlobalPropertiesPanel Instance;
 
 		UILabel titleLabel;
-		UIToggle hasTaserToggle;
-		UIToggle hasJetpackToggle;
+		UITogglePatcher hasTaserToggle;
+		UITogglePatcher hasJetpackToggle;
 		UICustomInputField deathYLimitField;
 		UIButtonAsToggle visualizeDeathYLimitButton;
 		UIDropdownPatcher skyboxDropdown;
@@ -75,26 +75,15 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		void CreateHasTaserToggle()
 		{
-			GameObject hasTaserToggle = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 350f), new Vector3Int(200, 42, 1), "HasTaser");
-			hasTaserToggle.name = "HasTaserToggle";
-			EventDelegate hasTaserDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithToggle),
-				NGUI_Utils.CreateEventDelegateParamter(this, "name", "HasTaser"),
-				NGUI_Utils.CreateEventDelegateParamter(this, "toggle", hasTaserToggle.GetComponent<UIToggle>()));
-			hasTaserToggle.GetComponent<UIToggle>().onChange.Clear();
-			hasTaserToggle.GetComponent<UIToggle>().onChange.Add(hasTaserDelegate);
-			this.hasTaserToggle = hasTaserToggle.GetComponent<UIToggle>();
+			hasTaserToggle = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 350f), new Vector3Int(200, 42, 1), "HasTaser");
+			hasTaserToggle.gameObject.name = "HasTaserToggle";
+			hasTaserToggle.onClick += (state) => SetGlobalPropertyWithToggle("HasTaser", hasTaserToggle.toggle);
 		}
 		void CreateHasJetpackToggle()
 		{
-			GameObject hasJetpackToggle = NGUI_Utils.CreateToggle(transform,
-				new Vector3(40f, 350f), new Vector3Int(200, 42, 1), "HasJetpack");
-			hasJetpackToggle.name = "HasJetpackToggle";
-			EventDelegate hasJetpackDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetGlobalPropertyWithToggle),
-				NGUI_Utils.CreateEventDelegateParamter(this, "name", "HasJetpack"),
-				NGUI_Utils.CreateEventDelegateParamter(this, "toggle", hasJetpackToggle.GetComponent<UIToggle>()));
-			hasJetpackToggle.GetComponent<UIToggle>().onChange.Clear();
-			hasJetpackToggle.GetComponent<UIToggle>().onChange.Add(hasJetpackDelegate);
-			this.hasJetpackToggle = hasJetpackToggle.GetComponent<UIToggle>();
+			hasJetpackToggle = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 350f), new Vector3Int(200, 42, 1), "HasJetpack");
+			hasJetpackToggle.gameObject.name = "HasJetpackToggle";
+			hasJetpackToggle.onClick += (state) => SetGlobalPropertyWithToggle("HasJetpack", hasJetpackToggle.toggle);
 		}
 		void CreateDeathYLimitField()
 		{

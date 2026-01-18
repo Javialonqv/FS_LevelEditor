@@ -59,7 +59,7 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject globalObjectsSettings;
         bool globalOptionsExpanded = false;
-        UIToggle startMovingObjectToggle;
+        UITogglePatcher startMovingObjectToggle;
         //-----------------------------------
         GameObject sawObjectsSettings;
         UIButtonMultiple sawStateButton;
@@ -68,21 +68,21 @@ namespace FS_LevelEditor.Editor.UI
         UIButtonMultiple objectiveStateButton;
         //-----------------------------------
         GameObject playerSettings;
-        UIToggle zeroGToggle;
-        UIToggle invertGravityToggle;
+        UITogglePatcher zeroGToggle;
+        UITogglePatcher invertGravityToggle;
         //-----------------------------------
         GameObject taserSettings;
         UIButtonMultiple taserStateButton;
-        UIToggle changeAmmoToggle;
+        UITogglePatcher changeAmmoToggle;
         UICustomInputField newAmmoInputField;
-        UIToggle infiniteTaserToggle;
+        UITogglePatcher infiniteTaserToggle;
         //-----------------------------------
         GameObject jetpackSettings;
         UIButtonMultiple jetpackStateButton;
         //-----------------------------------
         GameObject cubeObjectsSettings;
-        UIToggle respawnCubeToggle;
-        UIToggle respawnOnLastSwitchToggle;
+        UITogglePatcher respawnCubeToggle;
+        UITogglePatcher respawnOnLastSwitchToggle;
         //-----------------------------------
         GameObject laserObjectsSettings;
         UIButtonMultiple laserStateButton;
@@ -91,33 +91,33 @@ namespace FS_LevelEditor.Editor.UI
         UIButtonMultiple mineStateButton;
         //-----------------------------------
         GameObject lightObjectsSettings;
-        UIToggle changeLightColorToggle;
+        UITogglePatcher changeLightColorToggle;
         UILabel newLightColorTitleLabel;
         UIInput newLightColorInputField;
         //-----------------------------------
         GameObject ceilingLightObjectsSettings;
         UIButtonMultiple ceilingLightStateButton;
-        UIToggle changeCeilingLightColorToggle;
+        UITogglePatcher changeCeilingLightColorToggle;
         UIInput newCeilingLightColorInputField;
         //-----------------------------------
         GameObject healthAmmoPacksObjectsSettings;
-        UIToggle changePackRespawnTimeToggle;
+        UITogglePatcher changePackRespawnTimeToggle;
         UILabel newPackRespawnTimeTitleLabel;
         UICustomInputField newPackRespawnTimeInputField;
-        UIToggle spawnPackNowToggle;
+        UITogglePatcher spawnPackNowToggle;
         //-----------------------------------
         GameObject switchObjectsSettings;
         UIButtonMultiple switchStateButton;
-        UIToggle executeSwitchActionsToggle;
+        UITogglePatcher executeSwitchActionsToggle;
         UIButtonMultiple switchUsableStateButton;
         //-----------------------------------
         GameObject flameTrapObjectsSettings;
         UIButtonMultiple flameTrapStateButton;
         //-----------------------------------
         GameObject screenObjectsSettings;
-        UIToggle changeScreenColorTypeToggle;
+        UITogglePatcher changeScreenColorTypeToggle;
         UISmallButtonMultiple screenColorTypeButton;
-        UIToggle changeScreenTextToggle;
+        UITogglePatcher changeScreenTextToggle;
         UICustomInputField screenNewTextField;
         //-----------------------------------
         GameObject doorObjectsSettings;
@@ -143,6 +143,8 @@ namespace FS_LevelEditor.Editor.UI
         int selectedEventIDForContextMenu;
 
         LE_Object targetObj;
+
+        public EventsUIPageManager(IntPtr ptr) : base (ptr) { }
 
         public static void Create()
         {
@@ -1505,12 +1507,10 @@ namespace FS_LevelEditor.Editor.UI
         {
             GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
 
-            GameObject toggle = NGUI_Utils.CreateToggle(globalObjectsSettings.transform, new Vector3(-150f, -25f, 0f),
+            startMovingObjectToggle = NGUI_Utils.CreateToggle(globalObjectsSettings.transform, new Vector3(-150f, -25f, 0f),
                 new Vector3Int(250, 48, 1), "Start Moving Object");
-            toggle.name = "StartMovingObjectToggle";
-            startMovingObjectToggle = toggle.GetComponent<UIToggle>();
-            startMovingObjectToggle.onChange.Clear();
-            startMovingObjectToggle.onChange.Add(new EventDelegate(this, nameof(OnStartMovingObjectToggleChanged)));
+            startMovingObjectToggle.gameObject.name = "StartMovingObjectToggle";
+            startMovingObjectToggle.onClick += (state) => OnStartMovingObjectToggleChanged();
         }
         // -----------------------------------------
         void CreateSawObjectSettings()
@@ -1595,25 +1595,17 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateZeroGToggle()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-
-            GameObject toggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(-380f, 50f, 0f),
+            zeroGToggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(-380f, 50f, 0f),
                 new Vector3Int(250, 48, 1), "Enable/Disable Zero G");
-            toggle.name = "EnableOrDisableZeroGToggle";
-            zeroGToggle = toggle.GetComponent<UIToggle>();
-            zeroGToggle.onChange.Clear();
-            zeroGToggle.onChange.Add(new EventDelegate(this, nameof(OnZeroGToggleChanged)));
+            zeroGToggle.gameObject.name = "EnableOrDisableZeroGToggle";
+            zeroGToggle.onClick += (state) => OnZeroGToggleChanged();
         }
         void CreateInvertGravityToggle()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-
-            GameObject toggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(50f, 50f, 0f),
+            invertGravityToggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(50f, 50f, 0f),
                 new Vector3Int(250, 48, 1), "Invert Gravity");
-            toggle.name = "InvertGravityToggle";
-            invertGravityToggle = toggle.GetComponent<UIToggle>();
-            invertGravityToggle.onChange.Clear();
-            invertGravityToggle.onChange.Add(new EventDelegate(this, nameof(OnInvertGravityToggleChanged)));
+            invertGravityToggle.gameObject.name = "InvertGravityToggle";
+            invertGravityToggle.onClick += (state) => OnInvertGravityToggleChanged();
         }
         // -----------------------------------------
         void CreateTaserSettings()
@@ -1667,12 +1659,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateChangeAmmoToggle()
         {
-            GameObject toggle = NGUI_Utils.CreateToggle(taserSettings.transform, new Vector3(54f, 50f, 0f),
+            changeAmmoToggle = NGUI_Utils.CreateToggle(taserSettings.transform, new Vector3(54f, 50f, 0f),
                 new Vector3Int(250, 48, 1), "Change Ammo");
-            toggle.name = "ChangeAmmoToggle";
-            changeAmmoToggle = toggle.GetComponent<UIToggle>();
-            changeAmmoToggle.onChange.Clear();
-            changeAmmoToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeAmmoToggleChanged)));
+            changeAmmoToggle.gameObject.name = "ChangeAmmoToggle";
+            changeAmmoToggle.onClick += (state) => OnChangeAmmoToggleChanged();
         }
         void CreateNewAmmoInputField()
         {
@@ -1684,12 +1674,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateInfiniteTaserToggle()
         {
-            GameObject toggle = NGUI_Utils.CreateToggle(taserSettings.transform, new Vector3(-300f, -35f, 0f),
+            infiniteTaserToggle = NGUI_Utils.CreateToggle(taserSettings.transform, new Vector3(-300f, -35f, 0f),
                 new Vector3Int(250, 48, 1), "Infinite Ammo");
-            toggle.name = "InfiniteTaserToggle";
-            infiniteTaserToggle = toggle.GetComponent<UIToggle>();
-            infiniteTaserToggle.onChange.Clear();
-            infiniteTaserToggle.onChange.Add(new EventDelegate(this, nameof(OnInfiniteTaserToggleChanged)));
+            infiniteTaserToggle.gameObject.name = "InfiniteTaserToggle";
+            infiniteTaserToggle.onClick += (state) => OnInfiniteTaserToggleChanged();
             infiniteTaserToggle.gameObject.SetActive(false);
         }
         // -----------------------------------------
@@ -1822,25 +1810,17 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateRespawnCubeToggle()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-
-            GameObject toggle = NGUI_Utils.CreateToggle(cubeObjectsSettings.transform, new Vector3(-340f, -30f, 0f),
+            respawnCubeToggle = NGUI_Utils.CreateToggle(cubeObjectsSettings.transform, new Vector3(-340f, -30f, 0f),
                 new Vector3Int(250, 48, 1), "Respawn Cube");
-            toggle.name = "RespawnCubeToggle";
-            respawnCubeToggle = toggle.GetComponent<UIToggle>();
-            respawnCubeToggle.onChange.Clear();
-            respawnCubeToggle.onChange.Add(new EventDelegate(this, nameof(OnRespawnCubeChanged)));
+            respawnCubeToggle.gameObject.name = "RespawnCubeToggle";
+            respawnCubeToggle.onClick += (state) => OnRespawnCubeChanged();
         }
         void CreateRespawnCubeOnLastSwitchToggle()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-
-            GameObject toggle = NGUI_Utils.CreateToggle(cubeObjectsSettings.transform, new Vector3(0f, -30f, 0f),
+            respawnOnLastSwitchToggle = NGUI_Utils.CreateToggle(cubeObjectsSettings.transform, new Vector3(0f, -30f, 0f),
                 new Vector3Int(250, 48, 1), "On Last Activated Switch");
-            toggle.name = "OnLastActivatedSwitchToggle";
-            respawnOnLastSwitchToggle = toggle.GetComponent<UIToggle>();
-            respawnOnLastSwitchToggle.onChange.Clear();
-            respawnOnLastSwitchToggle.onChange.Add(new EventDelegate(this, nameof(OnRespawnCubeOnLastActivatedSwitchChanged)));
+            respawnOnLastSwitchToggle.gameObject.name = "OnLastActivatedSwitchToggle";
+            respawnOnLastSwitchToggle.onClick += (state) => OnRespawnCubeOnLastActivatedSwitchChanged();
         }
         // -----------------------------------------
         void CreateLaserObjectSettings()
@@ -1977,12 +1957,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateChangeLightColorToggle()
         {
-            GameObject toggle = NGUI_Utils.CreateToggle(lightObjectsSettings.transform, new Vector3(-380f, -30f, 0f),
+            changeLightColorToggle = NGUI_Utils.CreateToggle(lightObjectsSettings.transform, new Vector3(-380f, -30f, 0f),
                 new Vector3Int(250, 48, 1), "Change Color");
-            toggle.name = "ChangeLightColorToggle";
-            changeLightColorToggle = toggle.GetComponent<UIToggle>();
-            changeLightColorToggle.onChange.Clear();
-            changeLightColorToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeLightColorToggleChanged)));
+            changeLightColorToggle.gameObject.name = "ChangeLightColorToggle";
+            changeLightColorToggle.onClick += (state) => OnChangeLightColorToggleChanged();
         }
         void CreateNewLightColorTitleLabel()
         {
@@ -2068,13 +2046,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateChangeCeilingLightColorToggle()
         {
-            GameObject toggle = NGUI_Utils.CreateToggle(ceilingLightObjectsSettings.transform, new Vector3(20f, -17f, 0f),
+            changeCeilingLightColorToggle = NGUI_Utils.CreateToggle(ceilingLightObjectsSettings.transform, new Vector3(20f, -17f, 0f),
                 new Vector3Int(250, 48, 1), "Change Color");
-            toggle.name = "ChangeCeilingLightColorToggle";
-
-            changeCeilingLightColorToggle = toggle.GetComponent<UIToggle>();
-            changeCeilingLightColorToggle.onChange.Clear();
-            changeCeilingLightColorToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeCeilingLightColorToggleChanged)));
+            changeCeilingLightColorToggle.gameObject.name = "ChangeCeilingLightColorToggle";
+            changeCeilingLightColorToggle.onClick += (state) => OnChangeCeilingLightColorToggleChanged();
         }
         void CreateNewCeilingLightColorInputField()
         {
@@ -2123,12 +2098,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateChangePackRespawnTimeToggle()
         {
-            GameObject toggle = NGUI_Utils.CreateToggle(healthAmmoPacksObjectsSettings.transform, new Vector3(-380f, -30f, 0f),
+            changePackRespawnTimeToggle = NGUI_Utils.CreateToggle(healthAmmoPacksObjectsSettings.transform, new Vector3(-380f, -30f, 0f),
                 new Vector3Int(250, 48, 1), "Change Respawn Time");
-            toggle.name = "ChangeRespawnTimeToggle";
-            changePackRespawnTimeToggle = toggle.GetComponent<UIToggle>();
-            changePackRespawnTimeToggle.onChange.Clear();
-            changePackRespawnTimeToggle.onChange.Add(new EventDelegate(this, nameof(OnChangePackRespawnTimeToggleChanged)));
+            changePackRespawnTimeToggle.name = "ChangeRespawnTimeToggle";
+            changePackRespawnTimeToggle.onClick += (state) => OnChangePackRespawnTimeToggleChanged();
         }
         void CreateNewPackRespawnTimeTitleLabel()
         {
@@ -2164,12 +2137,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSpawnPackNowToggle()
         {
-            GameObject toggle = NGUI_Utils.CreateToggle(healthAmmoPacksObjectsSettings.transform, new Vector3(-140f, -100f, 0f),
+            spawnPackNowToggle = NGUI_Utils.CreateToggle(healthAmmoPacksObjectsSettings.transform, new Vector3(-140f, -100f, 0f),
                 new Vector3Int(250, 48, 1), "Spawn Pack Now");
-            toggle.name = "SpawnPackNowToggle";
-            spawnPackNowToggle = toggle.GetComponent<UIToggle>();
-            spawnPackNowToggle.onChange.Clear();
-            spawnPackNowToggle.onChange.Add(new EventDelegate(this, nameof(OnSpawnPackNowToggleChanged)));
+            spawnPackNowToggle.gameObject.name = "SpawnPackNowToggle";
+            spawnPackNowToggle.onClick += (state) => OnSpawnPackNowToggleChanged();
         }
         // -----------------------------------------
         void CreateSwitchObjectSettings()
@@ -2222,13 +2193,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateExecuteSwitchActionsToggle()
         {
-            GameObject toggle = NGUI_Utils.CreateToggle(switchObjectsSettings.transform, new Vector3(-350f, -120f, 0f),
+            executeSwitchActionsToggle = NGUI_Utils.CreateToggle(switchObjectsSettings.transform, new Vector3(-350f, -120f, 0f),
                 new Vector3Int(250, 48, 1), "Execute Actions");
-            toggle.name = "ExecuteActionsToggle";
-
-            executeSwitchActionsToggle = toggle.GetComponent<UIToggle>();
-            executeSwitchActionsToggle.onChange.Clear();
-            executeSwitchActionsToggle.onChange.Add(new EventDelegate(this, nameof(OnExecuteSwitchActionsToggleChanged)));
+            executeSwitchActionsToggle.gameObject.name = "ExecuteActionsToggle";
+            executeSwitchActionsToggle.onClick += (state) => OnExecuteSwitchActionsToggleChanged();
         }
         void CreateSwitchUsableStateSettings()
         {
@@ -2319,11 +2287,9 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateChangeScreenColorTypeToggle()
         {
-            GameObject toggleObj = NGUI_Utils.CreateToggle(screenObjectsSettings.transform, new Vector3(-380, -10), new Vector3Int(300, 48, 0), "Change Color Type");
-            toggleObj.name = "ChangeColorTypeToggle";
-            changeScreenColorTypeToggle = toggleObj.GetComponent<UIToggle>();
-            changeScreenColorTypeToggle.onChange.Clear();
-            changeScreenColorTypeToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeScreenColorTypeToggleChanged)));
+            changeScreenColorTypeToggle = NGUI_Utils.CreateToggle(screenObjectsSettings.transform, new Vector3(-380, -10), new Vector3Int(300, 48, 0), "Change Color Type");
+            changeScreenColorTypeToggle.gameObject.name = "ChangeColorTypeToggle";
+            changeScreenColorTypeToggle.onClick += (state) => OnChangeScreenColorTypeToggleChanged();
         }
         void CreateScreenColorTypeButton()
         {
@@ -2336,11 +2302,9 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateChangeScreenTextToggle()
         {
-            GameObject toggleObj = NGUI_Utils.CreateToggle(screenObjectsSettings.transform, new Vector3(-180, -65), new Vector3Int(300, 48, 0), "Change Text");
-            toggleObj.name = "ChangeTextToggle";
-            changeScreenTextToggle = toggleObj.GetComponent<UIToggle>();
-            changeScreenTextToggle.onChange.Clear();
-            changeScreenTextToggle.onChange.Add(new EventDelegate(this, nameof(OnChangeScreenTextToggleChanged)));
+            changeScreenTextToggle = NGUI_Utils.CreateToggle(screenObjectsSettings.transform, new Vector3(-180, -65), new Vector3Int(300, 48, 0), "Change Text");
+            changeScreenTextToggle.gameObject.name = "ChangeTextToggle";
+            changeScreenTextToggle.onClick += (state) => OnChangeScreenTextToggleChanged();
         }
         void CreateScreenNewTextField()
         {

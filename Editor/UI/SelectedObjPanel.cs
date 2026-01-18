@@ -22,7 +22,7 @@ namespace FS_LevelEditor.Editor.UI
 
 		GameObject header;
 		UILabel headerTitle;
-		public UIToggle setActiveAtStartToggle;
+		public UITogglePatcher setActiveAtStartToggle;
 		UIButtonPatcher expandPanelButton;
 		UISprite expandPanelButtonSprite;
 		UIButtonAsToggle globalObjAttributesToggle;
@@ -32,10 +32,10 @@ namespace FS_LevelEditor.Editor.UI
 		UICustomInputField posXField, posYField, posZField;
 		UICustomInputField rotXField, rotYField, rotZField;
 		UICustomInputField scaleXField, scaleYField, scaleZField;
-		UIToggle collisionToggle;
-        UIToggle invisibleMeshToggle;
+		UITogglePatcher collisionToggle;
+        UITogglePatcher invisibleMeshToggle;
         UIButtonPatcher addWaypointButton;
-		UIToggle startMovingAtStartToggle;
+		UITogglePatcher startMovingAtStartToggle;
 		UICustomInputField movingSpeedField;
 		UICustomInputField startDelayField;
 		UICustomInputField waitTimeField;
@@ -118,13 +118,14 @@ namespace FS_LevelEditor.Editor.UI
 		bool isSelectingAnObjectRightNow = false;
 		bool isSelectingMultipleObjects = false;
 		LE_Object currentSelectedObj;
-		bool executeSetActiveAtStartToggleActions = true;
 		bool executeCollisionToggleActions = true;
         bool executeInvisibleMeshToggleActions = true;
 
         Vector3 objPositionWhenSelectedField;
 		Quaternion objRotationWhenSelectedField;
 		Vector3 objScaleWhenSelectedField;
+
+		public SelectedObjPanel(IntPtr ptr) : base (ptr) { }
 
 		public static void Create(Transform editorUIParent)
 		{
@@ -175,24 +176,22 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		void CreateSetActiveAtStartToggle()
 		{
-			GameObject toggleObj = NGUI_Utils.CreateToggle(header.transform, new Vector3(-220f, 0f, 0f),
-				new Vector3Int(48, 48, 0));
-			toggleObj.name = "SetActiveAtStartToggle";
 
-			setActiveAtStartToggle = toggleObj.GetComponent<UIToggle>();
-			setActiveAtStartToggle.onChange.Clear();
-			setActiveAtStartToggle.onChange.Add(new EventDelegate(this, nameof(SetSetActiveAtStart)));
-			setActiveAtStartToggle.instantTween = true;
+			setActiveAtStartToggle = NGUI_Utils.CreateToggle(header.transform, new Vector3(-220f, 0f, 0f),
+                new Vector3Int(48, 48, 0));
+            setActiveAtStartToggle.name = "SetActiveAtStartToggle";
+			setActiveAtStartToggle.onClick += (state) => SetSetActiveAtStart();
+            setActiveAtStartToggle.toggle.instantTween = true;
 
-			FractalTooltip tooltip = toggleObj.AddComponent<FractalTooltip>();
+			FractalTooltip tooltip = setActiveAtStartToggle.gameObject.AddComponent<FractalTooltip>();
 			tooltip.toolTipLocKey = "tooltip.SetActiveAtStartToggle";
 			tooltip.staticTooltipPos = true;
 			tooltip.staticTooltipOffset = new Vector2(0.42f, 0.1f);
 
-			toggleObj.SetActive(false);
+            setActiveAtStartToggle.gameObject.SetActive(false);
 
 			GameObject line = new GameObject("Line");
-			line.transform.parent = toggleObj.GetChild("Background").transform;
+			line.transform.parent = setActiveAtStartToggle.gameObject.GetChild("Background").transform;
 			line.transform.localPosition = Vector3.zero;
 			line.transform.localScale = Vector3.one;
 
@@ -430,16 +429,13 @@ namespace FS_LevelEditor.Editor.UI
 			UILabel title = NGUI_Utils.CreateLabel(collisionToggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "Collision");
 			title.name = "Title";
 
-			GameObject toggle = NGUI_Utils.CreateToggle(collisionToggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
-			toggle.name = "Toggle";
-			toggle.GetComponent<UIToggle>().onChange.Clear();
-			var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetCollisionToggle));
-			toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
-			collisionToggle = toggle.GetComponent<UIToggle>();
-			collisionToggle.instantTween = true;
+            collisionToggle = NGUI_Utils.CreateToggle(collisionToggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
+            collisionToggle.gameObject.name = "Toggle";
+            collisionToggle.onClick += (state) => SetCollisionToggle();
+			collisionToggle.toggle.instantTween = true;
 
 			GameObject line = new GameObject("Line");
-			line.transform.parent = toggle.GetChild("Background").transform;
+			line.transform.parent = collisionToggle.gameObject.GetChild("Background").transform;
 			line.transform.localPosition = Vector3.zero;
 			line.transform.localScale = Vector3.one;
 
@@ -464,16 +460,13 @@ namespace FS_LevelEditor.Editor.UI
             UILabel title = NGUI_Utils.CreateLabel(invisibleMeshToggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "InvisibleMesh");
             title.name = "Title";
 
-            GameObject toggle = NGUI_Utils.CreateToggle(invisibleMeshToggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
-            toggle.name = "Toggle";
-            toggle.GetComponent<UIToggle>().onChange.Clear();
-            var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetInvisibleMeshToggle));
-            toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
-            invisibleMeshToggle = toggle.GetComponent<UIToggle>();
-            invisibleMeshToggle.instantTween = true;
+            invisibleMeshToggle = NGUI_Utils.CreateToggle(invisibleMeshToggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
+            invisibleMeshToggle.gameObject.name = "Toggle";
+			invisibleMeshToggle.onClick += (state) => SetInvisibleMeshToggle();
+            invisibleMeshToggle.toggle.instantTween = true;
 
             GameObject line = new GameObject("Line");
-            line.transform.parent = toggle.GetChild("Background").transform;
+            line.transform.parent = invisibleMeshToggle.gameObject.GetChild("Background").transform;
             line.transform.localPosition = Vector3.zero;
             line.transform.localScale = Vector3.one;
 
@@ -507,12 +500,10 @@ namespace FS_LevelEditor.Editor.UI
 			UILabel title = NGUI_Utils.CreateLabel(toggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "StartMovingAtStart");
 			title.name = "Title";
 
-			GameObject toggle = NGUI_Utils.CreateToggle(toggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
-			toggle.name = "Toggle";
-			toggle.GetComponent<UIToggle>().onChange.Clear();
-			toggle.GetComponent<UIToggle>().onChange.Add(new EventDelegate(this, nameof(SetStartMovingAtStart)));
-			startMovingAtStartToggle = toggle.GetComponent<UIToggle>();
-			startMovingAtStartToggle.instantTween = true;
+            startMovingAtStartToggle = NGUI_Utils.CreateToggle(toggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
+            startMovingAtStartToggle.gameObject.name = "Toggle";
+			startMovingAtStartToggle.onClick += (state) => SetStartMovingAtStart();
+			startMovingAtStartToggle.toggle.instantTween = true;
 
 			yPosForGlobalProps -= 50;
 		}
@@ -791,17 +782,13 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			else if (attrType == AttributeType.TOGGLE)
 			{
-				GameObject toggle = NGUI_Utils.CreateToggle(attributeParent.transform, new Vector3(200f, yPos), new Vector3Int(48, 48, 0));
-				toggle.name = "Toggle";
-				toggle.GetComponent<UIToggle>().onChange.Clear();
-				var toggleDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetPropertyWithToggle),
-					NGUI_Utils.CreateEventDelegateParamter(this, "propertyName", targetPropName),
-					NGUI_Utils.CreateEventDelegateParamter(this, "toggle", toggle.GetComponent<UIToggle>()));
-				toggle.GetComponent<UIToggle>().onChange.Add(toggleDelegate);
-				if ((bool)defaultValue) toggle.GetComponent<UIToggle>().Set(true);
+				UITogglePatcher toggle = NGUI_Utils.CreateToggle(attributeParent.transform, new Vector3(200f, yPos), new Vector3Int(48, 48, 0));
+				toggle.gameObject.name = "Toggle";
+				toggle.onClick += (state) => SetPropertyWithToggle(targetPropName, toggle);
+				if ((bool)defaultValue) toggle.Set(true);
 				if (tooltip != null)
 				{
-					toggle.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
+					toggle.gameObject.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
 				}
 
 				toReturn = toggle.GetComponent<UIToggle>();
@@ -1023,9 +1010,7 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			else
 			{
-				executeSetActiveAtStartToggleActions = false;
-				setActiveAtStartToggle.Set(false);
-				executeSetActiveAtStartToggleActions = true;
+				setActiveAtStartToggle.Set(false, false);
 				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
 			}
 			#endregion
@@ -1193,8 +1178,6 @@ namespace FS_LevelEditor.Editor.UI
 
 		public void SetSetActiveAtStart()
 		{
-			if (!executeSetActiveAtStartToggleActions) return;
-
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
 				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
@@ -1600,7 +1583,7 @@ namespace FS_LevelEditor.Editor.UI
 				inputField.Set(false);
 			}
 		}
-		public void SetPropertyWithToggle(string propertyName, UIToggle toggle)
+		public void SetPropertyWithToggle(string propertyName, UITogglePatcher toggle)
 		{
 			switch (propertyName)
 			{

@@ -198,9 +198,9 @@ namespace FS_LevelEditor.Editor.UI
 			// Optional tick (only for items that can be disabled)
 			if (canHaveLevel0)
 			{
-				GameObject tickIcon = NGUI_Utils.CreateToggle(parent.transform, new Vector3(LabelX + TickToLabelOffset, 0), new Vector3Int(26, 26, 0), "");
+				UITogglePatcher tickIcon = NGUI_Utils.CreateToggle(parent.transform, new Vector3(LabelX + TickToLabelOffset, 0), new Vector3Int(26, 26, 0), "");
 				tickIcon.name = "TickIcon"; // keep consistent with lookups
-				var tickSprite = tickIcon.GetComponent<UIToggle>();
+				var tickSprite = tickIcon.toggle;
 				tickSprite.startsActive = false; // Start unchecked
 
 				var checkmark = tickIcon.transform.Find("Checkmark");

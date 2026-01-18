@@ -11,18 +11,40 @@ namespace FS_LevelEditor.UI_Related
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class UITogglePatcher : MonoBehaviour
     {
+        bool initialized = false;
+
         public UIToggle toggle;
-        public Action onClick;
+        public Action<bool> onClick;
+        bool executeOnChange = true;
+
+        public bool isChecked => toggle.isChecked;
+
+        public UITogglePatcher(IntPtr ptr) : base (ptr) { }
 
         void Awake()
         {
+            if (!initialized) Init();
+        }
+        internal void Init()
+        {
             toggle = GetComponent<UIToggle>();
             toggle.onChange.Add(new EventDelegate(this, nameof(OnToggleChange)));
+
+            initialized = true;
         }
 
         void OnToggleChange()
         {
-            if (onClick != null) onClick();
+            if (!executeOnChange) return;
+
+            if (onClick != null) onClick(toggle.isChecked);
+        }
+
+        public void Set(bool newState, bool executeOnChange = true)
+        {
+            this.executeOnChange = executeOnChange;
+            toggle.Set(newState);
+            this.executeOnChange = true;
         }
     }
 }

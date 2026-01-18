@@ -35,6 +35,8 @@ namespace FS_LevelEditor.Editor.UI
         UIButtonAsToggle textLeft, textCenter, textRight;
         UIButtonAsToggle textBottomLeft, textBottom, textBottomRight;
 
+        public TextEditorUI(IntPtr ptr) : base (ptr) { }
+
         public static void Create()
         {
             if (Instance)
@@ -128,11 +130,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateAutoFontSizeToggle()
         {
-            GameObject toggle = NGUI_Utils.CreateToggle(editorPanel.transform, new Vector3(-600, 250), new Vector3Int(250, 48, 0),
+            autoFontSizeToggle = NGUI_Utils.CreateToggle(editorPanel.transform, new Vector3(-600, 250), new Vector3Int(250, 48, 0),
                 "Auto Font Size");
-            toggle.name = "AutoFontSizeToggle";
-            autoFontSizeToggle = toggle.AddComponent<UITogglePatcher>();
-            autoFontSizeToggle.onClick += OnAutoFontSizeToggleChanged;
+            autoFontSizeToggle.gameObject.name = "AutoFontSizeToggle";
+            autoFontSizeToggle.onClick += (state) => OnAutoFontSizeToggleChanged();
         }
         void CreateFontSizeField()
         {

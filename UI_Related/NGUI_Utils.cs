@@ -281,7 +281,7 @@ namespace FS_LevelEditor.UI_Related
 
         // Never ever ever dare to change ANYTHING inside of this method, it's literally the worst code in the whole mod.
         // (Followed by the gizmos arrows, ofc).
-        public static GameObject CreateToggle(Transform parent, Vector3 position, Vector3Int size, string text = "")
+        public static UITogglePatcher CreateToggle(Transform parent, Vector3 position, Vector3Int size, string text = "")
         {
             GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
 
@@ -328,7 +328,10 @@ namespace FS_LevelEditor.UI_Related
 
             toggle.AddComponent<UIToggleCheckedFix>();
 
-            return toggle;
+            UITogglePatcher patcher = toggle.AddComponent<UITogglePatcher>();
+            patcher.Init();
+
+            return patcher;
         }
 
         public static UIButtonPatcher CreateButton(Transform parent, Vector3 position, Vector3Int size, string text = "", int? depth = null, int textSize = 30)
