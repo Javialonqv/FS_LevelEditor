@@ -48,6 +48,7 @@ namespace FS_LevelEditor.Editor.UI
 		Transform objectSpecificPanelsParent;
 		Dictionary<LE_Object.ObjectType?, GameObject> attributesPanels = new Dictionary<LE_Object.ObjectType?, GameObject>();
 		Transform whereToCreateObjAttributesParent;
+		LE_Object.ObjectType currentlyCreatingPropsUIFor;
 
 		static readonly Dictionary<(LE_Object.ObjectType objType, string propName), string> objectPropsTooltips = new Dictionary<(LE_Object.ObjectType objType, string propName), string>
 		{
@@ -83,7 +84,7 @@ namespace FS_LevelEditor.Editor.UI
 			{ "TRAVEL_BACK", Color.red },
 			{ "LOOP", Color.blue },
 		};
-		static readonly List<string> bannedPropertiesFromUI = new List<string>()
+		static readonly string[] bannedPropertiesFromUI = new string[]
 		{
 			"AutoFontSize",
 			"FontSize",
@@ -109,11 +110,24 @@ namespace FS_LevelEditor.Editor.UI
 			{ "TRAVEL_BACK", "TravelBack_Mayus" },
 			{ "LOOP", "Loop_Mayus" },
 		};
-		static readonly List<(LE_Object.ObjectType type, string propName, string requiredPropName, object requiredPropValue)> optionalProps = new()
+		// For object properties that are only visible/active when another property is set to a specific value (like toggles).
+		static readonly Dictionary<(LE_Object.ObjectType? type, string propName), (string requiredPropName, object requiredPropValue)> optionalProps = new()
 		{
-			(LE_Object.ObjectType.DOOR, "InitialState", "IsAuto", false),
-			(LE_Object.ObjectType.DOOR, "InitialStateAuto", "IsAuto", true)
-		};
+			{ (LE_Object.ObjectType.DOOR, "InitialState"), ("IsAuto", false) },
+			{ (LE_Object.ObjectType.DOOR, "InitialStateAuto"), ("IsAuto", true) },
+            { (LE_Object.ObjectType.DOOR_V2, "InitialState"), ("IsAuto", false) },
+            { (LE_Object.ObjectType.DOOR_V2, "InitialStateAuto"), ("IsAuto", true) },
+
+			{ (LE_Object.ObjectType.LASER, "Damage"), ("InstaKill", false) },
+			{ (LE_Object.ObjectType.LASER, "OffDuration"), ("Blinking", true) },
+			{ (LE_Object.ObjectType.LASER, "OnDuration"), ("Blinking", true) },
+
+			{ (LE_Object.ObjectType.SWITCH, "OnlyByTaser"), ("CanUseTaser", true) },
+
+			{ (LE_Object.ObjectType.DEATH_TRIGGER, "TeleportCoordinates"), ("CustomCoordinates", true) },
+
+			{ (LE_Object.ObjectType.SAW, "WaitTime"), ("waypoints", null) }, // If it's checking for waypoints, the code already checks if the list count is greater than 0.
+        };
 
 		bool isSelectingAnObjectRightNow = false;
 		bool isSelectingMultipleObjects = false;
@@ -611,6 +625,7 @@ namespace FS_LevelEditor.Editor.UI
 			parent.transform.localScale = Vector3.one;
 
 			SetCurrentParentToCreateAttributes(parent);
+			currentlyCreatingPropsUIFor = type;
 
 			bool alreadyCreatedManageEventsButton = false;
 			foreach (var prop in defaultProps)
@@ -784,7 +799,8 @@ namespace FS_LevelEditor.Editor.UI
 			{
 				UITogglePatcher toggle = NGUI_Utils.CreateToggle(attributeParent.transform, new Vector3(200f, yPos), new Vector3Int(48, 48, 0));
 				toggle.gameObject.name = "Toggle";
-				toggle.onClick += (state) => SetPropertyWithToggle(targetPropName, toggle);
+				var targetObjType = currentlyCreatingPropsUIFor;
+				toggle.onClick += (state) => SetPropertyWithToggle(targetObjType, targetPropName, toggle.isChecked);
 				if ((bool)defaultValue) toggle.Set(true);
 				if (tooltip != null)
 				{
@@ -1040,7 +1056,7 @@ namespace FS_LevelEditor.Editor.UI
             if (specificAttributesFound)
             {
 				panel.SetActive(true);
-                UpdateObjectSpecificAttribute(objComponent, panel);
+                UpdateObjectSpecificAttributes(objComponent, panel);
             }
             #endregion
 
@@ -1065,77 +1081,15 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			#endregion
 		}
-		void UpdateObjectSpecificAttribute(LE_Object objComp, GameObject panelInUI)
-		{
-			// OFFICIALLY, THIS IS THE ULTIMATE MOST BETTER AUTOMATED PROPERTY UPDATER OF THE WORLD!
-			foreach (var attribute in panelInUI.GetChilds())
-			{
-				string attributeName = attribute.name; // Assuming the name of the childs in the UI is the same as the REAL attribute name.
-				if (objComp.TryGetProperty(attributeName, out object value))
-				{
-					if (attribute.ExistsChild("Field"))
-					{
-						switch (value)
-						{
-							case int intValue:
-								value = value + ""; // Convert to string directly, no ToString() shit needed here.
-								break;
-							case float floatValue:
-								value = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
-								break;
-							case Color colorValue:
-								value = Utils.ColorToHex(colorValue);
-								break;
 
-							case string:
-								// With string there's no problem, but put this so it's not catched by "default:".
-								break;
+        public void ShowGlobalObjectAttributes(bool show)
+        {
+            objectSpecificPanelsParent.gameObject.SetActive(!show);
+            globalObjectPanelsParent.gameObject.SetActive(show);
+        }
 
-							default:
-								Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in an INPUT FIELD?");
-								continue;
-						}
-
-						attribute.GetChild("Field").GetComponent<UIInput>().text = (string)value;
-					}
-					else if (attribute.ExistsChild("Toggle"))
-					{
-						// Values for toggles can ONLY be bools, nothing else LOL.
-						if (value is not bool)
-						{
-							Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in a TOGGLE?");
-							continue;
-						}
-
-						attribute.GetChild("Toggle").GetComponent<UIToggle>().Set((bool)value);
-					}
-					else if (attribute.ExistsChild("ButtonMultiple"))
-					{
-						// Values for multiple option buttons can be, int or maybe an enum
-						if (value is not int && value is not Enum)
-						{
-							Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in a BUTTON MULTIPLE?");
-							continue;
-						}
-
-						attribute.GetChild("ButtonMultiple").GetComponent<UISmallButtonMultiple>().SetOption((int)value);
-					}
-				}
-			}
-
-			if (objComp is LE_Saw)
-			{
-				var waypoints = objComp.GetProperty<List<WaypointData>>("waypoints");
-				ShowOrHideSawWaitTimeField(waypoints.Count);
-
-				if (objComp.TryGetProperty("Rotate", out object rotateValue) && rotateValue is bool rotate)
-				{
-					OnSawRotateChecked(rotate);
-				}
-			}
-		}
-
-		enum GlobalFieldType { Position, Rotation, Scale }
+        #region Global Attributes Logic
+        enum GlobalFieldType { Position, Rotation, Scale }
 		void OnGlobalAttributeFieldSelected(GlobalFieldType fieldType)
 		{
 			switch (fieldType)
@@ -1215,7 +1169,6 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			EditorController.Instance.levelHasBeenModified = true;
 		}
-
         public void SetInvisibleMeshToggle()
         {
             if (!executeInvisibleMeshToggleActions) return;
@@ -1272,13 +1225,9 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		public void SetStartMovingAtStart()
 		{
-			SetPropertyWithToggle("StartMovingAtStart", startMovingAtStartToggle);
+			SetPropertyWithToggle(null, "StartMovingAtStart", startMovingAtStartToggle.isChecked);
 		}
-		public void ShowGlobalObjectAttributes(bool show)
-		{
-			objectSpecificPanelsParent.gameObject.SetActive(!show);
-			globalObjectPanelsParent.gameObject.SetActive(show);
-		}
+
 		public void UpdateGlobalObjectAttributes(Transform obj)
 		{
 			// UICustomInput already verifies if the user is typing on the field, if so, SetText does nothing, we don't need to worry about that.
@@ -1464,7 +1413,93 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			#endregion
 		}
-		void SetVector3PropertyWithInput(string propertyName, GameObject attributeParent)
+        #endregion
+
+        #region Object Specific Attributes Logic
+        void UpdateObjectSpecificAttributes(LE_Object objComp, GameObject panelInUI)
+        {
+            // OFFICIALLY, THIS IS THE ULTIMATE MOST BETTER AUTOMATED PROPERTY UPDATER OF THE WORLD!
+            foreach (var attribute in panelInUI.GetChilds())
+            {
+                string attributeName = attribute.name; // Assuming the name of the childs in the UI is the same as the REAL attribute name.
+                if (objComp.TryGetProperty(attributeName, out object value))
+                {
+                    if (attribute.ExistsChild("Field"))
+                    {
+                        switch (value)
+                        {
+                            case int intValue:
+                                value = value + ""; // Convert to string directly, no ToString() shit needed here.
+                                break;
+                            case float floatValue:
+                                value = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
+                                break;
+                            case Color colorValue:
+                                value = Utils.ColorToHex(colorValue);
+                                break;
+
+                            case string:
+                                // With string there's no problem, but put this so it's not catched by "default:".
+                                break;
+
+                            default:
+                                Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in an INPUT FIELD?");
+                                continue;
+                        }
+
+                        attribute.GetChild("Field").GetComponent<UIInput>().text = (string)value;
+                    }
+                    else if (attribute.ExistsChild("Toggle"))
+                    {
+                        // Values for toggles can ONLY be bools, nothing else LOL.
+                        if (value is not bool)
+                        {
+                            Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in a TOGGLE?");
+                            continue;
+                        }
+
+                        attribute.GetChild("Toggle").GetComponent<UIToggle>().Set((bool)value);
+                    }
+                    else if (attribute.ExistsChild("ButtonMultiple"))
+                    {
+                        // Values for multiple option buttons can be, int or maybe an enum
+                        if (value is not int && value is not Enum)
+                        {
+                            Logger.Error($"Tried to update \"{attributeName}\" with value of type \"{value.GetType().Name}\" in a BUTTON MULTIPLE?");
+                            continue;
+                        }
+
+                        attribute.GetChild("ButtonMultiple").GetComponent<UISmallButtonMultiple>().SetOption((int)value);
+                    }
+                }
+            }
+
+            UpdateOptionalPropertiesVisibility(objComp.objectType);
+        }
+
+        void UpdateOptionalPropertiesVisibility(LE_Object.ObjectType? type)
+        {
+            foreach (var prop in optionalProps.Where(p => p.Key.type == type))
+            {
+                var value = prop.Value;
+
+                bool setActive = false;
+
+                if (value.requiredPropName == "waypoints")
+                {
+                    setActive = currentSelectedObj.GetProperty<List<WaypointData>>(value.requiredPropName).Count > 0;
+                }
+                else
+                {
+                    setActive = Equals(currentSelectedObj.GetProperty(value.requiredPropName), value.requiredPropValue);
+                }
+                attributesPanels[type].GetChild(prop.Key.propName).SetActive(setActive);
+            }
+        }
+        #endregion
+
+
+        void SetVector3PropertyWithInput(string propertyName, GameObject attributeParent)
 		{
 			var objComponent = EditorController.Instance.currentSelectedObjComponent;
 			if (objComponent == null) return;
@@ -1583,44 +1618,25 @@ namespace FS_LevelEditor.Editor.UI
 				inputField.Set(false);
 			}
 		}
-		public void SetPropertyWithToggle(string propertyName, UITogglePatcher toggle)
+		public void SetPropertyWithToggle(LE_Object.ObjectType? type, string propertyName, bool newValue)
 		{
 			switch (propertyName)
 			{
-				case "InstaKill":
-					OnLaserInstaKillChecked(toggle.isChecked);
-					break;
-				case "Blinking":
-					OnLaserBlinkingChecked(toggle.isChecked);
-					break;
-
 				case "TravelBack":
-					SetSawTravelBackORLoop(toggle.isChecked, false);
+					SetSawTravelBackORLoop(newValue, false);
 					break;
 				case "Loop":
-					SetSawTravelBackORLoop(false, toggle.isChecked);
-					break;
-
-				case "IsAuto":
-					OnDoorAutoChecked(toggle.isChecked);
-					OnDoorV2AutoChecked(toggle.isChecked);
-					break;
-				case "Rotate":
-					OnSawRotateChecked(toggle.isChecked);
-					break;
-				case "CanUseTaser":
-					OnTaserUsed(toggle.isChecked);
-					break;
-				case "CustomCoordinates":
-					OnCustomCoordinates(toggle.isChecked);
+					SetSawTravelBackORLoop(false, newValue);
 					break;
 			}
 
-			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, toggle.isChecked))
+			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, newValue))
 			{
 				EditorController.Instance.levelHasBeenModified = true;
 			}
-		}
+
+			UpdateOptionalPropertiesVisibility(type);
+        }
 		public void SetPropertyWithButtonMultiple(string propertyName, UISmallButtonMultiple button)
 		{
 			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, button.currentOption))
@@ -1637,48 +1653,6 @@ namespace FS_LevelEditor.Editor.UI
 		}
 
 		// Extra functions for specific things for specific attributes for specific objects LOL.
-		void OnSawRotateChecked(bool isEnabled)
-		{
-			if (attributesPanels.TryGetValue(LE_Object.ObjectType.SAW, out var sawPanel))
-			{
-				var rotateSpeedAttr = sawPanel.GetChild("RotateSpeed");
-				if (rotateSpeedAttr != null)
-				{
-					rotateSpeedAttr.SetActive(isEnabled);
-
-					// Update the rotate speed value when showing the field
-					if (isEnabled)
-					{
-						var field = rotateSpeedAttr.GetChild("Field").GetComponent<UIInput>();
-						if (EditorController.Instance.currentSelectedObjComponent.TryGetProperty("RotateSpeed", out object value))
-						{
-							field.text = value.ToString();
-						}
-					}
-				}
-			}
-		}
-		void OnLaserInstaKillChecked(bool newState)
-		{
-			attributesPanels[LE_Object.ObjectType.LASER].GetChild("Damage").SetActive(!newState);
-		}
-		void OnLaserBlinkingChecked(bool newState)
-		{
-			attributesPanels[LE_Object.ObjectType.LASER].GetChild("OffDuration").SetActive(newState);
-			attributesPanels[LE_Object.ObjectType.LASER].GetChild("OnDuration").SetActive(newState);
-		}
-		void ShowOrHideSawWaitTimeField(int waypointsCount)
-		{
-			attributesPanels[LE_Object.ObjectType.SAW].GetChild("WaitTime").SetActive(waypointsCount > 0);
-		}
-		void OnTaserUsed(bool isEnabled)
-		{
-			attributesPanels[LE_Object.ObjectType.SWITCH].GetChild("OnlyByTaser").SetActive(isEnabled);
-		}
-		void OnCustomCoordinates(bool isEnabled)
-		{
-			attributesPanels[LE_Object.ObjectType.DEATH_TRIGGER].GetChild("TeleportCoordinates").SetActive(isEnabled);
-		}
 		void SetSawTravelBackORLoop(bool travelBack, bool loop)
 		{
 			// This is to always enable one or the other, but NEVER both of the toggles, only one or the other.
@@ -1703,16 +1677,6 @@ namespace FS_LevelEditor.Editor.UI
 				EditorController.Instance.currentSelectedObjComponent.SetProperty("TravelBack", false);
 				EditorController.Instance.currentSelectedObjComponent.SetProperty("Loop", true);
 			}
-		}
-		void OnDoorAutoChecked(bool newState)
-		{
-			attributesPanels[LE_Object.ObjectType.DOOR].GetChild("InitialState").SetActive(!newState);
-			attributesPanels[LE_Object.ObjectType.DOOR].GetChild("InitialStateAuto").SetActive(newState);
-		}
-		void OnDoorV2AutoChecked(bool newState)
-		{
-			attributesPanels[LE_Object.ObjectType.DOOR_V2].GetChild("InitialState").SetActive(!newState);
-			attributesPanels[LE_Object.ObjectType.DOOR_V2].GetChild("InitialStateAuto").SetActive(newState);
 		}
 	}
 }
