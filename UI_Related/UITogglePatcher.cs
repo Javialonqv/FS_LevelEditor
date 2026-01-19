@@ -53,6 +53,12 @@ namespace FS_LevelEditor.UI_Related
 
         public void Set(bool newState, bool executeOnChange = true)
         {
+            if (isUndefined)
+            {
+                undefinedLine.SetActive(false);
+                isUndefined = false;
+            }
+
             this.executeOnChange = executeOnChange;
             toggle.Set(newState);
 
