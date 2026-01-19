@@ -188,7 +188,6 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		void CreateSetActiveAtStartToggle()
 		{
-
 			setActiveAtStartToggle = NGUI_Utils.CreateToggle(header.transform, new Vector3(-220f, 0f, 0f),
                 new Vector3Int(48, 48, 0));
             setActiveAtStartToggle.name = "SetActiveAtStartToggle";
@@ -201,19 +200,6 @@ namespace FS_LevelEditor.Editor.UI
 			tooltip.staticTooltipOffset = new Vector2(0.42f, 0.1f);
 
             setActiveAtStartToggle.gameObject.SetActive(false);
-
-			GameObject line = new GameObject("Line");
-			line.transform.parent = setActiveAtStartToggle.gameObject.GetChild("Background").transform;
-			line.transform.localPosition = Vector3.zero;
-			line.transform.localScale = Vector3.one;
-
-			UISprite lineSprite = line.AddComponent<UISprite>();
-			lineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
-			lineSprite.spriteName = "Square";
-			lineSprite.width = 35;
-			lineSprite.height = 6;
-			lineSprite.depth = 8;
-			line.SetActive(false);
 		}
 		void CreateExpandPanelToggle()
 		{
@@ -446,19 +432,6 @@ namespace FS_LevelEditor.Editor.UI
             collisionToggle.onClick += (state) => SetCollisionToggle();
 			collisionToggle.toggle.instantTween = true;
 
-			GameObject line = new GameObject("Line");
-			line.transform.parent = collisionToggle.gameObject.GetChild("Background").transform;
-			line.transform.localPosition = Vector3.zero;
-			line.transform.localScale = Vector3.one;
-
-			UISprite lineSprite = line.AddComponent<UISprite>();
-			lineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
-			lineSprite.spriteName = "Square";
-			lineSprite.width = 35;
-			lineSprite.height = 6;
-			lineSprite.depth = 8;
-			line.SetActive(false);
-
 			yPosForGlobalProps -= 55;
 		}
 
@@ -476,19 +449,6 @@ namespace FS_LevelEditor.Editor.UI
             invisibleMeshToggle.gameObject.name = "Toggle";
 			invisibleMeshToggle.onClick += (state) => SetInvisibleMeshToggle();
             invisibleMeshToggle.toggle.instantTween = true;
-
-            GameObject line = new GameObject("Line");
-            line.transform.parent = invisibleMeshToggle.gameObject.GetChild("Background").transform;
-            line.transform.localPosition = Vector3.zero;
-            line.transform.localScale = Vector3.one;
-
-            UISprite lineSprite = line.AddComponent<UISprite>();
-            lineSprite.atlas = NGUI_Utils.fractalSpaceAtlas;
-            lineSprite.spriteName = "Square";
-            lineSprite.width = 35;
-            lineSprite.height = 6;
-            lineSprite.depth = 8;
-            line.SetActive(false);
 
             yPosForGlobalProps -= 55;
         }
@@ -1020,12 +980,10 @@ namespace FS_LevelEditor.Editor.UI
 			if (setActiveStateInObjects != null)
 			{
 				setActiveAtStartToggle.Set((bool)setActiveStateInObjects);
-				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 			}
 			else
 			{
-				setActiveAtStartToggle.Set(false, false);
-				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
+				setActiveAtStartToggle.SetAsUndefined();
 			}
 			#endregion
 
@@ -1070,7 +1028,6 @@ namespace FS_LevelEditor.Editor.UI
 			{
 				setActiveAtStartToggle.gameObject.SetActive(true);
 				setActiveAtStartToggle.Set(objComponent.setActiveAtStart);
-				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 			}
 			else
 			{
@@ -1132,7 +1089,6 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
-				setActiveAtStartToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 				foreach (var obj in EditorController.Instance.currentSelectedObjects)
 				{
 					LE_Object comp = obj.GetComponent<LE_Object>();
@@ -1152,7 +1108,6 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
-				collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 				foreach (var obj in EditorController.Instance.currentSelectedObjects)
 				{
 					LE_Object comp = obj.GetComponent<LE_Object>();
@@ -1169,7 +1124,6 @@ namespace FS_LevelEditor.Editor.UI
         {
             if (EditorController.Instance.multipleObjectsSelected)
             {
-                invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
                 foreach (var obj in EditorController.Instance.currentSelectedObjects)
                 {
                     LE_Object comp = obj.GetComponent<LE_Object>();
@@ -1270,18 +1224,15 @@ namespace FS_LevelEditor.Editor.UI
 				if (collisionStateInObjects != null)
 				{
 					collisionToggle.Set((bool)collisionStateInObjects);
-					collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 				}
 				else
 				{
-					collisionToggle.Set(false, false);
-					collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
+					collisionToggle.SetAsUndefined();
 				}
 			}
 			else
 			{
 				collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
-				collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
 			}
             #endregion
 
@@ -1316,18 +1267,15 @@ namespace FS_LevelEditor.Editor.UI
                 if (invisibleMeshStateInObjects != null)
                 {
                     invisibleMeshToggle.Set((bool)invisibleMeshStateInObjects);
-                    invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
                 }
                 else
                 {
-                    invisibleMeshToggle.Set(false, false);
-                    invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
+					invisibleMeshToggle.SetAsUndefined();
                 }
             }
             else
             {
                 invisibleMeshToggle.Set(obj.GetComponent<LE_Object>().invisibleMesh); // Direct field access
-                invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
             }
             #endregion
 

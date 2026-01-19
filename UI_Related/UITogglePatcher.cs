@@ -14,10 +14,13 @@ namespace FS_LevelEditor.UI_Related
         bool initialized = false;
 
         public UIToggle toggle;
+        GameObject undefinedLine;
+
         public Action<bool> onClick;
         bool executeOnChange = true;
 
         public bool isChecked => toggle.isChecked;
+        public bool isUndefined = false;
 
         public UITogglePatcher(IntPtr ptr) : base (ptr) { }
 
@@ -28,6 +31,8 @@ namespace FS_LevelEditor.UI_Related
         internal void Init()
         {
             toggle = GetComponent<UIToggle>();
+            undefinedLine = gameObject.GetChildAt("Background/Line");
+
             toggle.onChange.Add(new EventDelegate(this, nameof(OnToggleChange)));
 
             initialized = true;
@@ -36,6 +41,12 @@ namespace FS_LevelEditor.UI_Related
         void OnToggleChange()
         {
             if (!executeOnChange) return;
+
+            if (isUndefined)
+            {
+                undefinedLine.SetActive(false);
+                isUndefined = false;
+            }
 
             if (onClick != null) onClick(toggle.isChecked);
         }
@@ -49,6 +60,13 @@ namespace FS_LevelEditor.UI_Related
             Utils.Invoke(() => {
                 this.executeOnChange = true;
             }, 0.1f);
+        }
+        public void SetAsUndefined()
+        {
+            if (isChecked) Set(false, false);
+
+            undefinedLine.SetActive(true);
+            isUndefined = true;
         }
     }
 }

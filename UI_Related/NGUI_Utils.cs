@@ -326,6 +326,19 @@ namespace FS_LevelEditor.UI_Related
                 toggle.GetComponent<BoxCollider>().size = colliderSize;
             }
 
+            GameObject line = new GameObject("Line");
+            line.transform.parent = toggle.gameObject.GetChild("Background").transform;
+            line.transform.localPosition = Vector3.zero;
+            line.transform.localScale = Vector3.one;
+
+            UISprite lineSprite = line.AddComponent<UISprite>();
+            lineSprite.atlas = fractalSpaceAtlas;
+            lineSprite.spriteName = "Square";
+            lineSprite.width = 35;
+            lineSprite.height = 6;
+            lineSprite.depth = 8;
+            line.SetActive(false);
+
             UITogglePatcher patcher = toggle.AddComponent<UITogglePatcher>();
             patcher.Init();
 
