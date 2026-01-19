@@ -132,8 +132,6 @@ namespace FS_LevelEditor.Editor.UI
 		bool isSelectingAnObjectRightNow = false;
 		bool isSelectingMultipleObjects = false;
 		LE_Object currentSelectedObj;
-		bool executeCollisionToggleActions = true;
-        bool executeInvisibleMeshToggleActions = true;
 
         Vector3 objPositionWhenSelectedField;
 		Quaternion objRotationWhenSelectedField;
@@ -1152,8 +1150,6 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		public void SetCollisionToggle()
 		{
-			if (!executeCollisionToggleActions) return;
-
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
 				collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
@@ -1171,8 +1167,6 @@ namespace FS_LevelEditor.Editor.UI
 		}
         public void SetInvisibleMeshToggle()
         {
-            if (!executeInvisibleMeshToggleActions) return;
-
             if (EditorController.Instance.multipleObjectsSelected)
             {
                 invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(false);
@@ -1280,9 +1274,7 @@ namespace FS_LevelEditor.Editor.UI
 				}
 				else
 				{
-					executeCollisionToggleActions = false;
-					collisionToggle.Set(false);
-					executeCollisionToggleActions = true;
+					collisionToggle.Set(false, false);
 					collisionToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
 				}
 			}
@@ -1328,9 +1320,7 @@ namespace FS_LevelEditor.Editor.UI
                 }
                 else
                 {
-                    executeInvisibleMeshToggleActions = false;
-                    invisibleMeshToggle.Set(false);
-                    executeInvisibleMeshToggleActions = true;
+                    invisibleMeshToggle.Set(false, false);
                     invisibleMeshToggle.gameObject.GetChildAt("Background/Line").SetActive(true);
                 }
             }
