@@ -50,7 +50,8 @@ namespace FS_LevelEditor.Editor.UI
 		Transform whereToCreateObjAttributesParent;
 		LE_Object.ObjectType currentlyCreatingPropsUIFor;
 
-		static readonly Dictionary<(LE_Object.ObjectType objType, string propName), string> objectPropsTooltips = new Dictionary<(LE_Object.ObjectType objType, string propName), string>
+        #region Rules/Patterns For Object Specific Props Creation
+        static readonly Dictionary<(LE_Object.ObjectType objType, string propName), string> objectPropsTooltips = new Dictionary<(LE_Object.ObjectType objType, string propName), string>
 		{
 			{ (LE_Object.ObjectType.SAW, "TravelBack"), "TravelBackTooltip" },
 			{ (LE_Object.ObjectType.SAW, "Loop"),		"LoopTooltip" },
@@ -128,8 +129,9 @@ namespace FS_LevelEditor.Editor.UI
 
 			{ (LE_Object.ObjectType.SAW, "WaitTime"), ("waypoints", null) }, // If it's checking for waypoints, the code already checks if the list count is greater than 0.
         };
+        #endregion
 
-		bool isSelectingAnObjectRightNow = false;
+        bool isSelectingAnObjectRightNow = false;
 		bool isSelectingMultipleObjects = false;
 		LE_Object currentSelectedObj;
 
@@ -950,44 +952,9 @@ namespace FS_LevelEditor.Editor.UI
 			setActiveAtStartToggle.gameObject.SetActive(true);
 			expandPanelButton.gameObject.SetActive(true);
 
-			#region Set Active At Start Toggle
-			// If this is null, that means the "Set Active At Start" in the current selected objects is different in at least one of them.
-			// If it's true or false, then ALL of them are true or false.
-			bool? setActiveStateInObjects = null;
-			foreach (var obj in EditorController.Instance.currentSelectedObjects)
-			{
-				LE_Object comp = obj.GetComponent<LE_Object>();
-				// Skip objects that can't be disabled at start.
-				if (!comp.canBeDisabledAtStart) continue;
+			SetPropInToggleDependingOfPropInObjects(setActiveAtStartToggle, (obj) => obj.setActiveAtStart, (obj) => obj.canBeDisabledAtStart);
 
-				if (setActiveStateInObjects == null)
-				{
-					setActiveStateInObjects = comp.setActiveAtStart;
-					continue;
-				}
-
-				if (setActiveStateInObjects == comp.setActiveAtStart)
-				{
-					continue;
-				}
-				else
-				{
-					setActiveStateInObjects = null;
-					break;
-				}
-			}
-
-			if (setActiveStateInObjects != null)
-			{
-				setActiveAtStartToggle.Set((bool)setActiveStateInObjects);
-			}
-			else
-			{
-				setActiveAtStartToggle.SetAsUndefined();
-			}
-			#endregion
-
-			globalObjAttributesToggle.gameObject.SetActive(false);
+            globalObjAttributesToggle.gameObject.SetActive(false);
 			globalObjAttributesToggle.SetToggleState(true, true);
 
 			UpdateGlobalObjectAttributes(EditorController.Instance.currentSelectedObj.transform);
@@ -1195,89 +1162,8 @@ namespace FS_LevelEditor.Editor.UI
 			scaleZField.SetText(obj.localScale.z, 3, false);
 			#endregion
 
-			#region Collision Toggle
-			if (EditorController.Instance.multipleObjectsSelected)
-			{
-				// If this is null, that means the "Collision" in the current selected objects is different in at least one of them.
-				// If it's true or false, then ALL of them are true or false.
-				bool? collisionStateInObjects = null;
-				foreach (var @object in EditorController.Instance.currentSelectedObjects)
-				{
-					LE_Object comp = @object.GetComponent<LE_Object>();
-					if (collisionStateInObjects == null)
-					{
-						collisionStateInObjects = comp.collision;
-						continue;
-					}
-
-					if (collisionStateInObjects == comp.collision)
-					{
-						continue;
-					}
-					else
-					{
-						collisionStateInObjects = null;
-						break;
-					}
-				}
-
-				if (collisionStateInObjects != null)
-				{
-					collisionToggle.Set((bool)collisionStateInObjects);
-				}
-				else
-				{
-					collisionToggle.SetAsUndefined();
-				}
-			}
-			else
-			{
-				collisionToggle.Set(obj.GetComponent<LE_Object>().collision);
-			}
-            #endregion
-
-            // Add this section in UpdateGlobalObjectAttributes() after the Collision Toggle region (around line 910)
-            #region Invisible Mesh Toggle
-            if (EditorController.Instance.multipleObjectsSelected)
-            {
-                // If this is null, that means the "InvisibleMesh" in the current selected objects is different in at least one of them.
-                // If it's true or false, then ALL of them are true or false.
-                bool? invisibleMeshStateInObjects = null;
-                foreach (var @object in EditorController.Instance.currentSelectedObjects)
-                {
-                    LE_Object comp = @object.GetComponent<LE_Object>();
-
-                    if (invisibleMeshStateInObjects == null)
-                    {
-                        invisibleMeshStateInObjects = comp.invisibleMesh; // Direct field access
-                        continue;
-                    }
-
-                    if (invisibleMeshStateInObjects == comp.invisibleMesh)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        invisibleMeshStateInObjects = null;
-                        break;
-                    }
-                }
-
-                if (invisibleMeshStateInObjects != null)
-                {
-                    invisibleMeshToggle.Set((bool)invisibleMeshStateInObjects);
-                }
-                else
-                {
-					invisibleMeshToggle.SetAsUndefined();
-                }
-            }
-            else
-            {
-                invisibleMeshToggle.Set(obj.GetComponent<LE_Object>().invisibleMesh); // Direct field access
-            }
-            #endregion
+			SetPropInToggleDependingOfPropInObjects(collisionToggle, (obj) => obj.collision);
+			SetPropInToggleDependingOfPropInObjects(invisibleMeshToggle, (obj) => obj.invisibleMesh);
 
             #region Add Waypoint Button
             if (EditorController.Instance.multipleObjectsSelected)
@@ -1616,5 +1502,51 @@ namespace FS_LevelEditor.Editor.UI
 				EditorController.Instance.currentSelectedObjComponent.SetProperty("Loop", true);
 			}
 		}
+
+		T? GetPropForAllSelectedObjects<T>(Func<LE_Object, T> func, Func<LE_Object, bool> filter = null) where T : struct
+		{
+			if (EditorController.Instance.multipleObjectsSelected)
+			{
+				var objects = EditorController.Instance.currentSelectedObjects.Select(obj => obj.GetComponent<LE_Object>());
+
+				bool hasValue = false;
+				T first = default;
+
+				foreach (var obj in objects)
+				{
+					if (filter != null && !filter(obj)) continue;
+
+					var value = func(obj);
+
+					if (!hasValue)
+					{
+						first = value;
+						hasValue = true;
+						continue;
+					}
+
+					if (!EqualityComparer<T>.Default.Equals(first, value)) return null;
+				}
+
+				return hasValue ? first : null;
+			}
+			else
+			{
+				return func(EditorController.Instance.currentSelectedObjComponent);
+			}
+		}
+		void SetPropInToggleDependingOfPropInObjects(UITogglePatcher toggle, Func<LE_Object, bool> selector, Func<LE_Object, bool> filter = null)
+		{
+            bool? state = GetPropForAllSelectedObjects(selector, filter);
+
+            if (state is bool value)
+            {
+                toggle.Set(value);
+            }
+            else
+            {
+                toggle.SetAsUndefined();
+            }
+        }
 	}
 }
