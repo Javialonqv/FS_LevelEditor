@@ -897,7 +897,7 @@ namespace FS_LevelEditor.Editor.UI
 				setActiveAtStartToggle.gameObject.SetActive(false);
 				expandPanelButton.gameObject.SetActive(false);
 				globalObjAttributesToggle.gameObject.SetActive(false);
-				panelIsExpanded = false;
+				//panelIsExpanded = false;
 			}
 
 			showingPanel = show;
@@ -990,7 +990,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			UpdateGlobalObjectAttributes(objComponent.transform);
 
-			#region Set At Start Toggle
+			#region Set Active At Start Toggle
 			if (objComponent.canBeDisabledAtStart)
 			{
 				setActiveAtStartToggle.gameObject.SetActive(true);
