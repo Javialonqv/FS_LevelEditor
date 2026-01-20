@@ -205,13 +205,17 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
-        public void SetText(string newText)
+        public void SetText(string newText, bool executeOnChange = true)
         {
+            this.executeOnChange = executeOnChange;
             input.text = newText;
+            this.executeOnChange = true;
         }
-        public void SetText(float value)
+        public void SetText(float value, bool executeOnChange = true)
         {
+            this.executeOnChange = executeOnChange;
             input.text = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            this.executeOnChange = true;
         }
         public void SetText(float value, int maxDecimals, bool executeOnChange = true)
         {
@@ -222,6 +226,20 @@ namespace FS_LevelEditor.UI_Related
             this.executeOnChange = executeOnChange;
             input.text = value.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
             this.executeOnChange = true;
+        }
+
+        public void SetAsUndefined()
+        {
+            var validation = input.validation;
+            var onValidate = input.onValidate;
+
+            input.validation = UIInput.Validation.None;
+            input.onValidate = null;
+
+            SetText("...", false);
+
+            input.validation = validation;
+            input.onValidate = onValidate;
         }
     }
 }

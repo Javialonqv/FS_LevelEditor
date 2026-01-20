@@ -96,6 +96,14 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
+        public void SetAsUndefined()
+        {
+            SetOption(0, false);
+
+            buttonLabel.text = "...";
+            buttonColor.defaultColor = NGUI_Utils.fsButtonsDefaultColor;
+        }
+
         public void RefreshLocalization()
         {
             buttonLabel.text = Loc.Get(options[currentOption].text, false);
