@@ -135,8 +135,8 @@ namespace FS_LevelEditor.Editor.UI
         bool isSelectingAnObjectRightNow = false;
 		bool isSelectingMultipleObjects = false;
 		bool isSelectingMultipleObjectsOfTheSameType = false;
-		LE_Object currentSelectedObj;
-		List<LE_Object> currentSelectedObjects = new List<LE_Object>();
+		LE_Object currentSelectedObj => EditorController.Instance.currentSelectedObjComponent;
+		List<LE_Object> currentSelectedObjects => EditorController.Instance.currentSelectedObjsComponents;
 
         Vector3 objPositionWhenSelectedField;
 		Quaternion objRotationWhenSelectedField;
@@ -947,14 +947,11 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		public void SetMultipleObjectsSelected()
 		{
-			currentSelectedObj = null;
-			currentSelectedObjects = EditorController.Instance.currentSelectedObjects.Select(obj => obj.GetComponent<LE_Object>()).ToList();
-
             isSelectingAnObjectRightNow = true;
 			isSelectingMultipleObjects = true;
-			isSelectingMultipleObjectsOfTheSameType = LE_Object.ObjectsAreOfTheSameType(currentSelectedObjects);
+            isSelectingMultipleObjectsOfTheSameType = EditorController.Instance.multipleObjectsOfTheSameTypeSelected;
 
-			ShowPanel(true, "selection.MultipleObjectsSelected");
+            ShowPanel(true, "selection.MultipleObjectsSelected");
 
 			setActiveAtStartToggle.gameObject.SetActive(true);
 			expandPanelButton.gameObject.SetActive(true);
@@ -1000,9 +997,6 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			isSelectingAnObjectRightNow = true;
 			isSelectingMultipleObjects = false;
-
-			currentSelectedObj = objComponent;
-			currentSelectedObjects.Clear();
 
 			// The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.
 			ShowPanel(true, objComponent.objectFullNameWithID);
@@ -1094,12 +1088,11 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
-				foreach (var obj in EditorController.Instance.currentSelectedObjects)
+				foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
 				{
-					LE_Object comp = obj.GetComponent<LE_Object>();
-					if (comp.canBeDisabledAtStart)
+					if (obj.canBeDisabledAtStart)
 					{
-						comp.setActiveAtStart = setActiveAtStartToggle.isChecked;
+                        obj.setActiveAtStart = setActiveAtStartToggle.isChecked;
 					}
 				}
 			}
@@ -1113,10 +1106,9 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
-				foreach (var obj in EditorController.Instance.currentSelectedObjects)
+				foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
 				{
-					LE_Object comp = obj.GetComponent<LE_Object>();
-					comp.collision = collisionToggle.isChecked;
+                    obj.collision = collisionToggle.isChecked;
 				}
 			}
 			else
@@ -1129,10 +1121,9 @@ namespace FS_LevelEditor.Editor.UI
         {
             if (EditorController.Instance.multipleObjectsSelected)
             {
-                foreach (var obj in EditorController.Instance.currentSelectedObjects)
+                foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
                 {
-                    LE_Object comp = obj.GetComponent<LE_Object>();
-                    comp.invisibleMesh = invisibleMeshToggle.isChecked;
+                    obj.invisibleMesh = invisibleMeshToggle.isChecked;
                 }
             }
             else
@@ -1207,7 +1198,7 @@ namespace FS_LevelEditor.Editor.UI
             if (EditorController.Instance.multipleObjectsSelected)
 			{
 				// Only enable the button when ALL of the selected objects allow waypoints.
-				addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjects.All(x => x.GetComponent<LE_Object>().canHaveWaypoints));
+				addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjsComponents.All(x => x.canHaveWaypoints));
 			}
 			else
 			{
@@ -1582,15 +1573,15 @@ namespace FS_LevelEditor.Editor.UI
 			{
 				bool toReturn = false;
 
-				foreach (var obj in EditorController.Instance.currentSelectedObjects)
+				foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
 				{
 					if (useBaseMethod)
 					{
-                        toReturn = obj.GetComponent<LE_Object>().SetPropertyBase(propertyName, value);
+                        toReturn = obj.SetPropertyBase(propertyName, value);
                     }
 					else
 					{
-                        toReturn = obj.GetComponent<LE_Object>().SetProperty(propertyName, value);
+                        toReturn = obj.SetProperty(propertyName, value);
                     }
                 }
 
@@ -1640,7 +1631,7 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
-				var objects = EditorController.Instance.currentSelectedObjects.Select(obj => obj.GetComponent<LE_Object>());
+				var objects = EditorController.Instance.currentSelectedObjsComponents;
 
 				bool hasValue = false;
 				T first = default;

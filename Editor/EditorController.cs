@@ -81,6 +81,7 @@ namespace FS_LevelEditor.Editor
         // When there's just one object selected, that object in in the currentSelectedObj variable.
         // But when there are multiple objects selected, this list contains em and "currentSelectedObj" is "multipleSelectedObjsParent".
         public List<GameObject> currentSelectedObjects = new List<GameObject>();
+        public List<LE_Object> currentSelectedObjsComponents = new List<LE_Object>();
         #endregion
 
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
@@ -140,6 +141,7 @@ namespace FS_LevelEditor.Editor
 
         #region Editor Variables
         public bool multipleObjectsSelected = false;
+        public bool multipleObjectsOfTheSameTypeSelected = false;
         bool isDuplicatingObj = false;
         public bool levelHasBeenModified = false;
         public bool showAllWaypoints = false;
@@ -1984,7 +1986,9 @@ namespace FS_LevelEditor.Editor
             if (obj) Logger.DebugLog($"SetSelectedObj called for object with name: \"{obj.name}\".");
             else Logger.DebugLog($"SetSelectedObj called with NO NEW TARGET OBJECT (To deselect).");
 
-            if (obj && obj != multipleSelectedObjsParent && obj.GetComponent<LE_Object>() == null)
+            LE_Object objComp = null;
+
+            if (obj && obj != multipleSelectedObjsParent && !obj.TryGetComponent<LE_Object>(out objComp))
             {
                 Logger.Error($"Illegal object selected! Name: {obj.name}, path: {obj.GetGameObjectPath(">")}");
                 // Idk either mate.
@@ -2000,9 +2004,9 @@ namespace FS_LevelEditor.Editor
             {
                 if (multipleObjectsSelected)
                 {
-                    foreach (var @object in currentSelectedObjects)
+                    foreach (var @object in currentSelectedObjsComponents)
                     {
-                        @object.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.NORMAL);
+                        @object.SetObjectColor(LE_Object.LEObjectContext.NORMAL);
                     }
                 }
                 else
@@ -2020,17 +2024,23 @@ namespace FS_LevelEditor.Editor
                 if (currentSelectedObj != null && currentSelectedObj != multipleSelectedObjsParent)
                 {
                     // But only if it hasn't been selected yet.
-                    if (!currentSelectedObjects.Contains(currentSelectedObj)) currentSelectedObjects.Add(currentSelectedObj);
+                    if (!currentSelectedObjects.Contains(currentSelectedObj))
+                    {
+                        currentSelectedObjects.Add(currentSelectedObj);
+                        currentSelectedObjsComponents.Add(currentSelectedObjComponent);
+                    }
                 }
                 // And add the most recent now, ofc lol (but only if it hasn't been selected yet).
                 if (!currentSelectedObjects.Contains(obj))
                 {
                     currentSelectedObjects.Add(obj);
+                    currentSelectedObjsComponents.Add(objComp);
                 }
                 else // If the object is already in the list, DEselect it:
                 {
                     currentSelectedObjects.Remove(obj);
-                    obj.transform.parent = obj.GetComponent<LE_Object>().objectParent; // Remove the object from the multipleSelectedObjsParent.
+                    currentSelectedObjsComponents.Remove(objComp);
+                    obj.transform.parent = objComp.objectParent; // Remove the object from the multipleSelectedObjsParent.
                     if (currentSelectedObjects.Count == 1)
                     {
                         SetSelectedObj(currentSelectedObjects[0]); // If there's only one object left, set it as the selected object.
@@ -2050,7 +2060,7 @@ namespace FS_LevelEditor.Editor
                     centeredPosition /= currentSelectedObjects.Count;
 
                     // Remove the parent from the selected objects, set the new parent position and put the parent in the objects again.
-                    currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
+                    currentSelectedObjsComponents.ForEach(x => x.transform.parent = x.objectParent);
                     multipleSelectedObjsParent.transform.localScale = Vector3.one;
                     multipleSelectedObjsParent.transform.position = centeredPosition;
                     multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
@@ -2062,43 +2072,27 @@ namespace FS_LevelEditor.Editor
                     Logger.DebugLog($"Adding \"{obj.name}\" to the multiple selected objects.");
 
                     #region Set Current Selected Obj Component
-                    // Get obj component:
-                    bool selectionHasDifferentObjTypes = false;
-                    LE_Object.ObjectType? firstTypeFound = null;
-                    foreach (var objInList in currentSelectedObjects)
-                    {
-                        // If there's no type found yet, use the first one found.
-                        if (firstTypeFound == null)
-                        {
-                            firstTypeFound = objInList.GetComponent<LE_Object>().objectType;
-                            continue;
-                        }
-
-                        // // If the obj type of this obj is different from the first found one, the obj types diffier.
-                        if (objInList.GetComponent<LE_Object>().objectType != firstTypeFound)
-                        {
-                            selectionHasDifferentObjTypes = true;
-                        }
-                    }
+                    multipleObjectsOfTheSameTypeSelected = LE_Object.ObjectsAreOfTheSameType(currentSelectedObjsComponents);
 
                     // If the obj types diffier, set the component as null.
-                    if (selectionHasDifferentObjTypes)
+                    if (!multipleObjectsOfTheSameTypeSelected)
                     {
                         if (currentSelectedObjComponent != null) currentSelectedObjComponent.OnDeselect(null);
                         currentSelectedObjComponent = null;
                     }
                     else // Otherwise, get the component from the first element in the list.
                     {
-                        currentSelectedObjComponent = currentSelectedObjects[0].GetComponent<LE_Object>();
+                        currentSelectedObjComponent = currentSelectedObjsComponents[0];
                     }
                     #endregion
                 }
                 else
                 {
                     multipleObjectsSelected = false;
+                    multipleObjectsOfTheSameTypeSelected = false;
 
                     currentSelectedObj = obj;
-                    currentSelectedObjComponent = currentSelectedObj.GetComponent<LE_Object>();
+                    currentSelectedObjComponent = objComp;
                     currentSelectedObjComponent.OnSelect();
 
                     Logger.Log($"\"{obj.name}\" selected while pressing CTRL, BUT NO OTHER OBJECTS ARE SELECTED.");
@@ -2112,11 +2106,13 @@ namespace FS_LevelEditor.Editor
                     if (currentSelectedObjects.Count > 0)
                     {
                         Logger.Log($"Deselecting the current selected objects, the count was: {currentSelectedObjects.Count}.");
-                        currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
-                        currentSelectedObjects.ForEach(x => x.GetComponent<LE_Object>().OnDeselect(obj));
+                        currentSelectedObjsComponents.ForEach(x => x.transform.parent = x.objectParent);
+                        currentSelectedObjsComponents.ForEach(x => x.OnDeselect(obj));
                         currentSelectedObjects.Clear();
+                        currentSelectedObjsComponents.Clear();
                     }
                     multipleObjectsSelected = false; // Set the bool again.
+                    multipleObjectsOfTheSameTypeSelected = false;
                 }
                 else // Otherwise, if it IS... set this bool again to true.
                 {
@@ -2144,9 +2140,9 @@ namespace FS_LevelEditor.Editor
                 // Change the color of the new select object to the "selected" color.
                 if (multipleObjectsSelected)
                 {
-                    foreach (var @object in currentSelectedObjects)
+                    foreach (var @object in currentSelectedObjsComponents)
                     {
-                        @object.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.SELECT);
+                        @object.SetObjectColor(LE_Object.LEObjectContext.SELECT);
                     }
                 }
                 else
@@ -2160,7 +2156,7 @@ namespace FS_LevelEditor.Editor
                 if (multipleObjectsSelected)
                 {
                     SelectedObjPanel.Instance.SetMultipleObjectsSelected();
-                    currentSelectedObjects.ForEach(x => x.GetComponent<LE_Object>().OnSelect());
+                    currentSelectedObjsComponents.ForEach(x => x.OnSelect());
                 }
                 else
                 {
@@ -2223,19 +2219,23 @@ namespace FS_LevelEditor.Editor
             multipleSelectedObjsParent.transform.position = centeredPosition;
             if (!isForUndo) multipleSelectedObjsParent.transform.rotation = Quaternion.identity;
 
-            currentSelectedObjects = new List<GameObject>();
+            currentSelectedObjects.Clear();
+            currentSelectedObjsComponents.Clear();
+
             foreach (var obj in filtered)
             {
-                var leObj = obj.GetComponent<LE_Object>();
+                var objComp = obj.GetComponent<LE_Object>();
 
                 obj.transform.parent = multipleSelectedObjsParent.transform;
-                leObj.SetObjectColor(LE_Object.LEObjectContext.SELECT);
-                leObj.OnSelect();
+                objComp.SetObjectColor(LE_Object.LEObjectContext.SELECT);
+                objComp.OnSelect();
 
                 currentSelectedObjects.Add(obj);
+                currentSelectedObjsComponents.Add(objComp);
             }
 
             multipleObjectsSelected = true;
+            multipleObjectsOfTheSameTypeSelected = LE_Object.ObjectsAreOfTheSameType(currentSelectedObjsComponents);
             currentSelectedObj = multipleSelectedObjsParent;
 
             if (currentSelectedObjects.Count > 0)
@@ -2590,12 +2590,10 @@ namespace FS_LevelEditor.Editor
 
                 // Create a copy of every object inside of the selected objects list.
                 List<GameObject> newSelectedObjectsList = new List<GameObject>();
-                foreach (var obj in currentSelectedObjects)
+                foreach (var objComp in currentSelectedObjsComponents)
                 {
-                    LE_Object objComponent = obj.GetComponent<LE_Object>();
-
                     GameObject placedObj = null;
-                    if (LE_Object.IsWaypoint(objComponent.objectType.Value))
+                    if (LE_Object.IsWaypoint(objComp.objectType.Value))
                     {
                         // Weird shit happends when duplicating waypoints + multiple objects, and I'm not mentally stable enough to see why. - Jav.
                         Utils.ShowCustomNotificationRed("Duplicating waypoints while selecting multiple objects is not supported.", 3f);
@@ -2603,31 +2601,31 @@ namespace FS_LevelEditor.Editor
                     }
                     else
                     {
-                        placedObj = PlaceObject(objComponent.objectType, objComponent.transform.position, objComponent.transform.eulerAngles,
-                        objComponent.transform.localScale, false);
+                        placedObj = PlaceObject(objComp.objectType, objComp.transform.position, objComp.transform.eulerAngles,
+                        objComp.transform.localScale, false);
                     }
 
                     if (!placedObj)
                     {
-                        Logger.Log($"PlaceObject when duplicating \"{objComponent.objectType}\" returned null. It probably reached its max object limit.");
+                        Logger.Log($"PlaceObject when duplicating \"{objComp.objectType}\" returned null. It probably reached its max object limit.");
                         continue;
                     }
                     LE_Object newPlacedObjComp = placedObj.GetComponent<LE_Object>();
 
                     // Copy every property from the origin to the copied obj.
-                    newPlacedObjComp.setActiveAtStart = objComponent.setActiveAtStart;
-                    newPlacedObjComp.collision = objComponent.collision;
-                    newPlacedObjComp.invisibleMesh = objComponent.invisibleMesh;
-                    newPlacedObjComp.startMovingAtStart = objComponent.startMovingAtStart;
-                    newPlacedObjComp.movingSpeed = objComponent.movingSpeed;
-                    newPlacedObjComp.startDelay = objComponent.startDelay;
-                    newPlacedObjComp.waitTime = objComponent.waitTime;
-                    newPlacedObjComp.waypointMode = objComponent.waypointMode;
-                    foreach (var property in objComponent.properties)
+                    newPlacedObjComp.setActiveAtStart = objComp.setActiveAtStart;
+                    newPlacedObjComp.collision = objComp.collision;
+                    newPlacedObjComp.invisibleMesh = objComp.invisibleMesh;
+                    newPlacedObjComp.startMovingAtStart = objComp.startMovingAtStart;
+                    newPlacedObjComp.movingSpeed = objComp.movingSpeed;
+                    newPlacedObjComp.startDelay = objComp.startDelay;
+                    newPlacedObjComp.waitTime = objComp.waitTime;
+                    newPlacedObjComp.waypointMode = objComp.waypointMode;
+                    foreach (var property in objComp.properties)
                     {
                         newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
                     }
-                    foreach (var waypoint in objComponent.waypoints)
+                    foreach (var waypoint in objComp.waypoints)
                     {
                         newPlacedObjComp.waypoints.Add((WaypointData)Utils.CreateCopyOf(waypoint));
                     }
