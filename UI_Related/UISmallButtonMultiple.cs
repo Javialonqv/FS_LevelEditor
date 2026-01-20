@@ -98,7 +98,8 @@ namespace FS_LevelEditor.UI_Related
 
         public void SetAsUndefined()
         {
-            SetOption(0, false);
+            // Select the last option internally, so when the user clicks again, it'll select the first available option.
+            SetOption(options.Count - 1, false);
 
             buttonLabel.text = "...";
             buttonColor.defaultColor = NGUI_Utils.fsButtonsDefaultColor;
