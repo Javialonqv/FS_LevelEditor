@@ -11,6 +11,7 @@ using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace FS_LevelEditor.Editor.UI
@@ -133,7 +134,9 @@ namespace FS_LevelEditor.Editor.UI
 
         bool isSelectingAnObjectRightNow = false;
 		bool isSelectingMultipleObjects = false;
+		bool isSelectingMultipleObjectsOfTheSameType = false;
 		LE_Object currentSelectedObj;
+		List<LE_Object> currentSelectedObjects = new List<LE_Object>();
 
         Vector3 objPositionWhenSelectedField;
 		Quaternion objRotationWhenSelectedField;
@@ -944,8 +947,12 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		public void SetMultipleObjectsSelected()
 		{
-			isSelectingAnObjectRightNow = true;
+			currentSelectedObj = null;
+			currentSelectedObjects = EditorController.Instance.currentSelectedObjects.Select(obj => obj.GetComponent<LE_Object>()).ToList();
+
+            isSelectingAnObjectRightNow = true;
 			isSelectingMultipleObjects = true;
+			isSelectingMultipleObjectsOfTheSameType = LE_Object.ObjectsAreOfTheSameType(currentSelectedObjects);
 
 			ShowPanel(true, "selection.MultipleObjectsSelected");
 
@@ -954,17 +961,48 @@ namespace FS_LevelEditor.Editor.UI
 
 			SetPropInToggleDependingOfPropInObjects(setActiveAtStartToggle, (obj) => obj.setActiveAtStart, (obj) => obj.canBeDisabledAtStart);
 
-            globalObjAttributesToggle.gameObject.SetActive(false);
-			globalObjAttributesToggle.SetToggleState(true, true);
+            UpdateGlobalObjectAttributes(EditorController.Instance.currentSelectedObj.transform);
 
-			UpdateGlobalObjectAttributes(EditorController.Instance.currentSelectedObj.transform);
-		}
+			if (isSelectingMultipleObjectsOfTheSameType)
+			{
+                #region Select Right Attributes Panel
+                bool specificAttributesFound = false;
+
+                attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
+
+				// We know that all of the objects are of the same type, so doesn't matter which one we use, whatever!
+                specificAttributesFound = attributesPanels.TryGetValue(currentSelectedObjects[0].objectType, out GameObject panel);
+                if (specificAttributesFound)
+                {
+                    panel.SetActive(true);
+					UpdateObjectSpecificAttributes(panel, currentSelectedObjects);
+                }
+				else
+				{
+					// Doesn't matter if they're of the same tiye, make them behave like they're not, so it only displays global props.
+					isSelectingMultipleObjectsOfTheSameType = false;
+				}
+				#endregion
+            }
+
+            if (!isSelectingMultipleObjectsOfTheSameType)
+            {
+                globalObjAttributesToggle.gameObject.SetActive(false);
+                globalObjAttributesToggle.SetToggleState(true, true);
+            }
+            else
+            {
+                globalObjAttributesToggle.gameObject.SetActive(true);
+                globalObjAttributesToggle.SetToggleState(false, true);
+            }
+        }
 		public void SetSelectedObject(LE_Object objComponent)
 		{
 			isSelectingAnObjectRightNow = true;
 			isSelectingMultipleObjects = false;
 
 			currentSelectedObj = objComponent;
+			currentSelectedObjects.Clear();
 
 			// The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.
 			ShowPanel(true, objComponent.objectFullNameWithID);
@@ -979,7 +1017,7 @@ namespace FS_LevelEditor.Editor.UI
             if (specificAttributesFound)
             {
 				panel.SetActive(true);
-                UpdateObjectSpecificAttributes(objComponent, panel);
+                UpdateObjectSpecificAttributes(panel, objComponent);
             }
             #endregion
 
@@ -994,7 +1032,7 @@ namespace FS_LevelEditor.Editor.UI
 			if (objComponent.canBeDisabledAtStart)
 			{
 				setActiveAtStartToggle.gameObject.SetActive(true);
-				setActiveAtStartToggle.Set(objComponent.setActiveAtStart);
+				setActiveAtStartToggle.Set(objComponent.setActiveAtStart, instant: true);
 			}
 			else
 			{
@@ -1240,16 +1278,48 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
 
         #region Object Specific Attributes Logic
-        void UpdateObjectSpecificAttributes(LE_Object objComp, GameObject panelInUI)
+        void UpdateObjectSpecificAttributes(GameObject panelInUI, params List<LE_Object> objComps)
         {
             // OFFICIALLY, THIS IS THE ULTIMATE MOST BETTER AUTOMATED PROPERTY UPDATER OF THE WORLD!
             foreach (var attribute in panelInUI.GetChilds())
             {
                 string attributeName = attribute.name; // Assuming the name of the childs in the UI is the same as the REAL attribute name.
-                if (objComp.TryGetProperty(attributeName, out object value))
+
+				// Only enable buttons when it's selecting one object, it's not compatible with multiple objs.
+				if (attribute.GetChild("Button"))
+				{
+					attribute.SetActive(objComps.Count == 1);
+					continue;
+				}
+
+				if (!objComps[0].TryGetProperty(attributeName, out _)) continue;
+				
+				bool valuesAreTheSame = true;
+				object value = null;
+                #region Detect If Values Foreach Object Are Different
+                if (objComps.Count == 1)
+				{
+					valuesAreTheSame = true;
+					value = objComps[0].GetProperty(attributeName);
+				}
+				else
+				{
+					value = objComps[0].GetProperty(attributeName);
+                    for (int i = 0; i < objComps.Count; i++)
+					{
+						if (!Equals(objComps[i].GetProperty(attributeName), value))
+						{
+							valuesAreTheSame = false;
+							break;
+						}
+					}
+                }
+                #endregion
+
+                if (attribute.ExistsChild("Field"))
                 {
-                    if (attribute.ExistsChild("Field"))
-                    {
+                    if (valuesAreTheSame)
+					{
                         switch (value)
                         {
                             case int intValue:
@@ -1271,10 +1341,17 @@ namespace FS_LevelEditor.Editor.UI
                                 continue;
                         }
 
-                        attribute.GetChild("Field").GetComponent<UIInput>().text = (string)value;
+						attribute.GetChild("Field").GetComponent<UICustomInputField>().SetText((string)value, false);
                     }
-                    else if (attribute.ExistsChild("Toggle"))
-                    {
+					else
+					{
+						attribute.GetChild("Field").GetComponent<UICustomInputField>().SetAsUndefined();
+					}
+                }
+                else if (attribute.ExistsChild("Toggle"))
+                {
+                    if (valuesAreTheSame)
+					{
                         // Values for toggles can ONLY be bools, nothing else LOL.
                         if (value is not bool)
                         {
@@ -1282,10 +1359,17 @@ namespace FS_LevelEditor.Editor.UI
                             continue;
                         }
 
-                        attribute.GetChild("Toggle").GetComponent<UIToggle>().Set((bool)value);
+                        attribute.GetChild("Toggle").GetComponent<UITogglePatcher>().Set((bool)value, false, true);
                     }
-                    else if (attribute.ExistsChild("ButtonMultiple"))
-                    {
+					else
+					{
+						attribute.GetChild("Toggle").GetComponent<UITogglePatcher>().SetAsUndefined();
+					}
+                }
+                else if (attribute.ExistsChild("ButtonMultiple"))
+                {
+					if (valuesAreTheSame)
+					{
                         // Values for multiple option buttons can be, int or maybe an enum
                         if (value is not int && value is not Enum)
                         {
@@ -1295,29 +1379,47 @@ namespace FS_LevelEditor.Editor.UI
 
                         attribute.GetChild("ButtonMultiple").GetComponent<UISmallButtonMultiple>().SetOption((int)value);
                     }
+					else
+					{
+						attribute.GetChild("ButtonMultiple").GetComponent<UISmallButtonMultiple>().SetAsUndefined();
+					}
                 }
             }
 
-            UpdateOptionalPropertiesVisibility(objComp.objectType);
+			UpdateOptionalPropertiesVisibility(objComps[0].objectType);
         }
 
         void UpdateOptionalPropertiesVisibility(LE_Object.ObjectType? type)
         {
             foreach (var prop in optionalProps.Where(p => p.Key.type == type))
             {
-                var value = prop.Value;
+				// When selecting multiple objects, just show 'em all!
+				if (isSelectingMultipleObjects)
+				{
+					// Except those props whose Y position doesn't change, hide those.
+					if (objectPropsWithNoYChange.Contains((type.Value, prop.Key.propName)))
+					{
+						attributesPanels[type].GetChild(prop.Key.propName).SetActive(false);
+						continue;
+					}
 
-                bool setActive = false;
+                    attributesPanels[type].GetChild(prop.Key.propName).SetActive(true);
+				}
+				else
+				{
+                    var value = prop.Value;
+                    bool setActive = false;
 
-                if (value.requiredPropName == "waypoints")
-                {
-                    setActive = currentSelectedObj.GetProperty<List<WaypointData>>(value.requiredPropName).Count > 0;
+                    if (value.requiredPropName == "waypoints")
+                    {
+                        setActive = currentSelectedObj.GetProperty<List<WaypointData>>(value.requiredPropName).Count > 0;
+                    }
+                    else
+                    {
+                        setActive = Equals(currentSelectedObj.GetProperty(value.requiredPropName), value.requiredPropValue);
+                    }
+                    attributesPanels[type].GetChild(prop.Key.propName).SetActive(setActive);
                 }
-                else
-                {
-                    setActive = Equals(currentSelectedObj.GetProperty(value.requiredPropName), value.requiredPropValue);
-                }
-                attributesPanels[type].GetChild(prop.Key.propName).SetActive(setActive);
             }
         }
         #endregion
@@ -1400,7 +1502,7 @@ namespace FS_LevelEditor.Editor.UI
 				// Accept only if it's 4 digits (0-9)
 				if (text.Length == 4 && text.All(char.IsDigit))
 				{
-					if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, text))
+					if (SetPropertyForCurrentSelectedObjects(propertyName, text))
 					{
 						EditorController.Instance.levelHasBeenModified = true;
 						inputField.Set(true);
@@ -1418,7 +1520,7 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			if (propertyName == "Intensity" && Utils.TryParseFloat(inputField.GetText(), out float intensityValue))
 			{
-				if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, intensityValue))
+				if (SetPropertyForCurrentSelectedObjects(propertyName, intensityValue))
 				{
 					EditorController.Instance.levelHasBeenModified = true;
 					inputField.Set(true);
@@ -1430,9 +1532,7 @@ namespace FS_LevelEditor.Editor.UI
 				return;
 			}
 
-			bool setPropResult = isGlobalProp ? EditorController.Instance.currentSelectedObjComponent.SetPropertyBase(propertyName, inputField.GetText())
-				: EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, inputField.GetText());
-            if (setPropResult)
+            if (SetPropertyForCurrentSelectedObjects(propertyName, inputField.GetText(), isGlobalProp))
 			{
 				EditorController.Instance.levelHasBeenModified = true;
 				inputField.Set(true);
@@ -1454,7 +1554,7 @@ namespace FS_LevelEditor.Editor.UI
 					break;
 			}
 
-			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, newValue))
+			if (SetPropertyForCurrentSelectedObjects(propertyName, newValue))
 			{
 				EditorController.Instance.levelHasBeenModified = true;
 			}
@@ -1463,7 +1563,7 @@ namespace FS_LevelEditor.Editor.UI
         }
 		public void SetPropertyWithButtonMultiple(string propertyName, UISmallButtonMultiple button)
 		{
-			if (EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, button.currentOption))
+			if (SetPropertyForCurrentSelectedObjects(propertyName, button.currentOption))
 			{
 				EditorController.Instance.levelHasBeenModified = true;
 			}
@@ -1474,6 +1574,39 @@ namespace FS_LevelEditor.Editor.UI
 			{
 				EditorController.Instance.levelHasBeenModified = true;
 			}
+		}
+
+		bool SetPropertyForCurrentSelectedObjects(string propertyName, object value, bool useBaseMethod = false)
+		{
+			if (EditorController.Instance.multipleObjectsSelected)
+			{
+				bool toReturn = false;
+
+				foreach (var obj in EditorController.Instance.currentSelectedObjects)
+				{
+					if (useBaseMethod)
+					{
+                        toReturn = obj.GetComponent<LE_Object>().SetPropertyBase(propertyName, value);
+                    }
+					else
+					{
+                        toReturn = obj.GetComponent<LE_Object>().SetProperty(propertyName, value);
+                    }
+                }
+
+				return toReturn;
+			}
+			else
+			{
+				if (useBaseMethod)
+				{
+					return EditorController.Instance.currentSelectedObjComponent.SetPropertyBase(propertyName, value);
+                }
+				else
+				{
+                    return EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, value);
+                }
+            }
 		}
 
 		// Extra functions for specific things for specific attributes for specific objects LOL.
@@ -1541,7 +1674,7 @@ namespace FS_LevelEditor.Editor.UI
 
             if (state is bool value)
             {
-                toggle.Set(value);
+                toggle.Set(value, true, true);
             }
             else
             {

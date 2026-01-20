@@ -941,6 +941,20 @@ namespace FS_LevelEditor
         {
             return type.ToString().Contains("Waypoint", StringComparison.OrdinalIgnoreCase);
         }
+
+        public static bool ObjectsAreOfTheSameType(params List<LE_Object> objects)
+        {
+            if (objects.Count == 1) return true;
+
+            ObjectType? first = objects[0].objectType;
+
+            for (int i = 1; i < objects.Count; i++)
+            {
+                if (objects[i].objectType != first) return false;
+            }
+
+            return true;
+        }
     }
 
     [MelonLoader.RegisterTypeInIl2Cpp]
