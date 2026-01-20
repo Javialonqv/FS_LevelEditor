@@ -51,7 +51,7 @@ namespace FS_LevelEditor.UI_Related
             if (onClick != null) onClick(toggle.isChecked);
         }
 
-        public void Set(bool newState, bool executeOnChange = true)
+        public void Set(bool newState, bool executeOnChange = true, bool instant = false)
         {
             if (isUndefined)
             {
@@ -60,7 +60,9 @@ namespace FS_LevelEditor.UI_Related
             }
 
             this.executeOnChange = executeOnChange;
+            toggle.instantTween = instant;
             toggle.Set(newState);
+            toggle.instantTween = false;
 
             // Re-enable after a small delay to avoid a bug where OnToggleChange() was called from an still unknown code, and onClick was executed when it shouldn't.
             Utils.Invoke(() => {
@@ -69,7 +71,7 @@ namespace FS_LevelEditor.UI_Related
         }
         public void SetAsUndefined()
         {
-            if (isChecked) Set(false, false);
+            if (isChecked) Set(false, false, true);
 
             undefinedLine.SetActive(true);
             isUndefined = true;
