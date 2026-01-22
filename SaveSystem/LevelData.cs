@@ -151,7 +151,7 @@ namespace FS_LevelEditor.SaveSystem
 
             if (EditorController.Instance.multipleObjectsSelected)
             {
-                EditorController.Instance.currentSelectedObjects.ForEach(x => x.transform.parent = x.GetComponent<LE_Object>().objectParent);
+                EditorController.Instance.currentSelectedObjsComponents.ForEach(x => x.transform.parent = x.objectParent);
             }
 
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
