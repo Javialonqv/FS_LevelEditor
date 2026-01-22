@@ -81,6 +81,16 @@ namespace FS_LevelEditor.UI_Related
 				return _juraFont;
 			}
 		}
+        static UIFont _notoSansFont;
+        public static UIFont notoSansFont
+        {
+            get
+            {
+                if (!_notoSansFont) _notoSansFont = GameObject.Find("MainMenu/Camera/Holder/Main/GamerTagDisplay/GamerTagLabel").GetComponent<UILabel>().font;
+                return _notoSansFont;
+            }
+        }
+
 		// Color
 		public static Color fsPauseButtonsDefaultColor
         {

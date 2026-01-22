@@ -556,6 +556,7 @@ namespace FS_LevelEditor
                 lvlButton.buttonLabel.fontSize = 40;
                 lvlButton.buttonLabel.transform.localPosition = new Vector3(-515f, 0f, 0f);
                 lvlButton.buttonLabel.color = Color.white;
+                lvlButton.buttonLabel.font = NGUI_Utils.notoSansFont;
 
                 // Only setup UIButtonScale and UIButton when is a valid level file, otherwise destroy the UIButton, UIButtonScale and UIButtonColor.
                 if (data != null)
