@@ -88,7 +88,8 @@ namespace FS_LevelEditor.SaveSystem.Converters
                     return convertedWaypoints;
                 }
 
-                // The properties only contain the ORIGINAL type, but what if the save data contains info about an object with a custom serialization type?
+                // The properties only contain the ORIGINAL type, but what if the save data contains info about an object with a CUSTOM serialization type?
+                // Example: property value type is Vector3, but the saved type is actually Vector3Serializable.
                 Type typeToDeserealize = SavePatches.ConvertTypeToSerializedObjectType(type);
                 return JsonSerializer.Deserialize(rawValue.GetRawText(), typeToDeserealize);
             }
