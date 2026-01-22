@@ -77,12 +77,23 @@ namespace FS_LevelEditor
 
 		public override bool SetProperty(string name, object value)
 		{
-			if (name == "TriggerMode" && value is int)
+			if (name == "TriggerMode")
 			{
-				properties[name] = value;
-				// No need to reconfigure collision detection since we handle it in the detector component
-				return true;
-			}
+				if (value is int)
+				{
+					properties[name] = (TriggerMode)value;
+
+                    // No need to reconfigure collision detection since we handle it in the detector component
+                    return true;
+                }
+                else if (value is TriggerMode)
+                {
+                    properties[name] = value;
+
+                    // No need to reconfigure collision detection since we handle it in the detector component
+                    return true;
+                }
+            }
 
 			if (GetAvailableEventsIDs().Contains(name))
 			{
