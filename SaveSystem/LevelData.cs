@@ -484,7 +484,7 @@ namespace FS_LevelEditor.SaveSystem
             {
                 foreach (var property in objectData.properties)
                 {
-                    spawnedObject.SetProperty(property.Key, SavePatches.ConvertFromSerializableValue(property.Value));
+                    spawnedObject.SetProperty(property.Key, property.Value);
                 }
             }
         }
