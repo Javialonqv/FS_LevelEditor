@@ -20,6 +20,14 @@ namespace FS_LevelEditor
             return transform.parent.parent.GetComponent<SawWaypointSupport>();
         }
 
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "WaitTime", 0f }
+            };
+        }
+
         public override void InitComponent()
         {
             Waypoint script = gameObject.AddComponent<Waypoint>();
