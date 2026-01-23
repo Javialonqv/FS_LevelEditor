@@ -130,6 +130,14 @@ namespace FS_LevelEditor.Editor.UI
 
 			{ (LE_Object.ObjectType.SAW, "WaitTime"), ("waypoints", null) }, // If it's checking for waypoints, the code already checks if the list count is greater than 0.
         };
+		static readonly Dictionary<LE_Object.ObjectType, string> addWaypointBtnLocKeys = new Dictionary<LE_Object.ObjectType, string>()
+		{
+			{ LE_Object.ObjectType.SAW, "AddSawWaypoint" },
+			{ LE_Object.ObjectType.SAW_WAYPOINT, "AddSawWaypoint" },
+
+			{ LE_Object.ObjectType.MOVING_PLATFORM, "AddMovingPlatformWaypoint" },
+			{ LE_Object.ObjectType.MOVING_PLATFORM_WAYPOINT, "AddMovingPlatformWaypoint" },
+		};
         #endregion
 
         bool isSelectingAnObjectRightNow = false;
@@ -691,10 +699,20 @@ namespace FS_LevelEditor.Editor.UI
 			}
 
             // Add "Add Waypoint" button if it has local waypoints.
-            if (LE_Object.customWaypointSupports.ContainsKey(type))
+            if (LE_Object.customWaypointSupports.ContainsKey(type) || LE_Object.IsWaypoint(type))
 			{
-				string addWaypointBtnLocKey = "Add" + type.ToString().Replace("_", string.Empty) + "Waypoint";
-				CreateObjectAttribute(addWaypointBtnLocKey, AttributeType.BUTTON, null, null, "AddWaypoint");
+				string addWaypointBtnLocKey = null;
+
+				if (addWaypointBtnLocKeys.ContainsKey(type))
+				{
+					addWaypointBtnLocKey = addWaypointBtnLocKeys[type];
+				}
+				else
+				{
+					addWaypointBtnLocKey = "AddGlobalWaypoint";
+				}
+
+                CreateObjectAttribute(addWaypointBtnLocKey, AttributeType.BUTTON, null, null, "AddWaypoint");
 			}
 
 			attributesPanels.Add(type, parent);
