@@ -48,7 +48,8 @@ namespace FS_LevelEditor
         {
             return new Dictionary<string, object>()
             {
-                { "WaitTime", 0f }
+                { "WaitTime", 0f },
+                { "MoveSpeed", 5f }
             };
         }
 
@@ -122,6 +123,22 @@ namespace FS_LevelEditor
                 else if (value is float)
                 {
                     properties["WaitTime"] = (float)value;
+                    return true;
+                }
+            }
+            else if (name == "MoveSpeed")
+            {
+                if (value is string)
+                {
+                    if (Utils.TryParseFloat((string)value, out float result))
+                    {
+                        properties["MoveSpeed"] = result;
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties["MoveSpeed"] = (float)value;
                     return true;
                 }
             }

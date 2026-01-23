@@ -57,6 +57,8 @@ namespace FS_LevelEditor
         LE_Waypoint currentWaypoint;
         bool currentlyMoving = false;
 
+        float currentMovingSpeed;
+
         public virtual List<WaypointData> targetWaypointsData => targetObject.waypoints;
         public virtual LE_Object.ObjectType waypointTypeToUse => LE_Object.ObjectType.WAYPOINT;
         public virtual bool needsEmptyWaypointAtStart => false;
@@ -161,6 +163,8 @@ namespace FS_LevelEditor
                 firstWaypoint.properties["WaitTime"] = 0f;
             }
 
+            firstWaypoint.properties["MoveSpeed"] = targetObject.movingSpeed;
+
             originalList.Insert(0, firstWaypoint);
         }
         void CreateLoopWaypoint(List<WaypointData> originalList)
@@ -231,13 +235,15 @@ namespace FS_LevelEditor
 
             yield return new WaitForSeconds(targetObject.startDelay);
 
+            currentMovingSpeed = targetObject.movingSpeed;
+
             for (int i = 0; i < spawnedWaypoints.Count; i++)
             {
                 currentWaypointID = i;
                 currentWaypoint = spawnedWaypoints[i];
 
                 Vector3 totalDistance = cachedWaypointPositions[i] - transform.position;
-                float totalDuration = totalDistance.magnitude / targetObject.movingSpeed;
+                float totalDuration = totalDistance.magnitude / currentMovingSpeed;
 
                 // Start rotation and scale tween now, so they keep running on background.
                 RotationTweener tweenRotation = RotationTweener.RotateTo(gameObject, cachedWaypointRotations[i], totalDuration, RotationPath.Shortest);
@@ -250,7 +256,7 @@ namespace FS_LevelEditor
                 while (Vector3.Distance(cachedWaypointPositions[i], transform.position) > 0.01f)
                 {
                     Vector3 oldPos = transform.position;
-                    Vector3 newPos = Vector3.MoveTowards(transform.position, cachedWaypointPositions[i], Time.deltaTime * targetObject.movingSpeed);
+                    Vector3 newPos = Vector3.MoveTowards(transform.position, cachedWaypointPositions[i], Time.deltaTime * currentMovingSpeed);
                     Vector3 difference = newPos - oldPos;
                     currentVelocity = difference;
 
@@ -281,6 +287,8 @@ namespace FS_LevelEditor
                 currentlyMoving = false;
                 currentVelocity = Vector3.zero;
 
+                currentMovingSpeed = currentWaypoint.GetProperty<float>("MoveSpeed");
+
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
 
                 if (i == spawnedWaypoints.Count - 1 && (targetObject.waypointMode == WaypointMode.LOOP || targetObject.waypointMode == WaypointMode.TRAVEL_BACK))
@@ -304,6 +312,17 @@ namespace FS_LevelEditor
         public virtual WaypointMode GetWaypointMode()
         {
             return targetObject.waypointMode;
+        }
+        float GetObjectMoveSpeed(LE_Object obj)
+        {
+            if (obj is LE_Waypoint)
+            {
+                return obj.GetProperty<float>("MoveSpeed");
+            }
+            else
+            {
+                return obj.movingSpeed;
+            }
         }
 
         void Update()
