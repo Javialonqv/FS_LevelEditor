@@ -30,9 +30,9 @@ namespace FS_LevelEditor.Editor.UI
 
 		GameObject body;
 		Transform globalObjectPanelsParent;
-		UICustomInputField posXField, posYField, posZField;
-		UICustomInputField rotXField, rotYField, rotZField;
-		UICustomInputField scaleXField, scaleYField, scaleZField;
+		UIVector3Fields posFields;
+		UIVector3Fields rotFields;
+		UIVector3Fields scaleFields;
 		UITogglePatcher collisionToggle;
         UITogglePatcher invisibleMeshToggle;
         UIButtonPatcher addWaypointButton;
@@ -297,138 +297,39 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		void CreateObjectPositionUIElements()
 		{
-			Transform positionThingsParent = new GameObject("Position").transform;
-			positionThingsParent.parent = globalObjectPanelsParent;
-			positionThingsParent.localPosition = Vector3.zero;
-			positionThingsParent.localScale = Vector3.one;
+			SetCurrentParentToCreateAttributes(globalObjectPanelsParent.gameObject);
 
-			UILabel title = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(150, 38, 0), "Position");
-			title.name = "Title";
+			posFields = (UIVector3Fields)CreateObjectAttribute("Position", AttributeType.VECTOR, null, UICustomInputField.UIInputType.FLOAT, null);
 
-			UILabel xTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(-40f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
-				UIWidget.Pivot.Center);
-			xTitle.name = "XTitle";
-			// ------------------------------
-			posXField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-				maxDecimals: 3);
-			posXField.name = "XField";
-			posXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
-			posXField.onChange += (() => SetPropertyWithInput("XPosition", posXField, true));
-			posXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
+			posFields.onSelected += (axis) => OnGlobalAttributeFieldSelected(GlobalFieldType.Position);
+			posFields.onChange += (axis) => SetVector3PropertyWithInput("Position", posFields, true);
+			posFields.onDeselected += (axis) => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position);
 
-			UILabel yTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
-				UIWidget.Pivot.Center);
-			yTitle.name = "YTitle";
-			// ------------------------------
-			posYField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-				maxDecimals: 3);
-			posYField.name = "YField";
-			posYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
-			posYField.onChange += (() => SetPropertyWithInput("YPosition", posYField, true));
-			posYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
-
-			UILabel zTitle = NGUI_Utils.CreateLabel(positionThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
-				UIWidget.Pivot.Center);
-			zTitle.name = "ZTitle";
-			// ------------------------------
-			posZField = NGUI_Utils.CreateInputField(positionThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-				maxDecimals: 3);
-			posZField.name = "ZField";
-			posZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Position));
-			posZField.onChange += (() => SetPropertyWithInput("ZPosition", posZField, true));
-			posZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Position));
-
-			yPosForGlobalProps -= 50;
+            yPosForGlobalProps -= 50;
 		}
 		void CreateObjectRotationUIElements()
 		{
-			Transform rotationThingsParent = new GameObject("Rotation").transform;
-			rotationThingsParent.parent = globalObjectPanelsParent;
-			rotationThingsParent.localPosition = Vector3.zero;
-			rotationThingsParent.localScale = Vector3.one;
+			SetCurrentParentToCreateAttributes(globalObjectPanelsParent.gameObject);
 
-			UILabel title = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(150, 38, 0), "Rotation");
-			title.name = "Title";
+			rotFields = (UIVector3Fields)CreateObjectAttribute("Rotation", AttributeType.VECTOR, null, UICustomInputField.UIInputType.FLOAT, null);
 
-			UILabel xTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(-40f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
-				UIWidget.Pivot.Center);
-			xTitle.name = "XTitle";
-			// ------------------------------
-			rotXField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-				maxDecimals: 3);
-			rotXField.name = "XField";
-			rotXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
-			rotXField.onChange += (() => SetPropertyWithInput("XRotation", rotXField, true));
-			rotXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
-
-			UILabel yTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
-				UIWidget.Pivot.Center);
-			yTitle.name = "YTitle";
-			// ------------------------------
-			rotYField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-				maxDecimals: 3);
-			rotYField.name = "YField";
-			rotYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
-			rotYField.onChange += (() => SetPropertyWithInput("YRotation", rotYField, true));
-			rotYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
-
-			UILabel zTitle = NGUI_Utils.CreateLabel(rotationThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
-				UIWidget.Pivot.Center);
-			zTitle.name = "ZTitle";
-			// ------------------------------
-			rotZField = NGUI_Utils.CreateInputField(rotationThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "0", inputType: UICustomInputField.UIInputType.FLOAT,
-				maxDecimals: 3);
-			rotZField.name = "ZField";
-			rotZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation));
-			rotZField.onChange += (() => SetPropertyWithInput("ZRotation", rotZField, true));
-			rotZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation));
+			rotFields.onSelected += (axis) => OnGlobalAttributeFieldSelected(GlobalFieldType.Rotation);
+			rotFields.onChange += (axis) => SetVector3PropertyWithInput("Rotation", rotFields, true);
+			rotFields.onDeselected += (axis) => OnGlobalAttributeFieldDeselected(GlobalFieldType.Rotation);
 
 			yPosForGlobalProps -= 50;
 		}
 		void CreateObjectScaleUIElements()
 		{
-			Transform scaleThingsParent = new GameObject("Scale").transform;
-			scaleThingsParent.parent = globalObjectPanelsParent;
-			scaleThingsParent.localPosition = Vector3.zero;
-			scaleThingsParent.localScale = Vector3.one;
+			SetCurrentParentToCreateAttributes(globalObjectPanelsParent.gameObject);
 
-			UILabel title = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(-230f, yPosForGlobalProps, 0f), new Vector3Int(150, 38, 0), "Scale");
-			title.name = "Title";
+            scaleFields = (UIVector3Fields)CreateObjectAttribute("Scale", AttributeType.VECTOR, null, UICustomInputField.UIInputType.FLOAT, null);
 
-			UILabel xTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(-40f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "X", NGUIText.Alignment.Center,
-				UIWidget.Pivot.Center);
-			xTitle.name = "XTitle";
-			// ------------------------------
-			scaleXField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(10f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
-				maxDecimals: 3);
-			scaleXField.name = "XField";
-			scaleXField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
-			scaleXField.onChange += (() => SetPropertyWithInput("XScale", scaleXField, true));
-			scaleXField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
+            scaleFields.onSelected += (axis) => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale);
+            scaleFields.onChange += (axis) => SetVector3PropertyWithInput("Scale", scaleFields, true);
+            scaleFields.onDeselected += (axis) => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale);
 
-			UILabel yTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(60f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Y", NGUIText.Alignment.Center,
-				UIWidget.Pivot.Center);
-			yTitle.name = "YTitle";
-			// ------------------------------
-			scaleYField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(110f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
-				maxDecimals: 3);
-			scaleYField.name = "YField";
-			scaleYField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
-			scaleYField.onChange += (() => SetPropertyWithInput("YScale", scaleYField, true));
-			scaleYField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
-
-			UILabel zTitle = NGUI_Utils.CreateLabel(scaleThingsParent, new Vector3(160f, yPosForGlobalProps, 0f), new Vector3Int(28, 38, 0), "Z", NGUIText.Alignment.Center,
-				UIWidget.Pivot.Center);
-			zTitle.name = "ZTitle";
-			// ------------------------------
-			scaleZField = NGUI_Utils.CreateInputField(scaleThingsParent, new Vector3(210f, yPosForGlobalProps, 0f), new Vector3Int(65, 38, 0), 27, "1", inputType: UICustomInputField.UIInputType.FLOAT,
-				maxDecimals: 3);
-			scaleZField.name = "ZField";
-			scaleZField.onSelected += (() => OnGlobalAttributeFieldSelected(GlobalFieldType.Scale));
-			scaleZField.onChange += (() => SetPropertyWithInput("ZScale", scaleZField, true));
-			scaleZField.onDeselected += (() => OnGlobalAttributeFieldDeselected(GlobalFieldType.Scale));
-
-			yPosForGlobalProps -= 50;
+            yPosForGlobalProps -= 50;
 		}
 		void CreateCollisionToggle()
 		{
@@ -1238,17 +1139,11 @@ namespace FS_LevelEditor.Editor.UI
 
 			// Set Global Attributes...
 			#region Position/Rotation/Scale Fields
-			posXField.SetText(obj.position.x, 3, false); // Changed from 2 to 3
-			posYField.SetText(obj.position.y, 3, false);
-			posZField.SetText(obj.position.z, 3, false);
+			posFields.SetVector(obj.position, 3, false);
 
-			rotXField.SetText(obj.localEulerAngles.x, 3, false);
-			rotYField.SetText(obj.localEulerAngles.y, 3, false);
-			rotZField.SetText(obj.localEulerAngles.z, 3, false);
+			rotFields.SetVector(obj.localEulerAngles, 3, false);
 
-			scaleXField.SetText(obj.localScale.x, 3, false);
-			scaleYField.SetText(obj.localScale.y, 3, false);
-			scaleZField.SetText(obj.localScale.z, 3, false);
+			scaleFields.SetVector(obj.localScale, 3, false);
 			#endregion
 
 			SetPropInToggleDependingOfPropInObjects(collisionToggle, (obj) => obj.collision);
@@ -1476,77 +1371,29 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
 
 
-        void SetVector3PropertyWithInput(string propertyName, GameObject attributeParent)
+        void SetVector3PropertyWithInput(string propertyName, UIVector3Fields fields, bool isGlobalProp = false)
 		{
-			var objComponent = EditorController.Instance.currentSelectedObjComponent;
-			if (objComponent == null) return;
-
-			// Find the three input fields within the attribute's parent object
-			var xField = attributeParent.transform.Find("XField").GetComponent<UICustomInputField>();
-			var yField = attributeParent.transform.Find("YField").GetComponent<UICustomInputField>();
-			var zField = attributeParent.transform.Find("ZField").GetComponent<UICustomInputField>();
-
-			if (xField == null || yField == null || zField == null)
+			switch (propertyName)
 			{
-				UnityEngine.Debug.LogError("Could not find all three Vector3 input fields.");
-				return;
+				case "Position":
+					EditorController.Instance.currentSelectedObj.transform.position = fields.GetVector();
+					return;
+                case "Rotation":
+                    EditorController.Instance.currentSelectedObj.transform.localEulerAngles = fields.GetVector();
+                    return;
+                case "Scale":
+                    EditorController.Instance.currentSelectedObj.transform.localScale = fields.GetVector();
+					EditorController.Instance.ApplyGizmosArrowsScale();
+                    return;
+            }
+
+			if (SetPropertyForCurrentSelectedObjects(propertyName, fields.GetVector(), isGlobalProp))
+			{
+				EditorController.Instance.levelHasBeenModified = true;
 			}
-
-			// Parse the current values from all three UI fields
-			float.TryParse(xField.input.text, out float xVal);
-			float.TryParse(yField.input.text, out float yVal);
-			float.TryParse(zField.input.text, out float zVal);
-
-			// Create the new Vector3 from the UI state
-			Vector3 newVector = new Vector3(xVal, yVal, zVal);
-
-			// Set the property using the editor's reliable SetProperty method
-			objComponent.SetProperty(propertyName, newVector);
 		}
 		public void SetPropertyWithInput(string propertyName, UICustomInputField inputField, bool isGlobalProp = false)
 		{
-			// Even if the input only accepts numbers and decimals, check if it CAN be converted to float anyways, what if the text is just a "-"!?
-			if ((propertyName.Contains("Position") || propertyName.Contains("Rotation") || propertyName.Contains("Scale")) &&
-				Utils.TryParseFloat(inputField.GetText(), out float floatValue))
-			{
-				switch (propertyName)
-				{
-					case "XPosition":
-						EditorController.Instance.currentSelectedObj.transform.SetXPosition(floatValue);
-						break;
-					case "YPosition":
-						EditorController.Instance.currentSelectedObj.transform.SetYPosition(floatValue);
-						break;
-					case "ZPosition":
-						EditorController.Instance.currentSelectedObj.transform.SetZPosition(floatValue);
-						break;
-
-					case "XRotation":
-						EditorController.Instance.currentSelectedObj.transform.SetXRotation(floatValue);
-						break;
-					case "YRotation":
-						EditorController.Instance.currentSelectedObj.transform.SetYRotation(floatValue);
-						break;
-					case "ZRotation":
-						EditorController.Instance.currentSelectedObj.transform.SetZRotation(floatValue);
-						break;
-
-					case "XScale":
-						EditorController.Instance.currentSelectedObj.transform.SetXScale(floatValue);
-						EditorController.Instance.ApplyGizmosArrowsScale();
-						break;
-					case "YScale":
-						EditorController.Instance.currentSelectedObj.transform.SetYScale(floatValue);
-						EditorController.Instance.ApplyGizmosArrowsScale();
-						break;
-					case "ZScale":
-						EditorController.Instance.currentSelectedObj.transform.SetZScale(floatValue);
-						EditorController.Instance.ApplyGizmosArrowsScale();
-						break;
-				}
-
-				return;
-			}
 			if (propertyName == "Keycode")
 			{
 				string text = inputField.GetText();
