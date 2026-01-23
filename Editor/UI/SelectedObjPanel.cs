@@ -744,22 +744,42 @@ namespace FS_LevelEditor.Editor.UI
 			float yPos = 90 - (50 * (whereToCreateObjAttributesParent.gameObject.GetChilds().Where(x => !x.ExistsChild("IgnoreYPos")).ToArray().Length - 1));
 			if (dontChangeYPos) yPos += 50;
 
-			if (attrType != AttributeType.BUTTON)
+            #region Create Title Label
+            if (attrType != AttributeType.BUTTON)
 			{
-				int titleWidth = (attrType == AttributeType.INPUT_FIELD || attrType == AttributeType.BUTTON_MULTIPLE || attrType == AttributeType.VECTOR) ? 260 : 395;
-				if (createHastag) titleWidth = 235;
+				int titleWidth = 0;
+				switch (attrType)
+				{
+					case AttributeType.INPUT_FIELD:
+					case AttributeType.BUTTON_MULTIPLE:
+						titleWidth = 260;
+                        if (createHastag) titleWidth = 235;
+                        break;
+
+					case AttributeType.TOGGLE:
+						titleWidth = 395;
+						break;
+
+					case AttributeType.VECTOR:
+						titleWidth = 150;
+						break;
+				}
+
 				UILabel title = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(-230, yPos), new Vector3Int(titleWidth, NGUI_Utils.defaultLabelSize.y, 0),
 					text);
 				title.name = "Title";
 			}
+            #endregion
 
-			if (createHastag && attrType == AttributeType.INPUT_FIELD)
+            #region Create Hastag If It's An Input Field
+            if (createHastag && attrType == AttributeType.INPUT_FIELD)
 			{
 				UILabel hashtagLOL = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(15, yPos), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
 					NGUIText.Alignment.Center, UIWidget.Pivot.Left);
 				hashtagLOL.name = "HashtagLOL";
 				hashtagLOL.color = Color.white;
 			}
+			#endregion
 
 			if (attrType == AttributeType.INPUT_FIELD)
 			{
@@ -821,7 +841,8 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			else if (attrType == AttributeType.VECTOR)
 			{
-				string[] defaultValues = { "0", "0", "0" };
+                #region Parse Default Values
+                string[] defaultValues = { "0", "0", "0" };
 				if (defaultValue is string defaultString && !string.IsNullOrEmpty(defaultString))
 				{
 					string[] parsedValues = defaultString.Split(',');
@@ -834,26 +855,47 @@ namespace FS_LevelEditor.Editor.UI
 						}
 					}
 				}
-				var inputTypeForVector = fieldType ?? UICustomInputField.UIInputType.FLOAT;
+                #endregion
 
-				float startX = 70f;
-				float fieldWidth = 60f;
-				float spacing = 2f;
+                var inputTypeForVector = fieldType ?? UICustomInputField.UIInputType.FLOAT;
 
-				UICustomInputField xField = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(startX, yPos), new Vector3Int((int)fieldWidth, 38, 0), 27, defaultValues[0], inputType: inputTypeForVector);
-				xField.name = "XField";
-				// **THE FIX**: Call the new method that rebuilds the vector from the UI
-				xField.onChange += () => SetVector3PropertyWithInput(targetPropName, attributeParent);
+				string[] axises = { "X", "Y", "Z" };
+				float[] fieldsTitlesXPositions = { -40f, 60f, 160f };
+				float[] fieldsXPositions = { 10f, 110f, 210f };
+				int fieldsTitlesWidth = 28;
+				int fieldsWidth = 65;
 
-				// Y Coordinate
-				UICustomInputField yField = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(startX + fieldWidth + spacing, yPos), new Vector3Int((int)fieldWidth, 38, 0), 27, defaultValues[1], inputType: inputTypeForVector);
-				yField.name = "YField";
-				yField.onChange += () => SetVector3PropertyWithInput(targetPropName, attributeParent);
+				UICustomInputField xField = null;
+				UICustomInputField yField = null;
+                UICustomInputField zField = null;
 
-				// Z Coordinate
-				UICustomInputField zField = NGUI_Utils.CreateInputField(attributeParent.transform, new Vector3(startX + (fieldWidth + spacing) * 2, yPos), new Vector3Int((int)fieldWidth, 38, 0), 27, defaultValues[2], inputType: inputTypeForVector);
-				zField.name = "ZField";
-				zField.onChange += () => SetVector3PropertyWithInput(targetPropName, attributeParent);
+				UIVector3Fields fields = new GameObject("Fields").AddComponent<UIVector3Fields>();
+				fields.transform.parent = attributeParent.transform;
+				fields.transform.localPosition = Vector3.zero;
+				fields.transform.localScale = Vector3.one;
+
+				for (int i = 0; i < 3; i++)
+				{
+					string axis = axises[i];
+					float titleXPos = fieldsTitlesXPositions[i];
+					float fieldXPos = fieldsXPositions[i];
+
+					UILabel title = NGUI_Utils.CreateLabel(fields.transform, new Vector3(titleXPos, yPos),
+						new Vector3Int(fieldsTitlesWidth, 38, 0), axis, NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+					title.name = $"{axis}Title";
+
+					UICustomInputField field = NGUI_Utils.CreateInputField(fields.transform, new Vector3(fieldXPos, yPos), new Vector3Int(fieldsWidth, 38, 0), 27, defaultValues[0], inputType: inputTypeForVector,
+						maxDecimals: 3);
+					field.name = $"{axis}Field";
+
+					if (i == 0) xField = field;
+					else if (i == 1) yField = field;
+					else if (i == 2) zField = field;
+				}
+
+				fields.Assign(xField, yField, zField);
+
+				toReturn = fields;
 
 				if (tooltip != null)
 				{
