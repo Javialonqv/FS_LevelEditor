@@ -632,11 +632,58 @@ namespace FS_LevelEditor.Editor.UI
 			whereToCreateObjAttributesParent = newParent.transform;
 		}
 
-		object CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType? fieldType, string targetPropName,
+        /// <summary>
+        /// Creates an <b>attribute</b> as a child of the object previously specified. Specify it with <i>SetCurrentParentToCreateAttributes()</i> method.
+        /// </summary>
+		/// 
+        /// <param name="text">The title of the attribute to create. (Or the text that will be in case it's a button).</param>
+		/// 
+        /// <param name="attrType">The kind of attribute it's about to create.</param>
+		/// 
+        /// <param name="defaultValue">
+		/// The default value for the attribute, the type depends of the attribute type to create:
+		/// <para/>
+		/// <see cref="AttributeType.TOGGLE"/>: <see langword="bool"/>
+		/// <br/> <see cref="AttributeType.INPUT_FIELD"/>: <see langword="string"/>
+		/// <br/> <see cref="AttributeType.BUTTON"/>: <see langword="null"/>
+		/// <br/> <see cref="AttributeType.BUTTON_MULTIPLE"/>: <c>NOT SUPPORTED</c>
+		/// <br/> <see cref="AttributeType.VECTOR"/>: <c>NOT SUPPORTED</c>
+		/// </param>
+		/// 
+        /// <param name="fieldType">The type of field to create.
+		/// <para/>
+		/// Valid for <see cref="AttributeType.INPUT_FIELD"/> and <see cref="AttributeType.VECTOR"/> <b>only.</b>
+		/// <br><see langword="null"/> otherwise.</br>
+		/// </param>
+		/// 
+        /// <param name="targetPropName">The name of the <b>target property</b> inside of the <see cref="LE_Object"/>.</param>
+		/// 
+        /// <param name="createHastag">Defines if it should create a hashtag on the left of the field (for hex color inputs).
+		/// <para/>
+		/// Valid for <see cref="AttributeType.INPUT_FIELD"/> <b>only.</b>
+		/// </param>
+		/// 
+        /// <param name="tooltip">Tooltip for the attribute. Leave <see langword="null"/> if you don't want any.</param>
+		/// 
+        /// <param name="dontChangeYPos">Defines if the attribute should be created in the <b>same position</b> as the previously created one, and not under it.</param>
+		/// 
+        /// <param name="maxLength">Character limit for the field.
+		/// <para/>
+		/// Valid for <see cref="AttributeType.INPUT_FIELD"/> <b>only.</b>
+		/// </param>
+		/// 
+        /// <returns>The script instance for the created attribute, the script type depends of the attribute type:
+		/// <para/>
+		/// <see cref="UITogglePatcher"/> for <see cref="AttributeType.TOGGLE"/>.
+		/// <br/> <see cref="UICustomInputField"/> for <see cref="AttributeType.INPUT_FIELD"/>.
+		/// <br/> <see cref="UIButtonPatcher"/> for <see cref="AttributeType.BUTTON"/>.
+		/// <br/> <see cref="UISmallButtonMultiple"/> for <see cref="AttributeType.BUTTON_MULTIPLE"/>.
+		/// <br/> <see cref="UIVector3Fields"/> for <see cref="AttributeType.VECTOR"/>.
+		/// </returns>
+        object CreateObjectAttribute(string text, AttributeType attrType, object defaultValue, UICustomInputField.UIInputType? fieldType, string targetPropName,
 			bool createHastag = false, string tooltip = null, bool dontChangeYPos = false, int? maxLength = null)
 		{
 			object toReturn = null;
-
 			GameObject attributeParent = new GameObject(targetPropName);
 			attributeParent.transform.parent = whereToCreateObjAttributesParent;
 			attributeParent.transform.localPosition = Vector3.zero;
