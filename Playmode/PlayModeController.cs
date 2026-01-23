@@ -102,7 +102,9 @@ namespace FS_LevelEditor.Playmode
 		}
 		public GameObject LoadOtherObjectInBundle(string objectName)
 		{
-			GameObject toReturn = otherObjectsFromBundle.FirstOrDefault(obj => obj.name == objectName);
+			if (otherObjectsFromBundle == null) return null;
+
+			GameObject toReturn = otherObjectsFromBundle.FirstOrDefault(obj => obj && obj.name == objectName);
 
 			if (objectName == "EditorLine")
 			{
