@@ -81,6 +81,7 @@ namespace FS_LevelEditor
             MINE,
             RGB_WALL,
             HEAL_AREA,
+            DEATH_TRIGGER_WAYPOINT // Even tho it's just one (the respawn point), call it waypoint so it doesn't break IsWaypoint() and such.
         }
 
         // This is used to specify the objects that use the same snap triggers.
@@ -121,7 +122,8 @@ namespace FS_LevelEditor
         public readonly static Dictionary<ObjectType, Type> customWaypointSupports = new Dictionary<ObjectType, Type>()
         {
             { ObjectType.SAW, typeof(SawWaypointSupport) },
-            { ObjectType.MOVING_PLATFORM, typeof(MovingPlatformWaypointSupport) }
+            { ObjectType.MOVING_PLATFORM, typeof(MovingPlatformWaypointSupport) },
+            { ObjectType.DEATH_TRIGGER, typeof(DeathTriggerWaypointSupport) }
         };
         public readonly static Dictionary<ObjectType?, Vector3> defaultScalesForObjects = new Dictionary<ObjectType?, Vector3>()
         {

@@ -55,6 +55,7 @@ object.KEYPAD,Keypad,Teclado,Циферблат
 object.HEAL_AREA,Heal Area,Area de Curación,Лікувальна зона
 object.RGB_WALL,Color Wall,Pared de Color,Кольорова стіна
 object.MINE,Mine,Mina,Міна
+object.DEATH_TRIGGER_WAYPOINT,Respawn Point,Punto de Reaparición,
 Player,Player,Jugador,Гравець
 Jetpack,Jetpack,Mochila Propulsora,Джетпак
 Taser,Taser,Taser,Тазер
@@ -174,3 +175,5 @@ Lifetime,Lifetime,Tiempo de vida,
 RETRACTED,RETRACTED,RETRACTADO,
 DEPLOYED,DEPLOYED,DESPLEGADO,
 allCorrect,All Correct,Todo Correcto,
+AddDeathTriggerWaypoint,+ Add Respawn Point,+ Añadir Punto de Reaparición,
+RotatePlayer,Rotate Player,Rotar al Jugador,

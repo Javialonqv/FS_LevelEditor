@@ -124,9 +124,10 @@ namespace FS_LevelEditor.Editor.UI
 			{ (LE_Object.ObjectType.LASER, "OffDuration"), ("Blinking", true) },
 			{ (LE_Object.ObjectType.LASER, "OnDuration"), ("Blinking", true) },
 
-			{ (LE_Object.ObjectType.SWITCH, "OnlyByTaser"), ("CanUseTaser", true) },
+			{ (LE_Object.ObjectType.DEATH_TRIGGER, "AddWaypoint"), ("CustomCoordinates || not_waypoints", true) }, // Yes, I just added the AND (||) operator just for this one.
+			{ (LE_Object.ObjectType.DEATH_TRIGGER_WAYPOINT, "AddWaypoint"), ("", null) }, // If requiredPropName is null, it'll be disabled :)
 
-			{ (LE_Object.ObjectType.DEATH_TRIGGER, "TeleportCoordinates"), ("CustomCoordinates", true) },
+			{ (LE_Object.ObjectType.SWITCH, "OnlyByTaser"), ("CanUseTaser", true) },
 
 			{ (LE_Object.ObjectType.SAW, "WaitTime"), ("waypoints", null) }, // If it's checking for waypoints, the code already checks if the list count is greater than 0.
         };
@@ -137,6 +138,8 @@ namespace FS_LevelEditor.Editor.UI
 
 			{ LE_Object.ObjectType.MOVING_PLATFORM, "AddMovingPlatformWaypoint" },
 			{ LE_Object.ObjectType.MOVING_PLATFORM_WAYPOINT, "AddMovingPlatformWaypoint" },
+
+			{ LE_Object.ObjectType.DEATH_TRIGGER, "AddDeathTriggerWaypoint" },
 		};
         #endregion
 

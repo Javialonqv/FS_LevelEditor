@@ -58,6 +58,7 @@
 		<Compile Include="ExternalSpriteLoader.cs" />
 		<Compile Include="LE_Objects\LE_Heal_Area.cs" />
 		<Compile Include="LE_Objects\LE_Rgb_Wall.cs" />
+		<Compile Include="LE_Objects\Waypoints\LE_Death_Trigger_Waypoint.cs" />
 		<Compile Include="UI_Related\UIVector3Fields.cs" />
 		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="LE_Objects\LE_Bridge.cs" />
@@ -141,6 +142,7 @@
 		<Compile Include="UI_Related\UITogglePatcher.cs" />
 		<Compile Include="Utils.cs" />
 		<Compile Include="Utils\ScreenTemplateExpander.cs" />
+		<Compile Include="WaypointSupports\DeathTriggerWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\MovingPlatformWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\SawWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\WaypointRotationApplier.cs" />
