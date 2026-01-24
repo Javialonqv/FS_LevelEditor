@@ -93,7 +93,9 @@ namespace FS_LevelEditor
                 ObjectType.RED_GROUND,
                 ObjectType.ORANGE_GROUND,
                 ObjectType.LARGE_GROUND,
-                ObjectType.GROUND_2
+                ObjectType.GROUND_2,
+
+                ObjectType.MOVING_PLATFORM
                 } },
             { "WALL", new List<ObjectType>(){
                 ObjectType.WALL,
@@ -103,6 +105,9 @@ namespace FS_LevelEditor
                 ObjectType.BREAKABLE_WINDOW,
                 ObjectType.DESTRUCTIBLE_WALL,
                 ObjectType.RGB_WALL,
+
+                ObjectType.DOOR,
+                ObjectType.DOOR_V2
                 } },
             { "LIGHT", new List<ObjectType>(){
                 ObjectType.DIRECTIONAL_LIGHT,
