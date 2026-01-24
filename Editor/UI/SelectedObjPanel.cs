@@ -56,7 +56,8 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			{ (LE_Object.ObjectType.SAW, "TravelBack"), "TravelBackTooltip" },
 			{ (LE_Object.ObjectType.SAW, "Loop"),		"LoopTooltip" },
-		};
+            { (LE_Object.ObjectType.DEATH_TRIGGER_WAYPOINT, "RotatePlayer"), "BROKEN AS HELL!!" },
+        };
 		// Object properties whose position will be the same as the latest added one.
 		static readonly List<(LE_Object.ObjectType objType, string propName)> objectPropsWithNoYChange = new()
 		{
