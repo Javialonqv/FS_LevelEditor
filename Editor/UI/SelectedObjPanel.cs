@@ -1400,17 +1400,30 @@ namespace FS_LevelEditor.Editor.UI
 				}
 				else
 				{
-                    var value = prop.Value;
+					var value = prop.Value;
                     bool setActive = false;
 
-                    if (value.requiredPropName == "waypoints")
-                    {
-                        setActive = currentSelectedObj.GetProperty<List<WaypointData>>(value.requiredPropName).Count > 0;
+                    foreach (var required in prop.Value.requiredPropName.Split("||"))
+					{
+                        string requiredPropName = required.Trim();
+						if (string.IsNullOrEmpty(requiredPropName)) break;
+
+                        if (requiredPropName == "waypoints")
+                        {
+                            setActive = currentSelectedObj.GetProperty<List<WaypointData>>("waypoints").Count > 0;
+                        }
+                        else if (requiredPropName == "not_waypoints")
+                        {
+                            setActive = currentSelectedObj.GetProperty<List<WaypointData>>("waypoints").Count == 0;
+                        }
+                        else
+                        {
+                            setActive = Equals(currentSelectedObj.GetProperty(requiredPropName), value.requiredPropValue);
+                        }
+
+						if (!setActive) break; // If there's just one required prop that's not true, break the loop and DON'T SHOW IT.
                     }
-                    else
-                    {
-                        setActive = Equals(currentSelectedObj.GetProperty(value.requiredPropName), value.requiredPropValue);
-                    }
+
                     attributesPanels[type].GetChild(prop.Key.propName).SetActive(setActive);
                 }
             }
