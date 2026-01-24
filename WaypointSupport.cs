@@ -66,6 +66,7 @@ namespace FS_LevelEditor
         public virtual bool usesCustomMoveSystem => false;
         public virtual Color editorLineColor => Color.white;
         public virtual GameObject waypointTemplate => null; // If null (by default), it'll create a copy of the main object.
+        public virtual int? maxWaypointsCount => null;
 
         bool playerIsAbove = false;
         public static WaypointSupport objectWithPlayerAbove = null;
@@ -374,6 +375,12 @@ namespace FS_LevelEditor
         }
         public LE_Waypoint AddWaypoint(bool fromSave = false, bool selectIfNotFromSave = true)
         {
+            if (maxWaypointsCount != null && spawnedWaypoints.Count >= maxWaypointsCount)
+            {
+                Logger.Warning($"Tried to add a waypoint in {GetType().Name} but max count ({maxWaypointsCount}) has been already reached!");
+                return null;
+            }
+
             GameObject waypoint = null;
             if (EditorController.Instance)
             {
