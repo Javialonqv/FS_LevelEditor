@@ -56,6 +56,8 @@ namespace FS_LevelEditor
 
         public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
         {
+            if (!obj) return Array.Empty<GameObject>();
+
             List<GameObject> children = new List<GameObject>();
 
             for (int i = 0; i < obj.transform.childCount; i++)
