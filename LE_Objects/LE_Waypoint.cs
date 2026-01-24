@@ -33,7 +33,7 @@ namespace FS_LevelEditor
         }
 
         bool alreadyCalledAwake = false;
-        internal void Awake()
+        internal virtual void Awake()
         {
             if (alreadyCalledAwake) return;
 
