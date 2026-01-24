@@ -387,6 +387,7 @@ namespace FS_LevelEditor
                 GameObject template = waypointTemplate ? waypointTemplate : EditorController.Instance.allCategoriesObjects[targetObject.objectType.Value];
 
                 waypoint = Instantiate(template, waypointsParent);
+                waypoint.SetActive(true); // Ensure the waypoint is enabled, since the template obj may not.
                 waypoint.SetTransparentMaterials();
                 if(targetObject.objectType == LE_Object.ObjectType.CEILING_LIGHT || targetObject.objectType == LE_Object.ObjectType.POINT_LIGHT 
                     || targetObject.objectType == LE_Object.ObjectType.DIRECTIONAL_LIGHT)
