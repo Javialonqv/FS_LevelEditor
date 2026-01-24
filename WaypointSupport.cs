@@ -650,6 +650,8 @@ namespace FS_LevelEditor
                 }
                 else
                 {
+                    if (Controls.Instance.m_currentControllerColliderHit == null) return;
+
                     MovingPlatformProxyWithCustomPlatform customProxy = Controls.Instance.m_currentControllerColliderHit.collider.gameObject.GetComponentInParent<MovingPlatformProxyWithCustomPlatform>();
                     if (customProxy) // But he collided wih a proxy.
                     {
