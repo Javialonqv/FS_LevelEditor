@@ -70,9 +70,13 @@ namespace FS_LevelEditor
             script.considerPlayer = true;
             script.m_collider = script.GetComponent<BoxCollider>();
 
-            if (((JsonElement)customWaypointSupport.targetWaypointsData[0].properties["RotatePlayer"]).GetBoolean())
+            if (customWaypointSupport.targetWaypointsData != null && customWaypointSupport.targetWaypointsData.Count > 0)
             {
-                script.gameObject.AddComponent<DeathTriggerRespawnRotationPatcher>();
+                // Since it's the waypoint DATA itself and not the spawned one, it's stored as JsonElement.
+                if (((JsonElement)customWaypointSupport.targetWaypointsData[0].properties["RotatePlayer"]).GetBoolean())
+                {
+                    script.gameObject.AddComponent<DeathTriggerRespawnRotationPatcher>();
+                }
             }
 
             script.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
