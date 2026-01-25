@@ -140,12 +140,6 @@ namespace FS_LevelEditor.Editor
             float distance = Vector3.Distance(Camera.main.transform.position, transform.position);
             float baseArrowScale = 2f;
             float scaleFactor = Mathf.Max(0.1f, distance * 0.15f);
-            float highestAxis = Utils.HighestValueOfVector(currentSelectedObj.transform.localScale);
-
-            if (highestAxis < 1f)
-            {
-                scaleFactor *= highestAxis;
-            }
 
             SetScale(Vector3.one * baseArrowScale * scaleFactor);
         }
