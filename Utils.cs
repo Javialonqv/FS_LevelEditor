@@ -515,6 +515,11 @@ namespace FS_LevelEditor
             }
         }
 
+        public static string FloatToString(float value)
+        {
+            return value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
         public static bool CallStaticMethodIfExists(Type type, string methodName, out object result)
         {
             if (type == null)

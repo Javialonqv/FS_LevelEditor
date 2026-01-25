@@ -154,7 +154,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			panel.GetChild("HasTaserToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasTaser"));
 			panel.GetChild("HasJetpackToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasJetpack"));
-			panel.GetChild("DeathYLimit").GetComponent<UIInput>().text = (float)GetGlobalProperty("DeathYLimit") + "";
+			panel.GetChild("DeathYLimit").GetComponent<UIInput>().text = Utils.FloatToString((float)GetGlobalProperty("DeathYLimit"));
 			panel.GetChild("SkyboxDropdown").GetComponent<UIDropdownPatcher>().SelectOption((int)GetGlobalProperty("Skybox"));
 		}
 
