@@ -90,6 +90,7 @@ namespace FS_LevelEditor
             doorScript.allCollidersExceptInstant = new Collider[0];
             doorScript.allowOpen = true;
             doorScript.animationSpeed = 1;
+            doorScript.speedrunModeMultiplier = 1f;
             doorScript.BlocSwitchs = new GameObject[0];
             doorScript.closeSound = t_doorV2.closeSound;
             doorScript.defaultIsRed = false;
