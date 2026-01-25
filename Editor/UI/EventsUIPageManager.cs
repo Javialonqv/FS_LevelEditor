@@ -1244,7 +1244,7 @@ namespace FS_LevelEditor.Editor.UI
                     StringComparison.OrdinalIgnoreCase));
                 if (targetObj)
                 {
-                    if (targetObj.canBeUsedInEventsTab)
+                    if (targetObj.canBeUsedInEventsTab && !targetObj.isDeleted)
                     {
                         objIsValid = true;
                     }
