@@ -556,10 +556,10 @@ namespace FS_LevelEditor
                 {
                     switch (@event.doorState)
                     {
-                        case LE_Event.DoorState.Closed:
+                        case LE_Event.DoorState.Close:
                             targetObj.TriggerAction("Deactivate");
                             break;
-                        case LE_Event.DoorState.ClosedFast:
+                        case LE_Event.DoorState.CloseFast:
                             targetObj.TriggerAction("CloseFast");
                             break;
                         case LE_Event.DoorState.Open:

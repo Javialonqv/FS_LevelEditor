@@ -2344,8 +2344,8 @@ namespace FS_LevelEditor.Editor.UI
             button.SetTitle("Set Door State");
             button.ClearOptions();
             button.AddOption("Do Nothing", true);
-            button.AddOption("Closed", false);
-            button.AddOption("Closed Fast", false);
+            button.AddOption("Close", false);
+            button.AddOption("Close Fast", false);
             button.AddOption("Open", false);
             button.AddOption("Toggle", false);
             button.onClick += (option) => OnDoorStateButtonChanged();
@@ -2860,7 +2860,7 @@ public class LE_Event
     #endregion
 
     #region Door Options
-    public enum DoorState { Do_Nothing, Closed, ClosedFast, Open, Toggle }
+    public enum DoorState { Do_Nothing, Close, CloseFast, Open, Toggle }
     public DoorState doorState { get; set; } = DoorState.Toggle;
     #endregion
 
