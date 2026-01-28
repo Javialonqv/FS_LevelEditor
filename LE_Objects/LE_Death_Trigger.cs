@@ -20,8 +20,8 @@ namespace FS_LevelEditor
         public static Vector3 RESPAWN_POINT_POS_OFFSET => new Vector3(0f, 0.3f);
 
         ContainmentBox script;
-        public Vector3 respawnPosition;
-        public Vector3 respawnRotation;
+        public Vector3 RespawnPosition { get; private set; }
+        public Vector3 RespawnRotation { get; private set; }
 
         public static Dictionary<string, object> GetDefaultProperties()
         {
@@ -57,10 +57,13 @@ namespace FS_LevelEditor
             script.warnDistance = 9;
             script.currentRespawnIndex = 0;
             script.m_resetTransform = content.GetChild("Spawn").transform;
-            if (GetProperty<bool>("CustomCoordinates"))
+
+            // If not using custom coords, and since respawnPosition uses GLOBAL coords, set them.
+            if (!GetProperty<bool>("CustomCoordinates"))
             {
-                UpdateRespawnPointPositionAndRotation();
+                SetRespawnPointPositionAndRotation(transform.position, transform.eulerAngles);
 			}
+
             script.playDialogs = false;
             script.selectivePlayDialogs = false;
             script.dialogsUpperLimit = false;
@@ -88,10 +91,13 @@ namespace FS_LevelEditor
             initialized = true;
         }
         // Add this method so DeathTriggerWaypointSupport.SetupForCustomSystem can call it to update the respawn point, since it's called after InitComponent().
-        public void UpdateRespawnPointPositionAndRotation()
+        public void SetRespawnPointPositionAndRotation(Vector3 position, Vector3 rotation)
         {
-            script.m_resetTransform.position = respawnPosition;
-            script.m_resetTransform.eulerAngles = respawnRotation;
+            RespawnPosition = position + RESPAWN_POINT_POS_OFFSET;
+            RespawnRotation = rotation;
+
+            script.m_resetTransform.position = RespawnPosition;
+            script.m_resetTransform.eulerAngles = RespawnRotation;
         }
 
         public override bool SetProperty(string name, object value)
@@ -209,14 +215,19 @@ namespace FS_LevelEditor
         IEnumerator PatchRoutine()
         {
             // Simulate the delay.
-            yield return new WaitForSecondsRealtime(script.GetProperty<float>("Delay") + 0.2f); // Small offset added.
+            yield return new WaitForSecondsRealtime(script.GetProperty<float>("Delay")); // Small offset added.
 
             // Don't ever ask me why, but since FS uses those yaw and pitch values, I need to pass these eulerAngles values inverted.
             // I've always struggled with rotations. - Jav.
-            Controls.Instance.Angle = new Vector2(script.respawnRotation.y, script.respawnRotation.x);
+            Transform player = Controls.Instance.player.transform;
+            Transform playerCam = Controls.Instance.gameCamera.transform;
+
+            player.localEulerAngles = new Vector3(0, script.RespawnRotation.y, 0);
+            playerCam.localEulerAngles = new Vector3(script.RespawnRotation.x, playerCam.localEulerAngles.y, playerCam.localEulerAngles.z);
+            Controls.Instance.AdjustYawPitchBasedOnCurrent(false, true, true);
 
             // And since Angle doesn't INSTANTLY move the camera, but it moves it slowly when it's drastically changed... force it ourselves :)
-            Controls.Instance.transform.eulerAngles = script.respawnRotation;
+            //Controls.Instance.transform.eulerAngles = script.respawnRotation;
         }
     }
 }

@@ -22,9 +22,7 @@ namespace FS_LevelEditor.WaypointSupports
         {
             LE_Death_Trigger script = (LE_Death_Trigger)targetObject;
 
-            script.respawnPosition = spawnedWaypoints[0].transform.position + LE_Death_Trigger.RESPAWN_POINT_POS_OFFSET;
-            script.respawnRotation = spawnedWaypoints[0].transform.eulerAngles;
-            script.UpdateRespawnPointPositionAndRotation();
+            script.SetRespawnPointPositionAndRotation(spawnedWaypoints[0].transform.position, spawnedWaypoints[0].transform.eulerAngles);
         }
 
         public override WaypointMode GetWaypointMode()
