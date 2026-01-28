@@ -125,7 +125,7 @@ namespace FS_LevelEditor.Editor.UI
 			{ (LE_Object.ObjectType.LASER, "OffDuration"), ("Blinking", true) },
 			{ (LE_Object.ObjectType.LASER, "OnDuration"), ("Blinking", true) },
 
-			{ (LE_Object.ObjectType.DEATH_TRIGGER, "AddWaypoint"), ("CustomCoordinates || not_waypoints", true) }, // Yes, I just added the AND (||) operator just for this one.
+			{ (LE_Object.ObjectType.DEATH_TRIGGER, "AddWaypoint"), ("not_waypoints", true) }, // Yes, I just added the AND (||) operator just for this one.
 			{ (LE_Object.ObjectType.DEATH_TRIGGER_WAYPOINT, "AddWaypoint"), ("", null) }, // If requiredPropName is null, it'll be disabled :)
 
 			{ (LE_Object.ObjectType.SWITCH, "OnlyByTaser"), ("CanUseTaser", true) },

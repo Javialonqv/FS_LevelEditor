@@ -29,7 +29,6 @@ namespace FS_LevelEditor
             {
                 { "Type", TriggerType.RELOCATION },
                 { "Delay", 0f },
-                { "CustomCoordinates", false },
                 { "waypoints", new List<WaypointData>() }, // In order to not fuck up any waypoints related code in LE, just call this "waypoints", even tho it's just one (the RESPAWN POINT).
                 { "OnTeleport", new List<LE_Event>() }
             };
@@ -59,7 +58,7 @@ namespace FS_LevelEditor
             script.m_resetTransform = content.GetChild("Spawn").transform;
 
             // If not using custom coords, and since respawnPosition uses GLOBAL coords, set them.
-            if (!GetProperty<bool>("CustomCoordinates"))
+            if (customWaypointSupport.targetWaypointsData == null || customWaypointSupport.targetWaypointsData.Count == 0)
             {
                 SetRespawnPointPositionAndRotation(transform.position, transform.eulerAngles);
 			}
@@ -115,14 +114,6 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-			else if (name == "CustomCoordinates")
-			{
-				if (value is bool)
-				{
-					properties["CustomCoordinates"] = (bool)value;
-					return true;
-				}
-			}
 			else if (name == "Delay")
             {
                 if (value is string)
