@@ -15,8 +15,8 @@ namespace FS_LevelEditor
 	[MelonLoader.RegisterTypeInIl2Cpp]
 	public class LE_Destructible_Wall : LE_Object
 	{
-
 		private List<BrickMaterialController> bricks = new List<BrickMaterialController>();
+		DestructibleWall script;
 
 		void Awake()
 		{
@@ -45,8 +45,8 @@ namespace FS_LevelEditor
 			GameObject content = gameObject.GetChild("Content");
 			content.SetActive(false);
 
-			DestructibleWall wall = content.AddComponent<DestructibleWall>();
-			wall.originalMesh = content.GetChild("OriginalMesh").GetComponent<MeshRenderer>();
+			script = content.AddComponent<DestructibleWall>();
+			script.originalMesh = content.GetChild("OriginalMesh").GetComponent<MeshRenderer>();
 			Transform shatteredParent = content.GetChild("DestrWall_Shattered").transform;
 			for (int i = 0; i < shatteredParent.childCount; i++)
 			{
@@ -55,7 +55,7 @@ namespace FS_LevelEditor
 				MovingPlatformProxy proxy = piece.gameObject.AddComponent<MovingPlatformProxy>();
 				proxy.shouldReact = true;
 				BrickMaterialController brick = piece.gameObject.AddComponent<BrickMaterialController>();
-				brick.associatedWall = wall;
+				brick.associatedWall = script;
 				brick.platformProxy = proxy;
 				brick.taserMinimumLevel = 1;
 				brick.disappearHeight = -100;
@@ -69,21 +69,21 @@ namespace FS_LevelEditor
 				brick.lifetime = GetProperty<float>("Lifetime");
 				bricks.Add(brick);
 			}
-			wall.allParts = bricks.ToArray();
-			wall.fakeBreakParts = bricks.ToArray();
-			wall.m_audioSource = content.GetComponent<AudioSource>();
-			wall.m_audioSource.outputAudioMixerGroup = t_breakableWall.m_audioSource.outputAudioMixerGroup;
-			ConfigureEvents(wall);
-			wall.useManualExplosion = false;
-			wall.manualExplosionExplodesOtherWalls = false;
-			wall.manualExplosionPosT = null;
-			wall.manualExplosionForce = 60;
-			wall.manualExplosionOtherBrickRadius = 8;
-			wall.manualExplosionBrickRef = null;
-			wall.manualExplosionDelay = 0;
-			wall.delayIgnoresTimecale = true;
-			wall.controlScript = null;
-			wall.manualExplosionVFXIsBefore = true;
+			script.allParts = bricks.ToArray();
+			script.fakeBreakParts = bricks.ToArray();
+			script.m_audioSource = content.GetComponent<AudioSource>();
+			script.m_audioSource.outputAudioMixerGroup = t_breakableWall.m_audioSource.outputAudioMixerGroup;
+			ConfigureEvents(script);
+			script.useManualExplosion = false;
+			script.manualExplosionExplodesOtherWalls = false;
+			script.manualExplosionPosT = null;
+			script.manualExplosionForce = 60;
+			script.manualExplosionOtherBrickRadius = 8;
+			script.manualExplosionBrickRef = null;
+			script.manualExplosionDelay = 0;
+			script.delayIgnoresTimecale = true;
+			script.controlScript = null;
+			script.manualExplosionVFXIsBefore = true;
 
 			//layers
 			content.GetChildAt("OriginalMesh").layer = LayerMask.NameToLayer("PlayerCollisionOnly");
@@ -125,6 +125,16 @@ namespace FS_LevelEditor
 			}
 			return base.SetProperty(name, value);
 		}
+        public override bool TriggerAction(string actionName)
+        {
+			if (actionName == "BreakNow")
+			{
+				script.OnBrickBroken();
+			}
+
+            return base.TriggerAction(actionName);
+        }
+
 		void ConfigureEvents(DestructibleWall script)
 		{
 			script.onBreak = new UnityEngine.Events.UnityEvent();

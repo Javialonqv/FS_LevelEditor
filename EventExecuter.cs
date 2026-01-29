@@ -600,6 +600,13 @@ namespace FS_LevelEditor
                             break;
                     }
                 }
+                else if (targetObj is LE_Destructible_Wall)
+                {
+                    if (@event.destructibleWallBreakNow)
+                    {
+                        targetObj.TriggerAction("BreakNow");
+                    }
+                }
             }
         }
     }

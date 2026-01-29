@@ -127,6 +127,9 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject bridgeObjectsSettings;
         UIButtonMultiple bridgeStateButton;
+        //-----------------------------------
+        GameObject destructibleWallObjectsSettings;
+        UITogglePatcher destructibleWallBreakNowToggle;
         #endregion
 
 
@@ -186,6 +189,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateDoorObjectSettings();
                 Instance.CreateMovingPlatformObjectSettings();
                 Instance.CreateBridgeObjectSettings();
+                Instance.CreateDestructibleWallObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -1253,6 +1257,10 @@ namespace FS_LevelEditor.Editor.UI
             {
                 objectiveStateButton.SelectOption((int)currentSelectedEvent.objectiveState);
             }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.DESTRUCTIBLE_WALL)
+            {
+                destructibleWallBreakNowToggle.Set(currentSelectedEvent.destructibleWallBreakNow);
+            }
             #endregion
 
             eventSettingsPanel.SetActive(true);
@@ -1433,6 +1441,10 @@ namespace FS_LevelEditor.Editor.UI
                 else if (targetObj is LE_Moving_Platform)
                 {
                     currentActiveObjectPanel = movingPlatformObjectsSettings;
+                }
+                else if (targetObj is LE_Destructible_Wall)
+                {
+                    currentActiveObjectPanel = destructibleWallObjectsSettings;
                 }
 
                 if (currentActiveObjectPanel && !globalOptionsExpanded)
@@ -2446,6 +2458,33 @@ namespace FS_LevelEditor.Editor.UI
             bridgeStateButton = button;
             button.gameObject.SetActive(true);
         }
+        // -----------------------------------------
+        void CreateDestructibleWallObjectSettings()
+        {
+            destructibleWallObjectsSettings = new GameObject("Destructible Wall");
+            destructibleWallObjectsSettings.transform.parent = eventOptionsParent.transform;
+            destructibleWallObjectsSettings.transform.localPosition = Vector3.zero;
+            destructibleWallObjectsSettings.transform.localScale = Vector3.one;
+            destructibleWallObjectsSettings.SetActive(false);
+
+            CreateDestructibleWallObjectTitleLabel();
+            CreateDestructibleWallBreakNowToggle();
+        }
+        void CreateDestructibleWallObjectTitleLabel()
+        {
+            UILabel titleLabel = NGUI_Utils.CreateLabel(destructibleWallObjectsSettings.transform, Vector3.up * 40, new Vector3Int(700, 40, 0), "DESTRUCTIBLE WALL OPTIONS",
+                NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "TitleLabel";
+            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            titleLabel.fontSize = 35;
+        }
+        void CreateDestructibleWallBreakNowToggle()
+        {
+            destructibleWallBreakNowToggle = NGUI_Utils.CreateToggle(destructibleWallObjectsSettings.transform, new Vector3(-150f, -25f, 0f),
+                new Vector3Int(250, 48, 1), "Break Now");
+            destructibleWallBreakNowToggle.gameObject.name = "BreakNowToggle";
+            destructibleWallBreakNowToggle.onClick += (state) => OnDestructibleWallBreakNowChanged();
+        }
         #endregion
 
         #region MPs
@@ -2723,6 +2762,11 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.doorState = (LE_Event.DoorState)setDoorStateButton.currentSelectedID;
         }
+        // -----------------------------------------
+        void OnDestructibleWallBreakNowChanged()
+        {
+            currentSelectedEvent.destructibleWallBreakNow = destructibleWallBreakNowToggle.isChecked;
+        }
         #endregion
         //------------------------------------------
         void OnMovingPlatformStateButtonChanged()
@@ -2921,5 +2965,9 @@ public class LE_Event
     #region Bridge Options
     public enum BridgeState { Do_Nothing, Extend, Retract, Toggle }
     public BridgeState bridgeState { get; set; } = BridgeState.Toggle;
+    #endregion
+
+    #region Destructible Wall Options
+    public bool destructibleWallBreakNow { get; set; }
     #endregion
 }
