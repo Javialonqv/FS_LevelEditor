@@ -322,6 +322,12 @@ namespace FS_LevelEditor
         public override void SetCollidersStateForEdgeCase(bool newEnabledState)
         {
             contentObject.GetComponent<BoxCollider>().isTrigger = !newEnabledState;
+
+            contentObject.GetChild("AdditionalInteractionCollider_Sides").GetComponent<BoxCollider>().enabled = newEnabledState;
+            contentObject.GetChild("AdditionalInteractionCollider_Radial").GetComponent<BoxCollider>().enabled = newEnabledState;
+            contentObject.GetChild("AdditionalInteractionCollider_Vertical").GetComponent<BoxCollider>().enabled = newEnabledState;
+            contentObject.GetChild("InteractionOccluder").GetComponent<BoxCollider>().enabled = newEnabledState;
+            contentObject.GetChild("AutoAimCollider").GetComponent<BoxCollider>().enabled = newEnabledState;
         }
     }
 }
