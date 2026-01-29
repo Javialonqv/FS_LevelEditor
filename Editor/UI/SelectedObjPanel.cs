@@ -1393,14 +1393,23 @@ namespace FS_LevelEditor.Editor.UI
 				// When selecting multiple objects, just show 'em all!
 				if (isSelectingMultipleObjects)
 				{
-					// Except those props whose Y position doesn't change, hide those.
-					if (objectPropsWithNoYChange.Contains((type.Value, prop.Key.propName)))
+					var attributePanel = attributesPanels[type].GetChild(prop.Key.propName);
+
+                    // Only enable buttons when it's selecting one object, it's not compatible with multiple objs.
+                    if (attributePanel.GetChild("Button"))
+                    {
+						attributePanel.SetActive(false);
+                        continue;
+                    }
+
+                    // Except those props whose Y position doesn't change, hide those.
+                    if (objectPropsWithNoYChange.Contains((type.Value, prop.Key.propName)))
 					{
-						attributesPanels[type].GetChild(prop.Key.propName).SetActive(false);
+                        attributePanel.SetActive(false);
 						continue;
 					}
 
-                    attributesPanels[type].GetChild(prop.Key.propName).SetActive(true);
+                    attributePanel.SetActive(true);
 				}
 				else
 				{
