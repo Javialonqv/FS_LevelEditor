@@ -77,13 +77,13 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			hasTaserToggle = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 350f), new Vector3Int(200, 42, 1), "HasTaser");
 			hasTaserToggle.gameObject.name = "HasTaserToggle";
-			hasTaserToggle.onClick += (state) => SetGlobalPropertyWithToggle("HasTaser", hasTaserToggle.toggle);
+			hasTaserToggle.onClick += (state) => SetGlobalProperty("HasTaser", hasTaserToggle.isChecked);
 		}
 		void CreateHasJetpackToggle()
 		{
 			hasJetpackToggle = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 350f), new Vector3Int(200, 42, 1), "HasJetpack");
 			hasJetpackToggle.gameObject.name = "HasJetpackToggle";
-			hasJetpackToggle.onClick += (state) => SetGlobalPropertyWithToggle("HasJetpack", hasJetpackToggle.toggle);
+			hasJetpackToggle.onClick += (state) => SetGlobalProperty("HasJetpack", hasJetpackToggle.isChecked);
 		}
 		void CreateDeathYLimitField()
 		{
@@ -122,22 +122,20 @@ namespace FS_LevelEditor.Editor.UI
 			skyboxDropdown.AddOption("Chapter 3 (PE)", false);
 			skyboxDropdown.AddOption("Chapter 4 (PE)", false);
 			skyboxDropdown.AddOption("Chapter 5 (PE)", false);
-			skyboxDropdown.AddOnChangeOption((id) => SetGlobalPropertyWithDropdown("Skybox", id));
+			skyboxDropdown.AddOnChangeOption((id) => SetGlobalProperty("Skybox", id));
 		}
-		#region Upgrades UI
-		void CreateUpgradesButton()
-		{
-			UIButtonPatcher upgradesButton = NGUI_Utils.CreateButton(transform, new Vector3(0f, 50f), new Vector3Int(300, 50, 0), "Player Upgrades");
-			upgradesButton.name = "UpgradesButton";
-			upgradesButton.buttonSprite.depth = 1;
-			upgradesButton.buttonLabel.fontSize = 28;
-			upgradesButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
-			upgradesButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
-			upgradesButton.onClick += () => UpgradesPanel.Instance.ShowUpgradesPanel();
-		}
-		#endregion
+        void CreateUpgradesButton()
+        {
+            UIButtonPatcher upgradesButton = NGUI_Utils.CreateButton(transform, new Vector3(0f, 50f), new Vector3Int(300, 50, 0), "Player Upgrades");
+            upgradesButton.name = "UpgradesButton";
+            upgradesButton.buttonSprite.depth = 1;
+            upgradesButton.buttonLabel.fontSize = 28;
+            upgradesButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            upgradesButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            upgradesButton.onClick += () => UpgradesPanel.Instance.ShowUpgradesPanel();
+        }
 
-		public void ShowOrHideGlobalPropertiesPanel()
+        public void ShowOrHideGlobalPropertiesPanel()
 		{
 			if (!EditorUIManager.IsCurrentUIContext(EditorUIContext.GLOBAL_PROPERTIES))
 			{
@@ -152,47 +150,21 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			GameObject panel = gameObject;
 
-			panel.GetChild("HasTaserToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasTaser"));
-			panel.GetChild("HasJetpackToggle").GetComponent<UIToggle>().Set((bool)GetGlobalProperty("HasJetpack"));
-			panel.GetChild("DeathYLimit").GetComponent<UIInput>().text = Utils.FloatToString((float)GetGlobalProperty("DeathYLimit"));
-			panel.GetChild("SkyboxDropdown").GetComponent<UIDropdownPatcher>().SelectOption((int)GetGlobalProperty("Skybox"));
+			hasTaserToggle.Set((bool)GetGlobalProperty("HasTaser"), false, true);
+			hasJetpackToggle.Set((bool)GetGlobalProperty("HasJetpack"), false, true);
+			deathYLimitField.SetText((float)GetGlobalProperty("DeathYLimit"), false);
+			skyboxDropdown.SelectOption((int)GetGlobalProperty("Skybox"));
 		}
 
-		public void SetGlobalPropertyWithToggle(string name, UIToggle toggle)
-		{
-			SetGlobalProperty(name, toggle.isChecked);
-		}
 		public void SetGlobalPropertyWithInput(string propertyName, UICustomInputField inputField)
 		{
-			// ParseInputFieldData returns true if the introduced data CAN be parsed.
-			if (ParseInputFieldData(inputField.name, inputField.GetText(), out object parsedData))
+			if (Utils.TryParseFloat(inputField.GetText(), out float parsedData))
 			{
 				EditorController.Instance.levelHasBeenModified = true;
 				SetGlobalProperty(propertyName, parsedData);
-				inputField.Set(true);
-			}
-			else
-			{
-				inputField.Set(false);
 			}
 		}
-		bool ParseInputFieldData(string inputFieldName, string fieldText, out object parsedData)
-		{
-			switch (inputFieldName)
-			{
-				case "DeathYLimit":
-					bool toReturn = Utils.TryParseFloat(fieldText, out float result);
-					parsedData = result;
-					return toReturn;
-			}
 
-			parsedData = null;
-			return false;
-		}
-		public void SetGlobalPropertyWithDropdown(string propertyName, int selectedID)
-		{
-			SetGlobalProperty(propertyName, selectedID);
-		}
 		public void SetGlobalProperty(string name, object value)
 		{
 			if (EditorController.Instance.globalProperties.ContainsKey(name))
