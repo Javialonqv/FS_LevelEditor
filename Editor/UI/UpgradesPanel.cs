@@ -46,15 +46,6 @@ namespace FS_LevelEditor.Editor.UI
 
 		public UpgradesPanel(IntPtr ptr) : base(ptr) { }
 
-		void Update()
-		{
-			// Handle ESC key to close the upgrades panel
-			if (Input.GetKeyDown(KeyCode.Escape) && EditorUIManager.IsCurrentUIContext(EditorUIContext.UPGRADES_PANEL))
-			{
-				HideUpgradesPanel();
-			}
-		}
-
 		#region Create UI
 		void CreateUpgradesPanel()
 		{
@@ -276,19 +267,10 @@ namespace FS_LevelEditor.Editor.UI
 		public void ShowUpgradesPanel()
 		{
 			EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
-
-			// If we're coming from Global Properties, close it properly
-			if (EditorUIManager.IsCurrentUIContext(EditorUIContext.GLOBAL_PROPERTIES))
-			{
-				// Slide the global properties panel out first
-				TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(1320, 0));
-			}
-
 			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.UPGRADES_PANEL);
 
 			UpdateUpgradesUI();
 		}
-
 		public void HideUpgradesPanel()
 		{
 			EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
@@ -305,7 +287,6 @@ namespace FS_LevelEditor.Editor.UI
 			if (colB != null)
 				for (int i = 0; i < colB.childCount; i++) UpdateUpgradeUI(colB.GetChild(i));
 		}
-
 		void UpdateUpgradeUI(Transform upgradeParent)
 		{
 			var upgradeType = Enum.Parse<UpgradeType>(upgradeParent.name);

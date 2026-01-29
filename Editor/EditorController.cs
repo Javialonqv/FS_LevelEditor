@@ -333,8 +333,7 @@ namespace FS_LevelEditor.Editor
             // Block all editor input when save popup is active
             if (SaveMetadataPopup.IsPopupActive()) return;
 
-            if (IsCurrentState(EditorState.PAUSED) || EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL) ||
-                EditorUIManager.IsCurrentUIContext(EditorUIContext.TEXT_EDITOR)) return;
+            if (IsCurrentState(EditorState.PAUSED)) return;
 
             #region Gizmos Arrows Hover Color Feedback
             if (currentMode == Mode.Selection && currentSelectedObj && gizmosRoot.activeSelf && !Input.GetMouseButton(0) && !Input.GetMouseButton(1))
@@ -670,6 +669,11 @@ namespace FS_LevelEditor.Editor
                 {
                     SetCurrentEditorState(EditorState.PAUSED); // It's set to paused while in events panel, so the user can't move the camera or anything.
                     EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
+                    return;
+                }
+                else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.UPGRADES_PANEL))
+                {
+                    UpgradesPanel.Instance.HideUpgradesPanel();
                     return;
                 }
 

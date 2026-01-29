@@ -229,6 +229,32 @@ namespace FS_LevelEditor
             tween.ignoreTimeScale = true;
             if (reversed) tween.PlayReverse(); else tween.PlayForward();
         }
+        public static void PlayIgnoringTimeScale(this TweenPosition tween, bool reversed)
+        {
+            tween.ignoreTimeScale = true;
+            if (reversed) tween.PlayReverse(); else tween.PlayForward();
+        }
+
+        public static void SetDirection(this UITweener tween, Il2CppAnimationOrTween.Direction direction)
+        {
+            if (direction == Il2CppAnimationOrTween.Direction.Forward)
+            {
+                tween.mAmountPerDelta = Mathf.Abs(tween.amountPerDelta);
+            }
+            else if (direction == Il2CppAnimationOrTween.Direction.Reverse)
+            {
+                tween.mAmountPerDelta = -Mathf.Abs(tween.amountPerDelta);
+            }
+            if (direction == Il2CppAnimationOrTween.Direction.Toggle)
+            {
+                tween.mAmountPerDelta = -tween.amountPerDelta;
+            }
+        }
+        public static void SetSample(this UITweener tween, float factor, bool isFinished)
+        {
+            tween.Sample(factor, isFinished);
+            tween.tweenFactor = factor;
+        }
 
         public static void ChangeChildIndex(this GameObject child, int newIndex)
         {

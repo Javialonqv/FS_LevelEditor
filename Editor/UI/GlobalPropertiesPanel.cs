@@ -64,7 +64,13 @@ namespace FS_LevelEditor.Editor.UI
 
 			BoxCollider collider = gameObject.AddComponent<BoxCollider>();
 			collider.size = new Vector2(650f, 1010f);
-		}
+
+			TweenPosition tween = gameObject.AddComponent<TweenPosition>();
+			tween.from = new Vector2(1320, 0);
+            tween.to = new Vector2(600, 0);
+			tween.duration = 0.2f;
+			tween.Play(false);
+        }
 		void CreateTitle()
 		{
 			titleLabel = NGUI_Utils.CreateLabel(transform, new Vector3(0, 460), new Vector3Int(600, 50, 0), "GlobalProperties",
@@ -164,7 +170,6 @@ namespace FS_LevelEditor.Editor.UI
 				SetGlobalProperty(propertyName, parsedData);
 			}
 		}
-
 		public void SetGlobalProperty(string name, object value)
 		{
 			if (EditorController.Instance.globalProperties.ContainsKey(name))

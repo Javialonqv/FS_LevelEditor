@@ -524,148 +524,227 @@ namespace FS_LevelEditor.Editor.UI
 			Logger.Log("LE UI deleted!");
 		}
 
-		public void SetEditorUIContext(EditorUIContext context)
+        #region Set Editor UI Context
+        public void SetEditorUIContext(EditorUIContext newContext)
 		{
-			bulkSelectionPanel.SetActive(context == EditorUIContext.NORMAL);
-			bulkNextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			bulkPreviousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			bulkSelectionLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			nextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			previousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
-            statsLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
-            if (context == EditorUIContext.HELP_PANEL)
-			{
-				helpPanel.SetActive(true);
+			if (newContext == currentUIContext) return;
 
-				if (currentUIContext == EditorUIContext.GLOBAL_PROPERTIES)
-				{
-					TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(1320, 0));
-				}
+			bool showInstantly = false;
+
+            #region Hide The Previous Context
+            // Cases where only the previous context needs to be hidden instatly.
+            if ((newContext == EditorUIContext.HELP_PANEL && currentUIContext == EditorUIContext.GLOBAL_PROPERTIES) || // Global Properties --> Help Panel
+					 (newContext == EditorUIContext.SELECTING_TARGET_OBJ && currentUIContext == EditorUIContext.EVENTS_PANEL) || // Events Panel --> Selecting Target Object
+                     (newContext == EditorUIContext.UPGRADES_PANEL && currentUIContext == EditorUIContext.GLOBAL_PROPERTIES)) // Global Properties --> Upgrades Panel
+            {
+                HideEditorUIContext(currentUIContext, true);
+            }
+			// Cases where the previous and the new context need to be shown/hidden instantly.
+            else if ((newContext == EditorUIContext.EVENTS_PANEL && currentUIContext == EditorUIContext.SELECTING_TARGET_OBJ)) // Selecting Target Object --> Events Panel
+            {
+				HideEditorUIContext(currentUIContext, true);
+				showInstantly = true;
 			}
-
-			// If the user is trying to switch from Events Panel to Normal but the previous context was help panel.
-			// Techinically, that SHOULD be impossible since help panel disables all of the buttons to open events panel, but who knows...
-			if (context == EditorUIContext.NORMAL && currentUIContext == EditorUIContext.EVENTS_PANEL && previousUIContext == EditorUIContext.HELP_PANEL)
+			else
 			{
-				SetEditorUIContext(EditorUIContext.HELP_PANEL);
-				return;
+				HideEditorUIContext(currentUIContext, false);
 			}
+            #endregion
 
-			if (context == EditorUIContext.SELECTING_TARGET_OBJ && currentUIContext == EditorUIContext.EVENTS_PANEL) // Event Panel --> Select Object With Mouse.
+            GameObject target = null;
+			bool playEntrySFX = true;
+
+            #region Decide Da Target
+            switch (newContext)
 			{
-				hittenTargetObjPanel.SetActive(true);
-				EventsUIPageManager.Instance.eventsPanel.SetActive(false);
+				case EditorUIContext.HELP_PANEL:
+					target = helpPanel;
+					playEntrySFX = false;
+					break;
+
+				case EditorUIContext.EVENTS_PANEL:
+					target = EventsUIPageManager.Instance.eventsPanel;
+                    break;
+
+				case EditorUIContext.SELECTING_TARGET_OBJ:
+					target = hittenTargetObjPanel;
+					playEntrySFX = false;
+                    break;
+
+				case EditorUIContext.GLOBAL_PROPERTIES:
+					target = GlobalPropertiesPanel.Instance.gameObject;
+					playEntrySFX = false;
+                    break;
+
+				case EditorUIContext.TEXT_EDITOR:
+					target = TextEditorUI.Instance.editorPanel;
+                    break;
+
+				case EditorUIContext.UPGRADES_PANEL:
+					target = UpgradesPanel.Instance.upgradesPanel;
+                    break;
 			}
-			if (context == EditorUIContext.EVENTS_PANEL && currentUIContext == EditorUIContext.SELECTING_TARGET_OBJ) // Select Object With Mouse --> Events Panel.
+            #endregion
+
+            #region Execute Specific Actions Depending On The Target
+			switch (newContext)
 			{
-				hittenTargetObjPanel.SetActive(false);
-				EventsUIPageManager.Instance.eventsPanel.SetActive(true);
+				case EditorUIContext.GLOBAL_PROPERTIES:
+                    GlobalPropertiesPanel.Instance.RefreshGlobalPropertiesPanelValues();
+                    break;
 			}
-			else if (context == EditorUIContext.EVENTS_PANEL) // Normal Events Panel opening.
+            #endregion
+
+            #region Play The Animation
+            if (newContext != EditorUIContext.NORMAL) // NORMAL is the only one that doesn't have a target obj.
 			{
-				EventsUIPageManager.Instance.eventsPanel.SetActive(true);
-				EventsUIPageManager.Instance.eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
-				Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
-			}
+                if (target.TryGetComponent<TweenScale>(out var tweenScale))
+                {
+					tweenScale.SetDirection(Il2CppAnimationOrTween.Direction.Forward);
 
-			if (context == EditorUIContext.TEXT_EDITOR && currentUIContext == EditorUIContext.NORMAL)
-			{
-				TextEditorUI.Instance.editorPanel.SetActive(true);
-				TextEditorUI.Instance.editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
-				Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
-			}
-			if (context == EditorUIContext.UPGRADES_PANEL)
-			{
-				UpgradesPanel.Instance.upgradesPanel.SetActive(true);
-				UpgradesPanel.Instance.upgradesPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(false);
-				Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
-				// If coming from Global Properties, close it
-				if (currentUIContext == EditorUIContext.GLOBAL_PROPERTIES)
-				{
-					TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(1320, 0));
-				}
-			}
-			if (context == EditorUIContext.GLOBAL_PROPERTIES)
-			{
-				GlobalPropertiesPanel.Instance.RefreshGlobalPropertiesPanelValues();
-				TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(600, 0));
+                    if (showInstantly)
+                    {
+                        tweenScale.SetSample(1f, true); // Set to end.
+                        target.SetActive(true);
+                        //target.transform.localScale = tweenScale.to;
+                    }
+                    else
+                    {
+                        tweenScale.SetSample(0f, true); // Set to beginning.
+                        target.SetActive(true);
+                        tweenScale.PlayIgnoringTimeScale(false);
+                        if (playEntrySFX) Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
+                    }
+                }
+                else if (target.TryGetComponent<TweenPosition>(out var tweenPosition))
+                {
+                    tweenPosition.SetDirection(Il2CppAnimationOrTween.Direction.Forward);
 
-				if (currentUIContext == EditorUIContext.HELP_PANEL)
-				{
-					helpPanel.SetActive(false);
-				}
-			}
+                    if (showInstantly)
+                    {
+                        tweenPosition.SetSample(1f, true); // Set to end.
+                        target.SetActive(true);
+                        //target.transform.localPosition = tweenPosition.to;
+                    }
+                    else
+                    {
+                        tweenPosition.SetSample(0f, true); // Set to beginning.
+                        target.SetActive(true);
+                        tweenPosition.PlayIgnoringTimeScale(false);
+                        if (playEntrySFX) Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
+                    }
+                }
+                else
+                {
+                    // No fancy tween, just instant.
+                    target.SetActive(true);
+                }
+            }
+            #endregion
 
-			if (context == EditorUIContext.NORMAL)
-			{
-				switch (currentUIContext)
-				{
-					case EditorUIContext.HELP_PANEL:
-						helpPanel.SetActive(false);
-						break;
+            #region UI Elements To Only Enable When Normal
+            EditorObjectsToBuildUI.Instance.root.SetActive(newContext == EditorUIContext.NORMAL && EditorController.Instance.currentMode == EditorController.Mode.Building);
+            SelectedObjPanel.Instance.gameObject.SetActive(newContext == EditorUIContext.NORMAL && EditorController.Instance.currentMode != EditorController.Mode.Building);
 
-					case EditorUIContext.GLOBAL_PROPERTIES:
-						TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(1320, 0));
-						break;
+            bulkSelectionPanel.SetActive(newContext == EditorUIContext.NORMAL);
+            bulkNextButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
+            bulkPreviousButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
+            bulkSelectionLabel.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
+            currentModeLabel.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
+            nextButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
+            previousButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
+            statsLabel.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
+            #endregion
 
-					case EditorUIContext.EVENTS_PANEL:
-						EventsUIPageManager.Instance.eventsPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
-						Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
-						break;
-
-					case EditorUIContext.TEXT_EDITOR:
-						TextEditorUI.Instance.editorPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
-						Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
-						break;
-					case EditorUIContext.UPGRADES_PANEL:
-						UpgradesPanel.Instance.upgradesPanel.GetComponent<TweenScale>().PlayIgnoringTimeScale(true);
-						Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
-						break;
-				}
-
-				switch (previousUIContext)
-				{
-					case EditorUIContext.HELP_PANEL:
-						if (currentUIContext != EditorUIContext.GLOBAL_PROPERTIES && currentUIContext != EditorUIContext.UPGRADES_PANEL) // Avoid an infinite loop with help panel and global properties.
-						{
-							helpPanel.SetActive(true);
-							context = EditorUIContext.HELP_PANEL;
-						}
-						break;
-
-					case EditorUIContext.GLOBAL_PROPERTIES:
-						if(currentUIContext != EditorUIContext.UPGRADES_PANEL)
-						{
-							TweenPosition.Begin(GlobalPropertiesPanel.Instance.gameObject, 0.2f, new Vector2(600, 0));
-							context = EditorUIContext.GLOBAL_PROPERTIES;
-						}
-						break;
-				}
-			}
-
-			// Only enable these panels if the current editor mode is building, and the UI is normal.
-			if (context != EditorUIContext.NORMAL)
-			{
-				EditorObjectsToBuildUI.Instance.root.SetActive(false);
-			}
-			else if (EditorController.Instance.currentMode == EditorController.Mode.Building)
-			{
-				EditorObjectsToBuildUI.Instance.root.SetActive(true);
-			}
-			// Only when normal.
-			SelectedObjPanel.Instance.gameObject.SetActive(context == EditorUIContext.NORMAL && EditorController.Instance.currentMode != EditorController.Mode.Building);
-			currentModeLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			nextButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
-			previousButtonObj.gameObject.SetActive(context == EditorUIContext.NORMAL);
-            statsLabel.gameObject.SetActive(context == EditorUIContext.NORMAL);
-
-			previousUIContext = currentUIContext;
-			currentUIContext = context;
+            previousUIContext = currentUIContext;
+			currentUIContext = newContext;
 
 			Logger.Log($"Switched Editor UI Context from {previousUIContext} to {currentUIContext}.");
 		}
-		public static bool IsCurrentUIContext(EditorUIContext context)
+		void HideEditorUIContext(EditorUIContext context, bool instant = false)
+		{
+			if (context == EditorUIContext.NORMAL) return;
+
+			GameObject target = null;
+			bool playExitSFX = true;
+
+            #region Decide Da Target
+            switch (context)
+			{
+				case EditorUIContext.HELP_PANEL:
+					target = helpPanel;
+					playExitSFX = false;
+					break;
+
+				case EditorUIContext.EVENTS_PANEL:
+					target = EventsUIPageManager.Instance.eventsPanel;
+                    break;
+
+				case EditorUIContext.SELECTING_TARGET_OBJ:
+					target = hittenTargetObjPanel;
+					playExitSFX = false;
+					break;
+
+				case EditorUIContext.GLOBAL_PROPERTIES:
+					target = GlobalPropertiesPanel.Instance.gameObject;
+					playExitSFX = false;
+                    break;
+
+				case EditorUIContext.TEXT_EDITOR:
+					target = TextEditorUI.Instance.editorPanel;
+                    break;
+
+				case EditorUIContext.UPGRADES_PANEL:
+					target = UpgradesPanel.Instance.upgradesPanel;
+                    break;
+			}
+            #endregion
+
+            #region Play The Animation
+			if (target.TryGetComponent<TweenScale>(out var tweenScale))
+			{
+                tweenScale.SetDirection(Il2CppAnimationOrTween.Direction.Forward);
+
+                if (instant)
+				{
+                    tweenScale.SetSample(0f, true); // Set to beginning.
+                    target.SetActive(false);
+					//target.transform.localScale = tweenScale.from;
+				}
+				else
+				{
+                    tweenScale.SetSample(1f, true); // Set to end.
+                    tweenScale.PlayIgnoringTimeScale(true);
+                    if (playExitSFX) Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
+                }
+			}
+			else if (target.TryGetComponent<TweenPosition>(out var tweenPosition))
+			{
+                tweenPosition.SetDirection(Il2CppAnimationOrTween.Direction.Forward);
+
+                if (instant)
+				{
+					tweenPosition.SetSample(0f, false); // Set to the beginning.
+                    target.SetActive(false);
+					//target.transform.localPosition = tweenPosition.from;
+				}
+				else
+				{
+                    tweenPosition.SetSample(1f, true); // Set to end.
+                    tweenPosition.PlayIgnoringTimeScale(true);
+					if (playExitSFX) Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
+				}
+			}
+			else
+			{
+                // No fancy tween, just instant.
+                target.SetActive(false);
+            }
+            #endregion
+        }
+        #endregion
+
+        public static bool IsCurrentUIContext(EditorUIContext context)
 		{
 			if (Instance == null) return false;
 
