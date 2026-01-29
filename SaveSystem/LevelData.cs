@@ -182,23 +182,6 @@ namespace FS_LevelEditor.SaveSystem
 
             return data;
         }
-        public static string GetAvailableLevelName(string levelNameOriginal = "New Level")
-        {
-            string levelName = levelNameOriginal;
-            string toReturn = levelName;
-            int counter = 1;
-
-            if (!Directory.Exists(levelsDirectory)) return levelName;
-
-            string[] existingLevels = Directory.GetFiles(levelsDirectory);
-            while (existingLevels.Any(lvl => Path.GetFileNameWithoutExtension(lvl) == toReturn))
-            {
-                toReturn = $"{levelName} {counter}";
-                counter++;
-            }
-
-            return toReturn;
-        }
 
         public static void SaveLevelData(string levelName, string levelFileNameWithoutExtension, LevelData data = null)
         {
@@ -208,27 +191,32 @@ namespace FS_LevelEditor.SaveSystem
                 data = CreateLevelData(levelName);
             }
 
-            LevelData oldLevelData = GetLevelData(levelFileNameWithoutExtension);
-            if (oldLevelData != null)
+            #region Get Old Level Data
+            if (LevelFileEixsts(levelFileNameWithoutExtension))
             {
-                if (oldLevelData.createdTime != 0)
+                LevelData oldLevelData = GetLevelData(levelFileNameWithoutExtension);
+                if (oldLevelData != null)
                 {
-                    data.createdTime = oldLevelData.createdTime;
-                }
+                    if (oldLevelData.createdTime != 0)
+                    {
+                        data.createdTime = oldLevelData.createdTime;
+                    }
 
-                // Preserve metadata if it exists and we're not explicitly providing new data
-                if (oldLevelData != data)
-                {
-                    if (!string.IsNullOrWhiteSpace(oldLevelData.authorName) && string.IsNullOrWhiteSpace(data.authorName))
-                        data.authorName = oldLevelData.authorName;
-                    if (!string.IsNullOrWhiteSpace(oldLevelData.tags) && string.IsNullOrWhiteSpace(data.tags))
-                        data.tags = oldLevelData.tags;
-                    if (!string.IsNullOrWhiteSpace(oldLevelData.description) && string.IsNullOrWhiteSpace(data.description))
-                        data.description = oldLevelData.description;
-                    if (!string.IsNullOrWhiteSpace(oldLevelData.thumbnailBase64) && string.IsNullOrWhiteSpace(data.thumbnailBase64))
-                        data.thumbnailBase64 = oldLevelData.thumbnailBase64;
+                    // Preserve metadata if it exists and we're not explicitly providing new data
+                    if (oldLevelData != data)
+                    {
+                        if (!string.IsNullOrWhiteSpace(oldLevelData.authorName) && string.IsNullOrWhiteSpace(data.authorName))
+                            data.authorName = oldLevelData.authorName;
+                        if (!string.IsNullOrWhiteSpace(oldLevelData.tags) && string.IsNullOrWhiteSpace(data.tags))
+                            data.tags = oldLevelData.tags;
+                        if (!string.IsNullOrWhiteSpace(oldLevelData.description) && string.IsNullOrWhiteSpace(data.description))
+                            data.description = oldLevelData.description;
+                        if (!string.IsNullOrWhiteSpace(oldLevelData.thumbnailBase64) && string.IsNullOrWhiteSpace(data.thumbnailBase64))
+                            data.thumbnailBase64 = oldLevelData.thumbnailBase64;
+                    }
                 }
             }
+            #endregion
 
             data.lastModificationTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
@@ -267,6 +255,9 @@ namespace FS_LevelEditor.SaveSystem
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             LevelData data = null;
             LevelObjectDataConverter.RefreshCounters();
+
+            if (!LevelFileEixsts(levelFileNameWithoutExtension)) return null;
+
             try
             {
                 data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), SavePatches.OnReadSaveFileOptions);
@@ -276,6 +267,7 @@ namespace FS_LevelEditor.SaveSystem
 
             return data;
         }
+
         public static Dictionary<string, LevelData> GetLevelsList()
         {
             if (!Directory.Exists(levelsDirectory)) Directory.CreateDirectory(levelsDirectory);
@@ -297,6 +289,7 @@ namespace FS_LevelEditor.SaveSystem
             return levels;
         }
 
+        #region Loading Level Related
         static LevelData LoadLevelData(string levelFileNameWithoutExtension)
         {
             LevelData data = GetLevelData(levelFileNameWithoutExtension, true);
@@ -321,6 +314,7 @@ namespace FS_LevelEditor.SaveSystem
 
             return data;
         }
+
         public static void LoadLevelDataInEditor(string levelFileNameWithoutExtension)
         {
             LevelData data = LoadLevelData(levelFileNameWithoutExtension);
@@ -395,7 +389,6 @@ namespace FS_LevelEditor.SaveSystem
 
             EditorController.Instance.AfterFinishedLoadingLevel();
         }
-
         public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
         {
             // Initialize essential components first
@@ -466,6 +459,7 @@ namespace FS_LevelEditor.SaveSystem
                 }
             }
         }
+
         static void SetInstantiatedObjectProperties(LE_Object spawnedObject, LE_ObjectData objectData)
         {
             spawnedObject.objectID = objectData.objectID;
@@ -488,6 +482,7 @@ namespace FS_LevelEditor.SaveSystem
                 }
             }
         }
+        #endregion
 
         public static void DeleteLevel(string levelFileNameWithoutExtension)
         {
@@ -497,7 +492,6 @@ namespace FS_LevelEditor.SaveSystem
                 File.Delete(path);
             }
         }
-
         public static void RenameLevel(string levelFileNameWithoutExtension, string newLevelName)
         {
             LevelData toRename = GetLevelData(levelFileNameWithoutExtension);
@@ -519,6 +513,30 @@ namespace FS_LevelEditor.SaveSystem
             File.Move(oldPath, newPath);
         }
 
+        public static bool LevelFileEixsts(string levelFileNameWithoutExtension)
+        {
+            string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
+
+            return File.Exists(filePath);
+        }
+        public static string GetAvailableLevelName(string levelNameOriginal = "New Level")
+        {
+            string levelName = levelNameOriginal;
+            string toReturn = levelName;
+            int counter = 1;
+
+            if (!Directory.Exists(levelsDirectory)) return levelName;
+
+            string[] existingLevels = Directory.GetFiles(levelsDirectory);
+            while (existingLevels.Any(lvl => Path.GetFileNameWithoutExtension(lvl) == toReturn))
+            {
+                toReturn = $"{levelName} {counter}";
+                counter++;
+            }
+
+            return toReturn;
+        }
+
         /// <summary>
         /// Checks if a level has metadata (author, tags, or description) set
         /// </summary>
@@ -529,8 +547,8 @@ namespace FS_LevelEditor.SaveSystem
 
             return !string.IsNullOrWhiteSpace(data.authorName) ||
                    !string.IsNullOrWhiteSpace(data.tags) ||
-         !string.IsNullOrWhiteSpace(data.description) ||
-      !string.IsNullOrWhiteSpace(data.thumbnailBase64);
+                   !string.IsNullOrWhiteSpace(data.description) ||
+                   !string.IsNullOrWhiteSpace(data.thumbnailBase64);
         }
 
         // This method was generated by Grok AI LOL, I kinda understand it, but not at all LOL.
