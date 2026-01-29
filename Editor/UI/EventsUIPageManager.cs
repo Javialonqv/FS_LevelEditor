@@ -49,8 +49,7 @@ namespace FS_LevelEditor.Editor.UI
 
         GameObject currentActiveObjectPanel;
 
-        UIButtonPatcher expandDefaultOptionsButton;
-        UISprite expandDefaultOptionsButtonSprite;
+        UIButtonAsToggle moreGlobalOptionsButton;
 
         #region Object Panels Related
         GameObject defaultObjectsSettings;
@@ -849,8 +848,6 @@ namespace FS_LevelEditor.Editor.UI
                 ShowEventSettings();
 
                 // Set the color of the NEW selected button.
-                //GameObject[] test2 = eventsPagesList[currentSelectedEventID / eventsPerPage].GetChilds();
-                //Transform test = eventsPagesList[currentSelectedEventID / eventsPerPage].transform.GetChild(currentSelectedEventID % eventsPerPage);
                 currentSelectedEventButton = eventsPagesList[currentSelectedEventID / EVENTS_PER_PAGE].transform.GetChild(currentSelectedEventID % EVENTS_PER_PAGE).
                     GetChild(0).GetComponent<UIButton>();
                 currentSelectedEventButton.defaultColor = new Color(0f, 0.6f, 0f, 1f);
@@ -1162,48 +1159,101 @@ namespace FS_LevelEditor.Editor.UI
                 }
             }
 
+            #region Refresh UI Options Values
             spawnOptionsDropdown.SelectOption((int)currentSelectedEvent.spawn);
             colliderStateDropdown.SelectOption((int)currentSelectedEvent.colliderState);
             startMovingObjectToggle.Set(currentSelectedEvent.moveObject);
-            sawStateButton.SelectOption((int)currentSelectedEvent.sawState);
-            zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
-            invertGravityToggle.Set(currentSelectedEvent.invertGravity);
-            taserStateButton.SelectOption((int)currentSelectedEvent.taserState);
-            changeAmmoToggle.Set(currentSelectedEvent.changeAmmo);
-            newAmmoInputField.gameObject.SetActive(currentSelectedEvent.changeAmmo && !currentSelectedEvent.infiniteTaser);
-            newAmmoInputField.SetText(currentSelectedEvent.newAmmo);
-            infiniteTaserToggle.gameObject.SetActive(currentSelectedEvent.changeAmmo);
-            infiniteTaserToggle.Set(currentSelectedEvent.infiniteTaser);
-            jetpackStateButton.SelectOption((int)currentSelectedEvent.jetpackState);
-            respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
-            respawnOnLastSwitchToggle.Set(currentSelectedEvent.respawnCubeOnLastSwitch);
-            laserStateButton.SelectOption((int)currentSelectedEvent.laserState);
-            mineStateButton.SelectOption((int)currentSelectedEvent.mineState);
-            changeLightColorToggle.Set(currentSelectedEvent.changeLightColor);
-            newLightColorTitleLabel.gameObject.SetActive(currentSelectedEvent.changeLightColor);
-            newLightColorInputField.gameObject.SetActive(currentSelectedEvent.changeLightColor);
-            newLightColorInputField.text = currentSelectedEvent.newLightColor;
-            ceilingLightStateButton.SelectOption((int)currentSelectedEvent.ceilingLightState);
-            changeCeilingLightColorToggle.Set(currentSelectedEvent.changeCeilingLightColor);
-            newCeilingLightColorInputField.text = currentSelectedEvent.newCeilingLightColor;
-            changePackRespawnTimeToggle.Set(currentSelectedEvent.changePackRespawnTime);
-            newPackRespawnTimeTitleLabel.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
-            newPackRespawnTimeInputField.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
-            newPackRespawnTimeInputField.SetText(currentSelectedEvent.packRespawnTime);
-            spawnPackNowToggle.Set(currentSelectedEvent.spawnPackNow);
-            switchStateButton.SelectOption((int)currentSelectedEvent.switchState);
-            executeSwitchActionsToggle.Set(currentSelectedEvent.executeSwitchActions);
-            switchUsableStateButton.SelectOption((int)currentSelectedEvent.switchUsableState);
-            flameTrapStateButton.SelectOption((int)currentSelectedEvent.flameTrapState);
-            changeScreenColorTypeToggle.Set(currentSelectedEvent.changeScreenColorType);
-            screenColorTypeButton.SetOption((int)currentSelectedEvent.screenColorType, true);
-            changeScreenTextToggle.Set(currentSelectedEvent.changeScreenText);
-            screenNewTextField.SetText(currentSelectedEvent.screenNewText);
-            setDoorStateButton.SelectOption((int)currentSelectedEvent.doorState);
-            bridgeStateButton.SelectOption((int)currentSelectedEvent.bridgeState);
-            movingPlatformStateButton.SelectOption((int)currentSelectedEvent.movingPlatformState, executeOnChange: false);
-            objectiveStateButton.SelectOption((int)currentSelectedEvent.objectiveState);
-            //setObjectiveMarkerButton.gameObject.SetActive(currentSelectedEvent.createObjective);
+
+            if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.SAW)
+            {
+                sawStateButton.SelectOption((int)currentSelectedEvent.sawState);
+            }
+            else if (currentSelectedEvent.isForPlayer)
+            {
+                zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
+                invertGravityToggle.Set(currentSelectedEvent.invertGravity);
+            }
+            else if (currentSelectedEvent.isForTaser)
+            {
+                taserStateButton.SelectOption((int)currentSelectedEvent.taserState);
+                changeAmmoToggle.Set(currentSelectedEvent.changeAmmo);
+                newAmmoInputField.gameObject.SetActive(currentSelectedEvent.changeAmmo && !currentSelectedEvent.infiniteTaser);
+                newAmmoInputField.SetText(currentSelectedEvent.newAmmo);
+                infiniteTaserToggle.gameObject.SetActive(currentSelectedEvent.changeAmmo);
+                infiniteTaserToggle.Set(currentSelectedEvent.infiniteTaser);
+            }
+            else if (currentSelectedEvent.isForJetpack)
+            {
+                jetpackStateButton.SelectOption((int)currentSelectedEvent.jetpackState);
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.CUBE)
+            {
+                respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
+                respawnOnLastSwitchToggle.Set(currentSelectedEvent.respawnCubeOnLastSwitch);
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.SWITCH)
+            {
+                laserStateButton.SelectOption((int)currentSelectedEvent.laserState);
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.MINE)
+            {
+                mineStateButton.SelectOption((int)currentSelectedEvent.mineState);
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.DIRECTIONAL_LIGHT || currentSelectedEvent.targetObjType == LE_Object.ObjectType.POINT_LIGHT)
+            {
+                changeLightColorToggle.Set(currentSelectedEvent.changeLightColor);
+                newLightColorTitleLabel.gameObject.SetActive(currentSelectedEvent.changeLightColor);
+                newLightColorInputField.gameObject.SetActive(currentSelectedEvent.changeLightColor);
+                newLightColorInputField.text = currentSelectedEvent.newLightColor;
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.CEILING_LIGHT)
+            {
+                ceilingLightStateButton.SelectOption((int)currentSelectedEvent.ceilingLightState);
+                changeCeilingLightColorToggle.Set(currentSelectedEvent.changeCeilingLightColor);
+                newCeilingLightColorInputField.text = currentSelectedEvent.newCeilingLightColor;
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.HEALTH_PACK || currentSelectedEvent.targetObjType == LE_Object.ObjectType.AMMO_PACK)
+            {
+                changePackRespawnTimeToggle.Set(currentSelectedEvent.changePackRespawnTime);
+                newPackRespawnTimeTitleLabel.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
+                newPackRespawnTimeInputField.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
+                newPackRespawnTimeInputField.SetText(currentSelectedEvent.packRespawnTime);
+                spawnPackNowToggle.Set(currentSelectedEvent.spawnPackNow);
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.SWITCH)
+            {
+                switchStateButton.SelectOption((int)currentSelectedEvent.switchState);
+                executeSwitchActionsToggle.Set(currentSelectedEvent.executeSwitchActions);
+                switchUsableStateButton.SelectOption((int)currentSelectedEvent.switchUsableState);
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.FLAME_TRAP)
+            {
+                flameTrapStateButton.SelectOption((int)currentSelectedEvent.flameTrapState);
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.SCREEN || currentSelectedEvent.targetObjType == LE_Object.ObjectType.SMALL_SCREEN)
+            {
+                changeScreenColorTypeToggle.Set(currentSelectedEvent.changeScreenColorType);
+                screenColorTypeButton.SetOption((int)currentSelectedEvent.screenColorType, true);
+                changeScreenTextToggle.Set(currentSelectedEvent.changeScreenText);
+                screenNewTextField.SetText(currentSelectedEvent.screenNewText);
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.DOOR || currentSelectedEvent.targetObjType == LE_Object.ObjectType.DOOR_V2)
+            {
+                setDoorStateButton.SelectOption((int)currentSelectedEvent.doorState);
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.BRIDGE)
+            {
+                bridgeStateButton.SelectOption((int)currentSelectedEvent.bridgeState);
+            }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.MOVING_PLATFORM)
+            {
+                movingPlatformStateButton.SelectOption((int)currentSelectedEvent.movingPlatformState, executeOnChange: false);
+            }
+            else if (currentSelectedEvent.isForObjective)
+            {
+                objectiveStateButton.SelectOption((int)currentSelectedEvent.objectiveState);
+            }
+            #endregion
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -1385,7 +1435,16 @@ namespace FS_LevelEditor.Editor.UI
                     currentActiveObjectPanel = movingPlatformObjectsSettings;
                 }
 
-                if (currentActiveObjectPanel && !globalOptionsExpanded) currentActiveObjectPanel.SetActive(true);
+                if (currentActiveObjectPanel && !globalOptionsExpanded)
+                {
+                    globalObjectsSettings.SetActive(false);
+                    currentActiveObjectPanel.SetActive(true);
+                }
+                else if (globalOptionsExpanded)
+                {
+                    globalObjectsSettings.SetActive(true);
+                    if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(false);
+                }
             }
             else
             {
@@ -1429,7 +1488,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateSpawnOptionsDropdown();
             CreateColliderStateDropdown();
-            CreateExpandDefaultOptionsButton();
+            CreateMoreGlobalOptionsButton();
         }
         void CreateSpawnOptionsDropdown()
         {
@@ -1461,14 +1520,10 @@ namespace FS_LevelEditor.Editor.UI
             this.colliderStateDropdown = colliderStateDropdown;
             colliderStateDropdown.gameObject.SetActive(true);
         }
-        void CreateExpandDefaultOptionsButton()
+        void CreateMoreGlobalOptionsButton()
         {
-            expandDefaultOptionsButton = NGUI_Utils.CreateButtonWithSprite(defaultObjectsSettings.transform, new Vector3(360, 120), Vector3Int.one * 55, 2,
-                "Triangle", new Vector2Int(35, 25));
-            expandDefaultOptionsButton.onClick += OnExpandDefaultOptionsButtonClicked;
-            expandDefaultOptionsButtonSprite = expandDefaultOptionsButton.gameObject.GetChildAt("Background/Label").GetComponent<UISprite>();
-
-            expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, -1, 1); // Default.
+            moreGlobalOptionsButton = NGUI_Utils.CreateButtonAsToggleWithSprite(defaultObjectsSettings.transform, new Vector3(360, 120), Vector3Int.one * 55, 2, "Global", new Vector2Int(35, 35));
+            moreGlobalOptionsButton.onClick += OnMoreGlobalOptionsButtonClicked;
         }
         // -----------------------------------------
         void CreateGlobalObjectsSettings()
@@ -2444,7 +2499,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.colliderState = (LE_Event.ColliderState)colliderStateDropdown.currentlySelectedID;
         }
-        void OnExpandDefaultOptionsButtonClicked()
+        void OnMoreGlobalOptionsButtonClicked(bool newState)
         {
             globalOptionsExpanded = !globalOptionsExpanded;
 
@@ -2452,23 +2507,11 @@ namespace FS_LevelEditor.Editor.UI
             {
                 globalObjectsSettings.SetActive(true);
                 if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(false);
-
-                // Show globe icon when global options are expanded
-                expandDefaultOptionsButtonSprite.SetExternalSprite("Global");
-                expandDefaultOptionsButtonSprite.width = 40;
-                expandDefaultOptionsButtonSprite.height = 40;
-                expandDefaultOptionsButtonSprite.transform.localScale = Vector3.one;
             }
             else
             {
                 globalObjectsSettings.SetActive(false);
                 if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(true);
-
-                // Show arrow pointing up when collapsed
-                expandDefaultOptionsButtonSprite.SetExternalSprite("Triangle");
-                expandDefaultOptionsButtonSprite.width = 35;
-                expandDefaultOptionsButtonSprite.height = 25;
-                expandDefaultOptionsButtonSprite.transform.localScale = new Vector3(1, -1, 1);
             }
         }
         // -----------------------------------------
