@@ -43,26 +43,15 @@ namespace FS_LevelEditor
                 { "WhenInvertingEvents", new List<LE_Event>() },
                 { "WhenActivatingEvents", new List<LE_Event>() },
                 { "WhenDeactivatingEvents", new List<LE_Event>() },
-                { "InvisibleMesh", false }
             };
         }
 
         public override void ObjectStart(LEScene scene)
         {
             SetMeshInEditor(GetProperty<SwitchState>("InitialState"));
-            if (scene != LEScene.Editor)
-            {
-                SetAllMeshRenderersEnabled(!GetProperty<bool>("InvisibleMesh"));
-            }
+
             base.ObjectStart(scene);
         }
-
-        void SetAllMeshRenderersEnabled(bool enabled)
-        {
-			gameObject.GetChild("Content").GetComponentsInChildren<MeshRenderer>(true)
-                .ToList()
-                .ForEach(mr => mr.enabled = enabled);
-		}
 
         public override void InitComponent()
         {
@@ -105,28 +94,16 @@ namespace FS_LevelEditor
             controller.lockboxAnimTrigger = "IGC_Open";
             controller.m_audioSource = button.GetComponent<AudioSource>();
             controller.m_audioSource.outputAudioMixerGroup = t_switch.m_audioSource.outputAudioMixerGroup;
-            if(!GetProperty<bool>("InvisibleMesh"))
-            {
-				controller.cyanLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Cyan").GetComponent<MeshRenderer>();
-				controller.cyanPlane = button.GetChildAt("ButtonMesh/CyanPlaneButton").GetComponent<MeshRenderer>();
-				controller.greenLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Green").GetComponent<MeshRenderer>();
-				controller.greenPlane = button.GetChildAt("ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
-				controller.redLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Bottom/Lightbands_Bottom_Red").GetComponent<MeshRenderer>();
-				controller.redPlane = button.GetChildAt("ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
-				controller.m_meshRenderer = button.GetChild("ButtonMesh").GetComponent<MeshRenderer>();
-			} else
-            {
-                var nofuckingthing = new GameObject("ShouldBeSaved").AddComponent<MeshRenderer>();
-				controller.m_meshRenderer = nofuckingthing;
-				controller.cyanLightbandPlane = nofuckingthing;
-				controller.cyanPlane = nofuckingthing;
-				controller.greenLightbandPlane = nofuckingthing;
-				controller.greenPlane = nofuckingthing;
-				controller.redPlane = nofuckingthing;
-				controller.redLightbandPlane = nofuckingthing;
-
-			}
-			controller.m_meshTransform = button.GetChild("ButtonMesh").transform;
+            #region Renderers
+            controller.cyanLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Cyan").GetComponent<MeshRenderer>();
+            controller.cyanPlane = button.GetChildAt("ButtonMesh/CyanPlaneButton").GetComponent<MeshRenderer>();
+            controller.greenLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Top/Lightbands_Top_Green").GetComponent<MeshRenderer>();
+            controller.greenPlane = button.GetChildAt("ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
+            controller.redLightbandPlane = button.GetChildAt("ButtonMesh/Switch_LightBands_Bottom/Lightbands_Bottom_Red").GetComponent<MeshRenderer>();
+            controller.redPlane = button.GetChildAt("ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
+            controller.m_meshRenderer = button.GetChild("ButtonMesh").GetComponent<MeshRenderer>();
+            #endregion
+            controller.m_meshTransform = button.GetChild("ButtonMesh").transform;
             controller.offColor = InterrupteurController.ColorType.RED;
             controller.offMaterials = t_switch.offMaterials;
             controller.onColor = InterrupteurController.ColorType.GREEN;
@@ -217,17 +194,6 @@ namespace FS_LevelEditor
 				if (value is bool)
 				{
 					properties["OnlyByTaser"] = (bool)value;
-					return true;
-				}
-			}
-			else if (name == "InvisibleMesh")
-			{
-				if (value is bool)
-				{
-					properties["InvisibleMesh"] = (bool)value;
-					// Only hide mesh if not in editor
-					if (EditorController.Instance == null)
-                        SetAllMeshRenderersEnabled(!(bool)value);
 					return true;
 				}
 			}
