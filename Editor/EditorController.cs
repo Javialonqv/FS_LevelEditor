@@ -2041,6 +2041,7 @@ namespace FS_LevelEditor.Editor
                     currentSelectedObjects.Remove(obj);
                     currentSelectedObjsComponents.Remove(objComp);
                     obj.transform.parent = objComp.objectParent; // Remove the object from the multipleSelectedObjsParent.
+                    objComp.OnDeselect(null);
                     if (currentSelectedObjects.Count == 1)
                     {
                         SetSelectedObj(currentSelectedObjects[0]); // If there's only one object left, set it as the selected object.
