@@ -650,9 +650,6 @@ namespace FS_LevelEditor.Editor
                 return;
             }
 
-            // Don't handle ESC if save popup is active (it handles its own ESC)
-            if (SaveMetadataPopup.IsPopupActive()) return;
-
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 if (EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL))
@@ -674,6 +671,11 @@ namespace FS_LevelEditor.Editor
                 else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.UPGRADES_PANEL))
                 {
                     UpgradesPanel.Instance.HideUpgradesPanel();
+                    return;
+                }
+                else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.SAVE_METADATA_PANEL))
+                {
+                    SaveMetadataPopup.Instance.OnCancelButtonClicked();
                     return;
                 }
 

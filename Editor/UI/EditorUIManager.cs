@@ -26,7 +26,8 @@ namespace FS_LevelEditor.Editor.UI
 		SELECTING_TARGET_OBJ,
 		GLOBAL_PROPERTIES,
 		TEXT_EDITOR,
-		UPGRADES_PANEL
+		UPGRADES_PANEL,
+		SAVE_METADATA_PANEL
 	}
 
 	[RegisterTypeInIl2Cpp]
@@ -583,6 +584,10 @@ namespace FS_LevelEditor.Editor.UI
 				case EditorUIContext.UPGRADES_PANEL:
 					target = UpgradesPanel.Instance.upgradesPanel;
                     break;
+
+				case EditorUIContext.SAVE_METADATA_PANEL:
+					target = SaveMetadataPopup.Instance.popupPanel;
+					break;
 			}
             #endregion
 
@@ -697,6 +702,10 @@ namespace FS_LevelEditor.Editor.UI
 				case EditorUIContext.UPGRADES_PANEL:
 					target = UpgradesPanel.Instance.upgradesPanel;
                     break;
+
+				case EditorUIContext.SAVE_METADATA_PANEL:
+					target = SaveMetadataPopup.Instance.popupPanel;
+					break;
 			}
             #endregion
 

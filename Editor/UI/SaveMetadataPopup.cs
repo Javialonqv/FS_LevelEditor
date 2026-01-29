@@ -201,21 +201,11 @@ namespace FS_LevelEditor.Editor.UI
 				descriptionField.SetText("");
 			}
 
-			// Show overlay and popup
-			transform.GetChild(0).gameObject.SetActive(true); // Overlay
-			popupPanel.SetActive(true);
-			
-			// Reset scale before playing animation to prevent flickering
-			popupPanel.transform.localScale = Vector3.zero;
-			TweenScale tweenScale = popupPanel.GetComponent<TweenScale>();
-			tweenScale.ResetToBeginning();
-			tweenScale.PlayForward();
-			
-			Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_SHOW);
+			EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
+			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.SAVE_METADATA_PANEL);
 			
 			Logger.Log("SaveMetadataPopup shown successfully");
 		}
-
 		public void HidePopup()
 		{
 			if (!isShowing) return;
@@ -229,19 +219,8 @@ namespace FS_LevelEditor.Editor.UI
 			// Set isShowing to false immediately to prevent double-hiding
 			isShowing = false;
 
-			TweenScale tweenScale = popupPanel.GetComponent<TweenScale>();
-			tweenScale.PlayReverse();
-			
-			MelonLoader.MelonCoroutines.Start(HideAfterAnimation());
-
-			Utils.PlayFSUISound(Utils.FS_UISound.POPUP_UI_HIDE);
-		}
-
-		System.Collections.IEnumerator HideAfterAnimation()
-		{
-			yield return new WaitForSecondsRealtime(0.2f);
-			popupPanel.SetActive(false);
-			transform.GetChild(0).gameObject.SetActive(false); // Overlay
+			EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
+			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 		}
 
 		void OnSaveButtonClicked()
@@ -338,20 +317,11 @@ namespace FS_LevelEditor.Editor.UI
 			Logger.Log($"Level saved with metadata - Name: {levelName}, Author: {authorName}, Tags: {tags}");
 		}
 
-		void OnCancelButtonClicked()
+		public void OnCancelButtonClicked()
 		{
 			// Discard changes and close
 			Logger.Log("Save popup cancelled - discarding changes");
 			HidePopup();
-		}
-
-		void Update()
-		{
-			// Allow ESC to discard and close popup
-			if (isShowing && Input.GetKeyDown(KeyCode.Escape))
-			{
-				OnCancelButtonClicked();
-			}
 		}
 
 		/// <summary>
