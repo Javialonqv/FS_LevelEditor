@@ -754,7 +754,7 @@ namespace FS_LevelEditor.Editor.UI
 				toggle.gameObject.name = "Toggle";
 				var targetObjType = currentlyCreatingPropsUIFor;
 				toggle.onClick += (state) => SetPropertyWithToggle(targetObjType, targetPropName, toggle.isChecked);
-				if ((bool)defaultValue) toggle.Set(true);
+				if ((bool)defaultValue) toggle.Set(true, false);
 				if (tooltip != null)
 				{
 					toggle.gameObject.AddComponent<FractalTooltip>().toolTipLocKey = tooltip;
@@ -1411,7 +1411,7 @@ namespace FS_LevelEditor.Editor.UI
 
                     attributePanel.SetActive(true);
 				}
-				else
+				else if (currentSelectedObj)
 				{
 					var value = prop.Value;
                     bool setActive = false;
@@ -1567,7 +1567,7 @@ namespace FS_LevelEditor.Editor.UI
 
 				return toReturn;
 			}
-			else
+			else if (EditorController.Instance.currentSelectedObjComponent)
 			{
 				if (useBaseMethod)
 				{
@@ -1578,6 +1578,8 @@ namespace FS_LevelEditor.Editor.UI
                     return EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, value);
                 }
             }
+
+			return false;
 		}
 
 		// Extra functions for specific things for specific attributes for specific objects LOL.
