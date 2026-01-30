@@ -25,12 +25,21 @@ namespace FS_LevelEditor
 
         BreakableWindowController script;
 
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
+            {
+                { "BreakWithDodge", true }
+            };
+        }
+
         public override void InitComponent()
         {
             GameObject content = gameObject.GetChild("Content");
 
             script = content.AddComponent<BreakableWindowController>();
             script.isFirstWindow = true;
+            script.breakWithDodge = GetProperty<bool>("BreakWithDodge");
             script.partsHolder = content.GetChild("BreakableWindow_Shattered").transform;
             script.m_meshRenderer = content.GetChild("Window_OriginalMesh").GetComponent<MeshRenderer>();
             script.m_audioSource = content.GetComponent<AudioSource>();
@@ -126,6 +135,19 @@ namespace FS_LevelEditor
 
             staticVariablesInitialized = true;
             initialized = true;
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "BreakWithDodge")
+            {
+                if (value is bool boolValue)
+                {
+                    properties["BreakWithDodge"] = boolValue;
+                }
+            }
+
+            return base.SetProperty(name, value);
         }
 
         public override bool TriggerAction(string actionName)
