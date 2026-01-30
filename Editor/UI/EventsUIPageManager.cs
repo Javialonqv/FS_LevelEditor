@@ -1459,15 +1459,26 @@ namespace FS_LevelEditor.Editor.UI
                     currentActiveObjectPanel = fragileWindowObjectsSettings;
                 }
 
-                if (currentActiveObjectPanel && !globalOptionsExpanded)
+                if (currentActiveObjectPanel) // User can decided if it shows global options or object-specific options.
                 {
-                    globalObjectsSettings.SetActive(false);
-                    currentActiveObjectPanel.SetActive(true);
+                    moreGlobalOptionsButton.gameObject.SetActive(true);
+
+                    if (globalOptionsExpanded)
+                    {
+                        globalObjectsSettings.SetActive(true);
+                        currentActiveObjectPanel.SetActive(false);
+                    }
+                    else
+                    {
+                        globalObjectsSettings.SetActive(false);
+                        currentActiveObjectPanel.SetActive(true);
+                    }
                 }
-                else if (globalOptionsExpanded)
+                else // Force global options to be displayed.
                 {
+                    moreGlobalOptionsButton.gameObject.SetActive(false);
+
                     globalObjectsSettings.SetActive(true);
-                    if (currentActiveObjectPanel) currentActiveObjectPanel.SetActive(false);
                 }
             }
             else
@@ -1483,6 +1494,8 @@ namespace FS_LevelEditor.Editor.UI
                 currentSelectedEvent.targetObjType = null;
                 currentSelectedEvent.targetObjID = 0;
                 currentSelectedEvent.targetObjName = inputText;
+
+                moreGlobalOptionsButton.gameObject.SetActive(false);
             }
 
             currentSelectedEvent.isValid = objIsValid;
