@@ -1167,109 +1167,7 @@ namespace FS_LevelEditor.Editor.UI
                 }
             }
 
-            #region Refresh UI Options Values
-            spawnOptionsDropdown.SelectOption((int)currentSelectedEvent.spawn);
-            colliderStateDropdown.SelectOption((int)currentSelectedEvent.colliderState);
-            startMovingObjectToggle.Set(currentSelectedEvent.moveObject);
-
-            if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.SAW)
-            {
-                sawStateButton.SelectOption((int)currentSelectedEvent.sawState);
-            }
-            else if (currentSelectedEvent.isForPlayer)
-            {
-                zeroGToggle.Set(currentSelectedEvent.enableOrDisableZeroG);
-                invertGravityToggle.Set(currentSelectedEvent.invertGravity);
-            }
-            else if (currentSelectedEvent.isForTaser)
-            {
-                taserStateButton.SelectOption((int)currentSelectedEvent.taserState);
-                changeAmmoToggle.Set(currentSelectedEvent.changeAmmo);
-                newAmmoInputField.gameObject.SetActive(currentSelectedEvent.changeAmmo && !currentSelectedEvent.infiniteTaser);
-                newAmmoInputField.SetText(currentSelectedEvent.newAmmo);
-                infiniteTaserToggle.gameObject.SetActive(currentSelectedEvent.changeAmmo);
-                infiniteTaserToggle.Set(currentSelectedEvent.infiniteTaser);
-            }
-            else if (currentSelectedEvent.isForJetpack)
-            {
-                jetpackStateButton.SelectOption((int)currentSelectedEvent.jetpackState);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.CUBE)
-            {
-                respawnCubeToggle.Set(currentSelectedEvent.respawnCube);
-                respawnOnLastSwitchToggle.Set(currentSelectedEvent.respawnCubeOnLastSwitch);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.SWITCH)
-            {
-                laserStateButton.SelectOption((int)currentSelectedEvent.laserState);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.MINE)
-            {
-                mineStateButton.SelectOption((int)currentSelectedEvent.mineState);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.DIRECTIONAL_LIGHT || currentSelectedEvent.targetObjType == LE_Object.ObjectType.POINT_LIGHT)
-            {
-                changeLightColorToggle.Set(currentSelectedEvent.changeLightColor);
-                newLightColorTitleLabel.gameObject.SetActive(currentSelectedEvent.changeLightColor);
-                newLightColorInputField.gameObject.SetActive(currentSelectedEvent.changeLightColor);
-                newLightColorInputField.text = currentSelectedEvent.newLightColor;
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.CEILING_LIGHT)
-            {
-                ceilingLightStateButton.SelectOption((int)currentSelectedEvent.ceilingLightState);
-                changeCeilingLightColorToggle.Set(currentSelectedEvent.changeCeilingLightColor);
-                newCeilingLightColorInputField.text = currentSelectedEvent.newCeilingLightColor;
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.HEALTH_PACK || currentSelectedEvent.targetObjType == LE_Object.ObjectType.AMMO_PACK)
-            {
-                changePackRespawnTimeToggle.Set(currentSelectedEvent.changePackRespawnTime);
-                newPackRespawnTimeTitleLabel.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
-                newPackRespawnTimeInputField.gameObject.SetActive(currentSelectedEvent.changePackRespawnTime);
-                newPackRespawnTimeInputField.SetText(currentSelectedEvent.packRespawnTime);
-                spawnPackNowToggle.Set(currentSelectedEvent.spawnPackNow);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.SWITCH)
-            {
-                switchStateButton.SelectOption((int)currentSelectedEvent.switchState);
-                executeSwitchActionsToggle.Set(currentSelectedEvent.executeSwitchActions);
-                switchUsableStateButton.SelectOption((int)currentSelectedEvent.switchUsableState);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.FLAME_TRAP)
-            {
-                flameTrapStateButton.SelectOption((int)currentSelectedEvent.flameTrapState);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.SCREEN || currentSelectedEvent.targetObjType == LE_Object.ObjectType.SMALL_SCREEN)
-            {
-                changeScreenColorTypeToggle.Set(currentSelectedEvent.changeScreenColorType);
-                screenColorTypeButton.SetOption((int)currentSelectedEvent.screenColorType, true);
-                changeScreenTextToggle.Set(currentSelectedEvent.changeScreenText);
-                screenNewTextField.SetText(currentSelectedEvent.screenNewText);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.DOOR || currentSelectedEvent.targetObjType == LE_Object.ObjectType.DOOR_V2)
-            {
-                setDoorStateButton.SelectOption((int)currentSelectedEvent.doorState);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.BRIDGE)
-            {
-                bridgeStateButton.SelectOption((int)currentSelectedEvent.bridgeState);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.MOVING_PLATFORM)
-            {
-                movingPlatformStateButton.SelectOption((int)currentSelectedEvent.movingPlatformState, executeOnChange: false);
-            }
-            else if (currentSelectedEvent.isForObjective)
-            {
-                objectiveStateButton.SelectOption((int)currentSelectedEvent.objectiveState);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.DESTRUCTIBLE_WALL)
-            {
-                destructibleWallBreakNowToggle.Set(currentSelectedEvent.destructibleWallBreakNow);
-            }
-            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.BREAKABLE_WINDOW)
-            {
-                fragileWindowBreakNowToggle.Set(currentSelectedEvent.fragileWindowBreakNow);
-            }
-            #endregion
+            UpdateEventOptionsWithEvent(currentSelectedEvent);
 
             eventSettingsPanel.SetActive(true);
             eventOptionsParent.DisableAllChildren();
@@ -1511,7 +1409,111 @@ namespace FS_LevelEditor.Editor.UI
         public void SetTargetObjectWithLE_Object(LE_Object obj)
         {
             targetObjInputField.SetText(obj.objectFullNameWithID);
+
+            UpdateEventOptionsWithEvent(currentSelectedEvent);
             OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
+        }
+
+        void UpdateEventOptionsWithEvent(LE_Event @event)
+        {
+            spawnOptionsDropdown.SelectOption((int)@event.spawn);
+            colliderStateDropdown.SelectOption((int)@event.colliderState);
+            startMovingObjectToggle.Set(@event.moveObject);
+
+            if (@event.isForPlayer)
+            {
+                zeroGToggle.Set(@event.enableOrDisableZeroG);
+                invertGravityToggle.Set(@event.invertGravity);
+            }
+            else if (@event.isForTaser)
+            {
+                taserStateButton.SelectOption((int)@event.taserState);
+                changeAmmoToggle.Set(@event.changeAmmo);
+                newAmmoInputField.SetText(@event.newAmmo);
+                infiniteTaserToggle.Set(@event.infiniteTaser);
+            }
+            else if (@event.isForJetpack)
+            {
+                jetpackStateButton.SelectOption((int)@event.jetpackState);
+            }
+            else if (@event.isForObjective)
+            {
+                objectiveStateButton.SelectOption((int)@event.objectiveState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.SAW)
+            {
+                sawStateButton.SelectOption((int)@event.sawState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.CUBE)
+            {
+                respawnCubeToggle.Set(@event.respawnCube);
+                respawnOnLastSwitchToggle.Set(@event.respawnCubeOnLastSwitch);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.LASER)
+            {
+                laserStateButton.SelectOption((int)@event.laserState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.MINE)
+            {
+                mineStateButton.SelectOption((int)@event.mineState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.DIRECTIONAL_LIGHT || @event.targetObjType == LE_Object.ObjectType.POINT_LIGHT)
+            {
+                changeLightColorToggle.Set(@event.changeLightColor);
+                newLightColorInputField.text = @event.newLightColor;
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.CEILING_LIGHT)
+            {
+                ceilingLightStateButton.SelectOption((int)@event.ceilingLightState, true);
+                changeCeilingLightColorToggle.Set(@event.changeCeilingLightColor, true);
+                newCeilingLightColorInputField.text = @event.newCeilingLightColor;
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.HEALTH_PACK || @event.targetObjType == LE_Object.ObjectType.AMMO_PACK)
+            {
+                changePackRespawnTimeToggle.Set(@event.changePackRespawnTime, true);
+                newPackRespawnTimeInputField.SetText(@event.packRespawnTime, true);
+
+                spawnPackNowToggle.Set(@event.spawnPackNow);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.SWITCH)
+            {
+                switchStateButton.SelectOption((int)@event.switchState);
+                executeSwitchActionsToggle.Set(@event.executeSwitchActions);
+
+                switchUsableStateButton.SelectOption((int)@event.switchUsableState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.FLAME_TRAP)
+            {
+                flameTrapStateButton.SelectOption((int)@event.flameTrapState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.SCREEN || @event.targetObjType == LE_Object.ObjectType.SMALL_SCREEN)
+            {
+                changeScreenColorTypeToggle.Set(@event.changeScreenColorType);
+                screenColorTypeButton.SetOption((int)@event.screenColorType, true);
+
+                changeScreenTextToggle.Set(@event.changeScreenText);
+                screenNewTextField.SetText(@event.screenNewText);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.DOOR || @event.targetObjType == LE_Object.ObjectType.DOOR_V2)
+            {
+                setDoorStateButton.SelectOption((int)@event.doorState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.BRIDGE)
+            {
+                bridgeStateButton.SelectOption((int)@event.bridgeState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.MOVING_PLATFORM)
+            {
+                movingPlatformStateButton.SelectOption((int)@event.movingPlatformState, executeOnChange: false);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.DESTRUCTIBLE_WALL)
+            {
+                destructibleWallBreakNowToggle.Set(@event.destructibleWallBreakNow);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.BREAKABLE_WINDOW)
+            {
+                fragileWindowBreakNowToggle.Set(@event.fragileWindowBreakNow);
+            }
         }
 
         #region Create UI Elements For Objects
@@ -2622,8 +2624,7 @@ namespace FS_LevelEditor.Editor.UI
             // Both toggles can't be enabled!
             if (zeroGToggle.isChecked && invertGravityToggle.isChecked)
             {
-                invertGravityToggle.Set(false);
-                OnInvertGravityToggleChanged();
+                invertGravityToggle.Set(false, true);
             }
         }
         void OnInvertGravityToggleChanged()
@@ -2632,8 +2633,7 @@ namespace FS_LevelEditor.Editor.UI
             // Both toggles can't be enabled!
             if (invertGravityToggle.isChecked && zeroGToggle.isChecked)
             {
-                zeroGToggle.Set(false);
-                OnZeroGToggleChanged();
+                zeroGToggle.Set(false, true);
             }
         }
         // -----------------------------------------
@@ -2674,7 +2674,6 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.jetpackState = (LE_Event.JetpackState)jetpackStateButton.currentSelectedID;
         }
-
         // -----------------------------------------
         void OnObjectiveStateButtonChanged()
         {
@@ -2709,6 +2708,7 @@ namespace FS_LevelEditor.Editor.UI
         void OnChangeLightColorToggleChanged()
         {
             currentSelectedEvent.changeLightColor = changeLightColorToggle.isChecked;
+
             newLightColorTitleLabel.gameObject.SetActive(changeLightColorToggle.isChecked);
             newLightColorInputField.gameObject.SetActive(changeLightColorToggle.isChecked);
         }
@@ -2735,6 +2735,7 @@ namespace FS_LevelEditor.Editor.UI
         void OnChangeCeilingLightColorToggleChanged()
         {
             currentSelectedEvent.changeCeilingLightColor = changeCeilingLightColorToggle.isChecked;
+
             newCeilingLightColorInputField.gameObject.SetActive(changeCeilingLightColorToggle.isChecked);
         }
         void OnNewCeilingLightColorInputFieldChanged()
@@ -2756,6 +2757,7 @@ namespace FS_LevelEditor.Editor.UI
         void OnChangePackRespawnTimeToggleChanged()
         {
             currentSelectedEvent.changePackRespawnTime = changePackRespawnTimeToggle.isChecked;
+
             newPackRespawnTimeTitleLabel.gameObject.SetActive(changePackRespawnTimeToggle.isChecked);
             newPackRespawnTimeInputField.gameObject.SetActive(changePackRespawnTimeToggle.isChecked);
         }
@@ -2794,6 +2796,7 @@ namespace FS_LevelEditor.Editor.UI
         void OnChangeScreenColorTypeToggleChanged()
         {
             currentSelectedEvent.changeScreenColorType = changeScreenColorTypeToggle.isChecked;
+
             screenColorTypeButton.gameObject.SetActive(changeScreenColorTypeToggle.isChecked);
         }
         void OnScreenColorTypeButtonChanged()
