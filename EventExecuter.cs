@@ -607,6 +607,13 @@ namespace FS_LevelEditor
                         targetObj.TriggerAction("BreakNow");
                     }
                 }
+                else if (targetObj is LE_Breakable_Window)
+                {
+                    if (@event.fragileWindowBreakNow)
+                    {
+                        targetObj.TriggerAction("BreakNow");
+                    }
+                }
             }
         }
     }

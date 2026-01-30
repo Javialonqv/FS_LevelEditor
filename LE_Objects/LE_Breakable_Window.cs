@@ -23,50 +23,52 @@ namespace FS_LevelEditor
         static AudioClip[] windowPartImpactSounds;
         static AudioClip[] windowPartCollisionSounds;
 
+        BreakableWindowController script;
+
         public override void InitComponent()
         {
             GameObject content = gameObject.GetChild("Content");
 
-            BreakableWindowController window = content.AddComponent<BreakableWindowController>();
-            window.isFirstWindow = true;
-            window.partsHolder = content.GetChild("BreakableWindow_Shattered").transform;
-            window.m_meshRenderer = content.GetChild("Window_OriginalMesh").GetComponent<MeshRenderer>();
-            window.m_audioSource = content.GetComponent<AudioSource>();
-            window.m_generalBreakSounds = t_window.m_generalBreakSounds;
+            script = content.AddComponent<BreakableWindowController>();
+            script.isFirstWindow = true;
+            script.partsHolder = content.GetChild("BreakableWindow_Shattered").transform;
+            script.m_meshRenderer = content.GetChild("Window_OriginalMesh").GetComponent<MeshRenderer>();
+            script.m_audioSource = content.GetComponent<AudioSource>();
+            script.m_generalBreakSounds = t_window.m_generalBreakSounds;
             if (!staticVariablesInitialized)
             {
-                windowPartsOriginalPositions = new Vector3[window.partsHolder.childCount];
-                windowPartsOriginalScales = new Vector3[window.partsHolder.childCount];
-                for (int i = 0; i < window.partsHolder.childCount; i++)
+                windowPartsOriginalPositions = new Vector3[script.partsHolder.childCount];
+                windowPartsOriginalScales = new Vector3[script.partsHolder.childCount];
+                for (int i = 0; i < script.partsHolder.childCount; i++)
                 {
-                    Transform child = window.partsHolder.GetChild(i);
+                    Transform child = script.partsHolder.GetChild(i);
                     windowPartsOriginalPositions[i] = child.transform.localPosition;
                     windowPartsOriginalScales[i] = child.transform.localScale;
                 }
             }
-            window.originalPositions = windowPartsOriginalPositions;
-            window.originalScales = windowPartsOriginalScales;
-            window.broken = false;
-            window.usePhysicsBreak = true;
-            window.taserIgnorePartsWhenBroken = false;
+            script.originalPositions = windowPartsOriginalPositions;
+            script.originalScales = windowPartsOriginalScales;
+            script.broken = false;
+            script.usePhysicsBreak = true;
+            script.taserIgnorePartsWhenBroken = false;
 
             if (!staticVariablesInitialized) sfxOutputMixerGroup = t_window.m_audioSource.outputAudioMixerGroup;
-            window.m_audioSource.outputAudioMixerGroup = sfxOutputMixerGroup;
+            script.m_audioSource.outputAudioMixerGroup = sfxOutputMixerGroup;
 
-            BreakableWindowPart[] parts = new BreakableWindowPart[window.partsHolder.childCount];
-            BreakableWindowPart[] fakeParts = new BreakableWindowPart[window.partsHolder.childCount];
-            for (int i = 0; i < window.partsHolder.childCount; i++)
+            BreakableWindowPart[] parts = new BreakableWindowPart[script.partsHolder.childCount];
+            BreakableWindowPart[] fakeParts = new BreakableWindowPart[script.partsHolder.childCount];
+            for (int i = 0; i < script.partsHolder.childCount; i++)
             {
-                var child = window.partsHolder.GetChild(i);
+                var child = script.partsHolder.GetChild(i);
                 var templateChild = t_window.partsHolder.GetChild(i);
 
                 if (!staticVariablesInitialized)
                 {
                     if (i == 0)
                     {
-                        windowPartMeshes = new Mesh[window.partsHolder.childCount];
-                        windowPartMaterials = new PhysicMaterial[window.partsHolder.childCount];
-                        windowPartColliderMeshes = new Mesh[window.partsHolder.childCount];
+                        windowPartMeshes = new Mesh[script.partsHolder.childCount];
+                        windowPartMaterials = new PhysicMaterial[script.partsHolder.childCount];
+                        windowPartColliderMeshes = new Mesh[script.partsHolder.childCount];
                     }
 
                     windowPartMeshes[i] = templateChild.GetComponent<MeshFilter>().mesh;
@@ -84,14 +86,14 @@ namespace FS_LevelEditor
 
                 var part = child.gameObject.AddComponent<BreakableWindowPart>();
                 part.movingPlatformProxy = proxy;
-                part.m_associatedWindow = window;
+                part.m_associatedWindow = script;
                 part.m_rigidBody = child.GetComponent<Rigidbody>();
                 part.m_meshRenderer = child.GetComponent<MeshRenderer>();
                 part.m_audioSource = child.GetComponent<AudioSource>();
                 if (!staticVariablesInitialized && (windowPartImpactSounds == null || windowPartCollisionSounds == null))
                 {
-                    windowPartImpactSounds = new AudioClip[window.partsHolder.childCount];
-                    windowPartCollisionSounds = new AudioClip[window.partsHolder.childCount];
+                    windowPartImpactSounds = new AudioClip[script.partsHolder.childCount];
+                    windowPartCollisionSounds = new AudioClip[script.partsHolder.childCount];
 
                     var templateComp = templateChild.GetComponent<BreakableWindowPart>();
                     windowPartImpactSounds = templateComp.m_impactSounds;
@@ -107,14 +109,14 @@ namespace FS_LevelEditor
                 if (i != 0 && i != 44 && i != 45 && i != 46) fakeParts[i] = part;
             }
 
-            window.allParts = parts;
-            window.fakeBreakParts = fakeParts;
+            script.allParts = parts;
+            script.fakeBreakParts = fakeParts;
 
             // ---------- SETUP TAGS & LAYERS ----------
 
-            window.m_meshRenderer.gameObject.layer = LayerMask.NameToLayer("Glass");
-            window.m_meshRenderer.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("PlayerCollisionOnly");
-            window.partsHolder.gameObject.layer = LayerMask.NameToLayer("TransparentFX");
+            script.m_meshRenderer.gameObject.layer = LayerMask.NameToLayer("Glass");
+            script.m_meshRenderer.transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("PlayerCollisionOnly");
+            script.partsHolder.gameObject.layer = LayerMask.NameToLayer("TransparentFX");
             foreach (var part in parts)
             {
                 part.gameObject.tag = "Destructible";
@@ -124,6 +126,18 @@ namespace FS_LevelEditor
 
             staticVariablesInitialized = true;
             initialized = true;
+        }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "BreakNow")
+            {
+                script.SetAsBroken(true);
+                // For some reason, SetAsBroken disables the mesh renderer, force it to be enabled.
+                //if (!invisibleMesh) script.m_meshRenderer.enabled = true;
+            }
+
+            return base.TriggerAction(actionName);
         }
     }
 }

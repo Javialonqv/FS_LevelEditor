@@ -130,6 +130,9 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject destructibleWallObjectsSettings;
         UITogglePatcher destructibleWallBreakNowToggle;
+        //-----------------------------------
+        GameObject fragileWindowObjectsSettings;
+        UITogglePatcher fragileWindowBreakNowToggle;
         #endregion
 
 
@@ -190,6 +193,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateMovingPlatformObjectSettings();
                 Instance.CreateBridgeObjectSettings();
                 Instance.CreateDestructibleWallObjectSettings();
+                Instance.CreateFragileWindowObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -1261,6 +1265,10 @@ namespace FS_LevelEditor.Editor.UI
             {
                 destructibleWallBreakNowToggle.Set(currentSelectedEvent.destructibleWallBreakNow);
             }
+            else if (currentSelectedEvent.targetObjType == LE_Object.ObjectType.BREAKABLE_WINDOW)
+            {
+                fragileWindowBreakNowToggle.Set(currentSelectedEvent.fragileWindowBreakNow);
+            }
             #endregion
 
             eventSettingsPanel.SetActive(true);
@@ -1445,6 +1453,10 @@ namespace FS_LevelEditor.Editor.UI
                 else if (targetObj is LE_Destructible_Wall)
                 {
                     currentActiveObjectPanel = destructibleWallObjectsSettings;
+                }
+                else if (targetObj is LE_Breakable_Window)
+                {
+                    currentActiveObjectPanel = fragileWindowObjectsSettings;
                 }
 
                 if (currentActiveObjectPanel && !globalOptionsExpanded)
@@ -2485,6 +2497,33 @@ namespace FS_LevelEditor.Editor.UI
             destructibleWallBreakNowToggle.gameObject.name = "BreakNowToggle";
             destructibleWallBreakNowToggle.onClick += (state) => OnDestructibleWallBreakNowChanged();
         }
+        // -----------------------------------------
+        void CreateFragileWindowObjectSettings()
+        {
+            fragileWindowObjectsSettings = new GameObject("Fragile Window");
+            fragileWindowObjectsSettings.transform.parent = eventOptionsParent.transform;
+            fragileWindowObjectsSettings.transform.localPosition = Vector3.zero;
+            fragileWindowObjectsSettings.transform.localScale = Vector3.one;
+            fragileWindowObjectsSettings.SetActive(false);
+
+            CreateFragileWindowObjectTitleLabel();
+            CreateFragileWindowBreakNowToggle();
+        }
+        void CreateFragileWindowObjectTitleLabel()
+        {
+            UILabel titleLabel = NGUI_Utils.CreateLabel(fragileWindowObjectsSettings.transform, Vector3.up * 40, new Vector3Int(700, 40, 0), "BREAKABLE WINDOW OPTIONS",
+                NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "TitleLabel";
+            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            titleLabel.fontSize = 35;
+        }
+        void CreateFragileWindowBreakNowToggle()
+        {
+            fragileWindowBreakNowToggle = NGUI_Utils.CreateToggle(fragileWindowObjectsSettings.transform, new Vector3(-150f, -25f, 0f),
+                new Vector3Int(250, 48, 1), "Break Now");
+            fragileWindowBreakNowToggle.gameObject.name = "BreakNowToggle";
+            fragileWindowBreakNowToggle.onClick += (state) => OnFragileWindowBreakNowChanged();
+        }
         #endregion
 
         #region MPs
@@ -2767,6 +2806,11 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.destructibleWallBreakNow = destructibleWallBreakNowToggle.isChecked;
         }
+        // -----------------------------------------
+        void OnFragileWindowBreakNowChanged()
+        {
+            currentSelectedEvent.fragileWindowBreakNow = fragileWindowBreakNowToggle.isChecked;
+        }
         #endregion
         //------------------------------------------
         void OnMovingPlatformStateButtonChanged()
@@ -2969,5 +3013,9 @@ public class LE_Event
 
     #region Destructible Wall Options
     public bool destructibleWallBreakNow { get; set; }
+    #endregion
+
+    #region Fragile Window
+    public bool fragileWindowBreakNow { get; set; }
     #endregion
 }
