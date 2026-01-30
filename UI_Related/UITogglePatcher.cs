@@ -61,7 +61,20 @@ namespace FS_LevelEditor.UI_Related
 
             this.executeOnChange = executeOnChange;
             toggle.instantTween = instant;
-            toggle.Set(newState);
+            if (newState != toggle.isChecked)
+            {
+                toggle.Set(newState);
+
+                // The toggle hasn't been initialized yet, so it won't call onChange, call it manually.
+                if (!toggle.mStarted && executeOnChange)
+                {
+                    onClick.Invoke(newState);
+                }
+            }
+            else if (executeOnChange) // Set() only triggers onClick when the value is different.
+            {
+                onClick.Invoke(newState);
+            }
             toggle.instantTween = false;
 
             // Re-enable after a small delay to avoid a bug where OnToggleChange() was called from an still unknown code, and onClick was executed when it shouldn't.
