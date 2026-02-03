@@ -59,6 +59,11 @@ namespace FS_LevelEditor.UI_Related
                 isUndefined = false;
             }
 
+            if (newState == toggle.isChecked)
+            {
+               
+            }
+
             this.executeOnChange = executeOnChange;
             toggle.instantTween = instant;
             if (newState != toggle.isChecked)
@@ -71,11 +76,25 @@ namespace FS_LevelEditor.UI_Related
                     onClick.Invoke(newState);
                 }
             }
-            else if (executeOnChange) // Set() only triggers onClick when the value is different.
+            else
             {
-                onClick.Invoke(newState);
+                // Force the checkmark to be visible or invisible, depending of the case.
+                toggle.activeSprite.alpha = newState ? 1 : 0;
+                toggle.activeSprite.transform.localScale = newState ? Vector3.one : new Vector3(0.1f, 0.1f, 1f);
+
+                if (executeOnChange) // Set() only triggers onClick when the value is different.
+                {
+                    onClick.Invoke(newState);
+                }
             }
             toggle.instantTween = false;
+
+            if (!toggle.gameObject.activeInHierarchy) // Force the animation to be reseted and set to the desired state.
+            {
+                // Forget it, just hardcode it because working with NGUI and Unity is hard af.
+                toggle.activeSprite.alpha = newState ? 1 : 0;
+                toggle.activeSprite.transform.localScale = newState ? Vector3.one : new Vector3(0.1f, 0.1f, 1f);
+            }
 
             // Re-enable after a small delay to avoid a bug where OnToggleChange() was called from an still unknown code, and onClick was executed when it shouldn't.
             Utils.Invoke(() => {

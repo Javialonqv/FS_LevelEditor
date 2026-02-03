@@ -1478,7 +1478,7 @@ namespace FS_LevelEditor.Editor.UI
             else if (@event.targetObjType == LE_Object.ObjectType.SWITCH)
             {
                 switchStateButton.SelectOption((int)@event.switchState);
-                executeSwitchActionsToggle.Set(@event.executeSwitchActions);
+                executeSwitchActionsToggle.Set(@event.executeSwitchActions, instant: true);
 
                 switchUsableStateButton.SelectOption((int)@event.switchUsableState);
             }
