@@ -262,6 +262,7 @@ namespace FS_LevelEditor
                     currentVelocity = difference;
 
                     transform.position = newPos;
+                    bool exec = targetObject.objectFullNameWithID == "Moving Platform 2";
 
                     // Move every object attached to this platform.
                     foreach (var obj in objectsToMove)
@@ -283,7 +284,7 @@ namespace FS_LevelEditor
                         Controls.Instance.transform.position += new Vector3(0, difference.y, 0);
                     }
 
-                    yield return new WaitForEndOfFrame(); // Skip frame.
+                    yield return null; // Skip frame.
                 }
                 currentlyMoving = false;
                 currentVelocity = Vector3.zero;
@@ -545,7 +546,7 @@ namespace FS_LevelEditor
                         Controls.Instance.m_currentWalkingAcceleration = Controls.Instance.m_airAcceleration;
                         if (objectWithPlayerAbove.currentlyMoving && Controls.Instance.m_movingPlatformMomentumMovement == Vector3.zero)
                         {
-                            Controls.Instance.m_movingPlatformMomentumMovement = objectWithPlayerAbove.currentVelocity.normalized * objectWithPlayerAbove.currentMovingSpeed * 0.8f;
+                            Controls.Instance.m_movingPlatformMomentumMovement = objectWithPlayerAbove.currentVelocity.normalized * objectWithPlayerAbove.currentMovingSpeed;
                             Controls.Instance.m_movingPlatformMomentumMovement.Set(Controls.Instance.m_movingPlatformMomentumMovement.x, 0f, Controls.Instance.m_movingPlatformMomentumMovement.z);
                             if (TimeManipulator.Exists && TimeManipulator.Instance.m_inPlayerPosession && TimeManipulator.Instance.IsCurrentlyActive())
                             {
@@ -640,7 +641,17 @@ namespace FS_LevelEditor
             {
                 LE_Object editorObjectComp = Controls.Instance.currentGround.gameObject.GetComponentInParent<LE_Object>();
                 if (!editorObjectComp) return;
-                if (editorObjectComp.objectType == LE_Object.ObjectType.MOVING_PLATFORM) return;
+                if (editorObjectComp.objectType == LE_Object.ObjectType.MOVING_PLATFORM && editorObjectComp.customWaypointSupport.targetWaypointsData.Count > 0)
+                {
+                    if (WaypointSupport.objectWithPlayerAbove != null)
+                    {
+                        Logger.DebugLog($"Player LOST collision with an object with global waypoints and went to a MP!");
+                        WaypointSupport.SetPlayerAbove(null);
+                        Controls.Instance.SetAsMovingPlatform(((LE_Moving_Platform)editorObjectComp).script);
+                    }
+                    return;
+                }
+
                 WaypointSupport waypointSupport = null;
 
                 if (editorObjectComp.customWaypointSupport && editorObjectComp.customWaypointSupport.targetWaypointsData.Count > 0) waypointSupport = editorObjectComp.customWaypointSupport;
