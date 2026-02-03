@@ -505,7 +505,7 @@ namespace FS_LevelEditor
             }
         }
 
-        // WARNING: 90% of this code is copied from Controls.SetAsMovingPlatform from 0.603's code. I can even understand it, but it works. - Jav.
+        // WARNING: 90% of this code is copied from Controls.SetAsMovingPlatform from 0.603's code. I can't even understand it, but it works. - Jav.
         public static void SetPlayerAbove(WaypointSupport newObjectWithPlayerAbove)
         {
             bool isOnObjectNow = newObjectWithPlayerAbove;
