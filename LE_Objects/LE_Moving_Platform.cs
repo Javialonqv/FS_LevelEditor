@@ -12,7 +12,7 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Moving_Platform : LE_Object
     {
-        MovingPlatformController script;
+        public MovingPlatformController script;
 
         void Awake()
         {
@@ -54,6 +54,13 @@ namespace FS_LevelEditor
                 // Deceleration set to -1 will disable it completely.
                 // Do this on ObjectStart 'cause MPs seem to be reseting it on start or something, idk. - Jav.
                 script.decelerationStartDistance = -1f;
+
+                // User will use GLOBAL waypoints to move this MP, instead of the local ones.
+                if (waypointSupport.targetWaypointsData.Count > 0 && customWaypointSupport.targetWaypointsData.Count == 0)
+                {
+                    // Remove the RigidBody because it causes problems.
+                    Destroy(contentObject.GetComponent<Rigidbody>());
+                }
             }
 
             base.ObjectStart(scene);
