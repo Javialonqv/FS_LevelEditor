@@ -135,8 +135,6 @@ namespace FS_LevelEditor.SaveSystem
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
         public Dictionary<string, object> globalProperties { get; set; } = new Dictionary<string, object>();
 
-        public static int currentLevelObjsCount = 0;
-
         static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
 
         // Create a LeveData instance with all of the current objects in the level.
@@ -303,14 +301,6 @@ namespace FS_LevelEditor.SaveSystem
                 toCheck = FixMultipleObjectsWithSameID(toCheck);
             }
             data.objects = toCheck;
-
-            currentLevelObjsCount = data.objects.Count;
-#if DEBUG
-            if (currentLevelObjsCount > 100)
-            {
-                Logger.DebugWarning("More than 100 objects in the level, not printing logs while instantiating objects!");
-            }
-#endif
 
             return data;
         }

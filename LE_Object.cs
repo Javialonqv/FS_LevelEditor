@@ -360,11 +360,6 @@ namespace FS_LevelEditor
             }
             else
             {
-                if (LevelData.currentLevelObjsCount <= 100)
-                {
-                    Logger.DebugWarning($"Can't find class of name \"{className}\" for object: \"{objectType}\", using default LE_Object class.");
-                }
-
                 LE_Object instancedComponent = targetObj.AddComponent<LE_Object>();
                 instancedComponent.Init(objectType, null);
                 return instancedComponent;
