@@ -21,6 +21,7 @@ namespace FS_LevelEditor
         public override string contentObjectName => "LE_Keypad";
 
 		private int keycodeValue = 0;
+		private int alternativeValue = 0;
 		public void Awake()
 		{
 			if(EditorController.Instance)
@@ -42,6 +43,9 @@ namespace FS_LevelEditor
                 { "Keycode", 1234 },
                 { "onWinEvents", new List<LE_Event>() },
                 { "onFailEvents", new List<LE_Event>() },
+				{ "LeaveOnIncorrect", false },
+				{ "Alternative", false },
+				{ "AlternativeComb", 1234 },
                 { "allCorrect", false }
             };
         }
@@ -120,18 +124,27 @@ namespace FS_LevelEditor
 			keycode.sourceToPlayOn = Controls.Instance.m_audioSource;
 
 			keycodeValue = (int)GetProperty<int>("Keycode");
+			alternativeValue = (int)GetProperty<int>("AlternativeComb");
 
-			// Ensure it's always 4 digits (pad with zeros if needed)
-			var digits = keycodeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
+            // Ensure it's always 4 digits (pad with zeros if needed)
+            var digits = keycodeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
 
 			var il2cppDigits = new Il2CppSystem.Collections.Generic.List<int>();
 			foreach (var d in digits)
 				il2cppDigits.Add(d);
 
-			keycode.keycode.combination = il2cppDigits;
+            var alternative_Combo = alternativeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
+
+            var il2cppDigits_alternative = new Il2CppSystem.Collections.Generic.List<int>();
+            foreach (var d in alternative_Combo)
+                il2cppDigits_alternative.Add(d);
+
+            keycode.keycode.combination = il2cppDigits;
 			keycode.keycode.label = keycode.gameObject.GetChildAt("Screen/Label/Label.Label").GetComponent<UILabel>();
 			keycode.keycode.keycodeController = keycode;
-			keycode.keycode.birthdayInput = GetProperty<bool>("allCorrect");	
+			keycode.keycode.useAlternativeCombination = GetProperty<bool>("Alternative");
+			keycode.keycode.alternateCombination = il2cppDigits_alternative;
+            keycode.keycode.birthdayInput = GetProperty<bool>("allCorrect");	
 
 			controller.objectsToActivate = new GameObject[] { keycode.gameObject };
 
@@ -146,9 +159,12 @@ namespace FS_LevelEditor
 
 			ConfigureEvents(keycode);
 
-			keycode.onFailEvents.AddListener((UnityEngine.Events.UnityAction)delegate { keycode.onFailEvents = new UnityEvent(); });
+            if (GetProperty<bool>("leaveOnIncorrect"))
+            {
+                keycode.onFailEvents.AddListener((UnityEngine.Events.UnityAction)delegate { keycode.OnLeaveButton(); });
+            }
 
-			initialized = true;
+            initialized = true;
 		}
 		public override bool SetProperty(string name, object value)
 		{
@@ -176,7 +192,39 @@ namespace FS_LevelEditor
 					}
 				}
 			}
-			else if (name == "allCorrect")
+            else if (name == "AlternativeComb")
+            {
+                if (value is int)
+                {
+                    properties["AlternativeComb"] = (int)value;
+                    return true;
+                }
+                else if (value is string)
+                {
+                    if (int.TryParse((string)value, out int result))
+                    {
+                        properties["AlternativeComb"] = result;
+                        return true;
+                    }
+                }
+            }
+            else if (name == "Alternative")
+            {
+                if (value is bool)
+                {
+                    properties["Alternative"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "LeaveOnIncorrect")
+            {
+                if (value is bool)
+                {
+                    properties["LeaveOnIncorrect"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "allCorrect")
 			{
 				if (value is bool)
 				{

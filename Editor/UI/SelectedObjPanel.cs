@@ -153,7 +153,7 @@ namespace FS_LevelEditor.Editor.UI
         Vector3 objPositionWhenSelectedField;
 		Quaternion objRotationWhenSelectedField;
 		Vector3 objScaleWhenSelectedField;
-
+			
 		public SelectedObjPanel(IntPtr ptr) : base (ptr) { }
 
 		public static void Create(Transform editorUIParent)
@@ -1489,7 +1489,29 @@ namespace FS_LevelEditor.Editor.UI
 				}
 				return;
 			}
-			if (propertyName == "Intensity" && Utils.TryParseFloat(inputField.GetText(), out float intensityValue))
+            if (propertyName == "AlternativeComb")
+            {
+                string text = inputField.GetText();
+                // Accept only if it's 4 digits (0-9)
+                if (text.Length == 4 && text.All(char.IsDigit))
+                {
+                    if (SetPropertyForCurrentSelectedObjects(propertyName, text))
+                    {
+                        EditorController.Instance.levelHasBeenModified = true;
+                        inputField.Set(true);
+                    }
+                    else
+                    {
+                        inputField.Set(false);
+                    }
+                }
+                else
+                {
+                    inputField.Set(false); // Mark field as invalid
+                }
+                return;
+            }
+            if (propertyName == "Intensity" && Utils.TryParseFloat(inputField.GetText(), out float intensityValue))
 			{
 				if (SetPropertyForCurrentSelectedObjects(propertyName, intensityValue))
 				{
