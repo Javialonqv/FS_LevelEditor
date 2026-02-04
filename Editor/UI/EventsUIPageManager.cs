@@ -61,33 +61,33 @@ namespace FS_LevelEditor.Editor.UI
         UITogglePatcher startMovingObjectToggle;
         //-----------------------------------
         GameObject sawObjectsSettings;
-        UIButtonMultiple sawStateButton;
+        UIDropdownPatcher sawStateButton;
         //-----------------------------------
         GameObject objectiveSettings;
-        UIButtonMultiple objectiveStateButton;
+        UIDropdownPatcher objectiveStateButton;
         //-----------------------------------
         GameObject playerSettings;
         UITogglePatcher zeroGToggle;
         UITogglePatcher invertGravityToggle;
         //-----------------------------------
         GameObject taserSettings;
-        UIButtonMultiple taserStateButton;
+        UIDropdownPatcher taserStateButton;
         UITogglePatcher changeAmmoToggle;
         UICustomInputField newAmmoInputField;
         UITogglePatcher infiniteTaserToggle;
         //-----------------------------------
         GameObject jetpackSettings;
-        UIButtonMultiple jetpackStateButton;
+        UIDropdownPatcher jetpackStateButton;
         //-----------------------------------
         GameObject cubeObjectsSettings;
         UITogglePatcher respawnCubeToggle;
         UITogglePatcher respawnOnLastSwitchToggle;
         //-----------------------------------
         GameObject laserObjectsSettings;
-        UIButtonMultiple laserStateButton;
+        UIDropdownPatcher laserStateButton;
         //-----------------------------------
         GameObject mineObjectsSettings;
-        UIButtonMultiple mineStateButton;
+        UIDropdownPatcher mineStateButton;
         //-----------------------------------
         GameObject lightObjectsSettings;
         UITogglePatcher changeLightColorToggle;
@@ -95,7 +95,7 @@ namespace FS_LevelEditor.Editor.UI
         UIInput newLightColorInputField;
         //-----------------------------------
         GameObject ceilingLightObjectsSettings;
-        UIButtonMultiple ceilingLightStateButton;
+        UIDropdownPatcher ceilingLightStateButton;
         UITogglePatcher changeCeilingLightColorToggle;
         UIInput newCeilingLightColorInputField;
         //-----------------------------------
@@ -106,12 +106,12 @@ namespace FS_LevelEditor.Editor.UI
         UITogglePatcher spawnPackNowToggle;
         //-----------------------------------
         GameObject switchObjectsSettings;
-        UIButtonMultiple switchStateButton;
+        UIDropdownPatcher switchStateButton;
         UITogglePatcher executeSwitchActionsToggle;
-        UIButtonMultiple switchUsableStateButton;
+        UIDropdownPatcher switchUsableStateButton;
         //-----------------------------------
         GameObject flameTrapObjectsSettings;
-        UIButtonMultiple flameTrapStateButton;
+        UIDropdownPatcher flameTrapStateButton;
         //-----------------------------------
         GameObject screenObjectsSettings;
         UITogglePatcher changeScreenColorTypeToggle;
@@ -120,13 +120,13 @@ namespace FS_LevelEditor.Editor.UI
         UICustomInputField screenNewTextField;
         //-----------------------------------
         GameObject doorObjectsSettings;
-        UIButtonMultiple setDoorStateButton;
+        UIDropdownPatcher setDoorStateButton;
         //-----------------------------------
         GameObject movingPlatformObjectsSettings;
-        UIButtonMultiple movingPlatformStateButton;
+        UIDropdownPatcher movingPlatformStateButton;
         //-----------------------------------
         GameObject bridgeObjectsSettings;
-        UIButtonMultiple bridgeStateButton;
+        UIDropdownPatcher bridgeStateButton;
         //-----------------------------------
         GameObject destructibleWallObjectsSettings;
         UITogglePatcher destructibleWallBreakNowToggle;
@@ -1464,7 +1464,7 @@ namespace FS_LevelEditor.Editor.UI
             }
             else if (@event.targetObjType == LE_Object.ObjectType.CEILING_LIGHT)
             {
-                ceilingLightStateButton.SelectOption((int)@event.ceilingLightState, true);
+                ceilingLightStateButton.SelectOption((int)@event.ceilingLightState);
                 changeCeilingLightColorToggle.Set(@event.changeCeilingLightColor, true);
                 newCeilingLightColorInputField.text = @event.newCeilingLightColor;
             }
@@ -1504,7 +1504,7 @@ namespace FS_LevelEditor.Editor.UI
             }
             else if (@event.targetObjType == LE_Object.ObjectType.MOVING_PLATFORM)
             {
-                movingPlatformStateButton.SelectOption((int)@event.movingPlatformState, executeOnChange: false);
+                movingPlatformStateButton.SelectOption((int)@event.movingPlatformState);
             }
             else if (@event.targetObjType == LE_Object.ObjectType.DESTRUCTIBLE_WALL)
             {
@@ -1641,17 +1641,15 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSawStateDropdown()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(sawObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-            button.SetTitle("Saw State");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Activate", false);
-            button.AddOption("Deactivate", false);
-            button.AddOption("Toggle State", false);
-            button.onClick += (option) => OnSawStateDropdownChanged();
+            sawStateButton = NGUI_Utils.CreateDropdown(sawObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            sawStateButton.SetTitle("Saw State");
+            sawStateButton.AddOption("Do Nothing", true);
+            sawStateButton.AddOption("Activate", false);
+            sawStateButton.AddOption("Deactivate", false);
+            sawStateButton.AddOption("Toggle State", false);
+            sawStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnSawStateDropdownChanged)));
 
-            sawStateButton = button;
-            button.gameObject.SetActive(true);
+            sawStateButton.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreatePlayerSettings()
@@ -1739,17 +1737,14 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateTaserStateButton()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(taserSettings.transform, new Vector3(-200, 50), Vector3.one * 0.8f);
-            button.Init();
-            button.SetTitle("Taser");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Give", false);
-            button.AddOption("Take Away", false);
-            button.onClick += (option) => OnTaserStateButtonChanged();
+            taserStateButton = NGUI_Utils.CreateDropdown(taserSettings.transform, new Vector3(-200, 50), Vector3.one * 0.8f);
+            taserStateButton.SetTitle("Taser");
+            taserStateButton.AddOption("Do Nothing", true);
+            taserStateButton.AddOption("Give", false);
+            taserStateButton.AddOption("Take Away", false);
+            taserStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnTaserStateButtonChanged)));
 
-            taserStateButton = button;
-            button.gameObject.SetActive(true);
+            taserStateButton.gameObject.SetActive(true);
         }
         void CreateChangeAmmoToggle()
         {
@@ -1809,17 +1804,14 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateJetpackStateButton()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(jetpackSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-            button.Init();
-            button.SetTitle("Jetpack");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Give", false);
-            button.AddOption("Take Away", false);
-            button.onClick += (option) => OnJetpackStateButtonChanged();
+            jetpackStateButton = NGUI_Utils.CreateDropdown(jetpackSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            jetpackStateButton.SetTitle("Jetpack");
+            jetpackStateButton.AddOption("Do Nothing", true);
+            jetpackStateButton.AddOption("Give", false);
+            jetpackStateButton.AddOption("Take Away", false);
+            jetpackStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnJetpackStateButtonChanged)));
 
-            jetpackStateButton = button;
-            button.gameObject.SetActive(true);
+            jetpackStateButton.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateObjectiveSettings()
@@ -1855,18 +1847,15 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateObjectiveStateButton()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(objectiveSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-            button.Init();
-            button.SetTitle("Objective");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", false);
-            button.AddOption("Create", true);
-            button.AddOption("Accomplish", false);
-            button.AddOption("Fail", false);
-            button.onClick += (option) => OnObjectiveStateButtonChanged();
+            objectiveStateButton = NGUI_Utils.CreateDropdown(objectiveSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            objectiveStateButton.SetTitle("Objective");
+            objectiveStateButton.AddOption("Do Nothing", false);
+            objectiveStateButton.AddOption("Create", true);
+            objectiveStateButton.AddOption("Accomplish", false);
+            objectiveStateButton.AddOption("Fail", false);
+            objectiveStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnObjectiveStateButtonChanged)));
 
-            objectiveStateButton = button;
-            button.gameObject.SetActive(true);
+            objectiveStateButton.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateCubeObjectSettings()
@@ -1951,18 +1940,15 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateLaserStateDropdown()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(laserObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-            button.Init();
-            button.SetTitle("Laser State");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Activate", false);
-            button.AddOption("Deactivate", false);
-            button.AddOption("Toggle State", false);
-            button.onClick += (option) => OnLaserStateDropdownChanged();
+            laserStateButton = NGUI_Utils.CreateDropdown(laserObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            laserStateButton.SetTitle("Laser State");
+            laserStateButton.AddOption("Do Nothing", true);
+            laserStateButton.AddOption("Activate", false);
+            laserStateButton.AddOption("Deactivate", false);
+            laserStateButton.AddOption("Toggle State", false);
+            laserStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnLaserStateDropdownChanged)));
 
-            laserStateButton = button;
-            button.gameObject.SetActive(true);
+            laserStateButton.gameObject.SetActive(true);
         }
         // -----------------------------------------
         #region Mine Object Settings
@@ -2001,18 +1987,15 @@ namespace FS_LevelEditor.Editor.UI
 
         void CreateMineStateDropdown()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(mineObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-            button.Init();
-            button.SetTitle("Mine State");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", false);
-            button.AddOption("Activate", false);
-            button.AddOption("Deactivate", false);
-            button.AddOption("Toggle State", true);
-            button.onClick += (option) => OnMineStateDropdownChanged();
+            mineStateButton = NGUI_Utils.CreateDropdown(mineObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            mineStateButton.SetTitle("Mine State");
+            mineStateButton.AddOption("Do Nothing", false);
+            mineStateButton.AddOption("Activate", false);
+            mineStateButton.AddOption("Deactivate", false);
+            mineStateButton.AddOption("Toggle State", true);
+            mineStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnMineStateDropdownChanged)));
 
-            mineStateButton = button;
-            button.gameObject.SetActive(true);
+            mineStateButton.gameObject.SetActive(true);
         }
         #endregion
         void CreateLightObjectSettings()
@@ -2125,18 +2108,15 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateCeilingLightStateDropdown()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(ceilingLightObjectsSettings.transform, new Vector3(-200, -10), Vector3.one * 0.8f);
-            button.Init();
-            button.SetTitle("Turn");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("On", false);
-            button.AddOption("Off", false);
-            button.AddOption("Toggle On/Off", false);
-            button.onClick += (option) => OnCeilingLightStateDropdownChanged();
+            ceilingLightStateButton = NGUI_Utils.CreateDropdown(ceilingLightObjectsSettings.transform, new Vector3(-200, -50), Vector3.one * 0.8f);
+            ceilingLightStateButton.SetTitle("Turn");
+            ceilingLightStateButton.AddOption("Do Nothing", true);
+            ceilingLightStateButton.AddOption("On", false);
+            ceilingLightStateButton.AddOption("Off", false);
+            ceilingLightStateButton.AddOption("Toggle On/Off", false);
+            ceilingLightStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnCeilingLightStateDropdownChanged)));
 
-            ceilingLightStateButton = button;
-            button.gameObject.SetActive(true);
+            ceilingLightStateButton.gameObject.SetActive(true);
         }
         void CreateChangeCeilingLightColorToggle()
         {
@@ -2273,17 +2253,15 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSwitchStateSettings()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(switchObjectsSettings.transform, new Vector3(-200, -10), Vector3.one * 0.8f);
-            button.SetTitle("Set Active State");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Activated", false);
-            button.AddOption("Deactivated", false);
-            button.AddOption("Toggle", false);
-            button.onClick += (option) => OnSwitchStateDropdownChanged();
+            switchStateButton = NGUI_Utils.CreateDropdown(switchObjectsSettings.transform, new Vector3(-200, -10), Vector3.one * 0.8f);
+            switchStateButton.SetTitle("Set Active State");
+            switchStateButton.AddOption("Do Nothing", true);
+            switchStateButton.AddOption("Activated", false);
+            switchStateButton.AddOption("Deactivated", false);
+            switchStateButton.AddOption("Toggle", false);
+            switchStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchStateDropdownChanged)));
 
-            switchStateButton = button;
-            button.gameObject.SetActive(true);
+            switchStateButton.gameObject.SetActive(true);
         }
         void CreateExecuteSwitchActionsToggle()
         {
@@ -2294,19 +2272,15 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSwitchUsableStateSettings()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(switchObjectsSettings.transform, new Vector3(200, -10), Vector3.one * 0.8f);
-            button.name = "SwitchUsableStateDropdownPanel";
-            button.Init();
-            button.SetTitle("Set Usable State");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Usable", false);
-            button.AddOption("Unusable", false);
-            button.AddOption("Toggle", false);
-            button.onClick += (option) => OnSwitchUsableStateDropdownChanged();
+            switchUsableStateButton = NGUI_Utils.CreateDropdown(switchObjectsSettings.transform, new Vector3(200, -10), Vector3.one * 0.8f);
+            switchUsableStateButton.SetTitle("Set Usable State");
+            switchUsableStateButton.AddOption("Do Nothing", true);
+            switchUsableStateButton.AddOption("Usable", false);
+            switchUsableStateButton.AddOption("Unusable", false);
+            switchUsableStateButton.AddOption("Toggle", false);
+            switchUsableStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchUsableStateDropdownChanged)));
 
-            switchUsableStateButton = button;
-            button.gameObject.SetActive(true);
+            switchUsableStateButton.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateFlameTrapObjectSettings()
@@ -2343,18 +2317,15 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateFlameTrapStateDropdown()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(flameTrapObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-            button.Init();
-            button.SetTitle("Flame State");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Activate", false);
-            button.AddOption("Deactivate", false);
-            button.AddOption("Toggle State", false);
-            button.onClick += (option) => OnFlameTrapStateDropdownChanged();
+            flameTrapStateButton = NGUI_Utils.CreateDropdown(flameTrapObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            flameTrapStateButton.SetTitle("Flame State");
+            flameTrapStateButton.AddOption("Do Nothing", true);
+            flameTrapStateButton.AddOption("Activate", false);
+            flameTrapStateButton.AddOption("Deactivate", false);
+            flameTrapStateButton.AddOption("Toggle State", false);
+            flameTrapStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnFlameTrapStateDropdownChanged)));
 
-            flameTrapStateButton = button;
-            button.gameObject.SetActive(true);
+            flameTrapStateButton.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateScreenObjectSettings()
@@ -2432,21 +2403,16 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateDoorStateButton()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(doorObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-            button.name = "DoorStateButton";
-            button.Init();
-            button.SetTitle("Set Door State");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Close", false);
-            button.AddOption("Close Fast", false);
-            button.AddOption("Open", false);
-            button.AddOption("Toggle", false);
-            button.onClick += (option) => OnDoorStateButtonChanged();
-            button.SetTooltip("EventsDoorStateTooltip");
+            setDoorStateButton = NGUI_Utils.CreateDropdown(doorObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            setDoorStateButton.SetTitle("Set Door State");
+            setDoorStateButton.AddOption("Do Nothing", true);
+            setDoorStateButton.AddOption("Close", false);
+            setDoorStateButton.AddOption("Close Fast", false);
+            setDoorStateButton.AddOption("Open", false);
+            setDoorStateButton.AddOption("Toggle", false);
+            setDoorStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnDoorStateButtonChanged)));
 
-            setDoorStateButton = button;
-            button.gameObject.SetActive(true);
+            setDoorStateButton.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateBridgeObjectSettings()
@@ -2470,20 +2436,15 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateBridgeStateButton()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(bridgeObjectsSettings.transform, new Vector3(0, -10), Vector3.one * 0.8f);
-            button.name = "BridgeStateButton";
-            button.Init();
-            button.SetTitle("Set Bridge State");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Extend", false);
-            button.AddOption("Retract", false);
-            button.AddOption("Toggle", false);
-            button.onClick += (option) => OnBridgeStateButtonChanged();
-            button.SetTooltip("EventsBridgeStateTooltip"); // Optional: add tooltip
+            bridgeStateButton = NGUI_Utils.CreateDropdown(bridgeObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            bridgeStateButton.SetTitle("Set Bridge State");
+            bridgeStateButton.AddOption("Do Nothing", true);
+            bridgeStateButton.AddOption("Extend", false);
+            bridgeStateButton.AddOption("Retract", false);
+            bridgeStateButton.AddOption("Toggle", false);
+            bridgeStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnBridgeStateButtonChanged)));
 
-            bridgeStateButton = button;
-            button.gameObject.SetActive(true);
+            bridgeStateButton.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateDestructibleWallObjectSettings()
@@ -2565,21 +2526,16 @@ namespace FS_LevelEditor.Editor.UI
 
         void CreateMovingPlatformStateButton()
         {
-            UIButtonMultiple button = NGUI_Utils.CreateButtonMultiple(movingPlatformObjectsSettings.transform,
-                new Vector3(0, -10), Vector3.one * 0.8f);
-            button.name = "MovingPlatformStateButton";
-            button.Init();
-            button.SetTitle("Set Platform State");
-            button.ClearOptions();
-            button.AddOption("Do Nothing", true);
-            button.AddOption("Activate", false);
-            button.AddOption("Deactivate", false);
-            button.AddOption("Toggle", false);
-            button.onClick += (option) => OnMovingPlatformStateButtonChanged();
-            button.SetTooltip("EventsMovingPlatformStateTooltip"); // Optional: add tooltip
+            movingPlatformStateButton = NGUI_Utils.CreateDropdown(movingPlatformObjectsSettings.transform,
+                new Vector3(0, -50), Vector3.one * 0.8f);
+            movingPlatformStateButton.SetTitle("Set Platform State");
+            movingPlatformStateButton.AddOption("Do Nothing", true);
+            movingPlatformStateButton.AddOption("Activate", false);
+            movingPlatformStateButton.AddOption("Deactivate", false);
+            movingPlatformStateButton.AddOption("Toggle", false);
+            movingPlatformStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnMovingPlatformStateButtonChanged)));
 
-            movingPlatformStateButton = button;
-            button.gameObject.SetActive(true);
+            movingPlatformStateButton.gameObject.SetActive(true);
         }
         #endregion
 
@@ -2615,7 +2571,7 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnSawStateDropdownChanged()
         {
-            currentSelectedEvent.sawState = (LE_Event.SawState)sawStateButton.currentSelectedID;
+            currentSelectedEvent.sawState = (LE_Event.SawState)sawStateButton.currentlySelectedID;
         }
         // -----------------------------------------
         void OnZeroGToggleChanged()
@@ -2639,7 +2595,7 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnTaserStateButtonChanged()
         {
-            currentSelectedEvent.taserState = (LE_Event.TaserState)taserStateButton.currentSelectedID;
+            currentSelectedEvent.taserState = (LE_Event.TaserState)taserStateButton.currentlySelectedID;
         }
         void OnChangeAmmoToggleChanged()
         {
@@ -2672,12 +2628,12 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnJetpackStateButtonChanged()
         {
-            currentSelectedEvent.jetpackState = (LE_Event.JetpackState)jetpackStateButton.currentSelectedID;
+            currentSelectedEvent.jetpackState = (LE_Event.JetpackState)jetpackStateButton.currentlySelectedID;
         }
         // -----------------------------------------
         void OnObjectiveStateButtonChanged()
         {
-            currentSelectedEvent.objectiveState = (LE_Event.ObjectiveState)objectiveStateButton.currentSelectedID;
+            currentSelectedEvent.objectiveState = (LE_Event.ObjectiveState)objectiveStateButton.currentlySelectedID;
         }
         // -----------------------------------------
         void OnRespawnCubeChanged()
@@ -2692,17 +2648,17 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnLaserStateDropdownChanged()
         {
-            currentSelectedEvent.laserState = (LE_Event.LaserState)laserStateButton.currentSelectedID;
+            currentSelectedEvent.laserState = (LE_Event.LaserState)laserStateButton.currentlySelectedID;
         }
         // -----------------------------------------
         void OnMineStateDropdownChanged()
         {
-            currentSelectedEvent.mineState = (LE_Event.MineState)mineStateButton.currentSelectedID;
+            currentSelectedEvent.mineState = (LE_Event.MineState)mineStateButton.currentlySelectedID;
         }
         // -----------------------------------------
         void OnBridgeStateButtonChanged()
         {
-            currentSelectedEvent.bridgeState = (LE_Event.BridgeState)bridgeStateButton.currentSelectedID;
+            currentSelectedEvent.bridgeState = (LE_Event.BridgeState)bridgeStateButton.currentlySelectedID;
         }
         // -----------------------------------------
         void OnChangeLightColorToggleChanged()
@@ -2730,7 +2686,7 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnCeilingLightStateDropdownChanged()
         {
-            currentSelectedEvent.ceilingLightState = (LE_Event.CeilingLightState)ceilingLightStateButton.currentSelectedID;
+            currentSelectedEvent.ceilingLightState = (LE_Event.CeilingLightState)ceilingLightStateButton.currentlySelectedID;
         }
         void OnChangeCeilingLightColorToggleChanged()
         {
@@ -2775,7 +2731,7 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnSwitchStateDropdownChanged()
         {
-            currentSelectedEvent.switchState = (LE_Event.SwitchState)switchStateButton.currentSelectedID;
+            currentSelectedEvent.switchState = (LE_Event.SwitchState)switchStateButton.currentlySelectedID;
 
             executeSwitchActionsToggle.gameObject.SetActive(currentSelectedEvent.switchState != LE_Event.SwitchState.Do_Nothing);
         }
@@ -2785,12 +2741,12 @@ namespace FS_LevelEditor.Editor.UI
         }
         void OnSwitchUsableStateDropdownChanged()
         {
-            currentSelectedEvent.switchUsableState = (LE_Event.SwitchUsableState)switchUsableStateButton.currentSelectedID;
+            currentSelectedEvent.switchUsableState = (LE_Event.SwitchUsableState)switchUsableStateButton.currentlySelectedID;
         }
         // -----------------------------------------
         void OnFlameTrapStateDropdownChanged()
         {
-            currentSelectedEvent.flameTrapState = (LE_Event.FlameTrapState)flameTrapStateButton.currentSelectedID;
+            currentSelectedEvent.flameTrapState = (LE_Event.FlameTrapState)flameTrapStateButton.currentlySelectedID;
         }
         // -----------------------------------------
         void OnChangeScreenColorTypeToggleChanged()
@@ -2815,7 +2771,7 @@ namespace FS_LevelEditor.Editor.UI
         // -----------------------------------------
         void OnDoorStateButtonChanged()
         {
-            currentSelectedEvent.doorState = (LE_Event.DoorState)setDoorStateButton.currentSelectedID;
+            currentSelectedEvent.doorState = (LE_Event.DoorState)setDoorStateButton.currentlySelectedID;
         }
         // -----------------------------------------
         void OnDestructibleWallBreakNowChanged()
@@ -2831,7 +2787,7 @@ namespace FS_LevelEditor.Editor.UI
         //------------------------------------------
         void OnMovingPlatformStateButtonChanged()
         {
-            currentSelectedEvent.movingPlatformState = (LE_Event.MovingPlatformState)movingPlatformStateButton.currentSelectedID;
+            currentSelectedEvent.movingPlatformState = (LE_Event.MovingPlatformState)movingPlatformStateButton.currentlySelectedID;
         }
         //------------------------------------------
         public void ShowEventsPage(LE_Object targetObj)
