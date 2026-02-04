@@ -24,7 +24,7 @@ namespace FS_LevelEditor
 		private int alternativeValue = 0;
 		public void Awake()
 		{
-			if(EditorController.Instance)
+			if (EditorController.Instance)
 			{
 				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(false);
 				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(false);
@@ -159,9 +159,9 @@ namespace FS_LevelEditor
 
 			ConfigureEvents(keycode);
 
-            if (GetProperty<bool>("leaveOnIncorrect"))
+            if (GetProperty<bool>("LeaveOnIncorrect"))
             {
-                keycode.onFailEvents.AddListener((UnityEngine.Events.UnityAction)delegate { keycode.OnLeaveButton(); });
+                keycode.onFailEvents.AddListener((UnityEngine.Events.UnityAction)keycode.OnLeaveButton);
             }
 
             initialized = true;

@@ -131,6 +131,8 @@ namespace FS_LevelEditor.Editor.UI
 			{ (LE_Object.ObjectType.SWITCH, "OnlyByTaser"), ("CanUseTaser", true) },
 
 			{ (LE_Object.ObjectType.SAW, "WaitTime"), ("waypoints", null) }, // If it's checking for waypoints, the code already checks if the list count is greater than 0.
+
+			{ (LE_Object.ObjectType.KEYPAD, "AlternativeComb"), ("Alternative", true) }
         };
 		static readonly Dictionary<LE_Object.ObjectType, string> addWaypointBtnLocKeys = new Dictionary<LE_Object.ObjectType, string>()
 		{
@@ -1467,7 +1469,7 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		public void SetPropertyWithInput(string propertyName, UICustomInputField inputField, bool isGlobalProp = false)
 		{
-			if (propertyName == "Keycode")
+			if (propertyName == "Keycode" || propertyName == "AlternativeComb")
 			{
 				string text = inputField.GetText();
 				// Accept only if it's 4 digits (0-9)
@@ -1489,28 +1491,6 @@ namespace FS_LevelEditor.Editor.UI
 				}
 				return;
 			}
-            if (propertyName == "AlternativeComb")
-            {
-                string text = inputField.GetText();
-                // Accept only if it's 4 digits (0-9)
-                if (text.Length == 4 && text.All(char.IsDigit))
-                {
-                    if (SetPropertyForCurrentSelectedObjects(propertyName, text))
-                    {
-                        EditorController.Instance.levelHasBeenModified = true;
-                        inputField.Set(true);
-                    }
-                    else
-                    {
-                        inputField.Set(false);
-                    }
-                }
-                else
-                {
-                    inputField.Set(false); // Mark field as invalid
-                }
-                return;
-            }
             if (propertyName == "Intensity" && Utils.TryParseFloat(inputField.GetText(), out float intensityValue))
 			{
 				if (SetPropertyForCurrentSelectedObjects(propertyName, intensityValue))
