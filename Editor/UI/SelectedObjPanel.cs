@@ -1322,7 +1322,11 @@ namespace FS_LevelEditor.Editor.UI
                         switch (value)
                         {
                             case int intValue:
-                                value = value + ""; // Convert to string directly, no ToString() shit needed here.
+                                // For keypad codes, format with leading zeros to preserve 4-digit format (e.g., 0451)
+                                if (attributeName == "Keycode" || attributeName == "AlternativeComb")
+                                    value = intValue.ToString("D4");
+                                else
+                                    value = value + ""; // Convert to string directly, no ToString() shit needed here.
                                 break;
                             case float floatValue:
                                 value = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);

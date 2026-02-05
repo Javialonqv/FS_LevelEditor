@@ -104,7 +104,7 @@ namespace FS_LevelEditor
 			return base.SetProperty(name, value);
 		}
 
-		void ConfigureEvents(BridgeController script)
+	void ConfigureEvents(BridgeController script)
 		{
 			script.onDeploy = new UnityEngine.Events.UnityEvent();
 			script.onDeploy.AddListener((UnityAction)ExecuteOnDeployEvents);
@@ -114,11 +114,11 @@ namespace FS_LevelEditor
 		}
 		void ExecuteOnDeployEvents()
 		{
-			eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnDeploy"]);
+			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnDeploy"], "OnDeploy", true);
 		}
 		void ExecuteOnRetractEvents()
 		{
-			eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnRetract"]);
+			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnRetract"], "OnRetract", false);
 		}
 		public override List<string> GetAvailableEventsIDs()
 		{

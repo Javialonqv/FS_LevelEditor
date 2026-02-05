@@ -52,6 +52,9 @@ namespace FS_LevelEditor.Playmode
 		{
 			Instance = this;
 
+			// Reset AND logic state for new playmode session
+			AndLogicManager.Reset();
+
 			LoadAssetBundle();
 			levelObjectsParent = new GameObject("LevelObjects");
 			levelObjectsParent.transform.position = Vector3.zero;

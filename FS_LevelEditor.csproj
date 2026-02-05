@@ -59,6 +59,7 @@
 		<Compile Include="LE_Objects\LE_Heal_Area.cs" />
 		<Compile Include="LE_Objects\LE_Rgb_Wall.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Death_Trigger_Waypoint.cs" />
+		<Compile Include="Playmode\AndLogicManager.cs" />
 		<Compile Include="UI_Related\UIVector3Fields.cs" />
 		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="LE_Objects\LE_Bridge.cs" />

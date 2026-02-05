@@ -267,7 +267,8 @@ namespace FS_LevelEditor
             }
             else if (actionName == "ExecuteWhenInvertingActions")
             {
-                ExecuteWhenInvertingEvents();
+                // Execute both activating and deactivating for inverting since we don't know the current state
+                ExecuteWhenInvertingEventsActivating();
             }
 
             else if (actionName == "SetUsable")
@@ -299,24 +300,28 @@ namespace FS_LevelEditor
         {
             controller.m_onActivate = new UnityEngine.Events.UnityEvent();
             controller.m_onActivate.AddListener((UnityAction)ExecuteWhenActivatingEvents);
-            controller.m_onActivate.AddListener((UnityAction)ExecuteWhenInvertingEvents);
+            controller.m_onActivate.AddListener((UnityAction)ExecuteWhenInvertingEventsActivating);
 
             controller.m_onDeactivate = new UnityEngine.Events.UnityEvent();
             controller.m_onDeactivate.AddListener((UnityAction)ExecuteWhenDeactivatingEvents);
-            controller.m_onDeactivate.AddListener((UnityAction)ExecuteWhenInvertingEvents);
+            controller.m_onDeactivate.AddListener((UnityAction)ExecuteWhenInvertingEventsDeactivating);
         }
 
         void ExecuteWhenActivatingEvents()
         {
-            eventExecuter.ExecuteEvents((List<LE_Event>)properties["WhenActivatingEvents"]);
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["WhenActivatingEvents"], "WhenActivatingEvents", true);
         }
         void ExecuteWhenDeactivatingEvents()
         {
-            eventExecuter.ExecuteEvents((List<LE_Event>)properties["WhenDeactivatingEvents"]);
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["WhenDeactivatingEvents"], "WhenDeactivatingEvents", false);
         }
-        void ExecuteWhenInvertingEvents()
+        void ExecuteWhenInvertingEventsActivating()
         {
-            eventExecuter.ExecuteEvents((List<LE_Event>)properties["WhenInvertingEvents"]);
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["WhenInvertingEvents"], "WhenInvertingEvents", true);
+        }
+        void ExecuteWhenInvertingEventsDeactivating()
+        {
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["WhenInvertingEvents"], "WhenInvertingEvents", false);
         }
 
         public override void SetCollidersStateForEdgeCase(bool newEnabledState)

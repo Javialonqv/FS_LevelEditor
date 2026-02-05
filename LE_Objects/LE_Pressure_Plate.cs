@@ -123,24 +123,28 @@ namespace FS_LevelEditor
         {
             script.onDropEvent = new UnityEngine.Events.UnityEvent();
             script.onDropEvent.AddListener((UnityAction)ExecuteOnDropEvents);
-            script.onDropEvent.AddListener((UnityAction)ExecuteOnBothEvents);
+            script.onDropEvent.AddListener((UnityAction)ExecuteOnBothEventsActivating);
 
             script.onRemoveEvent = new UnityEngine.Events.UnityEvent();
             script.onRemoveEvent.AddListener((UnityAction)ExecuteOnRemoveEvents);
-            script.onRemoveEvent.AddListener((UnityAction)ExecuteOnBothEvents);
+            script.onRemoveEvent.AddListener((UnityAction)ExecuteOnBothEventsDeactivating);
         }
 
         void ExecuteOnDropEvents()
         {
-            eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnDrop"]);
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnDrop"], "OnDrop", true);
         }
         void ExecuteOnRemoveEvents()
         {
-            eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnRemove"]);
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnRemove"], "OnRemove", false);
         }
-        void ExecuteOnBothEvents()
+        void ExecuteOnBothEventsActivating()
         {
-            eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnBoth"]);
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnBoth"], "OnBoth", true);
+        }
+        void ExecuteOnBothEventsDeactivating()
+        {
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnBoth"], "OnBoth", false);
         }
 
         public override List<string> GetAvailableEventsIDs()
