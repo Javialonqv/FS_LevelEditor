@@ -123,7 +123,7 @@ namespace FS_LevelEditor
 			if (mode != TriggerMode.CUBE_ONLY) return;
 
 			cubesInTrigger.Add(cube);
-			eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnEnter"]);
+			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnEnter"], "OnEnter", true);
 		}
 
 		// Called when cube exits trigger (only for cube-only mode)  
@@ -133,7 +133,7 @@ namespace FS_LevelEditor
 			if (mode != TriggerMode.CUBE_ONLY) return;
 
 			cubesInTrigger.Remove(cube);
-			eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnExit"]);
+			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnExit"], "OnExit", false);
 		}
 
         void ExecuteOnEnterEvents()
@@ -161,7 +161,7 @@ namespace FS_LevelEditor
             // For Once and Multiple modes, trigger the events
             if ((mode == TriggerMode.ONCE && !hasBeenTriggered) || mode == TriggerMode.MULTIPLE)
             {
-                eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnEnter"]);
+                eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnEnter"], "OnEnter", true);
 
                 // Mark as triggered for Once mode
                 if (mode == TriggerMode.ONCE)
@@ -206,7 +206,7 @@ namespace FS_LevelEditor
 			// Note: Exit events can still trigger even if OnEnter was already used in Once mode
 			if (mode == TriggerMode.ONCE || mode == TriggerMode.MULTIPLE)
 			{
-				eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnExit"]);
+				eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnExit"], "OnExit", false);
 			}
 		}
 

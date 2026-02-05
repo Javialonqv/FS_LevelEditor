@@ -55,10 +55,12 @@ namespace FS_LevelEditor.Editor.UI
         GameObject defaultObjectsSettings;
         UIDropdownPatcher spawnOptionsDropdown;
         UIDropdownPatcher colliderStateDropdown;
+        UITogglePatcher useAndLogicToggle;
         //-----------------------------------
         GameObject globalObjectsSettings;
         bool globalOptionsExpanded = false;
         UITogglePatcher startMovingObjectToggle;
+        UICustomInputField delayInputField;
         //-----------------------------------
         GameObject sawObjectsSettings;
         UIDropdownPatcher sawStateButton;
@@ -1414,11 +1416,14 @@ namespace FS_LevelEditor.Editor.UI
             OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
 
+
         void UpdateEventOptionsWithEvent(LE_Event @event)
         {
             spawnOptionsDropdown.SelectOption((int)@event.spawn);
             colliderStateDropdown.SelectOption((int)@event.colliderState);
+            useAndLogicToggle.Set(@event.useAndLogic);
             startMovingObjectToggle.Set(@event.moveObject);
+            delayInputField.SetText(@event.delay, true);
 
             if (@event.isForPlayer)
             {
@@ -1527,6 +1532,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateSpawnOptionsDropdown();
             CreateColliderStateDropdown();
+            CreateUseAndLogicToggle();
             CreateMoreGlobalOptionsButton();
         }
         void CreateSpawnOptionsDropdown()
@@ -1559,6 +1565,13 @@ namespace FS_LevelEditor.Editor.UI
             this.colliderStateDropdown = colliderStateDropdown;
             colliderStateDropdown.gameObject.SetActive(true);
         }
+        void CreateUseAndLogicToggle()
+        {
+            useAndLogicToggle = NGUI_Utils.CreateToggle(defaultObjectsSettings.transform, new Vector3(-395, 230f, 0f),
+                new Vector3Int(280, 48, 1), "AND");
+            useAndLogicToggle.gameObject.name = "UseAndLogicToggle";
+            useAndLogicToggle.onClick += (state) => OnUseAndLogicToggleChanged();
+        }
         void CreateMoreGlobalOptionsButton()
         {
             moreGlobalOptionsButton = NGUI_Utils.CreateButtonAsToggleWithSprite(defaultObjectsSettings.transform, new Vector3(360, 120), Vector3Int.one * 55, 2, "Global", new Vector2Int(35, 35));
@@ -1575,6 +1588,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateGlobalObjectsTitleLabel();
             CreateStartMovingObjectToggle();
+            CreateDelayInputField();
         }
         void CreateGlobalObjectsTitleLabel()
         {
@@ -1605,6 +1619,21 @@ namespace FS_LevelEditor.Editor.UI
                 new Vector3Int(250, 48, 1), "Start Moving Object");
             startMovingObjectToggle.gameObject.name = "StartMovingObjectToggle";
             startMovingObjectToggle.onClick += (state) => OnStartMovingObjectToggleChanged();
+        }
+        void CreateDelayInputField()
+        {
+            // Create the label for the delay field
+            UILabel delayLabel = NGUI_Utils.CreateLabel(globalObjectsSettings.transform, new Vector3(-300f, -90f, 0f),
+                new Vector3Int(150, 40, 0), "Delay (s)", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+            delayLabel.name = "DelayLabel";
+            delayLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            delayLabel.fontSize = 27;
+
+            // Create the input field for the delay value
+            delayInputField = NGUI_Utils.CreateInputField(globalObjectsSettings.transform, new Vector3(50f, -90f, 0f),
+                new Vector3Int(200, 40, 1), 27, "0", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            delayInputField.name = "DelayInputField";
+            delayInputField.onChange += OnDelayInputFieldChanged;
         }
         // -----------------------------------------
         void CreateSawObjectSettings()
@@ -2548,6 +2577,10 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.colliderState = (LE_Event.ColliderState)colliderStateDropdown.currentlySelectedID;
         }
+        void OnUseAndLogicToggleChanged()
+        {
+            currentSelectedEvent.useAndLogic = useAndLogicToggle.isChecked;
+        }
         void OnMoreGlobalOptionsButtonClicked(bool newState)
         {
             globalOptionsExpanded = !globalOptionsExpanded;
@@ -2567,6 +2600,13 @@ namespace FS_LevelEditor.Editor.UI
         void OnStartMovingObjectToggleChanged()
         {
             currentSelectedEvent.moveObject = startMovingObjectToggle.isChecked;
+        }
+        void OnDelayInputFieldChanged()
+        {
+            if (delayInputField.isValid)
+            {
+                currentSelectedEvent.delay = Utils.ParseFloat(delayInputField.GetText());
+            }
         }
         // -----------------------------------------
         void OnSawStateDropdownChanged()
@@ -2870,6 +2910,19 @@ public class LE_Event
     public string targetObjName { get; set; } = "";
     public LE_Object.ObjectType? targetObjType { get; set; } = null;
     public int targetObjID { get; set; } = 0;
+
+    /// <summary>
+    /// When enabled, the target object will only activate when ALL input objects with AND logic enabled are active.
+    /// If any of the AND inputs deactivates, the target will deactivate (undo action).
+    /// </summary>
+    public bool useAndLogic { get; set; } = false;
+
+    /// <summary>
+    /// Delay in seconds before executing the event.
+    /// For non-AND events: executes after this delay.
+    /// For AND events: executes after this delay once all AND conditions are met.
+    /// </summary>
+    public float delay { get; set; } = 0f;
 
     public enum SpawnState { Do_Nothing, Spawn, Despawn, Toggle }
     public SpawnState spawn { get; set; } = SpawnState.Toggle;

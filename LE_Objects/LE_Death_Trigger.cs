@@ -165,14 +165,15 @@ namespace FS_LevelEditor
 				"OnTeleport",
 			};
 		}
-		void ConfigureEvents(ContainmentBox script)
+	void ConfigureEvents(ContainmentBox script)
 		{
 			script.onTeleport = new UnityEngine.Events.UnityEvent();
 			script.onTeleport.AddListener((UnityAction)ExecuteOnTeleportEvents);
 		}
 		void ExecuteOnTeleportEvents()
 		{
-			eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnTeleport"]);
+			// OnTeleport is a one-shot activating event for AND logic purposes
+			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnTeleport"], "OnTeleport", true);
 		}
 		public static new Color GetDefaultObjectColor(LEObjectContext context)
         {
