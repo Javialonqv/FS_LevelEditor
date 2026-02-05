@@ -112,7 +112,8 @@ namespace FS_LevelEditor
         }
         void ExecuteOnPickUpEvents()
         {
-            eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnPickup"]);
+            // OnPickup is a one-shot activating event for AND logic purposes
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnPickup"], "OnPickup", true);
         }
         public override List<string> GetAvailableEventsIDs()
         {

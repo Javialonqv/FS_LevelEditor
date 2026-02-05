@@ -63,7 +63,42 @@ namespace FS_LevelEditor
             {
                 CreateInEditorLinksToTargetObjects();
             }
+            else if (scene == LEScene.Playmode)
+            {
+                RegisterAndLogicConnections();
+            }
         }
+
+        /// <summary>
+        /// Registers all AND logic connections for this object's events.
+        /// Called during playmode initialization to set up AND tracking.
+        /// </summary>
+        private void RegisterAndLogicConnections()
+        {
+            foreach (string eventKey in originalObject.GetAvailableEventsIDs())
+            {
+                var eventsList = originalObject.properties[eventKey] as List<LE_Event>;
+                if (eventsList == null) continue;
+
+                foreach (var @event in eventsList)
+                {
+                    if (!@event.useAndLogic || @event.targetObjType == null || !@event.isValid) continue;
+
+                    string actionType = AndLogicManager.GetActionTypeForEvent(@event);
+                    if (string.IsNullOrEmpty(actionType)) continue;
+
+                    string undoAction = AndLogicManager.GetUndoAction(actionType);
+                    AndLogicManager.RegisterAndConnection(
+                        originalObject,
+                        eventKey,
+                        @event.targetObjType,
+                        @event.targetObjID,
+                        actionType,
+                        undoAction);
+                }
+            }
+        }
+
         void Start()
         {
             ReValidateEditorLinks();
@@ -236,7 +271,26 @@ namespace FS_LevelEditor
             }
         }
 
+        /// <summary>
+        /// Executes events without AND logic support (legacy method).
+        /// </summary>
         public void ExecuteEvents(List<LE_Event> events)
+        {
+            ExecuteEventsInternal(events, null, true);
+        }
+
+        /// <summary>
+        /// Executes events with AND logic support.
+        /// </summary>
+        /// <param name="events">The list of events to execute.</param>
+        /// <param name="eventListName">The name of the event list (e.g., "OnDrop", "OnRemove", "WhenActivatingEvents").</param>
+        /// <param name="isActivating">True if this is an activating event (OnDrop, WhenActivating), false for deactivating (OnRemove, WhenDeactivating).</param>
+        public void ExecuteEventsWithAndLogic(List<LE_Event> events, string eventListName, bool isActivating)
+        {
+            ExecuteEventsInternal(events, eventListName, isActivating);
+        }
+
+        private void ExecuteEventsInternal(List<LE_Event> events, string eventListName, bool isActivating)
         {
             foreach (LE_Event @event in events)
             {
@@ -247,372 +301,415 @@ namespace FS_LevelEditor
                     continue;
                 }
 
-                if (@event.isForPlayer)
+                // Handle AND logic if enabled and we have a valid event list name
+                if (@event.useAndLogic && eventListName != null && @event.targetObjType != null)
                 {
-                    if (@event.enableOrDisableZeroG)
+                    var (shouldExecute, action, isUndo) = AndLogicManager.CheckAndCondition(
+                        originalObject,
+                        eventListName,
+                        @event,
+                        isActivating);
+
+                    if (!shouldExecute)
                     {
-                        if (Controls.Instance.IsInZeroGravity()) Controls.Instance.DisableZeroGravityFromButton();
-                        else Controls.Instance.EnableZeroGravityFromButton();
+                        // AND condition not met or no state change, skip this event
+                        continue;
                     }
-                    else if (@event.invertGravity)
+
+                    if (isUndo && action != null)
                     {
-                        PlayModeController.Instance.InvertPlayerGravity();
-                    }
-                    continue;
-                }
-                if (@event.isForTaser)
-                {
-                    if (@event.isForTaser)
-                    {
-                        // Handle giving/taking the taser
-                        switch (@event.taserState)
+                        // Execute undo action on target object (no delay for undo actions)
+                        LE_Object targetObjForUndo = PlayModeController.Instance.currentInstantiatedObjects.Find(
+                            x => x.objectType == @event.targetObjType && x.objectID == @event.targetObjID);
+                        if (targetObjForUndo != null)
                         {
-                            case LE_Event.TaserState.Give:
-                                if (!Controls.Instance.gunActivated)
-                                {
-                                    Controls.Instance.ActivateWeapon();
-                                }
-                                break;
-
-                            case LE_Event.TaserState.Take_Away:
-                                if (Controls.Instance.gunActivated)
-                                {
-                                    Controls.Instance.DeactivateWeaponInstant();
-                                }
-                                break;
+                            targetObjForUndo.TriggerAction(action);
                         }
-
-                        // Handle ammo changes (only if gun is activated)
-                        if (Controls.Instance.gunActivated)
-                        {
-                            if (@event.infiniteTaser)
-                            {
-                                GunController.Instance.SetTutorialMode(true);
-                                GunController.Instance.RequestLaserOnNow();
-                            }
-                            else
-                            {
-                                GunController.Instance.SetTutorialMode(false);
-
-                                if (@event.changeAmmo)
-                                {
-                                    GunController.Instance.SetAmmos(@event.newAmmo);
-                                    if(@event.newAmmo > 0)
-                                    {
-                                        GunController.Instance.RequestLaserOnNow();
-                                    }
-                                    
-                                }
-                            }
-                        }
-
                         continue;
                     }
                 }
-                if (@event.isForJetpack)
+
+                // Execute with delay if specified, otherwise execute immediately
+                if (@event.delay > 0)
                 {
-                    switch (@event.jetpackState)
-                    {
-                        case LE_Event.JetpackState.Give:
-                            Controls.Instance.ActivateJetPack(true, false);
-                            break;
-                        case LE_Event.JetpackState.Take_Away:
-                            Controls.Instance.BreakJetPack();
-                            break;
-                    }
-                    continue;
+                    MelonLoader.MelonCoroutines.Start(ExecuteEventWithDelay(@event, @event.delay));
                 }
-                if (@event.isForObjective)
+                else
                 {
-                    switch (@event.objectiveState)
-                    {
-                       case LE_Event.ObjectiveState.Create:
-                           PlayModeController.Instance.CreateObjective(@event.objectiveName);
-                           break;
-
-                       case LE_Event.ObjectiveState.Accomplish:
-                           PlayModeController.Instance.AccomplishObjective(@event.objectiveName);
-                            break;
-
-                        case LE_Event.ObjectiveState.Fail:
-                           PlayModeController.Instance.FailObjective(@event.objectiveName);
-                           break;
-                     }
-                    continue;
+                    ExecuteSingleEvent(@event);
                 }
-                LE_Object targetObj =
-                    PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.objectType == @event.targetObjType && x.objectID == @event.targetObjID);
+            }
+        }
 
-                switch (@event.spawn)
+        private IEnumerator ExecuteEventWithDelay(LE_Event @event, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            ExecuteSingleEvent(@event);
+        }
+
+        private void ExecuteSingleEvent(LE_Event @event)
+        {
+            if (@event.isForPlayer)
+            {
+                if (@event.enableOrDisableZeroG)
                 {
-                    case LE_Event.SpawnState.Spawn:
-                        targetObj.TriggerAction("SetActive_True");
+                    if (Controls.Instance.IsInZeroGravity()) Controls.Instance.DisableZeroGravityFromButton();
+                    else Controls.Instance.EnableZeroGravityFromButton();
+                }
+                else if (@event.invertGravity)
+                {
+                    PlayModeController.Instance.InvertPlayerGravity();
+                }
+                return;
+            }
+            if (@event.isForTaser)
+            {
+                // Handle giving/taking the taser
+                switch (@event.taserState)
+                {
+                    case LE_Event.TaserState.Give:
+                        if (!Controls.Instance.gunActivated)
+                        {
+                            Controls.Instance.ActivateWeapon();
+                        }
                         break;
 
-                    case LE_Event.SpawnState.Despawn:
+                    case LE_Event.TaserState.Take_Away:
+                        if (Controls.Instance.gunActivated)
+                        {
+                            Controls.Instance.DeactivateWeaponInstant();
+                        }
+                        break;
+                }
+
+                // Handle ammo changes (only if gun is activated)
+                if (Controls.Instance.gunActivated)
+                {
+                    if (@event.infiniteTaser)
+                    {
+                        GunController.Instance.SetTutorialMode(true);
+                        GunController.Instance.RequestLaserOnNow();
+                    }
+                    else
+                    {
+                        GunController.Instance.SetTutorialMode(false);
+
+                        if (@event.changeAmmo)
+                        {
+                            GunController.Instance.SetAmmos(@event.newAmmo);
+                            if (@event.newAmmo > 0)
+                            {
+                                GunController.Instance.RequestLaserOnNow();
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+            if (@event.isForJetpack)
+            {
+                switch (@event.jetpackState)
+                {
+                    case LE_Event.JetpackState.Give:
+                        Controls.Instance.ActivateJetPack(true, false);
+                        break;
+                    case LE_Event.JetpackState.Take_Away:
+                        Controls.Instance.BreakJetPack();
+                        break;
+                }
+                return;
+            }
+            if (@event.isForObjective)
+            {
+                switch (@event.objectiveState)
+                {
+                    case LE_Event.ObjectiveState.Create:
+                        PlayModeController.Instance.CreateObjective(@event.objectiveName);
+                        break;
+
+                    case LE_Event.ObjectiveState.Accomplish:
+                        PlayModeController.Instance.AccomplishObjective(@event.objectiveName);
+                        break;
+
+                    case LE_Event.ObjectiveState.Fail:
+                        PlayModeController.Instance.FailObjective(@event.objectiveName);
+                        break;
+                }
+                return;
+            }
+
+            LE_Object targetObj =
+                PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.objectType == @event.targetObjType && x.objectID == @event.targetObjID);
+
+            switch (@event.spawn)
+            {
+                case LE_Event.SpawnState.Spawn:
+                    targetObj.TriggerAction("SetActive_True");
+                    break;
+
+                case LE_Event.SpawnState.Despawn:
+                    targetObj.TriggerAction("SetActive_False");
+                    break;
+
+                case LE_Event.SpawnState.Toggle:
+                    if (targetObj.gameObject.activeSelf)
+                    {
                         targetObj.TriggerAction("SetActive_False");
-                        break;
+                    }
+                    else
+                    {
+                        targetObj.TriggerAction("SetActive_True");
+                    }
+                    break;
+            }
+            switch (@event.colliderState)
+            {
+                case LE_Event.ColliderState.Enable:
+                    targetObj.TriggerAction("SetColliderState_True");
+                    break;
 
-                    case LE_Event.SpawnState.Toggle:
-                        if (targetObj.gameObject.activeSelf)
-                        {
-                            targetObj.TriggerAction("SetActive_False");
-                        }
-                        else
-                        {
-                            targetObj.TriggerAction("SetActive_True");
-                        }
-                        break;
-                }
-                switch (@event.colliderState)
-                {
-                    case LE_Event.ColliderState.Enable:
-                        targetObj.TriggerAction("SetColliderState_True");
-                        break;
+                case LE_Event.ColliderState.Disable:
+                    targetObj.TriggerAction("SetColliderState_False");
+                    break;
 
-                    case LE_Event.ColliderState.Disable:
+                case LE_Event.ColliderState.Toggle:
+                    if (targetObj.currentCollisionState)
+                    {
                         targetObj.TriggerAction("SetColliderState_False");
-                        break;
-
-                    case LE_Event.ColliderState.Toggle:
-                        if (targetObj.currentCollisionState)
-                        {
-                            targetObj.TriggerAction("SetColliderState_False");
-                        }
-                        else
-                        {
-                            targetObj.TriggerAction("SetColliderState_True");
-                        }
-                        break;
-                }
-                if (@event.moveObject && targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))
-                {
-                    waypointSupport.StartObjectMovement();
-                }
-
-                if (targetObj is LE_Saw)
-                {
-                    switch (@event.sawState)
-                    {
-                        case LE_Event.SawState.Activate:
-                            targetObj.TriggerAction("Activate");
-                            break;
-
-                        case LE_Event.SawState.Deactivate:
-                            targetObj.TriggerAction("Deactivate");
-                            break;
-
-                        case LE_Event.SawState.Toggle_State:
-                            targetObj.TriggerAction("ToggleActivated");
-                            break;
                     }
-                }
-                else if (targetObj is LE_Cube)
-                {
-                    if (@event.respawnCube)
+                    else
                     {
-                        if (@event.respawnCubeOnLastSwitch)
-                        {
-                            targetObj.TriggerAction("RespawnCube");
-                        }
-                        else
-                        {
-                            targetObj.TriggerAction("RespawnCubeFromStartPoint");
-                        }
+                        targetObj.TriggerAction("SetColliderState_True");
                     }
-                }
-                else if (targetObj is LE_Laser)
-                {
-                    switch (@event.laserState)
-                    {
-                        case LE_Event.LaserState.Activate:
-                            targetObj.TriggerAction("Activate");
-                            break;
+                    break;
+            }
+            if (@event.moveObject && targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))
+            {
+                waypointSupport.StartObjectMovement();
+            }
 
-                        case LE_Event.LaserState.Deactivate:
-                            targetObj.TriggerAction("Deactivate");
-                            break;
-
-                        case LE_Event.LaserState.Toggle_State:
-                            targetObj.TriggerAction("ToggleActivated");
-                            break;
-                    }
-                }
-                else if (targetObj is LE_Mine)
+            if (targetObj is LE_Saw)
+            {
+                switch (@event.sawState)
                 {
-                    if (@event.mineState == LE_Event.MineState.Activate)
+                    case LE_Event.SawState.Activate:
                         targetObj.TriggerAction("Activate");
-                    else if (@event.mineState == LE_Event.MineState.Deactivate)
+                        break;
+
+                    case LE_Event.SawState.Deactivate:
                         targetObj.TriggerAction("Deactivate");
-                    else if (@event.mineState == LE_Event.MineState.Toggle_State)
+                        break;
+
+                    case LE_Event.SawState.Toggle_State:
                         targetObj.TriggerAction("ToggleActivated");
+                        break;
                 }
-                else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
+            }
+            else if (targetObj is LE_Cube)
+            {
+                if (@event.respawnCube)
                 {
-                    if (@event.changeLightColor)
+                    if (@event.respawnCubeOnLastSwitch)
                     {
-                        targetObj.SetProperty("Color", Utils.HexToColor(@event.newLightColor, false, null));
+                        targetObj.TriggerAction("RespawnCube");
                     }
-                }
-                else if (targetObj is LE_Ceiling_Light)
-                {
-                    switch (@event.ceilingLightState)
+                    else
                     {
-                        case LE_Event.CeilingLightState.On:
-                            targetObj.TriggerAction("Activate");
-                            break;
-
-                        case LE_Event.CeilingLightState.Off:
-                            targetObj.TriggerAction("Deactivate");
-                            break;
-
-                        case LE_Event.CeilingLightState.ToggleOnOff:
-                            targetObj.TriggerAction("ToggleActivated");
-                            break;
-                    }
-
-                    if (@event.changeCeilingLightColor)
-                    {
-                        targetObj.SetProperty("Color", Utils.HexToColor(@event.newCeilingLightColor, false, null));
+                        targetObj.TriggerAction("RespawnCubeFromStartPoint");
                     }
                 }
-                else if (targetObj is LE_Health_Pack || targetObj is LE_Ammo_Pack)
+            }
+            else if (targetObj is LE_Laser)
+            {
+                switch (@event.laserState)
                 {
-                    if (@event.changePackRespawnTime)
-                    {
-                        targetObj.SetProperty("RespawnTime", @event.packRespawnTime);
-                    }
+                    case LE_Event.LaserState.Activate:
+                        targetObj.TriggerAction("Activate");
+                        break;
 
-                    if (@event.spawnPackNow)
-                    {
-                        targetObj.TriggerAction("SpawnNow");
-                    }
+                    case LE_Event.LaserState.Deactivate:
+                        targetObj.TriggerAction("Deactivate");
+                        break;
+
+                    case LE_Event.LaserState.Toggle_State:
+                        targetObj.TriggerAction("ToggleActivated");
+                        break;
                 }
-                else if (targetObj is LE_Switch)
+            }
+            else if (targetObj is LE_Mine)
+            {
+                if (@event.mineState == LE_Event.MineState.Activate)
+                    targetObj.TriggerAction("Activate");
+                else if (@event.mineState == LE_Event.MineState.Deactivate)
+                    targetObj.TriggerAction("Deactivate");
+                else if (@event.mineState == LE_Event.MineState.Toggle_State)
+                    targetObj.TriggerAction("ToggleActivated");
+            }
+            else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
+            {
+                if (@event.changeLightColor)
                 {
-                    switch (@event.switchState)
-                    {
-                        case LE_Event.SwitchState.Activated:
-                            targetObj.TriggerAction("Activate");
-                            if (@event.executeSwitchActions) targetObj.TriggerAction("ExecuteWhenActivatingActions");
-                            break;
-
-                        case LE_Event.SwitchState.Deactivated:
-                            targetObj.TriggerAction("Deactivate");
-                            if (@event.executeSwitchActions) targetObj.TriggerAction("ExecuteWhenDeactivatingActions");
-                            break;
-
-                        case LE_Event.SwitchState.Toggle:
-                            targetObj.TriggerAction("ToggleActivated");
-                            if (@event.executeSwitchActions) targetObj.TriggerAction("ExecuteWhenInvertingActions");
-                            break;
-                    }
-
-                    switch (@event.switchUsableState)
-                    {
-                        case LE_Event.SwitchUsableState.Usable:
-                            targetObj.TriggerAction("SetUsable");
-                            break;
-
-                        case LE_Event.SwitchUsableState.Unusable:
-                            targetObj.TriggerAction("SetUnusable");
-                            break;
-
-                        case LE_Event.SwitchUsableState.Toggle:
-                            targetObj.TriggerAction("ToggleUsable");
-                            break;
-                    }
+                    targetObj.SetProperty("Color", Utils.HexToColor(@event.newLightColor, false, null));
                 }
-                else if (targetObj is LE_Flame_Trap)
+            }
+            else if (targetObj is LE_Ceiling_Light)
+            {
+                switch (@event.ceilingLightState)
                 {
-                    switch (@event.flameTrapState)
-                    {
-                        case LE_Event.FlameTrapState.Activate:
-                            targetObj.TriggerAction("Activate");
-                            break;
+                    case LE_Event.CeilingLightState.On:
+                        targetObj.TriggerAction("Activate");
+                        break;
 
-                        case LE_Event.FlameTrapState.Deactivate:
-                            targetObj.TriggerAction("Deactivate");
-                            break;
+                    case LE_Event.CeilingLightState.Off:
+                        targetObj.TriggerAction("Deactivate");
+                        break;
 
-                        case LE_Event.FlameTrapState.Toggle_State:
-                            targetObj.TriggerAction("ToggleActivated");
-                            break;
-                    }
+                    case LE_Event.CeilingLightState.ToggleOnOff:
+                        targetObj.TriggerAction("ToggleActivated");
+                        break;
                 }
-                else if (targetObj is LE_Screen || targetObj is LE_Small_Screen)
-                {
-                    if (@event.changeScreenColorType)
-                    {
-                        targetObj.SetProperty("ColorType", @event.screenColorType);
-                    }
 
-                    if (@event.changeScreenText)
-                    {
-                        targetObj.SetProperty("Text", @event.screenNewText);
-                    }
-                }
-                else if (targetObj is LE_Door || targetObj is LE_Door_V2)
+                if (@event.changeCeilingLightColor)
                 {
-                    switch (@event.doorState)
-                    {
-                        case LE_Event.DoorState.Close:
-                            targetObj.TriggerAction("Deactivate");
-                            break;
-                        case LE_Event.DoorState.CloseFast:
-                            targetObj.TriggerAction("CloseFast");
-                            break;
-                        case LE_Event.DoorState.Open:
-                            targetObj.TriggerAction("Activate");
-                            break;
-                        case LE_Event.DoorState.Toggle:
-                            targetObj.TriggerAction("InvertState");
-                            break;
-                    }
+                    targetObj.SetProperty("Color", Utils.HexToColor(@event.newCeilingLightColor, false, null));
                 }
-                else if (targetObj is LE_Moving_Platform)
+            }
+            else if (targetObj is LE_Health_Pack || targetObj is LE_Ammo_Pack)
+            {
+                if (@event.changePackRespawnTime)
                 {
-                    switch (@event.movingPlatformState)
-                    {
-                        case LE_Event.MovingPlatformState.Activate:
-                            targetObj.TriggerAction("Activate");
-                            break;
-                        case LE_Event.MovingPlatformState.Deactivate:
-                            targetObj.TriggerAction("Deactivate");
-                            break;
-                        case LE_Event.MovingPlatformState.Toggle:
-                            targetObj.TriggerAction("InvertState");
-                            break;
-                    }
+                    targetObj.SetProperty("RespawnTime", @event.packRespawnTime);
                 }
-                else if (targetObj is LE_Bridge)
+
+                if (@event.spawnPackNow)
                 {
-                    switch (@event.bridgeState)
-                    {
-                        case LE_Event.BridgeState.Extend:
-                            targetObj.TriggerAction("Deploy");
-                            break;
-                        case LE_Event.BridgeState.Retract:
-                            targetObj.TriggerAction("Retract");
-                            break;
-                        case LE_Event.BridgeState.Toggle:
-                            targetObj.TriggerAction("Toggle");
-                            break;
-                    }
+                    targetObj.TriggerAction("SpawnNow");
                 }
-                else if (targetObj is LE_Destructible_Wall)
+            }
+            else if (targetObj is LE_Switch)
+            {
+                switch (@event.switchState)
                 {
-                    if (@event.destructibleWallBreakNow)
-                    {
-                        targetObj.TriggerAction("BreakNow");
-                    }
+                    case LE_Event.SwitchState.Activated:
+                        targetObj.TriggerAction("Activate");
+                        if (@event.executeSwitchActions) targetObj.TriggerAction("ExecuteWhenActivatingActions");
+                        break;
+
+                    case LE_Event.SwitchState.Deactivated:
+                        targetObj.TriggerAction("Deactivate");
+                        if (@event.executeSwitchActions) targetObj.TriggerAction("ExecuteWhenDeactivatingActions");
+                        break;
+
+                    case LE_Event.SwitchState.Toggle:
+                        targetObj.TriggerAction("ToggleActivated");
+                        if (@event.executeSwitchActions) targetObj.TriggerAction("ExecuteWhenInvertingActions");
+                        break;
                 }
-                else if (targetObj is LE_Breakable_Window)
+
+                switch (@event.switchUsableState)
                 {
-                    if (@event.fragileWindowBreakNow)
-                    {
-                        targetObj.TriggerAction("BreakNow");
-                    }
+                    case LE_Event.SwitchUsableState.Usable:
+                        targetObj.TriggerAction("SetUsable");
+                        break;
+
+                    case LE_Event.SwitchUsableState.Unusable:
+                        targetObj.TriggerAction("SetUnusable");
+                        break;
+
+                    case LE_Event.SwitchUsableState.Toggle:
+                        targetObj.TriggerAction("ToggleUsable");
+                        break;
+                }
+            }
+            else if (targetObj is LE_Flame_Trap)
+            {
+                switch (@event.flameTrapState)
+                {
+                    case LE_Event.FlameTrapState.Activate:
+                        targetObj.TriggerAction("Activate");
+                        break;
+
+                    case LE_Event.FlameTrapState.Deactivate:
+                        targetObj.TriggerAction("Deactivate");
+                        break;
+
+                    case LE_Event.FlameTrapState.Toggle_State:
+                        targetObj.TriggerAction("ToggleActivated");
+                        break;
+                }
+            }
+            else if (targetObj is LE_Screen || targetObj is LE_Small_Screen)
+            {
+                if (@event.changeScreenColorType)
+                {
+                    targetObj.SetProperty("ColorType", @event.screenColorType);
+                }
+
+                if (@event.changeScreenText)
+                {
+                    targetObj.SetProperty("Text", @event.screenNewText);
+                }
+            }
+            else if (targetObj is LE_Door || targetObj is LE_Door_V2)
+            {
+                switch (@event.doorState)
+                {
+                    case LE_Event.DoorState.Close:
+                        targetObj.TriggerAction("Deactivate");
+                        break;
+                    case LE_Event.DoorState.CloseFast:
+                        targetObj.TriggerAction("CloseFast");
+                        break;
+                    case LE_Event.DoorState.Open:
+                        targetObj.TriggerAction("Activate");
+                        break;
+                    case LE_Event.DoorState.Toggle:
+                        targetObj.TriggerAction("InvertState");
+                        break;
+                }
+            }
+            else if (targetObj is LE_Moving_Platform)
+            {
+                switch (@event.movingPlatformState)
+                {
+                    case LE_Event.MovingPlatformState.Activate:
+                        targetObj.TriggerAction("Activate");
+                        break;
+                    case LE_Event.MovingPlatformState.Deactivate:
+                        targetObj.TriggerAction("Deactivate");
+                        break;
+                    case LE_Event.MovingPlatformState.Toggle:
+                        targetObj.TriggerAction("InvertState");
+                        break;
+                }
+            }
+            else if (targetObj is LE_Bridge)
+            {
+                switch (@event.bridgeState)
+                {
+                    case LE_Event.BridgeState.Extend:
+                        targetObj.TriggerAction("Deploy");
+                        break;
+                    case LE_Event.BridgeState.Retract:
+                        targetObj.TriggerAction("Retract");
+                        break;
+                    case LE_Event.BridgeState.Toggle:
+                        targetObj.TriggerAction("Toggle");
+                        break;
+                }
+            }
+            else if (targetObj is LE_Destructible_Wall)
+            {
+                if (@event.destructibleWallBreakNow)
+                {
+                    targetObj.TriggerAction("BreakNow");
+                }
+            }
+            else if (targetObj is LE_Breakable_Window)
+            {
+                if (@event.fragileWindowBreakNow)
+                {
+                    targetObj.TriggerAction("BreakNow");
                 }
             }
         }

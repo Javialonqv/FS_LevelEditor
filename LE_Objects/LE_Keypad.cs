@@ -235,7 +235,7 @@ namespace FS_LevelEditor
 
 			return base.SetProperty(name, value);
 		}
-		void ConfigureEvents(KeycodeController script)
+	void ConfigureEvents(KeycodeController script)
 		{
 			script.onWinEvents = new UnityEngine.Events.UnityEvent();
 			script.onWinEvents.AddListener((UnityAction)ExecuteOnWinEvents);
@@ -245,11 +245,13 @@ namespace FS_LevelEditor
 		}
 		void ExecuteOnWinEvents()
 		{
-			eventExecuter.ExecuteEvents((List<LE_Event>)properties["onWinEvents"]);
+			// OnWin is a one-shot activating event (permanently latched as "active" for AND logic)
+			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["onWinEvents"], "onWinEvents", true);
 		}
 		void ExecuteOnFailEvents()
 		{
-			eventExecuter.ExecuteEvents((List<LE_Event>)properties["onFailEvents"]);
+			// OnFail is a one-shot event, treated as activating for AND logic purposes
+			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["onFailEvents"], "onFailEvents", true);
 		}
 		public override List<string> GetAvailableEventsIDs()
 		{

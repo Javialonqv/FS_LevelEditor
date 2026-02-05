@@ -135,14 +135,15 @@ namespace FS_LevelEditor
             return base.TriggerAction(actionName);
         }
 
-		void ConfigureEvents(DestructibleWall script)
+	void ConfigureEvents(DestructibleWall script)
 		{
 			script.onBreak = new UnityEngine.Events.UnityEvent();
 			script.onBreak.AddListener((UnityAction)ExecuteOnBreakEvents);
 		}
 		void ExecuteOnBreakEvents()
 		{
-			eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnBreak"]);
+			// OnBreak is a one-shot activating event for AND logic purposes
+			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnBreak"], "OnBreak", true);
 		}
 		public override List<string> GetAvailableEventsIDs()
 		{
