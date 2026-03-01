@@ -3149,11 +3149,11 @@ namespace FS_LevelEditor.Editor
             }
 
             // Find all Light components in the scene and toggle them
-            var allLights = FindObjectsOfType<Light>();
-            foreach (var light in allLights)
-            {
-                light.enabled = lightingEnabled;
-            }
+            //var allLights = FindObjectsOfType<Light>();
+            //foreach (var light in allLights)
+            //{
+            //    light.enabled = lightingEnabled;
+            //}
 
             // Show notification to user
             string state = lightingEnabled ? "Lit" : "Unlit";
