@@ -177,6 +177,7 @@ namespace FS_LevelEditor
             finalWaypoint.scale = transform.localScale; // Same as the object at start.
             // Use the original object's "Wait Time" attribute since the user won't be able to select/change this final waypoint.
             finalWaypoint.properties["WaitTime"] = targetObject.waitTime;
+            finalWaypoint.properties["MoveSpeed"] = targetObject.movingSpeed;
 
             originalList.Add(finalWaypoint);
         }
@@ -202,6 +203,7 @@ namespace FS_LevelEditor
                 lastWaypoint.scale = transform.localScale; // Same as the object at start.
                 // Use the original object's "Wait Time" attribute since the user won't be able to select/change this last waypoint.
                 lastWaypoint.properties["WaitTime"] = targetObject.waitTime;
+                lastWaypoint.properties["MoveSpeed"] = targetObject.movingSpeed;
                 originalList.Add(lastWaypoint);
             }
         }
