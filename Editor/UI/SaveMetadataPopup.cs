@@ -103,6 +103,7 @@ namespace FS_LevelEditor.Editor.UI
 			levelNameField = NGUI_Utils.CreateInputField(popupPanel.transform, new Vector3(55, 130), new Vector3Int(410, 32, 0), 20, 
 				EditorController.Instance.levelName, false, NGUIText.Alignment.Left, UICustomInputField.UIInputType.PLAIN_TEXT, depth: 101);
 			levelNameField.name = "LevelNameField";
+			levelNameField.input.label.font = NGUI_Utils.notoSansFont;
             #endregion
 
             #region Author Name

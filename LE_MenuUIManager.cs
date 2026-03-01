@@ -1084,6 +1084,7 @@ namespace FS_LevelEditor
             previewLevelNameLabel.depth = 1;
             previewLevelNameLabel.overflowMethod = UILabel.Overflow.ClampContent;
             previewLevelNameLabel.maxLineCount = 1;
+            previewLevelNameLabel.font = NGUI_Utils.notoSansFont; // special characters display.
 
             // Object Count (smaller, below name)
             previewObjectCountLabel = NGUI_Utils.CreateLabel(contentContainer.transform, new Vector3(0f, 20f, 0f),
