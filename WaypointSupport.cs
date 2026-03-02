@@ -245,8 +245,24 @@ namespace FS_LevelEditor
                 currentWaypointID = i;
                 currentWaypoint = spawnedWaypoints[i];
 
-                Vector3 totalDistance = cachedWaypointPositions[i] - transform.position;
-                float totalDuration = totalDistance.magnitude / currentMovingSpeed;
+                Vector3 totalPosDistance = cachedWaypointPositions[i] - transform.position;
+                Vector3 totalRotDiff = new Vector3(
+                    Mathf.DeltaAngle(transform.eulerAngles.x, cachedWaypointRotations[i].x),
+                    Mathf.DeltaAngle(transform.eulerAngles.y, cachedWaypointRotations[i].y),
+                    Mathf.DeltaAngle(transform.eulerAngles.z, cachedWaypointRotations[i].z)
+                );
+                Vector3 totalScaleDiff = cachedWaypointScales[i] - transform.localScale;
+
+                float totalPosDuration = totalPosDistance.magnitude > 0.001f ? totalPosDistance.magnitude / currentMovingSpeed : 0f;
+                float totalRotDuration = totalRotDiff.magnitude > 0.001f ? totalRotDiff.magnitude / currentMovingSpeed : 0f;
+                float totalScaleDuration = totalScaleDiff.magnitude > 0.001f ? totalScaleDiff.magnitude / currentMovingSpeed : 0f;
+
+                // Use distance diff by default, if 0, then use the max value of either rotation or scale duration.
+                float totalDuration = totalPosDuration;
+                if (totalDuration == 0)
+                {
+                    totalDuration = Mathf.Max(totalPosDuration, totalRotDuration, totalScaleDuration);
+                }
 
                 // Start rotation and scale tween now, so they keep running on background.
                 RotationTweener tweenRotation = RotationTweener.RotateTo(gameObject, cachedWaypointRotations[i], totalDuration, RotationPath.Shortest);
@@ -259,7 +275,8 @@ namespace FS_LevelEditor
                 while (Vector3.Distance(cachedWaypointPositions[i], transform.position) > 0.01f)
                 {
                     Vector3 oldPos = transform.position;
-                    Vector3 newPos = Vector3.MoveTowards(transform.position, cachedWaypointPositions[i], Time.deltaTime * currentMovingSpeed);
+                    float posSpeed = totalPosDuration > 0.001f ? totalPosDistance.magnitude / totalDuration : 0f;
+                    Vector3 newPos = Vector3.MoveTowards(transform.position, cachedWaypointPositions[i], Time.deltaTime * posSpeed);
                     Vector3 difference = newPos - oldPos;
                     currentVelocity = difference;
 
@@ -290,6 +307,11 @@ namespace FS_LevelEditor
                 }
                 currentlyMoving = false;
                 currentVelocity = Vector3.zero;
+
+                while (tweenRotation.isPlaying || tweenScale.enabled)
+                {
+                    yield return null;
+                }
 
                 currentMovingSpeed = currentWaypoint.GetProperty<float>("MoveSpeed");
 
