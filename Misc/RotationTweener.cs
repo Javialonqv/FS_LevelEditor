@@ -12,7 +12,6 @@ public enum RotationPath
 public class RotationTweener : MonoBehaviour
 {
     Coroutine rotationCoroutine;
-    string test;
 
     public bool isPlaying = false;
 
@@ -70,7 +69,7 @@ public class RotationTweener : MonoBehaviour
             }
             catch
             {
-                OnDestroy();
+                //OnDestroy();
                 yield break;
             }
             yield return null;
@@ -80,7 +79,7 @@ public class RotationTweener : MonoBehaviour
         isPlaying = false;
 
         rotationCoroutine = null;
-        DestroyImmediate(this);
+        //DestroyImmediate(this);
     }
     void OnDestroy()
     {
@@ -96,7 +95,7 @@ public class RotationTweener : MonoBehaviour
         if (tweener != null)
         {
             MelonCoroutines.Stop(tweener.rotationCoroutine);
-            DestroyImmediate(tweener);
+            //DestroyImmediate(tweener);
         }
     }
 }
