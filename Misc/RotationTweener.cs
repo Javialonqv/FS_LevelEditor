@@ -62,7 +62,7 @@ public class RotationTweener : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
-            t = Mathf.SmoothStep(0f, 1f, t);
+            //t = Mathf.SmoothStep(0f, 1f, t);
 
             try // To avoid a bug where this coroutine is still executing even after the object is destroyed (OnDestroy not being called propertly?)
             {
