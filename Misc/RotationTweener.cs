@@ -14,6 +14,8 @@ public class RotationTweener : MonoBehaviour
     Coroutine rotationCoroutine;
     string test;
 
+    public bool isPlaying = false;
+
     public static RotationTweener RotateTo(GameObject obj, Vector3 targetEuler, float duration, RotationPath path = RotationPath.Shortest)
     {
         // Stop previous rotation if exists.
@@ -54,6 +56,7 @@ public class RotationTweener : MonoBehaviour
         }
 
         float elapsed = 0f;
+        isPlaying = true;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
@@ -74,6 +77,7 @@ public class RotationTweener : MonoBehaviour
         }
 
         transform.rotation = Quaternion.Euler(targetEuler);
+        isPlaying = false;
 
         rotationCoroutine = null;
         DestroyImmediate(this);
