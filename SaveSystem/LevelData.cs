@@ -7,6 +7,7 @@ using Il2Cpp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -396,9 +397,14 @@ namespace FS_LevelEditor.SaveSystem
             int objectCount = data.objects.Count;
             var objectsToInstantiate = new List<(LE_ObjectData data, GameObject obj)>(objectCount);
 
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             // First pass: Create all GameObjects without configuring them
             foreach (LE_ObjectData obj in data.objects)
             {
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+
                 var objInstance = playModeCtrl.PlaceObject(
                     obj.objectType,
                     obj.objPosition,
@@ -411,7 +417,11 @@ namespace FS_LevelEditor.SaveSystem
                 {
                     objectsToInstantiate.Add((obj, objInstance));
                 }
+
+                watch.Stop();
+                //if (watch.Elapsed.TotalMilliseconds > 100) Debugger.Break();
             }
+            timer.Stop();
 
             // Second pass: Configure all objects in batch
             foreach (var (objData, objInstance) in objectsToInstantiate)

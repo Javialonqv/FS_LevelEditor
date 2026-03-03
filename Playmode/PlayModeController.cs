@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Text.RegularExpressions;
+using FS_LevelEditor.UI_Related;
 
 namespace FS_LevelEditor.Playmode
 {
@@ -127,7 +128,9 @@ namespace FS_LevelEditor.Playmode
 			ConfigureGlobalProperties();
 			MelonCoroutines.Start(SetupEnvCam());
 			UnloadBundle();
-		}
+
+			SetSpeedrunTimerFont();
+        }
 
 		void CreateBackToLEButton()
 		{
@@ -421,6 +424,7 @@ namespace FS_LevelEditor.Playmode
 			IEnumerator Coroutine()
 			{
 				yield return new WaitForSecondsRealtime(0.025f);
+				MenuController.GetInstance().levelToResumeLabel.font = NGUI_Utils.notoSansFont; // Support special chars.
 				MenuController.GetInstance().levelToResumeLabel.text = "Custom Level : " + levelName;
 			}
 		}
@@ -567,5 +571,12 @@ namespace FS_LevelEditor.Playmode
             // This depends on how you're tracking objectives in your PlayModeController
             return activeObjectives.ContainsKey(objectiveName); // Adjust this based on your actual implementation
         }
+
+		void SetSpeedrunTimerFont()
+		{
+			// Special characters support.
+			GameObject.Find("(singleton) InGameUIManager/Camera/Panel/Timers/Holder/TimersHolder/Background1/SpeedrunTimers_Holder/CurrentLevelTimerTitle").GetComponent<UILabel>().font =
+				NGUI_Utils.notoSansFont;
+		}
     }
 }

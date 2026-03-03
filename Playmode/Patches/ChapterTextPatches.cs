@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using HarmonyLib;
+using FS_LevelEditor.UI_Related;
 
 namespace FS_LevelEditor.Playmode.Patches
 {
@@ -47,7 +48,11 @@ namespace FS_LevelEditor.Playmode.Patches
             {
                 // For some STUPID reason, the chapter display doesn't show "CUSTOM LEVEL" as title, it seems the GetChapterTitle function isn't patched at all after FS 0.604.
                 // Anyways, if it doesn't work, then modify the text directly when this function of get chapter name is called ;)
-                GameObject.Find("(singleton) InGameUIManager/Camera/Panel/ChapterDisplay/Holder/ChapterTitleLabel").GetComponent<UILabel>().text = "CUSTOM LEVEL";
+                //UILabel chapterTitleLabel = GameObject.Find("(singleton) InGameUIManager/Camera/Panel/ChapterDisplay/Holder/ChapterTitleLabel").GetComponent<UILabel>();
+                InGameUIManager.Instance.chapterTitleLabel.text = "CUSTOM LEVEL";
+
+                // Special characters for the chapter title.
+                InGameUIManager.Instance.chapterNameLabel.font = NGUI_Utils.notoSansFont;
             }
         }
     }
