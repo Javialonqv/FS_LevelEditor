@@ -3,6 +3,7 @@ using FS_LevelEditor.Playmode;
 using Il2Cpp;
 using Il2CppDiscord;
 using UnityEngine;
+using static MelonLoader.MelonLogger;
 
 namespace FS_LevelEditor
 {
@@ -10,6 +11,14 @@ namespace FS_LevelEditor
     public class LE_Jetpack : LE_Object
     {
         JetPack jetpack;
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
+            {
+                { "Rotate", true }
+            };
+        }
 
         public override void InitComponent()
         {
@@ -33,6 +42,40 @@ namespace FS_LevelEditor
 
             content.SetActive(true);
             initialized = true;
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "Rotate")
+            {
+                if (value is bool)
+                {
+                    properties["Rotate"] = (bool)value;
+                    return true;
+                }
+            }
+
+            return base.SetProperty(name, value);
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(JetPack), nameof(JetPack.Update))]
+    public static class JetpackRotationPatch
+    {
+        public static bool Prefix(JetPack __instance)
+        {
+            if (PlayModeController.Instance && __instance.transform.parent && __instance.transform.parent.TryGetComponent<LE_Jetpack>(out var jetpack))
+            {
+                if (!jetpack.GetProperty<bool>("Rotate"))
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            return true;
         }
     }
 }
