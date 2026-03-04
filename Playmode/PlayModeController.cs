@@ -129,6 +129,7 @@ namespace FS_LevelEditor.Playmode
 			MelonCoroutines.Start(SetupEnvCam());
 			UnloadBundle();
 
+			Utils.Invoke(() => ParticlesPatch.GetObjectsWithParticlesReferences(), 0.1f); // Delay the invoke, so objects are initialized correctly first.
 			SetSpeedrunTimerFont();
         }
 

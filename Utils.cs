@@ -668,6 +668,12 @@ namespace FS_LevelEditor
 
             return null;
         }
+        public static T[] FindObjectsOfTypeIncludingDisabled<T>() where T : Component
+        {
+            Object[] array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
+
+            return array.Select(obj => obj.Cast<T>()).ToArray();
+        }
 
         public static string ObjectTypeToFormatedName(LE_Object.ObjectType objectType)
         {
