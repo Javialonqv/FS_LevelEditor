@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.Grouping;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
 using Il2Cpp;
@@ -126,6 +127,12 @@ namespace FS_LevelEditor.Editor
         BulkSelectionMode currentBulkSelectionMode = BulkSelectionMode.Everything;
         #endregion
 
+        #region Double Click Detection for Groups
+        private float lastClickTime = 0f;
+        private GameObject lastClickedObject = null;
+        private const float doubleClickThreshold = 0.3f; // seconds
+        #endregion
+
         #region Grid
         private float gridSize = 1f;
         private const float MIN_GRID_SIZE = 0.0001f;
@@ -175,6 +182,10 @@ namespace FS_LevelEditor.Editor
 
             multipleSelectedObjsParent = new GameObject("MultipleSelectedObjsParent");
             multipleSelectedObjsParent.transform.position = Vector3.zero;
+
+            // Initialize GroupManager
+            GameObject groupManagerObj = new GameObject("GroupManager");
+            groupManagerObj.AddComponent<GroupManager>();
 
             deathYPlane = Instantiate(LoadOtherObjectInBundle("DeathYPlane")).AddComponent<DeathYPlaneCtrl>();
 
@@ -479,7 +490,59 @@ namespace FS_LevelEditor.Editor
                     // If it's selecting an object, well, set it as the selected one.
                     if (CanSelectObjectWithRay(out GameObject obj))
                     {
-                        if (Input.GetKey(KeyCode.LeftControl))
+                        // Check for double-click on a group to enter edit mode
+                        float timeSinceLastClick = Time.unscaledTime - lastClickTime;
+                        bool isDoubleClick = (lastClickedObject == obj && timeSinceLastClick <= doubleClickThreshold);
+                        lastClickTime = Time.unscaledTime;
+                        lastClickedObject = obj;
+
+                        // Check if clicked object is part of a group
+                        var clickedObjLE = obj.GetComponent<LE_Object>();
+                        LE_Group containingGroup = clickedObjLE != null ? GroupManager.Instance?.GetGroupContaining(clickedObjLE) : null;
+                        var clickedGroup = obj.GetComponent<LE_Group>();
+
+                        // Handle group editing mode
+                        if (GroupManager.Instance != null && GroupManager.Instance.isEditingGroup)
+                        {
+                            // If click is outside the editing group, exit edit mode
+                            if (!GroupManager.Instance.IsClickInsideEditingGroup(obj))
+                            {
+                                GroupManager.Instance.ExitGroupEditMode();
+                                // Select the clicked object normally
+                                if (containingGroup != null)
+                                {
+                                    SetSelectedObj(containingGroup.gameObject);
+                                }
+                                else
+                                {
+                                    SetSelectedObj(obj);
+                                }
+                            }
+                            else
+                            {
+                                // Inside the editing group - select the object within the group
+                                if (Input.GetKey(KeyCode.LeftControl))
+                                {
+                                    SetSelectedObj(obj, SelectionType.ForceMultiple);
+                                }
+                                else
+                                {
+                                    SetSelectedObj(obj);
+                                }
+                            }
+                        }
+                        // Double-click on a group to enter edit mode
+                        else if (isDoubleClick && clickedGroup != null)
+                        {
+                            GroupManager.Instance?.EnterGroupEditMode(clickedGroup);
+                        }
+                        // Single click on object inside a group - select the group
+                        else if (containingGroup != null && !GroupManager.Instance.isEditingGroup)
+                        {
+                            SetSelectedObj(containingGroup.gameObject);
+                        }
+                        // Normal selection
+                        else if (Input.GetKey(KeyCode.LeftControl))
                         {
                             SetSelectedObj(obj, SelectionType.ForceMultiple);
                         }
@@ -491,6 +554,11 @@ namespace FS_LevelEditor.Editor
                     // Otherwise, deselect the last selected object if there's one ONLY if it's not holding Ctrl
                     else if (!Input.GetKey(KeyCode.LeftControl))
                     {
+                        // If editing a group and clicking outside, exit edit mode
+                        if (GroupManager.Instance != null && GroupManager.Instance.isEditingGroup)
+                        {
+                            GroupManager.Instance.ExitGroupEditMode();
+                        }
                         SetSelectedObj(null);
                     }
                 }
@@ -845,6 +913,42 @@ namespace FS_LevelEditor.Editor
             if (EditorKeybinds.ToggleStartSpawnState && currentSelectedObj)
             {
                 SelectedObjPanel.Instance.setActiveAtStartToggle.Set(!SelectedObjPanel.Instance.setActiveAtStartToggle.isChecked);
+            }
+            #endregion
+
+            #region Grouping Shortcuts
+            // Create group from selection (Alt+G)
+            if (EditorKeybinds.CreateGroup && currentMode == Mode.Selection && !EditorKeybinds.UngroupObjects)
+            {
+                if (GroupManager.Instance != null)
+                {
+                    // If we're editing a group, exit edit mode first
+                    if (GroupManager.Instance.isEditingGroup)
+                    {
+                        GroupManager.Instance.ExitGroupEditMode();
+                    }
+                    else
+                    {
+                        GroupManager.Instance.CreateGroupFromSelection();
+                    }
+                }
+            }
+
+            // Ungroup objects (Alt+Shift+G)
+            if (EditorKeybinds.UngroupObjects && currentMode == Mode.Selection)
+            {
+                if (GroupManager.Instance != null)
+                {
+                    var selectedGroup = GetSelectedGroup();
+                    if (selectedGroup != null)
+                    {
+                        GroupManager.Instance.UngroupObjects(selectedGroup);
+                    }
+                    else
+                    {
+                        Utils.ShowCustomNotificationRed("Select a group to ungroup", 1.5f);
+                    }
+                }
             }
             #endregion
 
@@ -1996,8 +2100,16 @@ namespace FS_LevelEditor.Editor
             else Logger.DebugLog($"SetSelectedObj called with NO NEW TARGET OBJECT (To deselect).");
 
             LE_Object objComp = null;
+            LE_Group groupComp = null;
 
-            if (obj && obj != multipleSelectedObjsParent && !obj.TryGetComponent<LE_Object>(out objComp))
+            // Check if it's a group first
+            if (obj && obj != multipleSelectedObjsParent)
+            {
+                obj.TryGetComponent<LE_Group>(out groupComp);
+            }
+
+            // If it's not a group, check for LE_Object
+            if (obj && obj != multipleSelectedObjsParent && groupComp == null && !obj.TryGetComponent<LE_Object>(out objComp))
             {
                 Logger.Error($"Illegal object selected! Name: {obj.name}, path: {obj.GetGameObjectPath(">")}");
                 // Idk either mate.
@@ -2011,7 +2123,13 @@ namespace FS_LevelEditor.Editor
             // Reset the last selected object color back to normal.
             if (currentSelectedObj != null)
             {
-                if (multipleObjectsSelected)
+                // Check if previous selection was a group
+                var prevGroup = currentSelectedObj.GetComponent<LE_Group>();
+                if (prevGroup != null)
+                {
+                    prevGroup.OnDeselect();
+                }
+                else if (multipleObjectsSelected)
                 {
                     foreach (var @object in currentSelectedObjsComponents)
                     {
@@ -2147,31 +2265,45 @@ namespace FS_LevelEditor.Editor
 
             if (currentSelectedObj != null)
             {
-                // Change the color of the new select object to the "selected" color.
-                if (multipleObjectsSelected)
+                // Check if this is a group selection
+                var selectedGroup = currentSelectedObj.GetComponent<LE_Group>();
+
+                if (selectedGroup != null)
                 {
-                    foreach (var @object in currentSelectedObjsComponents)
+                    // Handle group selection
+                    selectedGroup.OnSelect();
+                    if (currentMode == Mode.Selection) gizmosRoot.SetActive(true);
+                    gizmosRoot.transform.localRotation = currentSelectedObj.transform.rotation;
+                    SelectedObjPanel.Instance.SetGroupSelected(selectedGroup);
+                }
+                else
+                {
+                    // Change the color of the new select object to the "selected" color.
+                    if (multipleObjectsSelected)
                     {
-                        @object.SetObjectColor(LE_Object.LEObjectContext.SELECT);
+                        foreach (var @object in currentSelectedObjsComponents)
+                        {
+                            @object.SetObjectColor(LE_Object.LEObjectContext.SELECT);
+                        }
                     }
-                }
-                else
-                {
-                    currentSelectedObjComponent.SetObjectColor(LE_Object.LEObjectContext.SELECT);
-                }
+                    else
+                    {
+                        currentSelectedObjComponent.SetObjectColor(LE_Object.LEObjectContext.SELECT);
+                    }
 
-                if (currentMode == Mode.Selection) gizmosRoot.SetActive(true);
-                gizmosRoot.transform.localRotation = currentSelectedObj.transform.rotation;
+                    if (currentMode == Mode.Selection) gizmosRoot.SetActive(true);
+                    gizmosRoot.transform.localRotation = currentSelectedObj.transform.rotation;
 
-                if (multipleObjectsSelected)
-                {
-                    SelectedObjPanel.Instance.SetMultipleObjectsSelected();
-                    currentSelectedObjsComponents.ForEach(x => x.OnSelect());
-                }
-                else
-                {
-                    SelectedObjPanel.Instance.SetSelectedObject(currentSelectedObjComponent);
-                    currentSelectedObjComponent.OnSelect();
+                    if (multipleObjectsSelected)
+                    {
+                        SelectedObjPanel.Instance.SetMultipleObjectsSelected();
+                        currentSelectedObjsComponents.ForEach(x => x.OnSelect());
+                    }
+                    else
+                    {
+                        SelectedObjPanel.Instance.SetSelectedObject(currentSelectedObjComponent);
+                        currentSelectedObjComponent.OnSelect();
+                    }
                 }
             }
             else
@@ -3061,6 +3193,23 @@ namespace FS_LevelEditor.Editor
             }
 
             return Vector3.zero;
+        }
+
+        /// <summary>
+        /// Gets the LE_Group component from the currently selected object, if it's a group.
+        /// </summary>
+        public LE_Group GetSelectedGroup()
+        {
+            if (currentSelectedObj == null) return null;
+            return currentSelectedObj.GetComponent<LE_Group>();
+        }
+
+        /// <summary>
+        /// Checks if the currently selected object is a group.
+        /// </summary>
+        public bool IsGroupSelected()
+        {
+            return GetSelectedGroup() != null;
         }
 
         public bool IsHittingObject(GameObject targetObj)

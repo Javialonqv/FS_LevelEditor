@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Grouping;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
@@ -134,6 +135,7 @@ namespace FS_LevelEditor.SaveSystem
         public long createdTime { get; set; }
         public long lastModificationTime { get; set; }
         public List<LE_ObjectData> objects { get; set; } = new List<LE_ObjectData>();
+        public List<LE_GroupData> groups { get; set; } = new List<LE_GroupData>();
         public Dictionary<string, object> globalProperties { get; set; } = new Dictionary<string, object>();
 
         static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
@@ -170,6 +172,27 @@ namespace FS_LevelEditor.SaveSystem
                     Logger.Error($"The object with name \"{obj.name}\" doesn't have a LE_Object component, can't save it, please report it as a bug.");
                     continue;
                 }
+            }
+
+            // Also save objects that are inside groups
+            if (GroupManager.Instance != null)
+            {
+                foreach (var group in GroupManager.Instance.allGroups)
+                {
+                    if (group == null || group.isDeleted) continue;
+
+                    foreach (var groupedObj in group.groupedObjects)
+                    {
+                        if (groupedObj == null || groupedObj.isDeleted) continue;
+
+                        groupedObj.BeforeSave();
+                        LE_ObjectData objData = new LE_ObjectData(groupedObj);
+                        data.objects.Add(objData);
+                    }
+                }
+
+                // Save groups data
+                data.groups = GroupManager.Instance.GetGroupsDataForSave();
             }
 
             if (EditorController.Instance.multipleObjectsSelected)
@@ -360,6 +383,15 @@ namespace FS_LevelEditor.SaveSystem
                 {
                     obj.SetTransparentMaterials();
                 }
+            }
+
+            // Load groups after all objects are instantiated
+            if (data.groups != null && data.groups.Count > 0 && GroupManager.Instance != null)
+            {
+                // Get all instantiated LE_Objects
+                var allInstantiatedObjects = EditorController.Instance.currentInstantiatedObjects.ToList();
+                GroupManager.Instance.OnLevelLoad(); // Reset group state
+                GroupManager.Instance.LoadGroupsFromData(data.groups, allInstantiatedObjects);
             }
 
             // Batch apply global properties

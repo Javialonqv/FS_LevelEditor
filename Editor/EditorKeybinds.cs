@@ -23,6 +23,10 @@ namespace FS_LevelEditor.Editor
         public static bool SelectAllObjects => Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.A);
         public static bool ToggleStartSpawnState => Input.GetKeyDown(KeyCode.Space);
 
+        // Grouping shortcuts.
+        public static bool CreateGroup => Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.G);
+        public static bool UngroupObjects => Input.GetKey(KeyCode.LeftAlt) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.G);
+
         // In-Editor shortcuts.
         public static bool SaveLevel => Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S);
         public static bool EnterPlaymode => Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P);
@@ -33,8 +37,8 @@ namespace FS_LevelEditor.Editor
         public static bool ToggleGlobalProperties => Input.GetKeyDown(KeyCode.O);
 
         // Grid shortcuts.
-        public static bool ToggleGridVisibility => Input.GetKeyDown(KeyCode.G) && !Input.GetKey(KeyCode.LeftShift);
-        public static bool ToggleGridState => Input.GetKeyDown(KeyCode.G) && Input.GetKey(KeyCode.LeftShift);
+        public static bool ToggleGridVisibility => Input.GetKeyDown(KeyCode.G) && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.LeftAlt);
+        public static bool ToggleGridState => Input.GetKeyDown(KeyCode.G) && Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.LeftAlt);
         public static bool AllowedToAdjustGrid => !Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.RightAlt);
         public static bool ChangeGridSize(out float scrollDelta)
         {

@@ -1,4 +1,5 @@
-﻿using FS_LevelEditor.UI_Related;
+﻿using FS_LevelEditor.Grouping;
+using FS_LevelEditor.UI_Related;
 using Il2Cpp;
 using Microsoft.VisualBasic.FileIO;
 using System;
@@ -34,8 +35,11 @@ namespace FS_LevelEditor.Editor.UI
 		UIVector3Fields rotFields;
 		UIVector3Fields scaleFields;
 		UITogglePatcher collisionToggle;
-        UITogglePatcher invisibleMeshToggle;
-        UIButtonPatcher addWaypointButton;
+		UITogglePatcher invisibleMeshToggle;
+		UIButtonPatcher addWaypointButton;
+		UIButtonPatcher createGroupButton;
+		UIButtonPatcher extendGroupButton;
+		UIButtonPatcher ungroupButton;
 		UITogglePatcher startMovingAtStartToggle;
 		UICustomInputField movingSpeedField;
 		UICustomInputField startDelayField;
@@ -295,6 +299,9 @@ namespace FS_LevelEditor.Editor.UI
 			CreateCollisionToggle();
 			CreateInvisibleMeshToggle();
 			CreateAddWaypointButton();
+			CreateGroupButton();
+			CreateExtendGroupButton();
+			CreateUngroupButton();
 			CreateStartMovingAtStartToggle();
 			CreateMovingSpeedField();
 			CreateStartDelayField();
@@ -372,7 +379,7 @@ namespace FS_LevelEditor.Editor.UI
 
             yPosForGlobalProps -= 55;
         }
-        void CreateAddWaypointButton()
+		void CreateAddWaypointButton()
 		{
 			addWaypointButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "AddGlobalWaypoint");
 			addWaypointButton.name = "AddWaypointButton";
@@ -381,6 +388,63 @@ namespace FS_LevelEditor.Editor.UI
 			addWaypointButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
 
 			yPosForGlobalProps -= 55;
+		}
+		void CreateGroupButton()
+		{
+			createGroupButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "CreateGroup");
+			createGroupButton.name = "CreateGroupButton";
+			createGroupButton.onClick += OnCreateGroupButtonClick;
+			createGroupButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+			createGroupButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+
+			yPosForGlobalProps -= 55;
+		}
+		void CreateExtendGroupButton()
+		{
+			extendGroupButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "ExtendGroup");
+			extendGroupButton.name = "ExtendGroupButton";
+			extendGroupButton.onClick += OnExtendGroupButtonClick;
+			extendGroupButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+			extendGroupButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+			extendGroupButton.gameObject.SetActive(false); // Hidden by default
+
+			yPosForGlobalProps -= 55;
+		}
+		void CreateUngroupButton()
+		{
+			ungroupButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "Ungroup");
+			ungroupButton.name = "UngroupButton";
+			ungroupButton.onClick += OnUngroupButtonClick;
+			ungroupButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+			ungroupButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+			ungroupButton.gameObject.SetActive(false); // Hidden by default
+
+			yPosForGlobalProps -= 55;
+		}
+		void OnCreateGroupButtonClick()
+		{
+			if (GroupManager.Instance != null)
+			{
+				GroupManager.Instance.CreateGroupFromSelection();
+			}
+		}
+		void OnExtendGroupButtonClick()
+		{
+			if (GroupManager.Instance != null)
+			{
+				GroupManager.Instance.ExtendGroupFromSelection();
+			}
+		}
+		void OnUngroupButtonClick()
+		{
+			if (GroupManager.Instance != null)
+			{
+				var selectedGroup = EditorController.Instance.GetSelectedGroup();
+				if (selectedGroup != null)
+				{
+					GroupManager.Instance.UngroupObjects(selectedGroup);
+				}
+			}
 		}
 		void CreateStartMovingAtStartToggle()
 		{
@@ -392,8 +456,8 @@ namespace FS_LevelEditor.Editor.UI
 			UILabel title = NGUI_Utils.CreateLabel(toggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "StartMovingAtStart");
 			title.name = "Title";
 
-            startMovingAtStartToggle = NGUI_Utils.CreateToggle(toggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
-            startMovingAtStartToggle.gameObject.name = "Toggle";
+			startMovingAtStartToggle = NGUI_Utils.CreateToggle(toggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
+			startMovingAtStartToggle.gameObject.name = "Toggle";
 			startMovingAtStartToggle.onClick += (state) => SetStartMovingAtStart();
 			startMovingAtStartToggle.toggle.instantTween = true;
 
@@ -958,21 +1022,71 @@ namespace FS_LevelEditor.Editor.UI
 			isSelectingMultipleObjects = true;
 
 			ShowPanel(false, "selection.NoObjectSelected");
+			createGroupButton.gameObject.SetActive(false); // Hide create group button
+			extendGroupButton.gameObject.SetActive(false); // Hide extend group button
+			ungroupButton.gameObject.SetActive(false); // Hide ungroup button
+		}
+
+		/// <summary>
+		/// Called when a group is selected.
+		/// </summary>
+		public void SetGroupSelected(LE_Group group)
+		{
+			isSelectingAnObjectRightNow = true;
+			isSelectingMultipleObjects = false;
+
+			ShowPanel(true, group.GroupFullName);
+			expandPanelButton.gameObject.SetActive(true);
+			setActiveAtStartToggle.gameObject.SetActive(true);
+			setActiveAtStartToggle.Set(group.setActiveAtStart, instant: true);
+			createGroupButton.gameObject.SetActive(false); // Hide create group button for existing group
+			extendGroupButton.gameObject.SetActive(false); // Hide extend group button for group-only selection
+			ungroupButton.gameObject.SetActive(true); // Show ungroup button for groups
+			globalObjAttributesToggle.gameObject.SetActive(false);
+			globalObjAttributesToggle.SetToggleState(true, true);
+
+			// Show invisible mesh toggle for groups
+			invisibleMeshToggle.transform.parent.gameObject.SetActive(true);
+
+			// Hide waypoint-related elements for groups (they don't have their own waypoints)
+			startMovingAtStartToggle.transform.parent.gameObject.SetActive(false);
+			movingSpeedField.transform.parent.gameObject.SetActive(false);
+			startDelayField.transform.parent.gameObject.SetActive(false);
+			waitTimeField.transform.parent.gameObject.SetActive(false);
+			waypointModeButton.transform.parent.gameObject.SetActive(false);
+
+			// Hide all object-specific panels
+			attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
+
+			UpdateGlobalObjectAttributes(group.transform);
 		}
 		public void SetMultipleObjectsSelected()
 		{
-            isSelectingAnObjectRightNow = true;
+			isSelectingAnObjectRightNow = true;
 			isSelectingMultipleObjects = true;
-            isSelectingMultipleObjectsOfTheSameType = EditorController.Instance.multipleObjectsOfTheSameTypeSelected;
+			isSelectingMultipleObjectsOfTheSameType = EditorController.Instance.multipleObjectsOfTheSameTypeSelected;
 
-            ShowPanel(true, "selection.MultipleObjectsSelected");
+			ShowPanel(true, "selection.MultipleObjectsSelected");
 
 			setActiveAtStartToggle.gameObject.SetActive(true);
 			expandPanelButton.gameObject.SetActive(true);
+			createGroupButton.gameObject.SetActive(true); // Show create group button for multiple selection
+			ungroupButton.gameObject.SetActive(false); // Hide ungroup button for multiple selection
+
+			// Show extend group button only if selection contains a group and non-grouped objects
+			bool canExtend = GroupManager.Instance != null && GroupManager.Instance.CanExtendGroup();
+			extendGroupButton.gameObject.SetActive(canExtend);
+
+			// Show waypoint-related elements
+			startMovingAtStartToggle.transform.parent.gameObject.SetActive(true);
+			movingSpeedField.transform.parent.gameObject.SetActive(true);
+			startDelayField.transform.parent.gameObject.SetActive(true);
+			waitTimeField.transform.parent.gameObject.SetActive(true);
+			waypointModeButton.transform.parent.gameObject.SetActive(true);
 
 			SetPropInToggleDependingOfPropInObjects(setActiveAtStartToggle, (obj) => obj.setActiveAtStart, (obj) => obj.canBeDisabledAtStart);
 
-            UpdateGlobalObjectAttributes(EditorController.Instance.currentSelectedObj.transform);
+			UpdateGlobalObjectAttributes(EditorController.Instance.currentSelectedObj.transform);
 
 			if (isSelectingMultipleObjectsOfTheSameType)
 			{
@@ -1015,8 +1129,18 @@ namespace FS_LevelEditor.Editor.UI
 			// The obj name is obviously NOT a valid loc key, but that doesn't matter, NGUI will just show it as is.
 			ShowPanel(true, objComponent.objectFullNameWithID);
 			expandPanelButton.gameObject.SetActive(true);
+			createGroupButton.gameObject.SetActive(false); // Hide create group button for single selection
+			extendGroupButton.gameObject.SetActive(false); // Hide extend group button for single selection
+			ungroupButton.gameObject.SetActive(false); // Hide ungroup button for non-group objects
 
-            bool specificAttributesFound = false;
+			// Show waypoint-related elements
+			startMovingAtStartToggle.transform.parent.gameObject.SetActive(true);
+			movingSpeedField.transform.parent.gameObject.SetActive(true);
+			startDelayField.transform.parent.gameObject.SetActive(true);
+			waitTimeField.transform.parent.gameObject.SetActive(true);
+			waypointModeButton.transform.parent.gameObject.SetActive(true);
+
+			bool specificAttributesFound = false;
 
             #region Select Right Attributes Panel
             attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
@@ -1100,13 +1224,22 @@ namespace FS_LevelEditor.Editor.UI
 
 		public void SetSetActiveAtStart()
 		{
+			// Handle group selection
+			var selectedGroup = EditorController.Instance.GetSelectedGroup();
+			if (selectedGroup != null)
+			{
+				selectedGroup.SetActiveAtStart(setActiveAtStartToggle.isChecked);
+				EditorController.Instance.levelHasBeenModified = true;
+				return;
+			}
+
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
 				foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
 				{
 					if (obj.canBeDisabledAtStart)
 					{
-                        obj.setActiveAtStart = setActiveAtStartToggle.isChecked;
+						obj.setActiveAtStart = setActiveAtStartToggle.isChecked;
 					}
 				}
 			}
@@ -1118,11 +1251,20 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		public void SetCollisionToggle()
 		{
+			// Handle group selection
+			var selectedGroup = EditorController.Instance.GetSelectedGroup();
+			if (selectedGroup != null)
+			{
+				selectedGroup.SetCollision(collisionToggle.isChecked);
+				EditorController.Instance.levelHasBeenModified = true;
+				return;
+			}
+
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
 				foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
 				{
-                    obj.collision = collisionToggle.isChecked;
+					obj.collision = collisionToggle.isChecked;
 				}
 			}
 			else
@@ -1131,23 +1273,65 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			EditorController.Instance.levelHasBeenModified = true;
 		}
-        public void SetInvisibleMeshToggle()
-        {
-            if (EditorController.Instance.multipleObjectsSelected)
-            {
-                foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
-                {
-                    obj.invisibleMesh = invisibleMeshToggle.isChecked;
-                }
-            }
-            else
-            {
-                EditorController.Instance.currentSelectedObjComponent.invisibleMesh = invisibleMeshToggle.isChecked;
-            }
-            EditorController.Instance.levelHasBeenModified = true;
-        }
-        public void AddWaypointForObject()
+		public void SetInvisibleMeshToggle()
 		{
+			// Handle group selection
+			var selectedGroup = EditorController.Instance.GetSelectedGroup();
+			if (selectedGroup != null)
+			{
+				selectedGroup.SetInvisibleMesh(invisibleMeshToggle.isChecked);
+				EditorController.Instance.levelHasBeenModified = true;
+				return;
+			}
+
+			if (EditorController.Instance.multipleObjectsSelected)
+			{
+				foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
+				{
+					obj.invisibleMesh = invisibleMeshToggle.isChecked;
+				}
+			}
+			else
+			{
+				EditorController.Instance.currentSelectedObjComponent.invisibleMesh = invisibleMeshToggle.isChecked;
+			}
+			EditorController.Instance.levelHasBeenModified = true;
+		}
+		public void AddWaypointForObject()
+		{
+			// Handle group selection
+			var selectedGroup = EditorController.Instance.GetSelectedGroup();
+			if (selectedGroup != null)
+			{
+				List<LE_Waypoint> createdWaypoints = new List<LE_Waypoint>();
+
+				foreach (var obj in selectedGroup.groupedObjects)
+				{
+					if (obj == null || !obj.canHaveWaypoints) continue;
+
+					var waypointSupport = obj.GetComponent<WaypointSupport>();
+					if (waypointSupport != null)
+					{
+						var waypoint = waypointSupport.AddWaypoint();
+						if (waypoint != null)
+							createdWaypoints.Add(waypoint);
+
+						// If this is the first waypoint, set startMovingAtStart to true
+						if (obj.waypoints.Count == 1)
+						{
+							obj.startMovingAtStart = true;
+						}
+					}
+				}
+
+				// Select all created waypoints
+				if (createdWaypoints.Count > 0)
+				{
+					EditorController.Instance.SetMultipleObjectsAsSelected(createdWaypoints.Select(w => w.gameObject).ToList());
+				}
+				return;
+			}
+
 			if (!EditorController.Instance.multipleObjectsSelected)
 			{
 				var objComp = EditorController.Instance.currentSelectedObjComponent;
@@ -1199,11 +1383,37 @@ namespace FS_LevelEditor.Editor.UI
 			scaleFields.SetVector(obj.localScale, 3, false);
 			#endregion
 
+			// Check if a group is selected - groups handle properties differently
+			var selectedGroup = EditorController.Instance.GetSelectedGroup();
+			if (selectedGroup != null)
+			{
+				// For groups, set collision toggle based on group's collision state
+				collisionToggle.Set(selectedGroup.collision, true, true);
+
+				// Set invisible mesh toggle based on group's objects state
+				invisibleMeshToggle.transform.parent.gameObject.SetActive(true);
+				var invisibleState = selectedGroup.GetInvisibleMeshState();
+				if (invisibleState.HasValue)
+					invisibleMeshToggle.Set(invisibleState.Value, true, true);
+				else
+					invisibleMeshToggle.SetAsUndefined();
+
+				// Show add waypoint button if all objects in group can have waypoints
+				addWaypointButton.gameObject.SetActive(selectedGroup.CanHaveWaypoints());
+
+				startMovingAtStartToggle.transform.parent.gameObject.SetActive(false);
+				movingSpeedField.transform.parent.gameObject.SetActive(false);
+				startDelayField.transform.parent.gameObject.SetActive(false);
+				waitTimeField.transform.parent.gameObject.SetActive(false);
+				waypointModeButton.transform.parent.gameObject.SetActive(false);
+				return;
+			}
+
 			SetPropInToggleDependingOfPropInObjects(collisionToggle, (obj) => obj.collision);
 			SetPropInToggleDependingOfPropInObjects(invisibleMeshToggle, (obj) => obj.invisibleMesh);
 
-            #region Add Waypoint Button
-            if (EditorController.Instance.multipleObjectsSelected)
+			#region Add Waypoint Button
+			if (EditorController.Instance.multipleObjectsSelected)
 			{
 				// Only enable the button when ALL of the selected objects allow waypoints.
 				addWaypointButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjsComponents.All(x => x.canHaveWaypoints));
