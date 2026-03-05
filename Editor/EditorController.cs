@@ -815,6 +815,9 @@ namespace FS_LevelEditor.Editor
                     if (obj == null || obj.isDeleted)
                         continue;
 
+                    if (obj is LE_Waypoint waypoint && waypoint.mainSupport.targetObject.isDeleted)
+                        continue;
+
                     if (obj.objectType == LE_Object.ObjectType.PLAYER_SPAWN)
                         continue;
 
