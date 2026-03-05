@@ -2632,6 +2632,7 @@ namespace FS_LevelEditor.Editor
                     {
                         newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
                     }
+                    objComp.BeforeSave(); // If the origin obj was waypoints, force them to update their position, rotation and props before copying them.
                     foreach (var waypoint in objComp.waypoints)
                     {
                         newPlacedObjComp.waypoints.Add((WaypointData)Utils.CreateCopyOf(waypoint));
