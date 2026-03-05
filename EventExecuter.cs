@@ -316,14 +316,23 @@ namespace FS_LevelEditor
                         continue;
                     }
 
-                    if (isUndo && action != null)
+                    // For AND logic events, we use the action returned by the manager
+                    if (action != null)
                     {
-                        // Execute undo action on target object (no delay for undo actions)
-                        LE_Object targetObjForUndo = PlayModeController.Instance.currentInstantiatedObjects.Find(
+                        // Execute the action (either the main action or undo action) on target object
+                        LE_Object targetObj = PlayModeController.Instance.currentInstantiatedObjects.Find(
                             x => x.objectType == @event.targetObjType && x.objectID == @event.targetObjID);
-                        if (targetObjForUndo != null)
+                        if (targetObj != null)
                         {
-                            targetObjForUndo.TriggerAction(action);
+                            if (@event.delay > 0 && !isUndo)
+                            {
+                                // Apply delay only for non-undo actions
+                                MelonLoader.MelonCoroutines.Start(ExecuteActionWithDelay(targetObj, action, @event.delay));
+                            }
+                            else
+                            {
+                                targetObj.TriggerAction(action);
+                            }
                         }
                         continue;
                     }
@@ -339,6 +348,12 @@ namespace FS_LevelEditor
                     ExecuteSingleEvent(@event);
                 }
             }
+        }
+
+        private IEnumerator ExecuteActionWithDelay(LE_Object targetObj, string action, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            targetObj.TriggerAction(action);
         }
 
         private IEnumerator ExecuteEventWithDelay(LE_Event @event, float delay)
