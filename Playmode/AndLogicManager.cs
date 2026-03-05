@@ -131,15 +131,16 @@ namespace FS_LevelEditor.Playmode
 
             // Update the input state
             bool allActive = SetInputState(sourceObj, eventListName, leEvent.targetObjType, leEvent.targetObjID, actionType, isActivating);
-            
+
             // Check if the AND condition state changed
             bool wasAllActive = previousAndState.ContainsKey(targetKey) && previousAndState[targetKey];
-            
+
             if (allActive && !wasAllActive)
             {
-                // Condition now met - execute the action
+                // Condition now met - execute the forward action
                 previousAndState[targetKey] = true;
-                return (true, actionType, false);
+                string forwardAction = GetForwardAction(actionType);
+                return (true, forwardAction, false);
             }
             else if (!allActive && wasAllActive)
             {
@@ -157,58 +158,75 @@ namespace FS_LevelEditor.Playmode
 
         /// <summary>
         /// Determines the action type string for an event based on its configuration.
+        /// Only checks object-specific states if the target object type matches.
         /// </summary>
         public static string GetActionTypeForEvent(LE_Event leEvent)
         {
-            // For doors
-            if (leEvent.doorState != LE_Event.DoorState.Do_Nothing)
+            var targetType = leEvent.targetObjType;
+
+            // For doors - only check if target is a door
+            if ((targetType == LE_Object.ObjectType.DOOR || targetType == LE_Object.ObjectType.DOOR_V2) 
+                && leEvent.doorState != LE_Event.DoorState.Do_Nothing)
             {
                 return "Door_" + leEvent.doorState.ToString();
             }
-            // For saws
-            if (leEvent.sawState != LE_Event.SawState.Do_Nothing)
+            // For saws - only check if target is a saw
+            if (targetType == LE_Object.ObjectType.SAW && leEvent.sawState != LE_Event.SawState.Do_Nothing)
             {
                 return "Saw_" + leEvent.sawState.ToString();
             }
-            // For lasers
-            if (leEvent.laserState != LE_Event.LaserState.Do_Nothing)
+            // For lasers - only check if target is a laser
+            if (targetType == LE_Object.ObjectType.LASER && leEvent.laserState != LE_Event.LaserState.Do_Nothing)
             {
                 return "Laser_" + leEvent.laserState.ToString();
             }
-            // For bridges
-            if (leEvent.bridgeState != LE_Event.BridgeState.Do_Nothing)
+            // For bridges - only check if target is a bridge
+            if (targetType == LE_Object.ObjectType.BRIDGE && leEvent.bridgeState != LE_Event.BridgeState.Do_Nothing)
             {
                 return "Bridge_" + leEvent.bridgeState.ToString();
             }
-            // For moving platforms
-            if (leEvent.movingPlatformState != LE_Event.MovingPlatformState.Do_Nothing)
+            // For moving platforms - only check if target is a moving platform
+            if (targetType == LE_Object.ObjectType.MOVING_PLATFORM && leEvent.movingPlatformState != LE_Event.MovingPlatformState.Do_Nothing)
             {
                 return "MP_" + leEvent.movingPlatformState.ToString();
             }
-            // For switches
-            if (leEvent.switchState != LE_Event.SwitchState.Do_Nothing)
+            // For switches - only check if target is a switch
+            if (targetType == LE_Object.ObjectType.SWITCH && leEvent.switchState != LE_Event.SwitchState.Do_Nothing)
             {
                 return "Switch_" + leEvent.switchState.ToString();
             }
-            // For flame traps
-            if (leEvent.flameTrapState != LE_Event.FlameTrapState.Do_Nothing)
+            // For flame traps - only check if target is a flame trap
+            if (targetType == LE_Object.ObjectType.FLAME_TRAP && leEvent.flameTrapState != LE_Event.FlameTrapState.Do_Nothing)
             {
                 return "FlameTrap_" + leEvent.flameTrapState.ToString();
             }
-            // For ceiling lights
-            if (leEvent.ceilingLightState != LE_Event.CeilingLightState.Do_Nothing)
+            // For ceiling lights - only check if target is a ceiling light
+            if (targetType == LE_Object.ObjectType.CEILING_LIGHT && leEvent.ceilingLightState != LE_Event.CeilingLightState.Do_Nothing)
             {
                 return "CeilingLight_" + leEvent.ceilingLightState.ToString();
             }
-            // For mines
-            if (leEvent.mineState != LE_Event.MineState.Do_Nothing)
+            // For mines - only check if target is a mine
+            if (targetType == LE_Object.ObjectType.MINE && leEvent.mineState != LE_Event.MineState.Do_Nothing)
             {
                 return "Mine_" + leEvent.mineState.ToString();
             }
-            // For spawn/despawn
-            if (leEvent.spawn != LE_Event.SpawnState.Do_Nothing)
+
+            // Generic actions that apply to any object type:
+
+            // For collider state - check BEFORE spawn since spawn defaults to Toggle
+            if (leEvent.colliderState != LE_Event.ColliderState.Do_Nothing)
+            {
+                return "Collider_" + leEvent.colliderState.ToString();
+            }
+            // For spawn/despawn - Spawn and Despawn are explicit choices
+            if (leEvent.spawn == LE_Event.SpawnState.Spawn || leEvent.spawn == LE_Event.SpawnState.Despawn)
             {
                 return "Spawn_" + leEvent.spawn.ToString();
+            }
+            // Toggle spawn is used as fallback (it's the default, so use it if nothing else matched)
+            if (leEvent.spawn == LE_Event.SpawnState.Toggle)
+            {
+                return "Spawn_Toggle";
             }
 
             return null;
@@ -284,12 +302,108 @@ namespace FS_LevelEditor.Playmode
                 if (actionType.Contains("Deactivate")) return "Activate";
                 if (actionType.Contains("Toggle")) return "ToggleActivated";
             }
-            // Spawn actions
+            // Spawn actions - check Toggle first since "Toggle" also contains "Spawn"
             if (actionType.StartsWith("Spawn_"))
             {
+                if (actionType.Contains("Toggle")) return "ToggleActive";
                 if (actionType.Contains("Spawn") && !actionType.Contains("Despawn")) return "SetActive_False";
                 if (actionType.Contains("Despawn")) return "SetActive_True";
+            }
+            // Collider actions
+            if (actionType.StartsWith("Collider_"))
+            {
+                if (actionType.Contains("Enable")) return "SetColliderState_False";
+                if (actionType.Contains("Disable")) return "SetColliderState_True";
+                if (actionType.Contains("Toggle")) return "ToggleColliderState";
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the forward action (TriggerAction string) for a given action type.
+        /// </summary>
+        public static string GetForwardAction(string actionType)
+        {
+            if (actionType == null) return null;
+
+            // Door actions
+            if (actionType.StartsWith("Door_"))
+            {
+                if (actionType.Contains("Open")) return "Activate";
+                if (actionType.Contains("Close") && actionType.Contains("Fast")) return "CloseFast";
+                if (actionType.Contains("Close")) return "Deactivate";
+                if (actionType.Contains("Toggle")) return "InvertState";
+            }
+            // Saw actions
+            if (actionType.StartsWith("Saw_"))
+            {
+                if (actionType.Contains("Activate")) return "Activate";
+                if (actionType.Contains("Deactivate")) return "Deactivate";
+                if (actionType.Contains("Toggle")) return "ToggleActivated";
+            }
+            // Laser actions
+            if (actionType.StartsWith("Laser_"))
+            {
+                if (actionType.Contains("Activate")) return "Activate";
+                if (actionType.Contains("Deactivate")) return "Deactivate";
+                if (actionType.Contains("Toggle")) return "ToggleActivated";
+            }
+            // Bridge actions
+            if (actionType.StartsWith("Bridge_"))
+            {
+                if (actionType.Contains("Extend")) return "Deploy";
+                if (actionType.Contains("Retract")) return "Retract";
+                if (actionType.Contains("Toggle")) return "Toggle";
+            }
+            // Moving platform actions
+            if (actionType.StartsWith("MP_"))
+            {
+                if (actionType.Contains("Activate")) return "Activate";
+                if (actionType.Contains("Deactivate")) return "Deactivate";
+                if (actionType.Contains("Toggle")) return "InvertState";
+            }
+            // Switch actions
+            if (actionType.StartsWith("Switch_"))
+            {
+                if (actionType.Contains("Activated")) return "Activate";
+                if (actionType.Contains("Deactivated")) return "Deactivate";
+                if (actionType.Contains("Toggle")) return "ToggleActivated";
+            }
+            // Flame trap actions
+            if (actionType.StartsWith("FlameTrap_"))
+            {
+                if (actionType.Contains("Activate")) return "Activate";
+                if (actionType.Contains("Deactivate")) return "Deactivate";
+                if (actionType.Contains("Toggle")) return "ToggleActivated";
+            }
+            // Ceiling light actions
+            if (actionType.StartsWith("CeilingLight_"))
+            {
+                if (actionType.Contains("On")) return "Activate";
+                if (actionType.Contains("Off")) return "Deactivate";
+                if (actionType.Contains("Toggle")) return "ToggleActivated";
+            }
+            // Mine actions
+            if (actionType.StartsWith("Mine_"))
+            {
+                if (actionType.Contains("Activate")) return "Activate";
+                if (actionType.Contains("Deactivate")) return "Deactivate";
+                if (actionType.Contains("Toggle")) return "ToggleActivated";
+            }
+            // Spawn actions - check Toggle first since "Toggle" also contains "Spawn"
+            if (actionType.StartsWith("Spawn_"))
+            {
                 if (actionType.Contains("Toggle")) return "ToggleActive";
+                if (actionType.Contains("Spawn") && !actionType.Contains("Despawn")) return "SetActive_True";
+                if (actionType.Contains("Despawn")) return "SetActive_False";
+            }
+            // Collider actions
+            if (actionType.StartsWith("Collider_"))
+            {
+                if (actionType.Contains("Enable")) return "SetColliderState_True";
+                if (actionType.Contains("Disable")) return "SetColliderState_False";
+                if (actionType.Contains("Toggle")) return "ToggleColliderState";
             }
 
             return null;

@@ -333,7 +333,7 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		
 		/// <summary>
-		/// Captures a thumbnail of the current editor view and returns it as a base64-encoded PNG string
+		/// Captures a thumbnail of the current editor view and returns it as a base64-encoded JPEG string
 		/// </summary>
 		string CaptureThumbnail()
 		{
@@ -344,9 +344,9 @@ namespace FS_LevelEditor.Editor.UI
 				return null;
 			}
 
-			// Define thumbnail dimensions (16:9 aspect ratio)
-			int thumbnailWidth = 320;
-			int thumbnailHeight = 180;
+			// Define thumbnail dimensions (16:9 aspect ratio, higher res for loading screen quality)
+			int thumbnailWidth = 960;
+			int thumbnailHeight = 540;
 
 			// Create a temporary render texture
 			RenderTexture currentRT = RenderTexture.active;
@@ -356,7 +356,7 @@ namespace FS_LevelEditor.Editor.UI
 			// Temporarily set camera to render to our texture
 			RenderTexture previousCameraRT = camera.targetTexture;
 			camera.targetTexture = tempRT;
-			
+
 			// Render the camera view
 			camera.Render();
 
@@ -370,19 +370,19 @@ namespace FS_LevelEditor.Editor.UI
 			RenderTexture.active = currentRT;
 			RenderTexture.ReleaseTemporary(tempRT);
 
-			// Encode to PNG and convert to base64
-			byte[] pngBytes = thumbnail.EncodeToPNG();
+			// Encode to JPEG with 85% quality (good balance between quality and file size)
+			byte[] jpgBytes = ImageConversion.EncodeToJPG(thumbnail, 85);
 			GameObject.Destroy(thumbnail);
-			
-			if (pngBytes == null || pngBytes.Length == 0)
+
+			if (jpgBytes == null || jpgBytes.Length == 0)
 			{
-				Logger.Warning("Failed to encode thumbnail to PNG");
+				Logger.Warning("Failed to encode thumbnail to JPEG");
 				return null;
 			}
 
-			string base64String = Convert.ToBase64String(pngBytes);
-			Logger.Log($"Thumbnail captured successfully ({pngBytes.Length} bytes, {base64String.Length} chars)");
-			
+			string base64String = Convert.ToBase64String(jpgBytes);
+			Logger.Log($"Thumbnail captured successfully ({jpgBytes.Length} bytes, {base64String.Length} chars)");
+
 			return base64String;
 		}
 	}

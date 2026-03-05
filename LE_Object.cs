@@ -621,13 +621,21 @@ namespace FS_LevelEditor
             {
                 gameObject.SetActive(false);
             }
-            if (actionName == "SetColliderState_True")
+            else if (actionName == "ToggleActive")
+            {
+                gameObject.SetActive(!gameObject.activeSelf);
+            }
+            else if (actionName == "SetColliderState_True")
             {
                 SetCollidersState(true);
             }
             else if (actionName == "SetColliderState_False")
             {
                 SetCollidersState(false);
+            }
+            else if (actionName == "ToggleColliderState")
+            {
+                SetCollidersState(!currentCollisionState);
             }
             else if (actionName == "ManageEvents")
             {
