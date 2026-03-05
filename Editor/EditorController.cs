@@ -131,7 +131,7 @@ namespace FS_LevelEditor.Editor
         private const float MIN_GRID_SIZE = 0.0001f;
         private const float MAX_GRID_SIZE = 8f;
         private const float GRID_SIZE_MULTIPLIER = 2f;
-        private float gridHeight = 121.31f;
+        private float gridHeight = 121f;
         private bool gridVisible = true;
         private bool gridEnabled = true;
         private Material gridLineMaterial;
