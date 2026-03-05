@@ -122,8 +122,18 @@ namespace FS_LevelEditor
             controller.dialogToActivate = new string[0];
 
             controller.usableOnce = (bool)GetProperty("UsableOnce");
-            controller.ignoreLaser = !(bool)GetProperty("CanUseTaser");
-            controller.laserOnly = (bool)GetProperty("OnlyByTaser");
+            //controller.ignoreLaser = !(bool)GetProperty("CanUseTaser");
+            //controller.laserOnly = (bool)GetProperty("OnlyByTaser");
+            if (GetProperty<bool>("CanUseTaser"))
+            {
+                controller.ignoreLaser = false;
+                controller.laserOnly = GetProperty<bool>("OnlyByTaser");
+            }
+            else
+            {
+                controller.ignoreLaser = true;
+                controller.laserOnly = false;
+            }
 
 			// Do all of this BEFORE configuring the switch events.
 			switch (GetProperty<SwitchState>("InitialState"))
