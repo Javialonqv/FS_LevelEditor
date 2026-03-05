@@ -30,6 +30,9 @@ namespace FS_LevelEditor.Misc
             if (!relativeTo) return;
 
             Vector3 parentScale = relativeTo.localScale;
+            if (parentScale.x == 0) parentScale.x = 1;
+            if (parentScale.y == 0) parentScale.y = 1;
+            if (parentScale.z == 0) parentScale.z = 1;
             transform.localScale = new Vector3(globalScale.x / parentScale.x, globalScale.y / parentScale.y, globalScale.z / parentScale.z);
         }
     }
