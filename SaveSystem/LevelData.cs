@@ -600,6 +600,7 @@ namespace FS_LevelEditor.SaveSystem
                 { "HasJetpack", true },
                 { "DeathYLimit", 100f },
                 { "Skybox", 0 },
+                { "Music", 4 },
                 { "Upgrades", GetDefaultUpgradeSaveData() }
             };
         }

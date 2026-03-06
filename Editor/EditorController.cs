@@ -160,6 +160,8 @@ namespace FS_LevelEditor.Editor
         // ----------------------------
         public Dictionary<string, object> globalProperties = LevelData.GetDefaultGlobalProperties();
         List<Material> skyboxes = new List<Material>();
+        List<AudioClip> tracks = new();
+        Il2CppAssetBundle editorAssetBundle; // Keep reference to prevent GC and allow FMOD to access audio data
 
         void Awake()
         {
@@ -283,7 +285,33 @@ namespace FS_LevelEditor.Editor
             }
             #endregion
 
-            bundle.Unload(false);
+            #region Setup OST
+            string[] trackNames = new[]
+            {
+                "Level1",
+                "Level2_old",
+                "Level2",
+                "Level3",
+                "Level4",
+                "Level5_Calm_Loop",
+                "Fractaloween_Soundtrack",
+                "Fractalentine_Soundtrack",
+                "White Trees",
+                "SR3d"
+            };
+            foreach (var trackName in trackNames)
+            {
+                AudioClip track = bundle.Load<AudioClip>(trackName);
+                if (track != null)
+                {
+                    track.hideFlags = HideFlags.DontUnloadUnusedAsset;
+                    tracks.Add(track);
+                }
+            }
+            #endregion
+
+            // Store bundle reference - don't unload it because FMOD needs access to FSB data for audio clips
+            editorAssetBundle = bundle;
         }
         public GameObject LoadOtherObjectInBundle(string objectName)
         {
@@ -2912,6 +2940,13 @@ namespace FS_LevelEditor.Editor
         {
             MenuController.isInLevelEditor = false;
             Destroy(editorObjectsRootFromBundle);
+
+            // Unload the asset bundle when the editor is destroyed
+            if (editorAssetBundle != null)
+            {
+                editorAssetBundle.Unload(true);
+                editorAssetBundle = null;
+            }
         }
 
         #region Current Editor State Methods
@@ -3133,6 +3168,12 @@ namespace FS_LevelEditor.Editor
         public void SetupSkybox(int skyboxID)
         {
             RenderSettings.skybox = skyboxes[skyboxID];
+        }
+        public void SetupLevelMusic(int musicID)
+        {
+            MusicManager.Instance.SetCurrentLevelNormalMusic(tracks[musicID]);
+            MusicManager.Instance.PauseMenuMusic();
+            MusicManager.Instance.m_context = MusicManager.MusicContext.NORMAL;
         }
 
         void ToggleLighting()
