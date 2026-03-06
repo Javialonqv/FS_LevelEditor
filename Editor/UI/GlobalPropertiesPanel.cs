@@ -22,6 +22,7 @@ namespace FS_LevelEditor.Editor.UI
 		UICustomInputField deathYLimitField;
 		UIButtonAsToggle visualizeDeathYLimitButton;
 		UIDropdownPatcher skyboxDropdown;
+		UIDropdownPatcher musicDropdown;
 
 		public static void Create(Transform parent)
 		{
@@ -45,6 +46,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateHasJetpackToggle();
 			CreateDeathYLimitField();
 			CreateLevelSkyboxDropdown();
+			CreateLevelMusicDropdown();
 			CreateUpgradesButton();
 		}
 		void Start()
@@ -110,29 +112,47 @@ namespace FS_LevelEditor.Editor.UI
 			visualizeDeathYLimitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
 			visualizeDeathYLimitButton.onClick += OnVisualizeDeathYLimitToggleClick;
 		}
-		void CreateLevelSkyboxDropdown()
-		{
-			skyboxDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 160f), Vector3.one * 0.8f);
-			skyboxDropdown.gameObject.name = "SkyboxDropdown";
-			skyboxDropdown.SetTitle("Skybox");
-			skyboxDropdown.AddOption("Chapter 1", false);
-			skyboxDropdown.AddOption("Chapter 2", false);
-			skyboxDropdown.AddOption("Chapter 3 & 4", false);
-			skyboxDropdown.AddOption("Menu", true);
-			skyboxDropdown.AddOption("Chapter 1 (0.53)", false);
-			skyboxDropdown.AddOption("Chapter 2 (0.53)", false);
-			skyboxDropdown.AddOption("Chapter 3 (0.53)", false);
-			skyboxDropdown.AddOption("Chapter 4 & Menu (0.53)", false);
-			skyboxDropdown.AddOption("Chapter 1 (PE)", false);
-			skyboxDropdown.AddOption("Chapter 2 (PE)", false);
-			skyboxDropdown.AddOption("Chapter 3 (PE)", false);
-			skyboxDropdown.AddOption("Chapter 4 (PE)", false);
-			skyboxDropdown.AddOption("Chapter 5 (PE)", false);
-			skyboxDropdown.AddOnChangeOption((id) => SetGlobalProperty("Skybox", id));
-		}
+        void CreateLevelSkyboxDropdown()
+        {
+            skyboxDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 160f), Vector3.one * 0.8f);
+            skyboxDropdown.gameObject.name = "SkyboxDropdown";
+            skyboxDropdown.SetTitle("Skybox");
+            skyboxDropdown.AddOption("Chapter 1", false);
+            skyboxDropdown.AddOption("Chapter 2", false);
+            skyboxDropdown.AddOption("Chapter 3 & 4", false);
+            skyboxDropdown.AddOption("Menu", true);
+            skyboxDropdown.AddOption("Chapter 1 (0.53)", false);
+            skyboxDropdown.AddOption("Chapter 2 (0.53)", false);
+            skyboxDropdown.AddOption("Chapter 3 (0.53)", false);
+            skyboxDropdown.AddOption("Chapter 4 & Menu (0.53)", false);
+            skyboxDropdown.AddOption("Chapter 1 (PE)", false);
+            skyboxDropdown.AddOption("Chapter 2 (PE)", false);
+            skyboxDropdown.AddOption("Chapter 3 (PE)", false);
+            skyboxDropdown.AddOption("Chapter 4 (PE)", false);
+            skyboxDropdown.AddOption("Chapter 5 (PE)", false);
+            skyboxDropdown.AddOnChangeOption((id) => SetGlobalProperty("Skybox", id));
+        }
+        void CreateLevelMusicDropdown()
+        {
+            musicDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 60f), Vector3.one * 0.8f);
+            musicDropdown.gameObject.name = "MusicDropdown";
+            musicDropdown.SetTitle("Music");
+            musicDropdown.AddOption("Chapter 1 PE", false);
+            musicDropdown.AddOption("Chapter 2 OLD", false);
+            musicDropdown.AddOption("Chapter 2", false);
+            musicDropdown.AddOption("Chapter 3", false);
+            musicDropdown.AddOption("Chapter 4", true);
+            musicDropdown.AddOption("Chapter 5 PE", false);
+            musicDropdown.AddOption("Fractaloween", false);
+            musicDropdown.AddOption("Fractalentine", false);
+            musicDropdown.AddOption("FractalXMAS", false);
+            musicDropdown.AddOption("Space Run 3D", false);
+
+            musicDropdown.AddOnChangeOption((id) => SetGlobalProperty("Music", id));
+        }
         void CreateUpgradesButton()
         {
-            UIButtonPatcher upgradesButton = NGUI_Utils.CreateButton(transform, new Vector3(0f, 50f), new Vector3Int(300, 50, 0), "Player Upgrades");
+            UIButtonPatcher upgradesButton = NGUI_Utils.CreateButton(transform, new Vector3(0f, -8f), new Vector3Int(300, 50, 0), "Player Upgrades");
             upgradesButton.name = "UpgradesButton";
             upgradesButton.buttonSprite.depth = 1;
             upgradesButton.buttonLabel.fontSize = 28;
@@ -160,7 +180,8 @@ namespace FS_LevelEditor.Editor.UI
 			hasJetpackToggle.Set((bool)GetGlobalProperty("HasJetpack"), false, true);
 			deathYLimitField.SetText((float)GetGlobalProperty("DeathYLimit"), false);
 			skyboxDropdown.SelectOption((int)GetGlobalProperty("Skybox"));
-		}
+            musicDropdown.SelectOption((int)GetGlobalProperty("Music"));
+        }
 
 		public void SetGlobalPropertyWithInput(string propertyName, UICustomInputField inputField)
 		{
@@ -182,6 +203,10 @@ namespace FS_LevelEditor.Editor.UI
 					if (name == "Skybox")
 					{
 						EditorController.Instance.SetupSkybox((int)value);
+					}
+					else if (name == "Music")
+					{
+						EditorController.Instance.SetupLevelMusic((int)value);
 					}
 				}
 			}

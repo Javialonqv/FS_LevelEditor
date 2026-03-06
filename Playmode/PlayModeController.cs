@@ -32,6 +32,7 @@ namespace FS_LevelEditor.Playmode
 		List<Dictionary<LE_Object.ObjectType, GameObject>> allCategoriesObjectsSorted = new();
 		GameObject[] otherObjectsFromBundle;
 		public GameObject levelObjectsParent;
+		List<AudioClip> tracks = new();
 
 		public Dictionary<string, object> globalProperties = LevelData.GetDefaultGlobalProperties();
 
@@ -103,6 +104,31 @@ namespace FS_LevelEditor.Playmode
 			}
 
 			otherObjectsFromBundle = LEBundle.Load<GameObject>("OtherObjects").GetChilds();
+
+			#region Setup OST
+			string[] trackNames = new[]
+			{
+				"Level1",
+				"Level2_old",
+				"Level2",
+				"Level3",
+				"Level4",
+				"Level5_Calm_Loop",
+				"Fractaloween_Soundtrack",
+				"Fractalentine_Soundtrack",
+				"White Trees",
+				"SR3d"
+			};
+			foreach (var trackName in trackNames)
+			{
+				AudioClip track = LEBundle.Load<AudioClip>(trackName);
+				if (track != null)
+				{
+					track.hideFlags = HideFlags.DontUnloadUnusedAsset;
+					tracks.Add(track);
+				}
+			}
+			#endregion
 		}
 		public GameObject LoadOtherObjectInBundle(string objectName)
 		{
@@ -119,7 +145,8 @@ namespace FS_LevelEditor.Playmode
 		}
 		public void UnloadBundle()
 		{
-			LEBundle.Unload(false);
+			// Don't unload the bundle - FMOD needs access to FSB data for audio clips
+			// The bundle will be unloaded in OnDestroy
 		}
 
 		void Start()
@@ -127,11 +154,10 @@ namespace FS_LevelEditor.Playmode
 			TeleportPlayer();
 			ConfigureGlobalProperties();
 			MelonCoroutines.Start(SetupEnvCam());
-			UnloadBundle();
 
 			Utils.Invoke(() => ParticlesPatch.GetObjectsWithParticlesReferences(), 0.1f); // Delay the invoke, so objects are initialized correctly first.
 			SetSpeedrunTimerFont();
-        }
+		}
 
 		void CreateBackToLEButton()
 		{
@@ -239,6 +265,7 @@ namespace FS_LevelEditor.Playmode
 			Controls.Instance.hasJetPack = hasJetpackGlobal;
 
 			SetupLevelSkybox((int)GetGlobalProperty("Skybox"));
+			SetupLevelMusic((int)GetGlobalProperty("Music"));
 
 			ApplyUpgrades((List<UpgradeSaveData>)GetGlobalProperty("Upgrades"), hasJetpackGlobal);
 		}
@@ -266,8 +293,17 @@ namespace FS_LevelEditor.Playmode
 			{
 				skyboxMat.shader = Shader.Find("Skybox/6 Sided 3 Axis Rotation");
 			}
-			
+
 			RenderSettings.skybox = skyboxMat;
+		}
+		void SetupLevelMusic(int musicID)
+		{
+			if (musicID >= 0 && musicID < tracks.Count)
+			{
+				MusicManager.Instance.SetCurrentLevelNormalMusic(tracks[musicID]);
+				MusicManager.Instance.PauseMenuMusic();
+				MusicManager.Instance.m_context = MusicManager.MusicContext.NORMAL;
+			}
 		}
 
 		void ResetAllUpgradeEffects(bool allowJetpack)
@@ -471,19 +507,26 @@ namespace FS_LevelEditor.Playmode
 			// again...
 			Destroy(backToLEButton);
 
-            if (levelObjectsParent != null)
-            {
-                Destroy(levelObjectsParent);
-            }
+			if (levelObjectsParent != null)
+			{
+				Destroy(levelObjectsParent);
+			}
 
-            LE_Object.ResetStaticVariablesInObjects();
+			LE_Object.ResetStaticVariablesInObjects();
 
 			PlaymodePauseMenuPatcher.DestroyPatcher();
 			UpgradePatches.Unpatch();
 			CleanupAllObjectives();
 
-            Destroy(editorObjectsRootFromBundle);
-        }
+			Destroy(editorObjectsRootFromBundle);
+
+			// Unload the asset bundle when playmode is destroyed
+			if (LEBundle != null)
+			{
+				LEBundle.Unload(true);
+				LEBundle = null;
+			}
+		}
 
 		// Objectives management methods
 		public void CleanupAllObjectives()
