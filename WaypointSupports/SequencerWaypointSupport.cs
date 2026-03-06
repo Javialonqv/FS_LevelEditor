@@ -19,6 +19,7 @@ namespace FS_LevelEditor.WaypointSupports
         public override Color editorLineColor => Color.yellow;
         public override GameObject waypointTemplate => Core.LoadOtherObjectInBundle("Sequence Step");
         public override bool showWaypointsOnPlaymode => true;
+        public override bool alwaysShowOnEditor => true;
 
         public override void SetupForCustomSystem()
         {

@@ -68,6 +68,7 @@ namespace FS_LevelEditor
         public virtual GameObject waypointTemplate => null; // If null (by default), it'll create a copy of the main object.
         public virtual int? maxWaypointsCount => null;
         public virtual bool showWaypointsOnPlaymode => false;
+        public virtual bool alwaysShowOnEditor => false; // This will also make the waypoints opaque (non-transparent).
 
         bool playerIsAbove = false;
         public static WaypointSupport objectWithPlayerAbove = null;
@@ -221,6 +222,11 @@ namespace FS_LevelEditor
                 {
                     StartObjectMovement();
                 }
+            }
+
+            if (scene == LEScene.Editor && alwaysShowOnEditor)
+            {
+                ShowWaypoints(true);
             }
         }
         public void StartObjectMovement()
@@ -380,6 +386,8 @@ namespace FS_LevelEditor
 
         public void ShowWaypoints(bool show)
         {
+            if (alwaysShowOnEditor && !show) show = true;
+
             if (show)
             {
                 waypointsParent.gameObject.SetActive(true);
@@ -391,10 +399,13 @@ namespace FS_LevelEditor
                 if (editorLine) editorLine.gameObject.SetActive(false); // Technically this can only be called when we're on the editor, but just in case.
             }
 
-            // Set the transparent materials in the waypoints just in case.
-            foreach (var waypoint in spawnedWaypoints)
+            if (!alwaysShowOnEditor)
             {
-                waypoint.gameObject.SetTransparentMaterials();
+                // Set the transparent materials in the waypoints just in case.
+                foreach (var waypoint in spawnedWaypoints)
+                {
+                    waypoint.gameObject.SetTransparentMaterials();
+                }
             }
         }
         public LE_Waypoint AddWaypoint(bool fromSave = false, bool selectIfNotFromSave = true)
@@ -412,7 +423,7 @@ namespace FS_LevelEditor
 
                 waypoint = Instantiate(template, waypointsParent);
                 waypoint.SetActive(true); // Ensure the waypoint is enabled, since the template obj may not.
-                waypoint.SetTransparentMaterials();
+                if (!alwaysShowOnEditor) waypoint.SetTransparentMaterials();
                 if(targetObject.objectType == LE_Object.ObjectType.CEILING_LIGHT || targetObject.objectType == LE_Object.ObjectType.POINT_LIGHT 
                     || targetObject.objectType == LE_Object.ObjectType.DIRECTIONAL_LIGHT)
                 {
