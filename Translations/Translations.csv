@@ -56,6 +56,8 @@ object.HEAL_AREA,Heal Area,Area de Curación,Лікувальна зона
 object.RGB_WALL,Color Wall,Pared de Color,Кольорова стіна
 object.MINE,Mine,Mina,Міна
 object.DEATH_TRIGGER_WAYPOINT,Respawn Point,Punto de Reaparición,
+object.SEQUENCE,Sequencer,Secuenciador,
+object.SEQUENCE_WAYPOINT,Sequencer Step,Etapa del Secuenciador,
 Player,Player,Jugador,Гравець
 Jetpack,Jetpack,Mochila Propulsora,Джетпак
 Taser,Taser,Taser,Тазер
@@ -184,3 +186,4 @@ BreakWithDodge,Break With Dodge,Romper Al Evadir,
 LeaveOnIncorrect,Leave On Incorrect,Salir Al Fallar,
 Alternative,Alternative,Alternativo,
 AlternativeComb,Alternative Keycode,Código Alternativo,
+AddSequencerWaypoint,+ Add Sequencer Step,+ Añadir Etapa del Secuenciador,

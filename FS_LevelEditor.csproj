@@ -58,7 +58,9 @@
 		<Compile Include="ExternalSpriteLoader.cs" />
 		<Compile Include="LE_Objects\LE_Heal_Area.cs" />
 		<Compile Include="LE_Objects\LE_Rgb_Wall.cs" />
+		<Compile Include="LE_Objects\LE_Sequence.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Death_Trigger_Waypoint.cs" />
+		<Compile Include="LE_Objects\Waypoints\LE_Sequence_Waypoint.cs" />
 		<Compile Include="Playmode\AndLogicManager.cs" />
 		<Compile Include="Playmode\Patches\ParticlesPatch.cs" />
 		<Compile Include="UI_Related\UIVector3Fields.cs" />
@@ -147,6 +149,7 @@
 		<Compile Include="WaypointSupports\DeathTriggerWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\MovingPlatformWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\SawWaypointSupport.cs" />
+		<Compile Include="WaypointSupports\SequencerWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\WaypointRotationApplier.cs" />
 	</ItemGroup>
 

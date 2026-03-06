@@ -67,6 +67,7 @@ namespace FS_LevelEditor
         public virtual Color editorLineColor => Color.white;
         public virtual GameObject waypointTemplate => null; // If null (by default), it'll create a copy of the main object.
         public virtual int? maxWaypointsCount => null;
+        public virtual bool showWaypointsOnPlaymode => false;
 
         bool playerIsAbove = false;
         public static WaypointSupport objectWithPlayerAbove = null;
@@ -428,10 +429,20 @@ namespace FS_LevelEditor
                     Destroy(rigidBody);
                 }
             }
-            else // We don't need any meshes or shit in playmode, just create an empty object.
+            else
             {
-                waypoint = new GameObject("Waypoint"); // AddComponentToObject will overwrite the name, so fuck it.
-                waypoint.transform.parent = waypointsParent;
+                if (showWaypointsOnPlaymode)
+                {
+                    GameObject template = waypointTemplate ? waypointTemplate : PlayModeController.Instance.allCategoriesObjects[targetObject.objectType.Value];
+
+                    waypoint = Instantiate(template, waypointsParent);
+                    waypoint.SetActive(true); // Ensure the waypoint is enabled, since the template obj may not.
+                }
+                else // We don't need any meshes or shit in playmode, just create an empty object.
+                {
+                    waypoint = new GameObject("Waypoint"); // AddComponentToObject will overwrite the name, so fuck it.
+                    waypoint.transform.parent = waypointsParent;
+                }
             }
 
             waypoint.transform.localPosition = Vector3.zero;

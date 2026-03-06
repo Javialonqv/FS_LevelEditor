@@ -28,7 +28,7 @@ namespace FS_LevelEditor.Playmode
 
 		GameObject editorObjectsRootFromBundle;
 		List<string> categories = new List<string>();
-		Dictionary<LE_Object.ObjectType, GameObject> allCategoriesObjects = new();
+		public Dictionary<LE_Object.ObjectType, GameObject> allCategoriesObjects = new();
 		List<Dictionary<LE_Object.ObjectType, GameObject>> allCategoriesObjectsSorted = new();
 		GameObject[] otherObjectsFromBundle;
 		public GameObject levelObjectsParent;

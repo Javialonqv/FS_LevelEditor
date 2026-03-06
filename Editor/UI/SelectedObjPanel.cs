@@ -86,6 +86,11 @@ namespace FS_LevelEditor.Editor.UI
 			{ "NONE", Color.black },
 			{ "TRAVEL_BACK", Color.red },
 			{ "LOOP", Color.blue },
+			{ "BLUE", Color.blue },
+			{ "ORANGE", new Color(1f, 0.67f, 0.1f) },
+			{ "YELLOW", new Color(0.8f, 0.8f, 0f) },
+			{ "WHITE", new Color(0.94f, 0.95f, 0.96f) },
+			{ "MAGENTA", new Color(1f, 0f, 1f) },
 		};
 		static readonly string[] bannedPropertiesFromUI = new string[]
 		{
@@ -143,6 +148,9 @@ namespace FS_LevelEditor.Editor.UI
 			{ LE_Object.ObjectType.MOVING_PLATFORM_WAYPOINT, "AddMovingPlatformWaypoint" },
 
 			{ LE_Object.ObjectType.DEATH_TRIGGER, "AddDeathTriggerWaypoint" },
+
+			{ LE_Object.ObjectType.SEQUENCE, "AddSequencerWaypoint" },
+			{ LE_Object.ObjectType.SEQUENCE_WAYPOINT, "AddSequencerWaypoint" }
 		};
         #endregion
 

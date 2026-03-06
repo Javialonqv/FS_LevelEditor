@@ -81,7 +81,9 @@ namespace FS_LevelEditor
             MINE,
             RGB_WALL,
             HEAL_AREA,
-            DEATH_TRIGGER_WAYPOINT // Even tho it's just one (the respawn point), call it waypoint so it doesn't break IsWaypoint() and such.
+            DEATH_TRIGGER_WAYPOINT, // Even tho it's just one (the respawn point), call it waypoint so it doesn't break IsWaypoint() and such.
+            SEQUENCE,
+            SEQUENCE_WAYPOINT
         }
 
         // This is used to specify the objects that use the same snap triggers.
@@ -128,7 +130,8 @@ namespace FS_LevelEditor
         {
             { ObjectType.SAW, typeof(SawWaypointSupport) },
             { ObjectType.MOVING_PLATFORM, typeof(MovingPlatformWaypointSupport) },
-            { ObjectType.DEATH_TRIGGER, typeof(DeathTriggerWaypointSupport) }
+            { ObjectType.DEATH_TRIGGER, typeof(DeathTriggerWaypointSupport) },
+            { ObjectType.SEQUENCE, typeof(SequencerWaypointSupport) }
         };
         public readonly static Dictionary<ObjectType?, Vector3> defaultScalesForObjects = new Dictionary<ObjectType?, Vector3>()
         {
@@ -235,6 +238,8 @@ namespace FS_LevelEditor
 		public static InterrupteurController t_keycode;
 		public static BridgeController t_bridge;
         public static PowerCoreBlocController t_powerCoreBloc;
+        public static SequenceSwitchController t_sequenceController;
+        public static BlocSwitchScript t_blocSwitchScript;
 
         public static void GetTemplatesReferences()
 		{
@@ -258,6 +263,8 @@ namespace FS_LevelEditor
 			t_keycode = Utils.FindObjectOfType<InterrupteurController>(x => x.CompareTag("Keypad"));
 			t_bridge = FindObjectOfType<BridgeController>();
             t_powerCoreBloc = FindObjectOfType<PowerCoreBlocController>();
+            t_sequenceController = FindObjectOfType<SequenceSwitchController>();
+            t_blocSwitchScript = Utils.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer != null);
         }
 		#endregion
 
