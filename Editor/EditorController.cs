@@ -2971,7 +2971,14 @@ namespace FS_LevelEditor.Editor
             // Unload the asset bundle when the editor is destroyed
             if (editorAssetBundle != null)
             {
-                editorAssetBundle.Unload(true);
+                try
+                {
+                    editorAssetBundle.Unload(true);
+                }
+                catch (System.Runtime.InteropServices.SEHException)
+                {
+                    // Asset bundle may have already been garbage collected by IL2CPP runtime
+                }
                 editorAssetBundle = null;
             }
         }

@@ -19,7 +19,9 @@ namespace FS_LevelEditor.Editor.UI
 		UILabel titleLabel;
 		UITogglePatcher hasTaserToggle;
 		UITogglePatcher hasJetpackToggle;
-		UICustomInputField deathYLimitField;
+        UITogglePatcher hasFlashlight;
+        UITogglePatcher debugAllowed;
+        UICustomInputField deathYLimitField;
 		UIButtonAsToggle visualizeDeathYLimitButton;
 		UIDropdownPatcher skyboxDropdown;
 		UIDropdownPatcher musicDropdown;
@@ -44,6 +46,8 @@ namespace FS_LevelEditor.Editor.UI
 			CreateTitle();
 			CreateHasTaserToggle();
 			CreateHasJetpackToggle();
+			CreateHasFlashlightToggle();
+			CreateAllowDebugToggle();
 			CreateDeathYLimitField();
 			CreateLevelSkyboxDropdown();
 			CreateLevelMusicDropdown();
@@ -93,20 +97,32 @@ namespace FS_LevelEditor.Editor.UI
 			hasJetpackToggle.gameObject.name = "HasJetpackToggle";
 			hasJetpackToggle.onClick += (state) => SetGlobalProperty("HasJetpack", hasJetpackToggle.isChecked);
 		}
-		void CreateDeathYLimitField()
+        void CreateHasFlashlightToggle()
+        {
+            hasFlashlight = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 270f), new Vector3Int(200, 42, 1), "HasFlashlight");
+            hasFlashlight.gameObject.name = "hasFlashlightToggle";
+            hasFlashlight.onClick += (state) => SetGlobalProperty("HasFlashlight", hasFlashlight.isChecked);
+        }
+        void CreateAllowDebugToggle()
+        {
+            debugAllowed = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 270f), new Vector3Int(200, 42, 1), "DebugAllowed");
+            debugAllowed.gameObject.name = "debugAllowedToggle";
+            debugAllowed.onClick += (state) => SetGlobalProperty("DebugAllowed", debugAllowed.isChecked);
+        }
+        void CreateDeathYLimitField()
 		{
-			UILabel deathYLimitLabel = NGUI_Utils.CreateLabel(transform, new Vector3(-300, 270), new Vector3Int(350, 50, 0), "DeathYLimit");
+			UILabel deathYLimitLabel = NGUI_Utils.CreateLabel(transform, new Vector3(-300, 160), new Vector3Int(350, 50, 0), "DeathYLimit");
 			deathYLimitLabel.name = "DeathYLimitLabel";
 			deathYLimitLabel.depth = 1;
 			deathYLimitLabel.fontSize = 30;
 
-			deathYLimitField = NGUI_Utils.CreateInputField(transform, new Vector3(150f, 270f, 0f),
+			deathYLimitField = NGUI_Utils.CreateInputField(transform, new Vector3(150f, 160f, 0f),
 				new Vector3Int(200, 50, 0), 30, "100", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
 			deathYLimitField.name = "DeathYLimit";
 			deathYLimitField.onChange += () => SetGlobalPropertyWithInput("DeathYLimit", deathYLimitField);
 
 			visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(transform,
-				new Vector3(285f, 270f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);
+				new Vector3(285f, 160f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);
 			visualizeDeathYLimitButton.name = "VisualizeDeathYLimitBtnToggle";
 			visualizeDeathYLimitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
 			visualizeDeathYLimitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
@@ -114,7 +130,7 @@ namespace FS_LevelEditor.Editor.UI
 		}
         void CreateLevelSkyboxDropdown()
         {
-            skyboxDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 160f), Vector3.one * 0.8f);
+            skyboxDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 60f), Vector3.one * 0.8f);
             skyboxDropdown.gameObject.name = "SkyboxDropdown";
             skyboxDropdown.SetTitle("Skybox");
             skyboxDropdown.AddOption("Chapter 1", false);
@@ -134,7 +150,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateLevelMusicDropdown()
         {
-            musicDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 60f), Vector3.one * 0.8f);
+            musicDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, -40f), Vector3.one * 0.8f);
             musicDropdown.gameObject.name = "MusicDropdown";
             musicDropdown.SetTitle("Music");
             musicDropdown.AddOption("Chapter 1 PE", false);
@@ -152,7 +168,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateUpgradesButton()
         {
-            UIButtonPatcher upgradesButton = NGUI_Utils.CreateButton(transform, new Vector3(0f, -8f), new Vector3Int(300, 50, 0), "Player Upgrades");
+            UIButtonPatcher upgradesButton = NGUI_Utils.CreateButton(transform, new Vector3(0f, -110f), new Vector3Int(300, 50, 0), "Player Upgrades");
             upgradesButton.name = "UpgradesButton";
             upgradesButton.buttonSprite.depth = 1;
             upgradesButton.buttonLabel.fontSize = 28;
@@ -178,7 +194,9 @@ namespace FS_LevelEditor.Editor.UI
 
 			hasTaserToggle.Set((bool)GetGlobalProperty("HasTaser"), false, true);
 			hasJetpackToggle.Set((bool)GetGlobalProperty("HasJetpack"), false, true);
-			deathYLimitField.SetText((float)GetGlobalProperty("DeathYLimit"), false);
+            hasFlashlight.Set((bool)GetGlobalProperty("HasFlashlight"), false, true);
+            debugAllowed.Set((bool)GetGlobalProperty("DebugAllowed"), false, true);
+            deathYLimitField.SetText((float)GetGlobalProperty("DeathYLimit"), false);
 			skyboxDropdown.SelectOption((int)GetGlobalProperty("Skybox"));
             musicDropdown.SelectOption((int)GetGlobalProperty("Music"));
         }
