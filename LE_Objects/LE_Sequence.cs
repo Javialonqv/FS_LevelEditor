@@ -17,6 +17,7 @@ namespace FS_LevelEditor
     public class LE_Sequence : LE_Object
     {
         public SequenceSwitchController sequence;
+        public MeshRenderer renderer;
 
         public static Dictionary<string, object> GetDefaultProperties()
         {
@@ -26,6 +27,11 @@ namespace FS_LevelEditor
                 { "waypoints", new List<WaypointData>() }, // In order to not fuck up any waypoints related code in LE, just call this "waypoints".
                 { "OnSuccess", new List<LE_Event>() }
             };
+        }
+
+        void Awake()
+        {
+            renderer = contentObject.GetChildAt("SequenceSwitch/Mesh").GetComponent<MeshRenderer>();
         }
 
         public override void InitComponent()
@@ -157,12 +163,14 @@ namespace FS_LevelEditor
                 {
                     properties["Color"] = type;
                     UpdateLinkedScreen();
+                    UpdateBlocColor();
                     return true;
                 }
                 else if (value is int typeInt)
                 {
                     properties["Color"] = (SequenceSwitchController.SwitchType)typeInt;
                     UpdateLinkedScreen();
+                    UpdateBlocColor();
                     return true;
                 }
             }
@@ -220,6 +228,41 @@ namespace FS_LevelEditor
             if (otherObjThisIsLinkedTo)
             {
                 ((LE_Sequence_Screen)otherObjThisIsLinkedTo.mainObject).UpdateScreen();
+            }
+        }
+        public void UpdateBlocColor()
+        {
+            if (!EditorController.Instance) return;
+
+            SequenceSwitchController.SwitchType color = GetProperty<SequenceSwitchController.SwitchType>("Color");
+            var material = EditorController.Instance.GetMaterial($"NewProps_v1_Light_{color}", true);
+
+            var sharedMaterials = renderer.sharedMaterials;
+            sharedMaterials[1] = material;
+            renderer.sharedMaterials = sharedMaterials;
+        }
+
+        // Skip the material which contains the color of the bloc.
+        public override void SetObjectColor(LEObjectContext context)
+        {
+            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
+            {
+                // Skip waypoints
+                if (canHaveWaypoints)
+                {
+                    if (waypointSupport && renderer.transform.IsChildOf(waypointSupport.waypointsParent)) continue;
+                    if (customWaypointSupport && renderer.transform.IsChildOf(customWaypointSupport.waypointsParent)) continue;
+                }
+
+                foreach (var material in renderer.materials)
+                {
+                    if (!material.HasProperty("_Color")) continue;
+                    if (material.name.Contains("NewProps_v1_Light")) continue;
+
+                    Color toSet = LE_Object.GetObjectColorForObject(objectType.Value, context);
+                    toSet.a = material.color.a;
+                    material.color = toSet;
+                }
             }
         }
     }
