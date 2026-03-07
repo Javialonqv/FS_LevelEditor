@@ -1,4 +1,6 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.SingleObjectLinks;
+using Il2Cpp;
 using Il2CppTMPro;
 using System;
 using System.Collections.Generic;
@@ -15,6 +17,7 @@ namespace FS_LevelEditor
     public class LE_Sequence : LE_Object
     {
         public SequenceSwitchController sequence;
+        public MeshRenderer renderer;
 
         public static Dictionary<string, object> GetDefaultProperties()
         {
@@ -26,17 +29,26 @@ namespace FS_LevelEditor
             };
         }
 
+        void Awake()
+        {
+            renderer = contentObject.GetChildAt("SequenceSwitch/Mesh").GetComponent<MeshRenderer>();
+        }
+
         public override void InitComponent()
         {
-            gameObject.SetActive(false);
+            contentObject.SetActive(false);
 
             LEDIndicator ledIndicator = contentObject.GetChildAt("SequenceSwitchController/LEDIndicatorPrefab").AddComponent<LEDIndicator>();
+            ledIndicator.m_offMaterial = t_sequenceController.m_LEDIndicators[0].m_offMaterial;
+            // On material is already set when InitializeLEDIndicators() is called.
             ledIndicator.m_renderer = ledIndicator.gameObject.GetChild("Mesh").GetComponent<MeshRenderer>();
             ledIndicator.m_textMesh = ledIndicator.gameObject.GetChild("LEDTextMesh").GetComponent<TextMeshPro>();
+            // Fucking mesh, assigning it from the Unity proj doesn't work... do it from here.
+            ledIndicator.m_renderer.GetComponent<MeshFilter>().mesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
 
             sequence = contentObject.GetChild("SequenceSwitchController").AddComponent<SequenceSwitchController>();
-            sequence.invertDisplayOrder = true;
-            sequence.useNumbers = true;
+            sequence.invertDisplayOrder = false;
+            sequence.useNumbers = false;
             sequence.requiredSequence = new Il2CppSystem.Collections.Generic.List<SequenceSwitchController.SwitchType>();
             sequence.requiredSequence.Add(GetProperty<SequenceSwitchController.SwitchType>("Color"));
             sequence.resetOnMistake = true;
@@ -51,8 +63,17 @@ namespace FS_LevelEditor
             sequence.resetSound = t_sequenceController.resetSound;
             sequence.stepSuccessSound = t_sequenceController.stepSuccessSound;
             sequence.sequenceSuccessSound = t_sequenceController.sequenceSuccessSound;
-            sequence.screenObject = sequence.gameObject.GetChild("ScreenObject");
-            sequence.LEDHolder = sequence.gameObject.GetChild("LEDHolder").transform;
+            if (otherObjThisIsLinkedTo)
+            {
+                LE_Sequence_Screen screen = otherObjThisIsLinkedTo.mainObject as LE_Sequence_Screen;
+                sequence.screenObject = screen.screenObject;
+                sequence.LEDHolder = screen.LEDHolder.transform;
+            }
+            else
+            {
+                sequence.screenObject = sequence.gameObject.GetChild("ScreenObject");
+                sequence.LEDHolder = sequence.gameObject.GetChild("LEDHolder").transform;
+            }
             sequence.LEDindicatorPrefab = ledIndicator.gameObject;
             sequence.indicatorsInitialized = true;
             sequence.m_LEDIndicators = new Il2CppSystem.Collections.Generic.List<LEDIndicator>();
@@ -121,12 +142,17 @@ namespace FS_LevelEditor
 
             ConfigureEvents();
 
-            gameObject.SetActive(true);
+            contentObject.SetActive(true);
         }
         public void FinishedSettingUpSteps()
         {
             sequence.indicatorsInitialized = false;
             sequence.InitializeLEDIndicators();
+
+            foreach (var led in sequence.m_LEDIndicators)
+            {
+                led.gameObject.SetActive(true); // They're disabled by default for some reason.
+            }
         }
 
         public override bool SetProperty(string name, object value)
@@ -136,11 +162,15 @@ namespace FS_LevelEditor
                 if (value is SequenceSwitchController.SwitchType type)
                 {
                     properties["Color"] = type;
+                    UpdateLinkedScreen();
+                    UpdateBlocColor();
                     return true;
                 }
                 else if (value is int typeInt)
                 {
                     properties["Color"] = (SequenceSwitchController.SwitchType)typeInt;
+                    UpdateLinkedScreen();
+                    UpdateBlocColor();
                     return true;
                 }
             }
@@ -167,6 +197,7 @@ namespace FS_LevelEditor
             if (actionName == "AddWaypoint")
             {
                 customWaypointSupport.AddWaypoint();
+                UpdateLinkedScreen();
                 return true;
             }
 
@@ -188,6 +219,51 @@ namespace FS_LevelEditor
             {
                 "OnSuccess"
             };
+        }
+
+        public void UpdateLinkedScreen()
+        {
+            if (!EditorController.Instance) return;
+
+            if (otherObjThisIsLinkedTo)
+            {
+                ((LE_Sequence_Screen)otherObjThisIsLinkedTo.mainObject).UpdateScreen();
+            }
+        }
+        public void UpdateBlocColor()
+        {
+            if (!EditorController.Instance) return;
+
+            SequenceSwitchController.SwitchType color = GetProperty<SequenceSwitchController.SwitchType>("Color");
+            var material = EditorController.Instance.GetMaterial($"NewProps_v1_Light_{color}", true);
+
+            var sharedMaterials = renderer.sharedMaterials;
+            sharedMaterials[1] = material;
+            renderer.sharedMaterials = sharedMaterials;
+        }
+
+        // Skip the material which contains the color of the bloc.
+        public override void SetObjectColor(LEObjectContext context)
+        {
+            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
+            {
+                // Skip waypoints
+                if (canHaveWaypoints)
+                {
+                    if (waypointSupport && renderer.transform.IsChildOf(waypointSupport.waypointsParent)) continue;
+                    if (customWaypointSupport && renderer.transform.IsChildOf(customWaypointSupport.waypointsParent)) continue;
+                }
+
+                foreach (var material in renderer.materials)
+                {
+                    if (!material.HasProperty("_Color")) continue;
+                    if (material.name.Contains("NewProps_v1_Light")) continue;
+
+                    Color toSet = LE_Object.GetObjectColorForObject(objectType.Value, context);
+                    toSet.a = material.color.a;
+                    material.color = toSet;
+                }
+            }
         }
     }
 }

@@ -84,7 +84,6 @@ namespace FS_LevelEditor.Playmode
 				categories.Add(child.name);
 			}
 
-
 			foreach (var categoryObj in editorObjectsRootFromBundle.GetChilds())
 			{
 				Dictionary<LE_Object.ObjectType, GameObject> categoryObjects = new();

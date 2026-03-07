@@ -59,11 +59,14 @@
 		<Compile Include="LE_Objects\LE_Heal_Area.cs" />
 		<Compile Include="LE_Objects\LE_Rgb_Wall.cs" />
 		<Compile Include="LE_Objects\LE_Sequence.cs" />
+		<Compile Include="LE_Objects\LE_Sequence_Screen.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Death_Trigger_Waypoint.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Sequence_Waypoint.cs" />
 		<Compile Include="Playmode\AndLogicManager.cs" />
 		<Compile Include="Playmode\Patches\DebugModePatch.cs" />
 		<Compile Include="Playmode\Patches\ParticlesPatch.cs" />
+		<Compile Include="SingleObjectLink.cs" />
+		<Compile Include="SingleObjectLinks\SequencerScreenObjectLink.cs" />
 		<Compile Include="UI_Related\UIVector3Fields.cs" />
 		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="LE_Objects\LE_Bridge.cs" />
