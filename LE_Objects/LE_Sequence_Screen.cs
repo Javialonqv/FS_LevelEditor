@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using FS_LevelEditor.Editor;
 using FS_LevelEditor.Playmode;
+using Il2CppTMPro;
 
 namespace FS_LevelEditor
 {
@@ -25,7 +26,8 @@ namespace FS_LevelEditor
             return new Dictionary<string, object>
             {
                 { "SequencerID", 0 },
-                { "InvertDisplayOrder", false }
+                { "InvertDisplayOrder", false },
+                { "UseNumbers", false }
             };
         }
 
@@ -45,6 +47,14 @@ namespace FS_LevelEditor
 
                 // Force the first LED to be active, it isn't for some... reason.
                 targetSequencer.sequence.m_LEDIndicators[0].SetOnMaterial();
+
+                // Force the leds to be in the right values, for some reason they aren't.
+                foreach (var led in targetSequencer.sequence.m_LEDIndicators)
+                {
+                    led.m_textMesh.transform.localPosition = new Vector3(-0.8f, 0, 0);
+                    led.m_textMesh.transform.localEulerAngles = new Vector3(0, 90, 0);
+                    led.m_textMesh.alignment = Il2CppTMPro.TextAlignmentOptions.Center;
+                }
             }
 
             base.ObjectStart(scene);
@@ -69,6 +79,15 @@ namespace FS_LevelEditor
                 }
             }
             else if (name == "InvertDisplayOrder")
+            {
+                if (value is bool boolValue)
+                {
+                    properties[name] = boolValue;
+                    UpdateScreen();
+                    return true;
+                }
+            }
+            else if (name == "UseNumbers")
             {
                 if (value is bool boolValue)
                 {
@@ -122,8 +141,18 @@ namespace FS_LevelEditor
                 }
                 createdLED.transform.localPosition = new Vector3((float)num * LEDindicatorSeparation, 0f, 0f);
 
-                SequenceSwitchController.SwitchType ledColor = stepsColors[i];
-                createdLED.GetChild("Mesh").GetComponent<MeshRenderer>().material = EditorController.Instance.GetMaterial($"NewProps_v1_Light_{ledColor}", true);
+                if (GetProperty<bool>("UseNumbers"))
+                {
+                    createdLED.GetChild("Mesh").GetComponent<MeshRenderer>().material = EditorController.Instance.GetMaterial($"NewProps_v1_Light_Black");
+                    createdLED.GetChild("LEDTextMesh").gameObject.SetActive(true);
+                    createdLED.GetChild("LEDTextMesh").GetComponent<TextMeshPro>().text = (i + 1) + "";
+                }
+                else
+                {
+                    SequenceSwitchController.SwitchType ledColor = stepsColors[i];
+                    createdLED.GetChild("Mesh").GetComponent<MeshRenderer>().material = EditorController.Instance.GetMaterial($"NewProps_v1_Light_{ledColor}", true);
+                    createdLED.GetChild("LEDTextMesh").gameObject.SetActive(false);
+                }
 
                 createdLED.SetActive(true);
             }

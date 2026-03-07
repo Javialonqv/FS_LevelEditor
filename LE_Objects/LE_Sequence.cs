@@ -45,9 +45,9 @@ namespace FS_LevelEditor
             ledIndicator.m_textMesh = ledIndicator.gameObject.GetChild("LEDTextMesh").GetComponent<TextMeshPro>();
             // Fucking mesh, assigning it from the Unity proj doesn't work... do it from here.
             ledIndicator.m_renderer.GetComponent<MeshFilter>().mesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
+            ledIndicator.m_textMesh.font = t_sequenceController.m_LEDIndicators[0].m_textMesh.font;
 
             sequence = contentObject.GetChild("SequenceSwitchController").AddComponent<SequenceSwitchController>();
-            sequence.useNumbers = false;
             sequence.requiredSequence = new Il2CppSystem.Collections.Generic.List<SequenceSwitchController.SwitchType>();
             sequence.requiredSequence.Add(GetProperty<SequenceSwitchController.SwitchType>("Color"));
             sequence.resetOnMistake = true;
@@ -67,12 +67,14 @@ namespace FS_LevelEditor
                 LE_Sequence_Screen screen = otherObjThisIsLinkedTo.mainObject as LE_Sequence_Screen;
 
                 sequence.invertDisplayOrder = screen.GetProperty<bool>("InvertDisplayOrder");
+                sequence.useNumbers = screen.GetProperty<bool>("UseNumbers");
                 sequence.screenObject = screen.screenObject;
                 sequence.LEDHolder = screen.LEDHolder.transform;
             }
             else
             {
                 sequence.invertDisplayOrder = false;
+                sequence.useNumbers = false;
                 sequence.screenObject = sequence.gameObject.GetChild("ScreenObject");
                 sequence.LEDHolder = sequence.gameObject.GetChild("LEDHolder").transform;
             }
