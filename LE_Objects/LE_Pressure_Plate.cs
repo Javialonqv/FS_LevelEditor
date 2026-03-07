@@ -15,6 +15,8 @@ namespace FS_LevelEditor
     public class LE_Pressure_Plate : LE_Object
     {
         MeshRenderer redPlane, greenPlane;
+        BlocSwitchScript script;
+
         void Awake()
         {
             redPlane = gameObject.GetChildAt("Content/MeshDynamic/MeshOffStatic").GetComponent<MeshRenderer>();
@@ -56,7 +58,7 @@ namespace FS_LevelEditor
         {
             GameObject content = gameObject.GetChild("Content");
 
-            BlocSwitchScript script = content.AddComponent<BlocSwitchScript>();
+            script = content.AddComponent<BlocSwitchScript>();
             script.boxCollider = content.GetComponent<BoxCollider>();
             script.objectsToActivate = new GameObject[0];
             script.m_dropOnSound = t_pressurePlate.m_dropOnSound;
@@ -171,6 +173,27 @@ namespace FS_LevelEditor
             }
 
             return base.SetProperty(name, value);
+        }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "SetUsable")
+            {
+                script.unavailble = false;
+                return true;
+            }
+            else if (actionName == "SetUnusable")
+            {
+                script.unavailble = true;
+                return true;
+            }
+            else if (actionName == "ToggleUsable")
+            {
+                script.unavailble = !script.unavailble;
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
         }
 
         void ConfigureEvents(BlocSwitchScript script)

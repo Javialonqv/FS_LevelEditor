@@ -644,6 +644,23 @@ namespace FS_LevelEditor
                         break;
                 }
             }
+            else if (targetObj is LE_Pressure_Plate)
+            {
+                switch (@event.pressurePlateUsableState)
+                {
+                    case LE_Event.PressurePlateUsableState.Usable:
+                        targetObj.TriggerAction("SetUsable");
+                        break;
+
+                    case LE_Event.PressurePlateUsableState.Unusable:
+                        targetObj.TriggerAction("SetUnusable");
+                        break;
+
+                    case LE_Event.PressurePlateUsableState.Toggle:
+                        targetObj.TriggerAction("ToggleUsable");
+                        break;
+                }
+            }
             else if (targetObj is LE_Flame_Trap)
             {
                 switch (@event.flameTrapState)

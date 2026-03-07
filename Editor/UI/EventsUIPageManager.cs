@@ -113,6 +113,9 @@ namespace FS_LevelEditor.Editor.UI
         UITogglePatcher executeSwitchActionsToggle;
         UIDropdownPatcher switchUsableStateButton;
         //-----------------------------------
+        GameObject pressurePlateObjectsSettings;
+        UIDropdownPatcher pressurePlateUsableStateButton;
+        //-----------------------------------
         GameObject flameTrapObjectsSettings;
         UIDropdownPatcher flameTrapStateButton;
         //-----------------------------------
@@ -190,6 +193,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateCeilingLightObjectSettings();
                 Instance.CreateHealthAndAmmoPacksObjectSettings();
                 Instance.CreateSwitchObjectSettings();
+                Instance.CreatePressurePlateObjectSettings();
                 Instance.CreateFlameTrapObjectSettings();
                 Instance.CreateScreenObjectSettings();
                 Instance.CreateDoorObjectSettings();
@@ -1331,6 +1335,10 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     currentActiveObjectPanel = switchObjectsSettings;
                 }
+                else if (targetObj is LE_Pressure_Plate)
+                {
+                    currentActiveObjectPanel = pressurePlateObjectsSettings;
+                }
                 else if (targetObj is LE_Flame_Trap)
                 {
                     currentActiveObjectPanel = flameTrapObjectsSettings;
@@ -1488,6 +1496,10 @@ namespace FS_LevelEditor.Editor.UI
                 executeSwitchActionsToggle.Set(@event.executeSwitchActions, instant: true);
 
                 switchUsableStateButton.SelectOption((int)@event.switchUsableState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.PRESSURE_PLATE)
+            {
+                pressurePlateUsableStateButton.SelectOption((int)@event.pressurePlateUsableState);
             }
             else if (@event.targetObjType == LE_Object.ObjectType.FLAME_TRAP)
             {
@@ -2292,7 +2304,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSwitchStateSettings()
         {
-            switchStateButton = NGUI_Utils.CreateDropdown(switchObjectsSettings.transform, new Vector3(-200, -10), Vector3.one * 0.8f);
+            switchStateButton = NGUI_Utils.CreateDropdown(switchObjectsSettings.transform, new Vector3(-200, -50), Vector3.one * 0.8f);
             switchStateButton.SetTitle("Set Active State");
             switchStateButton.AddOption("Do Nothing", true);
             switchStateButton.AddOption("Activated", false);
@@ -2311,7 +2323,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSwitchUsableStateSettings()
         {
-            switchUsableStateButton = NGUI_Utils.CreateDropdown(switchObjectsSettings.transform, new Vector3(200, -10), Vector3.one * 0.8f);
+            switchUsableStateButton = NGUI_Utils.CreateDropdown(switchObjectsSettings.transform, new Vector3(200, -50), Vector3.one * 0.8f);
             switchUsableStateButton.SetTitle("Set Usable State");
             switchUsableStateButton.AddOption("Do Nothing", true);
             switchUsableStateButton.AddOption("Usable", false);
@@ -2320,6 +2332,38 @@ namespace FS_LevelEditor.Editor.UI
             switchUsableStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchUsableStateDropdownChanged)));
 
             switchUsableStateButton.gameObject.SetActive(true);
+        }
+        // -----------------------------------------
+        void CreatePressurePlateObjectSettings()
+        {
+            pressurePlateObjectsSettings = new GameObject("Pressure Plate");
+            pressurePlateObjectsSettings.transform.parent = eventOptionsParent.transform;
+            pressurePlateObjectsSettings.transform.localPosition = Vector3.zero;
+            pressurePlateObjectsSettings.transform.localScale = Vector3.one;
+            pressurePlateObjectsSettings.SetActive(false);
+
+            CreatePressurePlateObjectsTitleLabel();
+            CreatePressurePlateUsableStateSettings();
+        }
+        void CreatePressurePlateObjectsTitleLabel()
+        {
+            UILabel titleLabel = NGUI_Utils.CreateLabel(pressurePlateObjectsSettings.transform, Vector3.up * 40,
+                new Vector3Int(700, 40, 0), "PRESSURE PLATE OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "TitleLabel";
+            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            titleLabel.fontSize = 35;
+        }
+        void CreatePressurePlateUsableStateSettings()
+        {
+            pressurePlateUsableStateButton = NGUI_Utils.CreateDropdown(pressurePlateObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            pressurePlateUsableStateButton.SetTitle("Set Usable State");
+            pressurePlateUsableStateButton.AddOption("Do Nothing", true);
+            pressurePlateUsableStateButton.AddOption("Usable", false);
+            pressurePlateUsableStateButton.AddOption("Unusable", false);
+            pressurePlateUsableStateButton.AddOption("Toggle", false);
+            pressurePlateUsableStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnPressurePlateUsableStateDropdownChanged)));
+
+            pressurePlateUsableStateButton.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreateFlameTrapObjectSettings()
@@ -2798,6 +2842,11 @@ namespace FS_LevelEditor.Editor.UI
             currentSelectedEvent.switchUsableState = (LE_Event.SwitchUsableState)switchUsableStateButton.currentlySelectedID;
         }
         // -----------------------------------------
+        void OnPressurePlateUsableStateDropdownChanged()
+        {
+            currentSelectedEvent.pressurePlateUsableState = (LE_Event.PressurePlateUsableState)pressurePlateUsableStateButton.currentlySelectedID;
+        }
+        // -----------------------------------------
         void OnFlameTrapStateDropdownChanged()
         {
             currentSelectedEvent.flameTrapState = (LE_Event.FlameTrapState)flameTrapStateButton.currentlySelectedID;
@@ -3016,6 +3065,11 @@ public class LE_Event
     public bool executeSwitchActions { get; set; } = true;
     public enum SwitchUsableState { Do_Nothing, Usable, Unusable, Toggle }
     public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Do_Nothing;
+    #endregion
+
+    #region Pressure Plate Options
+    public enum PressurePlateUsableState { Do_Nothing, Usable, Unusable, Toggle }
+    public PressurePlateUsableState pressurePlateUsableState { get; set; } = PressurePlateUsableState.Do_Nothing;
     #endregion
 
     #region Flame Trap Options
