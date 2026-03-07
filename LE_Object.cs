@@ -3,6 +3,7 @@ using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.SaveSystem.Converters;
+using FS_LevelEditor.SingleObjectLinks;
 using FS_LevelEditor.WaypointSupports;
 using Il2Cpp;
 using Il2CppInterop.Runtime;
@@ -83,7 +84,8 @@ namespace FS_LevelEditor
             HEAL_AREA,
             DEATH_TRIGGER_WAYPOINT, // Even tho it's just one (the respawn point), call it waypoint so it doesn't break IsWaypoint() and such.
             SEQUENCE,
-            SEQUENCE_WAYPOINT
+            SEQUENCE_WAYPOINT,
+            SEQUENCE_SCREEN
         }
 
         // This is used to specify the objects that use the same snap triggers.
@@ -132,6 +134,10 @@ namespace FS_LevelEditor
             { ObjectType.MOVING_PLATFORM, typeof(MovingPlatformWaypointSupport) },
             { ObjectType.DEATH_TRIGGER, typeof(DeathTriggerWaypointSupport) },
             { ObjectType.SEQUENCE, typeof(SequencerWaypointSupport) }
+        };
+        public readonly static Dictionary<ObjectType, Type> objectsWithSingleObjectLink = new Dictionary<ObjectType, Type>()
+        {
+            { ObjectType.SEQUENCE_SCREEN, typeof(SequencerScreenObjectLink) }
         };
         public readonly static Dictionary<ObjectType?, Vector3> defaultScalesForObjects = new Dictionary<ObjectType?, Vector3>()
         {
@@ -184,6 +190,8 @@ namespace FS_LevelEditor
         public EventExecuter eventExecuter;
         public WaypointSupport waypointSupport;
         public WaypointSupport customWaypointSupport;
+        public SingleObjectLink objectLink;
+        public SingleObjectLink otherObjThisIsLinkedTo;
         public virtual Transform objectParent
         {
             get
@@ -337,6 +345,11 @@ namespace FS_LevelEditor
                 {
                     customWaypointSupport = (WaypointSupport)gameObject.AddComponent(Il2CppType.From(customWaypointSupports[objectType]));
                 }
+            }
+
+            if (objectsWithSingleObjectLink.ContainsKey(objectType))
+            {
+                objectLink = (SingleObjectLink)gameObject.AddComponent(Il2CppType.From(objectsWithSingleObjectLink[objectType]));
             }
         }
 
@@ -670,6 +683,8 @@ namespace FS_LevelEditor
             if (eventExecuter) eventExecuter.OnSelect();
             if (waypointSupport) waypointSupport.OnSelect();
             if (customWaypointSupport) customWaypointSupport.OnSelect();
+            if (objectLink) objectLink.OnSelect();
+            if (otherObjThisIsLinkedTo) otherObjThisIsLinkedTo.OnSelect();
         }
         public virtual void OnDeselect(GameObject nextSelectedObj)
         {
@@ -688,6 +703,8 @@ namespace FS_LevelEditor
             if (eventExecuter) eventExecuter.OnDeselect();
             if (waypointSupport) waypointSupport.OnDeselect();
             if (customWaypointSupport) customWaypointSupport.OnDeselect();
+            if (objectLink) objectLink.OnDeselect();
+            if (otherObjThisIsLinkedTo) otherObjThisIsLinkedTo.OnDeselect();
         }
         public virtual void OnDelete()
         {
@@ -721,6 +738,10 @@ namespace FS_LevelEditor
         {
             if (waypointSupport) waypointSupport.BeforeSave();
             if (customWaypointSupport) customWaypointSupport.BeforeSave();
+        }
+        public virtual void OnObjectLinkTargetChanged(LE_Object newTarget)
+        {
+
         }
 
         public virtual List<string> GetAvailableEventsIDs()

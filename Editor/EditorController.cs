@@ -48,6 +48,7 @@ namespace FS_LevelEditor.Editor
         public Dictionary<LE_Object.ObjectType, GameObject> allCategoriesObjects = new();
 
         GameObject[] otherObjectsFromBundle;
+        Dictionary<string, Material> allMaterialsFromBundle = new();
 
         // ------------------------------------
 
@@ -285,6 +286,13 @@ namespace FS_LevelEditor.Editor
             }
             #endregion
 
+            #region Load All Materials
+            foreach (var mat in bundle.LoadAll<Material>())
+            {
+                allMaterialsFromBundle.Add(mat.name, mat);
+            }
+            #endregion
+
             #region Setup OST
             string[] trackNames = new[]
             {
@@ -323,6 +331,25 @@ namespace FS_LevelEditor.Editor
             }
 
             return toReturn;
+        }
+        public Material GetMaterial(string name, bool ignoreCase = false)
+        {
+            if (ignoreCase)
+            {
+                foreach (var mat in allMaterialsFromBundle)
+                {
+                    if (mat.Value.name.Equals(name, StringComparison.OrdinalIgnoreCase)) return mat.Value;
+                }
+            }
+            else
+            {
+                if (allMaterialsFromBundle.TryGetValue(name, out var material))
+                {
+                    return material;
+                }
+            }
+
+            return null;
         }
 
         void EnsureGameUIIsHidden()

@@ -80,16 +80,26 @@ namespace FS_LevelEditor
                 if (value is SequenceSwitchController.SwitchType type)
                 {
                     properties["Color"] = type;
+                    ((LE_Sequence)mainSupport.targetObject).UpdateLinkedScreen();
                     return true;
                 }
                 else if (value is int typeInt)
                 {
                     properties["Color"] = (SequenceSwitchController.SwitchType)typeInt;
+                    ((LE_Sequence)mainSupport.targetObject).UpdateLinkedScreen();
                     return true;
                 }
             }
 
             return base.SetProperty(name, value);
+        }
+
+        public override void OnDelete()
+        {
+            // Execute the base FIRST, so the waypoint gets deleted of the spawnedWaypoints list and everything, and then UpdateLinkedScreen() ignores it.
+            base.OnDelete();
+
+            ((LE_Sequence)mainSupport.targetObject).UpdateLinkedScreen();
         }
     }
 }
