@@ -1,4 +1,5 @@
-﻿using FS_LevelEditor.Editor.UI;
+﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
 using Il2Cpp;
 using System;
 using System.Collections.Generic;
@@ -13,24 +14,40 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Pressure_Plate : LE_Object
     {
+        MeshRenderer redPlane, greenPlane;
+        void Awake()
+        {
+            redPlane = gameObject.GetChildAt("Content/MeshDynamic/MeshOffStatic").GetComponent<MeshRenderer>();
+            greenPlane = gameObject.GetChildAt("Content/MeshDynamic/MeshOnStatic").GetComponent<MeshRenderer>();
+        }
+
+        public enum PlateState
+        {
+            DEACTIVATED,
+            ACTIVATED
+        }
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
             {
                 { "OnlyOnce", false },
+                { "Unuseable", false },
+                { "PressedState", PlateState.DEACTIVATED },
                 { "OnDrop", new List<LE_Event>() },
                 { "OnRemove", new List<LE_Event>() },
                 { "OnBoth", new List<LE_Event>() }
             };
         }
+        void SetMeshInEditor(PlateState newState)
+        {
+            redPlane.enabled = newState == PlateState.DEACTIVATED;
+            greenPlane.enabled = newState == PlateState.ACTIVATED;
+        }
 
         public override void ObjectStart(LEScene scene)
         {
-            if (scene == LEScene.Playmode)
-            {
-                // The on mesh is disabled by default, enable it when playmode starts.
-                gameObject.GetChildAt("Content/MeshDynamic/MeshOnStatic").SetActive(true);
-            }
+            SetMeshInEditor(GetProperty<PlateState>("PressedState"));
+            gameObject.GetChildAt("Content/MeshDynamic/MeshOnStatic").SetActive(true);
 
             base.ObjectStart(scene);
         }
@@ -58,6 +75,7 @@ namespace FS_LevelEditor
             script.meshDynamic = content.GetChild("MeshDynamic").GetComponent<MeshRenderer>();
             script.onRemove = new Messenger();
             script.canBeCancelled = true;
+            
             script.worksWithCubes = true;
             script.switchType = SequenceSwitchController.SwitchType.RED;
             //script.onDropEvent = new UnityEngine.Events.UnityEvent();
@@ -67,10 +85,22 @@ namespace FS_LevelEditor
             script.usableEditorState = true;
             script.onlyOnce = GetProperty<bool>("OnlyOnce");
             script.stayDownAfterOnce = GetProperty<bool>("OnlyOnce");
+            script.unavailble = GetProperty<bool>("Unuseable");
 
             script.m_audioSource.outputAudioMixerGroup = t_pressurePlate.m_audioSource.outputAudioMixerGroup;
 
             script.m_animation.clip = t_pressurePlate.m_animation.clip;
+
+            switch(GetProperty<PlateState>("PressedState"))
+            {
+                case PlateState.DEACTIVATED:
+                    break;
+                case PlateState.ACTIVATED:  
+                    //script.ForceActivateWithoutEvents();
+                    break;
+                
+            }
+
             foreach (var clip in t_pressurePlate.m_animation)
             {
                 AnimationState state = clip.Cast<AnimationState>();
@@ -105,6 +135,29 @@ namespace FS_LevelEditor
                 if (value is bool)
                 {
                     properties["OnlyOnce"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "Unuseable")
+            {
+                if (value is bool)
+                {
+                    properties["Unuseable"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "PressedState")
+            {
+                if (value is int)
+                {
+                    properties["PressedState"] = (PlateState)value;
+                    if (EditorController.Instance) SetMeshInEditor((PlateState)value);
+                    return true;
+                }
+                else if (value is PlateState)
+                {
+                    properties["PressedState"] = value;
+                    if (EditorController.Instance) SetMeshInEditor((PlateState)value);
                     return true;
                 }
             }

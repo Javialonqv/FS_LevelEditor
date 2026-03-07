@@ -24,12 +24,13 @@ namespace FS_LevelEditor
             UNUSABLE
         }
         InterrupteurController controller;
-        MeshRenderer redPlane, greenPlane;
+        MeshRenderer redPlane, greenPlane, cyanPlane;
 
         void Awake()
         {
             redPlane = gameObject.GetChildAt("Content/ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
             greenPlane = gameObject.GetChildAt("Content/ButtonMesh/GreenPlaneButton").GetComponent<MeshRenderer>();
+            cyanPlane = gameObject.GetChildAt("Content/ButtonMesh/CyanPlaneButton").GetComponent<MeshRenderer>();
         }
 
         public static Dictionary<string, object> GetDefaultProperties()
@@ -40,6 +41,7 @@ namespace FS_LevelEditor
                 { "UsableOnce", false },
                 { "CanUseTaser", true },
                 { "OnlyByTaser", false },
+                { "Cyan", false },
                 { "WhenInvertingEvents", new List<LE_Event>() },
                 { "WhenActivatingEvents", new List<LE_Event>() },
                 { "WhenDeactivatingEvents", new List<LE_Event>() },
@@ -107,6 +109,10 @@ namespace FS_LevelEditor
             controller.offColor = InterrupteurController.ColorType.RED;
             controller.offMaterials = t_switch.offMaterials;
             controller.onColor = InterrupteurController.ColorType.GREEN;
+            if ((bool)GetProperty<bool>("Cyan"))
+            {
+                controller.onColor = InterrupteurController.ColorType.CYAN;
+            }
             controller.onMaterials = t_switch.onMaterials;
             controller.unusableColor = InterrupteurController.ColorType.BLACK;
             controller.unusableCoverAnimator = button.GetChildAt("ButtonMesh/UnusableCoverHolder").GetComponent<Animator>();
@@ -199,7 +205,15 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-			else if (name == "OnlyByTaser")
+            else if (name == "Cyan")
+            {
+                if (value is bool)
+                {
+                    properties["Cyan"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "OnlyByTaser")
 			{
 				if (value is bool)
 				{
@@ -300,7 +314,8 @@ namespace FS_LevelEditor
         void SetMeshInEditor(SwitchState newState)
         {
             redPlane.enabled = newState == SwitchState.DEACTIVATED;
-            greenPlane.enabled = newState == SwitchState.ACTIVATED;
+            greenPlane.enabled = newState == SwitchState.ACTIVATED && !(bool)GetProperty<bool>("Cyan");
+            cyanPlane.enabled = newState == SwitchState.ACTIVATED && (bool)GetProperty<bool>("Cyan");
 
             // Both will be disabled if newState is UNUSABLE, that should show the UNUSABLE state as expected:)
             // Do NOT hide mesh in editor
