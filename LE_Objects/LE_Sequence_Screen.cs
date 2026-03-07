@@ -24,7 +24,8 @@ namespace FS_LevelEditor
         {
             return new Dictionary<string, object>
             {
-                { "SequencerID", 0 }
+                { "SequencerID", 0 },
+                { "InvertDisplayOrder", false }
             };
         }
 
@@ -67,6 +68,15 @@ namespace FS_LevelEditor
                     return objectLink.SetTargetObject(intVal);
                 }
             }
+            else if (name == "InvertDisplayOrder")
+            {
+                if (value is bool boolValue)
+                {
+                    properties[name] = boolValue;
+                    UpdateScreen();
+                    return true;
+                }
+            }
 
             return base.SetProperty(name, value);
         }
@@ -105,13 +115,12 @@ namespace FS_LevelEditor
                 GameObject createdLED = Instantiate(LEDIndicatorPrefab, LEDHolder.transform, false);
                 createdLED.transform.localScale = new Vector3(createdLED.transform.localScale.x, createdLED.transform.localScale.y, LEDIndicatorSize);
 
-                //int num = i;
-                //if (this.invertDisplayOrder)
-                //{
-                //    num = this.requiredSequence.Count - 1 - i;
-                //}
-                //createdLED.transform.localPosition = new Vector3((float)num * this.m_LEDindicatorSeparation, 0f, 0f);
-                createdLED.transform.localPosition = new Vector3((float)i * LEDindicatorSeparation, 0f, 0f);
+                int num = i;
+                if (GetProperty<bool>("InvertDisplayOrder"))
+                {
+                    num = stepsColors.Count - 1 - i;
+                }
+                createdLED.transform.localPosition = new Vector3((float)num * LEDindicatorSeparation, 0f, 0f);
 
                 SequenceSwitchController.SwitchType ledColor = stepsColors[i];
                 createdLED.GetChild("Mesh").GetComponent<MeshRenderer>().material = EditorController.Instance.GetMaterial($"NewProps_v1_Light_{ledColor}", true);

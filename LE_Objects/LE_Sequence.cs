@@ -47,7 +47,6 @@ namespace FS_LevelEditor
             ledIndicator.m_renderer.GetComponent<MeshFilter>().mesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
 
             sequence = contentObject.GetChild("SequenceSwitchController").AddComponent<SequenceSwitchController>();
-            sequence.invertDisplayOrder = false;
             sequence.useNumbers = false;
             sequence.requiredSequence = new Il2CppSystem.Collections.Generic.List<SequenceSwitchController.SwitchType>();
             sequence.requiredSequence.Add(GetProperty<SequenceSwitchController.SwitchType>("Color"));
@@ -66,11 +65,14 @@ namespace FS_LevelEditor
             if (otherObjThisIsLinkedTo)
             {
                 LE_Sequence_Screen screen = otherObjThisIsLinkedTo.mainObject as LE_Sequence_Screen;
+
+                sequence.invertDisplayOrder = screen.GetProperty<bool>("InvertDisplayOrder");
                 sequence.screenObject = screen.screenObject;
                 sequence.LEDHolder = screen.LEDHolder.transform;
             }
             else
             {
+                sequence.invertDisplayOrder = false;
                 sequence.screenObject = sequence.gameObject.GetChild("ScreenObject");
                 sequence.LEDHolder = sequence.gameObject.GetChild("LEDHolder").transform;
             }
