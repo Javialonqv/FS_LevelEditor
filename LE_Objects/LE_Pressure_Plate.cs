@@ -91,15 +91,6 @@ namespace FS_LevelEditor
 
             script.m_animation.clip = t_pressurePlate.m_animation.clip;
 
-            switch(GetProperty<PlateState>("PressedState"))
-            {
-                case PlateState.DEACTIVATED:
-                    break;
-                case PlateState.ACTIVATED:  
-                    //script.ForceActivateWithoutEvents();
-                    break;
-                
-            }
 
             foreach (var clip in t_pressurePlate.m_animation)
             {
@@ -108,6 +99,16 @@ namespace FS_LevelEditor
             }
             content.GetChild("MeshDynamic").GetComponent<BoxCollider>().material =
             t_pressurePlate.gameObject.GetChild("MeshDynamic").GetComponent<BoxCollider>().material;
+
+            switch (GetProperty<PlateState>("PressedState"))
+            {
+                case PlateState.DEACTIVATED:
+                    break;
+                case PlateState.ACTIVATED:
+                    script.ForceActivateWithoutEvents(null);
+                    break;
+
+            }
 
             ConfigureEvents(script);
 
