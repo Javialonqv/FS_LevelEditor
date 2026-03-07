@@ -375,6 +375,14 @@ namespace FS_LevelEditor
                 {
                     PlayModeController.Instance.InvertPlayerGravity();
                 }
+                else if(!@event.flashlightEnabled)
+                {
+                    Controls.Instance.SetFlashlightNotAllowed();
+                }
+                else if(@event.flashlightEnabled)
+                {
+                    Controls.Instance.SetFlashlightAllowed();
+                }
                 return;
             }
             if (@event.isForTaser)

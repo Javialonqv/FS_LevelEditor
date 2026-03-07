@@ -598,6 +598,8 @@ namespace FS_LevelEditor.SaveSystem
             {
                 { "HasTaser", true },
                 { "HasJetpack", true },
+                { "HasFlashlight", true },
+                { "DebugAllowed", true },
                 { "DeathYLimit", 100f },
                 { "Skybox", 0 },
                 { "Music", 4 },

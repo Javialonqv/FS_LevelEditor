@@ -261,10 +261,15 @@ namespace FS_LevelEditor.Playmode
 			{
 				Controls.Instance.DeactivateWeapon();
 			}
+			if(!(bool)GetGlobalProperty("HasFlashlight"))
+			{
+				Controls.Instance.SetFlashlightNotAllowed();
+			}
 			bool hasJetpackGlobal = (bool)GetGlobalProperty("HasJetpack");
 			Controls.Instance.hasJetPack = hasJetpackGlobal;
+			Patches.DebudModePatch.DebugAllowed = (bool)GetGlobalProperty("DebugAllowed");
 
-			SetupLevelSkybox((int)GetGlobalProperty("Skybox"));
+            SetupLevelSkybox((int)GetGlobalProperty("Skybox"));
 			SetupLevelMusic((int)GetGlobalProperty("Music"));
 
 			ApplyUpgrades((List<UpgradeSaveData>)GetGlobalProperty("Upgrades"), hasJetpackGlobal);
@@ -523,7 +528,14 @@ namespace FS_LevelEditor.Playmode
 			// Unload the asset bundle when playmode is destroyed
 			if (LEBundle != null)
 			{
-				LEBundle.Unload(true);
+				try
+				{
+					LEBundle.Unload(true);
+				}
+				catch (System.Runtime.InteropServices.SEHException)
+				{
+					// Asset bundle may have already been garbage collected by IL2CPP runtime
+				}
 				LEBundle = null;
 			}
 		}

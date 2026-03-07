@@ -71,6 +71,7 @@ namespace FS_LevelEditor.Editor.UI
         GameObject playerSettings;
         UITogglePatcher zeroGToggle;
         UITogglePatcher invertGravityToggle;
+        UITogglePatcher flashlightToggle;
         //-----------------------------------
         GameObject taserSettings;
         UIDropdownPatcher taserStateButton;
@@ -1429,6 +1430,7 @@ namespace FS_LevelEditor.Editor.UI
             {
                 zeroGToggle.Set(@event.enableOrDisableZeroG);
                 invertGravityToggle.Set(@event.invertGravity);
+                flashlightToggle.Set(@event.flashlightEnabled);
             }
             else if (@event.isForTaser)
             {
@@ -1692,6 +1694,7 @@ namespace FS_LevelEditor.Editor.UI
             CreatePlayerSettingsTitleLabel();
             CreateZeroGToggle();
             CreateInvertGravityToggle();
+            CreateFlashlightToggle();
         }
         void CreatePlayerSettingsTitleLabel()
         {
@@ -1727,6 +1730,13 @@ namespace FS_LevelEditor.Editor.UI
                 new Vector3Int(250, 48, 1), "Invert Gravity");
             invertGravityToggle.gameObject.name = "InvertGravityToggle";
             invertGravityToggle.onClick += (state) => OnInvertGravityToggleChanged();
+        }
+        void CreateFlashlightToggle()
+        {
+            flashlightToggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(-380f, -30f, 0f),
+                new Vector3Int(250, 48, 1), "Enable/Disable Flashlight");
+            flashlightToggle.gameObject.name = "EnableOrDisableFlashlightToggle";
+            flashlightToggle.onClick += (state) => OnFlashlightToggleChanged();
         }
         // -----------------------------------------
         void CreateTaserSettings()
@@ -2623,6 +2633,10 @@ namespace FS_LevelEditor.Editor.UI
                 invertGravityToggle.Set(false, true);
             }
         }
+        void OnFlashlightToggleChanged()
+        {
+            currentSelectedEvent.flashlightEnabled = flashlightToggle.isChecked;
+        }
         void OnInvertGravityToggleChanged()
         {
             currentSelectedEvent.invertGravity = invertGravityToggle.isChecked;
@@ -2938,6 +2952,7 @@ public class LE_Event
     #region Player Options
     public bool enableOrDisableZeroG { get; set; } = false;
     public bool invertGravity { get; set; } = false;
+    public bool flashlightEnabled { get; set; } = true;
     #endregion
 
     #region Taser Options
