@@ -1353,6 +1353,7 @@ namespace FS_LevelEditor.Editor.UI
                         }
 
 						attribute.GetChild("Field").GetComponent<UICustomInputField>().SetText((string)value, false);
+						attribute.GetChild("Field").GetComponent<UICustomInputField>().Set(SetPropertyForObjects(attributeName, value, false, objComps.ToArray()));
                     }
 					else
 					{
@@ -1565,36 +1566,49 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			if (EditorController.Instance.multipleObjectsSelected)
 			{
-				bool toReturn = false;
-
-				foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
-				{
-					if (useBaseMethod)
-					{
-                        toReturn = obj.SetPropertyBase(propertyName, value);
-                    }
-					else
-					{
-                        toReturn = obj.SetProperty(propertyName, value);
-                    }
-                }
-
-				return toReturn;
+				return SetPropertyForObjects(propertyName, value, useBaseMethod, EditorController.Instance.currentSelectedObjsComponents.ToArray());
 			}
 			else if (EditorController.Instance.currentSelectedObjComponent)
 			{
-				if (useBaseMethod)
-				{
-					return EditorController.Instance.currentSelectedObjComponent.SetPropertyBase(propertyName, value);
-                }
-				else
-				{
-                    return EditorController.Instance.currentSelectedObjComponent.SetProperty(propertyName, value);
-                }
+                return SetPropertyForObjects(propertyName, value, useBaseMethod, EditorController.Instance.currentSelectedObjComponent);
             }
 
 			return false;
 		}
+		bool SetPropertyForObjects(string propertyName, object value, bool useBaseMethod = false, params LE_Object[] objects)
+		{
+            if (objects.Length > 1)
+            {
+                bool toReturn = false;
+
+                foreach (var obj in objects)
+                {
+                    if (useBaseMethod)
+                    {
+                        toReturn = obj.SetPropertyBase(propertyName, value);
+                    }
+                    else
+                    {
+                        toReturn = obj.SetProperty(propertyName, value);
+                    }
+                }
+
+                return toReturn;
+            }
+            else if (objects.Length == 1)
+            {
+                if (useBaseMethod)
+                {
+                    return objects[0].SetPropertyBase(propertyName, value);
+                }
+                else
+                {
+                    return objects[0].SetProperty(propertyName, value);
+                }
+            }
+
+			return false;
+        }
 
 		// Extra functions for specific things for specific attributes for specific objects LOL.
 		void SetSawTravelBackORLoop(bool travelBack, bool loop)
