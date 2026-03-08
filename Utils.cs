@@ -47,6 +47,7 @@ namespace FS_LevelEditor
             propsMat = bundle.Load<Material>("Props_Mat");
             propsTransMat = bundle.Load<Material>("PropsTransparent_Mat");
 
+
             propsNoSpecMat = bundle.Load<Material>("Props_NoSpec");
             propsTransNoSpecMat = bundle.Load<Material>("PropsTransparent_NoSpec");
 
