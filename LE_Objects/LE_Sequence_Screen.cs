@@ -44,16 +44,18 @@ namespace FS_LevelEditor
             if (scene == LEScene.Playmode)
             {
                 targetSequencer = objectLink.targetObject ? objectLink.targetObject as LE_Sequence : null;
-
-                // Force the first LED to be active, it isn't for some... reason.
-                targetSequencer.sequence.m_LEDIndicators[0].SetOnMaterial();
-
-                // Force the leds to be in the right values, for some reason they aren't.
-                foreach (var led in targetSequencer.sequence.m_LEDIndicators)
+                if (targetSequencer)
                 {
-                    led.m_textMesh.transform.localPosition = new Vector3(-0.8f, 0, 0);
-                    led.m_textMesh.transform.localEulerAngles = new Vector3(0, 90, 0);
-                    led.m_textMesh.alignment = Il2CppTMPro.TextAlignmentOptions.Center;
+                    // Force the first LED to be active, it isn't for some... reason.
+                    targetSequencer.sequence.m_LEDIndicators[0].SetOnMaterial();
+
+                    // Force the leds to be in the right values, for some reason they aren't.
+                    foreach (var led in targetSequencer.sequence.m_LEDIndicators)
+                    {
+                        led.m_textMesh.transform.localPosition = new Vector3(-0.8f, 0, 0);
+                        led.m_textMesh.transform.localEulerAngles = new Vector3(0, 90, 0);
+                        led.m_textMesh.alignment = Il2CppTMPro.TextAlignmentOptions.Center;
+                    }
                 }
             }
 
