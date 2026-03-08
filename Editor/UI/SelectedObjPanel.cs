@@ -170,7 +170,7 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			GameObject root = new GameObject("CurrentSelectedObjPanel");
 			root.transform.parent = editorUIParent;
-			root.transform.localPosition = new Vector3(-690f, -220f, 0f); // Changed from -700f to -690f
+			root.transform.localPosition = new Vector3(-690f, -120f, 0f); // Changed from -700f to -690f
 			root.transform.localScale = Vector3.one;
 
 			root.AddComponent<SelectedObjPanel>();
@@ -263,16 +263,16 @@ namespace FS_LevelEditor.Editor.UI
 			sprite.color = new Color(0.0039f, 0.3568f, 0.3647f, 1f);
 			sprite.depth = -1;
 			sprite.width = 500;
-			sprite.height = 300;
+			sprite.height = 400;
 			sprite.pivot = UIWidget.Pivot.Top;
 
 			BoxCollider collider = body.AddComponent<BoxCollider>();
-			collider.size = new Vector3(500f, 300f, 1f);
+			collider.size = new Vector3(500f, 400f, 1f);
 			collider.center = new Vector3(0f, -150f);
 
 			// Add a UIPanel just to hide the objects outside of the panel.
 			UIPanel panel = body.AddComponent<UIPanel>();
-			panel.clipRange = new Vector4(0f, -150f, 500f, 280f);
+			panel.clipRange = new Vector4(0f, -200f, 500f, 360f);
 			panel.clipping = UIDrawCall.Clipping.SoftClip;
 
 			body.transform.localPosition = new Vector3(0f, -10f, 0f);
@@ -893,13 +893,13 @@ namespace FS_LevelEditor.Editor.UI
 
 				if (!expand) // Normal selection
 				{
-					gameObject.transform.localPosition = new Vector3(-690f, -220, 0f); // Changed from -700f to -690f
+					gameObject.transform.localPosition = new Vector3(-690f, -120, 0f); // Changed from -700f to -690f
 					headerTitle.width = 300;
 					body.SetActive(true);
-					body.GetComponent<UISprite>().height = 300;
-					body.GetComponent<BoxCollider>().center = new Vector3(0, -150f);
-					body.GetComponent<BoxCollider>().size = new Vector3(500, 300);
-					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -150f, 500, 260);
+					body.GetComponent<UISprite>().height = 400;
+					body.GetComponent<BoxCollider>().center = new Vector3(0, -200f);
+					body.GetComponent<BoxCollider>().size = new Vector3(500, 400);
+					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -200f, 500, 360);
 				}
 				else // EXPANDED PANEL
 				{

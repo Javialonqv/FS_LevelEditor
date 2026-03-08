@@ -1562,7 +1562,7 @@ namespace FS_LevelEditor.Editor.UI
         void CreateUseAndLogicToggle()
         {
             useAndLogicToggle = NGUI_Utils.CreateToggle(defaultObjectsSettings.transform, new Vector3(-395, 230f, 0f),
-                new Vector3Int(280, 48, 1), "AND");
+                new Vector3Int(70, 48, 1), "AND");
             useAndLogicToggle.gameObject.name = "UseAndLogicToggle";
             useAndLogicToggle.onClick += (state) => OnUseAndLogicToggleChanged();
         }
