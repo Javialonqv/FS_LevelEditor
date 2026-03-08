@@ -55,6 +55,11 @@ namespace FS_LevelEditor
         UIButtonPatcher previousPageButton, nextPageButton;
         bool trackIfComingBack = false;
 
+        // Track if we're currently renaming a level (to prevent entering editor when clicking the input field)
+        public bool isRenamingLevel = false;
+        // Reference to the button being renamed so we can disable/enable its interactions
+        GameObject currentRenamingButton = null;
+
         // Metadata preview panel
         GameObject metadataPreviewPanel;
         UILabel previewLevelNameLabel;
@@ -651,7 +656,8 @@ namespace FS_LevelEditor
                     renameButtonColor.SetState(UIButtonColor.State.Normal, true);
 
                     // Adjust what should the button execute when clicked.
-                    renameBtn.onClick += () => OnRenameLevelButtonClick(levelFileNameWithoutExtension, lvlButton.buttonLabel.gameObject);
+                    UIButtonPatcher capturedLvlButton = lvlButton;
+                    renameBtn.onClick += () => OnRenameLevelButtonClick(levelFileNameWithoutExtension, capturedLvlButton.buttonLabel.gameObject, capturedLvlButton.gameObject);
                     #endregion
                     #region Create Play Button
                     // --- Create Play Button (Green, First) ---
@@ -856,16 +862,36 @@ namespace FS_LevelEditor
             // Rebuild list staying on current page unless it's empty
             CreateLevelsList(currentGridBeforeDelete);
         }
-        void OnRenameLevelButtonClick(string levelFileNameWithoutExtension, GameObject lvlButtonLabelObj)
+        void OnRenameLevelButtonClick(string levelFileNameWithoutExtension, GameObject lvlButtonLabelObj, GameObject lvlButtonObj)
         {
             // If the label already has an UIInput component, that means it already is initialized, just select it.
             if (lvlButtonLabelObj.TryGetComponent<UIInput>(out UIInput component))
             {
                 component.isSelected = true;
+                isRenamingLevel = true;
+                return;
             }
+
+            // Store reference to the button being renamed and disable its interactions.
+            currentRenamingButton = lvlButtonObj;
+            DisableButtonInteractions(lvlButtonObj);
 
             // Get the UILabel component.
             UILabel label = lvlButtonLabelObj.GetComponent<UILabel>();
+
+            // Add a BoxCollider to the label so UIInput can receive click events for cursor positioning.
+            // NGUI's UIInput needs a collider on the same GameObject to handle mouse clicks.
+            if (!lvlButtonLabelObj.TryGetComponent<BoxCollider>(out _))
+            {
+                BoxCollider labelCollider = lvlButtonLabelObj.AddComponent<BoxCollider>();
+                // Size it to cover the full input area of the button (from label position to just before the action buttons).
+                // The label is at x=-515 and play button starts at x=360 (60x60), so leave some margin.
+                // Center the collider so it spans from the label's left edge to before the buttons.
+                // Label pivot is Left, so we need to offset the center to the right by half the width.
+                float inputAreaWidth = 800f;
+                labelCollider.size = new Vector3(inputAreaWidth, label.height, 1);
+                labelCollider.center = new Vector3(inputAreaWidth / 2f, 0, 0);
+            }
 
             // Create a UIInput component.
             UIInput input = lvlButtonLabelObj.AddComponent<UIInput>();
@@ -878,6 +904,9 @@ namespace FS_LevelEditor
             // Highlight the whole text on it.
             input.selectionStart = 0;
             input.selectionEnd = label.text.Length;
+
+            // Mark that we're in renaming mode to prevent the level button from entering the editor.
+            isRenamingLevel = true;
 
             // Set the method for when the user finishes typing the new name (OnSubmit).
             EventDelegate onSubmit = new EventDelegate(this, nameof(LE_MenuUIManager.RenameLevel));
@@ -901,6 +930,14 @@ namespace FS_LevelEditor
         }
         void RenameLevel(String levelFileNameWithoutExtension, UIInput input)
         {
+            // Clear the renaming flag and re-enable button interactions.
+            isRenamingLevel = false;
+            if (currentRenamingButton != null)
+            {
+                EnableButtonInteractions(currentRenamingButton);
+                currentRenamingButton = null;
+            }
+
             // Trim the text.
             input.text = input.text.Trim();
 
@@ -909,6 +946,98 @@ namespace FS_LevelEditor
             CreateLevelsList();
         }
 
+        void DisableButtonInteractions(GameObject buttonObj)
+        {
+            // Disable UIButton to prevent click events
+            if (buttonObj.TryGetComponent<UIButton>(out UIButton button))
+            {
+                button.enabled = false;
+            }
+
+            // Disable UIButtonScale to prevent hover scaling
+            if (buttonObj.TryGetComponent<UIButtonScale>(out UIButtonScale buttonScale))
+            {
+                buttonScale.enabled = false;
+            }
+
+            // Disable UIButtonColor to prevent hover color changes
+            if (buttonObj.TryGetComponent<UIButtonColor>(out UIButtonColor buttonColor))
+            {
+                buttonColor.enabled = false;
+            }
+
+            // Disable tooltip
+            if (buttonObj.TryGetComponent<FractalTooltip>(out FractalTooltip tooltip))
+            {
+                tooltip.enabled = false;
+            }
+
+            // Disable LevelButtonController to prevent OnClick
+            if (buttonObj.TryGetComponent<LevelButtonController>(out LevelButtonController controller))
+            {
+                controller.enabled = false;
+            }
+
+            // Disable UIEventListener to prevent hover events from triggering
+            if (buttonObj.TryGetComponent<UIEventListener>(out UIEventListener eventListener))
+            {
+                eventListener.enabled = false;
+            }
+
+            // Disable the button's collider so clicks can reach the label's collider for cursor positioning
+            if (buttonObj.TryGetComponent<Collider>(out Collider collider))
+            {
+                collider.enabled = false;
+            }
+
+            // Hide metadata preview if showing
+            HideMetadataPreview();
+        }
+
+        void EnableButtonInteractions(GameObject buttonObj)
+        {
+            // Re-enable UIButton
+            if (buttonObj.TryGetComponent<UIButton>(out UIButton button))
+            {
+                button.enabled = true;
+            }
+
+            // Re-enable UIButtonScale
+            if (buttonObj.TryGetComponent<UIButtonScale>(out UIButtonScale buttonScale))
+            {
+                buttonScale.enabled = true;
+            }
+
+            // Re-enable UIButtonColor
+            if (buttonObj.TryGetComponent<UIButtonColor>(out UIButtonColor buttonColor))
+            {
+                buttonColor.enabled = true;
+            }
+
+            // Re-enable tooltip
+            if (buttonObj.TryGetComponent<FractalTooltip>(out FractalTooltip tooltip))
+            {
+                tooltip.enabled = true;
+            }
+
+            // Re-enable LevelButtonController
+            if (buttonObj.TryGetComponent<LevelButtonController>(out LevelButtonController controller))
+            {
+                controller.enabled = true;
+            }
+
+            // Re-enable UIEventListener
+            if (buttonObj.TryGetComponent<UIEventListener>(out UIEventListener eventListener))
+            {
+                eventListener.enabled = true;
+            }
+
+            // Re-enable the button's collider
+            if (buttonObj.TryGetComponent<Collider>(out Collider collider))
+            {
+                collider.enabled = true;
+            }
+        }
 
         public void SwitchBetweenMenuAndLEMenu(bool showMainMenu = true)
         {

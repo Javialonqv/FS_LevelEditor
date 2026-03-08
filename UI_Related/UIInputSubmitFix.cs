@@ -30,6 +30,12 @@ namespace FS_LevelEditor
             {
                 input.Submit();
                 submitOnDeselect = false;
+
+                // Clear the renaming flag in case this is used for level renaming.
+                if (LE_MenuUIManager.Instance != null)
+                {
+                    LE_MenuUIManager.Instance.isRenamingLevel = false;
+                }
             }
         }
     }

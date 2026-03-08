@@ -17,6 +17,9 @@ namespace FS_LevelEditor
 
         public void OnClick()
         {
+            // Don't enter editor while renaming a level - clicking on the input field should just position the cursor.
+            if (LE_MenuUIManager.Instance.isRenamingLevel) return;
+
             LE_MenuUIManager.Instance.EnterEditor(true, levelFileNameWithoutExtension, levelName);
         }
     }
