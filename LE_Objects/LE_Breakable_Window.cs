@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
+using static FS_LevelEditor.LE_Pressure_Plate;
 
 namespace FS_LevelEditor
 {
@@ -23,14 +24,33 @@ namespace FS_LevelEditor
         static AudioClip[] windowPartImpactSounds;
         static AudioClip[] windowPartCollisionSounds;
 
+        MeshRenderer border;
+
         BreakableWindowController script;
+
+        void Awake()
+        {
+            border = gameObject.GetChild("Content").GetComponent<MeshRenderer>();
+        }
 
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
             {
-                { "BreakWithDodge", true }
+                { "BreakWithDodge", true },
+                { "Border", true }
             };
+        }
+
+        void SetMeshInEditor(bool newState)
+        {
+            border.enabled = newState;
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            SetMeshInEditor(GetProperty<bool>("Border"));
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()
@@ -121,6 +141,10 @@ namespace FS_LevelEditor
             script.allParts = parts;
             script.fakeBreakParts = fakeParts;
 
+            bool borderState = (bool)GetProperty<bool>("Border");
+            content.GetComponent<MeshRenderer>().enabled = borderState;
+            content.GetComponent<MeshCollider>().enabled = borderState;
+
             // ---------- SETUP TAGS & LAYERS ----------
 
             script.m_meshRenderer.gameObject.layer = LayerMask.NameToLayer("Glass");
@@ -146,6 +170,14 @@ namespace FS_LevelEditor
                     properties["BreakWithDodge"] = boolValue;
                 }
             }
+            else if (name == "Border")
+            {
+                if (value is bool boolValue)
+                {
+                    properties["Border"] = boolValue;
+                    SetMeshInEditor(boolValue);
+                }
+            }
 
             return base.SetProperty(name, value);
         }
@@ -158,6 +190,7 @@ namespace FS_LevelEditor
                 // For some reason, SetAsBroken disables the mesh renderer, force it to be enabled.
                 //if (!invisibleMesh) script.m_meshRenderer.enabled = true;
             }
+
 
             return base.TriggerAction(actionName);
         }

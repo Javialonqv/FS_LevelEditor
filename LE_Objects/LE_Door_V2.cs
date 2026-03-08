@@ -36,10 +36,10 @@ namespace FS_LevelEditor
             {
                 { "IsAuto", false },
                 { "InitialState", InitialState.CLOSED },
-                { "InitialStateAuto", InitialStateAuto.LOCKED }
+                { "InitialStateAuto", InitialStateAuto.LOCKED },
+                { "Border", true }
             };
         }
-
         public override void OnInstantiated(LEScene scene)
         {
             if (scene == LEScene.Editor)
@@ -156,6 +156,8 @@ namespace FS_LevelEditor
             teleport.teleportZ = true;
             teleport.useListOfPoints = true;
 
+            cyanPillars.transform.parent.gameObject.SetActive(GetProperty<bool>("Border"));
+
             // ---------- SETUP TAGS & LAYERS ----------
 
             content.tag = GetProperty<bool>("IsAuto") ? "PorteAuto" : "Porte";
@@ -198,6 +200,14 @@ namespace FS_LevelEditor
                 if (value is bool)
                 {
                     properties["IsAuto"] = (bool)value;
+                    UpdateMeshInEditorAutomatically();
+                }
+            }
+            else if (name == "Border")
+            {
+                if (value is bool)
+                {
+                    properties["Border"] = (bool)value;
                     UpdateMeshInEditorAutomatically();
                 }
             }
@@ -307,6 +317,8 @@ namespace FS_LevelEditor
             {
                 UpdateMeshInEditor(GetProperty<InitialState>("InitialState"));
             }
+            bool borders = GetProperty<bool>("Borders");
+            cyanPillars.transform.parent.gameObject.SetActive(borders);
         }
         void UpdateMeshInEditor(InitialState newState)
         {
