@@ -137,7 +137,9 @@ namespace FS_LevelEditor.Editor.UI
 
 			{ (LE_Object.ObjectType.SAW, "WaitTime"), ("waypoints", null) }, // If it's checking for waypoints, the code already checks if the list count is greater than 0.
 
+#if EXP_ONLY
 			{ (LE_Object.ObjectType.KEYPAD, "AlternativeComb"), ("Alternative", true) }
+#endif
         };
 		static readonly Dictionary<LE_Object.ObjectType, string> addWaypointBtnLocKeys = new Dictionary<LE_Object.ObjectType, string>()
 		{
@@ -152,7 +154,7 @@ namespace FS_LevelEditor.Editor.UI
 			{ LE_Object.ObjectType.SEQUENCE, "AddSequencerWaypoint" },
 			{ LE_Object.ObjectType.SEQUENCE_WAYPOINT, "AddSequencerWaypoint" }
 		};
-        #endregion
+#endregion
 
         bool isSelectingAnObjectRightNow = false;
 		bool isSelectingMultipleObjects = false;
@@ -595,7 +597,7 @@ namespace FS_LevelEditor.Editor.UI
 
 				var created = CreateObjectAttribute(locName, propType, defaultValue, inputType, targetPropName, inputType == UICustomInputField.UIInputType.HEX_COLOR, tooltipKey, dontChangeYPos);
 
-                #region Add Options To Small Button If It Is
+				#region Add Options To Small Button If It Is
                 if (created is UISmallButtonMultiple smallBtn)
 				{
                     foreach (var enumEntry in Enum.GetNames(value.GetType()))
@@ -605,7 +607,7 @@ namespace FS_LevelEditor.Editor.UI
                         smallBtn.AddOption(correctLocKeysForProps.GetValueOrDefault(enumEntry, enumEntry), entryColor);
                     }
                 }
-                #endregion
+				#endregion
             }
 
 			if (ShouldHaveEditTextButton(defaultProps))
@@ -706,7 +708,7 @@ namespace FS_LevelEditor.Editor.UI
 			float yPos = 90 - (50 * (whereToCreateObjAttributesParent.gameObject.GetChilds().Where(x => !x.ExistsChild("IgnoreYPos")).ToArray().Length - 1));
 			if (dontChangeYPos) yPos += 50;
 
-            #region Create Title Label
+			#region Create Title Label
             if (attrType != AttributeType.BUTTON)
 			{
 				int titleWidth = 0;
@@ -731,9 +733,9 @@ namespace FS_LevelEditor.Editor.UI
 					text);
 				title.name = "Title";
 			}
-            #endregion
+			#endregion
 
-            #region Create Hastag If It's An Input Field
+			#region Create Hastag If It's An Input Field
             if (createHastag && attrType == AttributeType.INPUT_FIELD)
 			{
 				UILabel hashtagLOL = NGUI_Utils.CreateLabel(attributeParent.transform, new Vector3(15, yPos), new Vector3Int(20, NGUI_Utils.defaultLabelSize.y, 0), "#",
@@ -803,7 +805,7 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			else if (attrType == AttributeType.VECTOR)
 			{
-                #region Parse Default Values
+				#region Parse Default Values
                 string[] defaultValues = { "0", "0", "0" };
 				if (defaultValue is string defaultString && !string.IsNullOrEmpty(defaultString))
 				{
@@ -817,7 +819,7 @@ namespace FS_LevelEditor.Editor.UI
 						}
 					}
 				}
-                #endregion
+				#endregion
 
                 var inputTypeForVector = fieldType ?? UICustomInputField.UIInputType.FLOAT;
 
@@ -984,7 +986,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			if (isSelectingMultipleObjectsOfTheSameType)
 			{
-                #region Select Right Attributes Panel
+				#region Select Right Attributes Panel
                 bool specificAttributesFound = false;
 
                 attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
@@ -1026,7 +1028,7 @@ namespace FS_LevelEditor.Editor.UI
 
             bool specificAttributesFound = false;
 
-            #region Select Right Attributes Panel
+			#region Select Right Attributes Panel
             attributesPanels.ToList().ForEach(x => x.Value.SetActive(false));
 
 			specificAttributesFound = attributesPanels.TryGetValue(objComponent.objectType, out GameObject panel);
@@ -1035,12 +1037,12 @@ namespace FS_LevelEditor.Editor.UI
 				panel.SetActive(true);
                 UpdateObjectSpecificAttributes(panel, objComponent);
             }
-            #endregion
+			#endregion
 
-            #region Setup Global Attributes Toggle
+			#region Setup Global Attributes Toggle
             globalObjAttributesToggle.gameObject.SetActive(specificAttributesFound);
             globalObjAttributesToggle.SetToggleState(!specificAttributesFound, true);
-            #endregion
+			#endregion
 
 			UpdateGlobalObjectAttributes(objComponent.transform);
 
@@ -1064,7 +1066,7 @@ namespace FS_LevelEditor.Editor.UI
             globalObjectPanelsParent.gameObject.SetActive(show);
         }
 
-        #region Global Attributes Logic
+		#region Global Attributes Logic
         enum GlobalFieldType { Position, Rotation, Scale }
 		void OnGlobalAttributeFieldSelected(GlobalFieldType fieldType)
 		{
@@ -1210,7 +1212,7 @@ namespace FS_LevelEditor.Editor.UI
 			SetPropInToggleDependingOfPropInObjects(collisionToggle, (obj) => obj.collision);
 			SetPropInToggleDependingOfPropInObjects(invisibleMeshToggle, (obj) => obj.invisibleMesh);
 
-            #region Add Waypoint Button
+			#region Add Waypoint Button
             if (EditorController.Instance.multipleObjectsSelected)
 			{
 				// Only enable the button when ALL of the selected objects allow waypoints.
@@ -1282,9 +1284,9 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			#endregion
 		}
-        #endregion
+		#endregion
 
-        #region Object Specific Attributes Logic
+		#region Object Specific Attributes Logic
         void UpdateObjectSpecificAttributes(GameObject panelInUI, params List<LE_Object> objComps)
         {
             // OFFICIALLY, THIS IS THE ULTIMATE MOST BETTER AUTOMATED PROPERTY UPDATER OF THE WORLD!
@@ -1303,7 +1305,7 @@ namespace FS_LevelEditor.Editor.UI
 				
 				bool valuesAreTheSame = true;
 				object value = null;
-                #region Detect If Values Foreach Object Are Different
+				#region Detect If Values Foreach Object Are Different
                 if (objComps.Count == 1)
 				{
 					valuesAreTheSame = true;
@@ -1321,7 +1323,7 @@ namespace FS_LevelEditor.Editor.UI
 						}
 					}
                 }
-                #endregion
+				#endregion
 
                 if (attribute.ExistsChild("Field"))
                 {
@@ -1456,7 +1458,7 @@ namespace FS_LevelEditor.Editor.UI
                 }
             }
         }
-        #endregion
+		#endregion
 
 
         void SetVector3PropertyWithInput(string propertyName, UIVector3Fields fields, bool isGlobalProp = false)

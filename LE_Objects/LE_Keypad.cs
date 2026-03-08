@@ -47,8 +47,10 @@ namespace FS_LevelEditor
                 { "allCorrect", false },
                 { "onWinEvents", new List<LE_Event>() },
                 { "onFailEvents", new List<LE_Event>() },
-                { "Alternative", false },
+#if EXP_ONLY
+				{ "Alternative", false },
                 { "AlternativeComb", 1234 },
+#endif
             };
         }
 
@@ -126,27 +128,33 @@ namespace FS_LevelEditor
 			keycode.sourceToPlayOn = Controls.Instance.m_audioSource;
 
 			keycodeValue = (int)GetProperty<int>("Keycode");
+#if EXP_ONLY
 			alternativeValue = (int)GetProperty<int>("AlternativeComb");
+#endif
 
-            // Ensure it's always 4 digits (pad with zeros if needed)
-            var digits = keycodeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
+			// Ensure it's always 4 digits (pad with zeros if needed)
+			var digits = keycodeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
 
 			var il2cppDigits = new Il2CppSystem.Collections.Generic.List<int>();
 			foreach (var d in digits)
 				il2cppDigits.Add(d);
 
+#if EXP_ONLY
             var alternative_Combo = alternativeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
 
             var il2cppDigits_alternative = new Il2CppSystem.Collections.Generic.List<int>();
             foreach (var d in alternative_Combo)
                 il2cppDigits_alternative.Add(d);
+#endif
 
-            keycode.keycode.combination = il2cppDigits;
+			keycode.keycode.combination = il2cppDigits;
 			keycode.keycode.label = keycode.gameObject.GetChildAt("Screen/Label/Label.Label").GetComponent<UILabel>();
 			keycode.keycode.keycodeController = keycode;
-			keycode.keycode.useAlternativeCombination = GetProperty<bool>("Alternative");
+#if EXP_ONLY
+            keycode.keycode.useAlternativeCombination = GetProperty<bool>("Alternative");
 			keycode.keycode.alternateCombination = il2cppDigits_alternative;
-            keycode.keycode.birthdayInput = GetProperty<bool>("allCorrect");	
+#endif
+			keycode.keycode.birthdayInput = GetProperty<bool>("allCorrect");	
 
 			controller.objectsToActivate = new GameObject[] { keycode.gameObject };
 
