@@ -43,6 +43,7 @@ namespace FS_LevelEditor
                 { "CanUseTaser", true },
                 { "OnlyByTaser", false },
                 { "Cyan", false },
+                { "canBeUsed", true },
                 { "WhenInvertingEvents", new List<LE_Event>() },
                 { "WhenActivatingEvents", new List<LE_Event>() },
                 { "WhenDeactivatingEvents", new List<LE_Event>() },
@@ -85,7 +86,7 @@ namespace FS_LevelEditor
             controller.additionalInteractionGO = button.GetChild("AdditionalInteractionCollider_Sides");
             controller.allowManualInteractAnim = true;
             controller.allowWhenSwitchingUIContext = true;
-            controller.canBeUsed = true;
+            controller.canBeUsed = GetProperty<bool>("canBeUsed");
             controller.controlScript = Controls.Instance;
             controller.handleAnimator = button.GetChildAt("ButtonMesh/HandleHolder").GetComponent<Animator>();
             controller.iconActivationSound = t_switch.iconActivationSound;
@@ -226,14 +227,22 @@ namespace FS_LevelEditor
                 }
             }
             else if (name == "OnlyByTaser")
-			{
-				if (value is bool)
-				{
-					properties["OnlyByTaser"] = (bool)value;
-					return true;
-				}
-			}
-			else if (name == "WhenActivatingEvents")
+            {
+                if (value is bool)
+                {
+                    properties["OnlyByTaser"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "canBeUsed")
+            {
+                if (value is bool)
+                {
+                    properties["canBeUsed"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "WhenActivatingEvents")
             {
                 if (value is List<LE_Event>)
                 {
@@ -318,6 +327,18 @@ namespace FS_LevelEditor
             else if (actionName == "ToggleUsable")
             {
                 controller.InvertUsableState();
+            }
+            else if (actionName == "SetCanBeUsed_True")
+            {
+                controller.canBeUsed = true;
+            }
+            else if (actionName == "SetCanBeUsed_False")
+            {
+                controller.canBeUsed = false;
+            }
+            else if (actionName == "ToggleCanBeUsed")
+            {
+                controller.canBeUsed = !controller.canBeUsed;
             }
 
             return base.TriggerAction(actionName);

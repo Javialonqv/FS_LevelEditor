@@ -643,6 +643,38 @@ namespace FS_LevelEditor
                         targetObj.TriggerAction("ToggleUsable");
                         break;
                 }
+
+                switch (@event.canBeUsedState)
+                {
+                    case LE_Event.CanBeUsedState.Enable:
+                        targetObj.TriggerAction("SetCanBeUsed_True");
+                        break;
+
+                    case LE_Event.CanBeUsedState.Disable:
+                        targetObj.TriggerAction("SetCanBeUsed_False");
+                        break;
+
+                    case LE_Event.CanBeUsedState.Toggle:
+                        targetObj.TriggerAction("ToggleCanBeUsed");
+                        break;
+                }
+            }
+            else if (targetObj is LE_Keypad)
+            {
+                switch (@event.canBeUsedState)
+                {
+                    case LE_Event.CanBeUsedState.Enable:
+                        targetObj.TriggerAction("SetCanBeUsed_True");
+                        break;
+
+                    case LE_Event.CanBeUsedState.Disable:
+                        targetObj.TriggerAction("SetCanBeUsed_False");
+                        break;
+
+                    case LE_Event.CanBeUsedState.Toggle:
+                        targetObj.TriggerAction("ToggleCanBeUsed");
+                        break;
+                }
             }
             else if (targetObj is LE_Pressure_Plate)
             {

@@ -112,6 +112,10 @@ namespace FS_LevelEditor.Editor.UI
         UIDropdownPatcher switchStateButton;
         UITogglePatcher executeSwitchActionsToggle;
         UIDropdownPatcher switchUsableStateButton;
+        UIDropdownPatcher switchCanBeUsedStateButton;
+        //-----------------------------------
+        GameObject keypadObjectsSettings;
+        UIDropdownPatcher keypadCanBeUsedStateButton;
         //-----------------------------------
         GameObject pressurePlateObjectsSettings;
         UIDropdownPatcher pressurePlateUsableStateButton;
@@ -193,6 +197,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateCeilingLightObjectSettings();
                 Instance.CreateHealthAndAmmoPacksObjectSettings();
                 Instance.CreateSwitchObjectSettings();
+                Instance.CreateKeypadObjectSettings();
                 Instance.CreatePressurePlateObjectSettings();
                 Instance.CreateFlameTrapObjectSettings();
                 Instance.CreateScreenObjectSettings();
@@ -1315,6 +1320,10 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     currentActiveObjectPanel = switchObjectsSettings;
                 }
+                else if (targetObj is LE_Keypad)
+                {
+                    currentActiveObjectPanel = keypadObjectsSettings;
+                }
                 else if (targetObj is LE_Pressure_Plate)
                 {
                     currentActiveObjectPanel = pressurePlateObjectsSettings;
@@ -1476,6 +1485,11 @@ namespace FS_LevelEditor.Editor.UI
                 executeSwitchActionsToggle.Set(@event.executeSwitchActions, instant: true);
 
                 switchUsableStateButton.SelectOption((int)@event.switchUsableState);
+                switchCanBeUsedStateButton.SelectOption((int)@event.canBeUsedState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.KEYPAD)
+            {
+                keypadCanBeUsedStateButton.SelectOption((int)@event.canBeUsedState);
             }
             else if (@event.targetObjType == LE_Object.ObjectType.PRESSURE_PLATE)
             {
@@ -2260,6 +2274,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateSwitchStateSettings();
             CreateExecuteSwitchActionsToggle();
             CreateSwitchUsableStateSettings();
+            CreateSwitchCanBeUsedStateSettings();
         }
         void CreateSwitchObjectsTitleLabel()
         {
@@ -2312,6 +2327,50 @@ namespace FS_LevelEditor.Editor.UI
             switchUsableStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchUsableStateDropdownChanged)));
 
             switchUsableStateButton.gameObject.SetActive(true);
+        }
+        void CreateSwitchCanBeUsedStateSettings()
+        {
+            switchCanBeUsedStateButton = NGUI_Utils.CreateDropdown(switchObjectsSettings.transform, new Vector3(0, -120), Vector3.one * 0.8f);
+            switchCanBeUsedStateButton.SetTitle("Set Can Be Used");
+            switchCanBeUsedStateButton.AddOption("Do Nothing", true);
+            switchCanBeUsedStateButton.AddOption("Enable", false);
+            switchCanBeUsedStateButton.AddOption("Disable", false);
+            switchCanBeUsedStateButton.AddOption("Toggle", false);
+            switchCanBeUsedStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchCanBeUsedStateDropdownChanged)));
+
+            switchCanBeUsedStateButton.gameObject.SetActive(true);
+        }
+        // -----------------------------------------
+        void CreateKeypadObjectSettings()
+        {
+            keypadObjectsSettings = new GameObject("Keypad");
+            keypadObjectsSettings.transform.parent = eventOptionsParent.transform;
+            keypadObjectsSettings.transform.localPosition = Vector3.zero;
+            keypadObjectsSettings.transform.localScale = Vector3.one;
+            keypadObjectsSettings.SetActive(false);
+
+            CreateKeypadObjectsTitleLabel();
+            CreateKeypadCanBeUsedStateSettings();
+        }
+        void CreateKeypadObjectsTitleLabel()
+        {
+            UILabel titleLabel = NGUI_Utils.CreateLabel(keypadObjectsSettings.transform, Vector3.up * 40,
+                new Vector3Int(700, 40, 0), "KEYPAD OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "TitleLabel";
+            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            titleLabel.fontSize = 35;
+        }
+        void CreateKeypadCanBeUsedStateSettings()
+        {
+            keypadCanBeUsedStateButton = NGUI_Utils.CreateDropdown(keypadObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            keypadCanBeUsedStateButton.SetTitle("Set Can Be Used");
+            keypadCanBeUsedStateButton.AddOption("Do Nothing", true);
+            keypadCanBeUsedStateButton.AddOption("Enable", false);
+            keypadCanBeUsedStateButton.AddOption("Disable", false);
+            keypadCanBeUsedStateButton.AddOption("Toggle", false);
+            keypadCanBeUsedStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnKeypadCanBeUsedStateDropdownChanged)));
+
+            keypadCanBeUsedStateButton.gameObject.SetActive(true);
         }
         // -----------------------------------------
         void CreatePressurePlateObjectSettings()
@@ -2821,6 +2880,15 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.switchUsableState = (LE_Event.SwitchUsableState)switchUsableStateButton.currentlySelectedID;
         }
+        void OnSwitchCanBeUsedStateDropdownChanged()
+        {
+            currentSelectedEvent.canBeUsedState = (LE_Event.CanBeUsedState)switchCanBeUsedStateButton.currentlySelectedID;
+        }
+        // -----------------------------------------
+        void OnKeypadCanBeUsedStateDropdownChanged()
+        {
+            currentSelectedEvent.canBeUsedState = (LE_Event.CanBeUsedState)keypadCanBeUsedStateButton.currentlySelectedID;
+        }
         // -----------------------------------------
         void OnPressurePlateUsableStateDropdownChanged()
         {
@@ -3045,6 +3113,8 @@ public class LE_Event
     public bool executeSwitchActions { get; set; } = true;
     public enum SwitchUsableState { Do_Nothing, Usable, Unusable, Toggle }
     public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Do_Nothing;
+    public enum CanBeUsedState { Do_Nothing, Enable, Disable, Toggle }
+    public CanBeUsedState canBeUsedState { get; set; } = CanBeUsedState.Do_Nothing;
     #endregion
 
     #region Pressure Plate Options

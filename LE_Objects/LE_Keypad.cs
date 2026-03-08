@@ -18,8 +18,9 @@ namespace FS_LevelEditor
 	[MelonLoader.RegisterTypeInIl2Cpp]
 	public class LE_Keypad : LE_Object
 	{
-        public override string contentObjectName => "LE_Keypad";
+		public override string contentObjectName => "LE_Keypad";
 
+		InterrupteurController controller;
 		private int keycodeValue = 0;
 		private int alternativeValue = 0;
 		public void Awake()
@@ -41,12 +42,13 @@ namespace FS_LevelEditor
             return new Dictionary<string, object>
             {
                 { "Keycode", 1234 },
+				{ "LeaveOnIncorrect", false },
+				{ "canBeUsed", true },
+                { "allCorrect", false },
                 { "onWinEvents", new List<LE_Event>() },
                 { "onFailEvents", new List<LE_Event>() },
-				{ "LeaveOnIncorrect", false },
-				{ "Alternative", false },
-				{ "AlternativeComb", 1234 },
-                { "allCorrect", false }
+                { "Alternative", false },
+                { "AlternativeComb", 1234 },
             };
         }
 
@@ -65,11 +67,11 @@ namespace FS_LevelEditor
 			button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
 			button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
 
-			InterrupteurController controller = button.AddComponent<InterrupteurController>();
+			controller = button.AddComponent<InterrupteurController>();
 
 			controller.ActivateButtonSound = t_keycode.ActivateButtonSound;
 			controller.allowWhenSwitchingUIContext = true;
-			controller.canBeUsed = true;
+			controller.canBeUsed = GetProperty<bool>("canBeUsed");
 			controller.controlScript = Controls.Instance;
 			controller.iconActivationSound = t_keycode.iconActivationSound;
 			controller.iconDeactivationSound = t_keycode.iconDeactivationSound;
@@ -216,6 +218,14 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "canBeUsed")
+            {
+                if (value is bool)
+                {
+                    properties["canBeUsed"] = (bool)value;
+                    return true;
+                }
+            }
             else if (name == "LeaveOnIncorrect")
             {
                 if (value is bool)
@@ -262,7 +272,28 @@ namespace FS_LevelEditor
 			};
 		}
 
-        public override void SetCollidersStateForEdgeCase(bool newEnabledState)
+		public override bool TriggerAction(string actionName)
+		{
+			if (actionName == "SetCanBeUsed_True")
+			{
+				if (controller != null) controller.canBeUsed = true;
+				return true;
+			}
+			else if (actionName == "SetCanBeUsed_False")
+			{
+				if (controller != null) controller.canBeUsed = false;
+				return true;
+			}
+			else if (actionName == "ToggleCanBeUsed")
+			{
+				if (controller != null) controller.canBeUsed = !controller.canBeUsed;
+				return true;
+			}
+
+			return base.TriggerAction(actionName);
+		}
+
+		public override void SetCollidersStateForEdgeCase(bool newEnabledState)
         {
             contentObject.GetComponent<BoxCollider>().isTrigger = !newEnabledState;
         }
