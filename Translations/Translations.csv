@@ -91,8 +91,7 @@ Position,Position,Posición,Позиція
 Rotation,Rotation,Rotación,Поворот
 Scale,Scale,Escala,Розмір
 Collision,Collision,Colisión,Колізія
-tooltip.SetActiveAtStartToggle,Defines if the object will be [00FFFF]spawned[-] or [FF0000]not[-] at the beginning of the level.,Define si el objeto estará [00FFFF]activado[-] o [FF0000]no[-] al inicio del nivel.,"Вирішує, чи об'єкт буде [00FFFF]активний[-] чи [FF0000]ні[-] на початку рівня."
-tooltip.EventsMovingPlatformStateTooltip,Defines what will happen with the [00FFFF]moving platform[-] on events.,Define qué pasará con la [00FFFF]plataforma móvil[-] en los eventos.,"Вирішує, що будет с [00FFFF]платформою[-] при виконанні."
+tooltip.SetActiveAtStartToggle,Defines if the object will be [00FFFF]enabled[-] or [FF0000]not[-] at the beginning of the level.,Define si el objeto estará [00FFFF]activado[-] o [FF0000]no[-] al inicio del nivel.,"Вирішує, чи об'єкт буде [00FFFF]активний[-] чи [FF0000]ні[-] на початку рівня."
 ColorHex,Color (Hex),Color (Hex),Колір (Hex)
 Intensity,Intensity,Intensidad,Інтенсивність
 Range,Range,Rango,Діапазон
@@ -193,3 +192,5 @@ events.OnSuccess,On Success,Al Completar,
 SequencerID,Sequencer ID,ID del Secuenciador,
 InvertDisplayOrder,Invert Display Order,Invertir Orden,
 UseNumbers,Use Numbers,Usar Números,
+HasFlashlight,Has Flashlight,Con Linterna,
+DebugAllowed,Debug Allowed,Permitir Modo Debug,
