@@ -47,7 +47,7 @@ namespace FS_LevelEditor
 
             if (objectsList == null) return false;
 
-            LE_Object newTarget = objectsList.Find(obj => obj.objectType == targetObjectType && obj.objectID == objectID);
+            LE_Object newTarget = objectsList.Find(obj => obj.objectType == targetObjectType && obj.objectID == objectID && (obj.otherObjThisIsLinkedTo == null || obj.otherObjThisIsLinkedTo == mainObject));
 
             if (targetObject)
             {
