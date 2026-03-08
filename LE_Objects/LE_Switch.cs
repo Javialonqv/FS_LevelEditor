@@ -11,6 +11,7 @@ using Unity.Services.Analytics;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using static Il2Cpp.KeycodeController;
 
 namespace FS_LevelEditor
 {
@@ -109,10 +110,6 @@ namespace FS_LevelEditor
             controller.offColor = InterrupteurController.ColorType.RED;
             controller.offMaterials = t_switch.offMaterials;
             controller.onColor = InterrupteurController.ColorType.GREEN;
-            if ((bool)GetProperty<bool>("Cyan"))
-            {
-                controller.onColor = InterrupteurController.ColorType.CYAN;
-            }
             controller.onMaterials = t_switch.onMaterials;
             controller.unusableColor = InterrupteurController.ColorType.BLACK;
             controller.unusableCoverAnimator = button.GetChildAt("ButtonMesh/UnusableCoverHolder").GetComponent<Animator>();
@@ -121,9 +118,9 @@ namespace FS_LevelEditor
             controller.objectsToDestroy = new GameObject[0];
             controller.objectsToEnableOnly = new GameObject[0];
             controller.objectToActivate = gameObject;
-            //controller.m_onActivate = new UnityEngine.Events.UnityEvent();
-            //controller.m_onActivate_HandOnly = new UnityEngine.Events.UnityEvent();
-            //controller.m_onActivate_TaserOnly = new UnityEngine.Events.UnityEvent();
+            controller.m_onActivate = new UnityEngine.Events.UnityEvent();
+            controller.m_onActivate_HandOnly = new UnityEngine.Events.UnityEvent();
+            controller.m_onActivate_TaserOnly = new UnityEngine.Events.UnityEvent();
             controller.messagesOnActivate = new Messenger[0];
             controller.dialogToActivate = new string[0];
 
@@ -155,6 +152,21 @@ namespace FS_LevelEditor
                 case SwitchState.UNUSABLE:
                     controller.IsNowUnusable();
                     break;
+            }
+
+            if ((bool)GetProperty<bool>("Cyan"))
+            {
+                controller.onColor = InterrupteurController.ColorType.CYAN;
+                controller.m_onActivate.AddListener((UnityEngine.Events.UnityAction)delegate {
+                    controller.offColor = InterrupteurController.ColorType.CYAN;
+                });
+                controller.m_onActivate_HandOnly.AddListener((UnityEngine.Events.UnityAction)delegate {
+                    controller.offColor = InterrupteurController.ColorType.CYAN;
+                });
+                controller.m_onActivate_TaserOnly.AddListener((UnityEngine.Events.UnityAction)delegate {
+                    controller.offColor = InterrupteurController.ColorType.CYAN;
+                });
+
             }
 
             ConfigureEvents(controller);
