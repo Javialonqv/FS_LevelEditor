@@ -475,24 +475,6 @@ namespace FS_LevelEditor.Editor.UI
             };
             #endregion
 
-            #region Move Up
-            ContextMenuOption moveUpOption = new ContextMenuOption()
-            {
-                name = "Move Up",
-                isEnabled = selectedEventIDForContextMenu > 0,
-                onClick = () => MoveEventUp(selectedEventIDForContextMenu)
-            };
-            #endregion
-
-            #region Move Down
-            ContextMenuOption moveDownOption = new ContextMenuOption()
-            {
-                name = "Move Down",
-                isEnabled = selectedEventIDForContextMenu < GetEventsList().Count - 1,
-                onClick = () => MoveEventDown(selectedEventIDForContextMenu)
-            };
-            #endregion
-
             #region Delete
             ContextMenuOption deleteOption = new ContextMenuOption()
             {
@@ -505,8 +487,6 @@ namespace FS_LevelEditor.Editor.UI
             eventsContextMenu.AddOption(copyToOption);
             eventsContextMenu.AddOption(moveToOption);
             eventsContextMenu.AddOption(duplicateOption);
-            eventsContextMenu.AddOption(moveUpOption);
-            eventsContextMenu.AddOption(moveDownOption);
             eventsContextMenu.AddOption(deleteOption);
         }
         #endregion
