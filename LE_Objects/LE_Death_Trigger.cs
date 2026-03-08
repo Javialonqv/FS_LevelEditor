@@ -194,6 +194,9 @@ namespace FS_LevelEditor
 
         void OnTriggerEnter(Collider collider)
         {
+            // Only respond to the player, not other objects like mines or debris
+            if (collider.tag != "Player") return;
+
             if (patchRoutine != null)
             {
                 MelonCoroutines.Stop(patchRoutine);
@@ -201,6 +204,9 @@ namespace FS_LevelEditor
         }
         void OnTriggerExit(Collider collider)
         {
+            // Only respond to the player, not other objects like mines or debris
+            if (collider.tag != "Player") return;
+
             patchRoutine = (Coroutine)MelonCoroutines.Start(PatchRoutine());
         }
 
