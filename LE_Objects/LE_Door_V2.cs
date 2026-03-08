@@ -317,7 +317,8 @@ namespace FS_LevelEditor
             {
                 UpdateMeshInEditor(GetProperty<InitialState>("InitialState"));
             }
-            bool borders = GetProperty<bool>("Borders");
+
+            bool borders = GetProperty<bool>("Border");
             cyanPillars.transform.parent.gameObject.SetActive(borders);
         }
         void UpdateMeshInEditor(InitialState newState)
