@@ -10,6 +10,8 @@ using UnityEngine;
 using FS_LevelEditor.Editor;
 using FS_LevelEditor.Playmode;
 using Il2CppTMPro;
+using System.Collections;
+using MelonLoader;
 
 namespace FS_LevelEditor
 {
@@ -43,23 +45,33 @@ namespace FS_LevelEditor
         {
             if (scene == LEScene.Playmode)
             {
-                targetSequencer = objectLink.targetObject ? objectLink.targetObject as LE_Sequence : null;
-                if (targetSequencer)
-                {
-                    // Force the first LED to be active, it isn't for some... reason.
-                    targetSequencer.sequence.m_LEDIndicators[0].SetOnMaterial();
-
-                    // Force the leds to be in the right values, for some reason they aren't.
-                    foreach (var led in targetSequencer.sequence.m_LEDIndicators)
-                    {
-                        led.m_textMesh.transform.localPosition = new Vector3(-0.8f, 0, 0);
-                        led.m_textMesh.transform.localEulerAngles = new Vector3(0, 90, 0);
-                        led.m_textMesh.alignment = Il2CppTMPro.TextAlignmentOptions.Center;
-                    }
-                }
+                MelonCoroutines.Start(WaitForSequenceInit());
             }
 
             base.ObjectStart(scene);
+        }
+        IEnumerator WaitForSequenceInit()
+        {
+            while (targetSequencer.sequence == null)
+                yield return null;
+
+            InitializeLEDs();
+        }
+
+        void InitializeLEDs()
+        {
+            if (targetSequencer == null || targetSequencer.sequence == null) return;
+
+            // Force the first LED to be active
+            targetSequencer.sequence.m_LEDIndicators[0].SetOnMaterial();
+
+            // Force the LEDs to be in the right values
+            foreach (var led in targetSequencer.sequence.m_LEDIndicators)
+            {
+                led.m_textMesh.transform.localPosition = new Vector3(-0.8f, 0, 0);
+                led.m_textMesh.transform.localEulerAngles = new Vector3(0, 90, 0);
+                led.m_textMesh.alignment = TextAlignmentOptions.Center;
+            }
         }
 
         public override bool SetProperty(string name, object value)

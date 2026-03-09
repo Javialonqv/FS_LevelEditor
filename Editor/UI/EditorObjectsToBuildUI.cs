@@ -26,6 +26,8 @@ namespace FS_LevelEditor.Editor.UI
         List<List<GameObject>> objectsToBuildGrids = new();
         static readonly Dictionary<LE_Object.ObjectType, Texture> iconCache = new();
 
+        List<GameObject> allActiveSwatches = new();
+
         UIButtonPatcher previousGridButton, nextGridButton;
 
         int currentCategoryID;
@@ -207,11 +209,15 @@ namespace FS_LevelEditor.Editor.UI
                 button.transform.localScale = Vector3.one * 0.8f;
                 button.GetComponent<UIButtonScale>().mScale = Vector3.one * 0.8f;
 
+                allActiveSwatches.Add(button.gameObject.GetChild("ActiveSwatch"));
+
                 if (i % 12 == 0 || i == 0) currentGridTable.Reposition(); // Reposition if in this iteration we created a grid.
             }
 
             objectsToBuildParentsByCategories.Add(categoryObjectsBtnParent);
             objectsToBuildGrids.Add(grids);
+
+
 
             return categoryObjectsBtnParent;
         }
@@ -250,14 +256,7 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		public void SelectObjToBuild(int buttonID)
         {
-            // Disable the "selected" obj in the other buttons.
-            foreach (var grid in objectsToBuildParentsByCategories[currentCategoryID].GetChilds())
-            {
-                foreach (var button in grid.GetChilds())
-                {
-                    button.GetChild("ActiveSwatch").SetActive(false);
-                }
-            }
+            allActiveSwatches.ForEach(swatch => swatch.SetActive(false));
 
             GameObject currentGrid = objectsToBuildGrids[currentCategoryID][currentGridID];
             GameObject newSelectedButton = currentGrid.transform.GetChild(buttonID).gameObject;

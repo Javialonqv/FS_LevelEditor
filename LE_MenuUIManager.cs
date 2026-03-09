@@ -499,7 +499,15 @@ namespace FS_LevelEditor
                 }
 
                 return;
+
             }
+
+            // Hide the "no levels" message if it exists and re-enable the buttons parent
+            if (noLevelsMessageLabel != null)
+            {
+                noLevelsMessageLabel.SetActive(false);
+            }
+            lvlButtonsParent.SetActive(true);
 
             List<string> keys = new List<string>(levels.Keys);
 
