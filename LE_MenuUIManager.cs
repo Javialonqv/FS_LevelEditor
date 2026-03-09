@@ -227,7 +227,7 @@ namespace FS_LevelEditor
             // Get the template, spawn the copy and set some parameters.
             backButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuPanel.transform);
             backButton.name = "BackButton";
-            backButton.transform.localPosition = new Vector3(-690f, 290f, 0f);
+            backButton.transform.localPosition = new Vector3(-690f, 320f, 0f);
 
             // Remove unnecesary components.
             GameObject.Destroy(backButton.GetComponent<ButtonController>());
@@ -235,8 +235,8 @@ namespace FS_LevelEditor
 
             // Set the sprite width and height, and in the box collider as well.
             backButton.GetComponent<UISprite>().width = 250;
-            backButton.GetComponent<UISprite>().height = 80;
-            backButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
+            backButton.GetComponent<UISprite>().height = 50;
+            backButton.GetComponent<BoxCollider>().size = new Vector3(250, 50);
 
             // Destroy the FUCKING UILocalize component, I hate it.
             GameObject.Destroy(backButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
@@ -277,7 +277,7 @@ namespace FS_LevelEditor
             // Get the template, spawn the copy and set some parameters.
             addButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuPanel.transform);
             addButton.name = "AddButton";
-            addButton.transform.localPosition = new Vector3(690f, 290f, 0f);
+            addButton.transform.localPosition = new Vector3(690f, 320f, 0f);
 
             // Remove unnecesary components.
             GameObject.Destroy(addButton.GetComponent<ButtonController>());
@@ -285,8 +285,8 @@ namespace FS_LevelEditor
 
             // Set the sprite width and height, and in the box collider as well.
             addButton.GetComponent<UISprite>().width = 250;
-            addButton.GetComponent<UISprite>().height = 80;
-            addButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
+            addButton.GetComponent<UISprite>().height = 50;
+            addButton.GetComponent<BoxCollider>().size = new Vector3(250, 50);
 
             // Destroy the FUCKING UILocalize component, I hate it.
             GameObject.Destroy(addButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
@@ -324,7 +324,7 @@ namespace FS_LevelEditor
             // Get the template, spawn the copy and set some parameters.
             GameObject folderButton = Instantiate(NGUI_Utils.buttonTemplate, leMenuPanel.transform);
             folderButton.name = "OpenFolderButton";
-            folderButton.transform.localPosition = new Vector3(420f, 290f, 0f); // Position it 200 units left of the Add button (690f)
+            folderButton.transform.localPosition = new Vector3(420f, 320f, 0f); // Position it 200 units left of the Add button (690f)
 
             // Remove unnecessary components
             GameObject.Destroy(folderButton.GetComponent<ButtonController>());
@@ -332,8 +332,8 @@ namespace FS_LevelEditor
 
             // Set the sprite width and height, and in the box collider as well
             folderButton.GetComponent<UISprite>().width = 250;
-            folderButton.GetComponent<UISprite>().height = 80;
-            folderButton.GetComponent<BoxCollider>().size = new Vector3(250, 80);
+            folderButton.GetComponent<UISprite>().height = 50;
+            folderButton.GetComponent<BoxCollider>().size = new Vector3(250, 50);
 
             // Remove UILocalize component
             GameObject.Destroy(folderButton.GetChildAt("Background/Label").GetComponent<UILocalize>());
@@ -420,7 +420,7 @@ namespace FS_LevelEditor
         public void CreatePreviousListButton()
         {
             // Create the button - positioned after the metadata panel (which is at -630f with width 360)
-            UIButtonPatcher btnPrevious = NGUI_Utils.CreateButton(leMenuPanel.transform, new Vector3(-324, -70), new Vector3Int(30, 100, 0), "<");
+            UIButtonPatcher btnPrevious = NGUI_Utils.CreateButton(leMenuPanel.transform, new Vector3(-324, -40), new Vector3Int(30, 100, 0), "<");
             btnPrevious.name = "BtnPrevious";
 
             btnPrevious.onClick += PreviousLevelsList;
@@ -429,7 +429,7 @@ namespace FS_LevelEditor
         }
         public void CreateNextListButton()
         {
-            UIButtonPatcher btnNext = NGUI_Utils.CreateButton(leMenuPanel.transform, new Vector3(840, -70), new Vector3Int(30, 100, 0), ">");
+            UIButtonPatcher btnNext = NGUI_Utils.CreateButton(leMenuPanel.transform, new Vector3(840, -40), new Vector3Int(30, 100, 0), ">");
             btnNext.name = "BtnNext";
 
             btnNext.onClick += NextLevelsList;
@@ -516,11 +516,11 @@ namespace FS_LevelEditor
                 string levelFileNameWithoutExtension = keys[i];
                 LevelData data = levels[levelFileNameWithoutExtension];
 
-                if (i % 7 == 0 || i == 0)
+                if (i % 8 == 0 || i == 0)
                 {
-                    currentGrid = new GameObject($"Grid {(int)(i / 7)}");
+                    currentGrid = new GameObject($"Grid {(int)(i / 8)}");
                     currentGrid.transform.parent = lvlButtonsParent.transform;
-                    currentGrid.transform.localPosition = new Vector3(280f, 170f, 0f); // Shifted more right to avoid arrow overlap
+                    currentGrid.transform.localPosition = new Vector3(280f, 230f, 0f); // Shifted more right to avoid arrow overlap
                     currentGrid.transform.localScale = Vector3.one;
 
                     UIGrid grid = currentGrid.AddComponent<UIGrid>();
@@ -1137,8 +1137,8 @@ namespace FS_LevelEditor
 
             //Why leave them on the screen if you're on the first or last page?
             // Cuz it will look MUCH better with them on screen - Gray from future.
-            //previousPageButton.gameObject.SetActive(previousPageButton.button.isEnabled);
-            //nextPageButton.gameObject.SetActive(nextPageButton.button.isEnabled);
+            previousPageButton.gameObject.SetActive(previousPageButton.button.isEnabled);
+            nextPageButton.gameObject.SetActive(nextPageButton.button.isEnabled);
         }
         private void OnApplicationFocus(bool hasFocus)
         {
@@ -1158,7 +1158,7 @@ namespace FS_LevelEditor
             // Create the panel container
             metadataPreviewPanel = new GameObject("MetadataPreviewPanel");
             metadataPreviewPanel.transform.parent = leMenuPanel.transform;
-            metadataPreviewPanel.transform.localPosition = new Vector3(-630f, -70f, 0f);
+            metadataPreviewPanel.transform.localPosition = new Vector3(-630f, -40f, 0f);
             metadataPreviewPanel.transform.localScale = Vector3.one;
 
             // Background
@@ -1168,7 +1168,7 @@ namespace FS_LevelEditor
             bgSprite.type = UIBasicSprite.Type.Sliced;
             bgSprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
             bgSprite.width = 360;
-            bgSprite.height = 550;
+            bgSprite.height = 580;
             bgSprite.depth = 0;
 
             // Create a content container that will be hidden/shown

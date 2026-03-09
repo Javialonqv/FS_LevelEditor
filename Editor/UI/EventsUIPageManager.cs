@@ -480,19 +480,10 @@ namespace FS_LevelEditor.Editor.UI
             };
             #endregion
 
-            #region Delete
-            ContextMenuOption deleteOption = new ContextMenuOption()
-            {
-                name = "Delete",
-                onClick = () => DeleteEvent(selectedEventIDForContextMenu)
-            };
-            #endregion
-
             eventsContextMenu = ContextMenu.Create(eventsPanel.transform, depth: 3);
             eventsContextMenu.AddOption(copyToOption);
             eventsContextMenu.AddOption(moveToOption);
             eventsContextMenu.AddOption(duplicateOption);
-            eventsContextMenu.AddOption(deleteOption);
         }
         #endregion
 

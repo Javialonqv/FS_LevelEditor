@@ -93,10 +93,13 @@ namespace FS_LevelEditor.Editor.UI
         void RefreshOptions()
         {
             gameObject.DeleteAllChildren();
+            createdMenuButtons.Clear();
 
             for (int i = 0; i < menuOptions.Count; i++)
             {
-                var button = CreateOptionButton(menuOptions[i], false);
+                int optionIndex = verticalDir == VerticalDirection.Up ? (menuOptions.Count - 1 - i) : i;
+
+                var button = CreateOptionButton(menuOptions[optionIndex], false);
                 float xPos = horizontalDir == HorizontalDirection.Right ? 0 : -optionsWidth;
                 float yPos = verticalDir == VerticalDirection.Down ? -(optionsHeight * i) : optionsHeight * i;
                 button.transform.localPosition = new Vector3(xPos, yPos);
