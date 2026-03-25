@@ -42,6 +42,14 @@ namespace FS_LevelEditor
             }
         }
 
+        public static bool IsUnity6
+        {
+            get
+            {
+                return Application.unityVersion.StartsWith("6000");
+            }
+        }
+
         public static void LoadMaterials(Il2CppAssetBundle bundle)
         {
             propsMat = bundle.Load<Material>("Props_Mat");
