@@ -14,7 +14,7 @@
 		<AssemblyName>FS_LevelEditor</AssemblyName>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Configurations>Debug;Release;Visible T bonds;Release NON EXP</Configurations>
+		<Configurations>Debug;Release;Visible T bonds;Release NON EXP;Release NO UNITY 6</Configurations>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -39,11 +39,15 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NON EXP|AnyCPU'" />
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DefineConstants>$(DefineConstants);EXP_ONLY;UNITY_6</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release NO UNITY 6|AnyCPU'">
 	  <DefineConstants>$(DefineConstants);EXP_ONLY</DefineConstants>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <DefineConstants>$(DefineConstants);EXP_ONLY</DefineConstants>
+	  <DefineConstants>$(DefineConstants);EXP_ONLY;UNITY_6</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -78,6 +82,7 @@
 		<Compile Include="SingleObjectLink.cs" />
 		<Compile Include="SingleObjectLinks\SequencerScreenObjectLink.cs" />
 		<Compile Include="UI_Related\UIVector3Fields.cs" />
+		<Compile Include="Utils\AnimationUtils.cs" />
 		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="LE_Objects\LE_Bridge.cs" />
 		<Compile Include="LE_Objects\LE_Cube_Killplane.cs" />
