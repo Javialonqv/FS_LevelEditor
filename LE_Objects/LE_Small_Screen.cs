@@ -100,7 +100,7 @@ namespace FS_LevelEditor
             foreach (var clip in t_screen.m_contentAnim)
             {
                 AnimationState state = clip.Cast<AnimationState>();
-                screen.m_contentAnim.AddClip(state.clip, state.name);
+                screen.m_contentAnim.AddClipFixed(state.clip, state.name);
             }
 
             screen.m_mainLabelRenderer.material = t_screen.m_mainLabelRenderer.material;

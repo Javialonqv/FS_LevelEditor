@@ -97,7 +97,7 @@ namespace FS_LevelEditor
             foreach (var clip in t_pressurePlate.m_animation)
             {
                 AnimationState state = clip.Cast<AnimationState>();
-                script.m_animation.AddClip(state.clip, state.name);
+                script.m_animation.AddClipFixed(state.clip, state.name);
             }
             content.GetChild("MeshDynamic").GetComponent<BoxCollider>().material =
             t_pressurePlate.gameObject.GetChild("MeshDynamic").GetComponent<BoxCollider>().material;

@@ -127,7 +127,7 @@ namespace FS_LevelEditor
             foreach (var state in template.GetComponent<Animation>())
             {
                 var animState = state.Cast<AnimationState>();
-                lightComp.GetComponent<Animation>().AddClip(animState.clip, animState.name);
+                lightComp.GetComponent<Animation>().AddClipFixed(animState.clip, animState.name);
             }
 
             gameObject.GetChild("Content").SetActive(true);

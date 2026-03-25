@@ -135,7 +135,7 @@ namespace FS_LevelEditor
             foreach (var state in t_doorV2.doorMeshV2.GetComponent<Animation>())
             {
                 var animState = state.Cast<AnimationState>();
-                doorScript.doorMeshV2.GetComponent<Animation>().AddClip(animState.clip, animState.name);
+                doorScript.doorMeshV2.GetComponent<Animation>().AddClipFixed(animState.clip, animState.name);
             }
             doorScript.doorMeshV2.GetComponent<Animation>().clip = t_doorV2.doorMeshV2.GetComponent<Animation>().clip;
 
