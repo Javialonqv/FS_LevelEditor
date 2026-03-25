@@ -19,7 +19,7 @@ namespace FS_LevelEditor
         static Vector3[] windowPartsOriginalPositions;
         static Vector3[] windowPartsOriginalScales;
         static Mesh[] windowPartMeshes;
-        static PhysicMaterial[] windowPartMaterials;
+        static PhysicsMaterial[] windowPartMaterials;
         static Mesh[] windowPartColliderMeshes;
         static AudioClip[] windowPartImpactSounds;
         static AudioClip[] windowPartCollisionSounds;
@@ -96,7 +96,7 @@ namespace FS_LevelEditor
                     if (i == 0)
                     {
                         windowPartMeshes = new Mesh[script.partsHolder.childCount];
-                        windowPartMaterials = new PhysicMaterial[script.partsHolder.childCount];
+                        windowPartMaterials = new PhysicsMaterial[script.partsHolder.childCount];
                         windowPartColliderMeshes = new Mesh[script.partsHolder.childCount];
                     }
 
