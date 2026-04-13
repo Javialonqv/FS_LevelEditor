@@ -21,3 +21,4 @@
 
 /Keyboard_Left Control\ + /Keyboard_S\ Save level.
 /Keyboard_Left Control\ + /Keyboard_P\ Enter playmode.
+/Keyboard_F2\ Toggle performance mode.

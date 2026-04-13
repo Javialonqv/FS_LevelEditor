@@ -26,6 +26,7 @@ namespace FS_LevelEditor.Editor
         // In-Editor shortcuts.
         public static bool SaveLevel => Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S);
         public static bool EnterPlaymode => Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.P);
+        public static bool TogglePerformanceMode => Input.GetKeyDown(KeyCode.F2);
 
         // UI shortcuts.
         public static bool ToggleHelpPanel => Input.GetKeyDown(KeyCode.F1);

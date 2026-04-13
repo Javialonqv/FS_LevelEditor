@@ -947,6 +947,16 @@ namespace FS_LevelEditor.Editor
 
                 EnterPlayMode();
             }
+
+            if (EditorKeybinds.TogglePerformanceMode)
+            {
+                OptionsController.SetPerformanceMode(!OptionsController.PerformanceModeState);
+                // The notification is showed only when in-game, since Controls.cs handles that only when the key is pressed there. Show it ourselves.
+                if (OptionsController.PerformanceModeState)
+                    InGameUIManager.Instance.ShowNotification(InGameUIManager.NotificationType.PerformanceModeOn, InGameUIManager.NotificationColor.Green, 0f, 1.5f, true, true);
+                else
+                    InGameUIManager.Instance.ShowNotification(InGameUIManager.NotificationType.PerformanceModeOff, InGameUIManager.NotificationColor.Red, 0f, 1.5f, true, true);
+            }
             #endregion
 
             #region UI Shortcuts
