@@ -1773,7 +1773,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateTaserStateButton()
         {
-            taserStateButton = NGUI_Utils.CreateDropdown(taserSettings.transform, new Vector3(-200, 50), Vector3.one * 0.8f);
+            taserStateButton = NGUI_Utils.CreateDropdown(taserSettings.transform, new Vector3(-200, 20), Vector3.one * 0.8f);
             taserStateButton.SetTitle("Taser");
             taserStateButton.AddOption("Do Nothing", true);
             taserStateButton.AddOption("Give", false);
@@ -2321,8 +2321,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSwitchCanBeUsedStateSettings()
         {
-            switchCanBeUsedStateButton = NGUI_Utils.CreateDropdown(switchObjectsSettings.transform, new Vector3(0, -120), Vector3.one * 0.8f);
-            switchCanBeUsedStateButton.SetTitle("Set Can Be Used");
+            switchCanBeUsedStateButton = NGUI_Utils.CreateDropdown(switchObjectsSettings.transform, new Vector3(0, -220), Vector3.one * 0.8f);
+            switchCanBeUsedStateButton.SetTitle("Set Interaction State");
             switchCanBeUsedStateButton.AddOption("Do Nothing", true);
             switchCanBeUsedStateButton.AddOption("Enable", false);
             switchCanBeUsedStateButton.AddOption("Disable", false);
