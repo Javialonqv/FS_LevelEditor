@@ -54,6 +54,8 @@ namespace FS_LevelEditor.Playmode
 		{
 			Instance = this;
 
+			LE_Object.ResetStaticVariablesInObjects();
+
 			// Reset AND logic state for new playmode session
 			AndLogicManager.Reset();
 

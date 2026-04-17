@@ -149,6 +149,8 @@ namespace FS_LevelEditor
         };
 
         public static Dictionary<ObjectType, int> alreadyUsedObjectIDs = new Dictionary<ObjectType, int>();
+        public static Dictionary<int, List<LE_Object>> objectsPerGroup = new Dictionary<int, List<LE_Object>>();
+        public static Dictionary<int, GameObject> groupsObjectsInPlaymode = new Dictionary<int, GameObject>();
 
         public ObjectType? objectType;
         public int objectID;
@@ -183,6 +185,7 @@ namespace FS_LevelEditor
         public float startDelay = 0f;
         public float waitTime = 0f;
         public WaypointMode waypointMode;
+        public int? groupID = null; // Null for "no group".
 
         public Dictionary<string, object> properties = new Dictionary<string, object>();
         public List<WaypointData> waypoints = new List<WaypointData>();
@@ -196,6 +199,9 @@ namespace FS_LevelEditor
         {
             get
             {
+                if (groupID.HasValue && PlayModeController.Instance && groupsObjectsInPlaymode.TryGetValue(groupID.Value, out var groupObj))
+                    return groupObj.transform;
+
                 if (EditorController.Instance != null) return EditorController.Instance.levelObjectsParent.transform;
                 else if (PlayModeController.Instance != null) return PlayModeController.Instance.levelObjectsParent.transform;
 
@@ -526,6 +532,11 @@ namespace FS_LevelEditor
             {
                 SetMeshRenderersState(false);
             }
+
+            if (groupID.HasValue)
+            {
+                SetGroup(groupID);
+            }
         }
 
         public bool SetPropertyBase(string name, object value)
@@ -710,6 +721,7 @@ namespace FS_LevelEditor
         {
             if (canUndoDeletion)
             {
+                SetGroup(null, false); // TEMPORALY remove the object from the group.
                 isDeleted = true;
             }
             else
@@ -722,6 +734,8 @@ namespace FS_LevelEditor
                 {
                     PlayModeController.Instance.currentInstantiatedObjects.Remove(this);
                 }
+
+                SetGroup(null);
             }
         }
         public virtual void OnUndoDeletion()
@@ -731,6 +745,8 @@ namespace FS_LevelEditor
                 Logger.Error("Dunno how you were able to undo deletion for an object of name " + name + ", but please report it.");
                 return;
             }
+
+            if (groupID.HasValue) SetGroup(groupID.Value); // Re-add the object to the group where it was before being deleted.
 
             isDeleted = false;
         }
@@ -970,8 +986,50 @@ namespace FS_LevelEditor
             }
         }
 
+        /// <summary>
+        /// Sets the group of this object to another one.
+        /// </summary>
+        /// <param name="newGroupID">The ID of the group. NULL if you wan't to remove it.</param>
+        public void SetGroup(int? newGroupID, bool updateGlobalVariable = true)
+        {
+            // IN CASE IT'S TRYING TO REMOVE THE CURRENT GROUOP.
+            if (!newGroupID.HasValue && groupID.HasValue) // trying to remove the group if the object already has one.
+            {
+                if (objectsPerGroup.TryGetValue(groupID.Value, out var objectsInTheGroup))
+                {
+                    objectsInTheGroup.Remove(this);
+                    groupID = null;
+                    transform.parent = objectParent; // objectParent will return the "normal" parent by now, since now groupID is null.
+                }
+                groupID = null;
+                return;
+            }
+
+            if (!objectsPerGroup.ContainsKey(newGroupID.Value)) objectsPerGroup.Add(newGroupID.Value, new());
+            objectsPerGroup[newGroupID.Value].Add(this);
+
+            // Add to the group parent if in playmode.
+            if (PlayModeController.Instance)
+            {
+                GameObject groupObj = null;
+                if (!groupsObjectsInPlaymode.TryGetValue(newGroupID.Value, out groupObj))
+                {
+                    groupObj = new GameObject($"Group {newGroupID.Value}");
+                    groupObj.transform.parent = PlayModeController.Instance.levelObjectsParent.transform;
+                    groupsObjectsInPlaymode.Add(newGroupID.Value, groupObj);
+                }
+
+                transform.parent = groupObj.transform;
+            }
+
+            groupID = newGroupID;
+        }
+
         public static void ResetStaticVariablesInObjects()
         {
+            objectsPerGroup = new();
+            groupsObjectsInPlaymode = new();
+
             LE_Breakable_Window.staticVariablesInitialized = false;
         }
 

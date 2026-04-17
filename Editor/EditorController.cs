@@ -83,6 +83,7 @@ namespace FS_LevelEditor.Editor
         // But when there are multiple objects selected, this list contains em and "currentSelectedObj" is "multipleSelectedObjsParent".
         public List<GameObject> currentSelectedObjects = new List<GameObject>();
         public List<LE_Object> currentSelectedObjsComponents = new List<LE_Object>();
+        public int? currentSelectedGroup = null; // Null for "no group":
         #endregion
 
         public List<LE_Object> currentInstantiatedObjects = new List<LE_Object>();
@@ -170,6 +171,8 @@ namespace FS_LevelEditor.Editor
             MenuController.isInLevelEditor = true;
 
             EnsureGameUIIsHidden();
+
+            LE_Object.ResetStaticVariablesInObjects();
 
             LoadAssetBundle();
 
@@ -715,6 +718,11 @@ namespace FS_LevelEditor.Editor
                 else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.TEXT_EDITOR))
                 {
                     TextEditorUI.Instance.HideTextEditor();
+                    return;
+                }
+                else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.GROUPS_PANEL))
+                {
+                    GroupsUI.Instance.HideGroupsPanel();
                     return;
                 }
                 else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ))
@@ -2073,6 +2081,15 @@ namespace FS_LevelEditor.Editor
 
             // SnapToGrid cube is adjusted in Late Update.
 
+            // Manage selecting groups first.
+            if (objComp && objComp.groupID.HasValue && currentSelectedGroup != objComp.groupID && !Input.GetKey(KeyCode.LeftControl))
+            {
+                currentSelectedGroup = objComp.groupID;
+                SetMultipleObjectsAsSelected(LE_Object.objectsPerGroup[objComp.groupID.Value].Select(x => x.gameObject).ToList());
+                return;
+            }
+            currentSelectedGroup = null;
+
             // Reset the last selected object color back to normal.
             if (currentSelectedObj != null)
             {
@@ -2297,6 +2314,7 @@ namespace FS_LevelEditor.Editor
             currentSelectedObjects.Clear();
             currentSelectedObjsComponents.Clear();
 
+            int? allObjectsGroup = null; // Null if they have different ones/don't have.
             foreach (var obj in filtered)
             {
                 var objComp = obj.GetComponent<LE_Object>();
@@ -2307,6 +2325,14 @@ namespace FS_LevelEditor.Editor
 
                 currentSelectedObjects.Add(obj);
                 currentSelectedObjsComponents.Add(objComp);
+
+                if (objComp.groupID.HasValue)
+                {
+                    if (allObjectsGroup == null)
+                        allObjectsGroup = objComp.groupID;
+                    else if (objComp.groupID != allObjectsGroup)
+                        allObjectsGroup = null;
+                }
             }
 
             multipleObjectsSelected = true;
@@ -2315,6 +2341,7 @@ namespace FS_LevelEditor.Editor
 
             if (currentSelectedObjects.Count > 0)
             {
+                currentSelectedGroup = allObjectsGroup;
                 SelectedObjPanel.Instance.SetMultipleObjectsSelected();
             }
         }
