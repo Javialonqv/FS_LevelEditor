@@ -1399,7 +1399,7 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     moreGlobalOptionsButton.gameObject.SetActive(false);
 
-                    globalObjectsSettings.SetActive(true);
+                    if (!currentSelectedEvent.isForGroup) globalObjectsSettings.SetActive(true);
                 }
             }
             else
