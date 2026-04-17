@@ -473,6 +473,7 @@ namespace FS_LevelEditor.SaveSystem
             spawnedObject.startDelay = objectData.startDelay;
             spawnedObject.waitTime = objectData.waitTime;
             spawnedObject.waypointMode = objectData.wayMode;
+            spawnedObject.groupID = objectData.groupID;
 
             if (objectData.properties != null)
             {
