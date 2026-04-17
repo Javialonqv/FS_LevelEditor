@@ -1144,6 +1144,10 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     targetObjInputField.SetText("Obj_" + currentSelectedEvent.objectiveName);
                 }
+                else if (currentSelectedEvent.isForGroup)
+                {
+                    targetObjInputField.SetText("Group " + currentSelectedEvent.targetGroupID);
+                }
                 else
                 {
                     targetObjInputField.SetText(currentSelectedEvent.targetObjName);
@@ -1185,6 +1189,14 @@ namespace FS_LevelEditor.Editor.UI
             {
                 objIsValid = true;
             }
+            else if (inputText.StartsWith("Group", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] splitted = inputText.Split(' ');
+                if (splitted.Length == 2 && int.TryParse(splitted[1], out int targetGroup))
+                {
+                    objIsValid = LE_Object.objectsPerGroup.ContainsKey(targetGroup);
+                }
+            }
             else
             {
                 targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => string.Equals(obj.objectFullNameWithID, inputText,
@@ -1213,6 +1225,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForTaser = false;
                     currentSelectedEvent.isForJetpack = false;
                     currentSelectedEvent.isForObjective = false;
+                    currentSelectedEvent.isForGroup = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1223,6 +1236,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForTaser = true;
                     currentSelectedEvent.isForJetpack = false;
                     currentSelectedEvent.isForObjective = false;
+                    currentSelectedEvent.isForGroup = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1233,6 +1247,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForTaser = false;
                     currentSelectedEvent.isForJetpack = true;
                     currentSelectedEvent.isForObjective = false;
+                    currentSelectedEvent.isForGroup = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1243,6 +1258,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForTaser = false;
                     currentSelectedEvent.isForJetpack = false;
                     currentSelectedEvent.isForObjective = true;
+                    currentSelectedEvent.isForGroup = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1251,12 +1267,27 @@ namespace FS_LevelEditor.Editor.UI
                     string objectiveName = inputText.Substring(4); // "Objective_" is 10 characters
                     currentSelectedEvent.objectiveName = objectiveName;
                 }
+                else if (inputText.StartsWith("Group", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSelectedEvent.isForPlayer = false;
+                    currentSelectedEvent.isForTaser = false;
+                    currentSelectedEvent.isForJetpack = false;
+                    currentSelectedEvent.isForObjective = false;
+                    currentSelectedEvent.isForGroup = true;
+                    currentSelectedEvent.targetObjType = null;
+                    currentSelectedEvent.targetObjID = 0;
+                    currentSelectedEvent.targetObjName = "";
+
+                    int targetGroup = int.Parse(inputText.Split(' ')[1]);
+                    currentSelectedEvent.targetGroupID = targetGroup;
+                }
                 else
                 {
                     currentSelectedEvent.isForPlayer = false;
                     currentSelectedEvent.isForTaser = false;
                     currentSelectedEvent.isForJetpack = false;
                     currentSelectedEvent.isForObjective = false;
+                    currentSelectedEvent.isForGroup = false;
                     currentSelectedEvent.targetObjType = targetObj.objectType;
                     currentSelectedEvent.targetObjID = targetObj.objectID;
                     currentSelectedEvent.targetObjName = ""; // While the object is valid, don't use the name, use the type and ID instead.
@@ -1279,6 +1310,7 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     currentActiveObjectPanel = objectiveSettings;
                 }
+                // There's no panel for groups.
                 else if (targetObj is LE_Saw)
                 {
                     currentActiveObjectPanel = sawObjectsSettings;
@@ -3152,5 +3184,10 @@ public class LE_Event
 
     #region Fragile Window
     public bool fragileWindowBreakNow { get; set; }
+    #endregion
+
+    #region Group Options
+    public bool isForGroup { get; set; } = false;
+    public int targetGroupID { get; set; }
     #endregion
 }

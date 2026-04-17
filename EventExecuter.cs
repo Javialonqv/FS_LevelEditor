@@ -215,7 +215,8 @@ namespace FS_LevelEditor
                     // ALSO, don't create editor links for the player related events.
                     // UPDATE: CREATE links even for INVALID objects, what if the user adds an object and the event becomes valid?
                     var objData = (@event.targetObjType, @event.targetObjID);
-                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer || @event.isForTaser || @event.isForJetpack || @event.isForObjective) continue;
+                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer || @event.isForTaser || @event.isForJetpack || @event.isForObjective || @event.isForGroup)
+                        continue;
 
                     GameObject linkObj = Instantiate(Core.LoadOtherObjectInBundle("EditorLine"), editorLinksParent.transform);
                     LineRenderer linkRender = linkObj.GetComponent<LineRenderer>();
@@ -456,6 +457,25 @@ namespace FS_LevelEditor
 
                     case LE_Event.ObjectiveState.Fail:
                         PlayModeController.Instance.FailObjective(@event.objectiveName);
+                        break;
+                }
+                return;
+            }
+            if (@event.isForGroup)
+            {
+                GameObject groupObj = LE_Object.groupsObjectsInPlaymode[@event.targetGroupID];
+                switch (@event.spawn)
+                {
+                    case LE_Event.SpawnState.Spawn:
+                        groupObj.SetActive(true);
+                        break;
+
+                    case LE_Event.SpawnState.Despawn:
+                        groupObj.SetActive(false);
+                        break;
+
+                    case LE_Event.SpawnState.Toggle:
+                        groupObj.SetActive(!groupObj.activeSelf);
                         break;
                 }
                 return;
