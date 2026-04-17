@@ -4,6 +4,7 @@ using Il2Cpp;
 using Il2CppInControl.NativeDeviceProfiles;
 using Il2CppVLB;
 using MelonLoader;
+using Mono.Cecil;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace FS_LevelEditor.Editor.UI
 		SELECTING_TARGET_OBJ,
 		GLOBAL_PROPERTIES,
 		TEXT_EDITOR,
+		GROUPS_PANEL,
 		UPGRADES_PANEL,
 		SAVE_METADATA_PANEL
 	}
@@ -52,6 +54,8 @@ namespace FS_LevelEditor.Editor.UI
 
 		GameObject hittenTargetObjPanel;
 		UILabel hittenTargetObjLabel;
+
+		UIButtonPatcher groupsButton;
 
 		// Misc
 		GameObject occluderForWhenPaused;
@@ -118,6 +122,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			EventsUIPageManager.Create();
 			TextEditorUI.Create();
+			GroupsUI.Create();
 			UpgradesPanel.Create();
 			SaveMetadataPopup.Create();
 
@@ -127,6 +132,8 @@ namespace FS_LevelEditor.Editor.UI
 			NotificationSystem.Create(editorUIParent.transform);
 
             CreateStatsLabel();
+
+			CreateGroupsButton();
 
             // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
@@ -404,6 +411,13 @@ namespace FS_LevelEditor.Editor.UI
 			statsLabel.text = stats.ToString();
 		}
 
+		void CreateGroupsButton()
+		{
+			groupsButton = NGUI_Utils.CreateButton(editorUIParent.transform, new Vector3(-935, 300), Vector3Int.one * 50, "...");
+			groupsButton.name = "GroupsButton";
+			groupsButton.onClick += GroupsUI.Instance.ShowGroupsPanel;
+		}
+
 
         public void ShowPause()
 		{
@@ -581,6 +595,10 @@ namespace FS_LevelEditor.Editor.UI
 					target = TextEditorUI.Instance.editorPanel;
                     break;
 
+				case EditorUIContext.GROUPS_PANEL:
+					target = GroupsUI.Instance.editorPanel;
+					break;
+
 				case EditorUIContext.UPGRADES_PANEL:
 					target = UpgradesPanel.Instance.upgradesPanel;
                     break;
@@ -659,6 +677,7 @@ namespace FS_LevelEditor.Editor.UI
             nextButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
             previousButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
             statsLabel.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
+			groupsButton.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
             #endregion
 
             previousUIContext = currentUIContext;
@@ -699,7 +718,11 @@ namespace FS_LevelEditor.Editor.UI
 					target = TextEditorUI.Instance.editorPanel;
                     break;
 
-				case EditorUIContext.UPGRADES_PANEL:
+                case EditorUIContext.GROUPS_PANEL:
+                    target = GroupsUI.Instance.editorPanel;
+                    break;
+
+                case EditorUIContext.UPGRADES_PANEL:
 					target = UpgradesPanel.Instance.upgradesPanel;
                     break;
 

@@ -58,6 +58,7 @@
 		<Compile Include="Editor\UI\ContextMenu.cs" />
 		<Compile Include="Editor\UI\EditorObjectsToBuildUI.cs" />
 		<Compile Include="Editor\UI\GlobalPropertiesPanel.cs" />
+		<Compile Include="Editor\UI\GroupsUI.cs" />
 		<Compile Include="Editor\UI\NotificationSystem.cs" />
 		<Compile Include="Editor\UI\SaveMetadataPopup.cs" />
 		<Compile Include="Editor\UI\SelectedObjPanel.cs" />
