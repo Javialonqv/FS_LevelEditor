@@ -372,7 +372,7 @@ namespace FS_LevelEditor.Editor.UI
 			RenderTexture.ReleaseTemporary(tempRT);
 
 			// Encode to JPEG with 85% quality (good balance between quality and file size)
-			byte[] jpgBytes = ImageConversion.EncodeToJPG(thumbnail, 85);
+			byte[] jpgBytes = Il2CppImageConversionManager.EncodeToJPG(thumbnail, 85);
 			GameObject.Destroy(thumbnail);
 
 			if (jpgBytes == null || jpgBytes.Length == 0)
