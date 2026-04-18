@@ -386,7 +386,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateAddToGroupButton()
         {
-            addToGroupButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "AddToGroup");
+            addToGroupButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "AddToGroupButton");
             addToGroupButton.name = "AddToGroupButton";
             addToGroupButton.onClick += AddToGroupPressed;
             addToGroupButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
@@ -988,7 +988,7 @@ namespace FS_LevelEditor.Editor.UI
             isSelectingMultipleObjectsOfTheSameType = EditorController.Instance.multipleObjectsOfTheSameTypeSelected;
 
             if (EditorController.Instance.currentSelectedGroup.HasValue)
-                ShowPanel(true, $"Group {EditorController.Instance.currentSelectedGroup.Value}");
+                ShowPanel(true, $"{Loc.Get("Group")} {EditorController.Instance.currentSelectedGroup.Value}");
 			else
                 ShowPanel(true, "selection.MultipleObjectsSelected");
 

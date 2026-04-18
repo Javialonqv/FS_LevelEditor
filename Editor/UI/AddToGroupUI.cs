@@ -46,7 +46,6 @@ namespace FS_LevelEditor.Editor.UI
             addPanel.name = "AddToGroupPanel";
 
             var windowTitle = this.addPanel.GetChild("Title").GetComponent<UILabel>();
-            windowTitle.gameObject.RemoveComponent<UILocalize>();
 
             foreach (var child in this.addPanel.GetChilds())
             {
@@ -67,7 +66,7 @@ namespace FS_LevelEditor.Editor.UI
             windowTitle.transform.localPosition = new Vector3(0, 157, 0);
             windowTitle.GetComponent<UILabel>().width = 1650;
             windowTitle.GetComponent<UILabel>().height = 50;
-            windowTitle.GetComponent<UILabel>().text = "Add To Group";
+            windowTitle.GetComponent<UILocalize>().key = "AddToGroupTitle";
 
             // Reset the scale of the new custom menu to one.
             addPanel.transform.localScale = Vector3.one;
@@ -160,7 +159,8 @@ namespace FS_LevelEditor.Editor.UI
 
         void Refresh()
         {
-            addToNewGroupButton.buttonLabel.text = Loc.Get("AddToNewGroup") + $" ({LE_Object.objectsPerGroup.Count})";
+            addToNewGroupButton.buttonLabel.GetComponent<UILocalize>().key = Loc.Get("AddToNewGroup") + $" ({LE_Object.objectsPerGroup.Count})";
+
             OnExistingFieldChanged();
         }
 
