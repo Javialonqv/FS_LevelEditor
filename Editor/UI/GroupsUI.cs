@@ -290,6 +290,8 @@ namespace FS_LevelEditor.Editor.UI
                 deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
                 deleteButtonColor.hover = new Color(1f, 0f, 0f, 1f);
                 deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
+
+                deleteButton.onClick += () => DeleteObject(objectID);
                 #endregion
             }
 
@@ -361,6 +363,11 @@ namespace FS_LevelEditor.Editor.UI
 
             currentObjectsPageLabel.text = (currentObjectsPage + 1) + "/" + objectsPages;
 
+            if (currentObjectsPage >= objectsPages)
+                currentObjectsPage = objectsPages - 1;
+            if (currentObjectsPage < 0)
+                currentObjectsPage = 0;
+
             CreateObjectsList();
         }
 
@@ -389,6 +396,15 @@ namespace FS_LevelEditor.Editor.UI
             EditorController.Instance.SetSelectedObj(targetObj.gameObject, EditorController.SelectionType.ForceSingle);
 
             HideGroupsPanel();
+        }
+        void DeleteObject(int objectID)
+        {
+            if (!currentSelectedGroup.HasValue) return;
+
+            LE_Object.objectsPerGroup[currentSelectedGroup.Value][objectID].groupID = null;
+            LE_Object.objectsPerGroup[currentSelectedGroup.Value].RemoveAt(objectID);
+
+            RefreshObjectsListUI();
         }
         #endregion
 
