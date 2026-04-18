@@ -37,7 +37,7 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
 
         #region Objects List
-        const int OBJECTS_PER_PAGE = 9;
+        const int OBJECTS_PER_PAGE = 7;
 
         #region UI References
         GameObject objectsListParent;
@@ -217,7 +217,7 @@ namespace FS_LevelEditor.Editor.UI
             table.columns = 1;
             table.direction = UITable.Direction.Down;
             table.pivot = UIWidget.Pivot.Center;
-            //table.padding = new Vector2(0, 10);
+            table.padding = new Vector2(0, 5);
         }
 
         void CreateObjectsList()
@@ -243,7 +243,12 @@ namespace FS_LevelEditor.Editor.UI
                 var button = NGUI_Utils.CreateButton(objectsListParent.transform, Vector3.zero, new Vector3Int(800, 60, 0), objectsInCurrentGroup[i].objectFullNameWithID, 2);
                 button.buttonLabel.alignment = NGUIText.Alignment.Left;
                 button.buttonLabel.width = 750;
-                button.onClick += () => SelectObject(objectID); 
+                button.onClick += () => SelectObject(objectID);
+
+                UIButtonScale scale = button.GetComponent<UIButtonScale>();
+                scale.mScale = Vector3.one;
+                scale.hover = Vector3.one;
+                scale.pressed = Vector3.one * 0.98f;
             }
 
             objectsListParent.GetComponent<UITable>().repositionNow = true;
