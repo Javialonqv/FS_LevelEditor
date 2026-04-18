@@ -267,6 +267,8 @@ namespace FS_LevelEditor.Editor.UI
         {
             EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
+
+            currentSelectedGroup = null; // Deselect the current group.
         }
     }
 }
