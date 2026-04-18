@@ -42,6 +42,7 @@ namespace FS_LevelEditor.Editor.UI
 		UICustomInputField waitTimeField;
 		UISmallButtonMultiple waypointModeButton;
 		UIButtonPatcher addToGroupButton;
+		UIButtonPatcher removeFromGroupButton;
 		// ------------------------------
 		bool showingPanel = false;
 		bool panelIsExpanded = false;
@@ -306,7 +307,8 @@ namespace FS_LevelEditor.Editor.UI
 			CreateCollisionToggle();
 			CreateInvisibleMeshToggle();
 			CreateAddToGroupButton();
-			CreateAddWaypointButton();
+			CreateRemoveFromGroupButton();
+            CreateAddWaypointButton();
 			CreateStartMovingAtStartToggle();
 			CreateMovingSpeedField();
 			CreateStartDelayField();
@@ -391,6 +393,16 @@ namespace FS_LevelEditor.Editor.UI
             addToGroupButton.onClick += AddToGroupPressed;
             addToGroupButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             addToGroupButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
+
+            // Do not substract yPos, add and remove buttons need to be on the same pos.
+        }
+        void CreateRemoveFromGroupButton()
+        {
+            removeFromGroupButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "RemoveFromGroup");
+            removeFromGroupButton.name = "RemoveFromGroupButton";
+            removeFromGroupButton.onClick += RemoveFromGroupPressed;
+            removeFromGroupButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            removeFromGroupButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
 
             yPosForGlobalProps -= 55;
         }
@@ -1220,10 +1232,31 @@ namespace FS_LevelEditor.Editor.UI
             {
 				AddToGroupUI.Instance.Show(EditorController.Instance.currentSelectedObjComponent);
             }
+
+			addToGroupButton.gameObject.SetActive(false);
+			removeFromGroupButton.gameObject.SetActive(true);
+
+            EditorController.Instance.levelHasBeenModified = true;
+        }
+        public void RemoveFromGroupPressed()
+        {
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+				foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
+					obj.SetGroup(null);
+            }
+            else
+            {
+				EditorController.Instance.currentSelectedObjComponent.SetGroup(null);
+            }
+
+            addToGroupButton.gameObject.SetActive(true);
+            removeFromGroupButton.gameObject.SetActive(false);
+
             EditorController.Instance.levelHasBeenModified = true;
         }
 
-		public void UpdateGlobalObjectAttributes(Transform obj)
+        public void UpdateGlobalObjectAttributes(Transform obj)
 		{
 			// UICustomInput already verifies if the user is typing on the field, if so, SetText does nothing, we don't need to worry about that.
 
@@ -1239,15 +1272,38 @@ namespace FS_LevelEditor.Editor.UI
 			SetPropInToggleDependingOfPropInObjects(collisionToggle, (obj) => obj.collision);
 			SetPropInToggleDependingOfPropInObjects(invisibleMeshToggle, (obj) => obj.invisibleMesh);
 
-            #region Add To Group Button
+            #region Add To Group / Remove From Group Buttons
             if (EditorController.Instance.multipleObjectsSelected)
             {
                 // Only enable the button when NONE of the selected objects have a group.
-                addToGroupButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjsComponents.All(x => x.groupID == null));
+				if (EditorController.Instance.currentSelectedObjsComponents.All(x => x.groupID == null))
+				{
+                    addToGroupButton.gameObject.SetActive(true);
+					removeFromGroupButton.gameObject.SetActive(false);
+                }
+				else
+				{
+                    addToGroupButton.gameObject.SetActive(false);
+					removeFromGroupButton.gameObject.SetActive(true);
+					if (LE_Object.ObjectsHaveTheSameGroupID(out int? groupID, EditorController.Instance.currentSelectedObjsComponents))
+						removeFromGroupButton.buttonLabel.text = Loc.Get("RemoveFromGroup") + $" ({groupID})";
+					else
+						removeFromGroupButton.buttonLabel.text = Loc.Get("RemoveFromGroup");
+                }
             }
             else
             {
-                addToGroupButton.gameObject.SetActive(EditorController.Instance.currentSelectedObjComponent.groupID == null);
+				if (EditorController.Instance.currentSelectedObjComponent.groupID == null)
+				{
+                    addToGroupButton.gameObject.SetActive(true);
+                    removeFromGroupButton.gameObject.SetActive(false);
+                }
+				else
+				{
+                    addToGroupButton.gameObject.SetActive(false);
+                    removeFromGroupButton.gameObject.SetActive(true);
+					removeFromGroupButton.buttonLabel.text = Loc.Get("RemoveFromGroup") + $" ({EditorController.Instance.currentSelectedObjComponent.groupID.Value})";
+				}
             }
             #endregion
 

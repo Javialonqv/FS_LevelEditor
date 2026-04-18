@@ -1051,6 +1051,26 @@ namespace FS_LevelEditor
 
             return true;
         }
+        public static bool ObjectsHaveTheSameGroupID(out int? groupID, params List<LE_Object> objects)
+        {
+            groupID = objects[0].groupID;
+
+            if (objects.Count == 1)
+                return true;
+
+            int? first = objects[0].groupID;
+
+            for (int i = 1; i < objects.Count; i++)
+            {
+                if (objects[i].groupID != first)
+                {
+                    groupID = null;
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     [MelonLoader.RegisterTypeInIl2Cpp]
