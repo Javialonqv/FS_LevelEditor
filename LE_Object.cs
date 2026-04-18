@@ -992,17 +992,18 @@ namespace FS_LevelEditor
         /// <param name="newGroupID">The ID of the group. NULL if you wan't to remove it.</param>
         public void SetGroup(int? newGroupID, bool updateGlobalVariable = true)
         {
-            // IN CASE IT'S TRYING TO REMOVE THE CURRENT GROUOP.
+            // IN CASE IT'S TRYING TO REMOVE THE CURRENT GROUP.
             if (!newGroupID.HasValue && groupID.HasValue) // trying to remove the group if the object already has one.
             {
                 if (objectsPerGroup.TryGetValue(groupID.Value, out var objectsInTheGroup))
                 {
                     objectsInTheGroup.Remove(this);
-                    groupID = null;
-                    transform.parent = objectParent; // objectParent will return the "normal" parent by now, since now groupID is null.
+                    if (updateGlobalVariable)
+                        groupID = null;
                     if (PlayModeController.Instance) transform.parent = objectParent; // objectParent will return the "normal" parent by now, since now groupID is null.
                 }
-                groupID = null;
+                if (updateGlobalVariable)
+                    groupID = null;
                 return;
             }
 
@@ -1025,7 +1026,8 @@ namespace FS_LevelEditor
                 transform.parent = groupObj.transform;
             }
 
-            groupID = newGroupID;
+            if (updateGlobalVariable) 
+                groupID = newGroupID;
         }
 
         public static void ResetStaticVariablesInObjects()
