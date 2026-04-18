@@ -45,6 +45,9 @@ namespace FS_LevelEditor.Editor.UI
         UIButtonPatcher previousObjectsPageBtn;
         UILabel currentObjectsPageLabel;
         UIButtonPatcher nextObjectsPageBtn;
+
+        UIButtonPatcher selectAllObjectsBtn;
+        UIButtonPatcher deleteGroupBtn;
         #endregion
 
         int currentObjectsPage;
@@ -77,6 +80,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateCurrentObjectsPageLabel();
             CreatePreviousObjectsPageButton();
             CreateNextObjectsPageButton();
+            CreateSelectAllObjectsButton();
+            CreateDeleteGroupButton();
         }
 
         #region Create UI
@@ -252,6 +257,40 @@ namespace FS_LevelEditor.Editor.UI
             nextObjectsPageBtn.gameObject.SetActive(true);
         }
 
+        void CreateSelectAllObjectsButton()
+        {
+            selectAllObjectsBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(225, 300), new Vector3Int(395, 60, 0), "Select All", 2);
+            selectAllObjectsBtn.name = "SelectAllObjectsButton";
+
+            selectAllObjectsBtn.gameObject.SetActive(true);
+
+            UIButtonScale scale = selectAllObjectsBtn.GetComponent<UIButtonScale>();
+            scale.mScale = Vector3.one;
+            scale.hover = Vector3.one;
+            scale.pressed = Vector3.one * 0.98f;
+
+            selectAllObjectsBtn.onClick += SelectAllObjects;
+        }
+        void CreateDeleteGroupButton()
+        {
+            deleteGroupBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(635, 300), new Vector3Int(395, 60, 0), "Delete Group", 2);
+            deleteGroupBtn.name = "DeleteGroupButton";
+
+            deleteGroupBtn.gameObject.SetActive(true);
+
+            UIButtonScale scale = deleteGroupBtn.GetComponent<UIButtonScale>();
+            scale.mScale = Vector3.one;
+            scale.hover = Vector3.one;
+            scale.pressed = Vector3.one * 0.98f;
+
+            UIButtonColor deleteButtonColor = deleteGroupBtn.GetComponent<UIButtonColor>();
+            deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
+            deleteButtonColor.hover = new Color(1f, 0f, 0f, 1f);
+            deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
+
+            deleteGroupBtn.onClick += DeleteGroup;
+        }
+
         void CreateObjectsList()
         {
             if (!currentSelectedGroup.HasValue)
@@ -313,6 +352,11 @@ namespace FS_LevelEditor.Editor.UI
 
             currentGroupsPageLabel.text = (currentGroupsPage + 1) + "/" + groupPages;
 
+            if (currentGroupsPage >= groupPages)
+                currentGroupsPage = groupPages - 1;
+            if (currentGroupsPage < 0)
+                currentGroupsPage = 0;
+
             CreateGroupsList();
         }
 
@@ -363,6 +407,9 @@ namespace FS_LevelEditor.Editor.UI
 
             currentObjectsPageLabel.text = (currentObjectsPage + 1) + "/" + objectsPages;
 
+            selectAllObjectsBtn.gameObject.SetActive(currentSelectedGroup.HasValue);
+            deleteGroupBtn.gameObject.SetActive(currentSelectedGroup.HasValue);
+
             if (currentObjectsPage >= objectsPages)
                 currentObjectsPage = objectsPages - 1;
             if (currentObjectsPage < 0)
@@ -406,10 +453,37 @@ namespace FS_LevelEditor.Editor.UI
 
             RefreshObjectsListUI();
         }
+
+        void SelectAllObjects()
+        {
+            if (!currentSelectedGroup.HasValue) return;
+
+            var objects = LE_Object.objectsPerGroup[currentSelectedGroup.Value].Select(obj => obj.gameObject).ToList();
+            EditorController.Instance.SetMultipleObjectsAsSelected(objects);
+
+            HideGroupsPanel();
+        }
+        void DeleteGroup()
+        {
+            if (!currentSelectedGroup.HasValue) return;
+
+            foreach (var obj in LE_Object.objectsPerGroup[currentSelectedGroup.Value])
+                obj.groupID = null;
+
+            LE_Object.objectsPerGroup.Remove(currentSelectedGroup.Value);
+
+            currentSelectedGroup = null;
+
+            RefreshUI(); // We need to refresh both of the UIs.
+        }
         #endregion
 
         #endregion
 
+        void SortGroupsDictionary()
+        {
+            LE_Object.objectsPerGroup = LE_Object.objectsPerGroup.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
+        }
         void RefreshUI()
         {
             RefreshGroupsPagesUI();
