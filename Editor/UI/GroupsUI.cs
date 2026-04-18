@@ -17,11 +17,23 @@ namespace FS_LevelEditor.Editor.UI
         public GameObject editorPanel;
         UILabel windowTitle;
 
-        #region UI References to the Group buttons
+        #region Groups Grid
+        const int GROUPS_LIST_COLLUMNS = 7;
+        const int GROUPS_LIST_ROWS = 9;
+        const int GROUPS_PER_PAGE = GROUPS_LIST_COLLUMNS * GROUPS_LIST_ROWS;
+
+        #region UI References
         GameObject groupsListBg;
 
         UIButtonPatcher previousPageBtn;
+        UILabel currentPageLabel;
         UIButtonPatcher nextPageBtn;
+
+        List<UIButtonAsToggle> groupButtons = new();
+        #endregion
+
+        int currentGroupsPage;
+        int currentSelectedGroup;
         #endregion
 
         public GroupsUI(IntPtr ptr) : base(ptr) { }
@@ -107,6 +119,8 @@ namespace FS_LevelEditor.Editor.UI
             verticalLine.GetComponent<UISprite>().height = 700;
             verticalLine.SetActive(true);
         }
+
+        #region Groups Grid
         void CreateGroupsButtonsBackground()
         {
             groupsListBg = new GameObject("EventsList");
@@ -126,15 +140,15 @@ namespace FS_LevelEditor.Editor.UI
             UIGrid grid = groupsListBg.AddComponent<UIGrid>();
             grid.arrangement = UIGrid.Arrangement.Horizontal;
             grid.cellWidth = 110;
-            grid.cellHeight = 110;
+            grid.cellHeight = 60;
             grid.maxPerLine = 7;
             grid.pivot = UIWidget.Pivot.Center;
         }
         void CreateCurrentGroupsPageLabel()
         {
-            UILabel label = NGUI_Utils.CreateLabel(editorPanel.transform, new Vector3(-430, -335), new Vector3Int(100, 30, 0), "0/0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
-            label.name = "CurrentGroupsPageLabel";
-            label.fontSize = 30;
+            currentPageLabel = NGUI_Utils.CreateLabel(editorPanel.transform, new Vector3(-430, -335), new Vector3Int(100, 30, 0), "0/0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            currentPageLabel.name = "CurrentGroupsPageLabel";
+            currentPageLabel.fontSize = 30;
         }
         void CreatePreviousPageButton()
         {
@@ -157,35 +171,92 @@ namespace FS_LevelEditor.Editor.UI
 
         void CreateGroupsList()
         {
-            var groups = LE_Object.objectsPerGroup.Select(x => x.Key).ToArray();
+            int startValue = currentGroupsPage * GROUPS_PER_PAGE;
+            int endValue = (currentGroupsPage + 1) * GROUPS_PER_PAGE;
+            endValue = Mathf.Clamp(endValue, 0, LE_Object.objectsPerGroup.Count); // Clamp the value in case endValue is greather than the available groups, otherwise the whole grid would fill up.
 
             groupsListBg.DeleteAllChildren();
-            for (int i = 0; i < groups.Length; i++)
+            groupButtons.Clear();
+            for (int i = startValue; i < endValue; i++)
             {
-                NGUI_Utils.CreateButtonAsToggle(groupsListBg.transform, Vector3.zero, new Vector3Int(100, 50, 0), i.ToString(), 2);
+                int groupID = i;
+
+                var button = NGUI_Utils.CreateButtonAsToggle(groupsListBg.transform, Vector3.zero, new Vector3Int(100, 50, 0), i.ToString(), 2);
+                button.onClick += (state) => SelectGroup(state, groupID);
+                groupButtons.Add(button);
             }
 
             groupsListBg.GetComponent<UIGrid>().repositionNow = true;
         }
         #endregion
 
+        #region Objects Per Group
+
+        #endregion
+
+        #endregion
+
         #region UI Implementation
+
+        #region Groups Grid
+        void RefreshGroupsPagesUI()
+        {
+            int groupPages = GetGroupsPagesCount();
+            currentPageLabel.gameObject.SetActive(groupPages > 1);
+            previousPageBtn.gameObject.SetActive(groupPages > 1 && currentGroupsPage > 0);
+            nextPageBtn.gameObject.SetActive(groupPages > 1 && currentGroupsPage < groupPages - 1);
+
+            currentPageLabel.text = (currentGroupsPage + 1) + "/" + groupPages;
+
+            CreateGroupsList();
+        }
+
+        int GetGroupsPagesCount()
+        {
+            return Mathf.CeilToInt((float)LE_Object.objectsPerGroup.Count / GROUPS_PER_PAGE);
+        }
         void PreviousGroupsPage()
         {
-
+            currentGroupsPage--;
+            RefreshGroupsPagesUI();
         }
         void NextGroupsPage()
         {
+            currentGroupsPage++;
+            RefreshGroupsPagesUI();
+        }
 
+        void SelectGroup(bool selecting, int groupID)
+        {
+            if (!selecting)
+            {
+                currentSelectedGroup = 0;
+                return;
+            }
+
+            foreach (var button in groupButtons)
+                button.SetToggleState(false, false);
+
+            groupButtons[groupID].SetToggleState(true, false);
         }
         #endregion
+
+        #region Objects Per Group
+        #endregion
+
+        #endregion
+
+        void RefreshUI()
+        {
+            RefreshGroupsPagesUI();
+        }
 
         public void ShowGroupsPanel()
         {
             EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.GROUPS_PANEL);
 
-            CreateGroupsList();
+            RefreshUI();
         }
         public void HideGroupsPanel()
         {
