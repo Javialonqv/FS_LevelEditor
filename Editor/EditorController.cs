@@ -2315,6 +2315,7 @@ namespace FS_LevelEditor.Editor
             currentSelectedObjsComponents.Clear();
 
             int? allObjectsGroup = null; // Null if they have different ones/don't have.
+            bool mismatchFound = false;
             foreach (var obj in filtered)
             {
                 var objComp = obj.GetComponent<LE_Object>();
@@ -2326,12 +2327,17 @@ namespace FS_LevelEditor.Editor
                 currentSelectedObjects.Add(obj);
                 currentSelectedObjsComponents.Add(objComp);
 
-                if (objComp.groupID.HasValue)
+                if (!mismatchFound)
                 {
                     if (allObjectsGroup == null)
+                    {
                         allObjectsGroup = objComp.groupID;
+                    }
                     else if (objComp.groupID != allObjectsGroup)
+                    {
                         allObjectsGroup = null;
+                        mismatchFound = true;
+                    }
                 }
             }
 

@@ -34,6 +34,7 @@ namespace FS_LevelEditor.Editor.UI
 
         int currentGroupsPage;
         int? currentSelectedGroup = null;
+        HashSet<int> modifiedGroups = new();
         #endregion
 
         #region Objects List
@@ -455,6 +456,8 @@ namespace FS_LevelEditor.Editor.UI
             LE_Object.objectsPerGroup[currentSelectedGroup.Value][objectID].groupID = null;
             LE_Object.objectsPerGroup[currentSelectedGroup.Value].RemoveAt(objectID);
 
+            modifiedGroups.Add(currentSelectedGroup.Value);
+
             RefreshObjectsListUI();
         }
 
@@ -476,6 +479,7 @@ namespace FS_LevelEditor.Editor.UI
 
             LE_Object.objectsPerGroup.Remove(currentSelectedGroup.Value);
 
+            modifiedGroups.Add(currentSelectedGroup.Value);
             currentSelectedGroup = null;
 
             RefreshUI(); // We need to refresh both of the UIs.
@@ -501,6 +505,7 @@ namespace FS_LevelEditor.Editor.UI
 
             SortGroupsDictionary();
             RefreshUI();
+            modifiedGroups.Clear();
         }
         public void HideGroupsPanel()
         {
@@ -508,6 +513,12 @@ namespace FS_LevelEditor.Editor.UI
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 
             currentSelectedGroup = null; // Deselect the current group.
+
+            // Refresh the selected objects in the editor so it doesn't say "Group" even for objects that aren't anymore.
+            if (EditorController.Instance.currentSelectedGroup.HasValue && modifiedGroups.Contains(EditorController.Instance.currentSelectedGroup.Value))
+            {
+                EditorController.Instance.SetMultipleObjectsAsSelected(EditorController.Instance.currentSelectedObjects);
+            }
         }
 
         void AddGroups(int amount)
