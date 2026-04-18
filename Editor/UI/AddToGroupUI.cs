@@ -128,12 +128,14 @@ namespace FS_LevelEditor.Editor.UI
             if (!int.TryParse(existingField.GetText(), out var inputID))
             {
                 existingField.Set(false);
+                addToExistingGroupButton.button.isEnabled = false;
                 return;
             }
 
             bool groupIsValid = LE_Object.objectsPerGroup.ContainsKey(inputID);
 
             existingField.Set(groupIsValid);
+            addToExistingGroupButton.button.isEnabled = groupIsValid;
         }
         void AddToExistingGroup()
         {
@@ -159,6 +161,7 @@ namespace FS_LevelEditor.Editor.UI
         void Refresh()
         {
             addToNewGroupButton.buttonLabel.text = Loc.Get("AddToNewGroup") + $" ({LE_Object.objectsPerGroup.Count})";
+            OnExistingFieldChanged();
         }
 
         public void Show(params LE_Object[] targetObjs)
