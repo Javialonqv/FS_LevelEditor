@@ -405,6 +405,7 @@ namespace FS_LevelEditor.UI_Related
 
             button.GetComponent<UISprite>().width = size.x;
             button.GetComponent<UISprite>().height = size.y;
+            button.GetComponent<UISprite>().depth = buttonDepth;
             button.GetComponent<BoxCollider>().size = size;
             GameObject.Destroy(button.GetComponent<ButtonController>());
 
