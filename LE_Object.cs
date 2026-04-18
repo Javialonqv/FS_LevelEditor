@@ -1000,6 +1000,7 @@ namespace FS_LevelEditor
                     objectsInTheGroup.Remove(this);
                     groupID = null;
                     transform.parent = objectParent; // objectParent will return the "normal" parent by now, since now groupID is null.
+                    if (PlayModeController.Instance) transform.parent = objectParent; // objectParent will return the "normal" parent by now, since now groupID is null.
                 }
                 groupID = null;
                 return;
