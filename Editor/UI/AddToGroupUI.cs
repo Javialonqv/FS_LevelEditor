@@ -159,6 +159,7 @@ namespace FS_LevelEditor.Editor.UI
 
         void Refresh()
         {
+            existingField.SetText("");
             addToNewGroupButton.buttonLabel.GetComponent<UILocalize>().key = Loc.Get("AddToNewGroup") + $" ({LE_Object.objectsPerGroup.Count})";
 
             OnExistingFieldChanged();
