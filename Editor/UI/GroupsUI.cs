@@ -33,7 +33,7 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
 
         int currentGroupsPage;
-        int currentSelectedGroup;
+        int? currentSelectedGroup = null;
         #endregion
 
         public GroupsUI(IntPtr ptr) : base(ptr) { }
@@ -184,6 +184,8 @@ namespace FS_LevelEditor.Editor.UI
                 var button = NGUI_Utils.CreateButtonAsToggle(groupsListBg.transform, Vector3.zero, new Vector3Int(100, 50, 0), i.ToString(), 2);
                 button.onClick += (state) => SelectGroup(state, groupID);
                 groupButtons.Add(button);
+
+                if (currentSelectedGroup.HasValue && i == currentSelectedGroup.Value) button.SetToggleState(true, false);
             }
 
             groupsListBg.GetComponent<UIGrid>().repositionNow = true;
@@ -230,14 +232,17 @@ namespace FS_LevelEditor.Editor.UI
         {
             if (!selecting)
             {
-                currentSelectedGroup = 0;
+                currentSelectedGroup = null;
                 return;
             }
 
             foreach (var button in groupButtons)
                 button.SetToggleState(false, false);
 
-            groupButtons[groupID].SetToggleState(true, false);
+            // Remember groupButtons only contains the buttons of the current page, compensate the difference.
+            groupButtons[groupID - (currentGroupsPage * GROUPS_PER_PAGE)].SetToggleState(true, false);
+
+            currentSelectedGroup = groupID;
         }
         #endregion
 
