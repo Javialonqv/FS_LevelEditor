@@ -91,7 +91,7 @@ namespace FS_LevelEditor.Editor.UI
             editorPanel.name = "GroupsPanel";
 
             windowTitle = editorPanel.GetChild("Title").GetComponent<UILabel>();
-            windowTitle.gameObject.RemoveComponent<UILocalize>();
+            //windowTitle.gameObject.RemoveComponent<UILocalize>();
 
             foreach (var child in editorPanel.GetChilds())
             {
@@ -112,7 +112,7 @@ namespace FS_LevelEditor.Editor.UI
             windowTitle.transform.localPosition = new Vector3(0, 387, 0);
             windowTitle.GetComponent<UILabel>().width = 1650;
             windowTitle.GetComponent<UILabel>().height = 50;
-            windowTitle.GetComponent<UILabel>().text = "Groups";
+            windowTitle.GetComponent<UILocalize>().key = "GroupsTitle";
 
             // Reset the scale of the new custom menu to one.
             editorPanel.transform.localScale = Vector3.one;
@@ -263,7 +263,7 @@ namespace FS_LevelEditor.Editor.UI
 
         void CreateSelectAllObjectsButton()
         {
-            selectAllObjectsBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(225, 300), new Vector3Int(395, 60, 0), "Select All", 2);
+            selectAllObjectsBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(225, 300), new Vector3Int(395, 60, 0), "SelectAll", 2);
             selectAllObjectsBtn.name = "SelectAllObjectsButton";
 
             selectAllObjectsBtn.gameObject.SetActive(true);
@@ -277,7 +277,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateDeleteGroupButton()
         {
-            deleteGroupBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(635, 300), new Vector3Int(395, 60, 0), "Delete Group", 2);
+            deleteGroupBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(635, 300), new Vector3Int(395, 60, 0), "DeleteGroup", 2);
             deleteGroupBtn.name = "DeleteGroupButton";
 
             deleteGroupBtn.gameObject.SetActive(true);
