@@ -36,6 +36,16 @@ namespace FS_LevelEditor.Editor.UI
         int? currentSelectedGroup = null;
         #endregion
 
+        #region Objects List
+        const int OBJECTS_PER_PAGE = 9;
+
+        #region UI References
+        GameObject objectsListParent;
+        #endregion
+
+        int currentObjectsPage;
+        #endregion
+
         public GroupsUI(IntPtr ptr) : base(ptr) { }
 
         public static void Create()
@@ -57,6 +67,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateCurrentGroupsPageLabel();
             CreatePreviousPageButton();
             CreateNextPageButton();
+
+            CreateObjectsListParent();
         }
 
         #region Create UI
@@ -123,7 +135,7 @@ namespace FS_LevelEditor.Editor.UI
         #region Groups Grid
         void CreateGroupsButtonsBackground()
         {
-            groupsListBg = new GameObject("EventsList");
+            groupsListBg = new GameObject("GroupsGrid");
             groupsListBg.transform.parent = editorPanel.transform;
             groupsListBg.transform.localScale = Vector3.one;
             groupsListBg.layer = LayerMask.NameToLayer("2D GUI");
@@ -193,7 +205,49 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
 
         #region Objects Per Group
+        void CreateObjectsListParent()
+        {
+            objectsListParent = new GameObject("ObjectsList");
+            objectsListParent.transform.parent = editorPanel.transform;
+            objectsListParent.transform.localPosition = new Vector3(430f, 15f, 0f);
+            objectsListParent.transform.localScale = Vector3.one;
+            objectsListParent.layer = LayerMask.NameToLayer("2D GUI");
 
+            UITable table = objectsListParent.AddComponent<UITable>();
+            table.columns = 1;
+            table.direction = UITable.Direction.Down;
+            table.pivot = UIWidget.Pivot.Center;
+            //table.padding = new Vector2(0, 10);
+        }
+
+        void CreateObjectsList()
+        {
+            if (!currentSelectedGroup.HasValue)
+            {
+                objectsListParent.SetActive(false);
+                return;
+            }
+            objectsListParent.SetActive(true);
+
+            List<LE_Object> objectsInCurrentGroup = LE_Object.objectsPerGroup[currentSelectedGroup.Value];
+
+            int startValue = currentObjectsPage * OBJECTS_PER_PAGE;
+            int endValue = (currentObjectsPage + 1) * OBJECTS_PER_PAGE;
+            endValue = Mathf.Clamp(endValue, 0, objectsInCurrentGroup.Count); // Clamp the value in case endValue is greather than the available groups, otherwise the whole grid would fill up.
+
+            objectsListParent.DeleteAllChildren();
+            for (int i = startValue; i < endValue; i++)
+            {
+                int objectID = i;
+
+                var button = NGUI_Utils.CreateButton(objectsListParent.transform, Vector3.zero, new Vector3Int(800, 60, 0), objectsInCurrentGroup[i].objectFullNameWithID, 2);
+                button.buttonLabel.alignment = NGUIText.Alignment.Left;
+                button.buttonLabel.width = 750;
+                button.onClick += () => SelectObject(objectID); 
+            }
+
+            objectsListParent.GetComponent<UITable>().repositionNow = true;
+        }
         #endregion
 
         #endregion
@@ -233,6 +287,7 @@ namespace FS_LevelEditor.Editor.UI
             if (!selecting)
             {
                 currentSelectedGroup = null;
+                RefreshObjectsListUI(); // So the objects UI gets hidden.
                 return;
             }
 
@@ -243,10 +298,26 @@ namespace FS_LevelEditor.Editor.UI
             groupButtons[groupID - (currentGroupsPage * GROUPS_PER_PAGE)].SetToggleState(true, false);
 
             currentSelectedGroup = groupID;
+
+            RefreshObjectsListUI();
         }
         #endregion
 
         #region Objects Per Group
+        void RefreshObjectsListUI()
+        {
+            CreateObjectsList();
+        }
+
+        void SelectObject(int objectID)
+        {
+            if (!currentSelectedGroup.HasValue) return;
+
+            LE_Object targetObj = LE_Object.objectsPerGroup[currentSelectedGroup.Value][objectID];
+            EditorController.Instance.SetSelectedObj(targetObj.gameObject, EditorController.SelectionType.ForceSingle);
+
+            HideGroupsPanel();
+        }
         #endregion
 
         #endregion
@@ -254,6 +325,7 @@ namespace FS_LevelEditor.Editor.UI
         void RefreshUI()
         {
             RefreshGroupsPagesUI();
+            RefreshObjectsListUI();
         }
 
         public void ShowGroupsPanel()
@@ -269,6 +341,12 @@ namespace FS_LevelEditor.Editor.UI
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 
             currentSelectedGroup = null; // Deselect the current group.
+        }
+
+        void AddGroups(int amount)
+        {
+            for (int i = 0; i < amount; i++)
+                LE_Object.objectsPerGroup.Add(LE_Object.objectsPerGroup.Count, new());
         }
     }
 }

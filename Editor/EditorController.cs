@@ -537,14 +537,8 @@ namespace FS_LevelEditor.Editor
                     // If it's selecting an object, well, set it as the selected one.
                     if (CanSelectObjectWithRay(out GameObject obj))
                     {
-                        if (Input.GetKey(KeyCode.LeftControl))
-                        {
-                            SetSelectedObj(obj, SelectionType.ForceMultiple);
-                        }
-                        else
-                        {
-                            SetSelectedObj(obj);
-                        }
+                        // Don't use ForceSingle or ForceMultiple, that will be automatically detected inside the method if not specified.
+                        SetSelectedObj(obj);
                     }
                     // Otherwise, deselect the last selected object if there's one ONLY if it's not holding Ctrl
                     else if (!Input.GetKey(KeyCode.LeftControl))
@@ -2082,7 +2076,8 @@ namespace FS_LevelEditor.Editor
             // SnapToGrid cube is adjusted in Late Update.
 
             // Manage selecting groups first.
-            if (objComp && objComp.groupID.HasValue && currentSelectedGroup != objComp.groupID && !Input.GetKey(KeyCode.LeftControl))
+            if (objComp && objComp.groupID.HasValue && currentSelectedGroup != objComp.groupID && (!Input.GetKey(KeyCode.LeftControl) || selectionType == SelectionType.ForceMultiple) &&
+                selectionType != SelectionType.ForceSingle)
             {
                 currentSelectedGroup = objComp.groupID;
                 SetMultipleObjectsAsSelected(LE_Object.objectsPerGroup[objComp.groupID.Value].Select(x => x.gameObject).ToList());
