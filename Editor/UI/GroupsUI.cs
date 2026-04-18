@@ -198,19 +198,23 @@ namespace FS_LevelEditor.Editor.UI
         {
             int startValue = currentGroupsPage * GROUPS_PER_PAGE;
             int endValue = (currentGroupsPage + 1) * GROUPS_PER_PAGE;
-            endValue = Mathf.Clamp(endValue, 0, LE_Object.objectsPerGroup.Count); // Clamp the value in case endValue is greather than the available groups, otherwise the whole grid would fill up.
+            endValue = Mathf.Min(endValue, LE_Object.objectsPerGroup.Count); // Clamp the value in case endValue is greather than the available groups, otherwise the whole grid would fill up.
 
             groupsListBg.DeleteAllChildren();
             groupButtons.Clear();
             for (int i = startValue; i < endValue; i++)
             {
-                int groupID = i;
+                if (i >= LE_Object.objectsPerGroup.Count) break;
 
-                var button = NGUI_Utils.CreateButtonAsToggle(groupsListBg.transform, Vector3.zero, new Vector3Int(100, 50, 0), i.ToString(), 2);
-                button.onClick += (state) => SelectGroup(state, groupID);
+                int groupID = LE_Object.objectsPerGroup.ElementAt(i).Key;
+                int capturedGroupID = groupID;
+
+                var button = NGUI_Utils.CreateButtonAsToggle(groupsListBg.transform, Vector3.zero, new Vector3Int(100, 50, 0), groupID.ToString(), 2);
+                button.name = groupID.ToString();
+                button.onClick += (state) => SelectGroup(state, capturedGroupID);
                 groupButtons.Add(button);
 
-                if (currentSelectedGroup.HasValue && i == currentSelectedGroup.Value) button.SetToggleState(true, false);
+                if (currentSelectedGroup.HasValue && capturedGroupID == currentSelectedGroup.Value) button.SetToggleState(true, false);
             }
 
             groupsListBg.GetComponent<UIGrid>().repositionNow = true;
@@ -387,8 +391,8 @@ namespace FS_LevelEditor.Editor.UI
             foreach (var button in groupButtons)
                 button.SetToggleState(false, false);
 
-            // Remember groupButtons only contains the buttons of the current page, compensate the difference.
-            groupButtons[groupID - (currentGroupsPage * GROUPS_PER_PAGE)].SetToggleState(true, false);
+            var targetButton = groupButtons.Find(b => b.name == groupID.ToString());
+            targetButton.SetToggleState(true, false);
 
             currentSelectedGroup = groupID;
             currentObjectsPage = 0;
@@ -495,6 +499,7 @@ namespace FS_LevelEditor.Editor.UI
             EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.GROUPS_PANEL);
 
+            SortGroupsDictionary();
             RefreshUI();
         }
         public void HideGroupsPanel()
