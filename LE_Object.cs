@@ -1006,6 +1006,8 @@ namespace FS_LevelEditor
                 return;
             }
 
+            if (!newGroupID.HasValue) return;
+
             if (!objectsPerGroup.ContainsKey(newGroupID.Value)) objectsPerGroup.Add(newGroupID.Value, new());
             objectsPerGroup[newGroupID.Value].Add(this);
 
