@@ -25,9 +25,9 @@ namespace FS_LevelEditor.Editor.UI
         #region UI References
         GameObject groupsListBg;
 
-        UIButtonPatcher previousPageBtn;
-        UILabel currentPageLabel;
-        UIButtonPatcher nextPageBtn;
+        UIButtonPatcher previousGroupsPageBtn;
+        UILabel currentGroupsPageLabel;
+        UIButtonPatcher nextGroupsPageBtn;
 
         List<UIButtonAsToggle> groupButtons = new();
         #endregion
@@ -41,6 +41,10 @@ namespace FS_LevelEditor.Editor.UI
 
         #region UI References
         GameObject objectsListParent;
+
+        UIButtonPatcher previousObjectsPageBtn;
+        UILabel currentObjectsPageLabel;
+        UIButtonPatcher nextObjectsPageBtn;
         #endregion
 
         int currentObjectsPage;
@@ -63,12 +67,16 @@ namespace FS_LevelEditor.Editor.UI
         {
             CreateGroupsPanel();
             CreateVerticalLine();
+
             CreateGroupsButtonsBackground();
             CreateCurrentGroupsPageLabel();
-            CreatePreviousPageButton();
-            CreateNextPageButton();
+            CreatePreviousGroupsPageButton();
+            CreateNextGroupsPageButton();
 
             CreateObjectsListParent();
+            CreateCurrentObjectsPageLabel();
+            CreatePreviousObjectsPageButton();
+            CreateNextObjectsPageButton();
         }
 
         #region Create UI
@@ -158,27 +166,27 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateCurrentGroupsPageLabel()
         {
-            currentPageLabel = NGUI_Utils.CreateLabel(editorPanel.transform, new Vector3(-430, -335), new Vector3Int(100, 30, 0), "0/0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
-            currentPageLabel.name = "CurrentGroupsPageLabel";
-            currentPageLabel.fontSize = 30;
+            currentGroupsPageLabel = NGUI_Utils.CreateLabel(editorPanel.transform, new Vector3(-430, -335), new Vector3Int(100, 30, 0), "0/0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            currentGroupsPageLabel.name = "CurrentGroupsPageLabel";
+            currentGroupsPageLabel.fontSize = 30;
         }
-        void CreatePreviousPageButton()
+        void CreatePreviousGroupsPageButton()
         {
-            previousPageBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(-530, -335), new Vector3Int(50, 50, 0), "<", 1, 40);
-            previousPageBtn.name = "PreviousPageButton";
+            previousGroupsPageBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(-530, -335), new Vector3Int(50, 50, 0), "<", 1, 40);
+            previousGroupsPageBtn.name = "PreviousGroupsPageButton";
 
-            previousPageBtn.onClick += PreviousGroupsPage;
+            previousGroupsPageBtn.onClick += PreviousGroupsPage;
 
-            previousPageBtn.gameObject.SetActive(true);
+            previousGroupsPageBtn.gameObject.SetActive(true);
         }
-        void CreateNextPageButton()
+        void CreateNextGroupsPageButton()
         {
-            nextPageBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(-330, -335), new Vector3Int(50, 50, 0), ">", 1, 40);
-            nextPageBtn.name = "NextPageButton";
+            nextGroupsPageBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(-330, -335), new Vector3Int(50, 50, 0), ">", 1, 40);
+            nextGroupsPageBtn.name = "NextGroupsPageButton";
 
-            nextPageBtn.onClick += NextGroupsPage;
+            nextGroupsPageBtn.onClick += NextGroupsPage;
 
-            nextPageBtn.gameObject.SetActive(true);
+            nextGroupsPageBtn.gameObject.SetActive(true);
         }
 
         void CreateGroupsList()
@@ -219,6 +227,30 @@ namespace FS_LevelEditor.Editor.UI
             table.pivot = UIWidget.Pivot.Center;
             table.padding = new Vector2(0, 5);
         }
+        void CreateCurrentObjectsPageLabel()
+        {
+            currentObjectsPageLabel = NGUI_Utils.CreateLabel(editorPanel.transform, new Vector3(430, -335), new Vector3Int(100, 30, 0), "0/0", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            currentObjectsPageLabel.name = "CurrentObjectsPageLabel";
+            currentObjectsPageLabel.fontSize = 30;
+        }
+        void CreatePreviousObjectsPageButton()
+        {
+            previousObjectsPageBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(330, -335), new Vector3Int(50, 50, 0), "<", 1, 40);
+            previousObjectsPageBtn.name = "PreviousObjectsPageButton";
+
+            previousObjectsPageBtn.onClick += PreviousObjectsPage;
+
+            previousObjectsPageBtn.gameObject.SetActive(true);
+        }
+        void CreateNextObjectsPageButton()
+        {
+            nextObjectsPageBtn = NGUI_Utils.CreateButton(editorPanel.transform, new Vector3(530, -335), new Vector3Int(50, 50, 0), ">", 1, 40);
+            nextObjectsPageBtn.name = "NextObjectsPageButton";
+
+            nextObjectsPageBtn.onClick += NextObjectsPage;
+
+            nextObjectsPageBtn.gameObject.SetActive(true);
+        }
 
         void CreateObjectsList()
         {
@@ -249,6 +281,16 @@ namespace FS_LevelEditor.Editor.UI
                 scale.mScale = Vector3.one;
                 scale.hover = Vector3.one;
                 scale.pressed = Vector3.one * 0.98f;
+
+                #region Delete Button
+                var deleteButton = NGUI_Utils.CreateButtonWithSprite(button.transform, new Vector3(370, 0), new Vector3Int(50, 50, 0), 3, "Trash", new Vector2Int(25, 35));
+
+                UIButtonColor deleteButtonColor = deleteButton.GetComponent<UIButtonColor>();
+                deleteButtonColor.duration = 0f;
+                deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
+                deleteButtonColor.hover = new Color(1f, 0f, 0f, 1f);
+                deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
+                #endregion
             }
 
             objectsListParent.GetComponent<UITable>().repositionNow = true;
@@ -263,11 +305,11 @@ namespace FS_LevelEditor.Editor.UI
         void RefreshGroupsPagesUI()
         {
             int groupPages = GetGroupsPagesCount();
-            currentPageLabel.gameObject.SetActive(groupPages > 1);
-            previousPageBtn.gameObject.SetActive(groupPages > 1 && currentGroupsPage > 0);
-            nextPageBtn.gameObject.SetActive(groupPages > 1 && currentGroupsPage < groupPages - 1);
+            currentGroupsPageLabel.gameObject.SetActive(groupPages > 1);
+            previousGroupsPageBtn.gameObject.SetActive(groupPages > 1 && currentGroupsPage > 0);
+            nextGroupsPageBtn.gameObject.SetActive(groupPages > 1 && currentGroupsPage < groupPages - 1);
 
-            currentPageLabel.text = (currentGroupsPage + 1) + "/" + groupPages;
+            currentGroupsPageLabel.text = (currentGroupsPage + 1) + "/" + groupPages;
 
             CreateGroupsList();
         }
@@ -303,6 +345,7 @@ namespace FS_LevelEditor.Editor.UI
             groupButtons[groupID - (currentGroupsPage * GROUPS_PER_PAGE)].SetToggleState(true, false);
 
             currentSelectedGroup = groupID;
+            currentObjectsPage = 0;
 
             RefreshObjectsListUI();
         }
@@ -311,7 +354,31 @@ namespace FS_LevelEditor.Editor.UI
         #region Objects Per Group
         void RefreshObjectsListUI()
         {
+            int objectsPages = GetObjectsPagesCount();
+            currentObjectsPageLabel.gameObject.SetActive(objectsPages > 1);
+            previousObjectsPageBtn.gameObject.SetActive(objectsPages > 1 && currentObjectsPage > 0);
+            nextObjectsPageBtn.gameObject.SetActive(objectsPages > 1 && currentObjectsPage < objectsPages - 1);
+
+            currentObjectsPageLabel.text = (currentObjectsPage + 1) + "/" + objectsPages;
+
             CreateObjectsList();
+        }
+
+        int GetObjectsPagesCount()
+        {
+            if (!currentSelectedGroup.HasValue) return 0;
+
+            return Mathf.CeilToInt((float)LE_Object.objectsPerGroup[currentSelectedGroup.Value].Count / OBJECTS_PER_PAGE);
+        }
+        void PreviousObjectsPage()
+        {
+            currentObjectsPage--;
+            RefreshObjectsListUI();
+        }
+        void NextObjectsPage()
+        {
+            currentObjectsPage++;
+            RefreshObjectsListUI();
         }
 
         void SelectObject(int objectID)
