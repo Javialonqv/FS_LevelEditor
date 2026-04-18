@@ -103,7 +103,6 @@ namespace FS_LevelEditor
 
 			controller.usableOnce = false;
 			controller.ignoreLaser = true;
-			controller.canBeUsed = true;
 			controller.interactionDistanceMultiplier = .8f;
 			controller.isKeypad = true;
 			controller.successfulKeypadColor = t_keycode.successfulKeypadColor;
