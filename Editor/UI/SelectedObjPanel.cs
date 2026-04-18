@@ -1214,15 +1214,11 @@ namespace FS_LevelEditor.Editor.UI
 		{
             if (EditorController.Instance.multipleObjectsSelected)
             {
-				int newGroupID = LE_Object.objectsPerGroup.Count;
-                foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
-                {
-					obj.SetGroup(newGroupID);
-                }
+				AddToGroupUI.Instance.Show(EditorController.Instance.currentSelectedObjsComponents.ToArray());
             }
             else
             {
-				EditorController.Instance.currentSelectedObjComponent.SetGroup(LE_Object.objectsPerGroup.Count);
+				AddToGroupUI.Instance.Show(EditorController.Instance.currentSelectedObjComponent);
             }
             EditorController.Instance.levelHasBeenModified = true;
         }

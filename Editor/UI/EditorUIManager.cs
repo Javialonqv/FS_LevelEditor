@@ -28,6 +28,7 @@ namespace FS_LevelEditor.Editor.UI
 		GLOBAL_PROPERTIES,
 		TEXT_EDITOR,
 		GROUPS_PANEL,
+		ADD_TO_GROUP_PANEL,
 		UPGRADES_PANEL,
 		SAVE_METADATA_PANEL
 	}
@@ -123,6 +124,7 @@ namespace FS_LevelEditor.Editor.UI
 			EventsUIPageManager.Create();
 			TextEditorUI.Create();
 			GroupsUI.Create();
+			AddToGroupUI.Create();
 			UpgradesPanel.Create();
 			SaveMetadataPopup.Create();
 
@@ -599,6 +601,10 @@ namespace FS_LevelEditor.Editor.UI
 					target = GroupsUI.Instance.editorPanel;
 					break;
 
+				case EditorUIContext.ADD_TO_GROUP_PANEL:
+					target = AddToGroupUI.Instance.addPanel;
+					break;
+
 				case EditorUIContext.UPGRADES_PANEL:
 					target = UpgradesPanel.Instance.upgradesPanel;
                     break;
@@ -720,6 +726,10 @@ namespace FS_LevelEditor.Editor.UI
 
                 case EditorUIContext.GROUPS_PANEL:
                     target = GroupsUI.Instance.editorPanel;
+                    break;
+
+                case EditorUIContext.ADD_TO_GROUP_PANEL:
+                    target = AddToGroupUI.Instance.addPanel;
                     break;
 
                 case EditorUIContext.UPGRADES_PANEL:

@@ -719,6 +719,11 @@ namespace FS_LevelEditor.Editor
                     GroupsUI.Instance.HideGroupsPanel();
                     return;
                 }
+                else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.ADD_TO_GROUP_PANEL))
+                {
+                    AddToGroupUI.Instance.Hide();
+                    return;
+                }
                 else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.SELECTING_TARGET_OBJ))
                 {
                     SetCurrentEditorState(EditorState.PAUSED); // It's set to paused while in events panel, so the user can't move the camera or anything.
