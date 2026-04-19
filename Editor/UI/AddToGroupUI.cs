@@ -112,7 +112,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateNewGroupButton()
         {
-            addToNewGroupButton = NGUI_Utils.CreateButton(addPanel.transform, new Vector3(0, -100), new Vector3Int(750, 60, 0), "AddToNewGroup", 2);
+            // Leave the default text blank, so no UILocalize is created.
+            addToNewGroupButton = NGUI_Utils.CreateButton(addPanel.transform, new Vector3(0, -100), new Vector3Int(750, 60, 0), "", 2); 
             addToNewGroupButton.name = "AddToNewGroupButton";
             addToNewGroupButton.onClick += AddToNewGroup;
 
@@ -160,7 +161,7 @@ namespace FS_LevelEditor.Editor.UI
         void Refresh()
         {
             existingField.SetText("");
-            addToNewGroupButton.buttonLabel.GetComponent<UILocalize>().key = Loc.Get("AddToNewGroup") + $" ({LE_Object.objectsPerGroup.Count})";
+            addToNewGroupButton.buttonLabel.text = Loc.Get("AddToNewGroup") + $" ({LE_Object.objectsPerGroup.Count})";
 
             OnExistingFieldChanged();
         }

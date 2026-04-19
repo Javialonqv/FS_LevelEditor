@@ -1233,9 +1233,6 @@ namespace FS_LevelEditor.Editor.UI
 				AddToGroupUI.Instance.Show(EditorController.Instance.currentSelectedObjComponent);
             }
 
-			addToGroupButton.gameObject.SetActive(false);
-			removeFromGroupButton.gameObject.SetActive(true);
-
             EditorController.Instance.levelHasBeenModified = true;
         }
         public void RemoveFromGroupPressed()
