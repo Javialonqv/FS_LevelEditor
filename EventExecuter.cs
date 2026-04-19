@@ -10,6 +10,7 @@ using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
 using System.Collections;
+using Il2CppInControl.NativeDeviceProfiles;
 
 namespace FS_LevelEditor
 {
@@ -49,6 +50,8 @@ namespace FS_LevelEditor
         GameObject editorLinksParent;
         List<EditorLink> editorLinks = new();
         bool dontDisableLinksParentWhenCreating;
+
+        List<Coroutine> executingEventsCoroutines = new();
 
         void Awake()
         {
@@ -215,7 +218,7 @@ namespace FS_LevelEditor
                     // ALSO, don't create editor links for the player related events.
                     // UPDATE: CREATE links even for INVALID objects, what if the user adds an object and the event becomes valid?
                     var objData = (@event.targetObjType, @event.targetObjID);
-                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer || @event.isForTaser || @event.isForJetpack || @event.isForObjective) continue;
+                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer || @event.isForTaser || @event.isForJetpack || @event.isForObjective || @event.isForWait) continue;
 
                     GameObject linkObj = Instantiate(Core.LoadOtherObjectInBundle("EditorLine"), editorLinksParent.transform);
                     LineRenderer linkRender = linkObj.GetComponent<LineRenderer>();
@@ -271,12 +274,23 @@ namespace FS_LevelEditor
             }
         }
 
+        void OnDestroy()
+        {
+            foreach (var coroutine in executingEventsCoroutines)
+            {
+                if (coroutine == null)
+                    continue;
+
+                MelonCoroutines.Stop(coroutine);
+            }
+        }
+
         /// <summary>
         /// Executes events without AND logic support (legacy method).
         /// </summary>
         public void ExecuteEvents(List<LE_Event> events)
         {
-            ExecuteEventsInternal(events, null, true);
+            executingEventsCoroutines.Add((Coroutine)MelonCoroutines.Start(ExecuteEventsInternal(events, null, true)));
         }
 
         /// <summary>
@@ -287,10 +301,10 @@ namespace FS_LevelEditor
         /// <param name="isActivating">True if this is an activating event (OnDrop, WhenActivating), false for deactivating (OnRemove, WhenDeactivating).</param>
         public void ExecuteEventsWithAndLogic(List<LE_Event> events, string eventListName, bool isActivating)
         {
-            ExecuteEventsInternal(events, eventListName, isActivating);
+            executingEventsCoroutines.Add((Coroutine)MelonCoroutines.Start(ExecuteEventsInternal(events, eventListName, isActivating)));
         }
 
-        private void ExecuteEventsInternal(List<LE_Event> events, string eventListName, bool isActivating)
+        private IEnumerator ExecuteEventsInternal(List<LE_Event> events, string eventListName, bool isActivating)
         {
             foreach (LE_Event @event in events)
             {
@@ -345,7 +359,7 @@ namespace FS_LevelEditor
                 }
                 else
                 {
-                    ExecuteSingleEvent(@event);
+                    yield return ExecuteSingleEvent(@event);
                 }
             }
         }
@@ -362,7 +376,7 @@ namespace FS_LevelEditor
             ExecuteSingleEvent(@event);
         }
 
-        private void ExecuteSingleEvent(LE_Event @event)
+        private IEnumerator ExecuteSingleEvent(LE_Event @event)
         {
             if (@event.isForPlayer)
             {
@@ -383,7 +397,7 @@ namespace FS_LevelEditor
                 {
                     Controls.Instance.SetFlashlightAllowed();
                 }
-                return;
+                yield break;
             }
             if (@event.isForTaser)
             {
@@ -427,7 +441,7 @@ namespace FS_LevelEditor
                         }
                     }
                 }
-                return;
+                yield break;
             }
             if (@event.isForJetpack)
             {
@@ -440,7 +454,7 @@ namespace FS_LevelEditor
                         Controls.Instance.BreakJetPack();
                         break;
                 }
-                return;
+                yield break;
             }
             if (@event.isForObjective)
             {
@@ -458,7 +472,16 @@ namespace FS_LevelEditor
                         PlayModeController.Instance.FailObjective(@event.objectiveName);
                         break;
                 }
-                return;
+                yield break;
+            }
+            if (@event.isForWait)
+            {
+                if (@event.waitTimeUnits == LE_Event.WaitTimeUnit.Seconds)
+                    yield return new WaitForSeconds(@event.waitTime);
+                else
+                    yield return new WaitForSeconds(@event.waitTime / 100);
+
+                yield break;
             }
 
             LE_Object targetObj =
