@@ -94,7 +94,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateExistingInputField()
         {
-            existingField = NGUI_Utils.CreateInputField(addPanel.transform, new Vector3(-200, 50), new Vector3Int(300, 60, 0), defaultText: "Enter existing group ID", inputType: UICustomInputField.UIInputType.INT, depth:2);
+            existingField = NGUI_Utils.CreateInputField(addPanel.transform, new Vector3(-200, 50), new Vector3Int(300, 60, 0), defaultText: "Enter existing group ID", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_INT, depth:2);
             existingField.name = "ExistingGroupInputField";
             existingField.setFieldColorAutomatically = false;
             existingField.onChange += OnExistingFieldChanged;
