@@ -7,6 +7,7 @@ using FS_LevelEditor.SingleObjectLinks;
 using FS_LevelEditor.WaypointSupports;
 using Il2Cpp;
 using Il2CppInterop.Runtime;
+using Il2CppTMPro;
 using System.Reflection;
 using System.Text.Json;
 using UnityEngine;
@@ -913,10 +914,6 @@ namespace FS_LevelEditor
             {
                 return;
             }
-            if(objectType == ObjectType.SCREEN || objectType == ObjectType.SMALL_SCREEN)
-            {
-                return;
-            }
 
             if (!contentObject)
             {
@@ -934,6 +931,12 @@ namespace FS_LevelEditor
             foreach (var renderer in renderers)
             {
                 if (renderer == null) continue; // Skip null renderers
+
+                if (renderer.gameObject.TryGetComponent<TextMeshPro>(out var tmpro))
+                {
+                    // This renderer is for text, skip.
+                    if (tmpro.renderer == renderer) continue;
+                }
 
                 // Skip waypoint renderers if this object has waypoints
                 if (canHaveWaypoints)

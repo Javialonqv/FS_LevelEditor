@@ -46,7 +46,6 @@ namespace FS_LevelEditor
             return new Dictionary<string, object>()
             {
                 { "ColorType", ScreenColorType.CYAN },
-                { "InvisibleMesh", false },
                 { "InvertWithGravity", true },
                 { "ScaledText", true },
                 { "AutoFontSize", true },
@@ -60,8 +59,6 @@ namespace FS_LevelEditor
 
         public override void ObjectStart(LEScene scene)
         {
-            // No matter the scene (Editor/Playmode) change the mesh.
-            SetScreenMeshVisibility(GetProperty<bool>("InvisibleMesh"));
             SetScreenColor(GetProperty<ScreenColorType>("ColorType"));
 			_rawTemplateText = GetProperty<string>("Text");
 			SetScreenText(_rawTemplateText);
@@ -134,15 +131,6 @@ namespace FS_LevelEditor
                 {
                     properties["ColorType"] = value;
                     SetScreenColor((ScreenColorType)value);
-                    return true;
-                }
-            }
-            else if (name == "InvisibleMesh")
-            {
-                if (value is bool)
-                {
-                    properties["InvisibleMesh"] = (bool)value;
-                    SetScreenMeshVisibility((bool)value);
                     return true;
                 }
             }
@@ -284,10 +272,6 @@ namespace FS_LevelEditor
             return base.TriggerAction(actionName);
         }
 
-        void SetScreenMeshVisibility(bool setInvisible)
-        {
-            wholeMesh.SetActive(!setInvisible);
-        }
         void SetScreenColor(ScreenColorType colorType)
         {
             if (EditorController.Instance)

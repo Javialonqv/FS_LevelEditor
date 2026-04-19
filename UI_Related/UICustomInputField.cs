@@ -141,6 +141,25 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
+        void OnGUI()
+        {
+            Event e = Event.current;
+
+            if (e.type == EventType.KeyDown && e.control && input.isSelected)
+            {
+                if (e.keyCode == KeyCode.C)
+                {
+                    e.Use(); // Prevent NGUI for using its weird system.
+                    GUIUtility.systemCopyBuffer = input.text;
+                }
+                else if (e.keyCode == KeyCode.V)
+                {
+                    e.Use(); // Prevent NGUI for using its weird system.
+                    input.Insert(GUIUtility.systemCopyBuffer);
+                }
+            }
+        }
+
         public void Set(bool newState)
         {
             isValid = newState;

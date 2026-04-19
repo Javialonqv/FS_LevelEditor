@@ -379,6 +379,7 @@ namespace FS_LevelEditor
         {
             if (@event.isForPlayer)
             {
+                // Only one of these can be enabled, it's either Zero-G or Inverse Gravity.
                 if (@event.enableOrDisableZeroG)
                 {
                     if (Controls.Instance.IsInZeroGravity()) Controls.Instance.DisableZeroGravityFromButton();
@@ -388,14 +389,12 @@ namespace FS_LevelEditor
                 {
                     PlayModeController.Instance.InvertPlayerGravity();
                 }
-                else if(!@event.flashlightEnabled)
-                {
+                
+                if(!@event.flashlightEnabled)
                     Controls.Instance.SetFlashlightNotAllowed();
-                }
-                else if(@event.flashlightEnabled)
-                {
+                else
                     Controls.Instance.SetFlashlightAllowed();
-                }
+
                 yield break;
             }
             if (@event.isForTaser)

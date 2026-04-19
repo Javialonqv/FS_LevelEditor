@@ -1448,6 +1448,8 @@ namespace FS_LevelEditor.Editor.UI
 
                     if (!currentSelectedEvent.isForWait || !currentSelectedEvent.isForGroup) globalObjectsSettings.SetActive(true);
                 }
+
+                UpdateEventOptionsWithEvent(currentSelectedEvent);
             }
             else
             {
