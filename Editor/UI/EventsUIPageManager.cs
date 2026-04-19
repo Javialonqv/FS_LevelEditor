@@ -1144,6 +1144,11 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     targetObjInputField.SetText("Obj_" + currentSelectedEvent.objectiveName);
                 }
+                else if (currentSelectedEvent.isForWait)
+                {
+                    string unit = currentSelectedEvent.waitTimeUnits == LE_Event.WaitTimeUnit.Seconds ? "s" : "ms";
+                    targetObjInputField.SetText($"Wait {currentSelectedEvent.waitTime}{unit}");
+                }
                 else if (currentSelectedEvent.isForGroup)
                 {
                     targetObjInputField.SetText("Group " + currentSelectedEvent.targetGroupID);
@@ -1189,6 +1194,20 @@ namespace FS_LevelEditor.Editor.UI
             {
                 objIsValid = true;
             }
+            else if (inputText.StartsWith("Wait", StringComparison.OrdinalIgnoreCase))
+            {
+                // Very dirty code, Ik it, alr?
+                if (inputText.EndsWith("ms", StringComparison.OrdinalIgnoreCase))
+                {
+                    string stripped = inputText.ToLower().Replace("wait", "").Replace("ms", "").Trim();
+                    objIsValid = float.TryParse(stripped, out _);
+                }
+                else if (inputText.EndsWith("s", StringComparison.OrdinalIgnoreCase))
+                {
+                    string stripped = inputText.ToLower().Replace("wait", "").Replace("s", "").Trim();
+                    objIsValid = float.TryParse(stripped, out _);
+                }
+            }
             else if (inputText.StartsWith("Group", StringComparison.OrdinalIgnoreCase))
             {
                 string[] splitted = inputText.Split(' ');
@@ -1226,6 +1245,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForJetpack = false;
                     currentSelectedEvent.isForObjective = false;
                     currentSelectedEvent.isForGroup = false;
+                    currentSelectedEvent.isForWait = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1237,6 +1257,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForJetpack = false;
                     currentSelectedEvent.isForObjective = false;
                     currentSelectedEvent.isForGroup = false;
+                    currentSelectedEvent.isForWait = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1248,6 +1269,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForJetpack = true;
                     currentSelectedEvent.isForObjective = false;
                     currentSelectedEvent.isForGroup = false;
+                    currentSelectedEvent.isForWait = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1259,6 +1281,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForJetpack = false;
                     currentSelectedEvent.isForObjective = true;
                     currentSelectedEvent.isForGroup = false;
+                    currentSelectedEvent.isForWait = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
@@ -1266,6 +1289,25 @@ namespace FS_LevelEditor.Editor.UI
                     // Extract the objective name after "Objective_"
                     string objectiveName = inputText.Substring(4); // "Objective_" is 10 characters
                     currentSelectedEvent.objectiveName = objectiveName;
+                }
+                else if (inputText.StartsWith("Wait", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentSelectedEvent.isForPlayer = false;
+                    currentSelectedEvent.isForTaser = false;
+                    currentSelectedEvent.isForJetpack = false;
+                    currentSelectedEvent.isForObjective = false;
+                    currentSelectedEvent.isForWait = true;
+                    currentSelectedEvent.targetObjType = null;
+                    currentSelectedEvent.targetObjID = 0;
+                    currentSelectedEvent.targetObjName = "";
+
+                    // Thanks to a previous if statement, we already know that the input either ends with "ms" or "s".
+                    currentSelectedEvent.waitTimeUnits = inputText.EndsWith("ms", StringComparison.OrdinalIgnoreCase) ? LE_Event.WaitTimeUnit.Miliseconds : LE_Event.WaitTimeUnit.Seconds;
+
+                    if (currentSelectedEvent.waitTimeUnits == LE_Event.WaitTimeUnit.Seconds)
+                        currentSelectedEvent.waitTime = Utils.ParseFloat(inputText.ToLower().Replace("wait", "").Replace("s", "").Trim());
+                    else
+                        currentSelectedEvent.waitTime = Utils.ParseFloat(inputText.ToLower().Replace("wait", "").Replace("ms", "").Trim());
                 }
                 else if (inputText.StartsWith("Group", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1288,12 +1330,16 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForJetpack = false;
                     currentSelectedEvent.isForObjective = false;
                     currentSelectedEvent.isForGroup = false;
+                    currentSelectedEvent.isForWait = false;
                     currentSelectedEvent.targetObjType = targetObj.objectType;
                     currentSelectedEvent.targetObjID = targetObj.objectID;
                     currentSelectedEvent.targetObjName = ""; // While the object is valid, don't use the name, use the type and ID instead.
                 }
 
-                if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack && !currentSelectedEvent.isForObjective) defaultObjectsSettings.SetActive(true);
+                if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack && !currentSelectedEvent.isForObjective &&
+                    !currentSelectedEvent.isForWait)
+                    defaultObjectsSettings.SetActive(true);
+
                 if (currentSelectedEvent.isForPlayer)
                 {
                     currentActiveObjectPanel = playerSettings;
@@ -1311,6 +1357,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentActiveObjectPanel = objectiveSettings;
                 }
                 // There's no panel for groups.
+                // No panel for wait.
                 else if (targetObj is LE_Saw)
                 {
                     currentActiveObjectPanel = sawObjectsSettings;
@@ -1399,7 +1446,7 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     moreGlobalOptionsButton.gameObject.SetActive(false);
 
-                    if (!currentSelectedEvent.isForGroup) globalObjectsSettings.SetActive(true);
+                    if (!currentSelectedEvent.isForWait || !currentSelectedEvent.isForGroup) globalObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -1412,6 +1459,7 @@ namespace FS_LevelEditor.Editor.UI
                 currentSelectedEvent.isForTaser = false;
                 currentSelectedEvent.isForJetpack = false;
                 currentSelectedEvent.isForObjective = false;
+                currentSelectedEvent.isForWait = false;
                 currentSelectedEvent.targetObjType = null;
                 currentSelectedEvent.targetObjID = 0;
                 currentSelectedEvent.targetObjName = inputText;
@@ -3184,6 +3232,13 @@ public class LE_Event
 
     #region Fragile Window
     public bool fragileWindowBreakNow { get; set; }
+    #endregion
+
+    #region Wait Options
+    public bool isForWait { get; set; } = false;
+    public float waitTime { get; set; }
+    public enum WaitTimeUnit { Seconds, Miliseconds }
+    public WaitTimeUnit waitTimeUnits { get; set; }
     #endregion
 
     #region Group Options
