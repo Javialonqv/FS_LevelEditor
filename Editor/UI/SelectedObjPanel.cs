@@ -1238,15 +1238,27 @@ namespace FS_LevelEditor.Editor.UI
         }
         public void RemoveFromGroupPressed()
         {
+			HashSet<int> modifiedGroups = new();
             if (EditorController.Instance.multipleObjectsSelected)
             {
 				foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
-					obj.SetGroup(null);
+				{
+					if (obj.groupID.HasValue) modifiedGroups.Add(obj.groupID.Value);
+                    obj.SetGroup(null);
+                }
             }
             else
             {
-				EditorController.Instance.currentSelectedObjComponent.SetGroup(null);
+                if (EditorController.Instance.currentSelectedObjComponent.groupID.HasValue) modifiedGroups.Add(EditorController.Instance.currentSelectedObjComponent.groupID.Value);
+                EditorController.Instance.currentSelectedObjComponent.SetGroup(null);
             }
+
+			// Remove groups with 0 objects.
+			foreach (var groupID in modifiedGroups)
+			{
+				if (LE_Object.objectsPerGroup[groupID].Count == 0)
+					LE_Object.objectsPerGroup.Remove(groupID);
+			}
 
             addToGroupButton.gameObject.SetActive(true);
             removeFromGroupButton.gameObject.SetActive(false);
