@@ -1414,7 +1414,7 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     moreGlobalOptionsButton.gameObject.SetActive(false);
 
-                    globalObjectsSettings.SetActive(true);
+                    if (!currentSelectedEvent.isForWait) globalObjectsSettings.SetActive(true);
                 }
             }
             else
@@ -1427,6 +1427,7 @@ namespace FS_LevelEditor.Editor.UI
                 currentSelectedEvent.isForTaser = false;
                 currentSelectedEvent.isForJetpack = false;
                 currentSelectedEvent.isForObjective = false;
+                currentSelectedEvent.isForWait = false;
                 currentSelectedEvent.targetObjType = null;
                 currentSelectedEvent.targetObjID = 0;
                 currentSelectedEvent.targetObjName = inputText;
