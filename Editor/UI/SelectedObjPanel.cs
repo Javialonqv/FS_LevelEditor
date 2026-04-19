@@ -398,7 +398,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateRemoveFromGroupButton()
         {
-            removeFromGroupButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "RemoveFromGroup");
+            // Leave the default text blank, so no UILocalize is created.
+            removeFromGroupButton = NGUI_Utils.CreateButton(globalObjectPanelsParent, new Vector3(0, yPosForGlobalProps), new Vector3Int(480, 50, 0), "");
             removeFromGroupButton.name = "RemoveFromGroupButton";
             removeFromGroupButton.onClick += RemoveFromGroupPressed;
             removeFromGroupButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
