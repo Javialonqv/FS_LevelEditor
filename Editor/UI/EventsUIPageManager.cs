@@ -499,6 +499,17 @@ namespace FS_LevelEditor.Editor.UI
                     eventsContextMenu.Show();
                 }
             }
+
+            if (Input.GetKey(KeyCode.LeftAlt) && (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow)))
+            {
+                if (currentSelectedEvent != null)
+                {
+                    if (Input.GetKeyDown(KeyCode.UpArrow))
+                        MoveEventUp(currentSelectedEventID);
+                    else if (Input.GetKeyDown(KeyCode.DownArrow))
+                        MoveEventDown(currentSelectedEventID);
+                }
+            }
         }
 
         #region Events List Related
