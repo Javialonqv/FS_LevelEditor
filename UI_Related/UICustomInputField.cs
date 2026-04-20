@@ -150,7 +150,10 @@ namespace FS_LevelEditor.UI_Related
                 if (e.keyCode == KeyCode.C)
                 {
                     e.Use(); // Prevent NGUI for using its weird system.
-                    GUIUtility.systemCopyBuffer = input.text;
+                    if (input.selectionStart == input.selectionEnd) // No text is selected specifically, copy it all.
+                        GUIUtility.systemCopyBuffer = input.value;
+                    else // There IS a selection, only copy that.
+                        GUIUtility.systemCopyBuffer = input.GetSelection();
                 }
                 else if (e.keyCode == KeyCode.V)
                 {
