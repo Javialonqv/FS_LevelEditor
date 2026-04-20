@@ -1418,7 +1418,7 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     moreGlobalOptionsButton.gameObject.SetActive(false);
 
-                    if (!currentSelectedEvent.isForWait && !currentSelectedEvent.isForGroup) globalObjectsSettings.SetActive(true);
+                    if (!currentSelectedEvent.isForWait) globalObjectsSettings.SetActive(true);
                 }
 
                 UpdateEventOptionsWithEvent(currentSelectedEvent);
