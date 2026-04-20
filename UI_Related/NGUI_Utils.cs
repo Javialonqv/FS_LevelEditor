@@ -705,7 +705,7 @@ namespace FS_LevelEditor.UI_Related
             if (dotIndex != -1)
             {
                 int decimals = text.Length - dotIndex;
-                if (decimals > 2)
+                if (decimals > maxDecimals)
                     return '\0';
             }
 
