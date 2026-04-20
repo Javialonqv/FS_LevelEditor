@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -1322,6 +1323,18 @@ namespace FS_LevelEditor.Editor.UI
 
                     int targetGroup = int.Parse(inputText.Split(' ')[1]);
                     currentSelectedEvent.targetGroupID = targetGroup;
+
+                    var objectsInGroup = LE_Object.objectsPerGroup[targetGroup];
+                    if (LE_Object.ObjectsAreOfTheSameType(objectsInGroup))
+                    {
+                        currentSelectedEvent.allObjectsInGroupAreTheSame = true;
+                        currentSelectedEvent.sameObjectType = objectsInGroup[0].objectType;
+                    }
+                    else
+                    {
+                        currentSelectedEvent.allObjectsInGroupAreTheSame = false;
+                        currentSelectedEvent.sameObjectType = null;
+                    }
                 }
                 else
                 {
@@ -1356,75 +1369,21 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     currentActiveObjectPanel = objectiveSettings;
                 }
-                // There's no panel for groups.
-                // No panel for wait.
-                else if (targetObj is LE_Saw)
+                if (currentSelectedEvent.isForGroup)
                 {
-                    currentActiveObjectPanel = sawObjectsSettings;
+                    var allObjectsInGroup = LE_Object.objectsPerGroup[currentSelectedEvent.targetGroupID];
+                    if (currentSelectedEvent.allObjectsInGroupAreTheSame)
+                    {
+                        currentActiveObjectPanel = GetOptionsPanelForObject(currentSelectedEvent.sameObjectType.Value);
+                    }
                 }
-                else if (targetObj is LE_Cube)
+                else if (currentSelectedEvent.isForWait)
                 {
-                    currentActiveObjectPanel = cubeObjectsSettings;
+                    // Empty, just is just so GetOptionsPanelForObject is not executed.
                 }
-                else if (targetObj is LE_Laser)
+                else
                 {
-                    currentActiveObjectPanel = laserObjectsSettings;
-                }
-                else if (targetObj is LE_Mine)
-                {
-                    currentActiveObjectPanel = mineObjectsSettings;
-                }
-                else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
-                {
-                    currentActiveObjectPanel = lightObjectsSettings;
-                }
-                else if (targetObj is LE_Ceiling_Light)
-                {
-                    currentActiveObjectPanel = ceilingLightObjectsSettings;
-                }
-                else if (targetObj is LE_Health_Pack || targetObj is LE_Ammo_Pack)
-                {
-                    currentActiveObjectPanel = healthAmmoPacksObjectsSettings;
-                }
-                else if (targetObj is LE_Switch)
-                {
-                    currentActiveObjectPanel = switchObjectsSettings;
-                }
-                else if (targetObj is LE_Keypad)
-                {
-                    currentActiveObjectPanel = keypadObjectsSettings;
-                }
-                else if (targetObj is LE_Pressure_Plate)
-                {
-                    currentActiveObjectPanel = pressurePlateObjectsSettings;
-                }
-                else if (targetObj is LE_Flame_Trap)
-                {
-                    currentActiveObjectPanel = flameTrapObjectsSettings;
-                }
-                else if (targetObj is LE_Screen || targetObj is LE_Small_Screen)
-                {
-                    currentActiveObjectPanel = screenObjectsSettings;
-                }
-                else if (targetObj is LE_Door || targetObj is LE_Door_V2)
-                {
-                    currentActiveObjectPanel = doorObjectsSettings;
-                }
-                else if (targetObj is LE_Bridge)
-                {
-                    currentActiveObjectPanel = bridgeObjectsSettings;
-                }
-                else if (targetObj is LE_Moving_Platform)
-                {
-                    currentActiveObjectPanel = movingPlatformObjectsSettings;
-                }
-                else if (targetObj is LE_Destructible_Wall)
-                {
-                    currentActiveObjectPanel = destructibleWallObjectsSettings;
-                }
-                else if (targetObj is LE_Breakable_Window)
-                {
-                    currentActiveObjectPanel = fragileWindowObjectsSettings;
+                    currentActiveObjectPanel = GetOptionsPanelForObject(targetObj.objectType.Value);
                 }
 
                 if (currentActiveObjectPanel) // User can decided if it shows global options or object-specific options.
@@ -1446,7 +1405,7 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     moreGlobalOptionsButton.gameObject.SetActive(false);
 
-                    if (!currentSelectedEvent.isForWait || !currentSelectedEvent.isForGroup) globalObjectsSettings.SetActive(true);
+                    if (!currentSelectedEvent.isForWait && !currentSelectedEvent.isForGroup) globalObjectsSettings.SetActive(true);
                 }
 
                 UpdateEventOptionsWithEvent(currentSelectedEvent);
@@ -1487,6 +1446,79 @@ namespace FS_LevelEditor.Editor.UI
             OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
 
+        GameObject GetOptionsPanelForObject(LE_Object.ObjectType targetObj)
+        {
+            if (targetObj == LE_Object.ObjectType.SAW)
+            {
+                return sawObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.CUBE)
+            {
+                return cubeObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.LASER)
+            {
+                return laserObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.MINE)
+            {
+                return mineObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.DIRECTIONAL_LIGHT || targetObj == LE_Object.ObjectType.POINT_LIGHT)
+            {
+                return lightObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.CEILING_LIGHT)
+            {
+                return ceilingLightObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.HEALTH_PACK || targetObj == LE_Object.ObjectType.AMMO_PACK)
+            {
+                return healthAmmoPacksObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.SWITCH)
+            {
+                return switchObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.KEYPAD)
+            {
+                return keypadObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.PRESSURE_PLATE)
+            {
+                return pressurePlateObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.FLAME_TRAP)
+            {
+                return flameTrapObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.SCREEN || targetObj == LE_Object.ObjectType.SMALL_SCREEN)
+            {
+                return screenObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.DOOR || targetObj == LE_Object.ObjectType.DOOR_V2)
+            {
+                return doorObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.BRIDGE)
+            {
+                return bridgeObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.MOVING_PLATFORM)
+            {
+                return movingPlatformObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.DESTRUCTIBLE_WALL)
+            {
+                return destructibleWallObjectsSettings;
+            }
+            else if (targetObj == LE_Object.ObjectType.BREAKABLE_WINDOW)
+            {
+                return fragileWindowObjectsSettings;
+            }
+
+            return null;
+        }
 
         void UpdateEventOptionsWithEvent(LE_Event @event)
         {
@@ -1516,6 +1548,15 @@ namespace FS_LevelEditor.Editor.UI
             else if (@event.isForObjective)
             {
                 objectiveStateButton.SelectOption((int)@event.objectiveState);
+            }
+            else if (@event.isForGroup && @event.allObjectsInGroupAreTheSame)
+            {
+                LE_Event newEvent = new LE_Event(@event);
+                newEvent.isForGroup = false;
+                newEvent.targetObjType = @event.sameObjectType;
+
+                UpdateEventOptionsWithEvent(newEvent);
+                return;
             }
             else if (@event.targetObjType == LE_Object.ObjectType.SAW)
             {
@@ -3246,5 +3287,7 @@ public class LE_Event
     #region Group Options
     public bool isForGroup { get; set; } = false;
     public int targetGroupID { get; set; }
+    public bool allObjectsInGroupAreTheSame { get; set; }
+    public LE_Object.ObjectType? sameObjectType { get; set; }
     #endregion
 }

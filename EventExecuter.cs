@@ -375,7 +375,7 @@ namespace FS_LevelEditor
             ExecuteSingleEvent(@event);
         }
 
-        private IEnumerator ExecuteSingleEvent(LE_Event @event)
+        private IEnumerator ExecuteSingleEvent(LE_Event @event, bool executeGlobalOptions = true)
         {
             if (@event.isForPlayer)
             {
@@ -498,57 +498,82 @@ namespace FS_LevelEditor
                         groupObj.SetActive(!groupObj.activeSelf);
                         break;
                 }
+
+                if (@event.allObjectsInGroupAreTheSame)
+                {
+                    var objects = LE_Object.objectsPerGroup[@event.targetGroupID];
+
+                    if (!LE_Object.ObjectsAreOfTheSameType(objects))
+                    {
+                        Logger.Warning($"The objects on the event \"{@event.eventName}\" are NOT of the same type {@event.sameObjectType}.");
+                        yield break;
+                    }
+
+                    foreach (var obj in objects)
+                    {
+                        LE_Event newEvent = new LE_Event(@event);
+                        newEvent.isForGroup = false;
+                        newEvent.targetObjType = obj.objectType;
+                        newEvent.targetObjID = obj.objectID;
+
+                        yield return MelonCoroutines.Start(ExecuteSingleEvent(newEvent, false));
+                    }
+                }
+
                 yield break;
             }
 
             LE_Object targetObj =
                 PlayModeController.Instance.currentInstantiatedObjects.Find(x => x.objectType == @event.targetObjType && x.objectID == @event.targetObjID);
 
-            switch (@event.spawn)
+            if (executeGlobalOptions)
             {
-                case LE_Event.SpawnState.Spawn:
-                    targetObj.TriggerAction("SetActive_True");
-                    break;
-
-                case LE_Event.SpawnState.Despawn:
-                    targetObj.TriggerAction("SetActive_False");
-                    break;
-
-                case LE_Event.SpawnState.Toggle:
-                    if (targetObj.gameObject.activeSelf)
-                    {
-                        targetObj.TriggerAction("SetActive_False");
-                    }
-                    else
-                    {
+                switch (@event.spawn)
+                {
+                    case LE_Event.SpawnState.Spawn:
                         targetObj.TriggerAction("SetActive_True");
-                    }
-                    break;
-            }
-            switch (@event.colliderState)
-            {
-                case LE_Event.ColliderState.Enable:
-                    targetObj.TriggerAction("SetColliderState_True");
-                    break;
+                        break;
 
-                case LE_Event.ColliderState.Disable:
-                    targetObj.TriggerAction("SetColliderState_False");
-                    break;
+                    case LE_Event.SpawnState.Despawn:
+                        targetObj.TriggerAction("SetActive_False");
+                        break;
 
-                case LE_Event.ColliderState.Toggle:
-                    if (targetObj.currentCollisionState)
-                    {
-                        targetObj.TriggerAction("SetColliderState_False");
-                    }
-                    else
-                    {
+                    case LE_Event.SpawnState.Toggle:
+                        if (targetObj.gameObject.activeSelf)
+                        {
+                            targetObj.TriggerAction("SetActive_False");
+                        }
+                        else
+                        {
+                            targetObj.TriggerAction("SetActive_True");
+                        }
+                        break;
+                }
+                switch (@event.colliderState)
+                {
+                    case LE_Event.ColliderState.Enable:
                         targetObj.TriggerAction("SetColliderState_True");
-                    }
-                    break;
-            }
-            if (@event.moveObject && targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))
-            {
-                waypointSupport.StartObjectMovement();
+                        break;
+
+                    case LE_Event.ColliderState.Disable:
+                        targetObj.TriggerAction("SetColliderState_False");
+                        break;
+
+                    case LE_Event.ColliderState.Toggle:
+                        if (targetObj.currentCollisionState)
+                        {
+                            targetObj.TriggerAction("SetColliderState_False");
+                        }
+                        else
+                        {
+                            targetObj.TriggerAction("SetColliderState_True");
+                        }
+                        break;
+                }
+                if (@event.moveObject && targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))
+                {
+                    waypointSupport.StartObjectMovement();
+                }
             }
 
             if (targetObj is LE_Saw)
