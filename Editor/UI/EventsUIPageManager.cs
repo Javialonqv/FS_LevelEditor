@@ -1370,19 +1370,19 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     currentActiveObjectPanel = playerSettings;
                 }
-                if (currentSelectedEvent.isForTaser)
+                else if (currentSelectedEvent.isForTaser)
                 {
                     currentActiveObjectPanel = taserSettings;
                 }
-                if (currentSelectedEvent.isForJetpack)
+                else if (currentSelectedEvent.isForJetpack)
                 {
                     currentActiveObjectPanel = jetpackSettings;
                 }
-                if (currentSelectedEvent.isForObjective)
+                else if (currentSelectedEvent.isForObjective)
                 {
                     currentActiveObjectPanel = objectiveSettings;
                 }
-                if (currentSelectedEvent.isForGroup)
+                else if (currentSelectedEvent.isForGroup)
                 {
                     var allObjectsInGroup = LE_Object.objectsPerGroup[currentSelectedEvent.targetGroupID];
                     if (currentSelectedEvent.allObjectsInGroupAreTheSame)
