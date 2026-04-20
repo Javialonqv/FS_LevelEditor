@@ -1297,6 +1297,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForTaser = false;
                     currentSelectedEvent.isForJetpack = false;
                     currentSelectedEvent.isForObjective = false;
+                    currentSelectedEvent.isForGroup = false;
                     currentSelectedEvent.isForWait = true;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
@@ -1317,6 +1318,7 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.isForJetpack = false;
                     currentSelectedEvent.isForObjective = false;
                     currentSelectedEvent.isForGroup = true;
+                    currentSelectedEvent.isForWait = false;
                     currentSelectedEvent.targetObjType = null;
                     currentSelectedEvent.targetObjID = 0;
                     currentSelectedEvent.targetObjName = "";
