@@ -2080,9 +2080,9 @@ namespace FS_LevelEditor.Editor
 
             // SnapToGrid cube is adjusted in Late Update.
 
-            // Manage selecting groups first.
-            if (objComp && objComp.groupID.HasValue && currentSelectedGroup != objComp.groupID && (!Input.GetKey(KeyCode.LeftControl) || selectionType == SelectionType.ForceMultiple) &&
-                selectionType != SelectionType.ForceSingle)
+            // Manage selecting groups first. Only when pressing ALT key.
+            if (objComp && objComp.groupID.HasValue && currentSelectedGroup != objComp.groupID && (Input.GetKey(KeyCode.LeftAlt) ||
+                selectionType == SelectionType.ForceMultiple) && selectionType != SelectionType.ForceSingle)
             {
                 currentSelectedGroup = objComp.groupID;
                 SetMultipleObjectsAsSelected(LE_Object.objectsPerGroup[objComp.groupID.Value].Select(x => x.gameObject).ToList());
