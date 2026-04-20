@@ -508,6 +508,11 @@ namespace FS_LevelEditor
                 SetMeshRenderersState(false);
             }
 
+            if (groupID.HasValue)
+            {
+                SetGroup(groupID);
+            }
+
             if (eventExecuter) eventExecuter.OnInstantiated(scene);
             if (waypointSupport) waypointSupport.OnInstantiated(scene);
             if (customWaypointSupport) customWaypointSupport.OnInstantiated(scene);
@@ -532,11 +537,6 @@ namespace FS_LevelEditor
             if (invisibleMesh && scene == LEScene.Playmode)
             {
                 SetMeshRenderersState(false);
-            }
-
-            if (groupID.HasValue)
-            {
-                SetGroup(groupID);
             }
         }
 
