@@ -684,7 +684,11 @@ namespace FS_LevelEditor.Editor.UI
             previousButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
             statsLabel.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
 			groupsButton.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
-            #endregion
+			#endregion
+
+			// Make sure any object on the other UI is deselected properly to avoid bugs.
+			UICamera.selectedObject = null;
+			UICamera.hoveredObject = null;
 
             previousUIContext = currentUIContext;
 			currentUIContext = newContext;
