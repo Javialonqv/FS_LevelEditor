@@ -575,7 +575,7 @@ namespace FS_LevelEditor.UI_Related
         }
 
         public static UILabel CreateLabel(Transform parent, Vector3 position, Vector3Int size, string text = "", NGUIText.Alignment alignment = NGUIText.Alignment.Left,
-            UIWidget.Pivot pivot = UIWidget.Pivot.Left)
+            UIWidget.Pivot pivot = UIWidget.Pivot.Left, int fontSize = 27, bool resetColorToWhite = true)
         {
             GameObject labelObj = GameObject.Instantiate(labelTemplate, parent);
             labelObj.name = "Label";
@@ -592,7 +592,8 @@ namespace FS_LevelEditor.UI_Related
             label.width = size.x;
             label.height = size.y;
             label.text = text;
-            label.color = Color.white;
+            if (resetColorToWhite) label.color = Color.white;
+            label.fontSize = fontSize;
             label.alignment = alignment;
             label.pivot = pivot;
 

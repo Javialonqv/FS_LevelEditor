@@ -23,8 +23,8 @@ namespace FS_LevelEditor.Editor.UI
         UILabel eventsWindowTitle;
         GameObject eventsButtonsParent;
         UIButtonPatcher previousEventPageButton, nextEventPageButton;
-        GameObject currentEventPageLabel;
-        GameObject noEventsLabel;
+        UILabel currentEventPageLabel;
+        UILabel noEventsLabel;
 
         Transform topButtonsParent;
         UIButtonPatcher firstEventsListButton;
@@ -378,50 +378,18 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateCurrentEventsPageLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            currentEventPageLabel = Instantiate(labelTemplate, eventsListBg.transform);
+            currentEventPageLabel = NGUI_Utils.CreateLabel(eventsListBg.transform, new Vector3(0, 300), new Vector3Int(800, 30, 0), "0/0", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 30, false);
             currentEventPageLabel.name = "CurrentEventPageLabel";
-            currentEventPageLabel.transform.localScale = Vector3.one;
 
-            Destroy(currentEventPageLabel.GetComponent<UILocalize>());
-
-            UILabel label = currentEventPageLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 30;
-            label.width = 800;
-            label.fontSize = 30;
-            label.text = "0/0";
-
-            // Change the label position AFTER changing the pivot.
-            currentEventPageLabel.transform.localPosition = new Vector3(0f, 300f, 0f);
-
-            currentEventPageLabel.SetActive(false);
+            currentEventPageLabel.gameObject.SetActive(false);
         }
         void CreateNoEventsLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            noEventsLabel = Instantiate(labelTemplate, eventsListBg.transform);
+            noEventsLabel = NGUI_Utils.CreateLabel(eventsListBg.transform, new Vector3(0, 40), new Vector3Int(700, 50, 0), "No Events Yet", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 30, false);
             noEventsLabel.name = "NoEventsLabel";
-            noEventsLabel.transform.localScale = Vector3.one;
+            noEventsLabel.color = new Color(1f, 1f, 0f, 1f);
 
-            Destroy(noEventsLabel.GetComponent<UILocalize>());
-
-            UILabel label = noEventsLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 50;
-            label.width = 700;
-            label.fontSize = 30;
-            label.color = new Color(1f, 1f, 0f, 1f);
-            label.text = "No Events Yet";
-
-            // Change the label position AFTER changing the pivot.
-            noEventsLabel.transform.localPosition = new Vector3(0f, 220f, 0f);
-
-            noEventsLabel.SetActive(false);
+            noEventsLabel.gameObject.SetActive(false);
         }
 
         void CreateEventsListsParent()
@@ -814,10 +782,10 @@ namespace FS_LevelEditor.Editor.UI
             // Only enable the page buttons and the page label once they're are more than 1 grid (1 event page).
             previousEventPageButton.gameObject.SetActive(eventsPagesList.Count > 1);
             nextEventPageButton.gameObject.SetActive(eventsPagesList.Count > 1);
-            currentEventPageLabel.SetActive(eventsPagesList.Count > 1);
+            currentEventPageLabel.gameObject.SetActive(eventsPagesList.Count > 1);
 
             // Enable the No Events Label in case there aren't any events...
-            noEventsLabel.SetActive(eventsPagesList.Count == 0);
+            noEventsLabel.gameObject.SetActive(eventsPagesList.Count == 0);
 
             // Update the state of the page buttons and the page label in case now they're enabled.
             previousEventPageButton.button.isEnabled = currentEventsPage > 0;
@@ -1097,24 +1065,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateTargetObjectINSTRUCTIONLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject targetObjectLabel = Instantiate(labelTemplate, eventSettingsPanel.transform);
+            UILabel targetObjectLabel = NGUI_Utils.CreateLabel(eventSettingsPanel.transform, new Vector3(0, 290), new Vector3Int(700, 30, 0), "Enter the target object name:", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 30, false);
             targetObjectLabel.name = "TargetObjectLabel";
-            targetObjectLabel.transform.localScale = Vector3.one;
-
-            Destroy(targetObjectLabel.GetComponent<UILocalize>());
-
-            UILabel label = targetObjectLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 30;
-            label.width = 700;
-            label.fontSize = 30;
-            label.text = "Enter the target object name:";
-
-            // Change the label position AFTER changing the pivot.
-            targetObjectLabel.transform.localPosition = new Vector3(0f, 290f, 0f);
         }
         void CreateTargetObjectInputField()
         {
@@ -1727,29 +1679,11 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateGlobalObjectsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, globalObjectsSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "GLOBAL OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(globalObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 60, 0), "GLOBAL OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateStartMovingObjectToggle()
         {
-            GameObject toggleTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles");
-
             startMovingObjectToggle = NGUI_Utils.CreateToggle(globalObjectsSettings.transform, new Vector3(-150f, -25f, 0f),
                 new Vector3Int(250, 48, 1), "Start Moving Object");
             startMovingObjectToggle.gameObject.name = "StartMovingObjectToggle";
@@ -1784,24 +1718,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSawObjectsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, sawObjectsSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "SAW OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(sawObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "SAW OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateSawStateDropdown()
         {
@@ -1831,24 +1749,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreatePlayerSettingsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, playerSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "PLAYER OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 120f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(playerSettings.transform, new Vector3(0, 120), new Vector3Int(700, 40, 0), "PLAYER OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateZeroGToggle()
         {
@@ -1888,24 +1790,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateTaserSettingsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, taserSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "TASER OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 120f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(taserSettings.transform, new Vector3(0, 120), new Vector3Int(700, 40, 0), "TASER OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateTaserStateButton()
         {
@@ -1955,24 +1841,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateJetpackSettingsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, jetpackSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "JETPACK OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(jetpackSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "JETPACK OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateJetpackStateButton()
         {
@@ -1999,23 +1869,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateObjectiveSettingsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, objectiveSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "OBJECTIVE OPTIONS";
-
-            titleLabel.transform.localPosition = new Vector3(0f, 120f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(objectiveSettings.transform, new Vector3(0, 120), new Vector3Int(700, 40, 0), "OBJECTIVE OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateObjectiveStateButton()
         {
@@ -2044,24 +1899,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateCubeObjectsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, cubeObjectsSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "CUBE OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(cubeObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "CUBE OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateRespawnCubeToggle()
         {
@@ -2091,24 +1930,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateLaserObjectsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, laserObjectsSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "LASER OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(laserObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "LASER OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateLaserStateDropdown()
         {
@@ -2138,23 +1961,8 @@ namespace FS_LevelEditor.Editor.UI
 
         void CreateMineObjectsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, mineObjectsSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "MINE OPTIONS";
-
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(mineObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "MINE OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
 
         void CreateMineStateDropdown()
@@ -2185,24 +1993,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateLightObjectsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, lightObjectsSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "LIGHT OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(lightObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "LIGHT OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateChangeLightColorToggle()
         {
@@ -2213,24 +2005,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateNewLightColorTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, lightObjectsSettings.transform);
-            titleLabel.name = "NewLightColorTitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 150;
-            label.fontSize = 27;
-            label.text = "New Color";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(50f, -30f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(lightObjectsSettings.transform, new Vector3(50, -30), new Vector3Int(150, 40, 0), "New Color", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 27, false);
+            label.name = "NewLightColorTitleLabel";
 
             newLightColorTitleLabel = label;
         }
@@ -2259,24 +2035,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateCeilingLightObjectsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, ceilingLightObjectsSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "CEILING LIGHT OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(ceilingLightObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "CEILING LIGHT OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateCeilingLightStateDropdown()
         {
@@ -2323,24 +2083,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateHealthAndAmmoPacksObjectsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, healthAmmoPacksObjectsSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "HEALTH & AMMO PACK OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(healthAmmoPacksObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "HEALTH & AMMO PACK OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateChangePackRespawnTimeToggle()
         {
@@ -2351,24 +2095,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateNewPackRespawnTimeTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, healthAmmoPacksObjectsSettings.transform);
-            titleLabel.name = "NewRespawnTimeTitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 150;
-            label.fontSize = 27;
-            label.text = "Time";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(50f, -30f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(healthAmmoPacksObjectsSettings.transform, new Vector3(50, -30), new Vector3Int(150, 40, 0), "Time", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 27, false);
+            label.name = "NewRespawnTimeTitleLabel";
 
             newPackRespawnTimeTitleLabel = label;
         }
@@ -2405,24 +2133,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateSwitchObjectsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, switchObjectsSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "SWITCH OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(switchObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "SWITCH OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateSwitchStateSettings()
         {
@@ -2545,24 +2257,8 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateFlameTrapObjectsTitleLabel()
         {
-            GameObject labelTemplate = GameObject.Find("MainMenu/Camera/Holder/Options/Game_Options/Buttons/Subtitles/Label");
-
-            GameObject titleLabel = Instantiate(labelTemplate, flameTrapObjectsSettings.transform);
-            titleLabel.name = "TitleLabel";
-            titleLabel.transform.localScale = Vector3.one;
-
-            Destroy(titleLabel.GetComponent<UILocalize>());
-
-            UILabel label = titleLabel.GetComponent<UILabel>();
-            label.pivot = UIWidget.Pivot.Center;
-            label.alignment = NGUIText.Alignment.Center;
-            label.height = 40;
-            label.width = 700;
-            label.fontSize = 35;
-            label.text = "FLAME TRAP OPTIONS";
-
-            // Change the label position AFTER changing the pivot.
-            titleLabel.transform.localPosition = new Vector3(0f, 40f, 0f);
+            UILabel label = NGUI_Utils.CreateLabel(flameTrapObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "FLAME TRAP OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         void CreateFlameTrapStateDropdown()
         {
