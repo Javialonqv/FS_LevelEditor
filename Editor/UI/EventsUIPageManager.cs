@@ -458,6 +458,7 @@ namespace FS_LevelEditor.Editor.UI
 
         void Update()
         {
+            // Open Context Menu.
             if (Input.GetMouseButtonDown(1) && EditorUIManager.IsCurrentUIContext(EditorUIContext.EVENTS_PANEL))
             {
                 if (UICamera.selectedObject.TryGetComponent<EventButton>(out var eventBtn))
@@ -468,6 +469,7 @@ namespace FS_LevelEditor.Editor.UI
                 }
             }
 
+            // Move events Up or Down.
             if (Input.GetKey(KeyCode.LeftAlt) && (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow)))
             {
                 if (currentSelectedEvent != null)
