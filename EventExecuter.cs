@@ -477,7 +477,7 @@ namespace FS_LevelEditor
                 if (@event.waitTimeUnits == LE_Event.WaitTimeUnit.Seconds)
                     yield return new WaitForSeconds(@event.waitTime);
                 else
-                    yield return new WaitForSeconds(@event.waitTime / 100);
+                    yield return new WaitForSeconds(@event.waitTime / 1000f);
 
                 yield break;
             }
