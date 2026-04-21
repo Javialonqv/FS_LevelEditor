@@ -505,6 +505,7 @@ namespace FS_LevelEditor
 
                     newEvent.targetObjType = obj.objectType;
                     newEvent.targetObjID = obj.objectID;
+                    newEvent.isForGroup = false;
 
                     // Only setup global options values manually.
                     newEvent.spawn = @event.spawn;
