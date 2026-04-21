@@ -33,8 +33,8 @@ namespace FS_LevelEditor
         AudioClip hidePageSound;
         GameObject popup;
         PopupController popupController;
-        GameObject popupTitle;
-        GameObject popupContentLabel;
+        UILabel popupTitle;
+        UILabel popupContentLabel;
         GameObject popupSmallButtonsParent;
         GameObject noLevelsMessageLabel;
 
@@ -134,27 +134,30 @@ namespace FS_LevelEditor
                 }
 
                 // For 0.606, it seems the menu music isn't played when returning to menu after being in LE, play it just in case.
-                if (!GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().isPlaying)
+                if (!MusicManager.Instance.m_menuMusicSource.isPlaying)
                 {
-                    GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().Play();
+                    MusicManager.Instance.m_menuMusicSource.Play();
                 }
             }
         }
         void GetSomeReferences()
         {
-            mainMenu = GameObject.Find("MainMenu/Camera/Holder/Main");
-            uiSoundSource = GameObject.Find("MainMenu/UISound").GetComponent<AudioSource>();
+            var menu = MenuController.GetInstance();
+
+            mainMenu = menu.m_mainHolder;
+            uiSoundSource = menu.m_uiAudioSource;
             // Ik this isn't the best way to get these clips, but it works, so... I'mn not touching it again lol.
+            // Yeah, still not touching it...
             okSound = GameObject.Find("MainMenu/Camera/Holder/Main/LargeButtons/2_Chapters").GetComponent<ButtonController>().m_pressSound;
             okSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
             hidePageSound = MenuController.GetInstance().hidePageSound;
             hidePageSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-            popup = GameObject.Find("MainMenu/Camera/Holder/Popup");
-            popupController = popup.GetComponent<PopupController>();
-            popupTitle = popup.GetChildAt("PopupHolder/Title/Label");
-            popupContentLabel = popup.GetChildAt("PopupHolder/Content/Label");
-            popupSmallButtonsParent = popup.GetChildAt("PopupHolder/SmallButtons");
+            popupController = menu.m_popupController;
+            popup = popupController.gameObject;
+            popupTitle = popupController.m_titleLabel;
+            popupContentLabel = popupController.m_contentLabel;
+            popupSmallButtonsParent = popupController.m_buttonsHolder;
         }
 
         // LE stands for "Level Editor" lmao.
@@ -169,8 +172,9 @@ namespace FS_LevelEditor
             GameObject.Destroy(defaultLEButton);
 
             // Change the button's label text.
-            GameObject.Destroy(levelEditorUIButton.GetChild("Label").GetComponent<UILocalize>());
-            levelEditorUIButton.GetChild("Label").GetComponent<UILabel>().text = "Level Editor";
+            UILabel label = levelEditorUIButton.GetChild("Label").GetComponent<UILabel>();
+            GameObject.Destroy(label.GetComponent<UILocalize>());
+            label.text = "Level Editor";
 
             // Change the button's on click action.
             GameObject.Destroy(levelEditorUIButton.GetComponent<ButtonController>());
@@ -763,7 +767,7 @@ namespace FS_LevelEditor
             }
 
             // Remove menu music while in LE.
-            GameObject.Find("MusicManager/MenuSource").GetComponent<AudioSource>().Stop();
+            MusicManager.Instance.m_menuMusicSource.Stop();
 
             mainMenu.SetActive(true);
             leMenuPanel.SetActive(false);
@@ -811,8 +815,8 @@ namespace FS_LevelEditor
 
         void ShowDeleteLevelPopup(string levelFileNameWithoutExtension)
         {
-            popupTitle.GetComponent<UILabel>().text = "Warning";
-            popupContentLabel.GetComponent<UILabel>().text = "Are you sure you want to delete this level?";
+            popupTitle.text = "Warning";
+            popupContentLabel.text = "Are you sure you want to delete this level?";
             popupSmallButtonsParent.DisableAllChildren();
             popupSmallButtonsParent.transform.localPosition = new Vector3(-130f, -315f, 0f);
             popupSmallButtonsParent.GetComponent<UITable>().padding = new Vector2(130f, 0f);

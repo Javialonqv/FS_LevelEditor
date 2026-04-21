@@ -308,7 +308,7 @@ namespace FS_LevelEditor
             IEnumerator Coroutine()
             {
                 // Get the variable.
-                GameObject notificationPanel = GameObject.Find("(singleton) InGameUIManager/Camera/Panel/Notifications");
+                GameObject notificationPanel = InGameUIManager.Instance.notificationPanel.gameObject;
                 // For some reason once going back to menu after playing a normal chapter, notificatons panel is disabled, we need to enable it manually again.
                 notificationPanel.GetComponent<UIPanel>().enabled = true;
 
@@ -323,9 +323,10 @@ namespace FS_LevelEditor
                 notificationPanel.SetActive(true);
                 TweenAlpha.Begin(notificationPanel, 0.2f, 1f);
                 // Set the text and start the typing effect while the fade is occurring.
-                notificationPanel.GetChildAt("Holder/Label").GetComponent<UILabel>().text = "";
-                notificationPanel.GetChildAt("Holder/Label").GetComponent<UILabel>().text = msg;
-                notificationPanel.GetChildAt("Holder/Label").GetComponent<TypewriterEffect>().ResetToBeginning();
+                var notificationLabel = notificationPanel.GetChildAt("Holder/Label").GetComponent<UILabel>();
+                notificationLabel.text = "";
+                notificationLabel.text = msg;
+                notificationLabel.GetComponent<TypewriterEffect>().ResetToBeginning();
 
                 // Wait the delay and then fade out the panel again.
                 yield return new WaitForSecondsRealtime(delay);
@@ -481,7 +482,7 @@ namespace FS_LevelEditor
         {
             if (sound == FS_UISound.POPUP_UI_SHOW || sound == FS_UISound.POPUP_UI_HIDE)
             {
-                PopupController popup = GameObject.Find("MainMenu/Camera/Holder/Popup").GetComponent<PopupController>();
+                PopupController popup = MenuController.GetInstance().m_popupController;
                 AudioClip toPlay = sound == FS_UISound.POPUP_UI_SHOW ? popup.showPopupSound : popup.hidePopupSound;
                 popup.audioSourceToUse.PlayOneShot(toPlay);
             }

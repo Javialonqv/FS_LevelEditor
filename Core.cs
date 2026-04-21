@@ -94,12 +94,13 @@ namespace FS_LevelEditor
             GameObject.Find("Level").SetActive(false);
 
             // Set camera's new position and rotation.
-            GameObject.Destroy(GameObject.Find("Main Camera").GetComponent<Animation>());
-            GameObject.Find("Main Camera").transform.position = new Vector3(-15f, 125f, -75f);
-            GameObject.Find("Main Camera").transform.localEulerAngles = new Vector3(45f, 0f, 0f);
+            GameObject camera = GameObject.Find("Main Camera");
+            GameObject.Destroy(camera.GetComponent<Animation>());
+            camera.transform.position = new Vector3(-15f, 125f, -75f);
+            camera.transform.localEulerAngles = new Vector3(45f, 0f, 0f);
 
             // Add the camera movement component to... well... the camera.
-            GameObject.Find("Main Camera").AddComponent<EditorCameraMovement>();
+            camera.AddComponent<EditorCameraMovement>();
         }
 
         void SpawnBase()
