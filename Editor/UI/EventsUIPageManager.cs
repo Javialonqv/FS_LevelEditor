@@ -21,35 +21,58 @@ namespace FS_LevelEditor.Editor.UI
 
         public GameObject eventsPanel;
         UILabel eventsWindowTitle;
-        GameObject eventsButtonsParent;
-        UIButtonPatcher previousEventPageButton, nextEventPageButton;
-        UILabel currentEventPageLabel;
-        UILabel noEventsLabel;
 
+        #region Top Buttons Related
         Transform topButtonsParent;
+
         UIButtonPatcher firstEventsListButton;
         UIButtonPatcher secondEventsListButton;
         UIButtonPatcher thirdEventsListButton;
-        UILabel oneEventTypeLabel;
 
+        UILabel oneEventTypeLabel;
+        #endregion
+
+        #region Events List Related
         const int EVENTS_PER_PAGE = 6;
+
+        #region UI References
         GameObject eventsListBg;
         GameObject eventsListsParent;
         List<GameObject> eventsPagesList = new List<GameObject>();
+
+        UIButtonPatcher previousEventPageButton, nextEventPageButton;
+        UILabel currentEventPageLabel;
+        UILabel noEventsLabel;
+        #endregion
+
+        List<string> eventsListsNames = new List<string>();
+        string currentEventsListName;
+        int currentEventsListID;
         int currentEventsPage = 0;
 
+        // Current selected event.
+        bool eventSelected;
+        int currentSelectedEventID;
+        LE_Event currentSelectedEvent;
+        UIButton currentSelectedEventButton;
+        ContextMenu eventsContextMenu;
+        int selectedEventIDForContextMenu;
+
+        LE_Object targetObj;
+        #endregion
+
+        #region Events Settings Related
         /// <summary>
         /// Contains all of the options of an event, including the target object name field.
         /// </summary>
         GameObject eventSettingsPanel;
-        UICustomInputField targetObjInputField;
         /// <summary>
         /// Contains all of the options of an event, EXCEPT the target object name field.
         /// </summary>
         GameObject eventOptionsParent;
 
+        UICustomInputField targetObjInputField;
         GameObject currentActiveObjectPanel;
-
         UIButtonAsToggle moreGlobalOptionsButton;
 
         #region Object Panels Related
@@ -146,19 +169,7 @@ namespace FS_LevelEditor.Editor.UI
         UITogglePatcher fragileWindowBreakNowToggle;
         #endregion
 
-
-        List<string> eventsListsNames = new List<string>();
-        int currentEventsListID;
-        string currentEventsListName;
-        bool eventSelected;
-        int currentSelectedEventID;
-        LE_Event currentSelectedEvent;
-        UIButton currentSelectedEventButton;
-
-        ContextMenu eventsContextMenu;
-        int selectedEventIDForContextMenu;
-
-        LE_Object targetObj;
+        #endregion
 
         public EventsUIPageManager(IntPtr ptr) : base (ptr) { }
 
@@ -483,15 +494,6 @@ namespace FS_LevelEditor.Editor.UI
         }
 
         #region Events List Related
-        void RenameEvent(int eventID, UICustomInputField inputRef)
-        {
-            // GetEventsList should return the same events list that when creating the events list, it should be fine :)
-            LE_Event eventToRename = GetEventsList()[eventID];
-            eventToRename.eventName = inputRef.GetText();
-
-            Logger.Log("RENAMED " + eventID + " TO: " + inputRef.GetText());
-        }
-
         void SetupTopButtons()
         {
             eventsListsNames = targetObj.GetAvailableEventsIDs();
@@ -837,6 +839,7 @@ namespace FS_LevelEditor.Editor.UI
             }
         }
 
+        // Event actions.
         void CopyEventToList(int eventID, int targetListID)
         {
             LE_Event toCopy = GetEventsList()[eventID];
@@ -1027,6 +1030,14 @@ namespace FS_LevelEditor.Editor.UI
                 // This won't do shit, besides deleting the last remaining button and refresh the UI elements.
                 CreateAllEventsPagesForList(currentEventsListID);
             }
+        }
+        void RenameEvent(int eventID, UICustomInputField inputRef)
+        {
+            // GetEventsList should return the same events list that when creating the events list, it should be fine :)
+            LE_Event eventToRename = GetEventsList()[eventID];
+            eventToRename.eventName = inputRef.GetText();
+
+            Logger.Log("RENAMED " + eventID + " TO: " + inputRef.GetText());
         }
 
         int GetPageIDForEvent(int eventID)
