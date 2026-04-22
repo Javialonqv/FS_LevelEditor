@@ -38,7 +38,7 @@ namespace FS_LevelEditor.Editor.UI
         #region UI References
         GameObject eventsListBg;
         GameObject eventsListsParent;
-        List<GameObject> eventsPagesList = new List<GameObject>();
+        List<EventButton> eventButtons = new();
 
         UIButtonPatcher previousEventPageButton, nextEventPageButton;
         UILabel currentEventPageLabel;
@@ -48,6 +48,7 @@ namespace FS_LevelEditor.Editor.UI
         List<string> eventsListsNames = new List<string>();
         string currentEventsListName;
         int currentEventsListID;
+
         int currentEventsPage = 0;
 
         // Current selected event.
@@ -189,6 +190,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateNoEventsLabel();
 
                 Instance.CreateEventsListsParent();
+                Instance.CreateAllEventsButtons();
 
                 Instance.CreateEventSettingsPanelAndOptionsParent();
                 Instance.CreateTargetObjectINSTRUCTIONLabel();
@@ -405,10 +407,95 @@ namespace FS_LevelEditor.Editor.UI
 
         void CreateEventsListsParent()
         {
-            eventsListsParent = new GameObject("Lists");
+            eventsListsParent = new GameObject("EventsList");
             eventsListsParent.transform.parent = eventsListBg.transform;
-            eventsListsParent.transform.localPosition = Vector3.zero;
+            eventsListsParent.transform.localPosition = new Vector3(0, 220);
             eventsListsParent.transform.localScale = Vector3.one;
+
+            // Add the UIGrid component, ofc.
+            UIGrid grid = eventsListsParent.AddComponent<UIGrid>();
+            grid.arrangement = UIGrid.Arrangement.Vertical;
+            grid.cellWidth = 780f;
+            grid.cellHeight = 80f;
+        }
+        void CreateAllEventsButtons()
+        {
+            for (int i = 0; i < EVENTS_PER_PAGE; i++)
+            {
+                // Create the event button PARENT, since inside of it are the button, the name label, and delete btn.
+                GameObject eventButtonParent = new GameObject($"Event {i}");
+                eventButtonParent.transform.parent = eventsListsParent.transform;
+                eventButtonParent.transform.localPosition = Vector3.zero;
+                eventButtonParent.transform.localScale = Vector3.one;
+
+                // Create the EVENT BUTTON itself...
+                GameObject eventButton = NGUI_Utils.CreateButton(eventButtonParent.transform, Vector3.zero, new Vector3Int(780, 70, 0)).gameObject;
+                eventButton.name = "Button";
+
+                eventButton.GetComponent<UISprite>().depth = 2;
+
+                // Change button scale options, because with the default values it looks too big.
+                UIButtonScale scale = eventButton.GetComponent<UIButtonScale>();
+                scale.mScale = Vector3.one;
+                scale.hover = Vector3.one;
+                scale.pressed = Vector3.one * 0.98f;
+
+                // Destroy the "original" label, since it's going to be replaced with the other name label.
+                Destroy(eventButton.GetChildAt("Background/Label"));
+
+                // Destroy the UIButtonPatcher, we'll use a custom class instead:
+                Destroy(eventButton.GetComponent<UIButtonPatcher>());
+                EventButton eventScript = eventButton.AddComponent<EventButton>();
+                eventScript.eventsManager = this;
+                eventScript.eventID = 0;
+                eventScript.uiButton = eventScript.GetComponent<UIButton>();
+
+                eventButtons.Add(eventScript);
+
+                #region Delete Button
+                // Create the button and set its name and positon.
+                UIButtonPatcher deleteBtn = NGUI_Utils.CreateButton(eventButtonParent.transform, new Vector3(350, 0), Vector3Int.one * 60);
+                deleteBtn.name = "DeleteBtn";
+                // Destroy the label, since we're going to add a SPRITE.
+                Destroy(deleteBtn.gameObject.GetChildAt("Background/Label"));
+
+                deleteBtn.GetComponent<UISprite>().depth = 3;
+
+                // Adjust the button color with red color variants.
+                UIButtonColor deleteButtonColor = deleteBtn.GetComponent<UIButtonColor>();
+                deleteButtonColor.duration = 0f;
+                deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
+                deleteButtonColor.hover = new Color(1f, 0f, 0f, 1f);
+                deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
+
+                // Create another sprite "inside" of the button one.
+                UISprite trashSprite = deleteBtn.gameObject.GetChild("Background").GetComponent<UISprite>();
+                trashSprite.name = "Trash";
+                trashSprite.SetExternalSprite("Trash");
+                trashSprite.width = 30;
+                trashSprite.height = 40;
+                trashSprite.depth = 4;
+                trashSprite.color = Color.white;
+                trashSprite.transform.localPosition = Vector3.zero;
+                trashSprite.enabled = true;
+
+                eventScript.deleteBtn = deleteBtn;
+                #endregion
+
+                #region Name Input Field
+                var nameInput = NGUI_Utils.CreateInputField(eventButtonParent.transform, new Vector3(-150, 0), new Vector3Int(450, 50, 0), 27, "", true, depth: 4);
+                nameInput.name = "NameInputField";
+                UISprite outlineSprite = nameInput.GetComponents<UISprite>()[1];
+                outlineSprite.width = 455;
+                outlineSprite.height = 55;
+
+                eventScript.nameInput = nameInput;
+
+                nameInput.GetComponents<UISprite>()[0].Invoke("MarkAsChanged", 0.01f);
+
+                eventScript.nameInput = nameInput;
+                #endregion
+            }
         }
 
         void CreateContextMenu()
@@ -558,7 +645,7 @@ namespace FS_LevelEditor.Editor.UI
             thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 
             OnEventSelect(null);
-            CreateAllEventsPagesForList(0);
+            SelectList(0);
         }
         void SecondEventsListBtnClick()
         {
@@ -569,7 +656,7 @@ namespace FS_LevelEditor.Editor.UI
             thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0.218f, 0.6464f, 0.6509f, 1f);
 
             OnEventSelect(null);
-            CreateAllEventsPagesForList(1);
+            SelectList(1);
         }
         void ThirdEventsListBtnClick()
         {
@@ -580,163 +667,52 @@ namespace FS_LevelEditor.Editor.UI
             thirdEventsListButton.GetComponent<UIButton>().defaultColor = new Color(0f, 1f, 0f, 1f);
 
             OnEventSelect(null);
-            CreateAllEventsPagesForList(2);
+            SelectList(2);
         }
 
-        void CreateAllEventsPagesForList(int listID)
+        void SelectList(int listID)
         {
             currentEventsListID = listID;
             currentEventsListName = eventsListsNames[listID];
 
-            eventsListsParent.DeleteAllChildren();
-            eventsPagesList.Clear();
-
-            List<LE_Event> events = GetEventsList(listID);
-            int eventsGridCount = Mathf.CeilToInt((float)events.Count / EVENTS_PER_PAGE);
-
-            for (int i = 0; i < eventsGridCount; i++)
-            {
-                CreateEventsPage(i);
-            }
-
-            // The first one's selected by default, always.
-            ShowEventPage(0);
+            currentEventsPage = 0;
+            CreateEventsPage(0);
 
             // Refresh the pages buttons state, the "No Events" label, etc.
             RefreshStateOfEventsListUIElements();
         }
-        void CreateEventsPage(int gridID, bool showPage = true, bool deselectCurrentSelectedEvent = true)
+        void CreateEventsPage(int pageID, bool showPage = true, bool deselectCurrentSelectedEvent = true)
         {
-            #region Get Or Create Page
-            GameObject pageObj;
-            if (eventsPagesList.Count > gridID) // Page already exists, just delete its childs.
+            if (deselectCurrentSelectedEvent) OnEventSelect(null);
+
+            if (pageID > GetEventsPagesCountForCurrentListID() - 1 && GetEventsPagesCountForCurrentListID() != 0)
             {
-                pageObj = eventsPagesList[gridID];
-                pageObj.DeleteAllChildren(true);
-            }
-            else // Page doesn't exist yet, create it.
-            {
-                // Create a page.
-                pageObj = new GameObject($"Grid {gridID}");
-                pageObj.transform.parent = eventsListsParent.transform;
-                pageObj.transform.localPosition = new Vector3(0f, 220f, 0f);
-                pageObj.transform.localScale = Vector3.one;
-
-                // Add the UIGrid component, ofc.
-                UIGrid grid = pageObj.AddComponent<UIGrid>();
-                grid.arrangement = UIGrid.Arrangement.Vertical;
-                grid.cellWidth = 780f;
-                grid.cellHeight = 80f;
-
-                pageObj.SetActive(false);
-
-                eventsPagesList.Add(pageObj);
-            }
-            #endregion
-
-            List<LE_Event> events = GetEventsList();
-            int startIndex = gridID * EVENTS_PER_PAGE;
-            int eventsCount = Mathf.Clamp(events.Count - (gridID * EVENTS_PER_PAGE), 0, 6);
-            events = events.GetRange(startIndex, eventsCount);
-
-            if (events.Count == 0) // In case the page is empty... destroy it and create the page BEFORE it :)
-            {
-                eventsPagesList.Remove(pageObj);
-                Destroy(pageObj);
-                CreateEventsPage(gridID - 1);
+                CreateEventsPage(GetEventsPagesCountForCurrentListID() - 1);
                 return;
             }
 
-            for (int i = 0; i < events.Count; i++)
+            List<LE_Event> events = GetEventsList();
+            int startIndex = pageID * EVENTS_PER_PAGE;
+            int endIndex = (pageID + 1) * EVENTS_PER_PAGE;
+            endIndex = Mathf.Clamp(endIndex, 0, events.Count); // Clamp the value in case endValue is greather than the available groups, otherwise the whole grid would fill up.
+
+            eventsListsParent.DisableAllChildren();
+            for (int i = startIndex; i < endIndex; i++)
             {
-                int realEventID = (gridID * 6) + i;
+                int buttonID = i - startIndex;
 
-                // Create the event button PARENT, since inside of it are the button, the name label, and delete btn.
-                GameObject eventButtonParent = new GameObject($"Event {i}");
-                eventButtonParent.transform.parent = pageObj.transform;
-                eventButtonParent.transform.localPosition = Vector3.zero;
-                eventButtonParent.transform.localScale = Vector3.one;
-
-                // Create the EVENT BUTTON itself...
-                GameObject eventButton = NGUI_Utils.CreateButton(eventButtonParent.transform, Vector3.zero, new Vector3Int(780, 70, 0)).gameObject;
-                eventButton.name = "Button";
-
-                eventButton.GetComponent<UISprite>().depth = 2;
-
-                // Change button scale options, because with the default values it looks too big.
-                UIButtonScale scale = eventButton.GetComponent<UIButtonScale>();
-                scale.mScale = Vector3.one;
-                scale.hover = Vector3.one;
-                scale.pressed = Vector3.one * 0.98f;
-
-                // Destroy the "original" label, since it's going to be replaced with the other name label.
-                Destroy(eventButton.GetChildAt("Background/Label"));
-
-                // Destroy the UIButtonPatcher, we'll use a custom class instead:
-                Destroy(eventButton.GetComponent<UIButtonPatcher>());
-                EventButton eventScript = eventButton.AddComponent<EventButton>();
-                eventScript.eventsManager = this;
-                eventScript.eventTypeID = currentEventsListID;
-                eventScript.eventID = realEventID;
-
-                #region Delete Button
-                // Create the button and set its name and positon.
-                UIButtonPatcher deleteBtn = NGUI_Utils.CreateButton(eventButtonParent.transform, new Vector3(350, 0), Vector3Int.one * 60);
-                deleteBtn.name = "DeleteBtn";
-                // Destroy the label, since we're going to add a SPRITE.
-                Destroy(deleteBtn.gameObject.GetChildAt("Background/Label"));
-
-                deleteBtn.GetComponent<UISprite>().depth = 3;
-
-                // Adjust the button color with red color variants.
-                UIButtonColor deleteButtonColor = deleteBtn.GetComponent<UIButtonColor>();
-                deleteButtonColor.duration = 0f;
-                deleteButtonColor.defaultColor = new Color(0.8f, 0f, 0f, 1f);
-                deleteButtonColor.hover = new Color(1f, 0f, 0f, 1f);
-                deleteButtonColor.pressed = new Color(0.5f, 0f, 0f, 1f);
-
-                // Create another sprite "inside" of the button one.
-                UISprite trashSprite = deleteBtn.gameObject.GetChild("Background").GetComponent<UISprite>();
-                trashSprite.name = "Trash";
-                trashSprite.SetExternalSprite("Trash");
-                trashSprite.width = 30;
-                trashSprite.height = 40;
-                trashSprite.depth = 4;
-                trashSprite.color = Color.white;
-                trashSprite.transform.localPosition = Vector3.zero;
-                trashSprite.enabled = true;
-
-                deleteBtn.onClick += () => DeleteEvent(realEventID);
-                #endregion
-
-                #region Name Input Field
-                var nameInput = NGUI_Utils.CreateInputField(eventButtonParent.transform, new Vector3(-150, 0), new Vector3Int(450, 50, 0), 27, "", true, depth: 4);
-                nameInput.name = "NameInputField";
-                UISprite outlineSprite = nameInput.GetComponents<UISprite>()[1];
-                outlineSprite.width = 455;
-                outlineSprite.height = 55;
-
-                nameInput.SetText(events[i].eventName);
-                nameInput.onSubmit += () => RenameEvent(realEventID, nameInput);
-
-                nameInput.GetComponents<UISprite>()[0].Invoke("MarkAsChanged", 0.01f);
-                #endregion
+                eventsListsParent.transform.GetChild(buttonID).gameObject.SetActive(true);
+                eventsListsParent.transform.GetChild(buttonID).GetChild(0).GetComponent<EventButton>().Setup(i);
             }
-            pageObj.GetComponent<UIGrid>().Invoke("Reposition", 0.01f);
 
-            if (showPage) ShowEventPage(gridID, deselectCurrentSelectedEvent);
-            else RefreshStateOfEventsListUIElements(); // If we don't show it, at least refresh the UI.
+            eventsListsParent.GetComponent<UIGrid>().repositionNow = true;
+
+            currentEventsPage = pageID;
+            RefreshStateOfEventsListUIElements();
         }
         void CreateEventsPageForEventOfID(int eventID, bool showPage = true)
         {
-            if ((eventID / EVENTS_PER_PAGE) != currentEventsPage)
-            {
-                CreateEventsPage((eventID / EVENTS_PER_PAGE), showPage);
-            }
-            else
-            {
-                CreateEventsPage(currentEventsPage, showPage);
-            }
+            CreateEventsPage((eventID / EVENTS_PER_PAGE), showPage);
         }
 
         void AddNewEvent()
@@ -752,53 +728,36 @@ namespace FS_LevelEditor.Editor.UI
 
             OnEventSelect(events.Count - 1);
         }
-        void ShowEventPage(int pageID, bool deselectCurrentSelectedEvent = true)
-        {
-            if (pageID < 0 || (pageID >= eventsPagesList.Count && pageID != int.MaxValue)) return;
-
-            if (pageID == int.MaxValue)
-            {
-                pageID = eventsPagesList.Count - 1;
-            }
-
-            currentEventsPage = pageID;
-
-            eventsPagesList.ForEach(x => x.SetActive(false));
-            eventsPagesList[currentEventsPage].SetActive(true);
-
-            if (deselectCurrentSelectedEvent) OnEventSelect(null);
-            RefreshStateOfEventsListUIElements();
-        }
         void PreviousEventsPage()
         {
             if (currentEventsPage <= 0) return;
 
-            ShowEventPage(currentEventsPage - 1);
+            CreateEventsPage(currentEventsPage - 1);
         }
         void NextEventsPage()
         {
-            if (currentEventsPage >= eventsPagesList.Count - 1) return;
+            if (currentEventsPage >= GetEventsPagesCountForCurrentListID() - 1) return;
 
-            ShowEventPage(currentEventsPage + 1);
+            CreateEventsPage(currentEventsPage + 1);
         }
         void RefreshStateOfEventsListUIElements()
         {
             // Only enable the page buttons and the page label once they're are more than 1 grid (1 event page).
-            previousEventPageButton.gameObject.SetActive(eventsPagesList.Count > 1);
-            nextEventPageButton.gameObject.SetActive(eventsPagesList.Count > 1);
-            currentEventPageLabel.gameObject.SetActive(eventsPagesList.Count > 1);
+            previousEventPageButton.gameObject.SetActive(GetEventsPagesCountForCurrentListID() > 1);
+            nextEventPageButton.gameObject.SetActive(GetEventsPagesCountForCurrentListID() > 1);
+            currentEventPageLabel.gameObject.SetActive(GetEventsPagesCountForCurrentListID() > 1);
 
             // Enable the No Events Label in case there aren't any events...
-            noEventsLabel.gameObject.SetActive(eventsPagesList.Count == 0);
+            noEventsLabel.gameObject.SetActive(GetEventsPagesCountForCurrentListID() == 0);
 
             // Update the state of the page buttons and the page label in case now they're enabled.
             previousEventPageButton.button.isEnabled = currentEventsPage > 0;
-            nextEventPageButton.button.isEnabled = currentEventsPage < eventsPagesList.Count - 1;
+            nextEventPageButton.button.isEnabled = currentEventsPage < GetEventsPagesCountForCurrentListID() - 1;
             currentEventPageLabel.GetComponent<UILabel>().text = GetCurrentEventPageText();
         }
         string GetCurrentEventPageText()
         {
-            return currentEventsPage + 1 + "/" + eventsPagesList.Count;
+            return currentEventsPage + 1 + "/" + GetEventsPagesCountForCurrentListID();
         }
         internal void OnEventSelect(int? selectedID)
         {
@@ -823,8 +782,7 @@ namespace FS_LevelEditor.Editor.UI
                 ShowEventSettings();
 
                 // Set the color of the NEW selected button.
-                currentSelectedEventButton = eventsPagesList[currentSelectedEventID / EVENTS_PER_PAGE].transform.GetChild(currentSelectedEventID % EVENTS_PER_PAGE).
-                    GetChild(0).GetComponent<UIButton>();
+                currentSelectedEventButton = eventButtons[currentSelectedEventID % EVENTS_PER_PAGE].uiButton;
                 currentSelectedEventButton.defaultColor = new Color(0f, 0.6f, 0f, 1f);
                 currentSelectedEventButton.hover = new Color(0.016f, 0.831f, 0f, 1f);
                 currentSelectedEventButton.UpdateColor(true);
@@ -860,8 +818,6 @@ namespace FS_LevelEditor.Editor.UI
         }
         void MoveEventToList(int eventID, int targetListID)
         {
-            int pagesInCurrentListBeforeMove = GetEventsPagesCountForCurrentListID();
-
             List<LE_Event> originList = GetEventsList();
             LE_Event toMove = originList[eventID];
             List<LE_Event> targetList = GetEventsList(targetListID);
@@ -874,18 +830,14 @@ namespace FS_LevelEditor.Editor.UI
                 // Update the target list in case is the current one.
                 if (targetListID == currentEventsListID) CreateEventsPageForEventOfID(targetList.Count - 1, false);
 
-                for (int i = currentEventsPage; i < GetEventsPagesCountForCurrentListID(); i++)
-                {
-                    CreateEventsPage(i, false); // Update the whole pages after the current one.
-                }
-                if (pagesInCurrentListBeforeMove > GetEventsPagesCountForCurrentListID()) CreateEventsPage(GetEventsPagesCountForCurrentListID(), false);
+                CreateEventsPage(currentEventsListID, false);
                 if (eventSelected) OnEventSelect(eventID > 0 ? eventID - 1 : 0);
             }
             else // Hide everything, fuck it.
             {
                 // If there are no events on this list, 100% the target list wasn't the current one, no update shit.
 
-                CreateAllEventsPagesForList(currentEventsListID);
+                SelectList(currentEventsListID);
                 OnEventSelect(null);
             }
         }
@@ -925,14 +877,11 @@ namespace FS_LevelEditor.Editor.UI
                 if (eventSelected && currentSelectedEvent == toMoveUp)
                 {
                     // If the user was currently selecting the event that was moved, switch the page so the user is still selecting it.
-                    CreateEventsPage(currentEventsPage, false, false);
                     CreateEventsPage(currentEventsPage - 1, true, false);
                     OnEventSelect(eventID - 1);
                 }
                 else
                 {
-                    // If wasn't select, just update both of the affected pages.
-                    CreateEventsPage(currentEventsPage - 1, false);
                     CreateEventsPage(currentEventsPage, true);
                 }
             }
@@ -942,17 +891,6 @@ namespace FS_LevelEditor.Editor.UI
                 CreateEventsPage(currentEventsPage, deselectCurrentSelectedEvent: !(eventSelected && currentSelectedEvent == toMoveUp));
                 if (eventSelected && currentSelectedEvent == toMoveUp) OnEventSelect(eventID - 1);
             }
-
-            //if (eventID % 6 == 0)
-            //{
-            //    PreviousEventsPage();
-            //    OnEventSelect(eventID - 1);
-            //}
-            //else
-            //{
-            //    CreateEventsPage(currentEventsPage);
-            //    OnEventSelect(eventID - 1);
-            //}
         }
         void MoveEventDown(int eventID)
         {
@@ -974,15 +912,12 @@ namespace FS_LevelEditor.Editor.UI
                 if (eventSelected && currentSelectedEvent == toMoveDown)
                 {
                     // If the user was currently selecting the event that was moved, switch the page so the user is still selecting it.
-                    CreateEventsPage(currentEventsPage, false, false);
                     CreateEventsPage(currentEventsPage + 1, true, false);
                     OnEventSelect(eventID + 1);
                 }
                 else
                 {
-                    // If wasn't select, just update both of the affected pages.
                     CreateEventsPage(currentEventsPage + 1, false);
-                    CreateEventsPage(currentEventsPage, true);
                 }
             }
             else // The event still in the current page.
@@ -991,47 +926,17 @@ namespace FS_LevelEditor.Editor.UI
                 CreateEventsPage(currentEventsPage, deselectCurrentSelectedEvent: !(eventSelected && currentSelectedEvent == toMoveDown));
                 if (eventSelected && currentSelectedEvent == toMoveDown) OnEventSelect(eventID + 1);
             }
-
-            //if ((eventID + 7) % 6 == 0)
-            //{
-            //    NextEventsPage();
-            //    OnEventSelect(eventID + 1);
-            //}
-            //else
-            //{
-            //    CreateEventsPage(currentEventsPage);
-            //    OnEventSelect(eventID + 1);
-            //}
         }
-        void DeleteEvent(int eventID)
+        public void DeleteEvent(int eventID)
         {
             int pagesBeforeRemove = GetEventsPagesCountForCurrentListID();
 
             OnEventSelect(null);
             GetEventsList().RemoveAt(eventID);
-            if (GetEventsList().Count > 0)
-            {
-                // Is the current page the last one? Since the event was already removed, don't substract -1 to the GetEventsPagesCountForCurrentListID() result.
-                if (currentEventsPage == GetEventsPagesCountForCurrentListID())
-                {
-                    CreateEventsPage(GetEventsPagesCountForCurrentListID());
-                }
-                else
-                {
-                    for (int i = currentEventsPage; i < GetEventsPagesCountForCurrentListID(); i++)
-                    {
-                        CreateEventsPage(i, i == currentEventsPage);
-                    }
-                    if (pagesBeforeRemove > GetEventsPagesCountForCurrentListID()) CreateEventsPage(GetEventsPagesCountForCurrentListID(), false);
-                }
-            }
-            else
-            {
-                // This won't do shit, besides deleting the last remaining button and refresh the UI elements.
-                CreateAllEventsPagesForList(currentEventsListID);
-            }
+
+            CreateEventsPage(currentEventsPage);
         }
-        void RenameEvent(int eventID, UICustomInputField inputRef)
+        public void RenameEvent(int eventID, UICustomInputField inputRef)
         {
             // GetEventsList should return the same events list that when creating the events list, it should be fine :)
             LE_Event eventToRename = GetEventsList()[eventID];
@@ -1048,12 +953,6 @@ namespace FS_LevelEditor.Editor.UI
         {
             List<LE_Event> events = GetEventsList();
             return Mathf.CeilToInt((float)events.Count / EVENTS_PER_PAGE);
-        }
-        int GetEventsCountForPage(int pageID)
-        {
-            List<LE_Event> events = GetEventsList();
-            int eventsCount = Mathf.Clamp(events.Count - (pageID * EVENTS_PER_PAGE), 0, 6);
-            return eventsCount;
         }
         #endregion
 
@@ -2895,7 +2794,7 @@ namespace FS_LevelEditor.Editor.UI
             OnEventSelect(null);
         }
 
-        List<LE_Event> GetEventsList()
+        public List<LE_Event> GetEventsList()
         {
             return (List<LE_Event>)targetObj.GetProperty(currentEventsListName);
         }
@@ -2910,8 +2809,21 @@ namespace FS_LevelEditor.Editor.UI
     public class EventButton : MonoBehaviour
     {
         public EventsUIPageManager eventsManager;
-        public int eventTypeID;
         public int eventID;
+
+        public UIButton uiButton;
+        public UIButtonPatcher deleteBtn;
+        public UICustomInputField nameInput;
+
+        public void Setup(int eventID)
+        {
+            this.eventID = eventID;
+            deleteBtn.onClick = null; // Clear old actions.
+            deleteBtn.onClick += () => eventsManager.DeleteEvent(eventID);
+            nameInput.SetText(eventsManager.GetEventsList()[eventID].eventName);
+            nameInput.onSubmit = null; // Clear old actions.
+            nameInput.onSubmit += () => eventsManager.RenameEvent(eventID, nameInput);
+        }
 
         public void OnClick()
         {
