@@ -1329,65 +1329,11 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			#endregion
 
-			#region Start Moving At Start Toggle
-			if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
-			{
-				startMovingAtStartToggle.transform.parent.gameObject.SetActive(true);
-				startMovingAtStartToggle.Set(EditorController.Instance.currentSelectedObjComponent.startMovingAtStart);
-			}
-			else
-			{
-				startMovingAtStartToggle.transform.parent.gameObject.SetActive(false);
-			}
-			#endregion
-
-			#region Moving Speed Field
-			if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
-			{
-				movingSpeedField.transform.parent.gameObject.SetActive(true);
-				movingSpeedField.SetText(EditorController.Instance.currentSelectedObjComponent.movingSpeed);
-			}
-			else
-			{
-				movingSpeedField.transform.parent.gameObject.SetActive(false);
-			}
-			#endregion
-
-			#region Start Delay Field
-			if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
-			{
-				startDelayField.transform.parent.gameObject.SetActive(true);
-				startDelayField.SetText(EditorController.Instance.currentSelectedObjComponent.startDelay);
-			}
-			else
-			{
-				startDelayField.transform.parent.gameObject.SetActive(false);
-			}
-			#endregion
-
-			#region Wait Time Field
-			if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
-			{
-				waitTimeField.transform.parent.gameObject.SetActive(true);
-				waitTimeField.SetText(EditorController.Instance.currentSelectedObjComponent.waitTime);
-			}
-			else
-			{
-				waitTimeField.transform.parent.gameObject.SetActive(false);
-			}
-			#endregion
-
-			#region Waypoint Mode Button
-			if (!EditorController.Instance.multipleObjectsSelected && EditorController.Instance.currentSelectedObjComponent.waypoints.Count > 0)
-			{
-				waypointModeButton.transform.parent.gameObject.SetActive(true);
-				waypointModeButton.SetOption((int)EditorController.Instance.currentSelectedObjComponent.waypointMode);
-			}
-			else
-			{
-				waypointModeButton.transform.parent.gameObject.SetActive(false);
-			}
-			#endregion
+			SetPropInToggleDependingOfPropInObjects(startMovingAtStartToggle, (obj) => obj.startMovingAtStart, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+			SetPropInFieldDependingOfPropInObjects(movingSpeedField, (obj) => obj.movingSpeed.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+			SetPropInFieldDependingOfPropInObjects(startDelayField, (obj) => obj.startDelay.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+			SetPropInFieldDependingOfPropInObjects(waitTimeField, (obj) => obj.waitTime.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+			SetPropInMultipleButtonDependingOfPropInObjects(waypointModeButton, (obj) => (int)obj.waypointMode, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
 		}
 		#endregion
 
@@ -1776,7 +1722,39 @@ namespace FS_LevelEditor.Editor.UI
 				return func(EditorController.Instance.currentSelectedObjComponent);
 			}
 		}
-		void SetPropInToggleDependingOfPropInObjects(UITogglePatcher toggle, Func<LE_Object, bool> selector, Func<LE_Object, bool> filter = null)
+        T GetPropForAllSelectedObjectsByRef<T>(Func<LE_Object, T> func, Func<LE_Object, bool> filter = null) where T : class
+        {
+            if (EditorController.Instance.multipleObjectsSelected)
+            {
+                var objects = EditorController.Instance.currentSelectedObjsComponents;
+
+                bool hasValue = false;
+                T first = default;
+
+                foreach (var obj in objects)
+                {
+                    if (filter != null && !filter(obj)) continue;
+
+                    var value = func(obj);
+
+                    if (!hasValue)
+                    {
+                        first = value;
+                        hasValue = true;
+                        continue;
+                    }
+
+                    if (!EqualityComparer<T>.Default.Equals(first, value)) return null;
+                }
+
+                return hasValue ? first : null;
+            }
+            else
+            {
+                return func(EditorController.Instance.currentSelectedObjComponent);
+            }
+        }
+        void SetPropInToggleDependingOfPropInObjects(UITogglePatcher toggle, Func<LE_Object, bool> selector, Func<LE_Object, bool> filter = null)
 		{
             bool? state = GetPropForAllSelectedObjects(selector, filter);
 
@@ -1789,5 +1767,31 @@ namespace FS_LevelEditor.Editor.UI
                 toggle.SetAsUndefined();
             }
         }
-	}
+        void SetPropInFieldDependingOfPropInObjects(UICustomInputField field, Func<LE_Object, string> selector, Func<LE_Object, bool> filter = null)
+        {
+            string text = GetPropForAllSelectedObjectsByRef(selector, filter);
+
+            if (text is string value)
+            {
+				field.SetText(value, true);
+            }
+            else
+            {
+				field.SetAsUndefined();
+            }
+        }
+        void SetPropInMultipleButtonDependingOfPropInObjects(UISmallButtonMultiple button, Func<LE_Object, int> selector, Func<LE_Object, bool> filter = null)
+        {
+            int? option = GetPropForAllSelectedObjects(selector, filter);
+
+            if (option is int value)
+            {
+				button.SetOption(value, true);
+            }
+            else
+            {
+                button.SetAsUndefined();
+            }
+        }
+    }
 }

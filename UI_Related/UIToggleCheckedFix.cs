@@ -20,7 +20,7 @@ namespace FS_LevelEditor.UI_Related
 
         void OnEnable()
         {
-            toggle.Set(toggle.isChecked, false);
+            if (!toggle.isUndefined) toggle.Set(toggle.isChecked, false);
         }
     }
 }

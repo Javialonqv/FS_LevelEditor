@@ -1079,6 +1079,11 @@ namespace FS_LevelEditor
 
             return true;
         }
+
+        public bool HasWaypoints()
+        {
+            return waypoints.Count > 0;
+        }
     }
 
     [MelonLoader.RegisterTypeInIl2Cpp]
