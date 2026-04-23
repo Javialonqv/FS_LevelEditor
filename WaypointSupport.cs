@@ -58,6 +58,7 @@ namespace FS_LevelEditor
         bool currentlyMoving = false;
         public bool IsCurrentlyMoving => moveObjectCoroutine != null;
 
+        Vector3 startPosition;
         Vector3[] cachedWaypointPositions;
         Vector3[] cachedWaypointRotations;
         Vector3[] cachedWaypointScales;
@@ -246,6 +247,8 @@ namespace FS_LevelEditor
         {
             if (cachedWaypointPositions == null || cachedWaypointRotations == null || cachedWaypointScales == null)
             {
+                startPosition = transform.position;
+
                 cachedWaypointPositions = spawnedWaypoints.Select(x => x.transform.position).ToArray();
                 cachedWaypointRotations = spawnedWaypoints.Select(x => x.transform.eulerAngles).ToArray();
                 cachedWaypointScales = spawnedWaypoints.Select(x => x.transform.localScale).ToArray();
@@ -348,6 +351,32 @@ namespace FS_LevelEditor
             moveObjectCoroutine = null;
             currentVelocity = Vector3.zero;
             Logger.Log("Waypoint movement stopped for object: " + gameObject.name);
+        }
+        public void ResetMovement()
+        {
+            StopObjectMovement();
+
+            Vector3 difference = startPosition - transform.position;
+
+            // Move every object attached to this platform.
+            foreach (var obj in objectsToMove)
+            {
+                if (obj.TryGetComponent<Rigidbody>(out var rb))
+                {
+                    obj.transform.position += difference;
+                    rb.MovePosition(obj.transform.position);
+                }
+            }
+
+            if (playerIsAbove)
+            {
+                Vector3 differenceForPlayer = new Vector3(difference.x, 0f, difference.z);
+                Controls.Instance.character.Move(differenceForPlayer);
+                Controls.Instance.transform.position += new Vector3(0, difference.y, 0);
+            }
+
+            transform.position = startPosition;
+            currentWaypointID = 0;
         }
         // --------------------------------------------------
         public virtual void SetupForCustomSystem()

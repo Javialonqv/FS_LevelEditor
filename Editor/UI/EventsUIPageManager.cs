@@ -85,6 +85,7 @@ namespace FS_LevelEditor.Editor.UI
         GameObject globalObjectsSettings;
         bool globalOptionsExpanded = false;
         UIDropdownPatcher movingStateToggle;
+        UITogglePatcher resetMovementToggle;
         UICustomInputField delayInputField;
         //-----------------------------------
         GameObject sawObjectsSettings;
@@ -1403,6 +1404,7 @@ namespace FS_LevelEditor.Editor.UI
             colliderStateDropdown.SelectOption((int)@event.colliderState);
             useAndLogicToggle.Set(@event.useAndLogic);
             movingStateToggle.SelectOption((int)@event.moveState);
+            resetMovementToggle.Set(@event.resetMovement);
             delayInputField.SetText(@event.delay, true);
 
             if (@event.isForPlayer)
@@ -1590,7 +1592,8 @@ namespace FS_LevelEditor.Editor.UI
             globalObjectsSettings.SetActive(false);
 
             CreateGlobalObjectsTitleLabel();
-            CreateStartMovingObjectToggle();
+            CreateMoveStateDropdown();
+            CreateResetMovementToggle();
             CreateDelayInputField();
         }
         void CreateGlobalObjectsTitleLabel()
@@ -1598,7 +1601,7 @@ namespace FS_LevelEditor.Editor.UI
             UILabel label = NGUI_Utils.CreateLabel(globalObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 60, 0), "GLOBAL OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
             label.name = "TitleLabel";
         }
-        void CreateStartMovingObjectToggle()
+        void CreateMoveStateDropdown()
         {
             movingStateToggle = NGUI_Utils.CreateDropdown(globalObjectsSettings.transform, new Vector3(0f, -40f, 0f), Vector3.one * 0.8f);
             movingStateToggle.gameObject.name = "MoveStateDropdown";
@@ -1607,19 +1610,25 @@ namespace FS_LevelEditor.Editor.UI
             movingStateToggle.AddOption("Start Moving", false);
             movingStateToggle.AddOption("Stop Moving", false);
             movingStateToggle.AddOption("Start/Stop Moving", false);
-            movingStateToggle.AddOnChangeOption((state) => OnStartMovingObjectToggleChanged());
+            movingStateToggle.AddOnChangeOption((state) => OnMoveStateDropdownChanged());
+        }
+        void CreateResetMovementToggle()
+        {
+            resetMovementToggle = NGUI_Utils.CreateToggle(globalObjectsSettings.transform, new Vector3(-150, -90), new Vector3Int(250, 48, 1), "Reset Movement");
+            resetMovementToggle.name = "ResetMovementToggle";
+            resetMovementToggle.onClick += (state) => OnResetMovementToggleChanged();
         }
         void CreateDelayInputField()
         {
             // Create the label for the delay field
-            UILabel delayLabel = NGUI_Utils.CreateLabel(globalObjectsSettings.transform, new Vector3(-300f, -90f, 0f),
+            UILabel delayLabel = NGUI_Utils.CreateLabel(globalObjectsSettings.transform, new Vector3(-300f, -150f, 0f),
                 new Vector3Int(150, 40, 0), "Delay (s)", NGUIText.Alignment.Left, UIWidget.Pivot.Left);
             delayLabel.name = "DelayLabel";
             delayLabel.color = NGUI_Utils.fsLabelDefaultColor;
             delayLabel.fontSize = 27;
 
             // Create the input field for the delay value
-            delayInputField = NGUI_Utils.CreateInputField(globalObjectsSettings.transform, new Vector3(50f, -90f, 0f),
+            delayInputField = NGUI_Utils.CreateInputField(globalObjectsSettings.transform, new Vector3(50f, -150f, 0f),
                 new Vector3Int(200, 40, 1), 27, "0", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             delayInputField.name = "DelayInputField";
             delayInputField.onChange += OnDelayInputFieldChanged;
@@ -2474,9 +2483,13 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
 
         #region Global Options
-        void OnStartMovingObjectToggleChanged()
+        void OnMoveStateDropdownChanged()
         {
             currentSelectedEvent.moveState = (LE_Event.MoveState)movingStateToggle.currentlySelectedID;
+        }
+        void OnResetMovementToggleChanged()
+        {
+            currentSelectedEvent.resetMovement = resetMovementToggle.isChecked;
         }
         void OnDelayInputFieldChanged()
         {
@@ -2880,9 +2893,9 @@ public class LE_Event
     public SpawnState spawn { get; set; } = SpawnState.Toggle;
     public enum ColliderState { Do_Nothing, Enable, Disable, Toggle }
     public ColliderState colliderState { get; set; } = ColliderState.Do_Nothing;
-    //public bool moveObject { get; set; } = false;
     public enum MoveState { Do_Nothing, Start_Moving, Stop_Moving, Start_Or_Stop_Moving }
     public MoveState moveState { get; set; } = MoveState.Do_Nothing;
+    public bool resetMovement { get; set; } = false;
 
     #region Saw Options
     public enum SawState { Do_Nothing, Activate, Deactivate, Toggle_State }

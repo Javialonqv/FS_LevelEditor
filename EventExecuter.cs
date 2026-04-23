@@ -561,6 +561,9 @@ namespace FS_LevelEditor
             }
             if (targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))
             {
+                if (@event.resetMovement)
+                    waypointSupport.ResetMovement();
+
                 switch (@event.moveState)
                 {
                     case LE_Event.MoveState.Start_Moving:
