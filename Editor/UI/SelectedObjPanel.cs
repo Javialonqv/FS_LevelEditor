@@ -1329,11 +1329,28 @@ namespace FS_LevelEditor.Editor.UI
 			}
 			#endregion
 
-			SetPropInToggleDependingOfPropInObjects(startMovingAtStartToggle, (obj) => obj.startMovingAtStart, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
-			SetPropInFieldDependingOfPropInObjects(movingSpeedField, (obj) => obj.movingSpeed.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
-			SetPropInFieldDependingOfPropInObjects(startDelayField, (obj) => obj.startDelay.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
-			SetPropInFieldDependingOfPropInObjects(waitTimeField, (obj) => obj.waitTime.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
-			SetPropInMultipleButtonDependingOfPropInObjects(waypointModeButton, (obj) => (int)obj.waypointMode, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+			if (EvaluateInAllSelectedObjects((obj) => obj.canHaveWaypoints && obj.HasWaypoints()))
+			{
+				startMovingAtStartToggle.transform.parent.gameObject.SetActive(true);
+				movingSpeedField.transform.parent.gameObject.SetActive(true);
+				startDelayField.transform.parent.gameObject.SetActive(true);
+				waitTimeField.transform.parent.gameObject.SetActive(true);
+				waypointModeButton.transform.parent.gameObject.SetActive(true);
+
+                SetPropInToggleDependingOfPropInObjects(startMovingAtStartToggle, (obj) => obj.startMovingAtStart, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+                SetPropInFieldDependingOfPropInObjects(movingSpeedField, (obj) => obj.movingSpeed.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+                SetPropInFieldDependingOfPropInObjects(startDelayField, (obj) => obj.startDelay.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+                SetPropInFieldDependingOfPropInObjects(waitTimeField, (obj) => obj.waitTime.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+                SetPropInMultipleButtonDependingOfPropInObjects(waypointModeButton, (obj) => (int)obj.waypointMode, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+            }
+			else
+			{
+                startMovingAtStartToggle.transform.parent.gameObject.SetActive(false);
+                movingSpeedField.transform.parent.gameObject.SetActive(false);
+                startDelayField.transform.parent.gameObject.SetActive(false);
+                waitTimeField.transform.parent.gameObject.SetActive(false);
+                waypointModeButton.transform.parent.gameObject.SetActive(false);
+            }
 		}
 		#endregion
 
@@ -1793,5 +1810,22 @@ namespace FS_LevelEditor.Editor.UI
                 button.SetAsUndefined();
             }
         }
+
+		bool EvaluateInAllSelectedObjects(Func<LE_Object, bool> selector)
+		{
+			if (EditorController.Instance.multipleObjectsSelected)
+			{
+				foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
+				{
+					if (!selector(obj))
+						return false;
+				}
+				return true;
+			}
+			else
+			{
+				return selector(EditorController.Instance.currentSelectedObjComponent);
+			}
+		}
     }
 }
