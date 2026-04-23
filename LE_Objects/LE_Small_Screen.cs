@@ -21,6 +21,8 @@ namespace FS_LevelEditor
         public static Color textGreenColor = new Color(0.3255f, 1f, 0.5765f);
         public static Color textRedColor = new Color(1, 0.4f, 0.3765f);
 
+        public override bool disableMeshInEditorIfIMEnabled => true;
+
         ScreenController screen;
 
         GameObject wholeMesh;

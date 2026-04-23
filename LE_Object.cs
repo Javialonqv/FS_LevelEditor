@@ -177,6 +177,7 @@ namespace FS_LevelEditor
                 }
             }
         }
+        public virtual bool disableMeshInEditorIfIMEnabled => false;
 
         public bool setActiveAtStart = true;
         public bool collision = true;
@@ -503,7 +504,7 @@ namespace FS_LevelEditor
             {
                 SetCollidersState(false);
             }
-            if(invisibleMesh && scene == LEScene.Playmode)
+            if (invisibleMesh && (scene == LEScene.Playmode || disableMeshInEditorIfIMEnabled))
             {
                 SetMeshRenderersState(false);
             }

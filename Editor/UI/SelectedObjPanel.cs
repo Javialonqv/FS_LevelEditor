@@ -1176,11 +1176,15 @@ namespace FS_LevelEditor.Editor.UI
                 foreach (var obj in EditorController.Instance.currentSelectedObjsComponents)
                 {
                     obj.invisibleMesh = invisibleMeshToggle.isChecked;
+					if (obj.disableMeshInEditorIfIMEnabled)
+						obj.SetMeshRenderersState(!invisibleMeshToggle.isChecked);
                 }
             }
             else
             {
                 EditorController.Instance.currentSelectedObjComponent.invisibleMesh = invisibleMeshToggle.isChecked;
+				if (EditorController.Instance.currentSelectedObjComponent.disableMeshInEditorIfIMEnabled)
+					EditorController.Instance.currentSelectedObjComponent.SetMeshRenderersState(!invisibleMeshToggle.isChecked);
             }
             EditorController.Instance.levelHasBeenModified = true;
         }
