@@ -1402,7 +1402,7 @@ namespace FS_LevelEditor.Editor.UI
             spawnOptionsDropdown.SelectOption((int)@event.spawn);
             colliderStateDropdown.SelectOption((int)@event.colliderState);
             useAndLogicToggle.Set(@event.useAndLogic);
-            startMovingObjectToggle.Set(@event.moveObject);
+            startMovingObjectToggle.Set(@event.moveState == LE_Event.MoveState.Start_Moving);
             delayInputField.SetText(@event.delay, true);
 
             if (@event.isForPlayer)
@@ -2472,7 +2472,7 @@ namespace FS_LevelEditor.Editor.UI
         #region Global Options
         void OnStartMovingObjectToggleChanged()
         {
-            currentSelectedEvent.moveObject = startMovingObjectToggle.isChecked;
+            currentSelectedEvent.moveState = startMovingObjectToggle.isChecked ? LE_Event.MoveState.Start_Moving : LE_Event.MoveState.Do_Nothing;
         }
         void OnDelayInputFieldChanged()
         {
@@ -2876,7 +2876,9 @@ public class LE_Event
     public SpawnState spawn { get; set; } = SpawnState.Toggle;
     public enum ColliderState { Do_Nothing, Enable, Disable, Toggle }
     public ColliderState colliderState { get; set; } = ColliderState.Do_Nothing;
-    public bool moveObject { get; set; } = false;
+    //public bool moveObject { get; set; } = false;
+    public enum MoveState { Do_Nothing, Start_Moving, Stop_Moving, Start_Or_Stop_Moving }
+    public MoveState moveState { get; set; } = MoveState.Do_Nothing;
 
     #region Saw Options
     public enum SawState { Do_Nothing, Activate, Deactivate, Toggle_State }

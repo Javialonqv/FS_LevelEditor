@@ -37,7 +37,20 @@ namespace FS_LevelEditor.SaveSystem
                         new LEPropertiesConverterNew(),
                         new OldPropertiesRename<LE_Event>(new Dictionary<string, string>
                         {
-                            { "setActive", "spawn" }
+                            { "setActive", "spawn" },
+                            { "moveObject", "moveState" }
+                        }, new Dictionary<string, Func<JsonElement, object>>
+                        {
+                            { "moveState", (moveObject) =>
+                                {
+                                    if (moveObject.ValueKind == JsonValueKind.True || moveObject.ValueKind == JsonValueKind.False)
+                                    {
+                                        return moveObject.GetBoolean() ? LE_Event.MoveState.Start_Moving : LE_Event.MoveState.Do_Nothing;
+                                    }
+
+                                    return moveObject.GetInt32();
+                                }
+                            }
                         }),
                         // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
                         // same type.

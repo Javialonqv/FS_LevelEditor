@@ -504,7 +504,7 @@ namespace FS_LevelEditor
                     // Only setup global options values manually.
                     newEvent.spawn = @event.spawn;
                     newEvent.colliderState = @event.colliderState;
-                    newEvent.moveObject = @event.moveObject;
+                    newEvent.moveState = @event.moveState;
 
                     // Don't use yield return, because it creates a very very small frame delay, instead of being instant.
                     CoroutineUtils.Start(ExecuteSingleEvent(newEvent), coroutinesID);
@@ -559,7 +559,7 @@ namespace FS_LevelEditor
                     }
                     break;
             }
-            if (@event.moveObject && targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))
+            if (@event.moveState == LE_Event.MoveState.Start_Moving && targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))
             {
                 waypointSupport.StartObjectMovement();
             }
