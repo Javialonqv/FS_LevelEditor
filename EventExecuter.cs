@@ -50,7 +50,7 @@ namespace FS_LevelEditor
         List<EditorLink> editorLinks = new();
         bool dontDisableLinksParentWhenCreating;
 
-        List<Coroutine> executingEventsCoroutines = new();
+        string coroutinesID => $"EventExecuter_{originalObject.objectFullNameWithID}";
 
         void Awake()
         {
@@ -275,13 +275,7 @@ namespace FS_LevelEditor
 
         void OnDestroy()
         {
-            foreach (var coroutine in executingEventsCoroutines)
-            {
-                if (coroutine == null)
-                    continue;
-
-                MelonCoroutines.Stop(coroutine);
-            }
+            CoroutineUtils.StopAllCoroutines(coroutinesID);
         }
 
         /// <summary>
@@ -289,7 +283,7 @@ namespace FS_LevelEditor
         /// </summary>
         public void ExecuteEvents(List<LE_Event> events)
         {
-            executingEventsCoroutines.Add((Coroutine)MelonCoroutines.Start(ExecuteEventsInternal(events, null, true)));
+            CoroutineUtils.Start(ExecuteEventsInternal(events, null, true), coroutinesID);
         }
 
         /// <summary>
@@ -300,7 +294,7 @@ namespace FS_LevelEditor
         /// <param name="isActivating">True if this is an activating event (OnDrop, WhenActivating), false for deactivating (OnRemove, WhenDeactivating).</param>
         public void ExecuteEventsWithAndLogic(List<LE_Event> events, string eventListName, bool isActivating)
         {
-            executingEventsCoroutines.Add((Coroutine)MelonCoroutines.Start(ExecuteEventsInternal(events, eventListName, isActivating)));
+            CoroutineUtils.Start(ExecuteEventsInternal(events, eventListName, isActivating), coroutinesID);
         }
 
         private IEnumerator ExecuteEventsInternal(List<LE_Event> events, string eventListName, bool isActivating)
@@ -340,7 +334,7 @@ namespace FS_LevelEditor
                             if (@event.delay > 0 && !isUndo)
                             {
                                 // Apply delay only for non-undo actions
-                                MelonLoader.MelonCoroutines.Start(ExecuteActionWithDelay(targetObj, action, @event.delay));
+                                CoroutineUtils.Start(ExecuteActionWithDelay(targetObj, action, @event.delay), coroutinesID);
                             }
                             else
                             {
@@ -354,7 +348,7 @@ namespace FS_LevelEditor
                 // Execute with delay if specified, otherwise execute immediately
                 if (@event.delay > 0)
                 {
-                    MelonLoader.MelonCoroutines.Start(ExecuteEventWithDelay(@event, @event.delay));
+                    CoroutineUtils.Start(ExecuteEventWithDelay(@event, @event.delay), coroutinesID);
                 }
                 else
                 {
@@ -372,7 +366,7 @@ namespace FS_LevelEditor
         private IEnumerator ExecuteEventWithDelay(LE_Event @event, float delay)
         {
             yield return new WaitForSeconds(delay);
-            ExecuteSingleEvent(@event);
+            yield return ExecuteSingleEvent(@event);
         }
 
         private IEnumerator ExecuteSingleEvent(LE_Event @event)
@@ -513,7 +507,7 @@ namespace FS_LevelEditor
                     newEvent.moveObject = @event.moveObject;
 
                     // Don't use yield return, because it creates a very very small frame delay, instead of being instant.
-                    MelonCoroutines.Start(ExecuteSingleEvent(newEvent));
+                    CoroutineUtils.Start(ExecuteSingleEvent(newEvent), coroutinesID);
                 }
 
                 yield break;
