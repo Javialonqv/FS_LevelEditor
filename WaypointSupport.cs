@@ -56,6 +56,11 @@ namespace FS_LevelEditor
         int currentWaypointID;
         LE_Waypoint currentWaypoint;
         bool currentlyMoving = false;
+        public bool IsCurrentlyMoving => moveObjectCoroutine != null;
+
+        Vector3[] cachedWaypointPositions;
+        Vector3[] cachedWaypointRotations;
+        Vector3[] cachedWaypointScales;
 
         float currentMovingSpeed;
 
@@ -239,26 +244,29 @@ namespace FS_LevelEditor
         }
         IEnumerator MoveObject()
         {
-            Vector3[] cachedWaypointPositions = spawnedWaypoints.Select(x => x.transform.position).ToArray();
-            Vector3[] cachedWaypointRotations = spawnedWaypoints.Select(x => x.transform.eulerAngles).ToArray();
-            Vector3[] cachedWaypointScales = spawnedWaypoints.Select(x => x.transform.localScale).ToArray();
+            if (cachedWaypointPositions == null || cachedWaypointRotations == null || cachedWaypointScales == null)
+            {
+                cachedWaypointPositions = spawnedWaypoints.Select(x => x.transform.position).ToArray();
+                cachedWaypointRotations = spawnedWaypoints.Select(x => x.transform.eulerAngles).ToArray();
+                cachedWaypointScales = spawnedWaypoints.Select(x => x.transform.localScale).ToArray();
+            }
 
             yield return new WaitForSeconds(targetObject.startDelay);
 
             currentMovingSpeed = targetObject.movingSpeed;
 
-            for (int i = 0; i < spawnedWaypoints.Count; i++)
+            string name = this.name;
+            for (/*Do not reset currentWaypointID to 0*/; currentWaypointID < spawnedWaypoints.Count; currentWaypointID++)
             {
-                currentWaypointID = i;
-                currentWaypoint = spawnedWaypoints[i];
+                currentWaypoint = spawnedWaypoints[currentWaypointID];
 
-                Vector3 totalPosDistance = cachedWaypointPositions[i] - transform.position;
+                Vector3 totalPosDistance = cachedWaypointPositions[currentWaypointID] - transform.position;
                 Vector3 totalRotDiff = new Vector3(
-                    Mathf.DeltaAngle(transform.eulerAngles.x, cachedWaypointRotations[i].x),
-                    Mathf.DeltaAngle(transform.eulerAngles.y, cachedWaypointRotations[i].y),
-                    Mathf.DeltaAngle(transform.eulerAngles.z, cachedWaypointRotations[i].z)
+                    Mathf.DeltaAngle(transform.eulerAngles.x, cachedWaypointRotations[currentWaypointID].x),
+                    Mathf.DeltaAngle(transform.eulerAngles.y, cachedWaypointRotations[currentWaypointID].y),
+                    Mathf.DeltaAngle(transform.eulerAngles.z, cachedWaypointRotations[currentWaypointID].z)
                 );
-                Vector3 totalScaleDiff = cachedWaypointScales[i] - transform.localScale;
+                Vector3 totalScaleDiff = cachedWaypointScales[currentWaypointID] - transform.localScale;
 
                 float totalPosDuration = totalPosDistance.magnitude > 0.001f ? totalPosDistance.magnitude / currentMovingSpeed : 0f;
                 float totalRotDuration = totalRotDiff.magnitude > 0.001f ? totalRotDiff.magnitude / currentMovingSpeed : 0f;
@@ -272,18 +280,18 @@ namespace FS_LevelEditor
                 }
 
                 // Start rotation and scale tween now, so they keep running on background.
-                RotationTweener tweenRotation = RotationTweener.RotateTo(gameObject, cachedWaypointRotations[i], totalDuration, RotationPath.Shortest);
+                RotationTweener tweenRotation = RotationTweener.RotateTo(gameObject, cachedWaypointRotations[currentWaypointID], totalDuration, RotationPath.Shortest);
 
-                TweenScale tweenScale = TweenScale.Begin(gameObject, totalDuration, cachedWaypointScales[i]);
+                TweenScale tweenScale = TweenScale.Begin(gameObject, totalDuration, cachedWaypointScales[currentWaypointID]);
                 tweenScale.ignoreTimeScale = false; // Avoid object scaling while the game's paused.
 
                 // Do the movement by steps, so we can also apply the position to the objects to move (cubes).
                 currentlyMoving = true;
-                while (Vector3.Distance(cachedWaypointPositions[i], transform.position) > 0.01f)
+                while (Vector3.Distance(cachedWaypointPositions[currentWaypointID], transform.position) > 0.01f)
                 {
                     Vector3 oldPos = transform.position;
                     float posSpeed = totalPosDuration > 0.001f ? totalPosDistance.magnitude / totalDuration : 0f;
-                    Vector3 newPos = Vector3.MoveTowards(transform.position, cachedWaypointPositions[i], Time.deltaTime * posSpeed);
+                    Vector3 newPos = Vector3.MoveTowards(transform.position, cachedWaypointPositions[currentWaypointID], Time.deltaTime * currentMovingSpeed);
                     Vector3 difference = newPos - oldPos;
                     currentVelocity = difference;
 
@@ -324,17 +332,21 @@ namespace FS_LevelEditor
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
 
-                if (i == spawnedWaypoints.Count - 1 && (targetObject.waypointMode == WaypointMode.LOOP || targetObject.waypointMode == WaypointMode.TRAVEL_BACK))
+                if (currentWaypointID == spawnedWaypoints.Count - 1 && (targetObject.waypointMode == WaypointMode.LOOP || targetObject.waypointMode == WaypointMode.TRAVEL_BACK))
                 {
-                    i = -1; // the 'for' loop will automatically add 1 in the next iteration, converting 'i' to 0.
+                    currentWaypointID = -1; // the 'for' loop will automatically add 1 in the next iteration, converting 'i' to 0.
                 }
             }
+
+            StopObjectMovement();
         }
         public void StopObjectMovement()
         {
             if (moveObjectCoroutine == null) return; // Just in case trying to stop a null coroutine throws an error.
 
             MelonCoroutines.Stop(moveObjectCoroutine);
+            moveObjectCoroutine = null;
+            currentVelocity = Vector3.zero;
             Logger.Log("Waypoint movement stopped for object: " + gameObject.name);
         }
         // --------------------------------------------------

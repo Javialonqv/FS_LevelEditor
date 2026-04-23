@@ -84,7 +84,7 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject globalObjectsSettings;
         bool globalOptionsExpanded = false;
-        UITogglePatcher startMovingObjectToggle;
+        UIDropdownPatcher movingStateToggle;
         UICustomInputField delayInputField;
         //-----------------------------------
         GameObject sawObjectsSettings;
@@ -1402,7 +1402,7 @@ namespace FS_LevelEditor.Editor.UI
             spawnOptionsDropdown.SelectOption((int)@event.spawn);
             colliderStateDropdown.SelectOption((int)@event.colliderState);
             useAndLogicToggle.Set(@event.useAndLogic);
-            startMovingObjectToggle.Set(@event.moveState == LE_Event.MoveState.Start_Moving);
+            movingStateToggle.SelectOption((int)@event.moveState);
             delayInputField.SetText(@event.delay, true);
 
             if (@event.isForPlayer)
@@ -1600,10 +1600,14 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateStartMovingObjectToggle()
         {
-            startMovingObjectToggle = NGUI_Utils.CreateToggle(globalObjectsSettings.transform, new Vector3(-150f, -25f, 0f),
-                new Vector3Int(250, 48, 1), "Start Moving Object");
-            startMovingObjectToggle.gameObject.name = "StartMovingObjectToggle";
-            startMovingObjectToggle.onClick += (state) => OnStartMovingObjectToggleChanged();
+            movingStateToggle = NGUI_Utils.CreateDropdown(globalObjectsSettings.transform, new Vector3(0f, -40f, 0f), Vector3.one * 0.8f);
+            movingStateToggle.gameObject.name = "MoveStateDropdown";
+            movingStateToggle.SetTitle("Move State");
+            movingStateToggle.AddOption("Do Nothing", true);
+            movingStateToggle.AddOption("Start Moving", false);
+            movingStateToggle.AddOption("Stop Moving", false);
+            movingStateToggle.AddOption("Start/Stop Moving", false);
+            movingStateToggle.AddOnChangeOption((state) => OnStartMovingObjectToggleChanged());
         }
         void CreateDelayInputField()
         {
@@ -2472,7 +2476,7 @@ namespace FS_LevelEditor.Editor.UI
         #region Global Options
         void OnStartMovingObjectToggleChanged()
         {
-            currentSelectedEvent.moveState = startMovingObjectToggle.isChecked ? LE_Event.MoveState.Start_Moving : LE_Event.MoveState.Do_Nothing;
+            currentSelectedEvent.moveState = (LE_Event.MoveState)movingStateToggle.currentlySelectedID;
         }
         void OnDelayInputFieldChanged()
         {

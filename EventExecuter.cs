@@ -559,9 +559,25 @@ namespace FS_LevelEditor
                     }
                     break;
             }
-            if (@event.moveState == LE_Event.MoveState.Start_Moving && targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))
+            if (targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))
             {
-                waypointSupport.StartObjectMovement();
+                switch (@event.moveState)
+                {
+                    case LE_Event.MoveState.Start_Moving:
+                        waypointSupport.StartObjectMovement();
+                        break;
+
+                    case LE_Event.MoveState.Stop_Moving:
+                        waypointSupport.StopObjectMovement();
+                        break;
+
+                    case LE_Event.MoveState.Start_Or_Stop_Moving:
+                        if (waypointSupport.IsCurrentlyMoving)
+                            waypointSupport.StopObjectMovement();
+                        else
+                            waypointSupport.StartObjectMovement();
+                        break;
+                }
             }
             #endregion
 
