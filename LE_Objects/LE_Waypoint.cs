@@ -50,6 +50,8 @@ namespace FS_LevelEditor
             {
                 { "WaitTime", 0f },
                 { "MoveSpeed", 5f }
+                { "MoveSpeed", 5f },
+                { "StopHere", false },
             };
         }
 
@@ -139,6 +141,14 @@ namespace FS_LevelEditor
                 else if (value is float)
                 {
                     properties["MoveSpeed"] = (float)value;
+                    return true;
+                }
+            }
+            else if (name == "StopHere")
+            {
+                if (value is bool)
+                {
+                    properties["StopHere"] = (bool)value;
                     return true;
                 }
             }

@@ -335,6 +335,13 @@ namespace FS_LevelEditor
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
 
+                if (currentWaypoint.GetProperty<bool>("StopHere"))
+                {
+                    currentWaypointID++;
+                    StopObjectMovement();
+                    yield break;
+                }
+
                 if (currentWaypointID == spawnedWaypoints.Count - 1 && (targetObject.waypointMode == WaypointMode.LOOP || targetObject.waypointMode == WaypointMode.TRAVEL_BACK))
                 {
                     currentWaypointID = -1; // the 'for' loop will automatically add 1 in the next iteration, converting 'i' to 0.
