@@ -54,5 +54,11 @@ namespace FS_LevelEditor
 
             initialized = true;
         }
+
+        // Override the LE_Waypoint implementation.
+        public override List<string> GetAvailableEventsIDs()
+        {
+            return new List<string>();
+        }
     }
 }

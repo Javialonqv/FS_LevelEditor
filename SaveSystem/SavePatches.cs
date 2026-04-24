@@ -173,6 +173,8 @@ namespace FS_LevelEditor.SaveSystem
 
             if (element.ValueKind == JsonValueKind.Array)
             {
+                if (element.GetArrayLength() == 0) return false;
+
                 if (!element[0].TryGetProperty("waypointPosition", out var test)) return false;
 
                 converted = new List<WaypointData>();

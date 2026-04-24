@@ -331,6 +331,8 @@ namespace FS_LevelEditor
                     yield return null;
                 }
 
+                currentWaypoint.ExecuteWhenReachedEvents();
+
                 currentMovingSpeed = currentWaypoint.GetProperty<float>("MoveSpeed");
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));

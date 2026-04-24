@@ -49,9 +49,9 @@ namespace FS_LevelEditor
             return new Dictionary<string, object>()
             {
                 { "WaitTime", 0f },
-                { "MoveSpeed", 5f }
                 { "MoveSpeed", 5f },
                 { "StopHere", false },
+                { "WhenReached", new List<LE_Event>() }
             };
         }
 
@@ -152,6 +152,14 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (GetAvailableEventsIDs().Contains(name))
+            {
+                if (value is List<LE_Event>)
+                {
+                    properties[name] = (List<LE_Event>)value;
+                    return true;
+                }
+            }
 
             return base.SetProperty(name, value);
         }
@@ -186,6 +194,18 @@ namespace FS_LevelEditor
         public virtual WaypointSupport GetMainSupport()
         {
             return transform.parent.parent.GetComponent<WaypointSupport>();
+        }
+
+        public override List<string> GetAvailableEventsIDs()
+        {
+            return new List<string>()
+            {
+                "WhenReached"
+            };
+        }
+        public void ExecuteWhenReachedEvents()
+        {
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["WhenReached"], "WhenReached", true);
         }
     }
 }
