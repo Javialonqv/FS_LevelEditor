@@ -1227,9 +1227,12 @@ namespace FS_LevelEditor.Editor.UI
                     currentSelectedEvent.targetObjName = ""; // While the object is valid, don't use the name, use the type and ID instead.
                 }
 
+                bool hasGlobalOptions = false;
                 if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack && !currentSelectedEvent.isForObjective &&
                     !currentSelectedEvent.isForWait)
-                    defaultObjectsSettings.SetActive(true);
+                {
+                    hasGlobalOptions = true;
+                }
 
                 if (currentSelectedEvent.isForPlayer)
                 {
@@ -1268,7 +1271,9 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     moreGlobalOptionsButton.gameObject.SetActive(true);
 
-                    if (globalOptionsExpanded)
+                    if (hasGlobalOptions) defaultObjectsSettings.SetActive(true);
+
+                    if (globalOptionsExpanded && hasGlobalOptions)
                     {
                         globalObjectsSettings.SetActive(true);
                         currentActiveObjectPanel.SetActive(false);
@@ -1283,7 +1288,8 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     moreGlobalOptionsButton.gameObject.SetActive(false);
 
-                    if (!currentSelectedEvent.isForWait) globalObjectsSettings.SetActive(true);
+                    if (hasGlobalOptions) defaultObjectsSettings.SetActive(true);
+                    if (hasGlobalOptions) globalObjectsSettings.SetActive(true);
                 }
 
                 UpdateEventOptionsWithEvent(currentSelectedEvent);
