@@ -58,6 +58,7 @@ namespace FS_LevelEditor
         bool currentlyMoving = false;
         public bool IsCurrentlyMoving => moveObjectCoroutine != null;
 
+        bool hasAlreadyMovedOnce = false;
         Vector3 startPosition;
         Vector3[] cachedWaypointPositions;
         Vector3[] cachedWaypointRotations;
@@ -254,6 +255,8 @@ namespace FS_LevelEditor
                 cachedWaypointScales = spawnedWaypoints.Select(x => x.transform.localScale).ToArray();
             }
 
+            hasAlreadyMovedOnce = true;
+
             yield return new WaitForSeconds(targetObject.startDelay);
 
             currentMovingSpeed = targetObject.movingSpeed;
@@ -363,6 +366,9 @@ namespace FS_LevelEditor
         }
         public void ResetMovement()
         {
+            if (!hasAlreadyMovedOnce)
+                return;
+
             StopObjectMovement();
 
             Vector3 difference = startPosition - transform.position;
