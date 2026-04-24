@@ -505,6 +505,7 @@ namespace FS_LevelEditor
                     newEvent.spawn = @event.spawn;
                     newEvent.colliderState = @event.colliderState;
                     newEvent.moveState = @event.moveState;
+                    newEvent.resetMovement = @event.resetMovement;
 
                     // Don't use yield return, because it creates a very very small frame delay, instead of being instant.
                     CoroutineUtils.Start(ExecuteSingleEvent(newEvent), coroutinesID);
