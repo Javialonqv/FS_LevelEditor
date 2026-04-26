@@ -5,12 +5,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace FS_LevelEditor
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Power_Slot : LE_Object
     {
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
+            {
+                { "OnBoth", new List<LE_Event>() },
+                { "OnInsert", new List<LE_Event>() },
+                { "OnRemove", new List<LE_Event>() }
+            };
+        }
+
         public override void InitComponent()
         {
             contentObject.SetActive(false);
@@ -34,8 +45,7 @@ namespace FS_LevelEditor
             powerCore.m_defaultMats = t_powerSlot.m_defaultMats;
             powerCore.m_activatedMats = t_powerSlot.m_activatedMats;
             powerCore.m_mesh1 = contentObject.GetChild("Mesh").GetComponent<MeshRenderer>();
-            powerCore.m_onInsert = new UnityEngine.Events.UnityEvent();
-            powerCore.m_onRemove = new UnityEngine.Events.UnityEvent();
+            ConfigureEvents(powerCore);
             powerCore.m_onFirstInsert = new UnityEngine.Events.UnityEvent();
             powerCore.m_onCorrectKeyInsert = new UnityEngine.Events.UnityEvent();
             powerCore.m_onWrongKeyInsert = new UnityEngine.Events.UnityEvent();
@@ -152,6 +162,58 @@ namespace FS_LevelEditor
             contentObject.SetActive(true);
 
             initialized = true;
+        }
+
+        void ConfigureEvents(PowerCoreController powerCore)
+        {
+            powerCore.m_onInsert = new UnityEvent();
+            powerCore.m_onInsert.AddListener((UnityAction)ExecuteOnInsertEvents);
+            powerCore.m_onInsert.AddListener((UnityAction)ExecuteOnBothEventsActivating);
+
+            powerCore.m_onRemove = new UnityEngine.Events.UnityEvent();
+            powerCore.m_onRemove.AddListener((UnityAction)ExecuteOnRemoveEvents);
+            powerCore.m_onRemove.AddListener((UnityAction)ExecuteOnBothEventsDeactivating);
+        }
+
+        void ExecuteOnInsertEvents()
+        {
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnInsert"], "OnInsert", true);
+        }
+        void ExecuteOnRemoveEvents()
+        {
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnRemove"], "OnRemove", false);
+        }
+        void ExecuteOnBothEventsActivating()
+        {
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnBoth"], "OnBoth", true);
+        }
+        void ExecuteOnBothEventsDeactivating()
+        {
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnBoth"], "OnBoth", false);
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (GetAvailableEventsIDs().Contains(name))
+            {
+                if (value is List<LE_Event>)
+                {
+                    properties[name] = (List<LE_Event>)value;
+                    return true;
+                }
+            }
+
+            return base.SetProperty(name, value);
+        }
+
+        public override List<string> GetAvailableEventsIDs()
+        {
+            return new List<string>()
+            {
+                "OnBoth",
+                "OnInsert",
+                "OnRemove"
+            };
         }
     }
 }
