@@ -2729,11 +2729,12 @@ namespace FS_LevelEditor.Editor
                     newPlacedObjComp.startDelay = objComp.startDelay;
                     newPlacedObjComp.waitTime = objComp.waitTime;
                     newPlacedObjComp.waypointMode = objComp.waypointMode;
+                    // Do this before copying properties, so local waypoints are copied correctly as well.
+                    objComp.BeforeSave(); // If the origin obj was waypoints, force them to update their position, rotation and props before copying them.
                     foreach (var property in objComp.properties)
                     {
                         newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
                     }
-                    objComp.BeforeSave(); // If the origin obj was waypoints, force them to update their position, rotation and props before copying them.
                     foreach (var waypoint in objComp.waypoints)
                     {
                         newPlacedObjComp.waypoints.Add((WaypointData)Utils.CreateCopyOf(waypoint));
@@ -2779,11 +2780,12 @@ namespace FS_LevelEditor.Editor
                 newPlacedObjComp.startDelay = objComponent.startDelay;
                 newPlacedObjComp.waitTime = objComponent.waitTime;
                 newPlacedObjComp.waypointMode = objComponent.waypointMode;
+                // Do this before copying properties, so local waypoints are copied correctly as well.
+                objComponent.BeforeSave(); // If the origin obj was waypoints, force them to update their position, rotation and props before copying them.
                 foreach (var property in objComponent.properties)
                 {
                     newPlacedObjComp.SetProperty(property.Key, Utils.CreateCopyOf(property.Value));
                 }
-                objComponent.BeforeSave(); // If the origin obj was waypoints, force them to update their position, rotation and props before copying them.
                 foreach (var waypoint in objComponent.waypoints)
                 {
                     newPlacedObjComp.waypoints.Add((WaypointData)Utils.CreateCopyOf(waypoint));
