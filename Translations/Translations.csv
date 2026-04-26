@@ -59,6 +59,7 @@ object.DEATH_TRIGGER_WAYPOINT,Respawn Point,Punto de Reaparición,
 object.SEQUENCE,Sequencer,Secuenciador,
 object.SEQUENCE_WAYPOINT,Sequencer Step,Etapa del Secuenciador,
 object.SEQUENCE_SCREEN,Sequence Screen,Pantalla del Secuenciador,
+object.POWER_CORE,Power Core,Núcleo de Energía,
 Player,Player,Jugador,Гравець
 Jetpack,Jetpack,Mochila Propulsora,Джетпак
 Taser,Taser,Taser,Тазер

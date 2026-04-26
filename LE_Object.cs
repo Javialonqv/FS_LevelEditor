@@ -86,7 +86,8 @@ namespace FS_LevelEditor
             DEATH_TRIGGER_WAYPOINT, // Even tho it's just one (the respawn point), call it waypoint so it doesn't break IsWaypoint() and such.
             SEQUENCE,
             SEQUENCE_WAYPOINT,
-            SEQUENCE_SCREEN
+            SEQUENCE_SCREEN,
+            POWER_CORE
         }
 
         // This is used to specify the objects that use the same snap triggers.
@@ -256,6 +257,7 @@ namespace FS_LevelEditor
         public static PowerCoreBlocController t_powerCoreBloc;
         public static SequenceSwitchController t_sequenceController;
         public static BlocSwitchScript t_blocSwitchScript;
+        public static BlocScript t_powerCore;
 
         public static void GetTemplatesReferences()
 		{
@@ -281,6 +283,7 @@ namespace FS_LevelEditor
             t_powerCoreBloc = FindObjectOfType<PowerCoreBlocController>();
             t_sequenceController = FindObjectOfType<SequenceSwitchController>();
             t_blocSwitchScript = Utils.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer != null);
+            t_powerCore = Utils.FindObjectOfType<BlocScript>(x => x.isPowerCore);
         }
 		#endregion
 

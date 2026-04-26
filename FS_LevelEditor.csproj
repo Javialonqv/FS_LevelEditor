@@ -73,6 +73,7 @@
 		<Compile Include="LE_MenuUIManager.cs" />
 		<Compile Include="ExternalSpriteLoader.cs" />
 		<Compile Include="LE_Objects\LE_Heal_Area.cs" />
+		<Compile Include="LE_Objects\LE_Power_Core.cs" />
 		<Compile Include="LE_Objects\LE_Rgb_Wall.cs" />
 		<Compile Include="LE_Objects\LE_Sequence.cs" />
 		<Compile Include="LE_Objects\LE_Sequence_Screen.cs" />

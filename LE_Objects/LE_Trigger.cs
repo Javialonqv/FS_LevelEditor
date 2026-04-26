@@ -75,6 +75,16 @@ namespace FS_LevelEditor
 			initialized = true;
 		}
 
+		void OnEnable()
+		{
+			var colliders = Physics.OverlapBox(gameObject.GetChildAt("Content/LE_Trigger").transform.position, transform.localScale, transform.rotation);
+			foreach (var collider in colliders)
+			{
+				if (collider.TryGetComponent<Controls>(out var player))
+					player.OnTriggerEnter(collider);
+			}
+		}
+
 		public override bool SetProperty(string name, object value)
 		{
 			if (name == "TriggerMode")
