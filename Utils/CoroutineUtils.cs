@@ -17,13 +17,15 @@ namespace FS_LevelEditor
         {
             MelonCoroutines.Start(coroutine);
         }
-        public static void Start(IEnumerator coroutine, string id)
+        public static object Start(IEnumerator coroutine, string id)
         {
             if (!executingCoroutinesWithIDs.ContainsKey(id))
                 executingCoroutinesWithIDs.Add(id, new());
 
             object coroutineToken = MelonCoroutines.Start(coroutine);
             executingCoroutinesWithIDs[id].Add(coroutineToken);
+
+            return coroutineToken;
         }
 
         public static void Stop(object coroutineToken)

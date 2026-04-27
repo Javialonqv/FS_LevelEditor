@@ -345,14 +345,23 @@ namespace FS_LevelEditor
                     }
                 }
 
-                // Execute with delay if specified, otherwise execute immediately
-                if (@event.delay > 0)
+                if (@event.isForWait) // Evaluate for wait events first.
                 {
+                    // Wait the designed time AND WAIT UNTIL IT FINISHES.
+                    if (@event.waitTimeUnits == LE_Event.WaitTimeUnit.Seconds)
+                        yield return new WaitForSeconds(@event.waitTime);
+                    else
+                        yield return new WaitForSeconds(@event.waitTime / 1000f);
+                }
+                else if (@event.delay > 0)
+                {
+                    // Execute with delay, but only this event, other events can continue executing without having to wait.
                     CoroutineUtils.Start(ExecuteEventWithDelay(@event, @event.delay), coroutinesID);
                 }
                 else
                 {
-                    yield return ExecuteSingleEvent(@event);
+                    // Execute the method directly, immediately.
+                    ExecuteSingleEvent(@event);
                 }
             }
         }
@@ -366,10 +375,10 @@ namespace FS_LevelEditor
         private IEnumerator ExecuteEventWithDelay(LE_Event @event, float delay)
         {
             yield return new WaitForSeconds(delay);
-            yield return ExecuteSingleEvent(@event);
+            ExecuteSingleEvent(@event);
         }
 
-        private IEnumerator ExecuteSingleEvent(LE_Event @event)
+        private void ExecuteSingleEvent(LE_Event @event)
         {
             if (@event.isForPlayer)
             {
@@ -389,7 +398,7 @@ namespace FS_LevelEditor
                 else
                     Controls.Instance.SetFlashlightAllowed();
 
-                yield break;
+                return;
             }
             if (@event.isForTaser)
             {
@@ -433,7 +442,7 @@ namespace FS_LevelEditor
                         }
                     }
                 }
-                yield break;
+                return;
             }
             if (@event.isForJetpack)
             {
@@ -446,7 +455,7 @@ namespace FS_LevelEditor
                         Controls.Instance.BreakJetPack();
                         break;
                 }
-                yield break;
+                return;
             }
             if (@event.isForObjective)
             {
@@ -464,17 +473,9 @@ namespace FS_LevelEditor
                         PlayModeController.Instance.FailObjective(@event.objectiveName);
                         break;
                 }
-                yield break;
+                return;
             }
-            if (@event.isForWait)
-            {
-                if (@event.waitTimeUnits == LE_Event.WaitTimeUnit.Seconds)
-                    yield return new WaitForSeconds(@event.waitTime);
-                else
-                    yield return new WaitForSeconds(@event.waitTime / 1000f);
-
-                yield break;
-            }
+            // Logic for wait events is on ExecuteEventsInternal().
             if (@event.isForGroup)
             {
                 var objects = LE_Object.objectsPerGroup[@event.targetGroupID];
@@ -507,11 +508,10 @@ namespace FS_LevelEditor
                     newEvent.moveState = @event.moveState;
                     newEvent.resetMovement = @event.resetMovement;
 
-                    // Don't use yield return, because it creates a very very small frame delay, instead of being instant.
-                    CoroutineUtils.Start(ExecuteSingleEvent(newEvent), coroutinesID);
+                    ExecuteSingleEvent(newEvent);
                 }
 
-                yield break;
+                return;
             }
 
             LE_Object targetObj =
