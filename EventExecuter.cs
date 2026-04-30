@@ -378,7 +378,7 @@ namespace FS_LevelEditor
             ExecuteSingleEvent(@event);
         }
 
-        private void ExecuteSingleEvent(LE_Event @event)
+        private void ExecuteSingleEvent(LE_Event @event, bool onlyGlobalOptions = false)
         {
             if (@event.isForPlayer)
             {
@@ -508,7 +508,8 @@ namespace FS_LevelEditor
                     newEvent.moveState = @event.moveState;
                     newEvent.resetMovement = @event.resetMovement;
 
-                    ExecuteSingleEvent(newEvent);
+                    bool onlyExecuteGlobalOptions = !allObjectsInGroupAreTheSame;
+                    ExecuteSingleEvent(newEvent, onlyExecuteGlobalOptions);
                 }
 
                 return;
@@ -584,6 +585,9 @@ namespace FS_LevelEditor
                 }
             }
             #endregion
+
+            if (onlyGlobalOptions)
+                return;
 
             if (targetObj is LE_Saw)
             {
