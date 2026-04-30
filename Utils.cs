@@ -855,5 +855,16 @@ namespace FS_LevelEditor
                 invokeCoroutines.Remove(id);
             }
         }
+
+        public static void InvokeAfterOneFrame(Action action)
+        {
+            MelonCoroutines.Start(InvokeAfterOneFrameCoroutine(action));
+        }
+        static IEnumerator InvokeAfterOneFrameCoroutine(Action action)
+        {
+            yield return null;
+
+            action.Invoke();
+        }
 	}
 }

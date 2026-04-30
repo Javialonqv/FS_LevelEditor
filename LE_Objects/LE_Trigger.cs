@@ -24,13 +24,19 @@ namespace FS_LevelEditor
 		private bool hasBeenTriggered = false; // Track if trigger has been activated (for Once mode)
 		private HashSet<GameObject> cubesInTrigger = new HashSet<GameObject>(); // Track cubes currently in trigger
 
+		TriggerScript triggerScript;
+		BoxCollider trigger;
+		public bool skipTriggerWithPlayerThisFrame = false;
+
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
             {
                 { "TriggerMode", TriggerMode.ONCE },
                 { "OnEnter", new List<LE_Event>() },
-                { "OnExit", new List<LE_Event>() }
+                { "OnExit", new List<LE_Event>() },
+				{ "ExecIfInside", true },
+				{ "ExecIfDespawned", false },
             };
         }
 
@@ -54,36 +60,81 @@ namespace FS_LevelEditor
 			CubeTriggerDetector cubeDetector = triggerObj.AddComponent<CubeTriggerDetector>();
 			cubeDetector.parentTrigger = this;
 
-			TriggerScript trigger = triggerObj.AddComponent<TriggerScript>();
-			trigger.onEnter = new UnityEvent();
-			trigger.onEnter.AddListener((UnityAction)ExecuteOnEnterEvents);
-			trigger.onExit = new UnityEngine.Events.UnityEvent();
-			trigger.onExit.AddListener((UnityAction)ExecuteOnExitEvents);
-			trigger.onDestroy = new UnityEvent();
-			trigger.BlocSwitchs = new GameObject[0];
-			trigger.objectsToActivate = new GameObject[0];
-			trigger.objectsToDeactivate = new GameObject[0];
-			trigger.objectsToEnableOnly = new GameObject[0];
-			trigger.objectsToDestroy = new GameObject[0];
-			trigger.doorsToClose = new GameObject[0];
-			trigger.lasersToEnable = new Laser_H_Controller[0];
-			trigger.lasersToDisable = new Laser_H_Controller[0];
-			trigger.dialogToActivate = new string[0];
-			trigger.m_messages = new Messenger[0];
-			trigger.keepActivated = true;
+			triggerScript = triggerObj.AddComponent<TriggerScript>();
+			triggerScript.onEnter = new UnityEvent();
+			triggerScript.onEnter.AddListener((UnityAction)ExecuteOnEnterEvents);
+			triggerScript.onExit = new UnityEngine.Events.UnityEvent();
+			triggerScript.onExit.AddListener((UnityAction)ExecuteOnExitEvents);
+			triggerScript.onDestroy = new UnityEvent();
+			triggerScript.BlocSwitchs = new GameObject[0];
+			triggerScript.objectsToActivate = new GameObject[0];
+			triggerScript.objectsToDeactivate = new GameObject[0];
+			triggerScript.objectsToEnableOnly = new GameObject[0];
+			triggerScript.objectsToDestroy = new GameObject[0];
+			triggerScript.doorsToClose = new GameObject[0];
+			triggerScript.lasersToEnable = new Laser_H_Controller[0];
+			triggerScript.lasersToDisable = new Laser_H_Controller[0];
+			triggerScript.dialogToActivate = new string[0];
+			triggerScript.m_messages = new Messenger[0];
+			triggerScript.keepActivated = true;
 
-			initialized = true;
+			this.trigger = gameObject.GetChildAt("Content/LE_Trigger").GetComponent<BoxCollider>();
+
+            initialized = true;
 		}
 
 		void OnEnable()
 		{
-			var colliders = Physics.OverlapBox(gameObject.GetChildAt("Content/LE_Trigger").transform.position, transform.localScale, transform.rotation);
-			foreach (var collider in colliders)
+			if (!initialized || !PlayModeController.Instance)
+				return;
+
+			// If the player is inside the trigger when enabled, and ExecIfInside is false, prevent the trigger from... triggering.
+			if (!GetProperty<bool>("ExecIfInside"))
 			{
-				if (collider.TryGetComponent<Controls>(out var player))
-					player.OnTriggerEnter(collider);
-			}
+                var colliders = Physics.OverlapBox(
+					trigger.bounds.center, // We can use bounds.center since it's world-space.
+                    Vector3.Scale(trigger.size, trigger.transform.lossyScale) / 2, // Don't use bounds.size cause that one it's adjusted to obj rotation and it's not what we want.
+					transform.rotation
+				);
+                foreach (var collider in colliders)
+                {
+                    if (collider.TryGetComponent<Controls>(out var player))
+					{
+                        skipTriggerWithPlayerThisFrame = true;
+						// Then, Controls.OnTriggerEnter is called.
+						break;
+                    }
+                }
+            }
 		}
+		void OnDisable()
+		{
+            if (!initialized || !PlayModeController.Instance)
+                return;
+
+            var colliders = Physics.OverlapBox(
+                trigger.bounds.center, // We can use bounds.center since it's world-space.
+                Vector3.Scale(trigger.size, trigger.transform.lossyScale) / 2, // Don't use bounds.size cause that one it's adjusted to obj rotation and it's not what we want.
+                transform.rotation
+            );
+            foreach (var collider in colliders)
+            {
+                if (collider.TryGetComponent<Controls>(out var player))
+				{
+					// OnTriggerExit won't be called automatically, just reset canBeReactivated to true.
+					Utils.InvokeAfterOneFrame(() =>
+					{
+						triggerScript.canBeReactivated = true;
+                    });
+                    // And only call OnTriggerExit (to execute events) if the prop is true.
+                    if (GetProperty<bool>("ExecIfDespawned"))
+					{
+                        player.OnTriggerExit(trigger);
+                    }
+                    break;
+                }
+            }
+        }
 
 		public override bool SetProperty(string name, object value)
 		{
@@ -104,8 +155,23 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-
-			if (GetAvailableEventsIDs().Contains(name))
+            else if (name == "ExecIfInside")
+            {
+                if (value is bool)
+                {
+                    properties["ExecIfInside"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "ExecIfDespawned")
+            {
+                if (value is bool)
+                {
+                    properties["ExecIfDespawned"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (GetAvailableEventsIDs().Contains(name))
 			{
 				if (value is List<LE_Event>)
 				{
@@ -261,6 +327,24 @@ namespace FS_LevelEditor
 				return true;
 
 			return false;
+		}
+	}
+
+	[HarmonyLib.HarmonyPatch(typeof(Controls), nameof(Controls.OnTriggerEnter))]
+	public static class LE_TriggerPlayerInsidePatch
+	{
+		public static bool Prefix(Controls __instance, Collider collider)
+		{
+			if (collider.transform.parent && collider.transform.parent.parent && collider.transform.parent.parent.TryGetComponent<LE_Trigger>(out var leTrigger))
+			{
+				if (leTrigger.skipTriggerWithPlayerThisFrame)
+				{
+					leTrigger.skipTriggerWithPlayerThisFrame = false; // Reset.
+					return false; // Prevent method execution.
+				}
+			}
+
+			return true;
 		}
 	}
 }
