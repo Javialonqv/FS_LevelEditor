@@ -78,6 +78,7 @@ events.OnDeploy,On Deploy,Al Desplegar,При розкритті
 events.OnRetract,On Retract,Al Retraer,При скритті
 events.onWinEvents,On Win,Al Ganar,При правильній комбінації
 events.onFailEvents,On Lose,Al Perder,При неправильній комбінації
+events.OnInsert,On Insert,Al Insertar,
 pause.PlayLevel,Play Level,Jugar Nivel,Грати рівень
 pause.NoSpawnObject,There isn't any player spawn obj in the scene.,No hay ningún spawn del jugador en la escena.,В сцені немає точки появи гравця.
 pause.SaveLevel,Save Level,Guardar Nivel,Зберегти рівень
