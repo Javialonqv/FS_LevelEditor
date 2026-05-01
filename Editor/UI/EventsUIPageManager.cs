@@ -1859,7 +1859,7 @@ namespace FS_LevelEditor.Editor.UI
         void CreateRespawnCubeOnLastSwitchToggle()
         {
             respawnOnLastSwitchToggle = NGUI_Utils.CreateToggle(cubeObjectsSettings.transform, new Vector3(0f, -30f, 0f),
-                new Vector3Int(250, 48, 1), "On Last Activated Switch");
+                new Vector3Int(250, 48, 1), "On Last Activated Plate");
             respawnOnLastSwitchToggle.gameObject.name = "OnLastActivatedSwitchToggle";
             respawnOnLastSwitchToggle.onClick += (state) => OnRespawnCubeOnLastActivatedSwitchChanged();
         }
