@@ -27,7 +27,7 @@ namespace FS_LevelEditor
             };
         }
 
-        public override void OnInstantiated(LEScene scene)
+        public override void ObjectStart(LEScene scene)
         {
 			if (scene == LEScene.Editor)
 			{
@@ -35,7 +35,7 @@ namespace FS_LevelEditor
                 SetLightState(GetProperty<bool>("Light"));
 			}
 
-            base.OnInstantiated(scene);
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()
@@ -73,11 +73,23 @@ namespace FS_LevelEditor
 		void UpdateParticlesStateInEditor(bool enabled)
 		{
 			particles.SetActive(enabled);
+            foreach (var waypoint in waypointSupport.spawnedWaypoints)
+            {
+                waypoint.gameObject.GetChildAt("Content/Particles").SetActive(enabled);
+            }
 		}
 
         void SetLightState(bool enabled)
         {
             light.SetActive(enabled);
+
+            if (EditorController.Instance)
+            {
+                foreach (var waypoint in waypointSupport.spawnedWaypoints)
+                {
+                    waypoint.gameObject.GetChildAt("Content/CollectibleAmmo_Baked_Spawn_Light").SetActive(enabled);
+                }
+            }
         }
 
         public override void SetCollidersStateForEdgeCase(bool newEnabledState)
