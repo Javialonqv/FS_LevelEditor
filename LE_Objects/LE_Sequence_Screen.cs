@@ -48,6 +48,8 @@ namespace FS_LevelEditor
                 if (targetSequencer) MelonCoroutines.Start(WaitForSequenceInit());
             }
 
+            objectLink.SetTargetObject(GetProperty<int>("SequencerID"));
+
             base.ObjectStart(scene);
         }
         IEnumerator WaitForSequenceInit()
