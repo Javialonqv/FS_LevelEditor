@@ -13,6 +13,8 @@ namespace FS_LevelEditor
     public class LE_Moving_Platform : LE_Object
     {
         public MovingPlatformController script;
+        bool willUseFakeActivation = false;
+        bool isFakeActivated = false;
 
         void Awake()
         {
@@ -49,7 +51,7 @@ namespace FS_LevelEditor
         {
             if (scene == LEScene.Playmode)
             {
-                if (GetProperty<bool>("ActivateOnStart")) script.Activate();
+                if (GetProperty<bool>("ActivateOnStart")) ActivateMP(true);
 
                 // Deceleration set to -1 will disable it completely.
                 // Do this on ObjectStart 'cause MPs seem to be reseting it on start or something, idk. - Jav.
@@ -58,6 +60,7 @@ namespace FS_LevelEditor
                 // User will use GLOBAL waypoints to move this MP, instead of the local ones.
                 if (waypointSupport.targetWaypointsData.Count > 0 && customWaypointSupport.targetWaypointsData.Count == 0)
                 {
+                    willUseFakeActivation = true;
                     // Remove the RigidBody because it causes problems.
                     Destroy(contentObject.GetComponent<Rigidbody>());
                 }
@@ -193,18 +196,18 @@ namespace FS_LevelEditor
             }
             else if (actionName == "Activate")
             {
-                script.Activate();
+                ActivateMP(true);
                 return true;
             }
             else if (actionName == "Deactivate")
             {
-                script.Deactivate();
+                ActivateMP(false);
                 return true;
             }
             else if (actionName == "InvertState")
             {
                 // Check if the platform is currently active
-                bool isActive = script.activated;
+                bool isActive = willUseFakeActivation ? isFakeActivated : script.activated;
                 if (isActive)
                 {
                     TriggerAction("Deactivate");
@@ -217,6 +220,29 @@ namespace FS_LevelEditor
             }
 
             return base.TriggerAction(actionName);
+        }
+
+        void ActivateMP(bool activate)
+        {
+            // User will be using GLOBAL waypoints.
+            if (willUseFakeActivation)
+            {
+                // Just fake it. Global waypoints will do the rest of the moving logic.
+                if (activate)
+                    script.SetOnMaterials();
+                else
+                    script.SetOffMaterials();
+
+                isFakeActivated = activate;
+
+                return;
+            }
+
+            // Activate the MP for real.
+            if (activate)
+                script.Activate();
+            else
+                script.Deactivate();
         }
 
         void SetMeshOnEditor(bool isPlatformActive)
