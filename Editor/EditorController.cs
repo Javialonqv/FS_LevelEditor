@@ -246,7 +246,7 @@ namespace FS_LevelEditor.Editor
 
             otherObjectsFromBundle = bundle.Load<GameObject>("OtherObjects").GetChilds();
 
-            Utils.LoadMaterials(bundle); // Opaque/Transparent materials for disabled objects and such.
+            MaterialUtils.LoadMaterials(bundle); // Opaque/Transparent materials for disabled objects and such.
 
             #region Load Grid Material
             gridLineMaterial = bundle.Load<Material>("GridLine");
@@ -330,7 +330,7 @@ namespace FS_LevelEditor.Editor
 
             if (objectName == "EditorLine")
             {
-                toReturn.GetComponent<LineRenderer>().material.shader = Shader.Find("Sprites/Default");
+                toReturn.GetComponent<LineRenderer>().sharedMaterial.shader = Shader.Find("Sprites/Default");
             }
 
             return toReturn;

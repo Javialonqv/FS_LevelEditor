@@ -430,14 +430,17 @@ namespace FS_LevelEditor
 					if (customWaypointSupport && renderer.transform.IsChildOf(customWaypointSupport.waypointsParent)) continue;
 				}
 
-				foreach (var material in renderer.materials)
-				{
-					if (!material.HasProperty("_Color")) continue;
+                var materials = renderer.sharedMaterials;
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    if (!materials[i].HasProperty("_Color")) continue;
 
-					Color toSet = LE_Object.GetObjectColorForObject(objectType.Value, context);
-					toSet.a = material.color.a;
-					material.color = toSet;
-				}
+                    Color toSet = LE_Object.GetObjectColorForObject(objectType.Value, context);
+                    toSet.a = materials[i].color.a;
+
+                    materials[i] = MaterialUtils.GetMaterialWithColor(materials[i], toSet);
+                }
+                renderer.sharedMaterials = materials;
 			}
 		}
 

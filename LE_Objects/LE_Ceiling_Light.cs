@@ -259,14 +259,17 @@ namespace FS_LevelEditor
             {
                 if (renderer.name == rangeSphere.name) continue;
 
-                foreach (var material in renderer.materials)
+                var materials = renderer.sharedMaterials;
+                for (int i = 0; i < materials.Length; i++)
                 {
-                    if (!material.HasProperty("_Color")) continue;
+                    if (!materials[i].HasProperty("_Color")) continue;
 
                     Color toSet = LE_Object.GetObjectColorForObject(objectType.Value, context);
-                    toSet.a = material.color.a;
-                    material.color = toSet;
+                    toSet.a = materials[i].color.a;
+
+                    materials[i] = MaterialUtils.GetMaterialWithColor(materials[i], toSet);
                 }
+                renderer.sharedMaterials = materials;
             }
         }
 

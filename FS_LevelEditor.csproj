@@ -88,6 +88,7 @@
 		<Compile Include="UI_Related\UIVector3Fields.cs" />
 		<Compile Include="Utils\AnimationUtils.cs" />
 		<Compile Include="Utils\CoroutineUtils.cs" />
+		<Compile Include="Utils\MaterialUtils.cs" />
 		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="LE_Objects\LE_Bridge.cs" />
 		<Compile Include="LE_Objects\LE_Cube_Killplane.cs" />

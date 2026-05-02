@@ -23,9 +23,6 @@ namespace FS_LevelEditor
     {
         static Coroutine customNotificationCoroutine;
         static Dictionary<string, Il2CppAssetBundle> loadedBundles = new Dictionary<string, Il2CppAssetBundle>();
-        static Material propsMat, propsTransMat;
-        static Material propsNoSpecMat, propsTransNoSpecMat;
-        static Material newPropsv1Mat, newPropsv1TransMat;
 
         static Dictionary<string, Coroutine> invokeCoroutines = new Dictionary<string, Coroutine>();
 
@@ -48,19 +45,6 @@ namespace FS_LevelEditor
             {
                 return Application.unityVersion.StartsWith("6000");
             }
-        }
-
-        public static void LoadMaterials(Il2CppAssetBundle bundle)
-        {
-            propsMat = bundle.Load<Material>("Props_Mat");
-            propsTransMat = bundle.Load<Material>("PropsTransparent_Mat");
-
-
-            propsNoSpecMat = bundle.Load<Material>("Props_NoSpec");
-            propsTransNoSpecMat = bundle.Load<Material>("PropsTransparent_NoSpec");
-
-            newPropsv1Mat = bundle.Load<Material>("NewProps_v1");
-            newPropsv1TransMat = bundle.Load<Material>("NewProps_v1_Transparent");
         }
 
         public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
@@ -407,67 +391,6 @@ namespace FS_LevelEditor
             int b = Mathf.RoundToInt(color.b * 255);
 
             return $"{r:X2}{g:X2}{b:X2}";
-        }
-
-        public static void SetTransparentMaterials(this GameObject gameObject)
-        {
-            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
-            {
-                Material[] materials = renderer.materials;
-                for (int i = 0; i < renderer.materials.Count; i++)
-                {
-                    if (renderer.materials[i].name.Contains("Props_Mat"))
-                    {
-                        materials[i] = new Material(propsTransMat);
-                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
-                                                        renderer.materials[i].color.b, 0.392f);
-                    }
-                    else if (renderer.materials[i].name.Contains("Props_NoSpec"))
-                    {
-                        materials[i] = new Material(propsTransNoSpecMat);
-                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
-                                renderer.materials[i].color.b, 0.392f);
-                    }
-                    else if (renderer.materials[i].name.Contains("NewProps_v1"))
-                    {
-                        materials[i] = new Material(newPropsv1TransMat);
-                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
-                                renderer.materials[i].color.b, 0.392f);
-                    }
-                }
-
-                renderer.materials = materials;
-            }
-        }
-        public static void SetOpaqueMaterials(this GameObject gameObject)
-        {
-            foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
-            {
-                Material[] materials = renderer.materials;
-                for (int i = 0; i < renderer.materials.Count; i++)
-                {
-                    if (renderer.materials[i].name.Contains("PropsTransparent_Mat"))
-                    {
-                        materials[i] = new Material(propsMat);
-                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
-                                renderer.materials[i].color.b, 1f);
-                    }
-                    else if (renderer.materials[i].name.Contains("PropsTransparent_NoSpec"))
-                    {
-                        materials[i] = new Material(propsNoSpecMat);
-                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
-                                renderer.materials[i].color.b, 1f);
-                    }
-                    else if (renderer.materials[i].name.Contains("NewProps_v1_Transparent"))
-                    {
-                        materials[i] = new Material(newPropsv1Mat);
-                        materials[i].color = new Color(renderer.materials[i].color.r, renderer.materials[i].color.g,
-                                renderer.materials[i].color.b, 1f);
-                    }
-                }
-
-                renderer.materials = materials;
-            }
         }
 
         public enum FS_UISound

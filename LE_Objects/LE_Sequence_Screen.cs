@@ -179,7 +179,7 @@ namespace FS_LevelEditor
         {
             foreach (var renderer in gameObject.TryGetComponents<MeshRenderer>())
             {
-                if (renderer.transform.IsChildOf(LEDHolder.transform))
+                if (renderer.transform.IsChildOf(LEDHolder.transform) || renderer.transform.IsChildOf(LEDIndicatorPrefab.transform))
                     continue;
 
                 // Skip waypoints
@@ -189,14 +189,17 @@ namespace FS_LevelEditor
                     if (customWaypointSupport && renderer.transform.IsChildOf(customWaypointSupport.waypointsParent)) continue;
                 }
 
-                foreach (var material in renderer.materials)
+                var materials = renderer.sharedMaterials;
+                for (int i = 0; i < materials.Length; i++)
                 {
-                    if (!material.HasProperty("_Color")) continue;
+                    if (!materials[i].HasProperty("_Color")) continue;
 
                     Color toSet = LE_Object.GetObjectColorForObject(objectType.Value, context);
-                    toSet.a = material.color.a;
-                    material.color = toSet;
+                    toSet.a = materials[i].color.a;
+
+                    materials[i] = MaterialUtils.GetMaterialWithColor(materials[i], toSet);
                 }
+                renderer.sharedMaterials = materials;
             }
         }
     }

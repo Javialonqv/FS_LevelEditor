@@ -119,9 +119,9 @@ namespace FS_LevelEditor
             SequenceSwitchController.SwitchType color = GetProperty<SequenceSwitchController.SwitchType>("Color");
             var material = EditorController.Instance.GetMaterial($"NewProps_v1_Light_{color}", true);
 
-            var sharedMaterials = renderer.sharedMaterials;
-            sharedMaterials[1] = material;
-            renderer.sharedMaterials = sharedMaterials;
+            var materials = renderer.materials;
+            materials[1] = material;
+            renderer.materials = materials;
         }
 
         // Skip the material which contains the color of the bloc.
@@ -136,15 +136,18 @@ namespace FS_LevelEditor
                     if (customWaypointSupport && renderer.transform.IsChildOf(customWaypointSupport.waypointsParent)) continue;
                 }
 
-                foreach (var material in renderer.materials)
+                var materials = renderer.sharedMaterials;
+                for (int i = 0; i < materials.Length; i++)
                 {
-                    if (!material.HasProperty("_Color")) continue;
-                    if (material.name.Contains("NewProps_v1_Light")) continue;
+                    if (!materials[i].HasProperty("_Color")) continue;
+                    if (materials[i].name.Contains("NewProps_v1_Light")) continue;
 
                     Color toSet = LE_Object.GetObjectColorForObject(objectType.Value, context);
-                    toSet.a = material.color.a;
-                    material.color = toSet;
+                    toSet.a = materials[i].color.a;
+
+                    materials[i] = MaterialUtils.GetMaterialWithColor(materials[i], toSet);
                 }
+                renderer.sharedMaterials = materials;
             }
         }
 

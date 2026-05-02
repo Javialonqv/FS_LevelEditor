@@ -565,7 +565,6 @@ namespace FS_LevelEditor.Playmode
 
 		public void CreateObjective(string objectiveName)
 		{
-
 			if (activeObjectives.TryGetValue(objectiveName, out var existingController))
 			{
 				return;

@@ -27,6 +27,8 @@ namespace FS_LevelEditor
         {
             currentSceneName = sceneName;
 
+            MaterialUtils.ResetMaterialWithColorsReferences();
+
             // Debug option to know the camera position when using Free Cam from Unity Explorer.
 #if DEBUG
             if (sceneName.Contains("Menu"))
