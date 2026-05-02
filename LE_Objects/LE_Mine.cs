@@ -107,7 +107,7 @@ namespace FS_LevelEditor
 			mine.constant = true;
 			#endregion
 			#region Rendering
-			mine.hasParticles = true;
+			mine.hasParticles = false;
 			mine.useSSR = true;
 			mine.forceDynLighting = false;
 			mine.flareMultiplier = 1;

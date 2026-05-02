@@ -30,7 +30,7 @@ namespace FS_LevelEditor.Playmode.Patches
             {
                 foreach (var laser in allLasers)
                 {
-                    if (!laser) continue;
+                    if (!laser || !laser.hasParticles) continue;
 
                     laser.UpdateParticlesAllowed(Controls.particlesEnabled);
                 }
