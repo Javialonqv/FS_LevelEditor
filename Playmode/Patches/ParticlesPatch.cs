@@ -19,9 +19,9 @@ namespace FS_LevelEditor.Playmode.Patches
             //allLasers = Utils.FindObjectsOfTypeIncludingDisabled<Laser_H_Controller>();
             //allSaws = Utils.FindObjectsOfTypeIncludingDisabled<ScieScript>();
             //allVentsWithSmoke = Utils.FindObjectsOfTypeIncludingDisabled<VentWithSmokeController>();
-            allLasers = PlayModeController.Instance.levelObjectsParent.GetComponentsInChildren<Laser_H_Controller>();
-            allSaws = PlayModeController.Instance.levelObjectsParent.GetComponentsInChildren<ScieScript>();
-            allVentsWithSmoke = PlayModeController.Instance.levelObjectsParent.GetComponentsInChildren<VentWithSmokeController>();
+            allLasers = PlayModeController.Instance.levelObjectsParent.GetComponentsInChildren<Laser_H_Controller>(true);
+            allSaws = PlayModeController.Instance.levelObjectsParent.GetComponentsInChildren<ScieScript>(true);
+            allVentsWithSmoke = PlayModeController.Instance.levelObjectsParent.GetComponentsInChildren<VentWithSmokeController>(true);
         }
 
         public static void Postfix()
@@ -50,7 +50,7 @@ namespace FS_LevelEditor.Playmode.Patches
                 {
                     if (!vent) continue;
 
-                    vent.UpdateParticlesAllowed(Controls.particlesEnabled);
+                    vent.UpdateParticlesAllowed(Controls.particlesEnabled && vent.GetComponentInParent<LE_Object>().GetProperty<bool>("Particles"));
                 }
             }
         }
