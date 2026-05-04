@@ -23,7 +23,8 @@ namespace FS_LevelEditor
         {
             return new Dictionary<string, object>()
             {
-                { "InvisibleEdges", false }
+                { "InvisibleEdges", false },
+                { "DestroyCubes", true }
             };
         }
 
@@ -44,7 +45,7 @@ namespace FS_LevelEditor
             KillPlaneController script = content.AddComponent<KillPlaneController>();
             script.activationAllowed = true;
             script.currentState = true;
-            script.destroyCubes = true;
+            script.destroyCubes = GetProperty<bool>("DestroyCubes");
             script.destroyOnlyIfNotInHands = true;
             script.fakeZeroScale = Vector3.one * 0.0001f;
             script.generalAnimator = content.GetComponent<Animator>();
@@ -76,6 +77,14 @@ namespace FS_LevelEditor
                 {
                     properties["InvisibleEdges"] = (bool)value;
                     if (EditorController.Instance != null) EnableEdges(!(bool)value);
+                    return true;
+                }
+            }
+            else if (name == "DestroyCubes")
+            {
+                if (value is bool)
+                {
+                    properties["DestroyCubes"] = (bool)value;
                     return true;
                 }
             }
