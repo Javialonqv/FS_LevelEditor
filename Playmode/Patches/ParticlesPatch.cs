@@ -50,7 +50,8 @@ namespace FS_LevelEditor.Playmode.Patches
                 {
                     if (!vent) continue;
 
-                    vent.UpdateParticlesAllowed(Controls.particlesEnabled && vent.GetComponentInParent<LE_Object>().GetProperty<bool>("Particles"));
+                    // This list only contains LE objects, they MUST have an LE_Object component in their parent.
+                    vent.UpdateParticlesAllowed(Controls.particlesEnabled && vent.GetComponentInParent<LE_Object>(true).GetProperty<bool>("Particles"));
                 }
             }
         }
