@@ -49,7 +49,7 @@ namespace FS_LevelEditor
             script.fakeZeroScale = Vector3.one * 0.0001f;
             script.generalAnimator = content.GetComponent<Animator>();
             script.m_desiredScale = Vector3.one * 0.4f;
-            script.m_light = content.GetChild("Light").GetComponent<Light>();
+            script.m_light = content.GetChildAt("Holder/Light").GetComponent<Light>();
             script.m_onTurnOff = new UnityEngine.Events.UnityEvent();
             script.m_onTurnOn = new UnityEngine.Events.UnityEvent();
             script.m_scaleSpeed = 0.25f;
@@ -57,11 +57,11 @@ namespace FS_LevelEditor
 
             // ---------- SETUP TAGS & LAYERS ----------
 
-            content.GetChild("KillPlane_Mesh").layer = LayerMask.NameToLayer("TransparentFX");
-            content.GetChild("KillZone").tag = "KillZone";
-            content.GetChild("KillZone").layer = LayerMask.NameToLayer("Ignore Raycast");
-            content.GetChildAt("KillZone/InteractionOccluder1").tag = "InteractionOccluder_ALL";
-            content.GetChildAt("KillZone/InteractionOccluder1").layer = LayerMask.NameToLayer("ActivableCheck");
+            content.GetChildAt("Holder/KillPlane_Mesh").layer = LayerMask.NameToLayer("TransparentFX");
+            content.GetChildAt("Holder/KillZone").tag = "KillZone";
+            content.GetChildAt("Holder/KillZone").layer = LayerMask.NameToLayer("Ignore Raycast");
+            content.GetChildAt("Holder/KillZone/InteractionOccluder1").tag = "InteractionOccluder_ALL";
+            content.GetChildAt("Holder/KillZone/InteractionOccluder1").layer = LayerMask.NameToLayer("ActivableCheck");
 
             content.SetActive(true);
 
