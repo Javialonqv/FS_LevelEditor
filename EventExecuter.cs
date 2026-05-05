@@ -423,6 +423,7 @@ namespace FS_LevelEditor
                 // Handle ammo changes (only if gun is activated)
                 if (Controls.Instance.gunActivated)
                 {
+                    LE_Gun.isCurrentlyInfinite = @event.infiniteTaser;
                     if (@event.infiniteTaser)
                     {
                         GunController.Instance.SetTutorialMode(true);
