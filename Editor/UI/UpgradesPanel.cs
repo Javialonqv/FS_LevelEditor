@@ -24,6 +24,9 @@ namespace FS_LevelEditor.Editor.UI
 		/// </summary>
 		GameObject upgradesUIParent;
 
+		UIButtonPatcher maxAllButton;
+		UIButtonPatcher resetAllButton;
+
 		// Layout tuning constants (shared)
 		const float COLUMN_OFFSET_X = 360f; // half width for two columns
 		const float ROW_START_Y = 250f; // lowered to visually center
@@ -82,7 +85,9 @@ namespace FS_LevelEditor.Editor.UI
 				Instance.CreateUpgradesPanel();
 				Instance.CreateUpgradesListParent();
 				Instance.CreateUpgradesUI();
-			}
+				Instance.CreateMaxAllButton();
+				Instance.CreateResetAllButton();
+            }
 		}
 
 		public UpgradesPanel(IntPtr ptr) : base(ptr) { }
@@ -271,9 +276,22 @@ namespace FS_LevelEditor.Editor.UI
 
             upgradeButtons.Add(type, upgradeButton);
 		}
-		#endregion
 
-		public void ShowUpgradesPanel(List<UpgradeSaveData> upgrades, string targetName, LE_Object targetObj = null)
+		void CreateMaxAllButton()
+		{
+			maxAllButton = NGUI_Utils.CreateButton(upgradesPanel.transform, new Vector3(-600, 310), new Vector3Int(300, 50, 0), "All", 2);
+			maxAllButton.name = "MaxAllButton";
+			maxAllButton.onClick += MaxAll;
+		}
+        void CreateResetAllButton()
+        {
+            resetAllButton = NGUI_Utils.CreateButton(upgradesPanel.transform, new Vector3(600, 310), new Vector3Int(300, 50, 0), "None", 2);
+            resetAllButton.name = "ResetAllButton";
+            resetAllButton.onClick += ResetAll;
+        }
+        #endregion
+
+        public void ShowUpgradesPanel(List<UpgradeSaveData> upgrades, string targetName, LE_Object targetObj = null)
 		{
 			EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
 			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.UPGRADES_PANEL);
@@ -407,8 +425,33 @@ namespace FS_LevelEditor.Editor.UI
 			EditorController.Instance.levelHasBeenModified = true;
 		}
 
-		// Helper method to get display names
-		string GetUpgradeDisplayName(UpgradeType type)
+		void MaxAll()
+		{
+			foreach (var pair in upgradeButtons)
+			{
+				var button = pair.Value;
+
+				if (button.activeToggle)
+					button.activeToggle.Set(true, true, true);
+				if (button.levelButton)
+					button.levelButton.SelectOption(button.levelButton.OptionsCount - 1, true);
+			}
+		}
+        void ResetAll()
+        {
+            foreach (var pair in upgradeButtons)
+            {
+                var button = pair.Value;
+
+                if (button.activeToggle)
+                    button.activeToggle.Set(false, true, true);
+                if (button.levelButton)
+                    button.levelButton.SelectOption(0, true);
+            }
+        }
+
+        // Helper method to get display names
+        string GetUpgradeDisplayName(UpgradeType type)
 		{
 			switch (type)
 			{
