@@ -26,14 +26,54 @@ namespace FS_LevelEditor.Editor.UI
 		GameObject upgradesUIParent;
 
 		// Layout tuning constants (shared)
-		const float ColumnOffsetX = 360f; // half width for two columns
-		const float RowStartY = 250f; // lowered to visually center
-		const float RowSpacing = 74f; // adjust spacing for larger font
-		const float LabelX = -180f;   // label start
-		const float TickToLabelOffset = -30f; // tick positioned this far left from label
-		const float ButtonX = 150f;   // level button position
+		const float COLUMN_OFFSET_X = 360f; // half width for two columns
+		const float ROW_START_Y = 250f; // lowered to visually center
+		const float ROW_SPACING = 74f; // adjust spacing for larger font
+		const float LABEL_X = -180f;   // label start
+		const float TICK_TO_LABEL_OFFSET = -30f; // tick positioned this far left from label
+		const float BUTTON_X = 150f;   // level button position
 
-		public static void Create()
+		static readonly List<UpgradeType> allUpgrades = new List<UpgradeType>()
+		{
+			UpgradeType.DODGE,
+			UpgradeType.SPRINT,
+			UpgradeType.HYPER_SPEED,
+			UpgradeType.JETPACK,
+			UpgradeType.HEALTH,
+			UpgradeType.SPEED,
+			UpgradeType.TASER_CAPACITY,
+			UpgradeType.HEALTH_BACKPACK,
+			UpgradeType.TASER_BACKPACK,
+			UpgradeType.TASER_POWER,
+			UpgradeType.STEALTH,
+			UpgradeType.AIM_STABILIZER,
+			UpgradeType.HOVER,
+			UpgradeType.SCOPE,
+			UpgradeType.SAFE_LANDING,
+			UpgradeType.UV_FLASHLIGHT,
+			UpgradeType.SCANNER
+		};
+		// Optional upgrades can have a checkbox to disable them.
+		// NOTE: Jetpack not included here because it is disabled in the global properties panel, and not in this menu.
+		static readonly List<UpgradeType> optionalUpgrades = new List<UpgradeType>()
+		{
+			UpgradeType.HEALTH_BACKPACK,
+			UpgradeType.TASER_BACKPACK,
+			UpgradeType.DODGE,
+			UpgradeType.SPRINT,           // ADDED - Sprint should have tick
+            UpgradeType.HYPER_SPEED,      // ADDED - Hyper-Speed should have tick
+            UpgradeType.TASER_POWER,      // ADDED - Taser Power now toggleable
+            UpgradeType.AIM_STABILIZER,
+			UpgradeType.HOVER,
+			UpgradeType.SCOPE,
+			UpgradeType.SAFE_LANDING,
+			UpgradeType.UV_FLASHLIGHT,
+			UpgradeType.SCANNER
+		};
+
+		Dictionary<UpgradeType, UpgradeUIButton> upgradeButtons = new Dictionary<UpgradeType, UpgradeUIButton>();
+
+        public static void Create()
 		{
 			if (Instance == null)
 			{
@@ -101,7 +141,6 @@ namespace FS_LevelEditor.Editor.UI
 
 			upgradesPanel.SetActive(false);
 		}
-
 		void CreateUpgradesListParent()
 		{
 			upgradesListParent = new GameObject("UpgradesList");
@@ -120,81 +159,46 @@ namespace FS_LevelEditor.Editor.UI
 			// Create 2 column containers
 			GameObject colA = new GameObject("ColumnA");
 			colA.transform.parent = upgradesUIParent.transform;
-			colA.transform.localPosition = new Vector3(-ColumnOffsetX, 0, 0);
+			colA.transform.localPosition = new Vector3(-COLUMN_OFFSET_X, 0, 0);
 			colA.transform.localScale = Vector3.one;
 
 			GameObject colB = new GameObject("ColumnB");
 			colB.transform.parent = upgradesUIParent.transform;
-			colB.transform.localPosition = new Vector3(ColumnOffsetX, 0, 0);
+			colB.transform.localPosition = new Vector3(COLUMN_OFFSET_X, 0, 0);
 			colB.transform.localScale = Vector3.one;
 
-			var allUpgrades = new List<UpgradeType>
-			{
-				UpgradeType.DODGE,
-				UpgradeType.SPRINT,
-				UpgradeType.HYPER_SPEED,
-				UpgradeType.JETPACK,
-				UpgradeType.HEALTH,
-				UpgradeType.SPEED,
-				UpgradeType.TASER_CAPACITY,
-				UpgradeType.HEALTH_BACKPACK,
-				UpgradeType.TASER_BACKPACK,
-				UpgradeType.TASER_POWER,
-				UpgradeType.STEALTH,
-				UpgradeType.AIM_STABILIZER,
-				UpgradeType.HOVER,
-				UpgradeType.SCOPE,
-				UpgradeType.SAFE_LANDING,
-				UpgradeType.UV_FLASHLIGHT,
-				UpgradeType.SCANNER
-			};
-
 			int half = (allUpgrades.Count + 1) / 2;
-			for (int i = 0; i < half; i++)
+			for (int i = 0; i < half; i++) // First half
 				CreateUpgradeUI(allUpgrades[i], colA.transform, i);
-			for (int i = half; i < allUpgrades.Count; i++)
+			for (int i = half; i < allUpgrades.Count; i++) // Second half.
 				CreateUpgradeUI(allUpgrades[i], colB.transform, i - half);
 		}
-
 		void CreateUpgradeUI(UpgradeType type, Transform parentColumn, int indexInColumn)
 		{
 			GameObject parent = new GameObject(type.ToString());
 			parent.transform.parent = parentColumn;
-			parent.transform.localPosition = new Vector3(0, RowStartY - (RowSpacing * indexInColumn), 0);
+			parent.transform.localPosition = new Vector3(0, ROW_START_Y - (ROW_SPACING * indexInColumn), 0);
 			parent.transform.localScale = Vector3.one;
 
 			var fsType = UpgradeSaveData.ConvertTypeToFSType(type);
 			string displayName = GetUpgradeDisplayName(type);
 
-			// Define which upgrades can have level 0 (should show ticks) - ADDED SPRINT AND HYPER_SPEED
-			var upgradesWithLevel0 = new HashSet<UpgradeType>
-			{
-				UpgradeType.HEALTH_BACKPACK,
-				UpgradeType.TASER_BACKPACK,
-				UpgradeType.DODGE,
-				UpgradeType.SPRINT,           // ADDED - Sprint should have tick
-                UpgradeType.HYPER_SPEED,      // ADDED - Hyper-Speed should have tick
-                UpgradeType.TASER_POWER,      // ADDED - Taser Power now toggleable
-                UpgradeType.AIM_STABILIZER,
-				UpgradeType.HOVER,
-				UpgradeType.SCOPE,
-				UpgradeType.SAFE_LANDING,
-				UpgradeType.UV_FLASHLIGHT,
-				UpgradeType.SCANNER
-			};
-
-			bool canHaveLevel0 = upgradesWithLevel0.Contains(type);
+			bool isOptional = optionalUpgrades.Contains(type);
 			bool isOneTimeSkill = fsType != null ? Controls.IsSkill(fsType.Value) : false;
 
-			// Optional tick (only for items that can be disabled)
-			if (canHaveLevel0)
-			{
-				UITogglePatcher tickIcon = NGUI_Utils.CreateToggle(parent.transform, new Vector3(LabelX + TickToLabelOffset, 0), new Vector3Int(26, 26, 0), "");
-				tickIcon.name = "TickIcon"; // keep consistent with lookups
-				var tickSprite = tickIcon.toggle;
-				tickSprite.startsActive = false; // Start unchecked
+			UpgradeUIButton upgradeButton = parent.AddComponent<UpgradeUIButton>();
+			upgradeButton.type = type;
 
-				var checkmark = tickIcon.transform.Find("Checkmark");
+            #region Toggle If Optional
+            // Upgrade that can be disabled with a checkbox.
+            if (isOptional)
+			{
+				UITogglePatcher togglePatcher = NGUI_Utils.CreateToggle(parent.transform, new Vector3(LABEL_X + TICK_TO_LABEL_OFFSET, 0), new Vector3Int(26, 26, 0), "");
+				togglePatcher.name = "TickIcon"; // keep consistent with lookups
+				togglePatcher.toggle.startsActive = false; // Start unchecked. Too afraid to remove this line and screw everything up.
+
+                #region Fix Checkmark Depth
+                var checkmark = togglePatcher.transform.Find("Checkmark");
 				if (checkmark != null)
 				{
 					var checkmarkSprite = checkmark.GetComponent<UISprite>();
@@ -204,38 +208,36 @@ namespace FS_LevelEditor.Editor.UI
 						checkmarkSprite.color = Color.white;
 					}
 				}
+				#endregion
 
-				// Reverted: use default background sprite & size (no manual square / border edits)
-				// Reverted: no custom scale on checkmark
+				togglePatcher.onClick += (state) => SetUpgradeEnabledState((int)type, upgradeButton);
 
-				EventDelegate tickDelegate = NGUI_Utils.CreateEvenDelegate(this, nameof(SetUpgradeEnabledState),
-					NGUI_Utils.CreateEventDelegateParamter(this, "type", (int)type),
-					NGUI_Utils.CreateEventDelegateParamter(this, "toggle", tickSprite));
-				tickSprite.onChange.Add(tickDelegate);
+				upgradeButton.activeToggle = togglePatcher;
 			}
+            #endregion
 
-			// Name label (same position regardless of tick)
-			UILabel nameLabel = NGUI_Utils.CreateLabel(parent.transform, new Vector3(LabelX, 0), new Vector3Int(300, 40, 0), displayName, NGUIText.Alignment.Left, UIWidget.Pivot.Left);
+            #region Name Label
+            // Name label (same position regardless of tick)
+            UILabel nameLabel = NGUI_Utils.CreateLabel(parent.transform, new Vector3(LABEL_X, 0), new Vector3Int(300, 40, 0), displayName, NGUIText.Alignment.Left, UIWidget.Pivot.Left);
 			nameLabel.name = "NameLabel";
 			nameLabel.fontSize = 22;
 			nameLabel.font = NGUI_Utils.juraFont ?? NGUI_Utils.labelFont;
 			nameLabel.color = NGUI_Utils.fsLabelDefaultColor;
 			nameLabel.overflowMethod = UILabel.Overflow.ClampContent; // avoid overlap
 			nameLabel.depth = 1;
+            #endregion
 
-			// Level button (if not an one-time skill) – always aligned to same X
-			// UV_FLASHLIGHT should act as simple on/off (no level cycling)
-			if (type == UpgradeType.UV_FLASHLIGHT)
+            #region Level Button If Has
+            // Skills don't have level cycling.
+            // NOTE: Exclude UV Flashlight because it's the only upgrade (for now) that is not a skill and has no levels.
+            if (!isOneTimeSkill && type != UpgradeType.UV_FLASHLIGHT)
 			{
-				// Ensure when enabled it always stays at level 1
-				// (Handled in SetUpgradeEnabledState when toggled on; no button needed here)
-			}
-			else if (!isOneTimeSkill)
-			{
-				UIButtonMultiple levelButton = NGUI_Utils.CreateButtonMultiple(parent.transform, new Vector3(ButtonX, 0), Vector3.one * 0.7f, 1);
+				UIButtonMultiple levelButton = NGUI_Utils.CreateButtonMultiple(parent.transform, new Vector3(BUTTON_X, 0), Vector3.one * 0.7f, 1);
 				levelButton.name = "LevelButton";
 				levelButton.SetTitle("Level");
-				Transform titleTf = levelButton.transform.Find("Title");
+
+                #region Title Label Size
+                Transform titleTf = levelButton.transform.Find("Title");
 				if (titleTf == null) titleTf = levelButton.transform.Find("Title/Label");
 				if (titleTf != null)
 				{
@@ -246,21 +248,27 @@ namespace FS_LevelEditor.Editor.UI
 						titleLabelField.fontSize = 22;
 					}
 				}
+                #endregion
 
-				int maxLevel = LevelData.GetUpgradeMaxLevel(type);
+                int maxLevel = LevelData.GetUpgradeMaxLevel(type);
 				for (int i = 1; i <= maxLevel; i++)
 				{
 					levelButton.AddOption("Level " + i, i == 1);
 				}
 
 				// Route to the right setter based on whether it can be disabled
-				if (canHaveLevel0)
-					levelButton.onClick += (id) => SetUpgradeLevel((int)type, levelButton);
+				if (isOptional)
+					levelButton.onClick += (id) => SetUpgradeLevel((int)type, upgradeButton);
 				else
-					levelButton.onClick += (id) => SetUpgradeLevelOnly((int)type, levelButton);
+					levelButton.onClick += (id) => SetUpgradeLevelOnly((int)type, upgradeButton);
 
 				levelButton.onLocalize = (id) => "Level " + (id + 1);
+
+				upgradeButton.levelButton = levelButton;
 			}
+            #endregion
+
+            upgradeButtons.Add(type, upgradeButton);
 		}
 		#endregion
 
@@ -269,7 +277,8 @@ namespace FS_LevelEditor.Editor.UI
 			EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
 			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.UPGRADES_PANEL);
 
-			UpdateUpgradesUI();
+			AttachSaveDataToUpgradeButtons();
+            UpdateUpgradesUI();
 		}
 		public void HideUpgradesPanel()
 		{
@@ -277,232 +286,96 @@ namespace FS_LevelEditor.Editor.UI
 			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
 		}
 
+		void AttachSaveDataToUpgradeButtons()
+		{
+            var list = (List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"];
+			foreach (var saveData in list)
+			{
+				if (!upgradeButtons.TryGetValue(saveData.type, out UpgradeUIButton upgradeButton))
+					continue;
+
+				upgradeButton.attachedSaveData = saveData;
+			}
+        }
 		void UpdateUpgradesUI()
 		{
-			var colA = upgradesUIParent.transform.Find("ColumnA");
-			if (colA != null)
-				for (int i = 0; i < colA.childCount; i++) UpdateUpgradeUI(colA.GetChild(i));
-
-			var colB = upgradesUIParent.transform.Find("ColumnB");
-			if (colB != null)
-				for (int i = 0; i < colB.childCount; i++) UpdateUpgradeUI(colB.GetChild(i));
-		}
-		void UpdateUpgradeUI(Transform upgradeParent)
-		{
-			var upgradeType = Enum.Parse<UpgradeType>(upgradeParent.name);
-			var upgradeData = ((List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"]).Find(x => x.type == upgradeType);
-
-			if (upgradeData == null) return; // Safety check
-
-			// Update tick icon ONLY if it exists (only for upgrades that can have level 0)
-			if (upgradeParent.gameObject.ExistsChild("TickIcon"))
+			foreach (var upgradeButton in upgradeButtons)
 			{
-				upgradeParent.gameObject.GetChild("TickIcon").GetComponent<UIToggle>().Set(upgradeData.active);
+				UpdateUpgradeUI(upgradeButton.Value);
 			}
+		}
+		void UpdateUpgradeUI(UpgradeUIButton upgradeButton)
+		{
+			UpgradeSaveData saveData = upgradeButton.attachedSaveData;
+			if (saveData == null) return; // Safety check
 
-			// Update level button if it exists
-			if (upgradeParent.gameObject.ExistsChild("LevelButton"))
+			// Update active toggle ONLY if it exists (optional upgrades).
+			if (upgradeButton.activeToggle)
+                upgradeButton.activeToggle.Set(saveData.active);
+
+            // Update level button if it exists
+            if (upgradeButton.levelButton)
 			{
-				var levelButton = upgradeParent.gameObject.GetChild("LevelButton").GetComponent<UIButtonMultiple>();
+				int maxLevel = LevelData.GetUpgradeMaxLevel(upgradeButton.type);
+                int optionsCount = upgradeButton.levelButton.OptionsCount;
+                int targetIndex = Math.Clamp(saveData.level - 1, 0, optionsCount - 1); // Level 1 at index 0.
 
-				// Determine if this upgrade can have level 0 - UPDATED to include Sprint and Hyper-Speed
-				var upgradesWithLevel0 = new HashSet<UpgradeType>
-				{
-					UpgradeType.HEALTH_BACKPACK,
-					UpgradeType.TASER_BACKPACK,
-					UpgradeType.DODGE,
-					UpgradeType.SPRINT,           // ADDED
-                    UpgradeType.HYPER_SPEED,      // ADDED
-                    UpgradeType.TASER_POWER,      // ADDED
-                    UpgradeType.AIM_STABILIZER,
-					UpgradeType.HOVER,
-					UpgradeType.SCOPE,
-					UpgradeType.SAFE_LANDING,
-					UpgradeType.UV_FLASHLIGHT,
-					UpgradeType.SCANNER
-				};
-
-				bool canHaveLevel0 = upgradesWithLevel0.Contains(upgradeType);
-
-				int targetOption = 0;
-				int maxLevel = LevelData.GetUpgradeMaxLevel(upgradeType);
-
-				if (canHaveLevel0)
-				{
-					// For upgrades that can have level 0, only show level if active
-					if (upgradeData.active && upgradeData.level > 0)
-					{
-						targetOption = Mathf.Clamp(upgradeData.level, 1, maxLevel) - 1; // clamp to max
-					}
-					else
-					{
-						targetOption = 0; // Default to first level
-					}
-				}
-				else
-				{
-					// For upgrades that can't have level 0, show the actual level
-					targetOption = Mathf.Clamp(upgradeData.level, 1, maxLevel) - 1; // clamp to max
-				}
-
-				// Safe call to SelectOption with try-catch to prevent exceptions
-				try
-				{
-					if (targetOption >= 0)
-					{
-						levelButton.SelectOption(targetOption, false); // Don't execute onChange
-					}
-				}
-				catch (System.ArgumentOutOfRangeException)
-				{
-					// If we get out of range, just select option 0
-					try
-					{
-						levelButton.SelectOption(0, false);
-					}
-					catch
-					{
-						// If even option 0 fails, there might be no options - skip
-					}
-				}
+                upgradeButton.levelButton.SelectOption(targetIndex, false); // Don't execute onChange.
 			}
 		}
 
-		public void SetUpgradeEnabledState(int typeID, UIToggle toggle)
+		public void SetUpgradeEnabledState(int typeID, UpgradeUIButton upgradeButton)
 		{
-			var list = (List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"];
-			var typeToModify = list.Find(x => x.type == (UpgradeType)typeID);
+			UpgradeSaveData saveData = upgradeButton.attachedSaveData;
+			saveData.active = upgradeButton.activeToggle.isChecked;
 
-			typeToModify.active = toggle.isChecked;
+			bool isOptional = optionalUpgrades.Contains((UpgradeType)typeID);
 
-			// Define which upgrades can have level 0 - UPDATED to include Sprint and Hyper-Speed
-			var upgradesWithLevel0 = new HashSet<UpgradeType>
+			if (upgradeButton.activeToggle.isChecked)
 			{
-				UpgradeType.HEALTH_BACKPACK,
-				UpgradeType.TASER_BACKPACK,
-				UpgradeType.DODGE,
-				UpgradeType.SPRINT,           // ADDED
-                UpgradeType.HYPER_SPEED,      // ADDED
-                UpgradeType.TASER_POWER,      // ADDED
-                UpgradeType.AIM_STABILIZER,
-				UpgradeType.HOVER,
-				UpgradeType.SCOPE,
-				UpgradeType.SAFE_LANDING,
-				UpgradeType.UV_FLASHLIGHT,
-				UpgradeType.SCANNER
-			};
-
-			bool canHaveLevel0 = upgradesWithLevel0.Contains((UpgradeType)typeID);
-
-			if (toggle.isChecked)
-			{
-				// If enabling the upgrade and it has level 0, set it to level 1
-				if (canHaveLevel0 && typeToModify.level == 0)
-				{
-					typeToModify.level = 1;
-				}
-				else if (!canHaveLevel0 && typeToModify.level == 0)
-				{
-					// For upgrades that can't be level 0, ensure they have at least level 1
-					typeToModify.level = 1;
-				}
+				// Make sure the level is within the range.
+				saveData.level = Mathf.Clamp(saveData.level, 1, LevelData.GetUpgradeMaxLevel(upgradeButton.type));
 
 				// Force UV flashlight to level 1 (no cycling)
-				if ((UpgradeType)typeID == UpgradeType.UV_FLASHLIGHT)
-				{
-					typeToModify.level = 1;
-				}
+				if (upgradeButton.type == UpgradeType.UV_FLASHLIGHT)
+                    saveData.level = 1;
 
-				// Update level button to show current level with proper bounds checking
-				var upgradeParent = FindUpgradeParent((UpgradeType)typeID);
-				if (upgradeParent != null && upgradeParent.gameObject.ExistsChild("LevelButton"))
+                // Update level button to show current level with proper bounds checking
+                if (upgradeButton.levelButton)
 				{
-					var levelButton = upgradeParent.gameObject.GetChild("LevelButton").GetComponent<UIButtonMultiple>();
-					int targetIndex = Math.Max(typeToModify.level - 1, 0); // Level 1 is at index 0
-
-					// Safe call to SelectOption with try-catch to prevent exceptions
-					try
-					{
-						levelButton.SelectOption(targetIndex, false); // Don't execute onChange to avoid infinite loop
-					}
-					catch (System.ArgumentOutOfRangeException)
-					{
-						// If we get out of range, just select option 0 (Level 1)
-						try
-						{
-							levelButton.SelectOption(0, false);
-						}
-						catch
-						{
-							// If even option 0 fails, there might be no options - skip update
-						}
-					}
+					int optionsCount = upgradeButton.levelButton.OptionsCount;
+					int targetIndex = Math.Clamp(saveData.level - 1, 0, optionsCount - 1); // Level 1 at index 0.
+					upgradeButton.levelButton.SelectOption(targetIndex, false); // Don't execute onChange to avoid infinite loop.
 				}
-			}
-			else
-			{
-				// If disabling the upgrade, set level to 0 only for upgrades that can have level 0
-				if (canHaveLevel0)
-				{
-					typeToModify.level = 0;
-				}
-				// For upgrades that can't be level 0, keep them at level 1 but mark as inactive
 			}
 
 			EditorController.Instance.levelHasBeenModified = true;
 		}
 
-		public void SetUpgradeLevel(int typeID, object button)
+		public void SetUpgradeLevel(int typeID, UpgradeUIButton upgradeButton)
 		{
-			var list = (List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"];
-			var typeToModify = list.Find(x => x.type == (UpgradeType)typeID);
+			UpgradeSaveData saveData = upgradeButton.attachedSaveData;
 
-			// If the upgrade is currently disabled (tick off), do not auto-enable when cycling level.
-			if (!typeToModify.active)
-			{
-				return; // Ignore level change requests while disabled.
-			}
-
-			int selectedLevel = ((UIButtonMultiple)button).currentSelectedID + 1; // +1 because levels start from 1
+			int selectedLevel = upgradeButton.levelButton.currentSelectedID + 1; // +1 because levels start from 1
 			selectedLevel = Mathf.Clamp(selectedLevel, 1, LevelData.GetUpgradeMaxLevel((UpgradeType)typeID));
 
-			// Only update the level (do NOT force active=true or tick)
-			typeToModify.level = selectedLevel;
+            // Only update the level (do NOT force active=true or tick)
+            saveData.level = selectedLevel;
 
 			EditorController.Instance.levelHasBeenModified = true;
 		}
-
-		public void SetUpgradeLevelOnly(int typeID, object button)
+		public void SetUpgradeLevelOnly(int typeID, UpgradeUIButton upgradeButton)
 		{
-			var list = (List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"];
-			var typeToModify = list.Find(x => x.type == (UpgradeType)typeID);
+			UpgradeSaveData saveData = upgradeButton.attachedSaveData;
 
-			int selectedLevel = ((UIButtonMultiple)button).currentSelectedID + 1; // +1 because levels start from 1
+			int selectedLevel = upgradeButton.levelButton.currentSelectedID + 1; // +1 because levels start from 1
 			selectedLevel = Mathf.Clamp(selectedLevel, 1, LevelData.GetUpgradeMaxLevel((UpgradeType)typeID));
 
 			// Always keep these upgrades active and just change the level
-			typeToModify.active = true;
-			typeToModify.level = selectedLevel;
+			saveData.active = true;
+			saveData.level = selectedLevel;
 
 			EditorController.Instance.levelHasBeenModified = true;
-		}
-
-		Transform FindUpgradeParent(UpgradeType upgradeType)
-		{
-			var colA = upgradesUIParent.transform.Find("ColumnA");
-			if (colA != null)
-			{
-				var upgradeParent = colA.Find(upgradeType.ToString());
-				if (upgradeParent != null) return upgradeParent;
-			}
-			var colB = upgradesUIParent.transform.Find("ColumnB");
-			if (colB != null)
-			{
-				var upgradeParent = colB.Find(upgradeType.ToString());
-				if (upgradeParent != null) return upgradeParent;
-			}
-
-			return null;
 		}
 
 		// Helper method to get display names
@@ -530,5 +403,17 @@ namespace FS_LevelEditor.Editor.UI
 				default: return type.ToString().Replace("_", " ");
 			}
 		}
+	}
+
+	[MelonLoader.RegisterTypeInIl2Cpp]
+	public class UpgradeUIButton : MonoBehaviour
+	{
+		public UpgradeType type;
+		public UITogglePatcher activeToggle;
+		public UIButtonMultiple levelButton;
+
+		public UpgradeSaveData attachedSaveData;
+
+		public UpgradeUIButton(IntPtr ptr) : base(ptr) { }
 	}
 }

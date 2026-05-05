@@ -30,6 +30,10 @@ namespace FS_LevelEditor.UI_Related
                 return options[currentSelectedID];
             }
         }
+        public int OptionsCount
+        {
+            get => options.Count;
+        }
 
         void Awake()
         {
