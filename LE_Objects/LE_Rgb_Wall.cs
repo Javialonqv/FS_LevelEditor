@@ -23,15 +23,6 @@ namespace FS_LevelEditor
             };
         }
 
-        public override void OnInstantiated(LEScene scene)
-        {
-            if (scene == LEScene.Playmode)
-            {
-                Logger.Log(GetProperty<Color>("Color").ToString());
-            }
-            base.OnInstantiated(scene);
-        }
-
         public override bool SetProperty(string name, object value)
         {
             if (name == "Color")
@@ -53,7 +44,6 @@ namespace FS_LevelEditor
                     }
                 }
             }
-            Debug.Log($"{name}, {value}");
             return base.SetProperty(name, value);
         }
 
