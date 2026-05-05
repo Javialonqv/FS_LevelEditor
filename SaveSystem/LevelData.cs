@@ -52,29 +52,6 @@ namespace FS_LevelEditor.SaveSystem
             level = _level;
         }
 
-        /// <summary>
-        /// Returns true if this upgrade is effectively enabled (active and level > 0)
-        /// </summary>
-        public bool IsEnabled => active && level > 0;
-
-        /// <summary>
-        /// Sets the upgrade to disabled state (active = false, level = 0)
-        /// </summary>
-        public void SetDisabled()
-        {
-            active = false;
-            level = 0;
-        }
-
-        /// <summary>
-        /// Sets the upgrade to enabled with specified level
-        /// </summary>
-        public void SetEnabled(int targetLevel)
-        {
-            active = true;
-            level = Math.Max(1, targetLevel); // Ensure level is at least 1 when enabled
-        }
-
         public static UpgradePageController.UpgradeType? ConvertTypeToFSType(UpgradeType type)
         {
             switch (type)
@@ -645,7 +622,6 @@ namespace FS_LevelEditor.SaveSystem
                 UpgradeType.SCOPE => 2,
                 UpgradeType.SAFE_LANDING => 2,
                 UpgradeType.UV_FLASHLIGHT => 2,
-                UpgradeType.SCANNER => 2,
                 _ => 3
             };
         }

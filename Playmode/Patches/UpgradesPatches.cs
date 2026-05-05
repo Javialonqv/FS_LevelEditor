@@ -20,7 +20,6 @@ namespace FS_LevelEditor.Playmode.Patches
 				return new UpgradeSaveData { type = t, active = false, level = 0 };
 			return u;
 		}
-		private const int MaxUpgradeLevel = 3;
 		public static MethodInfo getIntMethod
 		{
 			get
@@ -51,7 +50,34 @@ namespace FS_LevelEditor.Playmode.Patches
 			}
 		}
 
-		public static void Init()
+		static readonly Dictionary<string, UpgradeType> upgradeIntKeys = new Dictionary<string, UpgradeType>()
+		{
+            ["Dodge_Upgrade_Level"] =			UpgradeType.DODGE,
+            ["Jetpack_Upgrade_Level"] =			UpgradeType.JETPACK,
+            ["Health_Upgrade_Level"] =			UpgradeType.HEALTH,
+            ["Speed_Upgrade_Level"] =			UpgradeType.SPEED,
+            ["Taser_Capacity_Upgrade_Level"] =	UpgradeType.TASER_CAPACITY,
+            ["Health_Backpack_Upgrade_Level"] = UpgradeType.HEALTH_BACKPACK,
+            ["Taser_Backpack_Upgrade_Level"] =	UpgradeType.TASER_BACKPACK,
+            ["Taser_Power_Upgrade_Level"] =		UpgradeType.TASER_POWER,
+            ["Stealth_Upgrade_Level"] =			UpgradeType.STEALTH,
+            ["Aim_Stabilizer_Upgrade_Level"] =	UpgradeType.AIM_STABILIZER,
+            ["Hover_Upgrade_Level"] =			UpgradeType.HOVER,
+            ["Scope_Upgrade_Level"] =			UpgradeType.SCOPE,
+            ["Safe_Landing_Upgrade_Level"] =	UpgradeType.SAFE_LANDING,
+            ["UV_Flashlight_Upgrade_Level"] =	UpgradeType.UV_FLASHLIGHT,
+            ["Scanner_Upgrade_Level"] =			UpgradeType.SCANNER
+        };
+        static readonly Dictionary<string, UpgradeType> upgradeBoolKeys = new()
+        {
+            ["Has_Dodge"] =		UpgradeType.DODGE,
+            ["Has_Sprint"] =	UpgradeType.SPRINT,
+            ["Has_HS"] =		UpgradeType.HYPER_SPEED,
+            ["Has_Jetpack"] =	UpgradeType.JETPACK
+			// This doesn't include the taser keys since that's an special case.
+        };
+
+        public static void Init()
 		{
 			HarmonyLib.Harmony harmony = Melon<Core>.Instance.HarmonyInstance;
 
@@ -68,89 +94,40 @@ namespace FS_LevelEditor.Playmode.Patches
 
 		static bool GetIntPatches(ref int __result, string _key)
 		{
-			var upgrades = (List<UpgradeSaveData>)PlayModeController.Instance.globalProperties["Upgrades"];
+			if (!upgradeIntKeys.TryGetValue(_key, out UpgradeType type))
+				return true;
 
-			int Clamp(UpgradeType t, int v) => Math.Max(0, Math.Min(LevelData.GetUpgradeMaxLevel(t), v));
-			switch (_key)
-			{
-				case "Dodge_Upgrade_Level":
-					__result = Clamp(UpgradeType.DODGE, SafeFind(upgrades, UpgradeType.DODGE).level);
-					return false;
-				case "Jetpack_Upgrade_Level":
-					__result = Clamp(UpgradeType.JETPACK, SafeFind(upgrades, UpgradeType.JETPACK).level);
-					return false;
-				case "Health_Upgrade_Level":
-					__result = Clamp(UpgradeType.HEALTH, SafeFind(upgrades, UpgradeType.HEALTH).level);
-					return false;
-				case "Speed_Upgrade_Level":
-					__result = Clamp(UpgradeType.SPEED, SafeFind(upgrades, UpgradeType.SPEED).level);
-					return false;
-				case "Taser_Capacity_Upgrade_Level":
-					__result = Clamp(UpgradeType.TASER_CAPACITY, SafeFind(upgrades, UpgradeType.TASER_CAPACITY).level);
-					return false;
-				case "Health_Backpack_Upgrade_Level":
-					__result = Clamp(UpgradeType.HEALTH_BACKPACK, SafeFind(upgrades, UpgradeType.HEALTH_BACKPACK).level);
-					return false;
-				case "Taser_Backpack_Upgrade_Level":
-					__result = Clamp(UpgradeType.TASER_BACKPACK, SafeFind(upgrades, UpgradeType.TASER_BACKPACK).level);
-					return false;
-				case "Taser_Power_Upgrade_Level":
-					__result = Clamp(UpgradeType.TASER_POWER, SafeFind(upgrades, UpgradeType.TASER_POWER).level);
-					return false;
-				case "Stealth_Upgrade_Level":
-					__result = Clamp(UpgradeType.STEALTH, SafeFind(upgrades, UpgradeType.STEALTH).level);
-					return false;
-				case "Aim_Stabilizer_Upgrade_Level":
-					__result = Clamp(UpgradeType.AIM_STABILIZER, SafeFind(upgrades, UpgradeType.AIM_STABILIZER).level);
-					return false;
-				case "Hover_Upgrade_Level":
-					__result = Clamp(UpgradeType.HOVER, SafeFind(upgrades, UpgradeType.HOVER).level);
-					return false;
-				case "Scope_Upgrade_Level":
-					__result = Clamp(UpgradeType.SCOPE, SafeFind(upgrades, UpgradeType.SCOPE).level);
-					return false;
-				case "Safe_Landing_Upgrade_Level":
-					__result = Clamp(UpgradeType.SAFE_LANDING, SafeFind(upgrades, UpgradeType.SAFE_LANDING).level);
-					return false;
-				case "UV_Flashlight_Upgrade_Level":
-					__result = Clamp(UpgradeType.UV_FLASHLIGHT, SafeFind(upgrades, UpgradeType.UV_FLASHLIGHT).level);
-					return false;
-				case "Scanner_Upgrade_Level":
-					__result = Clamp(UpgradeType.SCANNER, SafeFind(upgrades, UpgradeType.SCANNER).level);
-					return false;
-			}
+			var upgrades = PlaymodeUpgrades.targetUpgradesData;
+			int maxLevel = LevelData.GetUpgradeMaxLevel(type);
+			int level = SafeFind(upgrades, type).level;
 
-			return true;
+			__result = Math.Clamp(level, 0, maxLevel);
+
+			return false;
 		}
 		static bool GetBoolPatches(ref bool __result, string _key)
 		{
-			var upgrades = (List<UpgradeSaveData>)PlayModeController.Instance.globalProperties["Upgrades"];
+			var upgrades = PlaymodeUpgrades.targetUpgradesData;
+
+			if (upgradeBoolKeys.TryGetValue(_key, out UpgradeType type))
+			{
+				__result = SafeFind(upgrades, type).active;
+				return false;
+			}
+
 			switch (_key)
 			{
-				case "Has_Dodge":
-					__result = SafeFind(upgrades, UpgradeType.DODGE).active;
-					return false;
-				case "Has_Sprint":
-					__result = SafeFind(upgrades, UpgradeType.SPRINT).active;
-					return false;
-				case "Has_HS":
-					__result = SafeFind(upgrades, UpgradeType.HYPER_SPEED).active;
-					return false;
-				// Add more flags if the game checks other boolean keys
-				case "Has_Jetpack":
-					__result = SafeFind(upgrades, UpgradeType.JETPACK).active;
-					return false;
 				// Ensure taser availability follows level save (default true) instead of base game save
 				case "Has_Taser":
 				case "Has_Tazer":
 				case "Has_Gun":
 					if (PlayModeController.Instance != null && PlayModeController.Instance.globalProperties != null)
 					{
-						if (PlayModeController.Instance.globalProperties.TryGetValue("HasTaser", out var hasTaserObj) && hasTaserObj is bool hasTaser)
+						if (PlayModeController.Instance.GetGlobalProperty("HasTaser") is bool hasTaser)
 						{
-							__result = hasTaser;
-							return false;
-						}
+                            __result = hasTaser;
+                            return false;
+                        }
 					}
 					// Fallback to true if something goes wrong, since default is true
 					__result = true;
@@ -168,7 +145,7 @@ namespace FS_LevelEditor.Playmode.Patches
 		{
 			if(PlayModeController.Instance)
 			{
-				__result = true;
+				__result = PlaymodeUpgrades.totalUpgradeCount > 0;
 				return false;
 			}
 			return true;

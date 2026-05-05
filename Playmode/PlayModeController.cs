@@ -44,7 +44,6 @@ namespace FS_LevelEditor.Playmode
 		public List<LE_Small_Screen> smallScreensOnTheLevel = new List<LE_Small_Screen>();
 
 		public bool endTriggerReached = false;
-		int totalUpgradeCount = 0;
 
 		// Objectives management
 		public Dictionary<string, ObjectiveController> activeObjectives = new Dictionary<string, ObjectiveController>();
@@ -273,9 +272,9 @@ namespace FS_LevelEditor.Playmode
             SetupLevelSkybox((int)GetGlobalProperty("Skybox"));
 			SetupLevelMusic((int)GetGlobalProperty("Music"));
 
-			ApplyUpgrades((List<UpgradeSaveData>)GetGlobalProperty("Upgrades"), hasJetpackGlobal);
+			PlaymodeUpgrades.ApplyUpgrades((List<UpgradeSaveData>)GetGlobalProperty("Upgrades"), hasJetpackGlobal);
 		}
-		object GetGlobalProperty(string name)
+		public object GetGlobalProperty(string name)
 		{
 			if (globalProperties.ContainsKey(name))
 			{
@@ -310,154 +309,6 @@ namespace FS_LevelEditor.Playmode
 				MusicManager.Instance.PauseMenuMusic();
 				MusicManager.Instance.m_context = MusicManager.MusicContext.NORMAL;
 			}
-		}
-
-		void ResetAllUpgradeEffects(bool allowJetpack)
-		{
-			// Force all upgrade-driven effects OFF/0 before applying data
-			Controls.m_hasDodgeSkill = false;
-			Controls.m_currentDodgeLevel = 0;
-
-			Controls.m_hasSprintSkill = false;
-
-			if (TimeManipulator.Instance)
-				TimeManipulator.Instance.SetInPlayerPosession(false);
-
-			if (!allowJetpack || allowJetpack)
-				Controls.m_currentJetpackUpgradeLevel = 0; // level 0 by default regardless; allowJetpack only gates enabling later
-
-			Controls.m_currentHealthUpgradeLevel = 0;
-			Controls.m_currentSpeedUpgradeLevel = 0;
-			Controls.m_currentTaserCapacityUpgradeLevel = 0;
-
-			Controls.m_currentHealthBackpackLevel = 0;
-			Controls.m_currentTaserBackpackLevel = 0;
-			Controls.m_currentTaserPowerUpgradeLevel = 0;
-			Controls.m_currentStealthUpgradeLevel = 0;
-			Controls.m_currentAimStabilizerLevel = 0;
-			Controls.m_currentHoverUpgradeLevel = 0;
-			Controls.m_currentScopeLevel = 0;
-			Controls.m_currentSafeLandingLevel = 0;
-			Controls.m_currentUVFlashlightLevel = 0;
-			Controls.m_currentScannerLevel = 0;
-			Controls.DisableInfraredFlashlight();
-		}
-
-		void ApplyUpgrades(List<UpgradeSaveData> upgrades, bool allowJetpack = true)
-		{
-			// Always reset all effects first. Missing entries remain disabled.
-			ResetAllUpgradeEffects(allowJetpack);
-
-			// If no upgrades provided by level data, leave everything disabled
-			if (upgrades == null)
-			{
-				UpgradePatches.Init();
-				// Set StatsManager.totalUpgradesCount to 0 when no upgrades
-				StatsManager.totalUpgradesCount = 0;
-				return;
-			}
-
-			foreach (var up in upgrades)
-			{
-				int max = LevelData.GetUpgradeMaxLevel(up.type);
-				if (up.level > max) up.level = max;
-
-				if (!allowJetpack && up.type == UpgradeType.JETPACK)
-				{
-					up.active = false;
-					up.level = 0;
-				}
-
-				if (up.type != UpgradeType.JETPACK)
-				{
-					// For non-jetpack, only considered enabled if level > 0 and active flag is true
-					up.active = up.active && up.level > 0;
-				}
-				else
-				{
-					// For jetpack, treat as enabled only if allowed and level > 0 and active flag
-					up.active = allowJetpack && up.active && up.level > 0;
-				}
-			}
-
-			// Apply only the upgrades present/enabled in the list
-			foreach (var upgrade in upgrades)
-			{
-				if (!upgrade.IsEnabled) continue;
-				switch (upgrade.type)
-				{
-					case UpgradeType.DODGE:
-						Controls.m_hasDodgeSkill = upgrade.active;
-						Controls.m_currentDodgeLevel = upgrade.level;
-						break;
-					case UpgradeType.SPRINT:
-						Controls.m_hasSprintSkill = upgrade.active;
-						break;
-					case UpgradeType.HYPER_SPEED:
-						TimeManipulator.Instance.SetInPlayerPosession(upgrade.active);
-						break;
-					case UpgradeType.JETPACK:
-						if (allowJetpack)
-							Controls.m_currentJetpackUpgradeLevel = upgrade.level;
-						break;
-					case UpgradeType.HEALTH:
-						Controls.m_currentHealthUpgradeLevel = upgrade.level;
-						Controls.Instance.currentHP = Controls.Instance.currentMaxHP; // Heal to full on health upgrade application
-						break;
-					case UpgradeType.SPEED:
-						Controls.m_currentSpeedUpgradeLevel = upgrade.level;
-						break;
-					case UpgradeType.TASER_CAPACITY:
-						Controls.m_currentTaserCapacityUpgradeLevel = upgrade.level;
-						break;
-					case UpgradeType.HEALTH_BACKPACK:
-						Controls.m_currentHealthBackpackLevel = upgrade.level;
-						break;
-					case UpgradeType.TASER_BACKPACK:
-						Controls.m_currentTaserBackpackLevel = upgrade.level;
-						break;
-					case UpgradeType.TASER_POWER:
-						Controls.m_currentTaserPowerUpgradeLevel = upgrade.level;
-						break;
-					case UpgradeType.STEALTH:
-						Controls.m_currentStealthUpgradeLevel = upgrade.level;
-						break;
-					case UpgradeType.AIM_STABILIZER:
-						Controls.m_currentAimStabilizerLevel = upgrade.level;
-						break;
-					case UpgradeType.HOVER:
-						Controls.m_currentHoverUpgradeLevel = upgrade.level;
-						break;
-					case UpgradeType.SCOPE:
-						Controls.m_currentScopeLevel = upgrade.level;
-						break;
-					case UpgradeType.SAFE_LANDING:
-						Controls.m_currentSafeLandingLevel = upgrade.level;
-						break;
-					case UpgradeType.UV_FLASHLIGHT:
-						Controls.m_currentUVFlashlightLevel = upgrade.level;
-						if (upgrade.level > 0 && upgrade.active)
-							Controls.EnableInfraredFlashlight();
-						break;
-					case UpgradeType.SCANNER:
-						Controls.m_currentScannerLevel = upgrade.level;
-						break;
-				}
-				if (upgrade.IsEnabled)
-				{
-					totalUpgradeCount += upgrade.level;
-					Debug.Log(totalUpgradeCount);	
-				}
-			}
-			StatsManager.totalUpgradesCount = totalUpgradeCount;
-			if (totalUpgradeCount <= 0)
-			{
-                StatsManager.totalUpgradesCount = 0; // Ensure it's exactly 0 if no upgrades
-            }
-
-
-            //For now, let's ignore that bitch
-            UpgradePatches.Init();
 		}
 
 		// Other stuff...
