@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,7 +28,7 @@ namespace FS_LevelEditor.SaveSystem.Converters
                 object defaultValue = property.GetValue(defaultInstance);
                 object currentValue = property.GetValue(value);
 
-                if (!Equals(defaultValue, currentValue))
+                if (!CustomEquals(defaultValue, currentValue))
                 {
                     writer.WritePropertyName(property.Name);
                     JsonSerializer.Serialize(writer, currentValue, property.PropertyType, options);
@@ -35,6 +36,17 @@ namespace FS_LevelEditor.SaveSystem.Converters
             }
 
             writer.WriteEndObject();
+        }
+
+        public static bool CustomEquals(object value1, object value2)
+        {
+            if (value1 is IList list1 && value2 is IList list2)
+            {
+                if (list1.Count == 0 && list2.Count == 0)
+                    return true;
+            }
+
+            return Equals(value1, value2);
         }
     }
 }

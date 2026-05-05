@@ -18,7 +18,6 @@ namespace FS_LevelEditor.Editor.UI
 		public GameObject upgradesPanel;
 		UILabel upgradesPanelTitle;
 		GameObject upgradesListParent;
-		UILabel noUpgradesLabel;
 
 		/// <summary>
 		/// Contains all upgrades UI components
@@ -72,6 +71,8 @@ namespace FS_LevelEditor.Editor.UI
 		};
 
 		Dictionary<UpgradeType, UpgradeUIButton> upgradeButtons = new Dictionary<UpgradeType, UpgradeUIButton>();
+		List<UpgradeSaveData> targetSaveData;
+		LE_Object targetObject;
 
         public static void Create()
 		{
@@ -272,29 +273,57 @@ namespace FS_LevelEditor.Editor.UI
 		}
 		#endregion
 
-		public void ShowUpgradesPanel()
+		public void ShowUpgradesPanel(List<UpgradeSaveData> upgrades, string targetName, LE_Object targetObj = null)
 		{
 			EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
 			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.UPGRADES_PANEL);
+
+			targetSaveData = upgrades;
+
+			RefreshTitle(targetName);
+			targetObject = targetObj;
 
 			AttachSaveDataToUpgradeButtons();
             UpdateUpgradesUI();
 		}
 		public void HideUpgradesPanel()
 		{
-			EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
-			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
+			if (targetObject)
+			{
+				EventsUIPageManager.Instance.ShowEventsPage(targetObject, false);
+				targetObject = null;
+			}
+			else
+			{
+                EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
+                EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
+            }
+		}
+
+		void RefreshTitle(string targetName)
+		{
+			if (targetName == "Global")
+			{
+				upgradesPanelTitle.text = "Global Upgrades";
+			}
+			else
+			{
+				upgradesPanelTitle.text = "Upgrades for " + targetName;
+			}
 		}
 
 		void AttachSaveDataToUpgradeButtons()
 		{
-            var list = (List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"];
-			foreach (var saveData in list)
+			foreach (var button in upgradeButtons)
 			{
-				if (!upgradeButtons.TryGetValue(saveData.type, out UpgradeUIButton upgradeButton))
-					continue;
+				UpgradeSaveData saveData = targetSaveData.FirstOrDefault(x => x.type == button.Key);
+				if (saveData == null) // Target list may not have the save data for that one.
+				{
+					saveData = new UpgradeSaveData(button.Key, false, 0);
+					targetSaveData.Add(saveData);
+				}
 
-				upgradeButton.attachedSaveData = saveData;
+				button.Value.attachedSaveData = saveData;
 			}
         }
 		void UpdateUpgradesUI()

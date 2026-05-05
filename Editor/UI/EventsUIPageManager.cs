@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor;
+using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
 using Il2Cpp;
 using Il2CppSystem.Runtime.Remoting.Messaging;
@@ -98,6 +99,7 @@ namespace FS_LevelEditor.Editor.UI
         UITogglePatcher zeroGToggle;
         UITogglePatcher invertGravityToggle;
         UITogglePatcher flashlightToggle;
+        UIButtonPatcher upgradesButton;
         //-----------------------------------
         GameObject taserSettings;
         UIDropdownPatcher taserStateButton;
@@ -1685,6 +1687,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateZeroGToggle();
             CreateInvertGravityToggle();
             CreateFlashlightToggle();
+            CreateUpgradesButton();
         }
         void CreatePlayerSettingsTitleLabel()
         {
@@ -1711,6 +1714,12 @@ namespace FS_LevelEditor.Editor.UI
                 new Vector3Int(250, 48, 1), "Enable/Disable Flashlight");
             flashlightToggle.gameObject.name = "EnableOrDisableFlashlightToggle";
             flashlightToggle.onClick += (state) => OnFlashlightToggleChanged();
+        }
+        void CreateUpgradesButton()
+        {
+            upgradesButton = NGUI_Utils.CreateButton(playerSettings.transform, new Vector3(0, -100), new Vector3Int(300, 50, 0), "Player Upgrades");
+            upgradesButton.name = "UpgradesButton";
+            upgradesButton.onClick += OnUpgradesButtonPressed;
         }
         #endregion
 
@@ -2536,6 +2545,13 @@ namespace FS_LevelEditor.Editor.UI
                 zeroGToggle.Set(false, true);
             }
         }
+        void OnUpgradesButtonPressed()
+        {
+            if (currentSelectedEvent.upgrades == null)
+                currentSelectedEvent.upgrades = new();
+
+            UpgradesPanel.Instance.ShowUpgradesPanel(currentSelectedEvent.upgrades, currentSelectedEvent.eventName, targetObj);
+        }
         #endregion
 
         #region Taser Options
@@ -2788,7 +2804,7 @@ namespace FS_LevelEditor.Editor.UI
 
         #endregion
 
-        public void ShowEventsPage(LE_Object targetObj)
+        public void ShowEventsPage(LE_Object targetObj, bool refresh = true)
         {
             if (targetObj.GetAvailableEventsIDs().Count <= 0)
             {
@@ -2803,8 +2819,11 @@ namespace FS_LevelEditor.Editor.UI
             EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED); // Just to stop camera movement and such.
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.EVENTS_PANEL);
 
-            SetupTopButtons();
-            FirstEventsListBtnClick(false);
+            if (refresh)
+            {
+                SetupTopButtons();
+                FirstEventsListBtnClick(false);
+            }
             // CreateEventsList();
         }
         public void HideEventsPage()
@@ -2920,6 +2939,7 @@ public class LE_Event
     public bool changeAmmo { get; set; } = false;
     public int newAmmo { get; set; } = 8;
     public bool infiniteTaser { get; set; } = false;
+    public List<UpgradeSaveData> upgrades { get; set; } = null;
     #endregion
 
     #region Jetpack Options

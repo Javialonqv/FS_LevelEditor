@@ -174,7 +174,7 @@ namespace FS_LevelEditor.Editor.UI
             upgradesButton.buttonLabel.fontSize = 28;
             upgradesButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             upgradesButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
-            upgradesButton.onClick += () => UpgradesPanel.Instance.ShowUpgradesPanel();
+            upgradesButton.onClick += () => UpgradesPanel.Instance.ShowUpgradesPanel((List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"], "Global");
         }
 
         public void ShowOrHideGlobalPropertiesPanel()

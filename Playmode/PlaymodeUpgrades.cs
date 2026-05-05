@@ -148,6 +148,8 @@ namespace FS_LevelEditor.Playmode
             StatsManager.totalUpgradesCount = Math.Max(totalUpgradeCount, 0); // Ensure it's exactly 0 if no upgrades.
 
             Controls.RefreshUpgradeVariables();
+            GunController.Instance.RefreshTaserModules();
+
             Controls.Instance.currentHP = Controls.Instance.currentMaxHP; // Heal to full after upgrades have been applied.
 
             UpgradePatches.Init();

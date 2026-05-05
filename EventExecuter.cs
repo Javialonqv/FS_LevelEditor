@@ -398,6 +398,8 @@ namespace FS_LevelEditor
                 else
                     Controls.Instance.SetFlashlightAllowed();
 
+                PlaymodeUpgrades.ApplyUpgrades(@event.upgrades);
+
                 return;
             }
             if (@event.isForTaser)
