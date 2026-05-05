@@ -14,17 +14,21 @@ namespace FS_LevelEditor
         static Material propsNoSpecMat, propsTransNoSpecMat;
         static Material newPropsv1Mat, newPropsv1TransMat;
 
-        static readonly Dictionary<(string name, Color matColor), Material> createdMaterialsWithColors = new();
+        static readonly Dictionary<(string name, Color matColor, Color emissionColor), Material> createdMaterialsWithColors = new();
 
         public static Material GetMaterialWithColor(Material original, Color matColor)
         {
+            return GetMaterialWithColor(original, matColor, original.GetColor("_EmissionColor"));
+        }
+        public static Material GetMaterialWithColor(Material original, Color matColor, Color emissionColor)
+        {
             string matName = original.name.Replace(" (Instance)", "");
 
-            if (!createdMaterialsWithColors.TryGetValue((matName, matColor), out Material mat))
+            if (!createdMaterialsWithColors.TryGetValue((matName, matColor, emissionColor), out Material mat))
             {
                 Material newMat = new Material(original);
                 newMat.color = matColor;
-                createdMaterialsWithColors.Add((matName, matColor), newMat);
+                createdMaterialsWithColors.Add((matName, matColor, emissionColor), newMat);
 
                 return newMat;
             }
