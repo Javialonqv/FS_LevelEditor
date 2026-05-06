@@ -225,7 +225,7 @@ namespace FS_LevelEditor.Editor.UI
         void UpdateTextEditorUIValues()
         {
             textField.SetText(targetObj.GetProperty<string>("Text"));
-            autoFontSizeToggle.toggle.Set(targetObj.GetProperty<bool>("AutoFontSize"));
+            autoFontSizeToggle.Set(targetObj.GetProperty<bool>("AutoFontSize"));
             fontSizeField.SetText(targetObj.GetProperty<float>("FontSize"));
             minFontSizeField.SetText(targetObj.GetProperty<float>("MinFontSize"));
             maxFontSizeField.SetText(targetObj.GetProperty<float>("MaxFontSize"));
@@ -241,9 +241,9 @@ namespace FS_LevelEditor.Editor.UI
         }
         void OnAutoFontSizeToggleChanged()
         {
-            targetObj.SetProperty("AutoFontSize", autoFontSizeToggle.toggle.isChecked);
+            targetObj.SetProperty("AutoFontSize", autoFontSizeToggle.isChecked);
 
-            if (autoFontSizeToggle.toggle.isChecked)
+            if (autoFontSizeToggle.isChecked)
             {
                 fontSizeLabel.gameObject.SetActive(false);
                 fontSizeField.gameObject.SetActive(false);
