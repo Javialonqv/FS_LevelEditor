@@ -88,7 +88,8 @@ namespace FS_LevelEditor
             SEQUENCE_WAYPOINT,
             SEQUENCE_SCREEN,
             POWER_CORE,
-            POWER_SLOT
+            POWER_SLOT,
+            UPGRADE_TERMINAL
         }
 
         // This is used to specify the objects that use the same snap triggers.
@@ -260,6 +261,7 @@ namespace FS_LevelEditor
         public static BlocSwitchScript t_blocSwitchScript;
         public static BlocScript t_powerCore;
         public static PowerCoreController t_powerSlot;
+        public static InterrupteurController t_upgradeTerminal;
 
         public static void GetTemplatesReferences()
 		{
@@ -287,6 +289,7 @@ namespace FS_LevelEditor
             t_blocSwitchScript = Utils.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer != null);
             t_powerCore = Utils.FindObjectOfType<BlocScript>(x => x.isPowerCore);
             t_powerSlot = Utils.FindObjectOfType<PowerCoreController>(x => !x.isTabletSlot);
+            t_upgradeTerminal = Utils.FindObjectOfType<InterrupteurController>(x => x.name.Contains("Upgrade"));
         }
 		#endregion
 

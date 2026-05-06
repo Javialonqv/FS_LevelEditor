@@ -61,6 +61,7 @@ object.SEQUENCE_WAYPOINT,Sequencer Step,Etapa del Secuenciador,
 object.SEQUENCE_SCREEN,Sequence Screen,Pantalla del Secuenciador,
 object.POWER_CORE,Power Core,Núcleo de Energía,
 object.POWER_SLOT,Power Slot,Entrada de Energía,
+object.UPGRADE_TERMINAL,Upgrade Terminal,Terminal de Mejora,
 Player,Player,Jugador,Гравець
 Jetpack,Jetpack,Mochila Propulsora,Джетпак
 Taser,Taser,Taser,Тазер
@@ -214,4 +215,3 @@ ExecIfInsideTooltip,Executes the [b]On Enter[/b] events when the trigger is [i]s
 ExecIfDespawnedTooltip,Executes the [b]On Exit[/b] events when the trigger is [i]despawned[/i] while the player is [b]still inside.[/b],Ejecuta los eventos [b]Al Salir[/b] cuando el trigger se [i]desactiva[/i] mientras el jugador [b]sigue adentro.[/b],
 canBeUsed,Usable,Usable,
 DestroyCubes,Destroy Cubes,Destruir Cubos,
-,,,
