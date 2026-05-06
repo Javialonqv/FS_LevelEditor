@@ -378,7 +378,7 @@ namespace FS_LevelEditor.Playmode
 			Destroy(editorObjectsRootFromBundle);
 
 			// Unload the asset bundle when playmode is destroyed
-			if (LEBundle != null)
+			if (LEBundle != null && !Core.isQuitting)
 			{
 				try
 				{

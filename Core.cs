@@ -23,6 +23,8 @@ namespace FS_LevelEditor
 
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
 
+        public static bool isQuitting;
+
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             currentSceneName = sceneName;
@@ -151,5 +153,9 @@ namespace FS_LevelEditor
             Utils.PreloadEmbeddedBundle("leveleditoricons");
         }
 
+        public override void OnApplicationQuit()
+        {
+            isQuitting = true;
+        }
     }
 }

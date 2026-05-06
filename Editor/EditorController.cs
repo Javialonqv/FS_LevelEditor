@@ -3014,7 +3014,7 @@ namespace FS_LevelEditor.Editor
             Destroy(editorObjectsRootFromBundle);
 
             // Unload the asset bundle when the editor is destroyed
-            if (editorAssetBundle != null)
+            if (editorAssetBundle != null && !Core.isQuitting)
             {
                 try
                 {
