@@ -50,6 +50,8 @@ namespace FS_LevelEditor.Playmode.Patches
 			}
 		}
 
+		public static bool applied = false;
+
 		static readonly Dictionary<string, UpgradeType> upgradeIntKeys = new Dictionary<string, UpgradeType>()
 		{
             ["Dodge_Upgrade_Level"] =			UpgradeType.DODGE,
@@ -79,6 +81,9 @@ namespace FS_LevelEditor.Playmode.Patches
 
         public static void Init()
 		{
+			if (applied)
+				return;
+
 			HarmonyLib.Harmony harmony = Melon<Core>.Instance.HarmonyInstance;
 
 			harmony.Patch(getIntMethod, new HarmonyMethod(getIntMethodPrefix), null, null);
@@ -90,6 +95,8 @@ namespace FS_LevelEditor.Playmode.Patches
 
 			harmony.Unpatch(getIntMethod, HarmonyPatchType.All);
 			harmony.Unpatch(getBoolMethod, HarmonyPatchType.All);
+
+			applied = false;
 		}
 
 		static bool GetIntPatches(ref int __result, string _key)
