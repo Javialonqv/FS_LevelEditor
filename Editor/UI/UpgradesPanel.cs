@@ -57,7 +57,7 @@ namespace FS_LevelEditor.Editor.UI
 		};
 		// Optional upgrades can have a checkbox to disable them.
 		// NOTE: Jetpack not included here because it is disabled in the global properties panel, and not in this menu.
-		static readonly List<UpgradeType> optionalUpgrades = new List<UpgradeType>()
+		public static readonly List<UpgradeType> optionalUpgrades = new List<UpgradeType>()
 		{
 			UpgradeType.HEALTH_BACKPACK,
 			UpgradeType.TASER_BACKPACK,
@@ -76,6 +76,17 @@ namespace FS_LevelEditor.Editor.UI
 		Dictionary<UpgradeType, UpgradeUIButton> upgradeButtons = new Dictionary<UpgradeType, UpgradeUIButton>();
 		List<UpgradeSaveData> targetSaveData;
 		LE_Object targetObject;
+		List<UpgradeType> currentActiveUpgradesList = new();
+		int CurrentActiveUpgrades => currentActiveUpgradesList.Count;
+		int? maxUpgrades = null;
+		bool ShowCheckboxesEvenForNonOptionalUpgrades
+		{
+			get
+			{
+				// For now, this is the only case when the user will want to activate/deactivate even non-optional upgrades.
+				return maxUpgrades.HasValue;
+			}
+		}
 
         public static void Create()
 		{
@@ -196,30 +207,29 @@ namespace FS_LevelEditor.Editor.UI
 			upgradeButton.type = type;
 
             #region Toggle If Optional
-            // Upgrade that can be disabled with a checkbox.
-            if (isOptional)
-			{
-				UITogglePatcher togglePatcher = NGUI_Utils.CreateToggle(parent.transform, new Vector3(LABEL_X + TICK_TO_LABEL_OFFSET, 0), new Vector3Int(26, 26, 0), "");
-				togglePatcher.name = "TickIcon"; // keep consistent with lookups
-				togglePatcher.toggle.startsActive = false; // Start unchecked. Too afraid to remove this line and screw everything up.
+            UITogglePatcher togglePatcher = NGUI_Utils.CreateToggle(parent.transform, new Vector3(LABEL_X + TICK_TO_LABEL_OFFSET, 0), new Vector3Int(26, 26, 0), "");
+            togglePatcher.name = "TickIcon"; // keep consistent with lookups
+            togglePatcher.toggle.startsActive = false; // Start unchecked. Too afraid to remove this line and screw everything up.
 
-                #region Fix Checkmark Depth
-                var checkmark = togglePatcher.transform.Find("Checkmark");
-				if (checkmark != null)
-				{
-					var checkmarkSprite = checkmark.GetComponent<UISprite>();
-					if (checkmarkSprite != null)
-					{
-						checkmarkSprite.depth = 2;
-						checkmarkSprite.color = Color.white;
-					}
-				}
-				#endregion
+            #region Fix Checkmark Depth
+            var checkmark = togglePatcher.transform.Find("Checkmark");
+            if (checkmark != null)
+            {
+                var checkmarkSprite = checkmark.GetComponent<UISprite>();
+                if (checkmarkSprite != null)
+                {
+                    checkmarkSprite.depth = 2;
+                    checkmarkSprite.color = Color.white;
+                }
+            }
+            #endregion
 
-				togglePatcher.onClick += (state) => SetUpgradeEnabledState((int)type, upgradeButton);
+            togglePatcher.onClick += (state) => SetUpgradeEnabledState((int)type, upgradeButton);
 
-				upgradeButton.activeToggle = togglePatcher;
-			}
+			upgradeButton.isOptional = isOptional;
+            upgradeButton.activeToggle = togglePatcher;
+
+			togglePatcher.gameObject.SetActive(isOptional);
             #endregion
 
             #region Name Label
@@ -291,7 +301,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         #endregion
 
-        public void ShowUpgradesPanel(List<UpgradeSaveData> upgrades, string targetName, LE_Object targetObj = null)
+        public void ShowUpgradesPanel(List<UpgradeSaveData> upgrades, string targetName, LE_Object targetObj = null, int? maxUpgrades = null)
 		{
 			EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
 			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.UPGRADES_PANEL);
@@ -300,6 +310,8 @@ namespace FS_LevelEditor.Editor.UI
 
 			RefreshTitle(targetName);
 			targetObject = targetObj;
+			currentActiveUpgradesList.Clear();
+            this.maxUpgrades = maxUpgrades;
 
 			AttachSaveDataToUpgradeButtons();
             UpdateUpgradesUI();
@@ -308,7 +320,11 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			if (targetObject)
 			{
-				EventsUIPageManager.Instance.ShowEventsPage(targetObject, false);
+				// When a target object is set, it can only be either a terminal, or an object with events.
+				if (targetObject is not LE_Upgrade_Terminal)
+				{
+                    EventsUIPageManager.Instance.ShowEventsPage(targetObject, false);
+                }
 				targetObject = null;
 			}
 			else
@@ -357,29 +373,49 @@ namespace FS_LevelEditor.Editor.UI
 			if (saveData == null) return; // Safety check
 
 			// Update active toggle ONLY if it exists (optional upgrades).
-			if (upgradeButton.activeToggle)
-                upgradeButton.activeToggle.Set(saveData.active);
+			upgradeButton.activeToggle.gameObject.SetActive(upgradeButton.isOptional || ShowCheckboxesEvenForNonOptionalUpgrades);
+            upgradeButton.activeToggle.Set(saveData.active);
 
             // Update level button if it exists
             if (upgradeButton.levelButton)
 			{
-				int maxLevel = LevelData.GetUpgradeMaxLevel(upgradeButton.type);
-                int optionsCount = upgradeButton.levelButton.OptionsCount;
-                int targetIndex = Math.Clamp(saveData.level - 1, 0, optionsCount - 1); // Level 1 at index 0.
+				if (ShowCheckboxesEvenForNonOptionalUpgrades) // On this mode, it can't interact with level buttons.
+				{
+					upgradeButton.levelButton.gameObject.SetActive(false);
+				}
+				else
+				{
+					upgradeButton.levelButton.gameObject.SetActive(true);
 
-                upgradeButton.levelButton.SelectOption(targetIndex, false); // Don't execute onChange.
+                    int maxLevel = LevelData.GetUpgradeMaxLevel(upgradeButton.type);
+                    int optionsCount = upgradeButton.levelButton.OptionsCount;
+                    int targetIndex = Math.Clamp(saveData.level - 1, 0, optionsCount - 1); // Level 1 at index 0.
+
+                    upgradeButton.levelButton.SelectOption(targetIndex, false); // Don't execute onChange.
+                }
 			}
 		}
 
 		public void SetUpgradeEnabledState(int typeID, UpgradeUIButton upgradeButton)
 		{
+			// If a max upgrades number is set, and trying to activate another upgrade but it already reached the max, prevent it, and force the checkbox to false instantly.
+			if (maxUpgrades.HasValue && CurrentActiveUpgrades >= maxUpgrades.Value && upgradeButton.activeToggle.isChecked &&
+				!currentActiveUpgradesList.Contains(upgradeButton.type))
+			{
+				upgradeButton.activeToggle.Set(false, false, true); // Don't execute onChange to avoid infinite loops.
+				return;
+			}
+
 			UpgradeSaveData saveData = upgradeButton.attachedSaveData;
 			saveData.active = upgradeButton.activeToggle.isChecked;
 
-			bool isOptional = optionalUpgrades.Contains((UpgradeType)typeID);
+            bool isOptional = optionalUpgrades.Contains((UpgradeType)typeID);
 
 			if (upgradeButton.activeToggle.isChecked)
 			{
+				if (!currentActiveUpgradesList.Contains(upgradeButton.type))
+					currentActiveUpgradesList.Add(upgradeButton.type);
+
 				// Make sure the level is within the range.
 				saveData.level = Mathf.Clamp(saveData.level, 1, LevelData.GetUpgradeMaxLevel(upgradeButton.type));
 
@@ -395,8 +431,13 @@ namespace FS_LevelEditor.Editor.UI
 					upgradeButton.levelButton.SelectOption(targetIndex, false); // Don't execute onChange to avoid infinite loop.
 				}
 			}
+			else
+			{
+                if (currentActiveUpgradesList.Contains(upgradeButton.type))
+                    currentActiveUpgradesList.Remove(upgradeButton.type);
+            }
 
-			EditorController.Instance.levelHasBeenModified = true;
+            EditorController.Instance.levelHasBeenModified = true;
 		}
 
 		public void SetUpgradeLevel(int typeID, UpgradeUIButton upgradeButton)
@@ -418,8 +459,9 @@ namespace FS_LevelEditor.Editor.UI
 			int selectedLevel = upgradeButton.levelButton.currentSelectedID + 1; // +1 because levels start from 1
 			selectedLevel = Mathf.Clamp(selectedLevel, 1, LevelData.GetUpgradeMaxLevel((UpgradeType)typeID));
 
-			// Always keep these upgrades active and just change the level
-			saveData.active = true;
+			// If this true, then the user can activate/deactivate non-optional upgrades for whatever reason (Upgrade terminals).
+			if (!ShowCheckboxesEvenForNonOptionalUpgrades) 
+				saveData.active = true; // But if false, then FORCE it.
 			saveData.level = selectedLevel;
 
 			EditorController.Instance.levelHasBeenModified = true;
@@ -443,7 +485,7 @@ namespace FS_LevelEditor.Editor.UI
             {
                 var button = pair.Value;
 
-                if (button.activeToggle)
+                if (button.activeToggle.gameObject.activeInHierarchy)
                     button.activeToggle.Set(false, true, true);
                 if (button.levelButton)
                     button.levelButton.SelectOption(0, true);
@@ -480,6 +522,7 @@ namespace FS_LevelEditor.Editor.UI
 	[MelonLoader.RegisterTypeInIl2Cpp]
 	public class UpgradeUIButton : MonoBehaviour
 	{
+		public bool isOptional;
 		public UpgradeType type;
 		public UITogglePatcher activeToggle;
 		public UIButtonMultiple levelButton;
