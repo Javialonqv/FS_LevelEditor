@@ -135,7 +135,15 @@ namespace FS_LevelEditor.Playmode
                         break;
                 }
 
-                totalUpgradeCount += upgrade.level;
+                if (!UpgradesPanel.optionalUpgrades.Contains(upgrade.type))
+                {
+                    if (upgrade.level > 1)
+                        totalUpgradeCount += upgrade.level;
+                }
+                else
+                {
+                    totalUpgradeCount += upgrade.level;
+                }
             }
 
             StatsManager.totalUpgradesCount = Math.Max(totalUpgradeCount, 0); // Ensure it's exactly 0 if no upgrades.
