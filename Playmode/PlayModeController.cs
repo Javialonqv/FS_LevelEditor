@@ -272,7 +272,7 @@ namespace FS_LevelEditor.Playmode
             SetupLevelSkybox((int)GetGlobalProperty("Skybox"));
 			SetupLevelMusic((int)GetGlobalProperty("Music"));
 
-			PlaymodeUpgrades.ApplyUpgrades((List<UpgradeSaveData>)GetGlobalProperty("Upgrades"), hasJetpackGlobal);
+			PlaymodeUpgrades.ApplyUpgrades((List<UpgradeSaveData>)GetGlobalProperty("Upgrades"));
 		}
 		public object GetGlobalProperty(string name)
 		{

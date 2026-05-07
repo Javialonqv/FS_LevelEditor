@@ -1,4 +1,5 @@
-﻿using FS_LevelEditor.Playmode.Patches;
+﻿using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.Playmode.Patches;
 using FS_LevelEditor.SaveSystem;
 using Il2Cpp;
 using System;
@@ -14,7 +15,7 @@ namespace FS_LevelEditor.Playmode
         public static List<UpgradeSaveData> targetUpgradesData;
         public static int totalUpgradeCount = 0;
 
-        public static void ResetAllUpgradeEffects(bool allowJetpack)
+        public static void ResetAllUpgradeEffects()
         {
             // Force all upgrade-driven effects OFF/0 before applying data
             Controls.m_hasDodgeSkill = false;
@@ -25,8 +26,7 @@ namespace FS_LevelEditor.Playmode
             if (TimeManipulator.Instance)
                 TimeManipulator.Instance.SetInPlayerPosession(false);
 
-            if (!allowJetpack || allowJetpack)
-                Controls.m_currentJetpackUpgradeLevel = 0; // level 0 by default regardless; allowJetpack only gates enabling later
+            Controls.m_currentJetpackUpgradeLevel = 0; // level 0 by default regardless; allowJetpack only gates enabling later
 
             Controls.m_currentHealthUpgradeLevel = 0;
             Controls.m_currentSpeedUpgradeLevel = 0;
@@ -45,12 +45,12 @@ namespace FS_LevelEditor.Playmode
             Controls.DisableInfraredFlashlight();
         }
 
-        public static void ApplyUpgrades(List<UpgradeSaveData> upgrades, bool allowJetpack = true)
+        public static void ApplyUpgrades(List<UpgradeSaveData> upgrades)
         {
             targetUpgradesData = upgrades;
 
             // Always reset all effects first. Missing entries remain disabled.
-            ResetAllUpgradeEffects(allowJetpack);
+            ResetAllUpgradeEffects();
 
             totalUpgradeCount = 0;
 
@@ -65,19 +65,13 @@ namespace FS_LevelEditor.Playmode
             foreach (var upgrade in upgrades)
             {
                 #region Safe Check Active And Level States
-                if (!allowJetpack && upgrade.type == UpgradeType.JETPACK)
-                {
-                    upgrade.active = false;
-                    upgrade.level = 0;
-                }
-                else
-                {
-                    upgrade.level = Math.Clamp(upgrade.level, 1, LevelData.GetUpgradeMaxLevel(upgrade.type));
-                    upgrade.active = upgrade.active && upgrade.level > 0;
+                upgrade.level = Math.Clamp(upgrade.level, 1, LevelData.GetUpgradeMaxLevel(upgrade.type));
+                upgrade.active = upgrade.active && upgrade.level > 0;
+                if (!UpgradesPanel.optionalUpgrades.Contains(upgrade.type))
+                    upgrade.active = true;
 
-                    if (!upgrade.active)
-                        upgrade.level = 0;
-                }
+                if (!upgrade.active)
+                    upgrade.level = 0;
                 #endregion
 
                 if (!upgrade.active)
@@ -96,8 +90,7 @@ namespace FS_LevelEditor.Playmode
                         TimeManipulator.Instance.SetInPlayerPosession(upgrade.active);
                         break;
                     case UpgradeType.JETPACK:
-                        if (allowJetpack)
-                            Controls.m_currentJetpackUpgradeLevel = upgrade.level;
+                        Controls.m_currentJetpackUpgradeLevel = upgrade.level;
                         break;
                     case UpgradeType.HEALTH:
                         Controls.m_currentHealthUpgradeLevel = upgrade.level;
