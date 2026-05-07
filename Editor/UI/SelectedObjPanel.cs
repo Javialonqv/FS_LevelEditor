@@ -103,7 +103,9 @@ namespace FS_LevelEditor.Editor.UI
 			"MinFontSize",
 			"MaxFontSize",
 			"TextAlign",
-			"Text"
+			"Text",
+
+			"upgrades"
 		};
 		// For objects where the prop name is not the same as the loc key.
 		static readonly Dictionary<string, string> correctLocKeysForProps = new Dictionary<string, string>()
@@ -642,6 +644,11 @@ namespace FS_LevelEditor.Editor.UI
 				CreateObjectAttribute("EditText", AttributeType.BUTTON, null, null, "EditText");
 			}
 
+			if (ShouldHaveManagedUpgradesButton(defaultProps))
+			{
+				CreateObjectAttribute("ManageUpgrades", AttributeType.BUTTON, null, null, "ManageUpgrades");
+			}
+
             // Add "Add Waypoint" button if it has local waypoints.
             if (LE_Object.customWaypointSupports.ContainsKey(type) || LE_Object.IsWaypoint(type))
 			{
@@ -667,6 +674,10 @@ namespace FS_LevelEditor.Editor.UI
 			string[] textProps = { "AutoFontSize", "FontSize", "MinFontSize", "MaxFontSize", "TextAlign", "Text" };
 
 			return textProps.All(p => props.ContainsKey(p));
+		}
+		bool ShouldHaveManagedUpgradesButton(Dictionary<string, object> props)
+		{
+			return props.ContainsKey("upgrades");
 		}
 
 		enum AttributeType { TOGGLE, INPUT_FIELD, BUTTON, BUTTON_MULTIPLE, VECTOR }

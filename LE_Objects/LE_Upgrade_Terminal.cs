@@ -1,4 +1,5 @@
-﻿using FS_LevelEditor.SaveSystem;
+﻿using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.SaveSystem;
 using Il2Cpp;
 using Il2CppTMPro;
 using System;
@@ -14,6 +15,14 @@ namespace FS_LevelEditor
     public class LE_Upgrade_Terminal : LE_Object
     {
         public override string contentObjectName => "Computer";
+
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "upgrades", new List<UpgradeSaveData>() }
+            };
+        }
 
         public override void InitComponent()
         {
@@ -223,12 +232,39 @@ namespace FS_LevelEditor
 
             UpgradePageController upgradePage = computerInterface.m_upgradePage.GetComponent<UpgradePageController>();
             upgradePage.availableUpgrades = new Il2CppSystem.Collections.Generic.List<UpgradePageController.UpgradeType>();
-            upgradePage.availableUpgrades.Add(UpgradePageController.UpgradeType.TASER);
+            foreach (var upgrade in GetProperty<List<UpgradeSaveData>>("upgrades"))
+            {
+                if (upgrade.active)
+                    upgradePage.availableUpgrades.Add(UpgradeSaveData.ConvertTypeToFSType(upgrade.type).Value);
+            }
             #endregion
 
             interrupteur.objectsToEnableOnly[0] = computerInterface.gameObject;
 
             initialized = true;
+        }
+
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "upgrades")
+            {
+                if (value is List<UpgradeSaveData>)
+                {
+                    properties["upgrades"] = value;
+                }
+            }
+
+            return base.SetProperty(name, value);
+        }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "ManageUpgrades")
+            {
+                UpgradesPanel.Instance.ShowUpgradesPanel(GetProperty<List<UpgradeSaveData>>("upgrades"), objectFullNameWithID, this, 4);
+            }
+
+            return base.TriggerAction(actionName);
         }
     }
 
