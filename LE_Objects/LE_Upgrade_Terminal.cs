@@ -2,6 +2,7 @@
 using FS_LevelEditor.SaveSystem;
 using Il2Cpp;
 using Il2CppSystem;
+using Il2CppSystem.Security.Cryptography;
 using Il2CppTMPro;
 using System;
 using System.Collections.Generic;
@@ -293,6 +294,21 @@ namespace FS_LevelEditor
             if (actionName == "ManageUpgrades")
             {
                 UpgradesPanel.Instance.ShowUpgradesPanel(GetProperty<List<UpgradeSaveData>>("upgrades"), objectFullNameWithID, this, 4);
+            }
+            else if (actionName == "ActiveState_True")
+            {
+                isActive = true;
+                computerInterface.CheckUpgradeAvailability();
+            }
+            else if (actionName == "ActiveState_False")
+            {
+                isActive = false;
+                computerInterface.CheckUpgradeAvailability();
+            }
+            else if (actionName == "ActiveState_Toggle")
+            {
+                isActive = !isActive;
+                computerInterface.CheckUpgradeAvailability();
             }
 
             return base.TriggerAction(actionName);

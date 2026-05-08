@@ -865,6 +865,21 @@ namespace FS_LevelEditor
                     targetObj.TriggerAction("BreakNow");
                 }
             }
+            else if (targetObj is LE_Upgrade_Terminal)
+            {
+                switch (@event.terminalActiveState)
+                {
+                    case LE_Event.TerminalActiveState.Active:
+                        targetObj.TriggerAction("ActiveState_True");
+                        break;
+                    case LE_Event.TerminalActiveState.Deactive:
+                        targetObj.TriggerAction("ActiveState_False");
+                        break;
+                    case LE_Event.TerminalActiveState.Toggle:
+                        targetObj.TriggerAction("ActiveState_Toggle");
+                        break;
+                }
+            }
         }
     }
 }

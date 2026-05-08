@@ -171,6 +171,9 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject fragileWindowObjectsSettings;
         UITogglePatcher fragileWindowBreakNowToggle;
+        //-----------------------------------
+        GameObject terminalObjectsSettings;
+        UIDropdownPatcher terminalActiveStateButton;
         #endregion
 
         #endregion
@@ -223,6 +226,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateBridgeObjectSettings();
                 Instance.CreateDestructibleWallObjectSettings();
                 Instance.CreateFragileWindowObjectSettings();
+                Instance.CreateUpgradeTerminalObjectSettings();
 
                 Instance.CreateDetails();
             }
@@ -1402,6 +1406,10 @@ namespace FS_LevelEditor.Editor.UI
             {
                 return fragileWindowObjectsSettings;
             }
+            else if (targetObj == LE_Object.ObjectType.UPGRADE_TERMINAL)
+            {
+                return terminalObjectsSettings;
+            }
 
             return null;
         }
@@ -1527,6 +1535,10 @@ namespace FS_LevelEditor.Editor.UI
             else if (@event.targetObjType == LE_Object.ObjectType.BREAKABLE_WINDOW)
             {
                 fragileWindowBreakNowToggle.Set(@event.fragileWindowBreakNow);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.UPGRADE_TERMINAL)
+            {
+                terminalActiveStateButton.SelectOption((int)@event.terminalActiveState);
             }
         }
 
@@ -2463,6 +2475,41 @@ namespace FS_LevelEditor.Editor.UI
         }
         #endregion
 
+        #region Upgrade Terminal Options
+        void CreateUpgradeTerminalObjectSettings()
+        {
+            terminalObjectsSettings = new GameObject("UpgradeTerminal");
+            terminalObjectsSettings.transform.parent = eventOptionsParent.transform;
+            terminalObjectsSettings.transform.localPosition = Vector3.zero;
+            terminalObjectsSettings.transform.localScale = Vector3.one;
+            terminalObjectsSettings.SetActive(false);
+
+            CreateUpgradeTerminalsObjectsTitleLabel();
+            CreateTerminalActiveStateButton();
+        }
+        void CreateUpgradeTerminalsObjectsTitleLabel()
+        {
+            UILabel titleLabel = NGUI_Utils.CreateLabel(terminalObjectsSettings.transform, Vector3.up * 40,
+                new Vector3Int(700, 40, 0), "UPGRADE TERMINAL OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center);
+            titleLabel.name = "TitleLabel";
+            titleLabel.color = NGUI_Utils.fsLabelDefaultColor;
+            titleLabel.fontSize = 35;
+        }
+        void CreateTerminalActiveStateButton()
+        {
+            terminalActiveStateButton = NGUI_Utils.CreateDropdown(terminalObjectsSettings.transform,
+                new Vector3(0, -50), Vector3.one * 0.8f);
+            terminalActiveStateButton.SetTitle("Set Active State");
+            terminalActiveStateButton.AddOption("Do Nothing", true);
+            terminalActiveStateButton.AddOption("Active", false);
+            terminalActiveStateButton.AddOption("Deactive", false);
+            terminalActiveStateButton.AddOption("Toggle", false);
+            terminalActiveStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnTerminalActiveStateButtonChanged)));
+
+            terminalActiveStateButton.gameObject.SetActive(true);
+        }
+        #endregion
+
         #endregion
 
         #region Logic For Objects UI Options
@@ -2802,6 +2849,13 @@ namespace FS_LevelEditor.Editor.UI
         }
         #endregion
 
+        #region Upgrade Terminal Options
+        void OnTerminalActiveStateButtonChanged()
+        {
+            currentSelectedEvent.terminalActiveState = (LE_Event.TerminalActiveState)terminalActiveStateButton.currentlySelectedID;
+        }
+        #endregion
+
         #endregion
 
         public void ShowEventsPage(LE_Object targetObj, bool refresh = true)
@@ -3057,5 +3111,10 @@ public class LE_Event
     public int targetGroupID { get; set; }
     public bool allObjectsInGroupAreTheSame { get; set; }
     public LE_Object.ObjectType? sameObjectType { get; set; }
+    #endregion
+
+    #region Upgrade Terminal
+    public enum TerminalActiveState { Do_Nothing, Active, Deactive, Toggle }
+    public TerminalActiveState terminalActiveState { get; set; }
     #endregion
 }
