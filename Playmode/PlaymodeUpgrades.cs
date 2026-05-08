@@ -154,6 +154,8 @@ namespace FS_LevelEditor.Playmode
             Controls.Instance.currentHP = Controls.Instance.currentMaxHP; // Heal to full after upgrades have been applied.
 
             UpgradePatches.Init();
+
+            LE_Upgrade_Terminal.RefreshUsableStateInAllTerminals();
         }
     }
 }

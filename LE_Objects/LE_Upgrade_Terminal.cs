@@ -1,6 +1,7 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
 using Il2Cpp;
+using Il2CppSystem;
 using Il2CppTMPro;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Il2Cpp.UpgradePageController;
 
 namespace FS_LevelEditor
 {
@@ -15,6 +17,22 @@ namespace FS_LevelEditor
     public class LE_Upgrade_Terminal : LE_Object
     {
         public override string contentObjectName => "Computer";
+
+        InterrupteurController interrupteur;
+        ScreenController screen;
+        ComputerInterfaceController computerInterface;
+
+        public bool isActive = true;
+
+        public bool firstUpgradeAlreadyTaken = false;
+        public UpgradePageController.UpgradeType firstTakenUpgrade;
+        public int firstTakenUpgradeLevel;
+
+        public bool secondUpgradeAlreadyTaken = false;
+        public UpgradePageController.UpgradeType secondTakenUpgrade;
+        public int secondTakenUpgradeLevel;
+
+        static List<ComputerInterfaceController> allComputerInterfaces = new();
 
         public static Dictionary<string, object> GetDefaultProperties()
         {
@@ -29,7 +47,7 @@ namespace FS_LevelEditor
             contentObject.SetActive(false);
 
             #region Interrupteur
-            InterrupteurController interrupteur = contentObject.AddComponent<InterrupteurController>();
+            interrupteur = contentObject.AddComponent<InterrupteurController>();
             interrupteur.ActivateButtonSound = t_upgradeTerminal.ActivateButtonSound;
             interrupteur.activated = false;
             interrupteur.additionalInteractionGO = contentObject.GetChild("AdditionalInteractionCollider");
@@ -84,7 +102,7 @@ namespace FS_LevelEditor
             #endregion
 
             #region Screen
-            ScreenController screen = contentObject.GetChild("Mesh").AddComponent<ScreenController>();
+            screen = contentObject.GetChild("Mesh").AddComponent<ScreenController>();
             screen.m_content = contentObject.GetChildAt("Mesh/Content").transform;
             screen.m_contentAnim = contentObject.GetChildAt("Mesh/Content").GetComponent<Animation>();
             screen.m_screenRenderer = contentObject.GetChildAt("Mesh/Mesh").GetComponent<MeshRenderer>();
@@ -212,7 +230,7 @@ namespace FS_LevelEditor
             #region Computer Interface (UI)
             ComputerInterfaceController computerTemp = GameObject.Find("2DGUI/Camera/MiniGames/UpgradeComputerInterface5_Bonus2").GetComponent<ComputerInterfaceController>();
 
-            ComputerInterfaceController computerInterface = Instantiate(computerTemp.gameObject, computerTemp.transform.parent).GetComponent<ComputerInterfaceController>();
+            computerInterface = Instantiate(computerTemp.gameObject, computerTemp.transform.parent).GetComponent<ComputerInterfaceController>();
             computerInterface.name = "LE_UpgradeComputerInterface_" + objectID;
             Destroy(computerInterface.GetComponent<UniqueId>());
             Destroy(computerInterface.GetComponent<SavedObject>());
@@ -237,11 +255,24 @@ namespace FS_LevelEditor
                 if (upgrade.active)
                     upgradePage.availableUpgrades.Add(UpgradeSaveData.ConvertTypeToFSType(upgrade.type).Value);
             }
+
+            allComputerInterfaces.Add(computerInterface);
             #endregion
 
             interrupteur.objectsToEnableOnly[0] = computerInterface.gameObject;
 
             initialized = true;
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Playmode)
+            {
+                // Refresh terminal.
+                computerInterface.CheckUpgradeAvailability();
+            }
+
+            base.ObjectStart(scene);
         }
 
         public override bool SetProperty(string name, object value)
@@ -266,11 +297,19 @@ namespace FS_LevelEditor
 
             return base.TriggerAction(actionName);
         }
+
+        public static void RefreshUsableStateInAllTerminals()
+        {
+            foreach (var computer in allComputerInterfaces)
+            {
+                computer.CheckUpgradeAvailability();
+            }
+        }
     }
 
     // This would've been WAY easier if I could patch UpgradePageController.GetUpgradesFromMissing, but the patch didn't work for some reason.
     [HarmonyLib.HarmonyPatch(typeof(UpgradePageController), nameof(UpgradePageController.CreateUpgradeButtons))]
-    public static class UpgradesPageControllerPatch2
+    public static class GetRightUpgradesPatch1
     {
         public static bool IsCreatingUpgradeButtons = false;
         public static Il2CppSystem.Collections.Generic.List<UpgradePageController.UpgradeType> CurrentlyCreatingUpgrades;
@@ -287,17 +326,150 @@ namespace FS_LevelEditor
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(Controls), nameof(Controls.GetMissingUpgradesList))]
-    public static class UpgradesPageControllerPatch3
+    public static class GetRightUpgradesPatch2
     {
         public static bool Prefix(Controls __instance, out Il2CppSystem.Collections.Generic.List<UpgradePageController.UpgradeType> __result)
         {
-            if (UpgradesPageControllerPatch2.IsCreatingUpgradeButtons)
+            if (GetRightUpgradesPatch1.IsCreatingUpgradeButtons)
             {
-                __result = UpgradesPageControllerPatch2.CurrentlyCreatingUpgrades;
+                __result = GetRightUpgradesPatch1.CurrentlyCreatingUpgrades;
                 return false;
             }
 
             __result = null;
+            return true;
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(ComputerInterfaceController), nameof(ComputerInterfaceController.OnUpgradeTaken))]
+    public static class OnUpgradeTakenPatch
+    {
+        public static void Prefix(ComputerInterfaceController __instance, UpgradePageController.UpgradeType _selectedUpgrade)
+        {
+            if (__instance.name.Contains("LE"))
+            {
+                LE_Upgrade_Terminal terminal = __instance.m_associatedComputer.transform.GetComponentInParent<LE_Upgrade_Terminal>(true);
+                if (terminal)
+                {
+                    if (!terminal.firstUpgradeAlreadyTaken)
+                    {
+                        terminal.firstTakenUpgrade = _selectedUpgrade;
+                        terminal.firstTakenUpgradeLevel = Controls.GetCurrentLevelFor(_selectedUpgrade);
+
+                        terminal.firstUpgradeAlreadyTaken = true;
+
+                        terminal.isActive = false;
+                    }
+                    else
+                    {
+                        terminal.secondTakenUpgrade = _selectedUpgrade;
+                        terminal.secondTakenUpgradeLevel = Controls.GetCurrentLevelFor(_selectedUpgrade);
+
+                        terminal.secondUpgradeAlreadyTaken = true;
+
+                        terminal.isActive = false;
+                    }
+                }
+            }
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(ComputerInterfaceController), nameof(ComputerInterfaceController.CheckUpgradeAvailability))]
+    public static class SetUpdateConsumedCorrectlyPatch1
+    {
+        public static bool IsCheckingUpgradeAvailability = false;
+        public static ComputerInterfaceController CurrentlyCheckingFor;
+
+        public static void Prefix(ComputerInterfaceController __instance)
+        {
+            IsCheckingUpgradeAvailability = true;
+            CurrentlyCheckingFor = __instance;
+        }
+        public static void Postfix()
+        {
+            IsCheckingUpgradeAvailability = false;
+            CurrentlyCheckingFor = null;
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(FractalSave), nameof(FractalSave.HasKey))]
+    public static class SetUpdateConsumedCorrectlyPatch2
+    {
+        public static bool Prefix(string _key, ref bool __result)
+        {
+            // This is the key used for every LE terminal, since the name of the object where the interrupteur script is "Computer", and it's always Ch4 (Level4_PC).
+            if ((_key == "UpgradeComputer_Level4_PC_Computer" || _key == "UpgradeComputer_Level4_PC_Computer_EndGame") && SetUpdateConsumedCorrectlyPatch1.IsCheckingUpgradeAvailability)
+            {
+                LE_Upgrade_Terminal terminal = SetUpdateConsumedCorrectlyPatch1.CurrentlyCheckingFor.m_associatedComputer.GetComponentInParent<LE_Upgrade_Terminal>();
+                if (terminal)
+                {
+                    __result = !terminal.isActive;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(ComputerInterfaceController), nameof(ComputerInterfaceController.RefreshTakenUpgradeScreen))]
+    public static class RefreshTakenUpgradeScreenPatch
+    {
+        public static bool Prefix(ComputerInterfaceController __instance)
+        {
+            if (__instance.name.Contains("LE"))
+            {
+                LE_Upgrade_Terminal terminal = __instance.m_associatedComputer.transform.GetComponentInParent<LE_Upgrade_Terminal>(true);
+                if (terminal)
+                {
+                    string upgradeLocalized = "";
+
+                    if (terminal.firstUpgradeAlreadyTaken)
+                    {
+                        upgradeLocalized = Localization.Get("Upgrade_" + terminal.firstTakenUpgrade.ToString() + "_Title");
+                        if (Controls.GetMaxLevelFor(terminal.firstTakenUpgrade) > 1 && ComputerInterfaceController.IsUpgradableType(terminal.firstTakenUpgrade))
+                        {
+                            upgradeLocalized = string.Concat(new string[]
+                            {
+                            upgradeLocalized,
+                            " ",
+                            Localization.Get("Level_Word"),
+                            " ",
+                            terminal.firstTakenUpgradeLevel.ToString()
+                            });
+                        }
+                        __instance.m_associatedComputer.SetUpgradeTakenText(upgradeLocalized, false);
+                    }
+                    else
+                    {
+                        __instance.m_associatedComputer.SetUpgradeTakenText("", false);
+                    }
+
+                    if (terminal.secondUpgradeAlreadyTaken)
+                    {
+                        upgradeLocalized = Localization.Get("Upgrade_" + terminal.secondTakenUpgrade.ToString() + "_Title");
+                        if (Controls.GetMaxLevelFor(terminal.secondTakenUpgrade) > 1 && ComputerInterfaceController.IsUpgradableType(terminal.secondTakenUpgrade))
+                        {
+                            upgradeLocalized = string.Concat(new string[]
+                            {
+                                upgradeLocalized,
+                                " ",
+                                Localization.Get("Level_Word"),
+                                " ",
+                                terminal.secondTakenUpgradeLevel.ToString()
+                            });
+                        }
+                        __instance.m_associatedComputer.SetUpgradeTakenText(upgradeLocalized, true);
+                    }
+                    else
+                    {
+                        __instance.m_associatedComputer.SetUpgradeTakenText("", true);
+                    }
+                }
+
+                return false;
+            }
+
             return true;
         }
     }
