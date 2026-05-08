@@ -307,7 +307,9 @@ namespace FS_LevelEditor
         }
     }
 
-    // This would've been WAY easier if I could patch UpgradePageController.GetUpgradesFromMissing, but the patch didn't work for some reason.
+    // These patches are for forcing the terminal to show the right upgrades (the defined ones in the props).
+    // This is because even if we set availableUpgrades to ours, Controls.GetMissingUpgradesList overwrites it, prevent that.
+    // NOTE: This would've been WAY easier if I could patch UpgradePageController.GetUpgradesFromMissing, but the patch didn't work for some reason.
     [HarmonyLib.HarmonyPatch(typeof(UpgradePageController), nameof(UpgradePageController.CreateUpgradeButtons))]
     public static class GetRightUpgradesPatch1
     {
@@ -341,6 +343,7 @@ namespace FS_LevelEditor
         }
     }
 
+    // Detect when the upgrade is taken and update our variables.
     [HarmonyLib.HarmonyPatch(typeof(ComputerInterfaceController), nameof(ComputerInterfaceController.OnUpgradeTaken))]
     public static class OnUpgradeTakenPatch
     {
@@ -374,6 +377,9 @@ namespace FS_LevelEditor
         }
     }
 
+    // These patches are for when the terminal checks the upgrades state and decides to enable/disable itself, force it to use OUR values.
+    // In this case, patching FractalSave.HasKey to return if the terminal has already been used or not depending of our isActive variable.
+    // NOTE: It was this ugly patch, or recreating CheckUpgradeAvailability from scratch.
     [HarmonyLib.HarmonyPatch(typeof(ComputerInterfaceController), nameof(ComputerInterfaceController.CheckUpgradeAvailability))]
     public static class SetUpdateConsumedCorrectlyPatch1
     {
@@ -402,6 +408,7 @@ namespace FS_LevelEditor
                 LE_Upgrade_Terminal terminal = SetUpdateConsumedCorrectlyPatch1.CurrentlyCheckingFor.m_associatedComputer.GetComponentInParent<LE_Upgrade_Terminal>();
                 if (terminal)
                 {
+                    // If returns true, the terminal will deactivate, and viceversa.
                     __result = !terminal.isActive;
                 }
 
@@ -412,6 +419,8 @@ namespace FS_LevelEditor
         }
     }
 
+    // Custom implementation of RefreshTakenUpgradeScreen.
+    // EXACTLY the same as the main game, but using our variables instead of FractalSave, which is blocked in playmode to not mess with the main game's save.
     [HarmonyLib.HarmonyPatch(typeof(ComputerInterfaceController), nameof(ComputerInterfaceController.RefreshTakenUpgradeScreen))]
     public static class RefreshTakenUpgradeScreenPatch
     {
