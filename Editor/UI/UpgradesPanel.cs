@@ -325,6 +325,11 @@ namespace FS_LevelEditor.Editor.UI
 				{
                     EventsUIPageManager.Instance.ShowEventsPage(targetObject, false);
                 }
+				else
+				{
+                    EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
+                    EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
+                }
 				targetObject = null;
 			}
 			else
