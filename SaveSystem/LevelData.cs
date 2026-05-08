@@ -51,6 +51,12 @@ namespace FS_LevelEditor.SaveSystem
             active = _active;
             level = _level;
         }
+        public UpgradeSaveData(UpgradeSaveData original)
+        {
+            type = original.type;
+            active = original.active;
+            level = original.level;
+        }
 
         public static UpgradePageController.UpgradeType? ConvertTypeToFSType(UpgradeType type)
         {

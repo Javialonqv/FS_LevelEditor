@@ -566,6 +566,9 @@ namespace FS_LevelEditor
 
                 case WaypointData waypoint:
                     return new WaypointData(waypoint);
+
+                case UpgradeSaveData upgrade:
+                    return new UpgradeSaveData(upgrade);
             }
 
             if (value.GetType().IsValueType)
