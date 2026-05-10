@@ -62,22 +62,6 @@ namespace FS_LevelEditor
             sequence.resetSound = t_sequenceController.resetSound;
             sequence.stepSuccessSound = t_sequenceController.stepSuccessSound;
             sequence.sequenceSuccessSound = t_sequenceController.sequenceSuccessSound;
-            if (otherObjThisIsLinkedTo)
-            {
-                LE_Sequence_Screen screen = otherObjThisIsLinkedTo.mainObject as LE_Sequence_Screen;
-
-                sequence.invertDisplayOrder = screen.GetProperty<bool>("InvertDisplayOrder");
-                sequence.useNumbers = screen.GetProperty<bool>("UseNumbers");
-                sequence.screenObject = screen.screenObject;
-                sequence.LEDHolder = screen.LEDHolder.transform;
-            }
-            else
-            {
-                sequence.invertDisplayOrder = false;
-                sequence.useNumbers = false;
-                sequence.screenObject = sequence.gameObject.GetChild("ScreenObject");
-                sequence.LEDHolder = sequence.gameObject.GetChild("LEDHolder").transform;
-            }
             sequence.LEDindicatorPrefab = ledIndicator.gameObject;
             sequence.indicatorsInitialized = true;
             sequence.m_LEDIndicators = new Il2CppSystem.Collections.Generic.List<LEDIndicator>();
@@ -150,6 +134,27 @@ namespace FS_LevelEditor
         }
         public void FinishedSettingUpSteps()
         {
+            // This may have been called from SetProperty, object could not be initialized yet and be null.
+            if (!sequence)
+                return;
+
+            if (otherObjThisIsLinkedTo)
+            {
+                LE_Sequence_Screen screen = otherObjThisIsLinkedTo.mainObject as LE_Sequence_Screen;
+
+                sequence.invertDisplayOrder = screen.GetProperty<bool>("InvertDisplayOrder");
+                sequence.useNumbers = screen.GetProperty<bool>("UseNumbers");
+                sequence.screenObject = screen.screenObject;
+                sequence.LEDHolder = screen.LEDHolder.transform;
+            }
+            else
+            {
+                sequence.invertDisplayOrder = false;
+                sequence.useNumbers = false;
+                sequence.screenObject = sequence.gameObject.GetChild("ScreenObject");
+                sequence.LEDHolder = sequence.gameObject.GetChild("LEDHolder").transform;
+            }
+
             sequence.indicatorsInitialized = false;
             sequence.InitializeLEDIndicators();
 

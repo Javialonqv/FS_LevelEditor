@@ -43,12 +43,12 @@ namespace FS_LevelEditor
 
         public override void ObjectStart(LEScene scene)
         {
+            objectLink.SetTargetObject(GetProperty<int>("SequencerID"));
+
             if (scene == LEScene.Playmode)
             {
                 if (targetSequencer) MelonCoroutines.Start(WaitForSequenceInit());
             }
-
-            objectLink.SetTargetObject(GetProperty<int>("SequencerID"));
 
             base.ObjectStart(scene);
         }
@@ -57,10 +57,10 @@ namespace FS_LevelEditor
             while (targetSequencer.sequence == null)
                 yield return null;
 
-            InitializeLEDs();
+            FixLEDs();
         }
 
-        void InitializeLEDs()
+        void FixLEDs()
         {
             if (targetSequencer == null || targetSequencer.sequence == null) return;
 
@@ -119,12 +119,19 @@ namespace FS_LevelEditor
         public override void OnObjectLinkTargetChanged(LE_Object newTarget)
         {
             targetSequencer = objectLink.targetObject ? objectLink.targetObject as LE_Sequence : null;
+            // This may have been called from SetProperty, which mean there's a chance the target sequencer has not been instantiated yet, wait till it's called from ObjectStart.
+            if (!targetSequencer)
+                return;
 
-            UpdateScreen();
+            if (EditorController.Instance)
+                UpdateScreen(); // Custom-made update system for editor.
+            else
+                targetSequencer.FinishedSettingUpSteps(); // Use official one.
         }
         public void UpdateScreen()
         {
-            if (!EditorController.Instance) return;
+            if (!EditorController.Instance)
+                return;
 
             // targetSequencer is assigned on ObjectStart, but since it may be executed AFTER this function, assign it NOW
             //if (!targetSequencer) targetSequencer = objectLink.targetObject ? objectLink.targetObject as LE_Sequence : null;
