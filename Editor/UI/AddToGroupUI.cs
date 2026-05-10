@@ -150,7 +150,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void AddToNewGroup()
         {
-            int newGroupID = LE_Object.objectsPerGroup.Count;
+            int newGroupID = LE_Object.objectsPerGroup.Count > 0 ? LE_Object.objectsPerGroup.Keys.Max() + 1 : 0;
             foreach (var obj in targetObjs)
                 obj.SetGroup(newGroupID);
 
@@ -161,7 +161,8 @@ namespace FS_LevelEditor.Editor.UI
         void Refresh()
         {
             existingField.SetText("");
-            addToNewGroupButton.buttonLabel.text = Loc.Get("AddToNewGroup") + $" ({LE_Object.objectsPerGroup.Count})";
+            int nextGroupID = LE_Object.objectsPerGroup.Count > 0 ? LE_Object.objectsPerGroup.Keys.Max() + 1 : 0;
+            addToNewGroupButton.buttonLabel.text = Loc.Get("AddToNewGroup") + $" ({nextGroupID})";
 
             OnExistingFieldChanged();
         }
