@@ -77,7 +77,7 @@ namespace FS_LevelEditor
             blocScript.m_powerCoreLayerCheck = t_powerCore.m_powerCoreLayerCheck;
             blocScript.targetScale = Vector3.one;
             blocScript.m_iconPosition2 = contentObject.GetChild("IconPosition2").transform;
-            blocScript.respawnHeight = -15;
+            blocScript.respawnHeight = -115.73f;
             blocScript.currentWaterState = t_powerCore.currentWaterState;
             blocScript.onStartFloating = new UnityEngine.Events.UnityEvent();
             blocScript.onStartSinking = new UnityEngine.Events.UnityEvent();
@@ -94,6 +94,8 @@ namespace FS_LevelEditor
             blocScript.handPandora = HandController.Instance.handPandora;
             blocScript.handPowerCore = HandController.Instance.handPowerCore;
             blocScript.handTablet = HandController.Instance.handTablet;
+            blocScript.respawnPosition = blocScript.transform.position;
+            blocScript.respawnEulerAngles = blocScript.transform.eulerAngles;
 
             blocScript.m_audioSource.outputAudioMixerGroup = t_powerCore.m_audioSource.outputAudioMixerGroup;
 
