@@ -1291,21 +1291,21 @@ namespace FS_LevelEditor
             contentContainer.SetActive(true);
 
             // Truncate level name if too long (max 20 characters)
-     const int maxLevelNameLength = 20;
-     string displayName = data.levelName;
-      if (displayName.Length > maxLevelNameLength)
-      {
-       displayName = displayName.Substring(0, maxLevelNameLength) + "...";
-      }
+            const int maxLevelNameLength = 20;
+            string displayName = data.levelName;
+            if (displayName.Length > maxLevelNameLength)
+            {
+                displayName = displayName.Substring(0, maxLevelNameLength) + "...";
+            }
 
             // Update labels
-      previewLevelNameLabel.text = displayName;
-    previewObjectCountLabel.text = $"Objects: {data.objects.Count}";
-    previewAuthorLabel.text = string.IsNullOrWhiteSpace(data.authorName) ? "[888888]Unknown[-]" : data.authorName;
-  previewTagsLabel.text = string.IsNullOrWhiteSpace(data.tags) ? "[888888]None[-]" : data.tags;
-         previewDescriptionLabel.text = string.IsNullOrWhiteSpace(data.description) ? "[888888]No description provided.[-]" : data.description;
+            previewLevelNameLabel.text = displayName;
+            previewObjectCountLabel.text = $"Objects: {data.objects.Count}";
+            previewAuthorLabel.text = string.IsNullOrWhiteSpace(data.authorName) ? "[888888]Unknown[-]" : data.authorName;
+            previewTagsLabel.text = string.IsNullOrWhiteSpace(data.tags) ? "[888888]None[-]" : data.tags;
+            previewDescriptionLabel.text = string.IsNullOrWhiteSpace(data.description) ? "[888888]No description provided.[-]" : data.description;
 
-          // Load thumbnail if available
+            // Load thumbnail if available
             if (!string.IsNullOrEmpty(data.thumbnailBase64))
             {
                 try
