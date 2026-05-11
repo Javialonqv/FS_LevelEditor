@@ -52,7 +52,27 @@ namespace FS_LevelEditor
 
         public override void ObjectStart(LEScene scene)
         {
-            SetMeshInEditor(GetProperty<SwitchState>("InitialState"));
+            if (scene == LEScene.Editor)
+                SetMeshInEditor(GetProperty<SwitchState>("InitialState"));
+
+            if (scene == LEScene.Playmode)
+            {
+                switch (GetProperty<SwitchState>("InitialState"))
+                {
+                    case SwitchState.DEACTIVATED:
+                        // Switch is already disabled at start by default.
+                        break;
+
+                    case SwitchState.ACTIVATED:
+                        // Events aren't triggered when called this way.
+                        TriggerAction("Activate");
+                        break;
+
+                    case SwitchState.UNUSABLE:
+                        TriggerAction("SetUnusable");
+                        break;
+                }
+            }
 
             base.ObjectStart(scene);
         }
@@ -123,7 +143,10 @@ namespace FS_LevelEditor
             controller.m_onActivate_HandOnly = new UnityEngine.Events.UnityEvent();
             controller.m_onActivate_TaserOnly = new UnityEngine.Events.UnityEvent();
             controller.messagesOnActivate = new Messenger[0];
+            controller.messagesOnDeactivate = new Messenger[0];
             controller.dialogToActivate = new string[0];
+            controller.doorsToClose = new GameObject[0];
+            controller.toggleCanBeUsed = new GameObject[0];
 
             controller.usableOnce = (bool)GetProperty("UsableOnce");
             //controller.ignoreLaser = !(bool)GetProperty("CanUseTaser");
@@ -139,23 +162,7 @@ namespace FS_LevelEditor
                 controller.laserOnly = false;
             }
 
-			// Do all of this BEFORE configuring the switch events.
-			switch (GetProperty<SwitchState>("InitialState"))
-            {
-                case SwitchState.DEACTIVATED:
-                    // Switch is already disabled at start by default.
-                    break;
-
-                case SwitchState.ACTIVATED:
-                    controller.ActivateSwitch();
-                    break;
-
-                case SwitchState.UNUSABLE:
-                    controller.IsNowUnusable();
-                    break;
-            }
-
-            if ((bool)GetProperty<bool>("Cyan"))
+            if (GetProperty<bool>("Cyan"))
             {
                 controller.onColor = InterrupteurController.ColorType.CYAN;
                 controller.m_onActivate.AddListener((UnityEngine.Events.UnityAction)delegate {
