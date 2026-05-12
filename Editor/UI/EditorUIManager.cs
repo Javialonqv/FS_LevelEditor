@@ -30,7 +30,8 @@ namespace FS_LevelEditor.Editor.UI
 		GROUPS_PANEL,
 		ADD_TO_GROUP_PANEL,
 		UPGRADES_PANEL,
-		SAVE_METADATA_PANEL
+		SAVE_METADATA_PANEL,
+		FIND_OBJECT
 	}
 
 	[RegisterTypeInIl2Cpp]
@@ -57,6 +58,7 @@ namespace FS_LevelEditor.Editor.UI
 		UILabel hittenTargetObjLabel;
 
 		UIButtonPatcher groupsButton;
+		UIButtonPatcher findObjectButton;
 
 		// Misc
 		GameObject occluderForWhenPaused;
@@ -127,6 +129,7 @@ namespace FS_LevelEditor.Editor.UI
 			AddToGroupUI.Create();
 			UpgradesPanel.Create();
 			SaveMetadataPopup.Create();
+			FindObjectUI.Create();
 
 			CreateHittenTargetObjPanel();
 
@@ -136,6 +139,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateStatsLabel();
 
 			CreateGroupsButton();
+			CreateFindObjectButton();
 
             // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
@@ -419,7 +423,12 @@ namespace FS_LevelEditor.Editor.UI
 			groupsButton.name = "GroupsButton";
 			groupsButton.onClick += GroupsUI.Instance.ShowGroupsPanel;
 		}
-
+        void CreateFindObjectButton()
+        {
+            findObjectButton = NGUI_Utils.CreateButton(editorUIParent.transform, new Vector3(-935, 250), Vector3Int.one * 50, "...");
+            findObjectButton.name = "FindObjectButton";
+            findObjectButton.onClick += FindObjectUI.Instance.Show;
+        }
 
         public void ShowPause()
 		{
@@ -612,6 +621,10 @@ namespace FS_LevelEditor.Editor.UI
 				case EditorUIContext.SAVE_METADATA_PANEL:
 					target = SaveMetadataPopup.Instance.popupPanel;
 					break;
+
+				case EditorUIContext.FIND_OBJECT:
+					target = FindObjectUI.Instance.findPanel;
+					break;
 			}
             #endregion
 
@@ -743,7 +756,11 @@ namespace FS_LevelEditor.Editor.UI
 				case EditorUIContext.SAVE_METADATA_PANEL:
 					target = SaveMetadataPopup.Instance.popupPanel;
 					break;
-			}
+
+                case EditorUIContext.FIND_OBJECT:
+                    target = FindObjectUI.Instance.findPanel;
+                    break;
+            }
             #endregion
 
             #region Play The Animation

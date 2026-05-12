@@ -215,3 +215,7 @@ ExecIfInsideTooltip,Executes the [b]On Enter[/b] events when the trigger is [i]s
 ExecIfDespawnedTooltip,Executes the [b]On Exit[/b] events when the trigger is [i]despawned[/i] while the player is [b]still inside.[/b],Ejecuta los eventos [b]Al Salir[/b] cuando el trigger se [i]desactiva[/i] mientras el jugador [b]sigue adentro.[/b],
 canBeUsed,Usable,Usable,
 DestroyCubes,Destroy Cubes,Destruir Cubos,
+FindObject,Find Object,Encontrar Objeto,
+SelectObject,Select Object,Seleccionar Objeto,
+SelectAllObjects,Select All Objects,Seleccionar Todos los Objetos,
+EnterAnObjectName,Enter an object name...,Introduce el nombre de un objeto...,

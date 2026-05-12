@@ -58,6 +58,7 @@
 		<Compile Include="Editor\UI\AddToGroupUI.cs" />
 		<Compile Include="Editor\UI\ContextMenu.cs" />
 		<Compile Include="Editor\UI\EditorObjectsToBuildUI.cs" />
+		<Compile Include="Editor\UI\FindObjectUI.cs" />
 		<Compile Include="Editor\UI\GlobalPropertiesPanel.cs" />
 		<Compile Include="Editor\UI\GroupsUI.cs" />
 		<Compile Include="Editor\UI\NotificationSystem.cs" />

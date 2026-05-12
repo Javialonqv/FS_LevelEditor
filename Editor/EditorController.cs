@@ -740,6 +740,11 @@ namespace FS_LevelEditor.Editor
                     SaveMetadataPopup.Instance.OnCancelButtonClicked();
                     return;
                 }
+                else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.FIND_OBJECT))
+                {
+                    FindObjectUI.Instance.Hide();
+                    return;
+                }
 
                 if (!IsCurrentState(EditorState.PAUSED))
                 {
