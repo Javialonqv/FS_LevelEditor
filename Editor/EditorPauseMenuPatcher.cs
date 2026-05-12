@@ -331,5 +331,10 @@ namespace FS_LevelEditor.Editor
             Destroy(saveButtonLE);
             Destroy(exitButtonLE);
         }
+
+        void OnDestroy()
+        {
+            patcher = null;
+        }
     }
 }

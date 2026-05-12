@@ -45,6 +45,11 @@ namespace FS_LevelEditor.Editor.UI
 			Logger.Log("SaveMetadataPopup initialized successfully");
 		}
 
+		void OnDestroy()
+		{
+			Instance = null;
+		}
+
 		void CreatePopupUI()
 		{
             #region Create Dark Background

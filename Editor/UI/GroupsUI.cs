@@ -85,6 +85,17 @@ namespace FS_LevelEditor.Editor.UI
             CreateDeleteGroupButton();
         }
 
+        void OnDestroy()
+        {
+            groupButtons.Clear();
+            modifiedGroups.Clear();
+
+            groupButtons = null;
+            modifiedGroups = null;
+
+            Instance = null;
+        }
+
         #region Create UI
         void CreateGroupsPanel()
         {

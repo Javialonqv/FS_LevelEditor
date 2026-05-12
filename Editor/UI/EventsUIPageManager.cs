@@ -587,6 +587,17 @@ namespace FS_LevelEditor.Editor.UI
             }
         }
 
+        void OnDestroy()
+        {
+            eventButtons.Clear();
+            eventsListsNames.Clear();
+
+            eventButtons = null;
+            eventsListsNames = null;
+
+            Instance = null;
+        }
+
         #region Events List Related
         void SetupTopButtons()
         {

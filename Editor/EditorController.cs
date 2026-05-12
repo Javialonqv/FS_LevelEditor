@@ -3013,6 +3013,29 @@ namespace FS_LevelEditor.Editor
             MenuController.isInLevelEditor = false;
             Destroy(editorObjectsRootFromBundle);
 
+            allCategoriesObjectsSorted.Clear();
+            allCategoriesObjects.Clear();
+            allMaterialsFromBundle.Clear();
+            categoriesNames.Clear();
+            currentSelectedObjects.Clear();
+            currentSelectedObjsComponents.Clear();
+            actionsMade.Clear();
+            globalProperties.Clear();
+            skyboxes.Clear();
+            tracks.Clear();
+
+            allCategoriesObjectsSorted = null;
+            allCategoriesObjects = null;
+            allMaterialsFromBundle = null;
+            otherObjectsFromBundle = null;
+            categoriesNames = null;
+            currentSelectedObjects = null;
+            currentSelectedObjsComponents = null;
+            actionsMade = null;
+            globalProperties = null;
+            skyboxes = null;
+            tracks = null;
+
             // Unload the asset bundle when the editor is destroyed
             if (editorAssetBundle != null && !Core.isQuitting)
             {
@@ -3026,6 +3049,8 @@ namespace FS_LevelEditor.Editor
                 }
                 editorAssetBundle = null;
             }
+
+            Instance = null;
         }
 
         #region Current Editor State Methods

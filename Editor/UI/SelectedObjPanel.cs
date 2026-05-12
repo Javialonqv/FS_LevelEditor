@@ -192,6 +192,14 @@ namespace FS_LevelEditor.Editor.UI
 			CreateBody();
 		}
 
+		void OnDestroy()
+		{
+			attributesPanels.Clear();
+			attributesPanels = null;
+
+			Instance = null;
+		}
+
 		#region Create UI
 		void CreateHeader()
 		{

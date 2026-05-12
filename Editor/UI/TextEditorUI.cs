@@ -60,6 +60,11 @@ namespace FS_LevelEditor.Editor.UI
             CreateTextAlignmentStuff();
         }
 
+        void OnDestroy()
+        {
+            Instance = null;
+        }
+
         void CreateTextEditorPanel()
         {
             editorPanel = Instantiate(NGUI_Utils.optionsPanel, EditorUIManager.Instance.editorUIParent.transform);

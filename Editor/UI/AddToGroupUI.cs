@@ -39,6 +39,12 @@ namespace FS_LevelEditor.Editor.UI
             CreateExistingGroupButton();
             CreateNewGroupButton();
         }
+        void OnDestroy()
+        {
+            targetObjs = null;
+
+            Instance = null;
+        }
 
         void CreatePanel()
         {

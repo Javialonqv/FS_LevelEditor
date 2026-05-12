@@ -103,6 +103,17 @@ namespace FS_LevelEditor.Editor.UI
 
 		public UpgradesPanel(IntPtr ptr) : base(ptr) { }
 
+		void OnDestroy()
+		{
+			upgradeButtons.Clear();
+			currentActiveUpgradesList.Clear();
+
+			upgradeButtons = null;
+			currentActiveUpgradesList = null;
+
+			Instance = null;
+		}
+
 		#region Create UI
 		void CreateUpgradesPanel()
 		{

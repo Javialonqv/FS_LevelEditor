@@ -57,6 +57,10 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			RefreshGlobalPropertiesPanelValues();
 		}
+		void OnDestroy()
+		{
+			Instance = null;
+		}
 
 		void CreatePanelBackground()
 		{

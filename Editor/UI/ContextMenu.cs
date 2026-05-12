@@ -51,6 +51,15 @@ namespace FS_LevelEditor.Editor.UI
             mainPanel.depth = depth;
         }
 
+        void OnDestroy()
+        {
+            menuOptions.Clear();
+            createdMenuButtons.Clear();
+
+            menuOptions = null;
+            createdMenuButtons = null;
+        }
+
         public void AddOption(ContextMenuOption option)
         {
             menuOptions.Add(option);

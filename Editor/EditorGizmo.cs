@@ -17,13 +17,13 @@ namespace FS_LevelEditor.Editor
         GameObject xObj, yObj, zObj;
 
         GizmosArrow currentHighlightedArrow = GizmosArrow.None;
-        readonly Dictionary<GizmosArrow, Color> arrowBaseColors = new Dictionary<GizmosArrow, Color>()
+        static readonly Dictionary<GizmosArrow, Color> arrowBaseColors = new Dictionary<GizmosArrow, Color>()
         {
             { GizmosArrow.X, new Color(0.89f, 0.27f, 0.20f, 1f) },
             { GizmosArrow.Y, new Color(0.25f, 0.78f, 0.35f, 1f) },
             { GizmosArrow.Z, new Color(0.20f, 0.52f, 0.89f, 1f) },
         };
-        readonly Dictionary<GizmosArrow, Color> arrowHighlightedColors = new Dictionary<GizmosArrow, Color>()
+        static readonly Dictionary<GizmosArrow, Color> arrowHighlightedColors = new Dictionary<GizmosArrow, Color>()
         {
             { GizmosArrow.X, new Color(0.956f, 0.708f, 0.68f) },
             { GizmosArrow.Y, new Color(0.7f, 0.912f, 0.74f) },
@@ -37,6 +37,11 @@ namespace FS_LevelEditor.Editor
             xObj = transform.GetChild(0).gameObject;
             yObj = transform.GetChild(1).gameObject;
             zObj = transform.GetChild(2).gameObject;
+        }
+
+        void OnDestroy()
+        {
+            Instance = null;
         }
 
         public GizmosArrow GetHoveredArrow(out Ray usedRay)

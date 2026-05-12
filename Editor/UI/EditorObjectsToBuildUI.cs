@@ -63,6 +63,19 @@ namespace FS_LevelEditor.Editor.UI
             Invoke("ForceEnableFirstCategory", 0.1f);
         }
 
+        void OnDestroy()
+        {
+            objectsToBuildParentsByCategories.Clear();
+            objectsToBuildGrids.ForEach(x => x.Clear());
+            objectsToBuildGrids.Clear();
+            allActiveSwatches.Clear();
+
+            objectsToBuildParentsByCategories = null;
+            objectsToBuildGrids.ForEach(x => x = null);
+            objectsToBuildGrids = null;
+            allActiveSwatches = null;
+        }
+
 		#region Create UI
 		void ForceEnableFirstCategory()
 		{

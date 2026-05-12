@@ -814,6 +814,8 @@ namespace FS_LevelEditor.Editor.UI
 				// Revert this just in case it breaks something LOL.
 				MenuController.GetInstance().m_uiCamera.submitKey0 = KeyCode.None;
 			}
-		}
+
+            Instance = null;
+        }
 	}
 }
