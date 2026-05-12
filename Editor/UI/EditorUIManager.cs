@@ -419,13 +419,13 @@ namespace FS_LevelEditor.Editor.UI
 
 		void CreateGroupsButton()
 		{
-			groupsButton = NGUI_Utils.CreateButton(editorUIParent.transform, new Vector3(-935, 300), Vector3Int.one * 50, "...");
+			groupsButton = NGUI_Utils.CreateButton(editorUIParent.transform, new Vector3(-935, 200), Vector3Int.one * 50, "...");
 			groupsButton.name = "GroupsButton";
 			groupsButton.onClick += GroupsUI.Instance.ShowGroupsPanel;
 		}
         void CreateFindObjectButton()
         {
-            findObjectButton = NGUI_Utils.CreateButton(editorUIParent.transform, new Vector3(-935, 250), Vector3Int.one * 50, "...");
+            findObjectButton = NGUI_Utils.CreateButton(editorUIParent.transform, new Vector3(-935, 140), Vector3Int.one * 50, "...");
             findObjectButton.name = "FindObjectButton";
             findObjectButton.onClick += FindObjectUI.Instance.Show;
         }
