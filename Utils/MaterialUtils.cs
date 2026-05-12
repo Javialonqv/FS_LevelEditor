@@ -13,6 +13,8 @@ namespace FS_LevelEditor
         static Material propsMat, propsTransMat;
         static Material propsNoSpecMat, propsTransNoSpecMat;
         static Material newPropsv1Mat, newPropsv1TransMat;
+        static Material newPropsv2Mat, newPropsv2TransMat;
+        static Material newPropsv3Mat, newPropsv3TransMat;
 
         static readonly Dictionary<(string name, Color matColor, Color emissionColor), Material> createdMaterialsWithColors = new();
 
@@ -50,6 +52,12 @@ namespace FS_LevelEditor
 
             newPropsv1Mat = bundle.Load<Material>("NewProps_v1");
             newPropsv1TransMat = bundle.Load<Material>("NewProps_v1_Transparent");
+
+            newPropsv2Mat = bundle.Load<Material>("NewProps_v2");
+            newPropsv2TransMat = bundle.Load<Material>("NewProps_v2_Transparent");
+
+            newPropsv3Mat = bundle.Load<Material>("NewProps_v3");
+            newPropsv3TransMat = bundle.Load<Material>("NewProps_v3_Transparent");
         }
 
         public static void SetTransparentMaterials(this GameObject gameObject)
@@ -73,6 +81,10 @@ namespace FS_LevelEditor
                         // Do nothing
                     else if (matName.Contains("NewProps_v1"))
                         toAssign = newPropsv1TransMat;
+                    else if (matName.Contains("NewProps_v2"))
+                        toAssign = newPropsv2TransMat;
+                    else if (matName.Contains("NewProps_v3"))
+                        toAssign = newPropsv3TransMat;
 
                     if (toAssign)
                     {
@@ -103,6 +115,10 @@ namespace FS_LevelEditor
                         toAssign = propsNoSpecMat;
                     else if (matName.Contains("NewProps_v1_Transparent"))
                         toAssign = newPropsv1Mat;
+                    else if (matName.Contains("NewProps_v2_Transparent"))
+                        toAssign = newPropsv2Mat;
+                    else if (matName.Contains("NewProps_v3_Transparent"))
+                        toAssign = newPropsv3Mat;
 
                     if (toAssign)
                     {
