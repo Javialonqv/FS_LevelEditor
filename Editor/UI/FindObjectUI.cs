@@ -186,7 +186,7 @@ namespace FS_LevelEditor.Editor.UI
             objectNameField.input.defaultText = Loc.Get("EnterAnObjectName");
             selectButton.button.isEnabled = valid;
             if (valid)
-                selectButton.buttonLabel.text = targetObjects.Count > 1 ? Loc.Get("SelectAllObjects") : Loc.Get("SelectObject");
+                selectButton.buttonLabel.text = targetObjects.Count > 1 ? Loc.Get("SelectAllObjects") + $" ({targetObjects.Count})" : Loc.Get("SelectObject");
             else
                 selectButton.buttonLabel.text = Loc.Get("SelectObject");
         }
