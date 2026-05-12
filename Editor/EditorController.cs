@@ -1483,6 +1483,8 @@ namespace FS_LevelEditor.Editor
                 gizmosRoot.SetActive(false);
             }
 
+            EditorUIManager.Instance.RefreshUIElementsVisibility();
+
             Logger.Log("Changed LE mode to: " + currentMode);
             EditorUIManager.Instance.SetCurrentModeLabelText(currentMode);
         }

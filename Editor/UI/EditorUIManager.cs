@@ -38,6 +38,7 @@ namespace FS_LevelEditor.Editor.UI
 	public class EditorUIManager : MonoBehaviour
 	{
 		public static EditorUIManager Instance;
+		public bool UIAlreadyCreated { get; private set; }
 
 		public GameObject editorUIParent;
 
@@ -57,8 +58,8 @@ namespace FS_LevelEditor.Editor.UI
 		GameObject hittenTargetObjPanel;
 		UILabel hittenTargetObjLabel;
 
-		UIButtonPatcher groupsButton;
-		UIButtonPatcher findObjectButton;
+		public UIButtonPatcher groupsButton;
+		public UIButtonPatcher findObjectButton;
 
 		// Misc
 		GameObject occluderForWhenPaused;
@@ -143,6 +144,8 @@ namespace FS_LevelEditor.Editor.UI
 
             // To fix the bug where sometimes the LE UI elements are "covered" by an object if it's too close to the editor camera, set the depth HIGHER.
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 12;
+
+			UIAlreadyCreated = true;
 		}
 		void DisableFuckingPauseMenu() => pauseMenu.SetActive(false);
 
@@ -682,21 +685,6 @@ namespace FS_LevelEditor.Editor.UI
                     target.SetActive(true);
                 }
             }
-            #endregion
-
-            #region UI Elements To Only Enable When Normal
-            EditorObjectsToBuildUI.Instance.root.SetActive(newContext == EditorUIContext.NORMAL && EditorController.Instance.currentMode == EditorController.Mode.Building);
-            SelectedObjPanel.Instance.gameObject.SetActive(newContext == EditorUIContext.NORMAL && EditorController.Instance.currentMode != EditorController.Mode.Building);
-
-            bulkSelectionPanel.SetActive(newContext == EditorUIContext.NORMAL);
-            bulkNextButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
-            bulkPreviousButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
-            bulkSelectionLabel.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
-            currentModeLabel.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
-            nextButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
-            previousButtonObj.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
-            statsLabel.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
-			groupsButton.gameObject.SetActive(newContext == EditorUIContext.NORMAL);
 			#endregion
 
 			// Make sure any object on the other UI is deselected properly to avoid bugs.
@@ -705,6 +693,8 @@ namespace FS_LevelEditor.Editor.UI
 
             previousUIContext = currentUIContext;
 			currentUIContext = newContext;
+
+			RefreshUIElementsVisibility();
 
 			Logger.Log($"Switched Editor UI Context from {previousUIContext} to {currentUIContext}.");
 		}
@@ -806,6 +796,26 @@ namespace FS_LevelEditor.Editor.UI
             #endregion
         }
         #endregion
+
+		public void RefreshUIElementsVisibility()
+		{
+			if (!UIAlreadyCreated)
+				return;
+
+            EditorObjectsToBuildUI.Instance.root.SetActive(currentUIContext == EditorUIContext.NORMAL && EditorController.Instance.currentMode == EditorController.Mode.Building);
+            SelectedObjPanel.Instance.gameObject.SetActive(currentUIContext == EditorUIContext.NORMAL && EditorController.Instance.currentMode != EditorController.Mode.Building);
+
+            bulkSelectionPanel.SetActive(currentUIContext == EditorUIContext.NORMAL);
+            bulkNextButtonObj.gameObject.SetActive(currentUIContext == EditorUIContext.NORMAL);
+            bulkPreviousButtonObj.gameObject.SetActive(currentUIContext == EditorUIContext.NORMAL);
+            bulkSelectionLabel.gameObject.SetActive(currentUIContext == EditorUIContext.NORMAL);
+            currentModeLabel.gameObject.SetActive(currentUIContext == EditorUIContext.NORMAL);
+            nextButtonObj.gameObject.SetActive(currentUIContext == EditorUIContext.NORMAL);
+            previousButtonObj.gameObject.SetActive(currentUIContext == EditorUIContext.NORMAL);
+            statsLabel.gameObject.SetActive(currentUIContext == EditorUIContext.NORMAL);
+            groupsButton.gameObject.SetActive(currentUIContext == EditorUIContext.NORMAL && !SelectedObjPanel.Instance.IsExpandedAndVisible());
+            findObjectButton.gameObject.SetActive(currentUIContext == EditorUIContext.NORMAL && !SelectedObjPanel.Instance.IsExpandedAndVisible());
+        }
 
         public static bool IsCurrentUIContext(EditorUIContext context)
 		{

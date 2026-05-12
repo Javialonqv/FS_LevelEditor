@@ -948,7 +948,7 @@ namespace FS_LevelEditor.Editor.UI
 					body.GetComponent<BoxCollider>().center = new Vector3(0, -200f);
 					body.GetComponent<BoxCollider>().size = new Vector3(500, 400);
 					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -200f, 500, 360);
-				}
+                }
 				else // EXPANDED PANEL
 				{
 					gameObject.transform.localPosition = new Vector3(-690f, 500, 0f); // Changed from -700f to -690f
@@ -958,7 +958,7 @@ namespace FS_LevelEditor.Editor.UI
 					body.GetComponent<BoxCollider>().center = new Vector3(0, -510f);
 					body.GetComponent<BoxCollider>().size = new Vector3(500, 1020);
 					body.GetComponent<UIPanel>().clipRange = new Vector4(0f, -510f, 500, 1000);
-				}
+                }
 
 				panelIsExpanded = expand;
 			}
@@ -970,10 +970,11 @@ namespace FS_LevelEditor.Editor.UI
 				setActiveAtStartToggle.gameObject.SetActive(false);
 				expandPanelButton.gameObject.SetActive(false);
 				globalObjAttributesToggle.gameObject.SetActive(false);
-				//panelIsExpanded = false;
 			}
 
 			showingPanel = show;
+
+			EditorUIManager.Instance.RefreshUIElementsVisibility();
 		}
 		public void ExpandButtonClick()
 		{
@@ -1006,6 +1007,11 @@ namespace FS_LevelEditor.Editor.UI
 			{
 				headerTitle.SetLocKey("selection.NoObjectSelected");
 			}
+		}
+
+		public bool IsExpandedAndVisible()
+		{
+			return showingPanel && panelIsExpanded && gameObject.activeInHierarchy;
 		}
 
 		public void SetSelectedObjPanelAsNone()
