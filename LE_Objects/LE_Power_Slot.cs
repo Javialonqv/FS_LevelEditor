@@ -1,4 +1,6 @@
-﻿using Il2Cpp;
+﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Playmode;
+using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +14,51 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Power_Slot : LE_Object
     {
+        public enum PowerSlotState
+        {
+            DEACTIVATED,
+            ACTIVATED
+        }
+        public PowerCoreController powerCore;
+        MeshRenderer mesh;
+        GameObject editorPowerCore;
+
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
             {
+                { "InitialState", PowerSlotState.DEACTIVATED },
                 { "OnBoth", new List<LE_Event>() },
                 { "OnInsert", new List<LE_Event>() },
                 { "OnRemove", new List<LE_Event>() }
             };
+        }
+
+        void Awake()
+        {
+            mesh = contentObject.GetChild("Mesh").GetComponent<MeshRenderer>();
+            editorPowerCore = contentObject.GetChild("Editor_PowerCore");
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+                SetStateOnEditor(GetProperty<PowerSlotState>("InitialState"));
+
+            if (scene == LEScene.Playmode)
+            {
+                if (GetProperty<PowerSlotState>("InitialState") == PowerSlotState.ACTIVATED)
+                {
+                    GameObject initialPowerCore = PlayModeController.Instance.PlaceObject(ObjectType.POWER_CORE, transform.position, transform.eulerAngles, transform.localScale, false);
+                    LE_Power_Core initialPowerCoreScript = initialPowerCore.GetComponent<LE_Power_Core>();
+
+                    // Set this variables, so we wait till LE_Power_Core.ObjectStart is called, and THEN it'll initialize itself into this power slot.
+                    initialPowerCoreScript.insertToPowerSlotOnStart = true;
+                    initialPowerCoreScript.powerSlotToInsertTo = this;
+                }
+            }
+
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()
@@ -27,7 +66,7 @@ namespace FS_LevelEditor
             contentObject.SetActive(false);
             contentObject.tag = "PowerCoreSlot";
 
-            PowerCoreController powerCore = contentObject.AddComponent<PowerCoreController>();
+            powerCore = contentObject.AddComponent<PowerCoreController>();
             powerCore.randomKeys = new Il2CppSystem.Collections.Generic.List<string>();
             powerCore.interactionColliders = new Il2CppSystem.Collections.Generic.List<UnityEngine.Collider>();
             powerCore.m_powerCoreHolder = contentObject.GetChild("PowerCoreHolder").transform;
@@ -164,6 +203,14 @@ namespace FS_LevelEditor
             initialized = true;
         }
 
+        void SetStateOnEditor(PowerSlotState state)
+        {
+            Material newMat = state == PowerSlotState.ACTIVATED ? MaterialUtils.newPropsv3Mat : MaterialUtils.newPropsv2Mat;
+            mesh.sharedMaterial = newMat;
+
+            editorPowerCore.SetActive(state == PowerSlotState.ACTIVATED);
+        }
+
         void ConfigureEvents(PowerCoreController powerCore)
         {
             powerCore.m_onInsert = new UnityEvent();
@@ -174,7 +221,6 @@ namespace FS_LevelEditor
             powerCore.m_onRemove.AddListener((UnityAction)ExecuteOnRemoveEvents);
             powerCore.m_onRemove.AddListener((UnityAction)ExecuteOnBothEventsDeactivating);
         }
-
         void ExecuteOnInsertEvents()
         {
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnInsert"], "OnInsert", true);
@@ -194,6 +240,23 @@ namespace FS_LevelEditor
 
         public override bool SetProperty(string name, object value)
         {
+            if (name == "InitialState")
+            {
+                if (value is int)
+                {
+                    properties["InitialState"] = (PowerSlotState)value;
+                    if (EditorController.Instance)
+                        SetStateOnEditor((PowerSlotState)value);
+                    return true;
+                }
+                else if (value is PowerSlotState)
+                {
+                    properties["InitialState"] = value;
+                    if (EditorController.Instance)
+                        SetStateOnEditor((PowerSlotState)value);
+                    return true;
+                }
+            }
             if (GetAvailableEventsIDs().Contains(name))
             {
                 if (value is List<LE_Event>)

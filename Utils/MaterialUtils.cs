@@ -10,11 +10,11 @@ namespace FS_LevelEditor
 {
     public static class MaterialUtils
     {
-        static Material propsMat, propsTransMat;
-        static Material propsNoSpecMat, propsTransNoSpecMat;
-        static Material newPropsv1Mat, newPropsv1TransMat;
-        static Material newPropsv2Mat, newPropsv2TransMat;
-        static Material newPropsv3Mat, newPropsv3TransMat;
+        public static Material propsMat, propsTransMat;
+        public static Material propsNoSpecMat, propsTransNoSpecMat;
+        public static Material newPropsv1Mat, newPropsv1TransMat;
+        public static Material newPropsv2Mat, newPropsv2TransMat;
+        public static Material newPropsv3Mat, newPropsv3TransMat;
 
         static readonly Dictionary<(string name, Color matColor, Color emissionColor), Material> createdMaterialsWithColors = new();
 

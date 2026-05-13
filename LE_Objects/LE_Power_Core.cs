@@ -12,6 +12,11 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Power_Core : LE_Object
     {
+        public BlocScript blocScript;
+
+        public bool insertToPowerSlotOnStart = false;
+        public LE_Power_Slot powerSlotToInsertTo = null;
+
         void Awake()
         {
             if (EditorController.Instance)
@@ -27,7 +32,7 @@ namespace FS_LevelEditor
 
             contentObject.tag = "Bloc";
 
-            BlocScript blocScript = contentObject.AddComponent<BlocScript>();
+            blocScript = contentObject.AddComponent<BlocScript>();
             blocScript.activateSwitches = false;
             blocScript.rigidBodiesInContact = new Il2CppSystem.Collections.Generic.List<UnityEngine.Rigidbody>();
             blocScript.useMeshSwap = false;
@@ -224,6 +229,26 @@ namespace FS_LevelEditor
             contentObject.SetActive(true);
 
             initialized = true;
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Playmode && insertToPowerSlotOnStart)
+            {
+                contentObject.transform.position = powerSlotToInsertTo.powerCore.m_powerCoreHolder.transform.position;
+                contentObject.transform.rotation = powerSlotToInsertTo.powerCore.m_powerCoreHolder.transform.rotation;
+
+                // Use _fromSave true so the animation is skipped?
+                powerSlotToInsertTo.powerCore.OnInsert(blocScript, true);
+                blocScript.m_currentlyInsertedPowerCore = powerSlotToInsertTo.powerCore;
+                blocScript.m_rigidbody.isKinematic = true;
+                blocScript.SetDisabledWhileInHands(false);
+                blocScript.SetEnabledWhenInHands(false);
+                if (blocScript.playerCollisionOnly)
+                    blocScript.playerCollisionOnly.SetActive(false);
+            }
+
+            base.ObjectStart(scene);
         }
     }
 }
