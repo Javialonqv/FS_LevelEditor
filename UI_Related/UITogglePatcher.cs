@@ -37,6 +37,10 @@ namespace FS_LevelEditor.UI_Related
 
             initialized = true;
         }
+        void OnDestroy()
+        {
+            onClick = null;
+        }
 
         void OnToggleChange()
         {

@@ -54,5 +54,28 @@ namespace FS_LevelEditor.UI_Related
                 onClick.Invoke();
             }
         }
+        void OnDestroy()
+        {
+            onClick = null;
+
+            if (gameObject.TryGetComponent<UIEventListener>(out var listener))
+            {
+                listener.onClick = null;
+                listener.onDoubleClick = null;
+                listener.onDrag = null;
+                listener.onDragEnd = null;
+                listener.onDragOut = null;
+                listener.onDragOver = null;
+                listener.onDragStart = null;
+                listener.onDrop = null;
+                listener.onHover = null;
+                listener.onKey = null;
+                listener.onPress = null;
+                listener.onScroll = null;
+                listener.onSelect = null;
+                listener.onSubmit = null;
+                listener.onTooltip = null;
+            }
+        }
     }
 }

@@ -276,6 +276,11 @@ namespace FS_LevelEditor
         void OnDestroy()
         {
             CoroutineUtils.StopAllCoroutines(coroutinesID);
+
+            originalObject = null;
+            editorLinksParent = null;
+            editorLinks.Clear();
+            editorLinks = null;
         }
 
         /// <summary>

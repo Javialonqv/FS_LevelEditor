@@ -89,6 +89,22 @@ namespace FS_LevelEditor
             CreateWaypointsParent();
             if (EditorController.Instance) CreateEditorLine();
         }
+        void OnDestroy()
+        {
+            if (moveObjectCoroutine != null)
+                StopObjectMovement();
+
+            waypointsParent = null;
+            spawnedWaypoints.Clear();
+            spawnedWaypoints = null;
+            firstWaypoint = null;
+            editorLine = null;
+
+            currentWaypoint = null;
+            objectsToMove.Clear();
+            objectsToMove = null;
+        }
+
         void CreateWaypointsParent()
         {
             waypointsParent = new GameObject("Waypoints").transform;
@@ -581,11 +597,6 @@ namespace FS_LevelEditor
                     waypoint.previousWaypoint = spawnedWaypoints[i - 1];
                 }
             }
-        }
-
-        void OnDestroy()
-        {
-            if (moveObjectCoroutine != null) StopObjectMovement();
         }
 
         public void OnPlatformProxyEntered(MovingPlatformProxy proxy)

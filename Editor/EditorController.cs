@@ -3026,6 +3026,7 @@ namespace FS_LevelEditor.Editor
             categoriesNames.Clear();
             currentSelectedObjects.Clear();
             currentSelectedObjsComponents.Clear();
+            currentInstantiatedObjects.Clear();
             actionsMade.Clear();
             globalProperties.Clear();
             skyboxes.Clear();
@@ -3038,10 +3039,18 @@ namespace FS_LevelEditor.Editor
             categoriesNames = null;
             currentSelectedObjects = null;
             currentSelectedObjsComponents = null;
+            currentInstantiatedObjects = null;
             actionsMade = null;
             globalProperties = null;
             skyboxes = null;
             tracks = null;
+            currentSelectedObj = null;
+            currentSelectedObjComponent = null;
+            gizmosRoot = null;
+            gizmo = null;
+            snapToGridCube = null;
+            deathYPlane = null;
+            gridTexture = null;
 
             // Unload the asset bundle when the editor is destroyed
             if (editorAssetBundle != null && !Core.isQuitting)

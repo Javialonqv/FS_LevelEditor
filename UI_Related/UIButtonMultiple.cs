@@ -42,6 +42,10 @@ namespace FS_LevelEditor.UI_Related
         void OnDestroy()
         {
             instances.Remove(this);
+
+            options.Clear();
+            onClick = null;
+            onLocalize = null;
         }
 
         public void Init()

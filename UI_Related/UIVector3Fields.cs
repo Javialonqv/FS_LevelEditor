@@ -72,5 +72,12 @@ namespace FS_LevelEditor.UI_Related
             yField.SetText(vector.y, maxDecimals, executeOnChange);
             zField.SetText(vector.z, maxDecimals, executeOnChange);
         }
+
+        void OnDestroy()
+        {
+            onSelected = null;
+            onChange = null;
+            onDeselected = null;
+        }
     }
 }

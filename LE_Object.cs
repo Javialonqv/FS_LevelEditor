@@ -370,6 +370,20 @@ namespace FS_LevelEditor
             }
         }
 
+        void OnDestroy()
+        {
+            properties.Clear();
+            properties = null;
+            waypoints.Clear();
+            waypoints = null;
+
+            eventExecuter = null;
+            waypointSupport = null;
+            customWaypointSupport = null;
+            objectLink = null;
+            otherObjThisIsLinkedTo = null;
+        }
+
         static Dictionary<Type, Il2CppSystem.Type> LETypesInIL2CPP = new Dictionary<Type, Il2CppSystem.Type>();
         /// <summary>
         /// The correct way to add a LE_Object component to a GameObject.

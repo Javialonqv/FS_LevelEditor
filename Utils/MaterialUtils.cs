@@ -20,7 +20,7 @@ namespace FS_LevelEditor
 
         public static Material GetMaterialWithColor(Material original, Color matColor)
         {
-            return GetMaterialWithColor(original, matColor, original.GetColor("_EmissionColor"));
+            return GetMaterialWithColor(original, matColor, original.HasColor("_EmissionColor") ? original.GetColor("_EmissionColor") : Color.white);
         }
         public static Material GetMaterialWithColor(Material original, Color matColor, Color emissionColor)
         {

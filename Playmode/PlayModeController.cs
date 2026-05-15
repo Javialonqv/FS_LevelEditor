@@ -390,6 +390,30 @@ namespace FS_LevelEditor.Playmode
 				}
 				LEBundle = null;
 			}
+
+			Instance = null;
+
+			editorObjectsRootFromBundle = null;
+			categories.Clear();
+			categories = null;
+			allCategoriesObjects.Clear();
+			allCategoriesObjects = null;
+			allCategoriesObjectsSorted.Clear();
+			allCategoriesObjectsSorted = null;
+			otherObjectsFromBundle = null;
+			levelObjectsParent = null;
+			tracks.Clear();
+			tracks = null;
+			globalProperties.Clear();
+			globalProperties = null;
+			currentInstantiatedObjects.Clear();
+			currentInstantiatedObjects = null;
+			screensOnTheLevel.Clear();
+			screensOnTheLevel = null;
+			smallScreensOnTheLevel.Clear();
+			smallScreensOnTheLevel = null;
+			activeObjectives.Clear();
+			activeObjectives = null;
 		}
 
 		// Objectives management methods

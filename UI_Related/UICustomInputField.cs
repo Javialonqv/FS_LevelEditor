@@ -44,6 +44,13 @@ namespace FS_LevelEditor.UI_Related
             input = GetComponent<UIInput>();
             fieldSprite = GetComponent<UISprite>();
         }
+        void OnDestroy()
+        {
+            onSelected = null;
+            onChange = null;
+            onSubmit = null;
+            onDeselected = null;
+        }
 
         public void Setup(UIInputType type, string defaultText = null, int maxDecimals = 0)
         {

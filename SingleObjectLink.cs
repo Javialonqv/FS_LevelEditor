@@ -22,6 +22,12 @@ namespace FS_LevelEditor
         {
             if (EditorController.Instance) CreateEditorLine();
         }
+        void OnDestroy()
+        {
+            editorLine = null;
+            targetObject = null;
+        }
+
         void CreateEditorLine()
         {
             if (!editorLine)

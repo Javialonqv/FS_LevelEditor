@@ -29,6 +29,11 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
+        void OnDestroy()
+        {
+            onClick = null;
+        }
+
         public void SetToggleState(bool newState, bool executeOnClick = false)
         {
             isChecked = newState;

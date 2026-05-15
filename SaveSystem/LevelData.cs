@@ -274,7 +274,11 @@ namespace FS_LevelEditor.SaveSystem
         #region Loading Level Related
         static LevelData LoadLevelData(string levelFileNameWithoutExtension)
         {
+            Stopwatch watch = Stopwatch.StartNew();
+            Logger.DebugLog("LOADING LEVEL DATA FOR LEVEL: " + levelFileNameWithoutExtension);
             LevelData data = GetLevelData(levelFileNameWithoutExtension, true);
+            Logger.DebugLog("LOADED LEVEL DATA FROM JSON IN (STILL NOT DONE): " + watch.Elapsed);
+            watch.Restart();
 
             SavePatches.ReevaluateOldProperties(ref data);
 
@@ -285,12 +289,17 @@ namespace FS_LevelEditor.SaveSystem
                 toCheck = FixMultipleObjectsWithSameID(toCheck);
             }
             data.objects = toCheck;
+            Logger.DebugLog("FINISHED LEVEL DATA LOADING IN: " + watch.Elapsed);
+
+            watch.Stop();
 
             return data;
         }
 
         public static void LoadLevelDataInEditor(string levelFileNameWithoutExtension)
         {
+            Stopwatch watch = Stopwatch.StartNew();
+            Logger.DebugLog("LOADING LEVEL IN THE EDITOR...");
             LevelData data = LoadLevelData(levelFileNameWithoutExtension);
 
             // Set camera properties in batch
@@ -311,6 +320,8 @@ namespace FS_LevelEditor.SaveSystem
                     obj.objScale
                 ));
             }
+            Logger.DebugLog("BATCH COLLECTED DATA IN: " + watch.Elapsed);
+            watch.Restart();
 
             // Clear existing objects
             GameObject objectsParent = EditorController.Instance.levelObjectsParent;
@@ -332,6 +343,8 @@ namespace FS_LevelEditor.SaveSystem
                     instantiatedObjects.Add((objInstance, data.objects[instantiatedObjects.Count]));
                 }
             }
+            Logger.DebugLog("BATCH INSTANTIATED IN: " + watch.Elapsed);
+            watch.Restart();
 
             // Batch configure objects
             foreach (var (obj, objData) in instantiatedObjects)
@@ -344,6 +357,8 @@ namespace FS_LevelEditor.SaveSystem
                     obj.SetTransparentMaterials();
                 }
             }
+            Logger.DebugLog("BATCH CONFIGURED IN: " + watch.Elapsed);
+            watch.Restart();
 
             // Batch apply global properties
             foreach (var keyPair in data.globalProperties)
@@ -360,7 +375,10 @@ namespace FS_LevelEditor.SaveSystem
                     }
                 }
             }
+            Logger.DebugLog("BATCH APPLIED GLOBAL PROPS IN: " + watch.Elapsed);
+            watch.Restart();
 
+            watch.Stop();
             EditorController.Instance.AfterFinishedLoadingLevel();
         }
         public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)

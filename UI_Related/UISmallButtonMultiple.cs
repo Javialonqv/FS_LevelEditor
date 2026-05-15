@@ -34,6 +34,9 @@ namespace FS_LevelEditor.UI_Related
         void OnDestroy()
         {
             instances.Remove(this);
+
+            onChange = null;
+            options.Clear();
         }
 
         public void Setup()

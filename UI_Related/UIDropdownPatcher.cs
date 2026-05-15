@@ -43,6 +43,9 @@ namespace FS_LevelEditor
         void OnDestroy()
         {
             instances.Remove(this);
+
+            optionsLocKeys.Clear();
+            onClickAlt = null;
         }
 
         public void Init()

@@ -940,7 +940,7 @@ namespace FS_LevelEditor
             // So.... for some reason the damn NGUI doesn't call the OnSubmit function when it should, so I had to create my own fix... FUCK!
             lvlButtonLabelObj.AddComponent<UIInputSubmitFix>();
         }
-        void RenameLevel(String levelFileNameWithoutExtension, UIInput input)
+        void RenameLevel(string levelFileNameWithoutExtension, UIInput input)
         {
             // Clear the renaming flag and re-enable button interactions.
             isRenamingLevel = false;
