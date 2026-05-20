@@ -1069,6 +1069,8 @@ namespace FS_LevelEditor
             groupsObjectsInPlaymode = new();
 
             LE_Breakable_Window.staticVariablesInitialized = false;
+
+            LE_Upgrade_Terminal.ResetStaticVariables();
         }
 
         public static bool IsWaypoint(ObjectType type)

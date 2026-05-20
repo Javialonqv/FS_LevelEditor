@@ -316,10 +316,17 @@ namespace FS_LevelEditor
 
         public static void RefreshUsableStateInAllTerminals()
         {
+            allComputerInterfaces.RemoveAll(computer => computer == null);
+
             foreach (var computer in allComputerInterfaces)
             {
                 computer.CheckUpgradeAvailability();
             }
+        }
+
+        public static void ResetStaticVariables()
+        {
+            allComputerInterfaces.Clear();
         }
     }
 
