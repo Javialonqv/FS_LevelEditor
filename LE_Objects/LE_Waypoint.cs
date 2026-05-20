@@ -184,13 +184,6 @@ namespace FS_LevelEditor
             return spawnedWaypoint;
         }
 
-        public override LE_Object[] GetReferenceObjectsToGetObjID()
-        {
-            if (!mainSupport) mainSupport = GetMainSupport();
-
-            return mainSupport.spawnedWaypoints.ToArray();
-        }
-
         public virtual WaypointSupport GetMainSupport()
         {
             return transform.parent.parent.GetComponent<WaypointSupport>();

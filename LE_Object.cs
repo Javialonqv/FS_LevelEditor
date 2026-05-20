@@ -5,6 +5,7 @@ using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SingleObjectLinks;
 using FS_LevelEditor.WaypointSupports;
+using Harmony;
 using Il2Cpp;
 using Il2CppInterop.Runtime;
 using Il2CppTMPro;
@@ -152,7 +153,9 @@ namespace FS_LevelEditor
             { ObjectType.MINE, new Vector3(0.6f, 0.5f, 0.6f) }
         };
 
-        public static Dictionary<ObjectType, int> alreadyUsedObjectIDs = new Dictionary<ObjectType, int>();
+        public static Dictionary<ObjectType, HashSet<int>> alreadyUsedIDsPerType = new Dictionary<ObjectType, HashSet<int>>();
+        // Special case for waypoints, since their IDs are relative to their parent object.
+        public static Dictionary<WaypointSupport, HashSet<int>> alreadyUsedIDsForWaypoints = new Dictionary<WaypointSupport, HashSet<int>>();
         public static Dictionary<int, List<LE_Object>> objectsPerGroup = new Dictionary<int, List<LE_Object>>();
         public static Dictionary<int, GameObject> groupsObjectsInPlaymode = new Dictionary<int, GameObject>();
 
@@ -341,7 +344,7 @@ namespace FS_LevelEditor
                 properties = (Dictionary<string, object>)props;
             }
 
-            SetNameAndType(objectType);
+            SetNameAndType(objectType, LevelData.IsCurrentlyLoadingData);
 
             if (PlayModeController.Instance != null)
             {
@@ -417,46 +420,59 @@ namespace FS_LevelEditor
             }
         }
 
-        void SetNameAndType(ObjectType objectTypeToSet)
+        void SetNameAndType(ObjectType objectTypeToSet, bool fromSave)
         {
             objectType = objectTypeToSet;
 
-            int id = 0;
-            LE_Object[] objects = GetReferenceObjectsToGetObjID();
-
-            while (objects.Any(x => x.objectID == id && x.objectType == objectType))
+            // Get next ID only when NOT loading data, cause otherwise the id would be overwritten by the loading logic.
+            if (!fromSave)
             {
-                id++;
+                if (this is LE_Waypoint waypoint)
+                {
+                    if (!waypoint.mainSupport) // Safety check.
+                        waypoint.mainSupport = waypoint.GetMainSupport();
+
+                    if (!alreadyUsedIDsForWaypoints.ContainsKey(waypoint.mainSupport))
+                        alreadyUsedIDsForWaypoints.Add(waypoint.mainSupport, new HashSet<int>());
+
+                    int id = 0;
+                    while (alreadyUsedIDsForWaypoints[waypoint.mainSupport].Contains(id))
+                        id++;
+                    alreadyUsedIDsForWaypoints[waypoint.mainSupport].Add(id);
+
+                    objectID = id;
+                }
+                else
+                {
+                    if (!alreadyUsedIDsPerType.ContainsKey(objectTypeToSet))
+                        alreadyUsedIDsPerType.Add(objectTypeToSet, new HashSet<int>());
+
+                    int id = 1;
+                    while (alreadyUsedIDsPerType[objectTypeToSet].Contains(id))
+                        id++;
+                    alreadyUsedIDsPerType[objectTypeToSet].Add(id);
+
+                    objectID = id;
+                }
             }
-            objectID = id;
+            else
+            {
+                // Just ensure the entry is created, just in case.
+                if (this is LE_Waypoint waypoint)
+                {
+                    if (!alreadyUsedIDsForWaypoints.ContainsKey(waypoint.mainSupport))
+                        alreadyUsedIDsForWaypoints.Add(waypoint.mainSupport, new HashSet<int>());
+                }
+                else
+                {
+                    if (!alreadyUsedIDsPerType.ContainsKey(objectTypeToSet))
+                        alreadyUsedIDsPerType.Add(objectTypeToSet, new HashSet<int>());
+                }
+            }
 
             gameObject.name = objectFullNameWithID;
 
-            // If the objects list has more than 1 object of the same type AND with the same ID, well, that's not allowed, show an error popup.
-            if (!Utils.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) && Utils.ListHasMultipleObjectsWithSameID(objects.ToList()))
-            {
-                LE_CustomErrorPopups.MultipleObjectsWithSameID();
-            }
-        }
-        // For now, this method is only used to setup the ID manually for Saw Waypoints, because the main Saw needs to setup the reference to it in the waypoint.
-        public void SetupObjectID()
-        {
-            int id = 0;
-            LE_Object[] objects = GetReferenceObjectsToGetObjID();
-
-            while (objects.Any(x => x.objectID == id && x.objectType == objectType))
-            {
-                id++;
-            }
-            objectID = id;
-
-            gameObject.name = objectFullNameWithID;
-
-            // If the objects list has more than 1 object of the same type AND with the same ID, well, that's not allowed, show an error popup.
-            if (!Utils.IsOverridingMethod(this.GetType(), nameof(GetReferenceObjectsToGetObjID)) && Utils.ListHasMultipleObjectsWithSameID(objects.ToList()))
-            {
-                LE_CustomErrorPopups.MultipleObjectsWithSameID();
-            }
+            // Removed the "Multiple Objects With The Same ID" error popup check because it's unlikely it'll happen with this system.
         }
         public static ObjectType? ConvertNameToObjectType(string objName)
         {
@@ -789,20 +805,6 @@ namespace FS_LevelEditor
         {
             return new List<string>();
         }
-
-        public virtual LE_Object[] GetReferenceObjectsToGetObjID()
-        {
-            if (EditorController.Instance != null && PlayModeController.Instance == null)
-            {
-                return EditorController.Instance.currentInstantiatedObjects.ToArray();
-            }
-            else if (EditorController.Instance == null && PlayModeController.Instance != null)
-            {
-                return PlayModeController.Instance.currentInstantiatedObjects.ToArray();
-            }
-
-            return null;
-        }
         #endregion
 
         public enum LEObjectContext { PREVIEW, SELECT, NORMAL }
@@ -1065,8 +1067,10 @@ namespace FS_LevelEditor
 
         public static void ResetStaticVariablesInObjects()
         {
-            objectsPerGroup = new();
-            groupsObjectsInPlaymode = new();
+            alreadyUsedIDsPerType.Clear();
+            alreadyUsedIDsForWaypoints.Clear();
+            objectsPerGroup.Clear();
+            groupsObjectsInPlaymode.Clear();
 
             LE_Breakable_Window.staticVariablesInitialized = false;
 

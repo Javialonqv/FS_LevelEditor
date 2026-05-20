@@ -121,6 +121,8 @@ namespace FS_LevelEditor.SaveSystem
 
         static readonly string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
 
+        public static bool IsCurrentlyLoadingData;
+
         // Create a LeveData instance with all of the current objects in the level.
         public static LevelData CreateLevelData(string levelName)
         {
@@ -298,6 +300,8 @@ namespace FS_LevelEditor.SaveSystem
 
         public static void LoadLevelDataInEditor(string levelFileNameWithoutExtension)
         {
+            IsCurrentlyLoadingData = true;
+
             Stopwatch watch = Stopwatch.StartNew();
             Logger.DebugLog("LOADING LEVEL IN THE EDITOR...");
             LevelData data = LoadLevelData(levelFileNameWithoutExtension);
@@ -380,9 +384,13 @@ namespace FS_LevelEditor.SaveSystem
 
             watch.Stop();
             EditorController.Instance.AfterFinishedLoadingLevel();
+
+            IsCurrentlyLoadingData = false;
         }
         public static void LoadLevelDataInPlaymode(string levelFileNameWithoutExtension)
         {
+            IsCurrentlyLoadingData = true;
+
             // Initialize essential components first
             LE_Object.GetTemplatesReferences();
             PlayModeController playModeCtrl = new GameObject("PlayModeController").AddComponent<PlayModeController>();
@@ -459,6 +467,8 @@ namespace FS_LevelEditor.SaveSystem
                     }
                 }
             }
+
+            IsCurrentlyLoadingData = false;
         }
 
         static void SetInstantiatedObjectProperties(LE_Object spawnedObject, LE_ObjectData objectData)
@@ -475,6 +485,17 @@ namespace FS_LevelEditor.SaveSystem
             spawnedObject.waitTime = objectData.waitTime;
             spawnedObject.waypointMode = objectData.wayMode;
             spawnedObject.groupID = objectData.groupID;
+
+            // Ensure the object id is added to the alreadyUsedIDs lists, since it's being loaded from save, we need to do this manually here.
+            // NOTE: The Dictionary entry, as well as the HashSet are already created by then, should be in the object Init() function.
+            if (spawnedObject is LE_Waypoint waypoint)
+            {
+                LE_Object.alreadyUsedIDsForWaypoints[waypoint.mainSupport].Add(spawnedObject.objectID);
+            }
+            else
+            {
+                LE_Object.alreadyUsedIDsPerType[spawnedObject.objectType.GetValueOrDefault()].Add(spawnedObject.objectID);
+            }
 
             if (objectData.properties != null)
             {

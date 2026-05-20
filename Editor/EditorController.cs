@@ -3052,6 +3052,8 @@ namespace FS_LevelEditor.Editor
             deathYPlane = null;
             gridTexture = null;
 
+            LE_Object.ResetStaticVariablesInObjects();
+
             // Unload the asset bundle when the editor is destroyed
             if (editorAssetBundle != null && !Core.isQuitting)
             {
