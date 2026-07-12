@@ -41,9 +41,9 @@ namespace FS_LevelEditor
             }
         }
 
-        public bool SetTargetObject(int objectID)
+        public bool SetTargetObject(int objectID, bool force = false)
         {
-            if (targetObject && objectID == targetObject.objectID) return true;
+            if (targetObject && objectID == targetObject.objectID && !force) return true;
 
             List<LE_Object> objectsList = null;
             if (EditorController.Instance)
@@ -53,7 +53,7 @@ namespace FS_LevelEditor
 
             if (objectsList == null) return false;
 
-            LE_Object newTarget = objectsList.Find(obj => obj.objectType == targetObjectType && obj.objectID == objectID && (obj.otherObjThisIsLinkedTo == null || obj.otherObjThisIsLinkedTo == mainObject));
+            LE_Object newTarget = objectsList.Find(obj => obj.objectType == targetObjectType && obj.objectID == objectID && (obj.otherObjThisIsLinkedTo == null || obj.otherObjThisIsLinkedTo == this));
 
             if (targetObject)
             {

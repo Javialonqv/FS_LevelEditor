@@ -43,7 +43,8 @@ namespace FS_LevelEditor
 
         public override void ObjectStart(LEScene scene)
         {
-            objectLink.SetTargetObject(GetProperty<int>("SequencerID"));
+            // It may've already been set in SetProperty, force it to be assigned again here so OnObjectLinkTargetChanged is called.
+            objectLink.SetTargetObject(GetProperty<int>("SequencerID"), true);
 
             if (scene == LEScene.Playmode)
             {
