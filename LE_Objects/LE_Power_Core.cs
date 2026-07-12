@@ -15,7 +15,7 @@ namespace FS_LevelEditor
         public BlocScript blocScript;
 
         public bool insertToPowerSlotOnStart = false;
-        public LE_Power_Slot powerSlotToInsertTo = null;
+        public LE_Power_Slot powerSlotToPreInsertTo = null;
 
         void Awake()
         {
@@ -235,20 +235,48 @@ namespace FS_LevelEditor
         {
             if (scene == LEScene.Playmode && insertToPowerSlotOnStart)
             {
-                contentObject.transform.position = powerSlotToInsertTo.powerCore.m_powerCoreHolder.transform.position;
-                contentObject.transform.rotation = powerSlotToInsertTo.powerCore.m_powerCoreHolder.transform.rotation;
+                contentObject.transform.position = powerSlotToPreInsertTo.powerCore.m_powerCoreHolder.transform.position;
+                contentObject.transform.rotation = powerSlotToPreInsertTo.powerCore.m_powerCoreHolder.transform.rotation;
 
-                // Use _fromSave true so the animation is skipped?
-                powerSlotToInsertTo.powerCore.OnInsert(blocScript, true);
-                blocScript.m_currentlyInsertedPowerCore = powerSlotToInsertTo.powerCore;
-                blocScript.m_rigidbody.isKinematic = true;
-                blocScript.SetDisabledWhileInHands(false);
-                blocScript.SetEnabledWhenInHands(false);
-                if (blocScript.playerCollisionOnly)
-                    blocScript.playerCollisionOnly.SetActive(false);
+                // Make sure to save the respawn position.
+                blocScript.respawnPosition = contentObject.transform.position;
+                blocScript.respawnEulerAngles = contentObject.transform.eulerAngles;
+
+                ForceInsertion(powerSlotToPreInsertTo, blocScript, true);
             }
 
             base.ObjectStart(scene);
+        }
+
+        public static void ForceInsertion(LE_Power_Slot slot, BlocScript core, bool executeEvents)
+        {
+            // If we want the OnInsert and OnRemove actions to be executed, _fromSave needs to be false.
+            slot.powerCore.OnInsert(core, !executeEvents);
+            core.m_currentlyInsertedPowerCore = slot.powerCore;
+            core.m_rigidbody.isKinematic = true;
+            core.SetDisabledWhileInHands(false);
+            core.SetEnabledWhenInHands(false);
+            if (core.playerCollisionOnly)
+                core.playerCollisionOnly.SetActive(false);
+        }
+    }
+
+    // Forces pre-inserted cores to insert themselves again into their original slot after respawning.
+    [HarmonyLib.HarmonyPatch(typeof(BlocScript), nameof(BlocScript.RespawnCubeNow), [typeof(bool)])]
+    public static class PowerCoreRespawnPatch
+    {
+        public static void Postfix(BlocScript __instance)
+        {
+            // Check if the object is from LE
+            LE_Power_Core core = __instance.GetComponentInParent<LE_Power_Core>();
+            if (core && core.powerSlotToPreInsertTo) // This patch is for pre-inserted cores only.
+            {
+                // Force the respawn values, in case the damn FS code adds an offset or something.
+                core.contentObject.transform.position = __instance.respawnPosition;
+                core.contentObject.transform.eulerAngles = __instance.respawnEulerAngles;
+
+                LE_Power_Core.ForceInsertion(core.powerSlotToPreInsertTo, core.blocScript, true);
+            }
         }
     }
 }

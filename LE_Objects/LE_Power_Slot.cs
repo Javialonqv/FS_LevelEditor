@@ -54,7 +54,7 @@ namespace FS_LevelEditor
 
                     // Set this variables, so we wait till LE_Power_Core.ObjectStart is called, and THEN it'll initialize itself into this power slot.
                     initialPowerCoreScript.insertToPowerSlotOnStart = true;
-                    initialPowerCoreScript.powerSlotToInsertTo = this;
+                    initialPowerCoreScript.powerSlotToPreInsertTo = this;
                 }
             }
 
