@@ -25,6 +25,11 @@ namespace FS_LevelEditor
 
         public static bool isQuitting;
 
+        public override void OnInitializeMelon()
+        {
+            LE_CustomErrorPopups.Init();
+        }
+
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             currentSceneName = sceneName;

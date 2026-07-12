@@ -207,7 +207,6 @@ namespace FS_LevelEditor.Playmode
 			if (!spawn)
 			{
 				Logger.Error("Couldn't find player spawn object in the level!");
-				LE_CustomErrorPopups.NoPlayerSpawnObjectDetected();
 				return;
 			}
 
