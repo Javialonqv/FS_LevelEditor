@@ -9,6 +9,7 @@ using Harmony;
 using Il2Cpp;
 using Il2CppInterop.Runtime;
 using Il2CppTMPro;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using UnityEngine;
@@ -460,6 +461,9 @@ namespace FS_LevelEditor
                 // Just ensure the entry is created, just in case.
                 if (this is LE_Waypoint waypoint)
                 {
+                    if (!waypoint.mainSupport) // Safety check.
+                        waypoint.mainSupport = waypoint.GetMainSupport();
+
                     if (!alreadyUsedIDsForWaypoints.ContainsKey(waypoint.mainSupport))
                         alreadyUsedIDsForWaypoints.Add(waypoint.mainSupport, new HashSet<int>());
                 }
