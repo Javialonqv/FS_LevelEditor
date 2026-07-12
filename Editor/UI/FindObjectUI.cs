@@ -153,7 +153,14 @@ namespace FS_LevelEditor.Editor.UI
         {
             Hide();
 
-            EditorController.Instance.SetMultipleObjectsAsSelected(targetObjects.Select(x => x.gameObject).ToList());
+            if (targetObjects.Count > 1)
+            {
+                EditorController.Instance.SetMultipleObjectsAsSelected(targetObjects.Select(x => x.gameObject).ToList());
+            }
+            else if (targetObjects.Count == 1)
+            {
+                EditorController.Instance.SetSelectedObj(targetObjects[0].gameObject, EditorController.SelectionType.ForceSingle);
+            }
         }
 
         bool FindTargetObjects(LE_Object.ObjectType? objectType, int? objectID = null)
