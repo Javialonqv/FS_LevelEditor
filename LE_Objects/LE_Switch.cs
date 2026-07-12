@@ -27,6 +27,10 @@ namespace FS_LevelEditor
         InterrupteurController controller;
         MeshRenderer redPlane, greenPlane, cyanPlane;
 
+        // Special variable for an edge case where the switch state was changed through events but ObjectStart wasn't called yet (the objected was set to be despawned at start)
+        // So the event change was overrided by ObjectStart when the object was enabled for the first time.
+        public bool alreadyChangedStateThroughtEvents = false;
+
         void Awake()
         {
             redPlane = gameObject.GetChildAt("Content/ButtonMesh/RedButtonPlane").GetComponent<MeshRenderer>();
@@ -55,7 +59,8 @@ namespace FS_LevelEditor
             if (scene == LEScene.Editor)
                 SetMeshInEditor(GetProperty<SwitchState>("InitialState"));
 
-            if (scene == LEScene.Playmode)
+            // Make sure that we aren't overriding any changes that an event could've done here.
+            if (scene == LEScene.Playmode && !alreadyChangedStateThroughtEvents)
             {
                 switch (GetProperty<SwitchState>("InitialState"))
                 {

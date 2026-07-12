@@ -695,8 +695,10 @@ namespace FS_LevelEditor
                     targetObj.TriggerAction("SpawnNow");
                 }
             }
-            else if (targetObj is LE_Switch)
+            else if (targetObj is LE_Switch switchObj)
             {
+                switchObj.alreadyChangedStateThroughtEvents = true;
+
                 switch (@event.switchState)
                 {
                     case LE_Event.SwitchState.Activated:
