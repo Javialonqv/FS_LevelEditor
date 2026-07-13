@@ -302,7 +302,11 @@ namespace FS_LevelEditor
 
 		public override void SetCollidersStateForEdgeCase(bool newEnabledState)
         {
-            contentObject.GetComponent<BoxCollider>().isTrigger = !newEnabledState;
+			BoxCollider collider = contentObject.GetComponent<BoxCollider>();
+            collider.isTrigger = !newEnabledState;
+			collider.gameObject.layer = LayerMask.NameToLayer(newEnabledState ? "Default" : "Ignore Raycast");
+			
+			contentObject.GetChild("Mesh").layer = LayerMask.NameToLayer(newEnabledState ? "Default" : "Ignore Raycast");
         }
 	}
 }
