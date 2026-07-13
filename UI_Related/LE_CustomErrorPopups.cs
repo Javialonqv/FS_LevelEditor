@@ -37,7 +37,7 @@ namespace FS_LevelEditor
         }
         static void OnMelonError(string section, string text)
         {
-            if (section == ASSEMBLY_NAME)
+            if (section == ASSEMBLY_NAME || text.Contains(ASSEMBLY_NAME))
             {
                 if (text.Contains('\n'))
                 {
