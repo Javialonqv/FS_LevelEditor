@@ -81,15 +81,22 @@ namespace FS_LevelEditor
 
         bool playerIsAbove = false;
         public static WaypointSupport objectWithPlayerAbove = null;
-        List<GameObject> objectsToMove = new List<GameObject>();
+        public List<GameObject> objectsToMove = new List<GameObject>();
 
         public Vector3 currentVelocity;
+
+        bool moveObjectsAboveNow = false;
+        Vector3 moveObjectsAboveStepDiff;
 
         void Awake()
         {
             targetObject = GetComponent<LE_Object>();
             CreateWaypointsParent();
-            if (EditorController.Instance) CreateEditorLine();
+            if (EditorController.Instance)
+                CreateEditorLine();
+
+            // Use our custom FixedUpdateProvider so it's also called even when the object is disabled.
+            FixedUpdateProvider.OnFixedUpdate += FixedUpdateEvenWhenDisabled;
         }
         void OnDestroy()
         {
@@ -105,6 +112,28 @@ namespace FS_LevelEditor
             currentWaypoint = null;
             objectsToMove.Clear();
             objectsToMove = null;
+
+            FixedUpdateProvider.OnFixedUpdate -= FixedUpdateEvenWhenDisabled;
+        }
+
+        void FixedUpdateEvenWhenDisabled()
+        {
+            // Do this in fixed update so it's synchronized with the physics engine.
+            if (moveObjectsAboveNow)
+            {
+                // Move every object attached to this platform.
+                foreach (var obj in objectsToMove)
+                {
+                    if (obj.TryGetComponent<Rigidbody>(out var rb))
+                    {
+                        rb.interpolation = RigidbodyInterpolation.Interpolate;
+                        rb.MovePosition(obj.transform.position + moveObjectsAboveStepDiff);
+                    }
+                }
+
+                moveObjectsAboveStepDiff = Vector3.zero;
+                moveObjectsAboveNow = false;
+            }
         }
 
         void CreateWaypointsParent()
@@ -281,7 +310,6 @@ namespace FS_LevelEditor
 
             currentMovingSpeed = targetObject.movingSpeed;
 
-            string name = this.name;
             for (/*Do not reset currentWaypointID to 0*/; currentWaypointID < spawnedWaypoints.Count; currentWaypointID++)
             {
                 currentWaypoint = spawnedWaypoints[currentWaypointID];
@@ -322,15 +350,9 @@ namespace FS_LevelEditor
                     transform.position = newPos;
                     bool exec = targetObject.objectFullNameWithID == "Moving Platform 2";
 
-                    // Move every object attached to this platform.
-                    foreach (var obj in objectsToMove)
-                    {
-                        if (obj.TryGetComponent<Rigidbody>(out var rb))
-                        {
-                            obj.transform.position += difference;
-                            rb.MovePosition(obj.transform.position);
-                        }
-                    }
+                    // Move objects above NOW (From FixedUpdate).
+                    moveObjectsAboveStepDiff += difference; // This NEEDS to be acumulated, it's then reseted when the next physic step is executed.
+                    moveObjectsAboveNow = true;
 
                     if (playerIsAbove)
                     {
@@ -396,8 +418,11 @@ namespace FS_LevelEditor
             {
                 if (obj.TryGetComponent<Rigidbody>(out var rb))
                 {
-                    obj.transform.position += difference;
-                    rb.MovePosition(obj.transform.position);
+                    Logger.DebugLog("Transform: " + obj.transform.position + " RigidBody: " + rb.position);
+                    //obj.transform.position += difference;
+                    rb.MovePosition(rb.position + difference);
+                    Logger.DebugLog("Transform: " + obj.transform.position + " RigidBody: " + rb.position);
+                    //rb.position = obj.transform.position;
                 }
             }
 

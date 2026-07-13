@@ -23,6 +23,8 @@ namespace FS_LevelEditor
         MeshRenderer mesh;
         GameObject editorPowerCore;
 
+        BlocScript activePowerCore;
+
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
@@ -217,16 +219,33 @@ namespace FS_LevelEditor
             powerCore.m_onInsert.AddListener((UnityAction)ExecuteOnInsertEvents);
             powerCore.m_onInsert.AddListener((UnityAction)ExecuteOnBothEventsActivating);
 
-            powerCore.m_onRemove = new UnityEngine.Events.UnityEvent();
+            powerCore.m_onRemove = new UnityEvent();
             powerCore.m_onRemove.AddListener((UnityAction)ExecuteOnRemoveEvents);
             powerCore.m_onRemove.AddListener((UnityAction)ExecuteOnBothEventsDeactivating);
         }
         void ExecuteOnInsertEvents()
         {
+            activePowerCore = powerCore.m_activePowerCore; // Make sure to cache this variable.
+            waypointSupport.objectsToMove.Add(activePowerCore.gameObject); // Make the core move along with the slot.
+
+            // Force the position here again, otherwise it's misplaced for some reason.
+            activePowerCore.transform.position = powerCore.m_powerCoreHolder.transform.position;
+            activePowerCore.transform.eulerAngles = powerCore.m_powerCoreHolder.transform.eulerAngles;
+
+            // Reduce power cores stuttering when moving.
+            activePowerCore.m_rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnInsert"], "OnInsert", true);
         }
         void ExecuteOnRemoveEvents()
         {
+            // Here, powerCore.m_activePowerCore is already null, use our cached variable.
+            waypointSupport.objectsToMove.Remove(activePowerCore.gameObject);
+            activePowerCore = null;
+
+            // Extrapolate is the main value for cores.
+            activePowerCore.m_rigidbody.interpolation = RigidbodyInterpolation.Extrapolate;
+            
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnRemove"], "OnRemove", false);
         }
         void ExecuteOnBothEventsActivating()

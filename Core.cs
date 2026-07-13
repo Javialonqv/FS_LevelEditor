@@ -28,6 +28,8 @@ namespace FS_LevelEditor
         public override void OnInitializeMelon()
         {
             LE_CustomErrorPopups.Init();
+
+            FixedUpdateProvider.Init();
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
