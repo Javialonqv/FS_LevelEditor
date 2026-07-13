@@ -63,5 +63,21 @@ namespace FS_LevelEditor.Misc
 
             scaleRoutine = null;
         }
+        void OnDestroy()
+        {
+            if (scaleRoutine != null)
+            {
+                MelonCoroutines.Stop(scaleRoutine);
+            }
+        }
+
+        public static void StopRotation(GameObject obj)
+        {
+            ScaleTweener tweener = obj.GetComponent<ScaleTweener>();
+            if (tweener && tweener.scaleRoutine != null)
+            {
+                MelonCoroutines.Stop(tweener.scaleRoutine);
+            }
+        }
     }
 }

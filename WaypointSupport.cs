@@ -402,6 +402,10 @@ namespace FS_LevelEditor
             MelonCoroutines.Stop(moveObjectCoroutine);
             moveObjectCoroutine = null;
             currentVelocity = Vector3.zero;
+
+            RotationTweener.StopRotation(gameObject);
+            ScaleTweener.StopRotation(gameObject);
+
             Logger.Log("Waypoint movement stopped for object: " + gameObject.name);
         }
         public void ResetMovement()
@@ -418,11 +422,7 @@ namespace FS_LevelEditor
             {
                 if (obj.TryGetComponent<Rigidbody>(out var rb))
                 {
-                    Logger.DebugLog("Transform: " + obj.transform.position + " RigidBody: " + rb.position);
-                    //obj.transform.position += difference;
                     rb.MovePosition(rb.position + difference);
-                    Logger.DebugLog("Transform: " + obj.transform.position + " RigidBody: " + rb.position);
-                    //rb.position = obj.transform.position;
                 }
             }
 

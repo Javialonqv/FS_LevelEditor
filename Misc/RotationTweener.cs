@@ -92,7 +92,7 @@ public class RotationTweener : MonoBehaviour
     public static void StopRotation(GameObject obj)
     {
         RotationTweener tweener = obj.GetComponent<RotationTweener>();
-        if (tweener != null)
+        if (tweener && tweener.rotationCoroutine != null)
         {
             MelonCoroutines.Stop(tweener.rotationCoroutine);
             //DestroyImmediate(tweener);
