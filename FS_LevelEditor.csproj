@@ -82,6 +82,7 @@
 		<Compile Include="LE_Objects\LE_Upgrade_Terminal.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Death_Trigger_Waypoint.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Sequence_Waypoint.cs" />
+		<Compile Include="Misc\ScaleTweener.cs" />
 		<Compile Include="Playmode\AndLogicManager.cs" />
 		<Compile Include="Playmode\Patches\DebugModePatch.cs" />
 		<Compile Include="Playmode\Patches\ParticlesPatch.cs" />

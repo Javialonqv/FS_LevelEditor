@@ -307,9 +307,7 @@ namespace FS_LevelEditor
 
                 // Start rotation and scale tween now, so they keep running on background.
                 RotationTweener tweenRotation = RotationTweener.RotateTo(gameObject, cachedWaypointRotations[currentWaypointID], totalDuration, RotationPath.Shortest);
-
-                TweenScale tweenScale = TweenScale.Begin(gameObject, totalDuration, cachedWaypointScales[currentWaypointID]);
-                tweenScale.ignoreTimeScale = false; // Avoid object scaling while the game's paused.
+                ScaleTweener tweenScale = ScaleTweener.ScaleTo(gameObject, cachedWaypointScales[currentWaypointID], totalDuration);
 
                 // Do the movement by steps, so we can also apply the position to the objects to move (cubes).
                 currentlyMoving = true;
@@ -349,7 +347,7 @@ namespace FS_LevelEditor
                 currentlyMoving = false;
                 currentVelocity = Vector3.zero;
 
-                while (tweenRotation.isPlaying || tweenScale.enabled)
+                while (tweenRotation.isPlaying || tweenScale.isPlaying)
                 {
                     yield return null;
                 }
