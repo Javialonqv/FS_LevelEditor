@@ -60,6 +60,8 @@ namespace FS_LevelEditor
 
         bool hasAlreadyMovedOnce = false;
         Vector3 startPosition;
+        Vector3 startRotation;
+        Vector3 startScale;
         Vector3[] cachedWaypointPositions;
         Vector3[] cachedWaypointRotations;
         Vector3[] cachedWaypointScales;
@@ -265,6 +267,8 @@ namespace FS_LevelEditor
             if (cachedWaypointPositions == null || cachedWaypointRotations == null || cachedWaypointScales == null)
             {
                 startPosition = transform.position;
+                startRotation = transform.eulerAngles;
+                startScale = transform.localScale;
 
                 cachedWaypointPositions = spawnedWaypoints.Select(x => x.transform.position).ToArray();
                 cachedWaypointRotations = spawnedWaypoints.Select(x => x.transform.eulerAngles).ToArray();
@@ -407,6 +411,8 @@ namespace FS_LevelEditor
             }
 
             transform.position = startPosition;
+            transform.eulerAngles = startRotation;
+            transform.localScale = startScale;
             currentWaypointID = 0;
         }
         // --------------------------------------------------
