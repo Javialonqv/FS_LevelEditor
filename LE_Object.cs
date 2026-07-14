@@ -91,7 +91,8 @@ namespace FS_LevelEditor
             SEQUENCE_SCREEN,
             POWER_CORE,
             POWER_SLOT,
-            UPGRADE_TERMINAL
+            UPGRADE_TERMINAL,
+            XMAS_TREE
         }
 
         // This is used to specify the objects that use the same snap triggers.

@@ -80,6 +80,7 @@
 		<Compile Include="LE_Objects\LE_Sequence.cs" />
 		<Compile Include="LE_Objects\LE_Sequence_Screen.cs" />
 		<Compile Include="LE_Objects\LE_Upgrade_Terminal.cs" />
+		<Compile Include="LE_Objects\LE_Xmas_Tree.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Death_Trigger_Waypoint.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Sequence_Waypoint.cs" />
 		<Compile Include="Misc\ScaleTweener.cs" />

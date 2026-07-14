@@ -62,6 +62,7 @@ object.SEQUENCE_SCREEN,Sequence Screen,Pantalla del Secuenciador,
 object.POWER_CORE,Power Core,Núcleo de Energía,
 object.POWER_SLOT,Power Slot,Entrada de Energía,
 object.UPGRADE_TERMINAL,Upgrade Terminal,Terminal de Mejora,
+object.XMAS_TREE,XMAS Tree,Árbol de Navidad,
 Player,Player,Jugador,Гравець
 Jetpack,Jetpack,Mochila Propulsora,Джетпак
 Taser,Taser,Taser,Тазер
