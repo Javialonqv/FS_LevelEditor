@@ -194,6 +194,7 @@ namespace FS_LevelEditor
         public float startDelay = 0f;
         public float waitTime = 0f;
         public WaypointMode waypointMode;
+        public bool carriesPlayer = true;
         public int? groupID = null; // Null for "no group".
 
         public Dictionary<string, object> properties = new Dictionary<string, object>();
@@ -609,6 +610,11 @@ namespace FS_LevelEditor
             else if (name == "WaypointMode")
             {
                 waypointMode = (WaypointMode)value;
+                return true;
+            }
+            else if (name == "CarriesPlayer")
+            {
+                carriesPlayer = (bool)value;
                 return true;
             }
 

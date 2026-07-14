@@ -43,6 +43,7 @@ namespace FS_LevelEditor.Editor.UI
 		UISmallButtonMultiple waypointModeButton;
 		UIButtonPatcher addToGroupButton;
 		UIButtonPatcher removeFromGroupButton;
+		UITogglePatcher carriesPlayerToggle;
 		// ------------------------------
 		bool showingPanel = false;
 		bool panelIsExpanded = false;
@@ -327,6 +328,7 @@ namespace FS_LevelEditor.Editor.UI
 			CreateStartDelayField();
 			CreateWaitTimeField();
 			CreateWaypointModeButton();
+			CreateCarriesPlayerToggle();
         }
 		void CreateObjectPositionUIElements()
 		{
@@ -520,6 +522,23 @@ namespace FS_LevelEditor.Editor.UI
 
 			yPosForGlobalProps -= 50;
 		}
+		void CreateCarriesPlayerToggle()
+		{
+            Transform toggleParent = new GameObject("CarriesPlayer").transform;
+            toggleParent.parent = globalObjectPanelsParent;
+            toggleParent.localPosition = Vector3.zero;
+            toggleParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(toggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "CarriesPlayer");
+            title.name = "Title";
+
+            carriesPlayerToggle = NGUI_Utils.CreateToggle(toggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
+            carriesPlayerToggle.gameObject.name = "Toggle";
+			carriesPlayerToggle.onClick += (state) => SetCarriesPlayer();
+            carriesPlayerToggle.toggle.instantTween = true;
+
+            yPosForGlobalProps -= 50;
+        }
         // ------------------------------
         void CreateObjectSpecificOptionsParent()
 		{
@@ -1255,6 +1274,10 @@ namespace FS_LevelEditor.Editor.UI
 		{
 			SetPropertyWithToggle(null, "StartMovingAtStart", startMovingAtStartToggle.isChecked);
 		}
+		public void SetCarriesPlayer()
+		{
+			SetPropertyWithToggle(null, "CarriesPlayer", carriesPlayerToggle.isChecked);
+		}
 		public void AddToGroupPressed()
 		{
             if (EditorController.Instance.multipleObjectsSelected)
@@ -1368,12 +1391,14 @@ namespace FS_LevelEditor.Editor.UI
 				startDelayField.transform.parent.gameObject.SetActive(true);
 				waitTimeField.transform.parent.gameObject.SetActive(true);
 				waypointModeButton.transform.parent.gameObject.SetActive(true);
+				carriesPlayerToggle.transform.parent.gameObject.SetActive(true);
 
                 SetPropInToggleDependingOfPropInObjects(startMovingAtStartToggle, (obj) => obj.startMovingAtStart, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
                 SetPropInFieldDependingOfPropInObjects(movingSpeedField, (obj) => obj.movingSpeed.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
                 SetPropInFieldDependingOfPropInObjects(startDelayField, (obj) => obj.startDelay.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
                 SetPropInFieldDependingOfPropInObjects(waitTimeField, (obj) => obj.waitTime.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
                 SetPropInMultipleButtonDependingOfPropInObjects(waypointModeButton, (obj) => (int)obj.waypointMode, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+				SetPropInToggleDependingOfPropInObjects(carriesPlayerToggle, (obj) => obj.carriesPlayer, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
             }
 			else
 			{
@@ -1382,6 +1407,7 @@ namespace FS_LevelEditor.Editor.UI
                 startDelayField.transform.parent.gameObject.SetActive(false);
                 waitTimeField.transform.parent.gameObject.SetActive(false);
                 waypointModeButton.transform.parent.gameObject.SetActive(false);
+				carriesPlayerToggle.transform.parent.gameObject.SetActive(false);
             }
 		}
 		#endregion

@@ -57,6 +57,7 @@ namespace FS_LevelEditor
         LE_Waypoint currentWaypoint;
         bool currentlyMoving = false;
         public bool IsCurrentlyMoving => moveObjectCoroutine != null;
+        public bool CanCarryPlayer => targetObject.carriesPlayer;
 
         bool hasAlreadyMovedOnce = false;
         Vector3 startPosition;
@@ -773,6 +774,8 @@ namespace FS_LevelEditor
     [HarmonyPatch(typeof(Controls), nameof(Controls.CheckGround))]
     public static class CheckGroundForPlayerInWaypointsObjPatch // Detect when player CONTACTS with an obj with waypoint support.
     {
+        static bool cantCarryPlayerLogAlreadyPrinted = false;
+
         // Use Postfix so Controls.currentGround is already set when called.
         public static void Postfix(Controls __instance)
         {
@@ -803,8 +806,17 @@ namespace FS_LevelEditor
                 {
                     if (waypointSupport != WaypointSupport.objectWithPlayerAbove)
                     {
-                        WaypointSupport.SetPlayerAbove(waypointSupport);
-                        Logger.DebugLog($"Player is above an object with waypoints: {waypointSupport.targetObject.objectFullNameWithID}");
+                        if (waypointSupport.CanCarryPlayer)
+                        {
+                            WaypointSupport.SetPlayerAbove(waypointSupport);
+                            Logger.DebugLog($"Player is above an object with waypoints: {waypointSupport.targetObject.objectFullNameWithID}");
+                            cantCarryPlayerLogAlreadyPrinted = false;
+                        }
+                        else if (!cantCarryPlayerLogAlreadyPrinted)
+                        {
+                            Logger.DebugLog($"Player is above an object with waypoints: {waypointSupport.targetObject.objectFullNameWithID} BUT IT CANNOT CARRY THE PLAYER!");
+                            cantCarryPlayerLogAlreadyPrinted = true;
+                        }
                     }
                 }
                 else
@@ -814,8 +826,17 @@ namespace FS_LevelEditor
                     {
                         if (customProxy.attachedWaypointObj != WaypointSupport.objectWithPlayerAbove)
                         {
-                            WaypointSupport.SetPlayerAbove(customProxy.attachedWaypointObj);
-                            Logger.DebugLog($"Player is above a proxy object: {customProxy.attachedWaypointObj.targetObject.objectFullNameWithID}");
+                            if (customProxy.attachedWaypointObj.CanCarryPlayer)
+                            {
+                                WaypointSupport.SetPlayerAbove(customProxy.attachedWaypointObj);
+                                Logger.DebugLog($"Player is above a proxy object: {customProxy.attachedWaypointObj.targetObject.objectFullNameWithID}");
+                                cantCarryPlayerLogAlreadyPrinted = false;
+                            }
+                            else if (!cantCarryPlayerLogAlreadyPrinted)
+                            {
+                                Logger.DebugLog($"Player is above a proxy object: {customProxy.attachedWaypointObj.targetObject.objectFullNameWithID} BUT IT CANNOT CARRY THE PLAYER!");
+                                cantCarryPlayerLogAlreadyPrinted = true;
+                            }
                         }
                     }
                     else // Didn't collide with any platform or related.

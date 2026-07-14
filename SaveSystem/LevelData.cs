@@ -484,6 +484,7 @@ namespace FS_LevelEditor.SaveSystem
             spawnedObject.startDelay = objectData.startDelay;
             spawnedObject.waitTime = objectData.waitTime;
             spawnedObject.waypointMode = objectData.wayMode;
+            spawnedObject.carriesPlayer = objectData.carriesPlayer;
             spawnedObject.groupID = objectData.groupID;
 
             // Ensure the object id is added to the alreadyUsedIDs lists, since it's being loaded from save, we need to do this manually here.
