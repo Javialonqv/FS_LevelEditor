@@ -190,7 +190,7 @@ namespace FS_LevelEditor
         public bool setActiveAtStart = true;
         public bool collision = true;
         public bool invisibleMesh = false;
-        public bool startMovingAtStart = true;
+        public bool startMovingAtStart = false;
         public float movingSpeed = 5f;
         public float startDelay = 0f;
         public float waitTime = 0f;

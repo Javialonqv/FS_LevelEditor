@@ -17,7 +17,7 @@ namespace FS_LevelEditor.SaveSystem
         public bool setActiveAtStart { get; set; } = true;
         public bool collision { get; set; } = true;
         public bool invisibleMesh { get; set; } = false;
-        public bool moveStart { get; set; } = true;
+        public bool moveStart { get; set; } = false;
         public float movingSpeed { get; set; } = 5f;
         public float startDelay { get; set; } = 1f;
         public float waitTime { get; set; } = 0f;

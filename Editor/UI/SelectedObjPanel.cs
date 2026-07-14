@@ -1241,12 +1241,6 @@ namespace FS_LevelEditor.Editor.UI
 			{
 				var objComp = EditorController.Instance.currentSelectedObjComponent;
 				objComp.GetComponent<WaypointSupport>().AddWaypoint();
-
-				// If this is the first waypoint, set startMovingAtStart to true
-				if (objComp.waypoints.Count == 1)
-				{
-					objComp.startMovingAtStart = true;
-				}
 			}
 			else
 			{
@@ -1259,12 +1253,6 @@ namespace FS_LevelEditor.Editor.UI
 					var comp = obj.GetComponent<LE_Object>();
 					var waypoint = comp.GetComponent<WaypointSupport>().AddWaypoint();
 					createdWaypoints.Add(waypoint);
-
-					// If this is the first waypoint, set startMovingAtStart to true
-					if (comp.waypoints.Count == 1)
-					{
-						comp.startMovingAtStart = true;
-					}
 				});
 
 				EditorController.Instance.SetMultipleObjectsAsSelected(createdWaypoints.Select(waypoint => waypoint.gameObject).ToList());
