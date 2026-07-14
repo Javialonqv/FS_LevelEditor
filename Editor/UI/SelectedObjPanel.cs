@@ -48,6 +48,7 @@ namespace FS_LevelEditor.Editor.UI
 		bool showingPanel = false;
 		bool panelIsExpanded = false;
 		string currentHeaderLocKey = "";
+		bool isShowingGlobalUser = false; // The decision of the user if he wants to show global whenever possible.
 		// ------------------------------
 		Transform objectSpecificPanelsParent;
 		Dictionary<LE_Object.ObjectType?, GameObject> attributesPanels = new Dictionary<LE_Object.ObjectType?, GameObject>();
@@ -1084,12 +1085,17 @@ namespace FS_LevelEditor.Editor.UI
             if (!isSelectingMultipleObjectsOfTheSameType)
             {
                 globalObjAttributesToggle.gameObject.SetActive(false);
+
+                // In case this object doesn't have specific attributes, FORCE the global ones ONLY THIS SINGLE TIME.
+                // This is just to not override the user's decision, only the user can change if he wants global or specific.
+                bool isShowingGlobalBefore = isShowingGlobalUser;
                 globalObjAttributesToggle.SetToggleState(true, true);
+                isShowingGlobalUser = isShowingGlobalBefore;
             }
             else
             {
                 globalObjAttributesToggle.gameObject.SetActive(true);
-                globalObjAttributesToggle.SetToggleState(false, true);
+                globalObjAttributesToggle.SetToggleState(isShowingGlobalUser, true);
             }
         }
 		public void SetSelectedObject(LE_Object objComponent)
@@ -1116,7 +1122,12 @@ namespace FS_LevelEditor.Editor.UI
 
 			#region Setup Global Attributes Toggle
             globalObjAttributesToggle.gameObject.SetActive(specificAttributesFound);
-            globalObjAttributesToggle.SetToggleState(!specificAttributesFound, true);
+
+			// In case this object doesn't have specific attributes, FORCE the global ones ONLY THIS SINGLE TIME.
+			// This is just to not override the user's decision, only the user can change if he wants global or specific.
+			bool isShowingGlobalBefore = isShowingGlobalUser;
+			globalObjAttributesToggle.SetToggleState(!specificAttributesFound || isShowingGlobalUser, true);
+			isShowingGlobalUser = isShowingGlobalBefore;
 			#endregion
 
 			UpdateGlobalObjectAttributes(objComponent.transform);
@@ -1139,6 +1150,8 @@ namespace FS_LevelEditor.Editor.UI
         {
             objectSpecificPanelsParent.gameObject.SetActive(!show);
             globalObjectPanelsParent.gameObject.SetActive(show);
+
+			isShowingGlobalUser = show;
         }
 
 		#region Global Attributes Logic
