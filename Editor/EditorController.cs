@@ -746,6 +746,12 @@ namespace FS_LevelEditor.Editor
                     return;
                 }
 
+                if (currentSelectedObj || currentSelectedObjects.Count > 0)
+                {
+                    SetSelectedObj(null);
+                    return;
+                }
+
                 if (!IsCurrentState(EditorState.PAUSED))
                 {
                     EditorUIManager.Instance.ShowPause();
