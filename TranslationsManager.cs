@@ -47,7 +47,7 @@ namespace FS_LevelEditor
             translations = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             languages = new List<string>();
 
-            string[] lines = fileContent.Split('\n');
+            string[] lines = SplitLines(fileContent);
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -86,6 +86,40 @@ namespace FS_LevelEditor
             }
         }
 
+        static string[] SplitLines(string text)
+        {
+            var lines = new List<string>();
+            int startOfLine = 0;
+            bool inQuotes = false;
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                char c = text[i];
+
+                if (c == '"')
+                {
+                    inQuotes = !inQuotes;
+                }
+                else if ((c == '\n' || c == '\r') && !inQuotes)
+                {
+                    if (c == '\r')
+                    {
+                        i++;
+                        c = text[i];
+                    }
+
+                    if (c == '\n')
+                    {
+                        string line = text.Substring(startOfLine, i - startOfLine);
+                        lines.Add(line);
+                    }
+
+                    startOfLine = i + 1;
+                }
+            }
+
+            return lines.ToArray();
+        }
         static string[] SplitWithCommas(string line)
         {
             var fields = new List<string>();
