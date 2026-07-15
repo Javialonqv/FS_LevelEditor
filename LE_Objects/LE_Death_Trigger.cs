@@ -19,7 +19,7 @@ namespace FS_LevelEditor
 
         public static Vector3 RESPAWN_POINT_POS_OFFSET => new Vector3(0f, 0.3f);
 
-        ContainmentBox script;
+        public ContainmentBox script;
         public Vector3 RespawnPosition { get; private set; }
         public Vector3 RespawnRotation { get; private set; }
 
@@ -61,7 +61,7 @@ namespace FS_LevelEditor
             if (customWaypointSupport.targetWaypointsData == null || customWaypointSupport.targetWaypointsData.Count == 0)
             {
                 SetRespawnPointPositionAndRotation(transform.position, transform.eulerAngles);
-			}
+            }
 
             script.playDialogs = false;
             script.selectivePlayDialogs = false;
@@ -83,9 +83,9 @@ namespace FS_LevelEditor
 
             script.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
 
-			ConfigureEvents(script);
+            ConfigureEvents(script);
 
-			content.SetActive(true);
+            content.SetActive(true);
 
             initialized = true;
         }
@@ -165,7 +165,7 @@ namespace FS_LevelEditor
 				"OnTeleport",
 			};
 		}
-	void ConfigureEvents(ContainmentBox script)
+	    void ConfigureEvents(ContainmentBox script)
 		{
 			script.onTeleport = new UnityEngine.Events.UnityEvent();
 			script.onTeleport.AddListener((UnityAction)ExecuteOnTeleportEvents);
@@ -178,6 +178,27 @@ namespace FS_LevelEditor
 		public static new Color GetDefaultObjectColor(LEObjectContext context)
         {
             return new Color(1f, 0f, 0f, 0.05f);
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(Controls), nameof(Controls.OnTriggerExit))]
+    public static class InstantRespawnPatch
+    {
+        public static bool Prefix(Collider collider)
+        {
+            LE_Death_Trigger deathTrigger = collider.GetComponentInParent<LE_Death_Trigger>();
+            if (deathTrigger)
+            {
+                if (deathTrigger.GetProperty<float>("Delay") == 0 && deathTrigger.GetProperty<LE_Death_Trigger.TriggerType>("Type") == LE_Death_Trigger.TriggerType.RELOCATION)
+                {
+                    // The rotation of the player is still handled by the DeathTriggerRespawnRotationPatcher.
+                    Controls.Instance.TeleportPlayerToPosition(deathTrigger.script.m_resetTransform.position, true);
+
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 
