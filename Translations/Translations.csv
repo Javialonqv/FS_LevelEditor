@@ -223,3 +223,12 @@ EnterAnObjectName,Enter an object name...,Introduce el nombre de un objeto...,
 RotatePlayerTooltip,Should the player rotate where this respawn point is looking at?,¿Debería rotar el jugador a donde el punto de reaparición está mirando?,
 PowerSlotInitialStateTooltip,[b][FFFF00]WARNING:[-][/b] Setting this to [00FF00][i]ACTIVATED[/i][-] will create a new [i]Power Core[/i] in the level when it starts.,[b][FFFF00]ADVERTENCIA:[-][/b] Poner esto en [00FF00][i]ACTIVADO[/i][-] creará un nuevo [i]Núcleo de Energía[/i] en el nivel cuando este empiece.,
 CarriesPlayer,Carries Player,Carries Player,
+EventsTargetObjectFieldTooltip,"The [b]Target Object Field[/b] supports the following syntaxes:
+
+- [b]Objects:[/b] [FFFF00]TYPE ID[-] Example: [00FFFF]Ground 12[-].
+- [b]Player:[/b] Access to Player options.
+- [b]Taser:[/b] Access to Taser options.
+- [b]Jetpack:[/b] Access to Jetpack options.
+- [b]Objectives:[/b] [00FFFF]Obj_[-][FFFF00]OBJECTIVE TEXT[-] Example: [00FFFF]Obj_Find a way out[-].
+- [b]Wait:[/b] [00FFFF]Wait[-] [FFFF00]Xs or Xms[-] Example: [00FFFF]Wait 3s[-].
+- [b]Groups:[/b] [00FFFF]Group[-] [FFFF00]ID[-] Example: [00FFFF]Group 2[-].",,

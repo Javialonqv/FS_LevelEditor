@@ -1003,6 +1003,9 @@ namespace FS_LevelEditor.Editor.UI
             targetObjInputField = NGUI_Utils.CreateInputField(eventSettingsPanel.transform, new Vector3(0f, 230f, 0f), new Vector3Int(500, 60, 0), 34,
                 "", true, NGUIText.Alignment.Center);
 
+            var tooltip = targetObjInputField.gameObject.AddComponent<FractalTooltip>();
+            tooltip.toolTipLocKey = "EventsTargetObjectFieldTooltip";
+
             targetObjInputField.onChange += () => OnTargetObjectFieldChanged(targetObjInputField, targetObjInputField.GetComponent<UISprite>());
         }
         void CreateSelectTargetObjectButton()
