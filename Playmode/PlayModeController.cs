@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Text.RegularExpressions;
 using FS_LevelEditor.UI_Related;
+using System.Diagnostics;
 
 namespace FS_LevelEditor.Playmode
 {
@@ -71,13 +72,12 @@ namespace FS_LevelEditor.Playmode
 
 		void LoadAssetBundle()
 		{
-			Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FS_LevelEditor.level_editor");
-			byte[] bytes = new byte[stream.Length];
-			stream.Read(bytes);
+			Stopwatch watch = Stopwatch.StartNew();
 
-			LEBundle = Il2CppAssetBundleManager.LoadFromMemory(bytes);
+            // The bundle was already preloaded in Core.OnEarlyInitializeMelon.
+            LEBundle = AssetBundleLoader.GetLoadedBundle("level_editor");
 
-			editorObjectsRootFromBundle = LEBundle.Load<GameObject>("LevelObjectsRoot");
+            editorObjectsRootFromBundle = LEBundle.Load<GameObject>("LevelObjectsRoot");
 			editorObjectsRootFromBundle.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
 			foreach (var child in editorObjectsRootFromBundle.GetChilds())
@@ -129,7 +129,10 @@ namespace FS_LevelEditor.Playmode
 				}
 			}
 			#endregion
-		}
+
+			watch.Stop();
+            Logger.DebugLog($"TOOK {watch.Elapsed} TO LOAD THE ASSET BUNDLE STUFF IN PLAYMODE");
+        }
 		public GameObject LoadOtherObjectInBundle(string objectName)
 		{
 			if (otherObjectsFromBundle == null) return null;
@@ -374,21 +377,7 @@ namespace FS_LevelEditor.Playmode
 			UpgradePatches.Unpatch();
 			CleanupAllObjectives();
 
-			Destroy(editorObjectsRootFromBundle);
-
-			// Unload the asset bundle when playmode is destroyed
-			if (LEBundle != null && !Core.isQuitting)
-			{
-				try
-				{
-					LEBundle.Unload(true);
-				}
-				catch (System.Runtime.InteropServices.SEHException)
-				{
-					// Asset bundle may have already been garbage collected by IL2CPP runtime
-				}
-				LEBundle = null;
-			}
+			// Do not unload the asset bundle, it may be used for the editor again.
 
 			Instance = null;
 

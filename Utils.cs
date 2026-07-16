@@ -22,7 +22,6 @@ namespace FS_LevelEditor
     public static class Utils
     {
         static Coroutine customNotificationCoroutine;
-        static Dictionary<string, Il2CppAssetBundle> loadedBundles = new Dictionary<string, Il2CppAssetBundle>();
 
         static Dictionary<string, Coroutine> invokeCoroutines = new Dictionary<string, Coroutine>();
 
@@ -668,42 +667,6 @@ namespace FS_LevelEditor
             }
         }
 
-        //temporary solution for icons
-        public static void PreloadEmbeddedBundle(string bundlePath)
-        {
-            string[] manifestResourceNames = Assembly.GetCallingAssembly().GetManifestResourceNames();
-            string text = Assembly.GetCallingAssembly().GetName().Name + "." + bundlePath.Replace('/', '.');
-            if (!manifestResourceNames.Contains(text))
-            {
-                Debug.LogError("Couldn't find any embedded file in the DLL with name: " + bundlePath + " in: " + text);
-                return;
-            }
-
-            Stream? manifestResourceStream = Assembly.GetCallingAssembly().GetManifestResourceStream(text);
-            byte[] array = new byte[manifestResourceStream.Length];
-            manifestResourceStream.Read(array);
-            Il2CppAssetBundle value = Il2CppAssetBundleManager.LoadFromMemory(array);
-            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(bundlePath);
-            loadedBundles.Add(fileNameWithoutExtension, value);
-        }
-
-        public static T LoadAsset<T>(string assetName, string bundleName) where T : Object
-        {
-            if (!loadedBundles.ContainsKey(bundleName))
-            {
-                Debug.Log("Couldn't find loaded asset bundle with name:" + bundleName);
-                return null;
-            }
-
-            T val = loadedBundles[bundleName].Load<T>(assetName);
-            if (val == null)
-            {
-                Debug.LogError("Error loading the asset of name: " + assetName);
-                return null;
-            }
-
-            return val;
-        }
 		public static void SetChildCollidersState(this GameObject obj, bool state, bool includeInactive = true, params string[] except)
 		{
 			foreach (var collider in obj.TryGetComponents<Collider>(includeInactive))

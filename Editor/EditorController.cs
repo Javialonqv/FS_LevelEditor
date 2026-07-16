@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace FS_LevelEditor.Editor
 {
@@ -192,11 +193,10 @@ namespace FS_LevelEditor.Editor
 
         void LoadAssetBundle()
         {
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("FS_LevelEditor.level_editor");
-            byte[] bytes = new byte[stream.Length];
-            stream.Read(bytes);
+            Stopwatch watch = Stopwatch.StartNew();
 
-            Il2CppAssetBundle bundle = Il2CppAssetBundleManager.LoadFromMemory(bytes);
+            // The bundle was already preloaded in Core.OnEarlyInitializeMelon.
+            Il2CppAssetBundle bundle = AssetBundleLoader.GetLoadedBundle("level_editor");
 
             #region Load LE Objects From Bundle
             editorObjectsRootFromBundle = bundle.Load<GameObject>("LevelObjectsRoot");
@@ -323,6 +323,9 @@ namespace FS_LevelEditor.Editor
 
             // Store bundle reference - don't unload it because FMOD needs access to FSB data for audio clips
             editorAssetBundle = bundle;
+
+            watch.Stop();
+            Logger.DebugLog($"TOOK {watch.Elapsed} TO LOAD THE ASSET BUNDLE STUFF IN THE EDITOR");
         }
         public GameObject LoadOtherObjectInBundle(string objectName)
         {
@@ -3024,7 +3027,6 @@ namespace FS_LevelEditor.Editor
         void OnDestroy()
         {
             MenuController.isInLevelEditor = false;
-            Destroy(editorObjectsRootFromBundle);
 
             allCategoriesObjectsSorted.Clear();
             allCategoriesObjects.Clear();
@@ -3060,19 +3062,7 @@ namespace FS_LevelEditor.Editor
 
             LE_Object.ResetStaticVariablesInObjects();
 
-            // Unload the asset bundle when the editor is destroyed
-            if (editorAssetBundle != null && !Core.isQuitting)
-            {
-                try
-                {
-                    editorAssetBundle.Unload(true);
-                }
-                catch (System.Runtime.InteropServices.SEHException)
-                {
-                    // Asset bundle may have already been garbage collected by IL2CPP runtime
-                }
-                editorAssetBundle = null;
-            }
+            // Do NOT unload the editor asset bundle, since this bundle is also used for PlayMode.
 
             Instance = null;
         }

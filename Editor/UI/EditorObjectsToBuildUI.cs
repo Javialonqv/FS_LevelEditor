@@ -340,7 +340,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             if (!iconCache.TryGetValue(objectType, out var tex) || tex == null)
             {
-                tex = Utils.LoadAsset<Texture>(objectType.ToString(), "leveleditoricons");
+                tex = AssetBundleLoader.LoadAsset<Texture>(objectType.ToString(), "leveleditoricons");
                 iconCache[objectType] = tex;
             }
             return tex;

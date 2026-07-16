@@ -32,6 +32,12 @@ namespace FS_LevelEditor
             FixedUpdateProvider.Init();
         }
 
+        public override void OnEarlyInitializeMelon()
+        {
+            AssetBundleLoader.PreloadEmbeddedBundle("level_editor");
+            AssetBundleLoader.PreloadEmbeddedBundle("leveleditoricons");
+        }
+
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             currentSceneName = sceneName;
@@ -153,11 +159,6 @@ namespace FS_LevelEditor
             }
 
             return null;
-        }
-
-        public override void OnEarlyInitializeMelon()
-        {
-            Utils.PreloadEmbeddedBundle("leveleditoricons");
         }
 
         public override void OnApplicationQuit()
