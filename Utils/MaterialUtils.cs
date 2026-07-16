@@ -15,6 +15,8 @@ namespace FS_LevelEditor
         public static Material newPropsv1Mat, newPropsv1TransMat;
         public static Material newPropsv2Mat, newPropsv2TransMat;
         public static Material newPropsv3Mat, newPropsv3TransMat;
+        public static Material propsXMASLitMat, propsXMASLitTransMat;
+        public static Material propsXMASUnlitMat, propsXMASUnlitTransMat;
 
         static readonly Dictionary<(string name, Color matColor, Color emissionColor), Material> createdMaterialsWithColors = new();
 
@@ -58,6 +60,12 @@ namespace FS_LevelEditor
 
             newPropsv3Mat = bundle.Load<Material>("NewProps_v3");
             newPropsv3TransMat = bundle.Load<Material>("NewProps_v3_Transparent");
+
+            propsXMASLitMat = bundle.Load<Material>("Props_XMAS_Lit");
+            propsXMASLitTransMat = bundle.Load<Material>("Props_XMAS_Lit_Transparent");
+
+            propsXMASUnlitMat = bundle.Load<Material>("Props_XMAS_Unlit");
+            propsXMASUnlitTransMat = bundle.Load<Material>("Props_XMAS_Unlit_Transparent");
         }
 
         public static void SetTransparentMaterials(this GameObject gameObject)
@@ -78,13 +86,17 @@ namespace FS_LevelEditor
                     else if (matName.Contains("Props_NoSpec"))
                         toAssign = propsTransNoSpecMat;
                     else if (matName.Contains("NewProps_v1_Light_")) { }
-                        // Do nothing
+                    // Do nothing
                     else if (matName.Contains("NewProps_v1"))
                         toAssign = newPropsv1TransMat;
                     else if (matName.Contains("NewProps_v2"))
                         toAssign = newPropsv2TransMat;
                     else if (matName.Contains("NewProps_v3"))
                         toAssign = newPropsv3TransMat;
+                    else if (matName.Contains("Props_XMAS_Lit"))
+                        toAssign = propsXMASLitTransMat;
+                    else if (matName.Contains("Props_XMAS_Unlit"))
+                        toAssign = propsXMASUnlitTransMat;
 
                     if (toAssign)
                     {
@@ -119,6 +131,10 @@ namespace FS_LevelEditor
                         toAssign = newPropsv2Mat;
                     else if (matName.Contains("NewProps_v3_Transparent"))
                         toAssign = newPropsv3Mat;
+                    else if (matName.Contains("Props_XMAS_Lit_Transparent"))
+                        toAssign = propsXMASLitMat;
+                    else if (matName.Contains("Props_XMAS_Unlit_Transparent"))
+                        toAssign = propsXMASUnlitMat;
 
                     if (toAssign)
                     {
