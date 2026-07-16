@@ -1,5 +1,4 @@
 ﻿using FS_LevelEditor.Editor;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,6 +40,11 @@ namespace FS_LevelEditor
         }
         public static void ResetMaterialWithColorsReferences()
         {
+            foreach (var mat in createdMaterialsWithColors.Values)
+            {
+                UnityEngine.Object.Destroy(mat);
+            }
+
             createdMaterialsWithColors.Clear();
         }
 
@@ -86,7 +90,7 @@ namespace FS_LevelEditor
                     else if (matName.Contains("Props_NoSpec"))
                         toAssign = propsTransNoSpecMat;
                     else if (matName.Contains("NewProps_v1_Light_")) { }
-                    // Do nothing
+                        // Do nothing
                     else if (matName.Contains("NewProps_v1"))
                         toAssign = newPropsv1TransMat;
                     else if (matName.Contains("NewProps_v2"))
