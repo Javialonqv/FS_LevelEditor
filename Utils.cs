@@ -46,19 +46,38 @@ namespace FS_LevelEditor
             }
         }
 
+        static readonly Regex invalidFileNameRegex = new Regex(
+            "[" + Regex.Escape(new string(Path.GetInvalidFileNameChars())) + "]",
+            RegexOptions.Compiled);
+
+        static readonly Dictionary<(Type type, string method), MethodInfo> staticMethodCache = new Dictionary<(Type type, string method), MethodInfo>();
+        static readonly Dictionary<(Type type, string method), MethodInfo> declaredMethodCache = new Dictionary<(Type type, string method), MethodInfo>();
+        static readonly Dictionary<(Type type, string method), MethodInfo> instanceMethodCache = new Dictionary<(Type type, string method), MethodInfo>();
+
+        #region GameObject And Transform Childs Utils
         public static GameObject[] GetChilds(this GameObject obj, bool includeInactive = true)
         {
-            if (!obj) return Array.Empty<GameObject>();
+            if (!obj)
+                return Array.Empty<GameObject>();
 
-            List<GameObject> children = new List<GameObject>();
+            // No filter at all, use a fixed array using childCount.
+            if (includeInactive)
+            {
+                GameObject[] result = new GameObject[obj.transform.childCount];
+                for (int i = 0; i < obj.transform.childCount; i++)
+                {
+                    result[i] = obj.transform.GetChild(i).gameObject;
+                }
+                return result;
+            }
 
+            // includeInative is false, USE a filter.
+            List<GameObject> children = new List<GameObject>(obj.transform.childCount);
             for (int i = 0; i < obj.transform.childCount; i++)
             {
                 GameObject child = obj.transform.GetChild(i).gameObject;
-                if (child.activeSelf || includeInactive)
-                {
+                if (child.activeSelf)
                     children.Add(child);
-                }
             }
 
             return children.ToArray();
@@ -66,34 +85,39 @@ namespace FS_LevelEditor
 
         public static Transform GetChild(this Transform tr, string name)
         {
-            foreach (GameObject child in GetChilds(tr.gameObject))
+            if (!tr)
+                return null;
+
+            for (int i = 0; i < tr.childCount; i++)
             {
-                if (child.name == name) return child.transform;
+                Transform child = tr.GetChild(i);
+                if (child.name == name)
+                    return child;
             }
 
             return null;
         }
         public static GameObject GetChild(this GameObject obj, string name)
         {
-            foreach (GameObject child in GetChilds(obj))
-            {
-                if (child.name == name) return child;
-            }
+            if (!obj)
+                return null;
 
-            return null;
+            Transform found = obj.transform.GetChild(name);
+            return found ? found.gameObject : null;
         }
         public static bool ExistsChild(this GameObject obj, string name)
         {
-            foreach (GameObject child in GetChilds(obj))
-            {
-                if (child.name == name) return true;
-            }
+            if (!obj)
+                return false;
 
-            return false;
+            return obj.GetChild(name);
         }
 
         public static GameObject GetChildAt(this GameObject obj, string path)
         {
+            if (!obj)
+                return null;
+
             string[] childNames = path.Split('/');
             GameObject currentChild = obj;
 
@@ -114,68 +138,134 @@ namespace FS_LevelEditor
 
         public static void DeleteAllChildren(this GameObject obj, bool immediate = false)
         {
-            foreach (GameObject child in GetChilds(obj))
+            if (!obj)
+                return;
+
+            Transform tr = obj.transform;
+            int childCount = tr.childCount;
+
+            for (int i = 0; i < childCount; i++)
             {
-                if (immediate) GameObject.DestroyImmediate(child);
-                else GameObject.Destroy(child);
+                GameObject child = tr.GetChild(i).gameObject;
+                if (immediate)
+                    GameObject.DestroyImmediate(child);
+                else
+                    GameObject.Destroy(child);
             }
         }
         public static void DisableAllChildren(this GameObject obj)
         {
-            foreach (GameObject child in GetChilds(obj))
+            if (!obj)
+                return;
+
+            Transform tr = obj.transform;
+            int childCount = tr.childCount;
+
+            for (int i = 0; i < childCount; i++)
             {
-                child.SetActive(false);
+                tr.GetChild(i).gameObject.SetActive(false);
             }
         }
         public static void EnableAllChildren(this GameObject obj)
         {
-            foreach (GameObject child in GetChilds(obj))
+            if (!obj)
+                return;
+
+            Transform tr = obj.transform;
+            int childCount = tr.childCount;
+
+            for (int i = 0; i < childCount; i++)
             {
-                child.SetActive(true);
+                tr.GetChild(i).gameObject.SetActive(true);
             }
         }
 
+        public static void ChangeChildIndex(this GameObject child, int newIndex)
+        {
+            if (!child)
+                return;
+
+            if (child.transform.parent == null)
+            {
+                Logger.Error("The GameObject has no parent!");
+                return;
+            }
+
+            Transform parent = child.transform.parent;
+            int childCount = parent.childCount;
+
+            // Make sure te new index is inside of the child count of the parent.
+            newIndex = Mathf.Clamp(newIndex, 0, childCount - 1);
+
+            // Change the child index.
+            child.transform.SetSiblingIndex(newIndex);
+        }
+        public static void ChangeChildIndexToLastOne(this GameObject child)
+        {
+            if (!child)
+                return;
+
+            if (child.transform.parent == null)
+            {
+                Debug.LogError("The GameObject has no parent!");
+                return;
+            }
+
+            Transform parent = child.transform.parent;
+            int lastIndex = parent.childCount - 1;
+
+            // Move the child to the last index.
+            child.transform.SetSiblingIndex(lastIndex);
+        }
+
+        public static void SetChildCollidersState(this GameObject obj, bool state, bool includeInactive = true, params string[] except)
+        {
+            if (!obj)
+                return;
+
+            foreach (var collider in obj.TryGetComponents<Collider>(includeInactive))
+            {
+                if (except != null && except.Contains(collider.gameObject.name)) continue;
+                collider.enabled = state;
+            }
+        }
+        #endregion
+
+        #region Transform Utils
+        public static void SetXRotation(this Transform transform, float newValue)
+        {
+            transform.localEulerAngles = new Vector3(newValue, transform.localEulerAngles.y, transform.localEulerAngles.z);
+        }
+        public static void SetYRotation(this Transform transform, float newValue)
+        {
+            transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, newValue, transform.localEulerAngles.z);
+        }
+        public static void SetZRotation(this Transform transform, float newValue)
+        {
+            transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, newValue);
+        }
+
+        public static void SetXScale(this Transform transform, float newValue)
+        {
+            transform.localScale = new Vector3(newValue, transform.localScale.y, transform.localScale.z);
+        }
+        public static void SetYScale(this Transform transform, float newValue)
+        {
+            transform.localScale = new Vector3(transform.localScale.x, newValue, transform.localScale.z);
+        }
+        public static void SetZScale(this Transform transform, float newValue)
+        {
+            transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, newValue);
+        }
+        #endregion
+
+        #region Component Utils
         public static T[] TryGetComponents<T>(this GameObject obj, bool includeInactive = false) where T : Component
         {
-            List<T> components = new List<T>();
+            if (!obj)
+                return Array.Empty<T>();
 
-            if (obj.TryGetComponent<T>(out T component))
-            {
-                components.AddRange(obj.GetComponents<T>());
-            }
-            components.AddRange(obj.GetComponentsInChildren<T>(includeInactive));
-
-            return components.ToArray();
-        }
-
-        public static Vector3 GetMousePositionInWorld()
-        {
-            Vector3 mouseScreenPosition = Input.mousePosition;
-            mouseScreenPosition.z = Camera.main.nearClipPlane;
-            return Camera.main.ScreenToWorldPoint(mouseScreenPosition);
-        }
-
-        public static bool ItsTheOnlyHittedObjectByRaycast(Ray ray, float rayDistance, GameObject desiredObj)
-        {
-            RaycastHit[] hits = Physics.RaycastAll(ray, rayDistance);
-            bool objFound = false;
-
-            foreach (var hit in hits)
-            {
-                if (hit.collider != null)
-                {
-                    if (hit.collider.gameObject == desiredObj)
-                    {
-                        objFound = true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return objFound;
+            return obj.GetComponentsInChildren<T>(includeInactive);
         }
 
         /// <summary>
@@ -196,21 +286,36 @@ namespace FS_LevelEditor
             }
         }
 
-        public static bool IsMouseOverUIElement()
+        public static T FindObjectOfType<T>(Func<T, bool> predicate = null) where T : Component
         {
-            if (theresAnInputFieldSelected)
+            Object[] array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
+            if (predicate == null)
             {
-                return true;
+                return array[0].Cast<T>();
+            }
+            else
+            {
+                foreach (var obj in array)
+                {
+                    T casted = obj.Cast<T>();
+                    if (predicate.Invoke(casted))
+                    {
+                        return casted;
+                    }
+                }
             }
 
-            if (UICamera.hoveredObject != null)
-            {
-                return UICamera.hoveredObject.name != "MainMenu";
-            }
-
-            return false;
+            return null;
         }
+        public static T[] FindObjectsOfTypeIncludingDisabled<T>() where T : Component
+        {
+            Object[] array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
 
+            return array.Select(obj => obj.Cast<T>()).ToArray();
+        }
+        #endregion
+
+        #region Tween Utils
         public static void PlayIgnoringTimeScale(this TweenAlpha tween, bool reversed)
         {
             tween.ignoreTimeScale = true;
@@ -247,37 +352,215 @@ namespace FS_LevelEditor
             tween.Sample(factor, isFinished);
             tween.tweenFactor = factor;
         }
+        #endregion
 
-        public static void ChangeChildIndex(this GameObject child, int newIndex)
+        #region Parse Utils
+        public static bool TryParseFloat(string text, out float result)
         {
-            if (child.transform.parent == null)
+            if (float.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float value))
             {
-                Debug.LogError("The GameObject has no parent!");
-                return;
+                result = value;
+                return true;
             }
-
-            Transform parent = child.transform.parent;
-            int childCount = parent.childCount;
-
-            // Make sure te new index is inside of the child count of the parent.
-            newIndex = Mathf.Clamp(newIndex, 0, childCount - 1);
-
-            // Change the child index.
-            child.transform.SetSiblingIndex(newIndex);
+            else
+            {
+                result = 0f;
+                return false;
+            }
         }
-        public static void ChangeChildIndexToLastOne(this GameObject child)
+
+        public static float ParseFloat(string text, bool throwErrorIfCantParse = false)
         {
-            if (child.transform.parent == null)
+            if (float.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float value))
             {
-                Debug.LogError("The GameObject has no parent!");
+                return value;
+            }
+            else
+            {
+                if (throwErrorIfCantParse) Logger.Error($"Couldn't parse \"{text}\" to float!");
+                return value;
+            }
+        }
+
+        public static string FloatToString(float value)
+        {
+            return value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        #endregion
+
+        #region Invoke Utils
+        public static void Invoke(Action action, float delay, string id = "")
+        {
+            Coroutine coroutine = (Coroutine)MelonCoroutines.Start(InvokeCoroutine(action, delay, id));
+            if (coroutine == null)
+            {
+                Logger.Error($"An error occured while trying to start the invoke coroutine. (Delay: {delay}, ID: \"{id}\").");
                 return;
             }
+            if (!string.IsNullOrEmpty(id))
+            {
+                invokeCoroutines.Add(id, coroutine);
+            }
+        }
+        public static void CancelInvoke(string id)
+        {
+            if (invokeCoroutines.ContainsKey(id))
+            {
+                MelonCoroutines.Stop(invokeCoroutines[id]);
+                invokeCoroutines.Remove(id);
+            }
+            else
+            {
+                Logger.Warning($"Couldn't find any invoking coroutine with id \"{id}\".");
+            }
+        }
+        static IEnumerator InvokeCoroutine(Action action, float delay, string id)
+        {
+            yield return new WaitForSeconds(delay);
+            action.Invoke();
 
-            Transform parent = child.transform.parent;
-            int lastIndex = parent.childCount - 1;
+            if (!string.IsNullOrEmpty(id) && invokeCoroutines.ContainsKey(id))
+            {
+                invokeCoroutines.Remove(id);
+            }
+        }
 
-            // Move the child to the last index.
-            child.transform.SetSiblingIndex(lastIndex);
+        public static void InvokeAfterOneFrame(Action action)
+        {
+            MelonCoroutines.Start(InvokeAfterOneFrameCoroutine(action));
+        }
+        static IEnumerator InvokeAfterOneFrameCoroutine(Action action)
+        {
+            yield return null;
+
+            action.Invoke();
+        }
+        #endregion
+
+        #region Reflection Utils
+        public static bool CallStaticMethodIfExists(Type type, string methodName, out object result)
+        {
+            if (type == null)
+            {
+                result = null;
+                return false;
+            }
+
+            var key = (type, methodName);
+            if (!staticMethodCache.TryGetValue(key, out var method))
+            {
+                var flags = BindingFlags.Static
+                | BindingFlags.Public
+                | BindingFlags.NonPublic;
+
+                method = type.GetMethod(methodName, flags);
+                staticMethodCache[key] = method;
+            }
+
+            if (method != null)
+            {
+                result = method.Invoke(null, null);
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+        public static bool IsOverridingMethod(Type type, string methodName)
+        {
+            var key = (type, methodName);
+            if (!declaredMethodCache.TryGetValue(key, out MethodInfo method))
+            {
+                var flags = BindingFlags.Instance
+                      | BindingFlags.Public
+                      | BindingFlags.NonPublic
+                      | BindingFlags.DeclaredOnly;
+
+                method = type.GetMethod(methodName, flags);
+                declaredMethodCache[key] = method;
+            }
+
+            return method != null;
+        }
+        public static void CallMethodIfOverrided(Type baseType, object instance, string methodName, params object[] parms)
+        {
+            var type = instance.GetType();
+            var key = (type, methodName);
+            if (!instanceMethodCache.TryGetValue(key, out MethodInfo method))
+            {
+                var flags = BindingFlags.Instance
+                    | BindingFlags.Public
+                    | BindingFlags.NonPublic;
+
+                method = type.GetMethod(methodName, flags);
+                instanceMethodCache[key] = method;
+            }
+
+            if (method.DeclaringType != baseType)
+            {
+                method.Invoke(instance, parms);
+            }
+        }
+        public static void CallMethod(this object instance, string methodName, params object[] parms)
+        {
+            var type = instance.GetType();
+            var key = (type, methodName);
+            if (!instanceMethodCache.TryGetValue(key, out MethodInfo method))
+            {
+                var flags = BindingFlags.Instance
+                    | BindingFlags.Public
+                    | BindingFlags.NonPublic;
+
+                method = type.GetMethod(methodName, flags);
+                instanceMethodCache[key] = method;
+            }
+            if (method != null) method.Invoke(instance, parms);
+        }
+        #endregion
+
+        public static Vector3 GetMousePositionInWorld()
+        {
+            Vector3 mouseScreenPosition = Input.mousePosition;
+            mouseScreenPosition.z = Camera.main.nearClipPlane;
+            return Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+        }
+
+        public static bool ItsTheOnlyHittedObjectByRaycast(Ray ray, float rayDistance, GameObject desiredObj)
+        {
+            RaycastHit[] hits = Physics.RaycastAll(ray, rayDistance);
+            bool objFound = false;
+
+            foreach (var hit in hits)
+            {
+                if (hit.collider != null)
+                {
+                    if (hit.collider.gameObject == desiredObj)
+                    {
+                        objFound = true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return objFound;
+        }
+
+        public static bool IsMouseOverUIElement()
+        {
+            if (theresAnInputFieldSelected)
+            {
+                return true;
+            }
+
+            if (UICamera.hoveredObject != null)
+            {
+                return UICamera.hoveredObject.name != "MainMenu";
+            }
+
+            return false;
         }
 
         public static void ShowCustomNotificationRed(string msg, float delay)
@@ -420,117 +703,6 @@ namespace FS_LevelEditor
             }
         }
 
-        public static void SetXRotation(this Transform transform, float newValue)
-        {
-            transform.localEulerAngles = new Vector3(newValue, transform.localEulerAngles.y, transform.localEulerAngles.z);
-        }
-        public static void SetYRotation(this Transform transform, float newValue)
-        {
-            transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, newValue, transform.localEulerAngles.z);
-        }
-        public static void SetZRotation(this Transform transform, float newValue)
-        {
-            transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, newValue);
-        }
-
-        public static void SetXScale(this Transform transform, float newValue)
-        {
-            transform.localScale = new Vector3(newValue, transform.localScale.y, transform.localScale.z);
-        }
-        public static void SetYScale(this Transform transform, float newValue)
-        {
-            transform.localScale = new Vector3(transform.localScale.x, newValue, transform.localScale.z);
-        }
-        public static void SetZScale(this Transform transform, float newValue)
-        {
-            transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, newValue);
-        }
-
-        public static bool TryParseFloat(string text, out float result)
-        {
-            if (float.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float value))
-            {
-                result = value;
-                return true;
-            }
-            else
-            {
-                result = 0f;
-                return false;
-            }
-        }
-
-        public static float ParseFloat(string text, bool throwErrorIfCantParse = false)
-        {
-            if (float.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float value))
-            {
-                return value;
-            }
-            else
-            {
-                if (throwErrorIfCantParse) Logger.Error($"Couldn't parse \"{text}\" to float!");
-                return value;
-            }
-        }
-
-        public static string FloatToString(float value)
-        {
-            return value.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        }
-
-        public static bool CallStaticMethodIfExists(Type type, string methodName, out object result)
-        {
-            if (type == null)
-            {
-                result = null;
-                return false;
-            }
-
-            var flags = BindingFlags.Static
-                | BindingFlags.Public
-                | BindingFlags.NonPublic;
-
-            MethodInfo method = type.GetMethod(methodName, flags);
-            if (method != null)
-            {
-                result = method.Invoke(null, null);
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
-        public static bool IsOverridingMethod(Type type, string methodName)
-        {
-            var flags = BindingFlags.Instance
-                  | BindingFlags.Public
-                  | BindingFlags.NonPublic
-                  | BindingFlags.DeclaredOnly;
-
-            return type.GetMethod(methodName, flags) != null;
-        }
-        public static void CallMethodIfOverrided(Type baseType, object instance, string methodName, params object[] parms)
-        {
-            var flags = BindingFlags.Instance
-                  | BindingFlags.Public
-                  | BindingFlags.NonPublic;
-
-            MethodInfo method = instance.GetType().GetMethod(methodName, flags);
-            if (method.DeclaringType != baseType)
-            {
-                method.Invoke(instance, parms);
-            }
-        }
-        public static void CallMethod(this object instance, string methodName, params object[] parms)
-        {
-            var flags = BindingFlags.Instance
-                  | BindingFlags.Public
-                  | BindingFlags.NonPublic;
-
-            MethodInfo method = instance.GetType().GetMethod(methodName, flags);
-            if (method != null) method.Invoke(instance, parms);
-        }
-
         public static float HighestValueOfVector(Vector3 vector)
         {
             return Mathf.Max(vector.x, Mathf.Max(vector.y, vector.z));
@@ -582,34 +754,6 @@ namespace FS_LevelEditor
             return value;
         }
 
-        public static T FindObjectOfType<T>(Func<T, bool> predicate = null) where T : Component
-        {
-            Object[] array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
-            if (predicate == null)
-            {
-                return array[0].Cast<T>();
-            }
-            else
-            {
-                foreach (var obj in array)
-                {
-                    T casted = obj.Cast<T>();
-                    if (predicate.Invoke(casted))
-                    {
-                        return casted;
-                    }
-                }
-            }
-
-            return null;
-        }
-        public static T[] FindObjectsOfTypeIncludingDisabled<T>() where T : Component
-        {
-            Object[] array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
-
-            return array.Select(obj => obj.Cast<T>()).ToArray();
-        }
-
         public static string ObjectTypeToFormatedName(LE_Object.ObjectType objectType)
         {
             string withSpaces = objectType.ToString().Replace("_", " ");
@@ -636,12 +780,11 @@ namespace FS_LevelEditor
 
         public static string SanitizeFileName(string fileName, string replacement = "_", bool collapse = true)
         {
-            if (string.IsNullOrEmpty(fileName)) return string.Empty;
+            if (string.IsNullOrEmpty(fileName))
+                return string.Empty;
 
-            char[] invalidChars = Path.GetInvalidFileNameChars();
-            string invalidPattern = "[" + Regex.Escape(new string(invalidChars)) + "]";
-
-            string cleaned = Regex.Replace(fileName, invalidPattern, replacement);
+            // Use a cached and pre-compiled regex.
+            string cleaned = invalidFileNameRegex.Replace(fileName, replacement);
 
             if (collapse && !string.IsNullOrEmpty(replacement))
             {
@@ -667,15 +810,6 @@ namespace FS_LevelEditor
             }
         }
 
-		public static void SetChildCollidersState(this GameObject obj, bool state, bool includeInactive = true, params string[] except)
-		{
-			foreach (var collider in obj.TryGetComponents<Collider>(includeInactive))
-			{
-				if (except != null && except.Contains(collider.gameObject.name)) continue;
-				collider.enabled = state;
-			}
-		}
-
 		/// <summary>
 		/// Gets the hierarchical path of a GameObject from the root to the object.
 		/// </summary>
@@ -685,75 +819,30 @@ namespace FS_LevelEditor
 		/// <returns>The hierarchical path as a string.</returns>
 		public static string GetGameObjectPath(this GameObject obj, string separator = "/", bool includeScene = false)
 		{
-			if (obj == null) return string.Empty;
+            if (obj == null)
+                return string.Empty;
 
-			List<string> pathParts = new List<string>();
-			Transform current = obj.transform;
+            // First get the total depth of the object.
+            int depth = 0;
+            for (Transform t = obj.transform; t != null; t = t.parent)
+                depth++;
 
-			// Traverse up the hierarchy
-			while (current != null)
-			{
-				pathParts.Add(current.name);
-				current = current.parent;
-			}
+            // Create the fixed-size array.
+            bool attachScene = includeScene && obj.scene.isLoaded;
+            string[] pathParts = new string[depth + (attachScene ? 1 : 0)];
 
-			// Reverse to get root-to-object order
-			pathParts.Reverse();
-
-			// Optionally include scene name
-			if (includeScene && obj.scene.isLoaded)
-			{
-				pathParts.Insert(0, obj.scene.name);
-			}
-
-			return string.Join(separator, pathParts);
-		}
-
-        public static void Invoke(Action action, float delay, string id = "")
-        {
-            Coroutine coroutine = (Coroutine)MelonCoroutines.Start(InvokeCoroutine(action, delay, id));
-            if (coroutine == null)
+            // Iterate backwards, and put the parent names in the array.
+            int index = pathParts.Length - 1;
+            for (Transform t = obj.transform; t != null; t = t.parent)
             {
-                Logger.Error($"An error occured while trying to start the invoke coroutine. (Delay: {delay}, ID: \"{id}\").");
-                return;
+                pathParts[index--] = t.name;
             }
-            if (!string.IsNullOrEmpty(id))
-            {
-                invokeCoroutines.Add(id, coroutine);
-            }
-        }
-        public static void CancelInvoke(string id)
-        {
-            if (invokeCoroutines.ContainsKey(id))
-            {
-                MelonCoroutines.Stop(invokeCoroutines[id]);
-                invokeCoroutines.Remove(id);
-            }
-            else
-            {
-                Logger.Warning($"Couldn't find any invoking coroutine with id \"{id}\".");
-            }
-        }
-        static IEnumerator InvokeCoroutine(Action action, float delay, string id)
-        {
-            yield return new WaitForSeconds(delay);
-            action.Invoke();
 
-            if (!string.IsNullOrEmpty(id) && invokeCoroutines.ContainsKey(id))
-            {
-                invokeCoroutines.Remove(id);
-            }
-        }
+            // Attach the scene name if specified.
+            if (attachScene)
+                pathParts[0] = obj.scene.name;
 
-        public static void InvokeAfterOneFrame(Action action)
-        {
-            MelonCoroutines.Start(InvokeAfterOneFrameCoroutine(action));
-        }
-        static IEnumerator InvokeAfterOneFrameCoroutine(Action action)
-        {
-            yield return null;
-
-            action.Invoke();
+            return string.Join(separator, pathParts);
         }
 	}
 }
