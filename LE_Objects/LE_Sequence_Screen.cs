@@ -1,4 +1,11 @@
-﻿using Il2Cpp;
+﻿/* LE_Sequence_Screen
+ * 
+ * Dear programmer, whatever made you end up here with my LE child, and you're just reviewing my code, let me give you a bit of advice, DON'T.
+ * Here lies one of the WORST pieces of code ever written by man, EVER!
+ * In case you don't mind that, user discretion is highly recommended.
+*/
+
+using Il2Cpp;
 using Il2CppInterop.Runtime;
 using System;
 using System.Collections.Generic;
@@ -55,8 +62,11 @@ namespace FS_LevelEditor
         }
         IEnumerator WaitForSequenceInit()
         {
-            while (targetSequencer.sequence == null)
+            while (targetSequencer.sequence == null || targetSequencer.sequence.m_LEDIndicators == null)
                 yield return null;
+
+            // It may've already been set in SetProperty, force it to be assigned again here so OnObjectLinkTargetChanged is called.
+            objectLink.SetTargetObject(GetProperty<int>("SequencerID"), true);
 
             FixLEDs();
         }

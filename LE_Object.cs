@@ -973,7 +973,14 @@ namespace FS_LevelEditor
 
             foreach (var renderer in renderers)
             {
-                if (renderer == null) continue; // Skip null renderers
+                if (renderer == null)
+                    continue; // Skip null renderers
+
+                if (objectType == ObjectType.SEQUENCE)
+                {
+                    if (renderer.name == "Mesh" && renderer.transform.parent && renderer.transform.parent.name == "LEDIndicatorPrefab")
+                        continue; // Skip the sequencer LED Indicator Prefab.
+                }
 
                 if (renderer.gameObject.TryGetComponent<TextMeshPro>(out var tmpro))
                 {
