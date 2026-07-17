@@ -123,27 +123,29 @@ namespace FS_LevelEditor.Editor.UI
                 targetObjectID = null;
             }
             // Is searching for all objects of one type
-            else if (Enum.TryParse<LE_Object.ObjectType>(input, true, out var objectType))
+            else if (TranslationsManager.IsLocalizedObjectName(input, out var objectType))
             {
                 targetObjectType = objectType;
                 targetObjectID = null;
             }
             else // Is searching for a specific object.
             {
-                string[] splitted = input.Split(' ');
-                if (splitted.Length == 2)
+                int lastSpacePos = input.LastIndexOf(' ');
+                if (lastSpacePos != -1)
                 {
-                    if (Enum.TryParse<LE_Object.ObjectType>(splitted[0], true, out objectType) &&
-                        int.TryParse(splitted[1], out int objectID))
+                    string typeStr = input.Substring(0, lastSpacePos).Trim();
+                    string idStr = input.Substring(lastSpacePos + 1).Trim();
+
+                    if (TranslationsManager.IsLocalizedObjectName(typeStr, out objectType) && int.TryParse(idStr, out int objectID))
                     {
                         targetObjectType = objectType;
                         targetObjectID = objectID;
                     }
-                }
-                else
-                {
-                    targetObjectType = null;
-                    targetObjectID = null;
+                    else
+                    {
+                        targetObjectType = null;
+                        targetObjectID = null;
+                    }
                 }
             }
 

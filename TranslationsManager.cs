@@ -24,11 +24,15 @@ namespace FS_LevelEditor
             }
         }
 
+        static readonly Dictionary<LE_Object.ObjectType, string> localizedObjectNames = new Dictionary<LE_Object.ObjectType, string>();
+
         public static void Init()
         {
             ReadTranslationsFile();
 
             initialized = true;
+
+            RefreshLocalizedObjectsNamesDictionary(); // MAKE SURE TO CALL THIS AFTER SETTING INITIALIZED TO TRUE, OTHERWISE, STACK OVERFLOW.
         }
 
         static void ReadTranslationsFile()
@@ -222,6 +226,40 @@ namespace FS_LevelEditor
                 }
             }
         }
+
+        public static void RefreshLocalizedObjectsNamesDictionary()
+        {
+            localizedObjectNames.Clear();
+            foreach (LE_Object.ObjectType type in Enum.GetValues(typeof(LE_Object.ObjectType)))
+            {
+                string localized = Loc.Get("object." + type.ToString());
+                localizedObjectNames.Add(type, localized);
+            }
+        }
+        public static string GetLocalizedObjectName(LE_Object.ObjectType type)
+        {
+            foreach (var pair in localizedObjectNames)
+            {
+                if (pair.Key == type)
+                    return pair.Value;
+            }
+
+            return null;
+        }
+        public static bool IsLocalizedObjectName(string name, out LE_Object.ObjectType type)
+        {
+            foreach (var pair in localizedObjectNames)
+            {
+                if (string.Equals(pair.Value, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    type = pair.Key;
+                    return true;
+                }
+            }
+
+            type = LE_Object.ObjectType.GROUND;
+            return false;
+        }
     }
 
     // This class is only to avoid writing TranslationsManager.GetTranslation bla bla bla every time I wanna use it.
@@ -270,6 +308,8 @@ namespace FS_LevelEditor
             {
                 EditorUIManager.Instance.OnLanguageChanged();
             }
+
+            TranslationsManager.RefreshLocalizedObjectsNamesDictionary();
         }
     }
 }
