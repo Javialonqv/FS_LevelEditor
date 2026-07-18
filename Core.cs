@@ -74,22 +74,6 @@ namespace FS_LevelEditor
             }
         }
 
-        public override void OnUpdate()
-        {
-#if DEBUG
-            // Keybind to open the level editor.
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.L))
-            {
-                SetupEditorBasics();
-
-                new GameObject("EditorController").AddComponent<EditorController>();
-                new GameObject("EditorUIManager").AddComponent<EditorUIManager>();
-
-                SpawnBase();
-            }
-#endif
-        }
-
         public void SetupTheWholeEditor(bool willLoadALevel = false)
         {
             SetupEditorBasics();
