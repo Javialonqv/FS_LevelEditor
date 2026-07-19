@@ -17,6 +17,8 @@ namespace FS_LevelEditor
         public bool insertToPowerSlotOnStart = false;
         public LE_Power_Slot powerSlotToPreInsertTo = null;
 
+        public LE_Power_Slot currentlyInsertedSlot = null;
+
         void Awake()
         {
             if (EditorController.Instance)
@@ -269,11 +271,13 @@ namespace FS_LevelEditor
         {
             // Check if the object is from LE
             LE_Power_Core core = __instance.GetComponentInParent<LE_Power_Core>();
-            if (core && core.powerSlotToPreInsertTo) // This patch is for pre-inserted cores only.
+
+            // If not inserted into a slot, respawn in the main one, PRE-INSERTED CORES ONLY.
+            if (core && core.powerSlotToPreInsertTo)
             {
                 // Force the respawn values, in case the damn FS code adds an offset or something.
-                core.contentObject.transform.position = __instance.respawnPosition;
-                core.contentObject.transform.eulerAngles = __instance.respawnEulerAngles;
+                core.contentObject.transform.position = core.powerSlotToPreInsertTo.powerCore.m_powerCoreHolder.transform.position;
+                core.contentObject.transform.rotation = core.powerSlotToPreInsertTo.powerCore.m_powerCoreHolder.transform.rotation;
 
                 LE_Power_Core.ForceInsertion(core.powerSlotToPreInsertTo, core.blocScript, true);
             }

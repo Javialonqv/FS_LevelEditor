@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
+using static MelonLoader.MelonLaunchOptions;
 
 namespace FS_LevelEditor
 {
@@ -230,8 +231,14 @@ namespace FS_LevelEditor
             activePowerCore = powerCore.m_activePowerCore; // Make sure to cache this variable.
             activePowerCoreLE = activePowerCore.transform.parent.GetComponent<LE_Power_Core>();
 
+            activePowerCoreLE.currentlyInsertedSlot = this;
+
             // The power core will inherit position/rotation/scale from this slot.
             activePowerCoreLE.transform.parent = contentObject.transform;
+
+            // In case the user's Chris and he's MOVING the slot, force the core positions so it's not misplaced.
+            activePowerCoreLE.contentObject.transform.position = powerCore.m_powerCoreHolder.transform.position;
+            activePowerCoreLE.contentObject.transform.rotation = powerCore.m_powerCoreHolder.transform.rotation;
 
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnInsert"], "OnInsert", true);
         }
@@ -239,6 +246,8 @@ namespace FS_LevelEditor
         {
             // Here, powerCore.m_activePowerCore is already null, use our cached variable.
             activePowerCoreLE.transform.parent = activePowerCoreLE.objectParent;
+
+            activePowerCoreLE.currentlyInsertedSlot = null;
 
             activePowerCore = null;
             activePowerCoreLE = null;
