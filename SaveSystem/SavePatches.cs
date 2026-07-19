@@ -50,6 +50,19 @@ namespace FS_LevelEditor.SaveSystem
 
                                     return moveObject.GetInt32();
                                 }
+                            },
+                            { "upgrades", (upgrades) =>
+                                {
+                                    // This is to fix a bug where "upgrades" used to be null by default, which caused some issues in playmode. Changing the default value in LE_Event fixes it from now on.
+                                    // But we need to use this code to intercept any null value from old levels and force it to be a correct list.
+                                    if (upgrades.ValueKind == JsonValueKind.Null)
+                                    {
+                                        return new List<UpgradeSaveData>();
+                                    }
+
+                                    return JsonSerializer.Deserialize<List<UpgradeSaveData>>(upgrades);
+                                }
+
                             }
                         }),
                         // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the

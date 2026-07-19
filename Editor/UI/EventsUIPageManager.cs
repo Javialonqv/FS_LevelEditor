@@ -2999,6 +2999,7 @@ public class LE_Event
     public bool enableOrDisableZeroG { get; set; } = false;
     public bool invertGravity { get; set; } = false;
     public bool flashlightEnabled { get; set; } = true;
+    public List<UpgradeSaveData> upgrades { get; set; } = new();
     #endregion
 
     #region Taser Options
@@ -3007,7 +3008,6 @@ public class LE_Event
     public bool changeAmmo { get; set; } = false;
     public int newAmmo { get; set; } = 8;
     public bool infiniteTaser { get; set; } = false;
-    public List<UpgradeSaveData> upgrades { get; set; } = null;
     #endregion
 
     #region Jetpack Options
