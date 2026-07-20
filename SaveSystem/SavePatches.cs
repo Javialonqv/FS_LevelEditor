@@ -22,7 +22,7 @@ namespace FS_LevelEditor.SaveSystem
 #if DEBUG
                     WriteIndented = true,
 #endif
-                    Converters = { new LEIgnoreDefaultValuesInLEEvents() }
+                    //Converters = { new LEIgnoreDefaultValuesInLEEvents() }
                 };
             }
         }
