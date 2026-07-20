@@ -170,7 +170,7 @@ namespace FS_LevelEditor
 			script.onTeleport = new UnityEngine.Events.UnityEvent();
 			script.onTeleport.AddListener((UnityAction)ExecuteOnTeleportEvents);
 		}
-		void ExecuteOnTeleportEvents()
+		public void ExecuteOnTeleportEvents()
 		{
 			// OnTeleport is a one-shot activating event for AND logic purposes
 			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnTeleport"], "OnTeleport", true);
@@ -193,6 +193,9 @@ namespace FS_LevelEditor
                 {
                     // The rotation of the player is still handled by the DeathTriggerRespawnRotationPatcher.
                     Controls.Instance.TeleportPlayerToPosition(deathTrigger.script.m_resetTransform.position, true);
+
+                    // onTeleport in ContainmentBox is not called for some reason, execute the events manually.
+                    deathTrigger.ExecuteOnTeleportEvents();
 
                     return false;
                 }
