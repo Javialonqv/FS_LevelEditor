@@ -27,6 +27,13 @@ namespace FS_LevelEditor
         InterrupteurController controller;
         MeshRenderer redPlane, greenPlane, cyanPlane;
 
+        public override string[] EventsIDs =>
+        [
+            "WhenInvertingEvents",
+            "WhenActivatingEvents",
+            "WhenDeactivatingEvents"
+        ];
+
         // Special variable for an edge case where the switch state was changed through events but ObjectStart wasn't called yet (the objected was set to be despawned at start)
         // So the event change was overrided by ObjectStart when the object was enabled for the first time.
         public bool alreadyChangedStateThroughtEvents = false;
@@ -185,16 +192,6 @@ namespace FS_LevelEditor
             ConfigureEvents(controller);
             // Do NOT hide mesh in editor
             initialized = true;
-        }
-
-        public override List<string> GetAvailableEventsIDs()
-        {
-            return new List<string>
-            {
-                "WhenInvertingEvents",
-                "WhenActivatingEvents",
-                "WhenDeactivatingEvents"
-            };
         }
 
         public override bool SetProperty(string name, object value)

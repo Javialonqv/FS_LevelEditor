@@ -23,6 +23,11 @@ namespace FS_LevelEditor
         public Vector3 RespawnPosition { get; private set; }
         public Vector3 RespawnRotation { get; private set; }
 
+        public override string[] EventsIDs =>
+        [
+            "OnTeleport"
+        ];
+
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>()
@@ -158,13 +163,6 @@ namespace FS_LevelEditor
             return base.TriggerAction(actionName);
         }
 
-		public override List<string> GetAvailableEventsIDs()
-		{
-			return new List<string>
-			{
-				"OnTeleport",
-			};
-		}
 	    void ConfigureEvents(ContainmentBox script)
 		{
 			script.onTeleport = new UnityEngine.Events.UnityEvent();

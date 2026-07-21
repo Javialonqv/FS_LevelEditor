@@ -28,6 +28,13 @@ namespace FS_LevelEditor
         BlocScript activePowerCore;
         LE_Power_Core activePowerCoreLE;
 
+        public override string[] EventsIDs =>
+        [
+            "OnBoth",
+            "OnInsert",
+            "OnRemove"
+        ];
+
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
@@ -292,16 +299,6 @@ namespace FS_LevelEditor
             }
 
             return base.SetProperty(name, value);
-        }
-
-        public override List<string> GetAvailableEventsIDs()
-        {
-            return new List<string>()
-            {
-                "OnBoth",
-                "OnInsert",
-                "OnRemove"
-            };
         }
     }
 }

@@ -18,6 +18,11 @@ namespace FS_LevelEditor
 
         public static bool isCurrentlyInfinite = false;
 
+        public override string[] EventsIDs =>
+        [
+            "OnPickup"
+        ];
+
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
@@ -114,13 +119,6 @@ namespace FS_LevelEditor
         {
             // OnPickup is a one-shot activating event for AND logic purposes
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnPickup"], "OnPickup", true);
-        }
-        public override List<string> GetAvailableEventsIDs()
-        {
-            return new List<string>()
-            {
-                "OnPickup"
-            };
         }
     }
 

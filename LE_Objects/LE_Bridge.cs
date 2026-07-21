@@ -17,6 +17,12 @@ namespace FS_LevelEditor
 		private BridgeController bridgeController;
 		public enum InitialState { RETRACTED, DEPLOYED };
 
+		public override string[] EventsIDs => new string[]
+        {
+            "OnDeploy",
+            "OnRetract"
+        };
+
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
@@ -119,14 +125,6 @@ namespace FS_LevelEditor
 		void ExecuteOnRetractEvents()
 		{
 			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnRetract"], "OnRetract", false);
-		}
-		public override List<string> GetAvailableEventsIDs()
-		{
-			return new List<string>()
-			{
-				"OnDeploy",
-				"OnRetract"
-			};
 		}
 
 		public override bool TriggerAction(string actionName)

@@ -18,6 +18,11 @@ namespace FS_LevelEditor
 		private List<BrickMaterialController> bricks = new List<BrickMaterialController>();
 		DestructibleWall script;
 
+		public override string[] EventsIDs =>
+		[
+			"OnBreak"
+		];
+
 		void Awake()
 		{
 			if(EditorController.Instance)
@@ -135,7 +140,7 @@ namespace FS_LevelEditor
             return base.TriggerAction(actionName);
         }
 
-	void ConfigureEvents(DestructibleWall script)
+		void ConfigureEvents(DestructibleWall script)
 		{
 			script.onBreak = new UnityEngine.Events.UnityEvent();
 			script.onBreak.AddListener((UnityAction)ExecuteOnBreakEvents);
@@ -144,13 +149,6 @@ namespace FS_LevelEditor
 		{
 			// OnBreak is a one-shot activating event for AND logic purposes
 			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnBreak"], "OnBreak", true);
-		}
-		public override List<string> GetAvailableEventsIDs()
-		{
-			return new List<string>()
-			{
-				"OnBreak"
-			};
 		}
 	}
 }

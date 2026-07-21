@@ -161,6 +161,9 @@ namespace FS_LevelEditor
         public static Dictionary<int, List<LE_Object>> objectsPerGroup = new Dictionary<int, List<LE_Object>>();
         public static Dictionary<int, GameObject> groupsObjectsInPlaymode = new Dictionary<int, GameObject>();
 
+        static Dictionary<ObjectType, string[]> objectsEventsIDs = new Dictionary<ObjectType, string[]>();
+        public virtual string[] EventsIDs => [];
+
         public ObjectType? objectType;
         public int objectID;
         public string objectLocalizatedName
@@ -356,7 +359,7 @@ namespace FS_LevelEditor
             }
 
             // If greater than 0 that means this object DOES support events.
-            if (GetAvailableEventsIDs().Count > 0)
+            if (GetAvailableEventsIDs().Length > 0)
             {
                 eventExecuter = gameObject.AddComponent<EventExecuter>();
             }
@@ -811,12 +814,22 @@ namespace FS_LevelEditor
         {
 
         }
-
-        public virtual List<string> GetAvailableEventsIDs()
-        {
-            return new List<string>();
-        }
         #endregion
+
+        public string[] GetAvailableEventsIDs()
+        {
+            // objectType SHOULDN'T be null ever, but just in case.
+            if (!objectType.HasValue)
+                return null;
+
+            if (!objectsEventsIDs.TryGetValue(objectType.Value, out string[] ids))
+            {
+                ids = EventsIDs;
+                objectsEventsIDs.Add(objectType.Value, ids);
+            }
+
+            return ids;
+        }
 
         public enum LEObjectContext { PREVIEW, SELECT, NORMAL }
         public static Color GetDefaultObjectColor(LEObjectContext context)

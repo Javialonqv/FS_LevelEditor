@@ -601,7 +601,7 @@ namespace FS_LevelEditor.Editor.UI
         #region Events List Related
         void SetupTopButtons()
         {
-            eventsListsNames = targetObj.GetAvailableEventsIDs();
+            eventsListsNames = targetObj.GetAvailableEventsIDs().ToList();
 
             if (eventsListsNames.Count > 1) // Setup with buttons.
             {
@@ -2874,7 +2874,7 @@ namespace FS_LevelEditor.Editor.UI
 
         public void ShowEventsPage(LE_Object targetObj, bool refresh = true)
         {
-            if (targetObj.GetAvailableEventsIDs().Count <= 0)
+            if (targetObj.GetAvailableEventsIDs().Length <= 0)
             {
                 Logger.Error("Requested to show Events Panel but the target object has NO Events List. IT'S NOT COMPATIBLE!");
                 return;

@@ -24,6 +24,11 @@ namespace FS_LevelEditor
         public bool isFirstWaypoint => waypointIndex == 0;
         public bool isLastWaypoint => waypointIndex == mainSupport.targetWaypointsData.Count - 1;
 
+        public override string[] EventsIDs =>
+        [
+            "WhenReached"
+        ];
+
         public LE_Waypoint()
         {
             canBeUsedInEventsTab = false;
@@ -189,13 +194,6 @@ namespace FS_LevelEditor
             return transform.parent.parent.GetComponent<WaypointSupport>();
         }
 
-        public override List<string> GetAvailableEventsIDs()
-        {
-            return new List<string>()
-            {
-                "WhenReached"
-            };
-        }
         public void ExecuteWhenReachedEvents()
         {
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["WhenReached"], "WhenReached", true);

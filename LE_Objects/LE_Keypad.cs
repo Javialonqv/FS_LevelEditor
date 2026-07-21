@@ -20,6 +20,12 @@ namespace FS_LevelEditor
 	{
 		public override string contentObjectName => "LE_Keypad";
 
+        public override string[] EventsIDs =>
+		[
+            "onWinEvents",
+            "onFailEvents"
+        ];
+
 		InterrupteurController controller;
 		private int keycodeValue = 0;
 		private int alternativeValue = 0;
@@ -269,14 +275,6 @@ namespace FS_LevelEditor
 		{
 			// OnFail is a one-shot event, treated as activating for AND logic purposes
 			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["onFailEvents"], "onFailEvents", true);
-		}
-		public override List<string> GetAvailableEventsIDs()
-		{
-			return new List<string>()
-			{
-				"onWinEvents",
-				"onFailEvents"
-			};
 		}
 
 		public override bool TriggerAction(string actionName)

@@ -28,7 +28,13 @@ namespace FS_LevelEditor
 		BoxCollider trigger;
 		public bool skipTriggerWithPlayerThisFrame = false;
 
-        public static Dictionary<string, object> GetDefaultProperties()
+		public override string[] EventsIDs =>
+		[
+			"OnEnter",
+			"OnExit"
+        ];
+
+		public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
             {
@@ -181,15 +187,6 @@ namespace FS_LevelEditor
 			}
 
 			return base.SetProperty(name, value);
-		}
-
-		public override List<string> GetAvailableEventsIDs()
-		{
-			return new List<string>()
-			{
-				"OnEnter",
-				"OnExit"
-			};
 		}
 
 		// Called when cube enters trigger (only for cube-only mode)

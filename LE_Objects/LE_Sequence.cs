@@ -19,6 +19,11 @@ namespace FS_LevelEditor
         public SequenceSwitchController sequence;
         public MeshRenderer renderer;
 
+        public override string[] EventsIDs =>
+        [
+            "OnSuccess"
+        ];
+
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
@@ -221,13 +226,6 @@ namespace FS_LevelEditor
         void ExecuteOnSuccessEvents()
         {
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnSuccess"], "OnSuccess", true);
-        }
-        public override List<string> GetAvailableEventsIDs()
-        {
-            return new List<string>()
-            {
-                "OnSuccess"
-            };
         }
 
         public void UpdateLinkedScreen()

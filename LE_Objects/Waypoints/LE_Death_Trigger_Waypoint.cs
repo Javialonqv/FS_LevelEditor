@@ -14,6 +14,9 @@ namespace FS_LevelEditor
     {
         GameObject sprite;
 
+        // Override the LE_Waypoint implementation.
+        public override string[] EventsIDs => [];
+
         public override WaypointSupport GetMainSupport()
         {
             return transform.parent.parent.GetComponent<DeathTriggerWaypointSupport>();
@@ -54,12 +57,6 @@ namespace FS_LevelEditor
 			}
 
             return base.SetProperty(name, value);
-        }
-
-        // Override the LE_Waypoint implementation.
-        public override List<string> GetAvailableEventsIDs()
-        {
-            return new List<string>();
         }
     }
 }

@@ -17,6 +17,13 @@ namespace FS_LevelEditor
         MeshRenderer redPlane, greenPlane;
         BlocSwitchScript script;
 
+        public override string[] EventsIDs =>
+        [
+            "OnDrop",
+            "OnRemove",
+            "OnBoth"
+        ];
+
         void Awake()
         {
             redPlane = gameObject.GetChildAt("Content/MeshDynamic/MeshOffStatic").GetComponent<MeshRenderer>();
@@ -222,16 +229,6 @@ namespace FS_LevelEditor
         void ExecuteOnBothEventsDeactivating()
         {
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnBoth"], "OnBoth", false);
-        }
-
-        public override List<string> GetAvailableEventsIDs()
-        {
-            return new List<string>()
-            {
-                "OnDrop",
-                "OnRemove",
-                "OnBoth"
-            };
         }
     }
 }

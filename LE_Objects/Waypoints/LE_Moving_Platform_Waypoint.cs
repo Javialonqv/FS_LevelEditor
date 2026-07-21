@@ -11,6 +11,9 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Moving_Platform_Waypoint : LE_Waypoint
     {
+        // Override the LE_Waypoint implementation.
+        public override string[] EventsIDs => [];
+
         public override WaypointSupport GetMainSupport()
         {
             return transform.parent.parent.GetComponent<MovingPlatformWaypointSupport>();
@@ -53,12 +56,6 @@ namespace FS_LevelEditor
             script.checkpoints = mainSupport.spawnedWaypoints.Select(x => x.gameObject).ToArray();
 
             initialized = true;
-        }
-
-        // Override the LE_Waypoint implementation.
-        public override List<string> GetAvailableEventsIDs()
-        {
-            return new List<string>();
         }
     }
 }

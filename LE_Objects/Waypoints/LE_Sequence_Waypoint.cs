@@ -13,6 +13,9 @@ namespace FS_LevelEditor
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class LE_Sequence_Waypoint : LE_Waypoint
     {
+        // Override the LE_Waypoint implementation.
+        public override string[] EventsIDs => [];
+
         public MeshRenderer renderer;
 
         public override WaypointSupport GetMainSupport()
@@ -149,12 +152,6 @@ namespace FS_LevelEditor
                 }
                 renderer.sharedMaterials = materials;
             }
-        }
-
-        // Override the LE_Waypoint implementation.
-        public override List<string> GetAvailableEventsIDs()
-        {
-            return new List<string>();
         }
     }
 }
