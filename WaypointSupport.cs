@@ -125,6 +125,11 @@ namespace FS_LevelEditor
                 // Move every object attached to this platform.
                 foreach (var obj in objectsToMove)
                 {
+                    // The guys were having some issues with this function in this line, they didn't explain me shit, but I guess it's when you leave playmode or something?
+                    // Add this check so it skips already destroyed objects (because of the scene switching).
+                    if (!obj)
+                        continue;
+
                     if (obj.TryGetComponent<Rigidbody>(out var rb))
                     {
                         rb.interpolation = RigidbodyInterpolation.Interpolate;
