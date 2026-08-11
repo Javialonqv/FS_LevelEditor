@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor;
+using FS_LevelEditor.Editor;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
 using Il2Cpp;
@@ -1070,182 +1071,17 @@ namespace FS_LevelEditor.Editor.UI
         void OnTargetObjectFieldChanged(UICustomInputField input, UISprite fieldSprite)
         {
             string inputText = input.GetText();
-            LE_Object targetObj = null;
-            bool objIsValid = false;
 
-            #region Check if the object is valid
-            if (string.Equals(inputText, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase))
-            {
-                objIsValid = true;
-            }
-            if (string.Equals(inputText, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase))
-            {
-                objIsValid = true;
-            }
-            if (string.Equals(inputText, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase))
-            {
-                objIsValid = true;
-            }
-            // Check if input starts with "Objective_"
-            if (inputText.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase))
-            {
-                objIsValid = true;
-            }
-            else if (inputText.StartsWith("Wait", StringComparison.OrdinalIgnoreCase))
-            {
-                // Very dirty code, Ik it, alr?
-                if (inputText.EndsWith("ms", StringComparison.OrdinalIgnoreCase))
-                {
-                    string stripped = inputText.ToLower().Replace("wait", "").Replace("ms", "").Trim();
-                    objIsValid = float.TryParse(stripped, out _);
-                }
-                else if (inputText.EndsWith("s", StringComparison.OrdinalIgnoreCase))
-                {
-                    string stripped = inputText.ToLower().Replace("wait", "").Replace("s", "").Trim();
-                    objIsValid = float.TryParse(stripped, out _);
-                }
-            }
-            else if (inputText.StartsWith("Group", StringComparison.OrdinalIgnoreCase))
-            {
-                string[] splitted = inputText.Split(' ');
-                if (splitted.Length == 2 && int.TryParse(splitted[1], out int targetGroup))
-                {
-                    objIsValid = LE_Object.objectsPerGroup.ContainsKey(targetGroup);
-                }
-            }
-            else
-            {
-                targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => string.Equals(obj.objectFullNameWithID, inputText,
-                    StringComparison.OrdinalIgnoreCase));
-                if (targetObj)
-                {
-                    if (targetObj.canBeUsedInEventsTab && !targetObj.isDeleted)
-                    {
-                        objIsValid = true;
-                    }
-                }
-            }
-            #endregion
+            // This will automatically configure the variables in it, which then are used by the IsValid property.
+            currentSelectedEvent.Setup(inputText);
 
             // If the object name that the user put there is valid and exists...
-            if (objIsValid)
+            if (currentSelectedEvent.IsValid)
             {
                 fieldSprite.color = new Color(0.0588f, 0.3176f, 0.3215f, 0.9412f);
                 eventOptionsParent.SetActive(true);
                 eventOptionsParent.DisableAllChildren();
                 currentActiveObjectPanel = null;
-
-                if (string.Equals(inputText, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase))
-                {
-                    currentSelectedEvent.isForPlayer = true;
-                    currentSelectedEvent.isForTaser = false;
-                    currentSelectedEvent.isForJetpack = false;
-                    currentSelectedEvent.isForObjective = false;
-                    currentSelectedEvent.isForGroup = false;
-                    currentSelectedEvent.isForWait = false;
-                    currentSelectedEvent.targetObjType = null;
-                    currentSelectedEvent.targetObjID = 0;
-                    currentSelectedEvent.targetObjName = "";
-                }
-                else if (string.Equals(inputText, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase))
-                {
-                    currentSelectedEvent.isForPlayer = false;
-                    currentSelectedEvent.isForTaser = true;
-                    currentSelectedEvent.isForJetpack = false;
-                    currentSelectedEvent.isForObjective = false;
-                    currentSelectedEvent.isForGroup = false;
-                    currentSelectedEvent.isForWait = false;
-                    currentSelectedEvent.targetObjType = null;
-                    currentSelectedEvent.targetObjID = 0;
-                    currentSelectedEvent.targetObjName = "";
-                }
-                else if (string.Equals(inputText, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase))
-                {
-                    currentSelectedEvent.isForPlayer = false;
-                    currentSelectedEvent.isForTaser = false;
-                    currentSelectedEvent.isForJetpack = true;
-                    currentSelectedEvent.isForObjective = false;
-                    currentSelectedEvent.isForGroup = false;
-                    currentSelectedEvent.isForWait = false;
-                    currentSelectedEvent.targetObjType = null;
-                    currentSelectedEvent.targetObjID = 0;
-                    currentSelectedEvent.targetObjName = "";
-                }
-                else if (inputText.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase))
-                {
-                    currentSelectedEvent.isForPlayer = false;
-                    currentSelectedEvent.isForTaser = false;
-                    currentSelectedEvent.isForJetpack = false;
-                    currentSelectedEvent.isForObjective = true;
-                    currentSelectedEvent.isForGroup = false;
-                    currentSelectedEvent.isForWait = false;
-                    currentSelectedEvent.targetObjType = null;
-                    currentSelectedEvent.targetObjID = 0;
-                    currentSelectedEvent.targetObjName = "";
-
-                    // Extract the objective name after "Objective_"
-                    string objectiveName = inputText.Substring(4); // "Objective_" is 10 characters
-                    currentSelectedEvent.objectiveName = objectiveName;
-                }
-                else if (inputText.StartsWith("Wait", StringComparison.OrdinalIgnoreCase))
-                {
-                    currentSelectedEvent.isForPlayer = false;
-                    currentSelectedEvent.isForTaser = false;
-                    currentSelectedEvent.isForJetpack = false;
-                    currentSelectedEvent.isForObjective = false;
-                    currentSelectedEvent.isForGroup = false;
-                    currentSelectedEvent.isForWait = true;
-                    currentSelectedEvent.targetObjType = null;
-                    currentSelectedEvent.targetObjID = 0;
-                    currentSelectedEvent.targetObjName = "";
-
-                    // Thanks to a previous if statement, we already know that the input either ends with "ms" or "s".
-                    currentSelectedEvent.waitTimeUnits = inputText.EndsWith("ms", StringComparison.OrdinalIgnoreCase) ? LE_Event.WaitTimeUnit.Miliseconds : LE_Event.WaitTimeUnit.Seconds;
-
-                    if (currentSelectedEvent.waitTimeUnits == LE_Event.WaitTimeUnit.Seconds)
-                        currentSelectedEvent.waitTime = Utils.ParseFloat(inputText.ToLower().Replace("wait", "").Replace("s", "").Trim());
-                    else
-                        currentSelectedEvent.waitTime = Utils.ParseFloat(inputText.ToLower().Replace("wait", "").Replace("ms", "").Trim());
-                }
-                else if (inputText.StartsWith("Group", StringComparison.OrdinalIgnoreCase))
-                {
-                    currentSelectedEvent.isForPlayer = false;
-                    currentSelectedEvent.isForTaser = false;
-                    currentSelectedEvent.isForJetpack = false;
-                    currentSelectedEvent.isForObjective = false;
-                    currentSelectedEvent.isForGroup = true;
-                    currentSelectedEvent.isForWait = false;
-                    currentSelectedEvent.targetObjType = null;
-                    currentSelectedEvent.targetObjID = 0;
-                    currentSelectedEvent.targetObjName = "";
-
-                    int targetGroup = int.Parse(inputText.Split(' ')[1]);
-                    currentSelectedEvent.targetGroupID = targetGroup;
-
-                    var objectsInGroup = LE_Object.objectsPerGroup[targetGroup];
-                    if (LE_Object.ObjectsAreOfTheSameType(objectsInGroup))
-                    {
-                        currentSelectedEvent.allObjectsInGroupAreTheSame = true;
-                        currentSelectedEvent.sameObjectType = objectsInGroup[0].objectType;
-                    }
-                    else
-                    {
-                        currentSelectedEvent.allObjectsInGroupAreTheSame = false;
-                        currentSelectedEvent.sameObjectType = null;
-                    }
-                }
-                else
-                {
-                    currentSelectedEvent.isForPlayer = false;
-                    currentSelectedEvent.isForTaser = false;
-                    currentSelectedEvent.isForJetpack = false;
-                    currentSelectedEvent.isForObjective = false;
-                    currentSelectedEvent.isForGroup = false;
-                    currentSelectedEvent.isForWait = false;
-                    currentSelectedEvent.targetObjType = targetObj.objectType;
-                    currentSelectedEvent.targetObjID = targetObj.objectID;
-                    currentSelectedEvent.targetObjName = ""; // While the object is valid, don't use the name, use the type and ID instead.
-                }
 
                 bool hasGlobalOptions = false;
                 if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack && !currentSelectedEvent.isForObjective &&
@@ -1284,7 +1120,7 @@ namespace FS_LevelEditor.Editor.UI
                 }
                 else
                 {
-                    currentActiveObjectPanel = GetOptionsPanelForObject(targetObj.objectType.Value);
+                    currentActiveObjectPanel = GetOptionsPanelForObject(currentSelectedEvent.targetObjType.Value);
                 }
 
                 if (currentActiveObjectPanel) // User can decided if it shows global options or object-specific options.
@@ -1331,8 +1167,6 @@ namespace FS_LevelEditor.Editor.UI
 
                 moreGlobalOptionsButton.gameObject.SetActive(false);
             }
-
-            currentSelectedEvent.isValid = objIsValid;
         }
         void OnSelectTargetObjectButtonClick()
         {
@@ -2951,11 +2785,48 @@ public class LE_Event
 
         foreach (var property in type.GetProperties())
         {
+            if (!property.CanWrite)
+                continue;
+
             property.SetValue(this, property.GetValue(toCopy));
         }
     }
 
+    // RUNTIME PROPERTY, DO NOT DECLARE IT AS A PROPERTY BECAUSE WE DON'T WANT IT TO BE SERIALIZED BY JSON.
+    public LE_Object targetInstanceObject = null;
+
+    // ------------------------------------------------------
+    // Everything here below IS serialized with json.
+
+    [Obsolete("This this is here just to keep the old 'event upgrader' system working for VERY old levels. DO NOT USE THIS!")]
     public bool isValid { get; set; } = false;
+    public bool IsValid
+    {
+        get
+        {
+            // Special event (player, taser, jetpack, etc.)
+            if (!IsNormalEventThatRequriesTargetObject())
+            {
+                if (!IsAtLeastOneTypeOfEvent())
+                    return false; // The event has no type
+
+                // Special case for groups, check that it still exists.
+                if (isForGroup)
+                {
+                    if (!LE_Object.objectsPerGroup.ContainsKey(targetGroupID))
+                        return false;
+                }
+
+                return true;
+            }
+
+            // It's a normal event that requires a target object.
+            if (targetInstanceObject)
+                return targetInstanceObject;
+
+            return VerifyNormalEventValidity(targetObjType, targetObjID, true);
+        }
+    }
 
     // Yeah, why should I put a name to a freaking event? Dunno, may be useful :)
     public string eventName { get; set; } = "New Event";
@@ -3131,4 +3002,136 @@ public class LE_Event
     public enum TerminalActiveState { Do_Nothing, Active, Deactive, Toggle }
     public TerminalActiveState terminalActiveState { get; set; }
     #endregion
+
+
+    public bool VerifyNormalEventValidity(string inputText)
+    {
+        targetInstanceObject = FS_LevelEditor.Editor.EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => string.Equals(obj.objectFullNameWithID, inputText,
+                StringComparison.OrdinalIgnoreCase));
+        if (targetInstanceObject)
+        {
+            if (targetInstanceObject.canBeUsedInEventsTab && !targetInstanceObject.isDeleted)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    public bool VerifyNormalEventValidity(LE_Object.ObjectType? objectType, int objectID, bool setGlobalVar)
+    {
+        targetInstanceObject = FS_LevelEditor.Utils.GetCurrentInstantiatedObjectsList().FirstOrDefault(x => x.objectType == objectType
+            && x.objectID == objectID && !x.isDeleted);
+        if (targetInstanceObject)
+        {
+            if (targetInstanceObject.canBeUsedInEventsTab && !targetInstanceObject.isDeleted)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void Setup(string inputText)
+    {
+        isForPlayer = false;
+        isForTaser = false;
+        isForJetpack = false;
+        isForObjective = false;
+        isForGroup = false;
+        isForWait = false;
+        targetObjType = null;
+        targetObjID = 0;
+        targetObjName = "";
+
+        if (string.Equals(inputText, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase))
+        {
+            isForPlayer = true;
+        }
+        else if (string.Equals(inputText, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase))
+        {
+            isForTaser = true;
+        }
+        else if (string.Equals(inputText, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase))
+        {
+            isForJetpack = true;
+        }
+        else if (inputText.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase))
+        {
+            isForObjective = true;
+
+            // Extract the objective name after "Objective_"
+            objectiveName = inputText.Substring(4); // "Objective_" is 10 characters
+        }
+        else if (inputText.StartsWith("Wait", StringComparison.OrdinalIgnoreCase))
+        {
+            // Very dirty code, Ik it, alr?
+            if (inputText.EndsWith("ms", StringComparison.OrdinalIgnoreCase))
+            {
+                waitTimeUnits = WaitTimeUnit.Miliseconds;
+
+                string stripped = inputText.ToLower().Replace("wait", "").Replace("ms", "").Trim();
+                waitTime = FS_LevelEditor.Utils.ParseFloat(stripped);
+            }
+            else if (inputText.EndsWith("s", StringComparison.OrdinalIgnoreCase))
+            {
+                waitTimeUnits = WaitTimeUnit.Seconds;
+
+                string stripped = inputText.ToLower().Replace("wait", "").Replace("s", "").Trim();
+                waitTime = FS_LevelEditor.Utils.ParseFloat(stripped);
+            }
+            else
+            {
+                return;
+            }
+
+            isForWait = true;
+        }
+        else if (inputText.StartsWith("Group", StringComparison.OrdinalIgnoreCase))
+        {
+            string[] splitted = inputText.Split(' ');
+            if (splitted.Length != 2)
+                return;
+            if (!int.TryParse(splitted[1], out int targetGroup))
+                return;
+
+            if (!LE_Object.objectsPerGroup.TryGetValue(targetGroup, out var objectsInGroup))
+                return;
+
+            targetGroupID = targetGroup;
+
+            if (LE_Object.ObjectsAreOfTheSameType(objectsInGroup))
+            {
+                allObjectsInGroupAreTheSame = true;
+                sameObjectType = objectsInGroup[0].objectType;
+            }
+            else
+            {
+                allObjectsInGroupAreTheSame = false;
+                sameObjectType = null;
+            }
+
+            isForGroup = true;
+        }
+        // VerifyNormalEventValidity already caches the targetInstanceObject, get its values so they can be serialized.
+        else if (VerifyNormalEventValidity(inputText))
+        {
+            targetObjType = targetInstanceObject.objectType;
+            targetObjID = targetInstanceObject.objectID;
+        }
+        else
+        {
+            targetObjName = inputText;
+        }
+    }
+
+    public bool IsNormalEventThatRequriesTargetObject()
+    {
+        return !isForPlayer && !isForTaser && !isForJetpack && !isForObjective && !isForWait && !isForGroup;
+    }
+    public bool IsAtLeastOneTypeOfEvent()
+    {
+        return isForPlayer || isForTaser || isForJetpack || isForObjective || isForWait || isForGroup;
+    }
 }

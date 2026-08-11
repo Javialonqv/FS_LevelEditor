@@ -19,25 +19,19 @@ namespace FS_LevelEditor
     {
         public LE_Event originalEvent;
         public LE_Object originalObject;
-        public LE_Object targetObj;
         public LineRenderer editorLinkRenderer;
 
-        public EditorLink(LE_Event originalEvent, LE_Object originalObject, LE_Event @event, LineRenderer editorLinkRenderer)
+        public EditorLink(LE_Event originalEvent, LE_Object originalObject, LineRenderer editorLinkRenderer)
         {
             this.originalEvent = originalEvent;
             this.originalObject = originalObject;
-            if (originalEvent.targetObjType != null)
-            {
-                targetObj = EditorController.Instance.currentInstantiatedObjects.Find(x => x.objectType == originalEvent.targetObjType && x.objectID ==
-                    originalEvent.targetObjID);
-            }
             this.editorLinkRenderer = editorLinkRenderer;
         }
 
         public void UpdateLinkPositions()
         {
             editorLinkRenderer.SetPosition(0, originalObject.transform.position);
-            editorLinkRenderer.SetPosition(1, targetObj.transform.position);
+            editorLinkRenderer.SetPosition(1, originalEvent.targetInstanceObject.transform.position);
         }
     }
 
@@ -84,7 +78,7 @@ namespace FS_LevelEditor
 
                 foreach (var @event in eventsList)
                 {
-                    if (!@event.useAndLogic || @event.targetObjType == null || !@event.isValid) continue;
+                    if (!@event.useAndLogic || @event.targetObjType == null || !@event.IsValid) continue;
 
                     string actionType = AndLogicManager.GetActionTypeForEvent(@event);
                     if (string.IsNullOrEmpty(actionType)) continue;
@@ -170,6 +164,7 @@ namespace FS_LevelEditor
                         @event.objectiveName = @event.targetObjName.Substring(4);
                         @event.targetObjName = "";
                     }
+                    // IsValid can't be used now because it's now a property that uses the current variables, use the obsolete one.
                     else if (@event.targetObjType == null && @event.isValid && !string.IsNullOrEmpty(@event.targetObjName) && !isPlayer)
                     {
                         var objData = Utils.SplitTypeAndId(@event.targetObjName);
@@ -214,10 +209,10 @@ namespace FS_LevelEditor
                 {
                     // For optimization purposes, also don't create a link to an already linked object in another event,
                     // doesn't matter the event type (On Activated, On Deactivated...).
-                    // ALSO, don't create editor links for the player related events.
+                    // ALSO, only create links for events that require a target object.
                     // UPDATE: CREATE links even for INVALID objects, what if the user adds an object and the event becomes valid?
                     var objData = (@event.targetObjType, @event.targetObjID);
-                    if (alreadyLinkedObjects.Contains(objData) || @event.isForPlayer || @event.isForTaser || @event.isForJetpack || @event.isForObjective || @event.isForWait || @event.isForGroup) continue;
+                    if (alreadyLinkedObjects.Contains(objData) || !@event.IsNormalEventThatRequriesTargetObject()) continue;
 
                     GameObject linkObj = Instantiate(Core.LoadOtherObjectInBundle("EditorLine"), editorLinksParent.transform);
                     LineRenderer linkRender = linkObj.GetComponent<LineRenderer>();
@@ -225,7 +220,7 @@ namespace FS_LevelEditor
                     linkRender.endColor = Color.cyan;
 
                     alreadyLinkedObjects.Add(objData);
-                    editorLinks.Add(new EditorLink(@event, originalObject, @event, linkRender));
+                    editorLinks.Add(new EditorLink(@event, originalObject, linkRender));
                 }
             }
 
@@ -235,7 +230,7 @@ namespace FS_LevelEditor
         {
             foreach (var editorLink in editorLinks)
             {
-                if (editorLink.originalEvent.isValid)
+                if (editorLink.originalEvent.IsValid)
                 {
                     editorLink.editorLinkRenderer.gameObject.SetActive(true);
                     editorLink.UpdateLinkPositions();
@@ -248,16 +243,13 @@ namespace FS_LevelEditor
         }
         public void ReValidateEditorLinks()
         {
+            // We already know that these events ARE normal ones (they target a normal obj in the level) because we're using the EDITOR LINKS.
             foreach (var editorLink in editorLinks)
             {
                 // Check if the event is REALLY valid, the event may NOT be valid, but if the player already added an object that mades
-                // it valid, then, check that when the switch is selected, to show the links.
-                LE_Object targetObj = EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(x => x.objectType == editorLink.originalEvent.targetObjType
-                    && x.objectID == editorLink.originalEvent.targetObjID && !x.isDeleted);
-                bool isReallyValid = targetObj != null;
+                // it valid, then, check that when the object is selected, to show the links.
 
-                editorLink.targetObj = targetObj;
-                editorLink.originalEvent.isValid = isReallyValid;
+                editorLink.originalEvent.VerifyNormalEventValidity(editorLink.originalEvent.targetObjType, editorLink.originalEvent.targetObjID, true);
             }
         }
 
@@ -306,7 +298,7 @@ namespace FS_LevelEditor
         {
             foreach (LE_Event @event in events)
             {
-                if (!@event.isValid)
+                if (!@event.IsValid)
                 {
                     Logger.Warning($"Event of name \"{@event.eventName}\" is NOT valid! Type: {@event.targetObjType}. ID: {@event.targetObjID}." +
                         $"Text: \"{@event.targetObjName}\"");

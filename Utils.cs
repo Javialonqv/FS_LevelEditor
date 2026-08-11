@@ -1,4 +1,6 @@
-﻿using FS_LevelEditor.SaveSystem;
+﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Playmode;
+using FS_LevelEditor.SaveSystem;
 using Il2Cpp;
 using Il2CppI2.Loc;
 using Il2CppInControl.NativeDeviceProfiles;
@@ -843,6 +845,16 @@ namespace FS_LevelEditor
                 pathParts[0] = obj.scene.name;
 
             return string.Join(separator, pathParts);
+        }
+
+        public static List<LE_Object> GetCurrentInstantiatedObjectsList()
+        {
+            if (EditorController.Instance)
+                return EditorController.Instance.currentInstantiatedObjects;
+            else if (PlayModeController.Instance)
+                return PlayModeController.Instance.currentInstantiatedObjects;
+
+            return null;
         }
 	}
 }
