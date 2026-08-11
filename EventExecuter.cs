@@ -291,6 +291,10 @@ namespace FS_LevelEditor
         /// <param name="isActivating">True if this is an activating event (OnDrop, WhenActivating), false for deactivating (OnRemove, WhenDeactivating).</param>
         public void ExecuteEventsWithAndLogic(List<LE_Event> events, string eventListName, bool isActivating)
         {
+            // To fix a bug where the user can request events to be executed when the object hasn't even been active once (Awake not called), make sure the target object variable is initialized correctly.
+            if (!originalObject)
+                originalObject = GetComponent<LE_Object>();
+
             CoroutineUtils.Start(ExecuteEventsInternal(events, eventListName, isActivating), coroutinesID);
         }
 
