@@ -3007,7 +3007,7 @@ public class LE_Event
     public bool VerifyNormalEventValidity(string inputText)
     {
         targetInstanceObject = FS_LevelEditor.Editor.EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => string.Equals(obj.objectFullNameWithID, inputText,
-                StringComparison.OrdinalIgnoreCase));
+                StringComparison.OrdinalIgnoreCase) && !obj.isDeleted);
         if (targetInstanceObject)
         {
             if (targetInstanceObject.canBeUsedInEventsTab && !targetInstanceObject.isDeleted)
