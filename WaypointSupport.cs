@@ -380,8 +380,6 @@ namespace FS_LevelEditor
                     yield return null;
                 }
 
-                currentWaypoint.ExecuteWhenReachedEvents();
-
                 currentMovingSpeed = currentWaypoint.GetProperty<float>("MoveSpeed");
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
@@ -390,8 +388,14 @@ namespace FS_LevelEditor
                 {
                     currentWaypointID++;
                     StopObjectMovement();
+
+                    // We're about to stop the routine execution, make sure to execute the events NOW because the other statement below won't be hit.
+                    currentWaypoint.ExecuteWhenReachedEvents();
+
                     yield break;
                 }
+
+                currentWaypoint.ExecuteWhenReachedEvents();
 
                 if (currentWaypointID == spawnedWaypoints.Count - 1 && (targetObject.waypointMode == WaypointMode.LOOP || targetObject.waypointMode == WaypointMode.TRAVEL_BACK))
                 {
