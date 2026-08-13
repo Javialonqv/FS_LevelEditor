@@ -63,6 +63,7 @@ object.POWER_CORE,Power Core,Núcleo de Energía,
 object.POWER_SLOT,Power Slot,Entrada de Energía,
 object.UPGRADE_TERMINAL,Upgrade Terminal,Terminal de Mejora,
 object.XMAS_TREE,XMAS Tree,Árbol de Navidad,
+object.DUMMY_CHECKPOINT,Dummy Checkpoint,Punto de Control Parcial,
 Player,Player,Jugador,Гравець
 Jetpack,Jetpack,Mochila Propulsora,Джетпак
 Taser,Taser,Taser,Тазер
@@ -82,6 +83,8 @@ events.onWinEvents,On Win,Al Ganar,При правильній комбінац�
 events.onFailEvents,On Lose,Al Perder,При неправильній комбінації
 events.OnInsert,On Insert,Al Insertar,
 events.OnTeleport,On Teleport,Al Teletransportar,
+events.OnSave,On Save,Al Guardar,
+events.OnRespawn,On Respawn,Al Reaparecer,
 pause.PlayLevel,Play Level,Jugar Nivel,Грати рівень
 pause.NoSpawnObject,There isn't any player spawn obj in the scene.,No hay ningún spawn del jugador en la escena.,В сцені немає точки появи гравця.
 pause.SaveLevel,Save Level,Guardar Nivel,Зберегти рівень
@@ -233,3 +236,4 @@ EventsTargetObjectFieldTooltip,"The [b]Target Object Field[/b] supports the foll
 - [b]Objectives:[/b] [00FFFF]Obj_[-][FFFF00]OBJECTIVE TEXT[-] Example: [00FFFF]Obj_Find a way out[-].
 - [b]Wait:[/b] [00FFFF]Wait[-] [FFFF00]Xs or Xms[-] Example: [00FFFF]Wait 3s[-].
 - [b]Groups:[/b] [00FFFF]Group[-] [FFFF00]ID[-] Example: [00FFFF]Group 2[-].",,
+RespawnAnim,Respawn Animation,Animación de Reaparición,

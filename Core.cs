@@ -8,6 +8,7 @@ using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.Playmode;
+using FS_LevelEditor.Playmode.Patches;
 
 [assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.3.0", "Javialon_qv and Gray", null)]
 [assembly: MelonGame("Haze Games", "Fractal Space")]
@@ -20,6 +21,8 @@ namespace FS_LevelEditor
         public bool loadCustomLevelOnSceneLoad;
         public string levelFileNameWithoutExtensionToLoad;
         public int totalDeathsInCurrentPlaymodeSession = 0;
+        public static string LevelNameJustQuitFrom = "";
+        public static bool JustQuitPlaymode = false;
 
         static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
 
@@ -71,6 +74,14 @@ namespace FS_LevelEditor
             {
                 // Reset this variable.
                 totalDeathsInCurrentPlaymodeSession = 0;
+            }
+
+            if (!sceneName.Contains("Level4_PC") && JustQuitPlaymode)
+            {
+                DeleteAutoSaveFilesPatch.DeleteCurrentLevelAutoSaveFileIfExists(LevelNameJustQuitFrom);
+
+                LevelNameJustQuitFrom = "";
+                JustQuitPlaymode = false;
             }
         }
 

@@ -158,8 +158,9 @@ namespace FS_LevelEditor.Playmode
 			ConfigureGlobalProperties();
 			MelonCoroutines.Start(SetupEnvCam());
 
-			Utils.Invoke(() => ParticlesPatch.GetObjectsWithParticlesReferences(), 0.1f); // Delay the invoke, so objects are initialized correctly first.
-			SetSpeedrunTimerFont();
+			Utils.Invoke(() => ParticlesPatch.GetObjectsWithParticlesReferences(), 0.1f);						// Delay the invoke, so objects are initialized correctly first.
+			Utils.Invoke(() => LE_Dummy_Checkpoint.UpdateSavedObjetsHolderCheckpointsWithLevelOnes(), 0.1f);    // Delay the invoke, so objects are initialized correctly first.
+            SetSpeedrunTimerFont();
 		}
 
 		void CreateBackToLEButton()
@@ -402,6 +403,11 @@ namespace FS_LevelEditor.Playmode
 			smallScreensOnTheLevel = null;
 			activeObjectives.Clear();
 			activeObjectives = null;
+
+			LE_Dummy_Checkpoint.AtLeastOneCheckpointReached = false;
+
+			Core.LevelNameJustQuitFrom = levelName;
+			Core.JustQuitPlaymode = true;
 		}
 
 		// Objectives management methods

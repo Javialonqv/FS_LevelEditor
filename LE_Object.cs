@@ -92,7 +92,8 @@ namespace FS_LevelEditor
             POWER_CORE,
             POWER_SLOT,
             UPGRADE_TERMINAL,
-            XMAS_TREE
+            XMAS_TREE,
+            DUMMY_CHECKPOINT
         }
 
         // This is used to specify the objects that use the same snap triggers.
