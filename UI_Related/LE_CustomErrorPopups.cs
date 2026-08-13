@@ -30,13 +30,17 @@ namespace FS_LevelEditor
         public static void OnLogReceived(string condition, string stackTrace, LogType type)
         {
             if ((type == LogType.Error || type == LogType.Exception)    // Make sure it's an error.
-                && stackTrace.Contains(ASSEMBLY_NAME))                  // Make sure is from LE and not other mod or main game log.
+                && stackTrace.Contains(ASSEMBLY_NAME)                   // Make sure is from LE and not other mod or main game log.
+                && !Logger.IncomingErrorIsPassive)                      // Make sure it's not a passive error (those don't show a full error window).
             {
                 Show(condition, stackTrace);
             }
         }
         static void OnMelonError(string section, string text)
         {
+            if (Logger.IncomingErrorIsPassive)
+                return;
+
             if (section == ASSEMBLY_NAME || text.Contains(ASSEMBLY_NAME))
             {
                 if (text.Contains('\n'))
@@ -55,6 +59,9 @@ namespace FS_LevelEditor
         public static void Show(string exception, string stackTrace)
         {
             var menu = MenuController.GetInstance();
+
+            if (!menu)
+                return;
 
             if (menu.ErrorPopupIsDisplayed())
                 return;

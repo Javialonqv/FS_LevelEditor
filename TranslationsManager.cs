@@ -177,7 +177,7 @@ namespace FS_LevelEditor
                 }
                 else // If nothing of this works, just return the key, fuck it.
                 {
-                    if (throwErrorIfNotFound) Logger.Error($"\"{key}\" doesn't exists in the LE Translations!");
+                    if (throwErrorIfNotFound) Logger.Error($"\"{key}\" doesn't exists in the LE Translations!", true);
                     return key;
                 }
             }
