@@ -340,8 +340,12 @@ namespace FS_LevelEditor.Editor.UI
         {
             if (!iconCache.TryGetValue(objectType, out var tex) || tex == null)
             {
-                tex = AssetBundleLoader.LoadAsset<Texture>(objectType.ToString(), "leveleditoricons");
-                iconCache[objectType] = tex;
+                // Do NOT throw the generic LoadAsset error, instead, if no icon can be found, throw a more specific error.
+                tex = AssetBundleLoader.LoadAsset<Texture>(objectType.ToString(), "leveleditoricons", false);
+                if (tex)
+                    iconCache[objectType] = tex;
+                else
+                    Logger.Error($"Couldn't find the icon for object of type: {objectType}", true);
             }
             return tex;
         }

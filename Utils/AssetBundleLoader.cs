@@ -44,18 +44,20 @@ namespace FS_LevelEditor
             return bundle;
         }
 
-        public static T LoadAsset<T>(string assetName, string bundleName) where T : Object
+        public static T LoadAsset<T>(string assetName, string bundleName, bool throwError = true) where T : Object
         {
             if (!loadedBundles.ContainsKey(bundleName))
             {
-                Logger.Error("Couldn't find loaded asset bundle with name:" + bundleName);
+                if (throwError)
+                    Logger.Error("Couldn't find loaded asset bundle with name:" + bundleName);
                 return null;
             }
 
             T obj = loadedBundles[bundleName].LoadAsset<T>(assetName);
             if (obj == null)
             {
-                Logger.Error("Error loading the asset of name: " + assetName);
+                if (throwError)
+                    Logger.Error("Error loading the asset of name: " + assetName);
                 return null;
             }
 
