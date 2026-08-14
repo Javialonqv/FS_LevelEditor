@@ -21,8 +21,24 @@ namespace FS_LevelEditor.Playmode.Patches
 				__result = PlayModeController.Instance.levelName;
 				return false; // Skip the original method
 			}
+            if (key == "Notification_FlashlightNotOperational")
+            {
+                __result = TranslationsManager.GetTranslation("FlashlightNotOperational", false);
+                return false;
+            }
+            if (key == "Notification_FlashlightOperational")
+            {
+                __result = TranslationsManager.GetTranslation("FlashlightOperational", false);
+                return false;
+            }
+            if (key == "Notification_TASER_WATER_UNUSABLE")
+            {
+                __result = TranslationsManager.GetTranslation("TASER_WATER_UNUSABLE", false);
+                return false;
+            }
 
-			return true;
+
+            return true;
 		}
 	}
 }
