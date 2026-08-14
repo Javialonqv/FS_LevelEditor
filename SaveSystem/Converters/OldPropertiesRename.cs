@@ -21,51 +21,86 @@ namespace FS_LevelEditor.SaveSystem.Converters
 
         public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            using var doc = JsonDocument.ParseValue(ref reader);
-            var root = doc.RootElement;
-
-            using var modifiedStream = new MemoryStream();
-            using (var writer = new Utf8JsonWriter(modifiedStream))
+            using (var doc = JsonDocument.ParseValue(ref reader))
             {
-                writer.WriteStartObject();
+                var root = doc.RootElement;
 
+                bool needsConvertion = false;
                 foreach (var prop in root.EnumerateObject())
                 {
-                    // Check for the final name (rename if it exists on the "renames" dict).
                     string targetName = renames.ContainsKey(prop.Name) ? renames[prop.Name] : prop.Name;
-                    writer.WritePropertyName(targetName);
-
-                    // Check if this name has a value conversion func.
-                    if (valueConverters.TryGetValue(targetName, out var converter))
+                    if (renames.ContainsKey(prop.Name) || valueConverters.ContainsKey(targetName))
                     {
-                        var convertedValue = converter(prop.Value);
-                        // Serialize the converted value.
-                        JsonSerializer.Serialize(writer, convertedValue, options);
-                    }
-                    else
-                    {
-                        // Serialie the original value, no modifications at all.
-                        prop.Value.WriteTo(writer);
+                        needsConvertion = true;
+                        break;
                     }
                 }
 
-                writer.WriteEndObject();
+                var optionsWithoutThisConverter = GetOptionsWithoutThisConverter(options);
+                if (!needsConvertion)
+                {
+                    return JsonSerializer.Deserialize<T>(root.GetRawText(), optionsWithoutThisConverter);
+                }
+
+                using var modifiedStream = new MemoryStream();
+                using (var writer = new Utf8JsonWriter(modifiedStream))
+                {
+                    writer.WriteStartObject();
+
+                    foreach (var prop in root.EnumerateObject())
+                    {
+                        // Check for the final name (rename if it exists on the "renames" dict).
+                        string targetName = renames.ContainsKey(prop.Name) ? renames[prop.Name] : prop.Name;
+                        writer.WritePropertyName(targetName);
+
+                        // Check if this name has a value conversion func.
+                        if (valueConverters.TryGetValue(targetName, out var converter))
+                        {
+                            var convertedValue = converter(prop.Value);
+                            // Serialize the converted value.
+                            JsonSerializer.Serialize(writer, convertedValue, options);
+                        }
+                        else
+                        {
+                            // Serialie the original value, no modifications at all.
+                            prop.Value.WriteTo(writer);
+                        }
+                    }
+
+                    writer.WriteEndObject();
+                }
+
+                modifiedStream.Position = 0;
+
+                return JsonSerializer.Deserialize<T>(modifiedStream, optionsWithoutThisConverter)!;
             }
 
-            modifiedStream.Position = 0;
-
-            // Use the same options, BUT removing this converter from there to avoid infinite loops.
-            var fallbackOptions = new JsonSerializerOptions(options);
-            var existing = fallbackOptions.Converters.FirstOrDefault(c => c is OldPropertiesRename<T>);
-            if (existing != null) fallbackOptions.Converters.Remove(existing);
-
-            return JsonSerializer.Deserialize<T>(modifiedStream, fallbackOptions)!;
         }
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
             Logger.Error("[SAVE FILE] OldPropertiesRename converter is for read only.");
             throw new NotSupportedException("[SAVE FILE] OldPropertiesRename converter is for read only.");
+        }
+
+        JsonSerializerOptions _optionsWithoutThisConverter;
+        JsonSerializerOptions GetOptionsWithoutThisConverter(JsonSerializerOptions defaultOptions)
+        {
+            if (_optionsWithoutThisConverter != null)
+                return _optionsWithoutThisConverter;
+
+            var options = new JsonSerializerOptions(defaultOptions);
+            for (int i = 0; i < options.Converters.Count; i++) // Optimized loop, one scan only.
+            {
+                if (options.Converters[i] is OldPropertiesRename<T>)
+                {
+                    options.Converters.RemoveAt(i);
+                    break;
+                }
+            }
+
+            _optionsWithoutThisConverter = options;
+            return _optionsWithoutThisConverter;
         }
     }
 }

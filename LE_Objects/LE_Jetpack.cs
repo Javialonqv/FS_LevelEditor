@@ -3,6 +3,7 @@ using FS_LevelEditor.Playmode;
 using Il2Cpp;
 using Il2CppDiscord;
 using UnityEngine;
+using UnityEngine.Events;
 using static MelonLoader.MelonLogger;
 
 namespace FS_LevelEditor
@@ -34,6 +35,7 @@ namespace FS_LevelEditor
             jetpack.jetpackMaterial = content.GetChildAt("Mesh/JetPack").GetComponent<Renderer>().material;
             jetpack.jetpackLight = content.GetChildAt("Mesh/JetPack/JetpackPickupLight").GetComponent<Light>();
             jetpack.jetpackFlare = new GameObject("ShouldBeSaved").AddComponent<LensFlare>();
+            ConfigureEvents(jetpack);
 
             // --------- SETUP TAGS & LAYERS ---------
 
@@ -56,6 +58,16 @@ namespace FS_LevelEditor
             }
 
             return base.SetProperty(name, value);
+        }
+
+        void ConfigureEvents(JetPack script)
+        {
+            script.onEveryPickup = new UnityEngine.Events.UnityEvent();
+            script.onEveryPickup.AddListener((UnityAction)ExecuteOnPickUpEvents);
+        }
+        void ExecuteOnPickUpEvents()
+        {
+            LE_Dummy_Checkpoint.UpdateHasGunAndJetpackValues();
         }
     }
 

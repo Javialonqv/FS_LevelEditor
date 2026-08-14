@@ -23,6 +23,9 @@ namespace FS_LevelEditor
         public static LE_Dummy_Checkpoint LastReachedCheckpoint = null;
         static int CheckpointsCount = 0;
 
+        static bool HasGun;
+        static bool HasJetpack;
+
         public override void InitComponent()
         {
             GameObject checkpointObj = contentObject.GetChild("Checkpoint");
@@ -96,11 +99,30 @@ namespace FS_LevelEditor
             AtLeastOneCheckpointReached = true;
             LastReachedCheckpoint = this;
 
+            UpdateHasGunAndJetpackValues();
+
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnSave"], "OnSave", true);
         }
         public void ExecuteOnRespawnEvents()
         {
+            // The game performs safety-checks to ensure that the player has taser/jetpack in Ch4, force it to have our saved values.
+            if (HasGun)
+                Controls.Instance.ActivateWeapon(false);
+            else
+                Controls.Instance.DeactivateWeapon();
+
+            // We could use Controls.Instance.ActivateJetpack/DeactivateJetpack instead, but whatever.
+            Controls.Instance.hasJetPack = HasJetpack;
+            Controls.Instance.jetPackObject.SetActive(HasJetpack);
+
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnRespawn"], "OnRespawn", true);
+        }
+
+        public static void UpdateHasGunAndJetpackValues()
+        {
+            // NOTE: They're static, it's intended that the player keeps the taser/jetpack even if he didn't have it when he reached the checkpoint (as long as he acquired them lol).
+            HasGun = Controls.Instance.HasTaser();
+            HasJetpack = Controls.Instance.hasJetPack;
         }
 
         // FS uses SavedObjeTsHolder.AllCheckpoints to find the current checkpoint (because it's not cached for some reason), and then read the variables from it.
