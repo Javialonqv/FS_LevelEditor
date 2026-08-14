@@ -186,6 +186,7 @@ namespace FS_LevelEditor.Playmode.Patches
             if (PlayModeController.Instance)
             {
                 __instance.m_saveFileName = $"CustomLevel_{PlayModeController.Instance.levelName}_AutoSave.dat";
+                FractalSave.quickSaveFileName = $"CustomLevel_{PlayModeController.Instance.levelName}_AutoSave.dat";
             }
         }
     }

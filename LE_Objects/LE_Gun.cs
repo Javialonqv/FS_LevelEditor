@@ -117,6 +117,8 @@ namespace FS_LevelEditor
         }
         void ExecuteOnPickUpEvents()
         {
+            LE_Dummy_Checkpoint.UpdateHasGunAndJetpackValues();
+
             // OnPickup is a one-shot activating event for AND logic purposes
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnPickup"], "OnPickup", true);
         }
