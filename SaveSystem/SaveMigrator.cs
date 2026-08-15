@@ -88,7 +88,9 @@ namespace FS_LevelEditor.SaveSystem
                     }
                 }
 
-                bool isPlayerEvent = obj.ContainsKey("isForPlayer") && obj["isForPlayer"].AsValue().TryGetValue<bool>(out bool isForPlayer) && isForPlayer;
+                bool isPlayerEvent = obj["isForPlayer"] is JsonValue playerValue && playerValue.TryGetValue<bool>(out bool isForPlayer) && isForPlayer;
+                if (!isPlayerEvent)
+                    isPlayerEvent = obj["targetObjName"].ToString() == "Player";
 
                 // This is to fix a bug where "upgrades" used to be null by default, which caused some issues in playmode. Changing the default value in LE_Event fixes it from now on.
                 // But we need to use this code to intercept any null value from old levels and force it to be a correct list.
@@ -119,6 +121,78 @@ namespace FS_LevelEditor.SaveSystem
                     else
                     {
                         Logger.Error($"Failed to convert \"{objName}\" to an object type! This is probably a bug, report if you didn't modify the save file.");
+                    }
+                }
+            }
+
+            // LEGACY "EventExecuter.UpdateLEEventsToTheNewSystem" FUNCTIONALITY HERE!!
+            foreach (var obj in SaveMigratorHelpers.EnumerateAllJsonObjects(root))
+            {
+                bool isOldEvent = obj.ContainsKey("targetObjName");
+                if (!isOldEvent)
+                    continue;
+
+                // This method is used to update the LE_Event targetObjType and targetObjID properties in case it comes from a previous version that used targetObjName.
+                string targetObjName = obj["targetObjName"].ToString();
+
+                bool isPlayer = string.Equals(targetObjName, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase);
+                bool isTaser = string.Equals(targetObjName, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase);
+                bool isJetpack = string.Equals(targetObjName, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase);
+                bool isObjective = targetObjName.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase);
+
+                bool isValid = obj["isValid"] is JsonValue validValue && validValue.TryGetValue<bool>(out bool parsedIsValid) && parsedIsValid;
+
+                if (isPlayer)
+                {
+                    obj["isForPlayer"] = true;
+                    obj["isForTaser"] = false;
+                    obj["isForJetpack"] = false;
+                    obj["isForObjective"] = false;
+                    obj["targetObjType"] = null;
+                    obj["targetObjID"] = 0;
+                    obj.Remove("targetObjName");
+                }
+                else if (isTaser)
+                {
+                    obj["isForPlayer"] = false;
+                    obj["isForTaser"] = true;
+                    obj["isForJetpack"] = false;
+                    obj["isForObjective"] = false;
+                    obj["targetObjType"] = null;
+                    obj["targetObjID"] = 0;
+                    obj.Remove("targetObjName");
+                }
+                else if (isJetpack)
+                {
+                    obj["isForPlayer"] = false;
+                    obj["isForTaser"] = false;
+                    obj["isForJetpack"] = true;
+                    obj["isForObjective"] = false;
+                    obj["targetObjType"] = null;
+                    obj["targetObjID"] = 0;
+                    obj.Remove("targetObjName");
+                }
+                else if (isObjective)
+                {
+                    obj["isForPlayer"] = false;
+                    obj["isForTaser"] = false;
+                    obj["isForJetpack"] = false;
+                    obj["isForObjective"] = true;
+                    obj["targetObjType"] = null;
+                    obj["targetObjID"] = 0;
+                    obj["objectiveName"] = targetObjName.Substring(4);
+                    obj.Remove("targetObjName");
+                }
+                else if (obj["targetObjType"] == null && isValid && !string.IsNullOrEmpty(targetObjName))
+                {
+                    var objData = Utils.SplitTypeAndId(targetObjName);
+                    var objType = LE_Object.ConvertNameToObjectType(objData.type);
+
+                    if (objType != null)
+                    {
+                        obj["targetObjType"] = (int)objType;
+                        obj["targetObjID"] = objData.id;
+                        obj.Remove("targetObjName"); // Clear the name, since we are using the type and ID now.
                     }
                 }
             }
