@@ -69,31 +69,56 @@ namespace FS_LevelEditor.SaveSystem
             {
                 // Yes, to identify old events, we just do this, not the best thing in the world, but it works... I guess...
                 bool isOldEvent = obj.ContainsKey("setActive") || obj.ContainsKey("moveObject");
-                if (!isOldEvent)
-                    continue;
-
-                SaveMigratorHelpers.RenameProperty(obj.AsObject(), "setActive", "spawn");
-                SaveMigratorHelpers.RenameProperty(obj.AsObject(), "moveObject", "moveState");
-
-                if (obj.TryGetPropertyValue("moveState", out var moveState))
+                if (isOldEvent)
                 {
-                    var valueKind = moveState.GetValueKind();
-                    if (valueKind == JsonValueKind.True || valueKind == JsonValueKind.False)
-                    {
-                        var enumValue = moveState.GetValue<bool>()
-                            ? LE_Event.MoveState.Start_Moving
-                            : LE_Event.MoveState.Do_Nothing;
+                    SaveMigratorHelpers.RenameProperty(obj.AsObject(), "setActive", "spawn");
+                    SaveMigratorHelpers.RenameProperty(obj.AsObject(), "moveObject", "moveState");
 
-                        obj["moveState"] = (int)enumValue;
+                    if (obj.TryGetPropertyValue("moveState", out var moveState))
+                    {
+                        var valueKind = moveState.GetValueKind();
+                        if (valueKind == JsonValueKind.True || valueKind == JsonValueKind.False)
+                        {
+                            var enumValue = moveState.GetValue<bool>()
+                                ? LE_Event.MoveState.Start_Moving
+                                : LE_Event.MoveState.Do_Nothing;
+
+                            obj["moveState"] = (int)enumValue;
+                        }
                     }
                 }
+
+                bool isPlayerEvent = obj.ContainsKey("isForPlayer") && obj["isForPlayer"].AsValue().TryGetValue<bool>(out bool isForPlayer) && isForPlayer;
+
                 // This is to fix a bug where "upgrades" used to be null by default, which caused some issues in playmode. Changing the default value in LE_Event fixes it from now on.
                 // But we need to use this code to intercept any null value from old levels and force it to be a correct list.
-                if (obj.TryGetPropertyValue("upgrades", out var upgrades))
+                if (isPlayerEvent && obj.TryGetPropertyValue("upgrades", out var upgrades))
                 {
                     if (upgrades.GetValueKind() == JsonValueKind.Null)
                     {
                         obj["upgrades"] = new JsonArray();
+                    }
+                }
+            }
+
+            // LEGACY "LevelObjectDataConverter" FUNCTIONALITY HERE!!
+            foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
+            {
+                var obj = objNode.AsObject();
+
+                if (obj.TryGetPropertyValue("objectOriginalName", out var objNameNode))
+                {
+                    string objName = objNameNode.ToString();
+                    var convertedType = LE_Object.ConvertNameToObjectType(objName);
+
+                    if (convertedType != null)
+                    {
+                        obj.Remove("objectOriginalName");
+                        obj["objectType"] = (int)convertedType;
+                    }
+                    else
+                    {
+                        Logger.Error($"Failed to convert \"{objName}\" to an object type! This is probably a bug, report if you didn't modify the save file.");
                     }
                 }
             }

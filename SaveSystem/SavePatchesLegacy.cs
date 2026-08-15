@@ -24,10 +24,7 @@ namespace FS_LevelEditor.SaveSystem
         {
             Converters =
             {
-                new LEPropertiesConverterNew(),
-                // The conversion for old properties is in a different function since the FUCKING Json converter can't use 2 converters with the
-                // same type.
-                new LevelObjectDataConverter()
+                new LEPropertiesConverterNew()
             }
         };
 
