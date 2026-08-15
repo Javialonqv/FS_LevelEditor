@@ -26,12 +26,14 @@ namespace FS_LevelEditor.Playmode
             if (TimeManipulator.Instance)
                 TimeManipulator.Instance.SetInPlayerPosession(false);
 
-            Controls.m_currentJetpackUpgradeLevel = 0; // level 0 by default regardless; allowJetpack only gates enabling later
+            // These all start at 1 because they're ALREADY UNLOCKED BY DEFAULT.
+            // I mean, how could you possible be missing Health? LOL, you must have Level 1 at least already.
+            Controls.m_currentJetpackUpgradeLevel = 1;
+            Controls.m_currentHealthUpgradeLevel = 1;
+            Controls.m_currentSpeedUpgradeLevel = 1;
+            Controls.m_currentTaserCapacityUpgradeLevel = 1;
 
-            Controls.m_currentHealthUpgradeLevel = 0;
-            Controls.m_currentSpeedUpgradeLevel = 0;
-            Controls.m_currentTaserCapacityUpgradeLevel = 0;
-
+            // Meanwhile, these all start at 0 because these ARE NORMAL UPGRADES which do start at 0 because they're locked by default.
             Controls.m_currentHealthBackpackLevel = 0;
             Controls.m_currentTaserBackpackLevel = 0;
             Controls.m_currentTaserPowerUpgradeLevel = 0;
