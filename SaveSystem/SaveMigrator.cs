@@ -90,7 +90,7 @@ namespace FS_LevelEditor.SaveSystem
 
                 bool isPlayerEvent = obj["isForPlayer"] is JsonValue playerValue && playerValue.TryGetValue<bool>(out bool isForPlayer) && isForPlayer;
                 if (!isPlayerEvent)
-                    isPlayerEvent = obj["targetObjName"].ToString() == "Player";
+                    isPlayerEvent = obj["targetObjName"] is JsonValue playerValue2 && playerValue2.TryGetValue<string>(out string targetObjName) && targetObjName == "Player";
 
                 // This is to fix a bug where "upgrades" used to be null by default, which caused some issues in playmode. Changing the default value in LE_Event fixes it from now on.
                 // But we need to use this code to intercept any null value from old levels and force it to be a correct list.
@@ -193,6 +193,38 @@ namespace FS_LevelEditor.SaveSystem
                         obj["targetObjType"] = (int)objType;
                         obj["targetObjID"] = objData.id;
                         obj.Remove("targetObjName"); // Clear the name, since we are using the type and ID now.
+                    }
+                }
+            }
+
+            // LEGACY "LegacyDeserealize" for { Type, Value } properties FUNCTIONALITY HERE!!
+            foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
+            {
+                var obj = objNode.AsObject();
+
+                if (!obj.TryGetPropertyValue("properties", out var properties))
+                    continue;
+
+                foreach (var property in properties.AsObject().ToList())
+                {
+                    if (property.Value is JsonObject propertyObj
+                        && propertyObj.TryGetPropertyValue("Type", out var typeNode)
+                        && propertyObj.TryGetPropertyValue("Value", out var valueNode))
+                    {
+                        string realTypeName = typeNode.ToString();
+                        if (realTypeName == null)
+                        {
+                            Logger.Error("[SAVE FILE] [LEGACY] Couldn't get value type, value type was a null string.");
+                            continue;
+                        }
+                        Type realType = Type.GetType(SavePatchesLegacy.GetCorrectTypeNameForLegacySystem(realTypeName));
+                        if (realType == null)
+                        {
+                            Logger.Error($"[SAVE FILE] [LEGACY] Couldn't find type of name \"{realTypeName}\".");
+                            continue;
+                        }
+
+                        properties[property.Key] = valueNode.DeepClone();
                     }
                 }
             }

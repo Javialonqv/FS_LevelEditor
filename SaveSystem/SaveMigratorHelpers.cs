@@ -72,5 +72,38 @@ namespace FS_LevelEditor.SaveSystem
 
             return JsonValueKind.Undefined;
         }
+
+        // JsonNode.DeepClone wasn't introduced until .NET 8 or so, here it's .NET 6, do it ourselves.
+        public static JsonNode DeepClone(this JsonNode node)
+        {
+            if (node == null) return null;
+
+            // If an Object { }, iterate throught its properties.
+            if (node is JsonObject obj)
+            {
+                var newObj = new JsonObject();
+                foreach (var property in obj)
+                {
+                    // Add a copy of each property.
+                    newObj.Add(property.Key, property.Value?.DeepClone());
+                }
+                return newObj;
+            }
+
+            // If an Array [ ], iterate throught its properties.
+            if (node is JsonArray arr)
+            {
+                var newArr = new JsonArray();
+                foreach (var element in arr)
+                {
+                    // Add a copy of each element.
+                    newArr.Add(element?.DeepClone());
+                }
+                return newArr;
+            }
+
+            // If it's a primitive value (string, int, bool, null), clone it directly.
+            return JsonValue.Create(node.AsValue().GetValue<object>());
+        }
     }
 }
