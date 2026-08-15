@@ -129,6 +129,7 @@ namespace FS_LevelEditor.SaveSystem
         public static LevelData CreateLevelData(string levelName)
         {
             LevelData data = new LevelData();
+            data.schemaVersion = SaveMigrator.CURRENT_SCHEMA_VERSION;
             data.levelName = levelName;
             data.cameraPosition = Camera.main.transform.position;
             EditorCameraMovement editorCamera = Camera.main.GetComponent<EditorCameraMovement>();
