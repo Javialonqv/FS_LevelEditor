@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FS_LevelEditor.SaveSystem.SerializableTypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -224,8 +225,51 @@ namespace FS_LevelEditor.SaveSystem
                             continue;
                         }
 
+                        // Create a copy of the node because it already belongs to the property.
                         properties[property.Key] = valueNode.DeepClone();
                     }
+                }
+            }
+
+            // LEGACY "SavePatchesLegacy.ReevaluateOldProperties" FUNCTIONALITY HERE!!
+            foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
+            {
+                var obj = objNode.AsObject();
+
+                if (!obj.TryGetPropertyValue("properties", out var properties))
+                    continue;
+
+                SaveMigratorHelpers.RenameProperty(properties.AsObject(), "OnActivatedEvents", "WhenActivatingEvents");
+                SaveMigratorHelpers.RenameProperty(properties.AsObject(), "OnDeactivatedEvents", "WhenDeactivatingEvents");
+                SaveMigratorHelpers.RenameProperty(properties.AsObject(), "OnChangeEvents", "WhenInvertingEvents");
+            }
+
+            // LEGACY "SavePatchesLegacy.IsOldSawWaypointsSave" FUNCTIONALITY HERE!!
+            foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
+            {
+                var obj = objNode.AsObject();
+
+                // This only works for SAW waypoints.
+                if (obj["objectType"] is not JsonValue objectType || objectType.GetValue<int>() != (int)LE_Object.ObjectType.SAW)
+                    continue;
+
+                if (obj["properties"] is not JsonObject properties          // properties exist.
+                    || properties["waypoints"] is not JsonArray waypoints   // waypoints exist.
+                    || waypoints.Count == 0                                 // waypoints aren't empty.
+                    || waypoints[0] is not JsonObject firstWaypoint         // first waypoint is an object.
+                    || !firstWaypoint.ContainsKey("waypointPosition"))      // waypoint has the old position prop.
+                    continue;
+
+                // In the old system, there was an empty waypoint at the start, in the new one, there isn't, so skip the first one since it's useless.
+                waypoints.RemoveAt(0);
+
+                foreach (var waypointNode in waypoints)
+                {
+                    if (waypointNode is not JsonObject waypoint)
+                        continue;
+
+                    SaveMigratorHelpers.RenameProperty(waypointNode, "waypointPosition", "position");
+                    SaveMigratorHelpers.RenameProperty(waypointNode, "waypointRotation", "rotation");
                 }
             }
         }

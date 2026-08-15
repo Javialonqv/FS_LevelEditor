@@ -289,7 +289,7 @@ namespace FS_LevelEditor.SaveSystem
             Logger.DebugLog("LOADED LEVEL DATA FROM JSON IN (STILL NOT DONE): " + watch.Elapsed);
             watch.Restart();
 
-            SavePatchesLegacy.ReevaluateOldProperties(ref data);
+            // SavePatchesLegacy.ReevaluateOldProperties(ref data);
 
             List<LE_ObjectData> toCheck = data.objects;
             if (Utils.ListHasMultipleObjectsWithSameID(toCheck, false))
