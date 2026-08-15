@@ -18,7 +18,7 @@ namespace FS_LevelEditor.SaveSystem
 #if DEBUG
             WriteIndented = true,
 #endif
-            //Converters = { new LEIgnoreDefaultValuesInLEEvents() }
+            Converters = { new LEIgnoreDefaultValuesInLEEvents() }
         };
         public static readonly JsonSerializerOptions OnReadSaveFileOptions = new JsonSerializerOptions
         {
