@@ -2893,7 +2893,7 @@ public class LE_Event
 
     #region Laser Options
     public enum LaserState { Do_Nothing, Activate, Deactivate, Toggle_State }
-    public LaserState laserState = LaserState.Toggle_State;
+    public LaserState laserState { get; set; } = LaserState.Toggle_State;
     #endregion
 
     #region Mine Options

@@ -257,14 +257,17 @@ namespace FS_LevelEditor
 
         public override bool TriggerAction(string actionName)
         {
+            // I do respect Charles a lot, but for fuck's sake, why make the Activate() function TOGGLE the laser state instead?.... WHY!?
             if (actionName == "Activate")
             {
-                laser.Activate();
+                if (!laser.activated)
+                    laser.Activate();
                 return true;
             }
             else if (actionName == "Deactivate")
             {
-                laser.Deactivate();
+                if (laser.activated)
+                    laser.Deactivate();
                 return true;
             }
             else if (actionName == "ToggleActivated")
