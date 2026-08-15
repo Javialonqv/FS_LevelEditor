@@ -51,7 +51,7 @@ namespace FS_LevelEditor.SaveSystem
             carriesPlayer = originalObj.carriesPlayer;
             groupID = originalObj.groupID;
 
-            SavePatches.AddPropertiesToObjectToSave(this, originalObj);
+            SavePatchesLegacy.AddPropertiesToObjectToSave(this, originalObj);
             waypoints = new (originalObj.waypoints);
 
             objPosition = originalObj.transform.localPosition;

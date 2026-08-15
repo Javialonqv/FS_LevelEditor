@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
@@ -107,6 +108,7 @@ namespace FS_LevelEditor.SaveSystem
     [Serializable]
     public class LevelData
     {
+        public int schemaVersion { get; set; }
         public string levelName { get; set; }
         public string authorName { get; set; }
         public string tags { get; set; }
@@ -212,7 +214,7 @@ namespace FS_LevelEditor.SaveSystem
                 }
 
                 string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-                File.WriteAllText(filePath, JsonSerializer.Serialize(data, SavePatches.OnWriteSaveFileOptions));
+                File.WriteAllText(filePath, JsonSerializer.Serialize(data, SavePatchesLegacy.OnWriteSaveFileOptions));
 
                 Logger.Log("Level saved! Path: " + filePath);
             }
@@ -240,12 +242,16 @@ namespace FS_LevelEditor.SaveSystem
             LevelData data = null;
             LevelObjectDataConverter.RefreshCounters();
 
-            if (!LevelFileEixsts(levelFileNameWithoutExtension)) return null;
+            if (!LevelFileEixsts(levelFileNameWithoutExtension))
+                return null;
 
             try
             {
-                data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), SavePatches.OnReadSaveFileOptions);
-                if (printLogs) LevelObjectDataConverter.PrintLogs();
+                string json = File.ReadAllText(filePath);
+                data = SaveMigrator.DeserializeLevelData(json, Path.GetFileName(filePath));
+                // data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), SavePatchesLegacy.OnReadSaveFileOptions);
+                if (printLogs)
+                    LevelObjectDataConverter.PrintLogs();
             }
             catch { }
 
@@ -264,7 +270,7 @@ namespace FS_LevelEditor.SaveSystem
                 LevelData levelData = null;
                 try
                 {
-                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), SavePatches.OnReadSaveFileOptions);
+                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), SavePatchesLegacy.OnReadSaveFileOptions);
                 }
                 catch { }
                 levels.Add(Path.GetFileNameWithoutExtension(levelPath), levelData);
@@ -282,7 +288,7 @@ namespace FS_LevelEditor.SaveSystem
             Logger.DebugLog("LOADED LEVEL DATA FROM JSON IN (STILL NOT DONE): " + watch.Elapsed);
             watch.Restart();
 
-            SavePatches.ReevaluateOldProperties(ref data);
+            SavePatchesLegacy.ReevaluateOldProperties(ref data);
 
             List<LE_ObjectData> toCheck = data.objects;
             if (Utils.ListHasMultipleObjectsWithSameID(toCheck, false))

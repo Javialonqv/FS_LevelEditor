@@ -640,7 +640,7 @@ namespace FS_LevelEditor
                 if (converted != null)
                 {
                     // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
-                    Utils.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatches.ConvertFromSerializableValue(converted));
+                    Utils.CallMethodIfOverrided(typeof(LE_Object), this, nameof(SetProperty), name, SavePatchesLegacy.ConvertFromSerializableValue(converted));
                     return true;
                 }
             }
