@@ -89,6 +89,8 @@
 		<Compile Include="Playmode\Patches\DebugModePatch.cs" />
 		<Compile Include="Playmode\Patches\ParticlesPatch.cs" />
 		<Compile Include="Playmode\PlaymodeUpgrades.cs" />
+		<Compile Include="SaveSystem\SaveMigrator.cs" />
+		<Compile Include="SaveSystem\SaveMigratorHelpers.cs" />
 		<Compile Include="SingleObjectLink.cs" />
 		<Compile Include="SingleObjectLinks\SequencerScreenObjectLink.cs" />
 		<Compile Include="UI_Related\UIVector3Fields.cs" />
@@ -153,9 +155,7 @@
 		<Compile Include="Playmode\PlaymodePauseMenuPatcher.cs" />
 		<Compile Include="SaveSystem\Converters\LEIgnoreDefaultValuesInLEEvents.cs" />
 		<Compile Include="SaveSystem\Converters\LEPropertiesConverterNew.cs" />
-		<Compile Include="SaveSystem\Converters\LevelObjectDataConverter.cs" />
-		<Compile Include="SaveSystem\Converters\OldPropertiesRename.cs" />
-		<Compile Include="SaveSystem\SavePatches.cs" />
+		<Compile Include="SaveSystem\SavePatchesLegacy.cs" />
 		<Compile Include="SaveSystem\SerializableTypes\ColorSerializable.cs" />
 		<Compile Include="SaveSystem\SerializableTypes\Vector3Serializable.cs" />
 		<Compile Include="TranslationsManager.cs" />
