@@ -95,6 +95,7 @@ namespace FS_LevelEditor
             var lines = new List<string>();
             int startOfLine = 0;
             bool inQuotes = false;
+            bool skipLine = false;
 
             for (int i = 0; i < text.Length; i++)
             {
@@ -104,23 +105,33 @@ namespace FS_LevelEditor
                 {
                     inQuotes = !inQuotes;
                 }
+                else if (c == '#' && !inQuotes) // Skip comments inside of the CSV file.
+                {
+                    skipLine = true;
+                }
                 else if ((c == '\n' || c == '\r') && !inQuotes)
                 {
-                    if (c == '\r')
+                    if (c == '\r') // Just skip over the /r char.
                     {
                         i++;
                         c = text[i];
                     }
 
-                    if (c == '\n')
+                    if (c == '\n' && !skipLine)
                     {
-                        string line = text.Substring(startOfLine, i - startOfLine);
-                        lines.Add(line);
+                        int length = i - startOfLine;
+                        string line = text.Substring(startOfLine, length);
+                        if (!string.IsNullOrEmpty(line))
+                            lines.Add(line);
                     }
+                    skipLine = false;
 
                     startOfLine = i + 1;
                 }
             }
+
+            // Here we should check if there's remaining text at the end of the file (final line), but conversion from XLSX -> CSV always results in an extra new line, so the check is not necessary.
+            // TL;DR: I'm lazy.
 
             return lines.ToArray();
         }
