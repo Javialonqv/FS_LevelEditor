@@ -55,32 +55,10 @@ namespace FS_LevelEditor.SaveSystem.Converters
             return deserialized;
         }
 
-        object LegacyDeserealize(JsonElement rawType, JsonElement rawValue)
-        {
-            string realTypeName = rawType.GetString();
-            if (realTypeName == null)
-            {
-                Logger.Error("[SAVE FILE] [LEGACY] Couldn't get value type, value type was a null string.");
-                throw new JsonException("[SAVE FILE] [LEGACY] Couldn't get value type, value type was a null string.");
-            }
-            Type realType = Type.GetType(SavePatchesLegacy.GetCorrectTypeNameForLegacySystem(realTypeName));
-            if (realType == null)
-            {
-                Logger.Error($"[SAVE FILE] [LEGACY] Couldn't find type of name \"{realTypeName}\".");
-                throw new JsonException($"[SAVE FILE] [LEGACY] Couldn't find type of name \"{realTypeName}\".");
-            }
-
-            return JsonSerializer.Deserialize(rawValue.GetRawText(), realType);
-        }
         public static object NewDeserealize(Type type, JsonElement rawValue)
         {
             try
             {
-                if (SavePatchesLegacy.IsOldSawWaypointsSave(rawValue, out var convertedWaypoints))
-                {
-                    return convertedWaypoints;
-                }
-
                 // The properties only contain the ORIGINAL type, but what if the save data contains info about an object with a CUSTOM serialization type?
                 // Example: property value type is Vector3, but the saved type is actually Vector3Serializable.
                 Type typeToDeserealize = SavePatchesLegacy.ConvertTypeToSerializedObjectType(type);

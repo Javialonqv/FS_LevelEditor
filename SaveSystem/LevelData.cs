@@ -237,11 +237,10 @@ namespace FS_LevelEditor.SaveSystem
             }
         }
 
-        public static LevelData GetLevelData(string levelFileNameWithoutExtension, bool printLogs = false)
+        public static LevelData GetLevelData(string levelFileNameWithoutExtension)
         {
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             LevelData data = null;
-            LevelObjectDataConverter.RefreshCounters();
 
             if (!LevelFileEixsts(levelFileNameWithoutExtension))
                 return null;
@@ -250,8 +249,6 @@ namespace FS_LevelEditor.SaveSystem
             {
                 string json = File.ReadAllText(filePath);
                 data = SaveMigrator.DeserializeLevelData(json, Path.GetFileName(filePath));
-                if (printLogs)
-                    LevelObjectDataConverter.PrintLogs();
             }
             catch { }
 
@@ -284,7 +281,7 @@ namespace FS_LevelEditor.SaveSystem
         {
             Stopwatch watch = Stopwatch.StartNew();
             Logger.Log("[SAVE SYSTEM] [DESERIALIZATON] LOADING LEVEL DATA FOR LEVEL: " + levelFileNameWithoutExtension);
-            LevelData data = GetLevelData(levelFileNameWithoutExtension, true);
+            LevelData data = GetLevelData(levelFileNameWithoutExtension);
             Logger.Log("[SAVE SYSTEM] [DESERIALIZATION] DESERIALIZED DATA FROM JSON (NO ID CHECKS DONE YET): " + watch.Elapsed);
             watch.Restart();
 

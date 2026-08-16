@@ -155,8 +155,6 @@
 		<Compile Include="Playmode\PlaymodePauseMenuPatcher.cs" />
 		<Compile Include="SaveSystem\Converters\LEIgnoreDefaultValuesInLEEvents.cs" />
 		<Compile Include="SaveSystem\Converters\LEPropertiesConverterNew.cs" />
-		<Compile Include="SaveSystem\Converters\LevelObjectDataConverter.cs" />
-		<Compile Include="SaveSystem\Converters\OldPropertiesRename.cs" />
 		<Compile Include="SaveSystem\SavePatchesLegacy.cs" />
 		<Compile Include="SaveSystem\SerializableTypes\ColorSerializable.cs" />
 		<Compile Include="SaveSystem\SerializableTypes\Vector3Serializable.cs" />
