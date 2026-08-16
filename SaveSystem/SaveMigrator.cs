@@ -66,6 +66,14 @@ namespace FS_LevelEditor.SaveSystem
             Logger.Log("[SAVE MIGRATOR] Migrating save file from V0 to V1...");
 
             // LEGACY "OldPropertiesRename" FUNCTIONALITY HERE!!
+            // TARGET: LE_Event
+            // Rename:
+            //  - setActive       ->    spawn
+            //  - moveObject      ->    moveState
+            // Convert:
+            //  - moveState BOOL  ->    moveState ENUM
+            // Ensure:
+            //  - upgrades is NOT null, and replace it with an empty list if so.
             foreach (var obj in SaveMigratorHelpers.EnumerateAllJsonObjects(root))
             {
                 // Yes, to identify old events, we just do this, not the best thing in the world, but it works... I guess...
@@ -105,6 +113,9 @@ namespace FS_LevelEditor.SaveSystem
             }
 
             // LEGACY "LevelObjectDataConverter" FUNCTIONALITY HERE!!
+            // TARGET: LE_Object
+            // Convert:
+            //  - objectOriginalName STRING -> objectType ENUM and objectID INT
             foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
             {
                 var obj = objNode.AsObject();
@@ -127,6 +138,12 @@ namespace FS_LevelEditor.SaveSystem
             }
 
             // LEGACY "EventExecuter.UpdateLEEventsToTheNewSystem" FUNCTIONALITY HERE!!
+            // TARGET: LE_Event
+            // Convert:
+            //  - targetObjName STRING
+            //      - isForPlayer, isForTaser, isForJetpack, isForObjective BOOLS
+            //      OR
+            //      - targetObjType ENUM AND targetObjID INT.
             foreach (var obj in SaveMigratorHelpers.EnumerateAllJsonObjects(root))
             {
                 bool isOldEvent = obj.ContainsKey("targetObjName");
@@ -199,6 +216,14 @@ namespace FS_LevelEditor.SaveSystem
             }
 
             // LEGACY "LegacyDeserealize" for { Type, Value } properties FUNCTIONALITY HERE!!
+            // TARGET: LE_Object Properties AND Global Properties.
+            // Convert:
+            //  - Properties with the structure:
+            //  propName:
+            //      Type STRING (Type Namespace in C#)
+            //      Value OBJECT
+            //  TO
+            //  propName: Value OBJECT
             foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
             {
                 var obj = objNode.AsObject();
@@ -214,6 +239,11 @@ namespace FS_LevelEditor.SaveSystem
             }
 
             // LEGACY "SavePatchesLegacy.ReevaluateOldProperties" FUNCTIONALITY HERE!!
+            // TARGET: LE_Object Properties Names
+            // Rename:
+            //  - OnActivatedEvents     ->      WhenActivatingEvents
+            //  - OnDeactivatedEvents   ->      WhenDeactivatingEvents
+            //  - OnChangeEvents        ->      WhenInvertingEvents
             foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
             {
                 var obj = objNode.AsObject();
@@ -227,6 +257,10 @@ namespace FS_LevelEditor.SaveSystem
             }
 
             // LEGACY "SavePatchesLegacy.IsOldSawWaypointsSave" FUNCTIONALITY HERE!!
+            // TARGET: LE_Saw Wayputos
+            // Rename:
+            //  - waypointPosition      ->      position
+            //  - waypointRotation      ->      rotation
             foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
             {
                 var obj = objNode.AsObject();
