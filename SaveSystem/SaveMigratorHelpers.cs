@@ -105,5 +105,16 @@ namespace FS_LevelEditor.SaveSystem
             // If it's a primitive value (string, int, bool, null), clone it directly.
             return JsonValue.Create(node.AsValue().GetValue<object>());
         }
+
+        public static T GetValueNoException<T>(this JsonObject jsonObj, string propertyName, T defaultValue)
+        {
+            if (jsonObj[propertyName] is not JsonValue propValue)
+                return defaultValue;
+
+            if (propValue.TryGetValue<T>(out var result))
+                return result;
+            else
+                return defaultValue;
+        }
     }
 }

@@ -89,9 +89,9 @@ namespace FS_LevelEditor.SaveSystem
                     }
                 }
 
-                bool isPlayerEvent = obj["isForPlayer"] is JsonValue playerValue && playerValue.TryGetValue<bool>(out bool isForPlayer) && isForPlayer;
+                bool isPlayerEvent = obj.GetValueNoException<bool>("isForPlayer", false);
                 if (!isPlayerEvent)
-                    isPlayerEvent = obj["targetObjName"] is JsonValue playerValue2 && playerValue2.TryGetValue<string>(out string targetObjName) && targetObjName == Loc.Get("Player");
+                    isPlayerEvent = obj.GetValueNoException<string>("targetObjName", "") == Loc.Get("Player");
 
                 // This is to fix a bug where "upgrades" used to be null by default, which caused some issues in playmode. Changing the default value in LE_Event fixes it from now on.
                 // But we need to use this code to intercept any null value from old levels and force it to be a correct list.
