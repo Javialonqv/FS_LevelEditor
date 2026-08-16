@@ -1,6 +1,7 @@
 ﻿using FS_LevelEditor.SaveSystem.SerializableTypes;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -30,18 +31,27 @@ namespace FS_LevelEditor.SaveSystem
 
             if (schemaVersion > CURRENT_SCHEMA_VERSION)
             {
-                Logger.Error($"The level '{fileName}' has schema version {schemaVersion}, but this mod version only supports up to {CURRENT_SCHEMA_VERSION}." +
+                Logger.Error($"[SAVE SYSTEM] [MIGRATOR] The level '{fileName}' has schema version {schemaVersion}, but this mod version only supports up to {CURRENT_SCHEMA_VERSION}." +
                              $"Are you trying to open it in an older version of the Level Editor mod?");
                 return;
             }
 
+            bool needsUpgrade = false;
             if (schemaVersion != CURRENT_SCHEMA_VERSION)
-                Logger.Log("[SAVE MIGRATOR] Detected and older level file! Schema Version: " + schemaVersion);
+            {
+                Logger.Log("[SAVE SYSTEM] [MIGRATOR] Detected and older level file! Schema Version: " + schemaVersion);
+                needsUpgrade = true;
+            }
             else
-                Logger.Log("[SAVE MIGRATOR] The level file is currently in the latest version! Schema Version: " + schemaVersion);
+            {
+                Logger.Log("[SAVE SYSTEM] [MIGRATOR] The level file is currently in the latest version! Schema Version: " + schemaVersion);
+            }
 
             while (schemaVersion < CURRENT_SCHEMA_VERSION)
             {
+                Stopwatch watch = Stopwatch.StartNew();
+                Logger.Log($"[SAVE SYSTEM] [MIGRATOR] Migrating save file from V{schemaVersion} to V{schemaVersion+1}...");
+
                 switch (schemaVersion)
                 {
                     case 0:
@@ -49,8 +59,16 @@ namespace FS_LevelEditor.SaveSystem
                         break;
                 }
 
+                watch.Stop();
+                Logger.Log($"[SAVE SYSTEM] [MIGRATOR] Finished migrating from V{schemaVersion} to V{schemaVersion+1}! Took: {watch.Elapsed}");
+
                 schemaVersion++;
                 root["schemaVersion"] = schemaVersion;
+            }
+
+            if (needsUpgrade)
+            {
+                Logger.Log("[SAVE SYSTEM] [MIGRATOR] FINISHED MIGRATING LEVEL SAVE FILE");
             }
         }
         static int ReadSchemaVersion(JsonObject root)
@@ -63,8 +81,6 @@ namespace FS_LevelEditor.SaveSystem
 
         static void MigrateV0ToV1(JsonObject root)
         {
-            Logger.Log("[SAVE MIGRATOR] Migrating save file from V0 to V1...");
-
             // LEGACY "OldPropertiesRename" FUNCTIONALITY HERE!!
             // TARGET: LE_Event
             // Rename:
