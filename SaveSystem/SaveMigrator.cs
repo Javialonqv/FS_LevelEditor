@@ -12,7 +12,7 @@ namespace FS_LevelEditor.SaveSystem
 {
     public static class SaveMigrator
     {
-        public const int CURRENT_SCHEMA_VERSION = 1;
+        public const int CURRENT_SCHEMA_VERSION = 2;
 
         public static LevelData DeserializeLevelData(string json, string fileName)
         {
@@ -56,6 +56,10 @@ namespace FS_LevelEditor.SaveSystem
                 {
                     case 0:
                         MigrateV0ToV1(root);
+                        break;
+
+                    case 1:
+                        MigrateV1ToV2(root);
                         break;
                 }
 
@@ -328,6 +332,46 @@ namespace FS_LevelEditor.SaveSystem
 
                     // Create a copy of the node because it already belongs to the property.
                     properties[property.Key] = valueNode.DeepClone();
+                }
+            }
+        }
+
+        static void MigrateV1ToV2(JsonObject root)
+        {
+            // For V2, the default spawn state changed from: Toggle -> Do Nothing.
+            // Make sure every value in V1 stays as is.
+            // Iterate through each event and when we find one that does NOT have spawn specified,
+            // then we know that, since it's from V1, it has to be Toggle, specify it.
+            foreach (var obj in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
+            {
+                if (!obj.AsObject().TryGetPropertyValue("properties", out var propertiesNode) || propertiesNode is not JsonObject properties)
+                    continue;
+
+                // we don't have a proper way to tell if a property has event lists or not, so...
+                foreach (var prop in properties)
+                {
+                    #region Check The Prop Entry Is A Events Array
+                    if (prop.Value is not JsonArray array) // Events ARE arrays.
+                        continue;
+
+                    if (array.Count == 0) // Skip empty arrays.
+                        continue;
+
+                    if (array[0] is not JsonObject firstItem) // The elements in the events' arrays are objects.
+                        continue;
+
+                    // MOMENT OF TRUTH: An event needs to have AT LEAST one of these properties, this way we make sure that this array indeed contains events.
+                    if (!firstItem.ContainsKey("isForPlayer") && !firstItem.ContainsKey("isForTaser") && !firstItem.ContainsKey("isForJetpack") && !firstItem.ContainsKey("isForObjective") && !firstItem.ContainsKey("targetObjType"))
+                        continue;
+                    #endregion
+
+                    foreach (var item in array)
+                    {
+                        if (item.AsObject().TryGetPropertyValue("spawn", out _)) // Skips ones that ALREADY have spawn specified.
+                            continue;
+
+                        item.AsObject()["spawn"] = (int)LE_Event.SpawnState.Toggle;
+                    }
                 }
             }
         }
