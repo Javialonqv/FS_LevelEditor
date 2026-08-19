@@ -62,7 +62,7 @@ namespace FS_LevelEditor
             script.currentRespawnIndex = 0;
             script.m_resetTransform = content.GetChild("Spawn").transform;
 
-            // If not using custom coords, and since respawnPosition uses GLOBAL coords, set them.
+            // If not using custom coords, and since respawnPosition uses GLOBAL coords, use this object itself pivot as the respawn coords.
             if (customWaypointSupport.targetWaypointsData == null || customWaypointSupport.targetWaypointsData.Count == 0)
             {
                 SetRespawnPointPositionAndRotation(transform.position, transform.eulerAngles);
@@ -82,7 +82,8 @@ namespace FS_LevelEditor
                 // Since it's the waypoint DATA itself and not the spawned one, it's stored as JsonElement.
                 if (((JsonElement)customWaypointSupport.targetWaypointsData[0].properties["RotatePlayer"]).GetBoolean())
                 {
-                    script.gameObject.AddComponent<DeathTriggerRespawnRotationPatcher>();
+                    if (GetProperty<float>("Delay") != 0 && GetProperty<LE_Death_Trigger.TriggerType>("Type") == LE_Death_Trigger.TriggerType.RELOCATION)
+                        script.gameObject.AddComponent<DeathTriggerRespawnRotationPatcher>();
                 }
             }
 
@@ -192,6 +193,8 @@ namespace FS_LevelEditor
                     // The rotation of the player is still handled by the DeathTriggerRespawnRotationPatcher.
                     Controls.Instance.TeleportPlayerToPosition(deathTrigger.script.m_resetTransform.position, true);
 
+                    DeathTriggerRespawnRotationPatcher.RotatePlayerNow(deathTrigger);
+
                     // onTeleport in ContainmentBox is not called for some reason, execute the events manually.
                     deathTrigger.ExecuteOnTeleportEvents();
 
@@ -237,6 +240,11 @@ namespace FS_LevelEditor
             // Simulate the delay.
             yield return new WaitForSecondsRealtime(script.GetProperty<float>("Delay")); // Small offset added.
 
+            RotatePlayerNow(script);
+        }
+
+        public static void RotatePlayerNow(LE_Death_Trigger script)
+        {
             // Don't ever ask me why, but since FS uses those yaw and pitch values, I need to pass these eulerAngles values inverted.
             // I've always struggled with rotations. - Jav.
             Transform player = Controls.Instance.player.transform;
@@ -248,10 +256,6 @@ namespace FS_LevelEditor
             playerCam.localEulerAngles = new Vector3(script.RespawnRotation.x, playerCam.localEulerAngles.y, playerCam.localEulerAngles.z);
             Controls.Instance.AdjustYawPitchBasedOnCurrent(false, true, true);
             Controls.Instance.m_walkingMovement = Controls.Instance.transform.TransformDirection(globalMovement);
-            
-
-            // And since Angle doesn't INSTANTLY move the camera, but it moves it slowly when it's drastically changed... force it ourselves :)
-            //Controls.Instance.transform.eulerAngles = script.respawnRotation;
         }
     }
 }
