@@ -209,7 +209,12 @@ namespace FS_LevelEditor.Editor.UI
 
 			EditorController.Instance.SetCurrentEditorState(EditorState.PAUSED);
 			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.SAVE_METADATA_PANEL);
-			
+
+			// Since the Save Metadata popup is the only panel (for now) that can be opened WHILE PRESSING THE RIGHT MOUSE KEY, unlock the cursor manually here.
+			EditorCameraMovement.Instance.currentCameraMove = EditorCameraMovement.CameraMove.NONE;
+			Cursor.lockState = CursorLockMode.None;
+			Cursor.visible = true;
+
 			Logger.Log("SaveMetadataPopup shown successfully");
 		}
 		public void HidePopup()
@@ -227,6 +232,20 @@ namespace FS_LevelEditor.Editor.UI
 
 			EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
 			EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
+
+            // Since the Save Metadata popup is the only panel (for now) that can be opened WHILE PRESSING THE RIGHT MOUSE KEY, lock/unlock it again manually here.
+            if (Input.GetMouseButton(1))
+			{
+                EditorCameraMovement.Instance.currentCameraMove = EditorCameraMovement.CameraMove.NORMAL;
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+			else
+			{
+                EditorCameraMovement.Instance.currentCameraMove = EditorCameraMovement.CameraMove.NONE;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
 		}
 
 		void OnSaveButtonClicked()

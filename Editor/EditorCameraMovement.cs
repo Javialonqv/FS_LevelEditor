@@ -14,8 +14,8 @@ namespace FS_LevelEditor.Editor
     [RegisterTypeInIl2Cpp]
     public class EditorCameraMovement : MonoBehaviour
     {
-        enum CameraMove { NONE, NORMAL, MOUSE_DRAG }
-        CameraMove currentCameraMove;
+        public enum CameraMove { NONE, NORMAL, MOUSE_DRAG }
+        public CameraMove currentCameraMove;
         private float moveSpeedWhenShiftPressed = 10f;
         public float moveSpeed = 10f;
         public float mouseSensivility = 10f;
@@ -76,10 +76,8 @@ namespace FS_LevelEditor.Editor
 
 		void Update()
         {
-            if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ)) return;
-
-            // Don't allow camera movement when save popup is active
-            if (SaveMetadataPopup.IsPopupActive()) return;
+            if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ))
+                return;
 
             #region Define Camera Mode To Use
             if (!Input.GetMouseButton(0) && Input.GetMouseButton(1) && currentCameraMove == CameraMove.NONE)
@@ -90,9 +88,12 @@ namespace FS_LevelEditor.Editor
             {
                 currentCameraMove = CameraMove.MOUSE_DRAG;
             }
-    if (Input.GetMouseButtonUp(1) && currentCameraMove == CameraMove.NORMAL) currentCameraMove = CameraMove.NONE;
-     if (Input.GetMouseButtonUp(2) && currentCameraMove == CameraMove.MOUSE_DRAG) currentCameraMove = CameraMove.NONE;
- #endregion
+
+            if (Input.GetMouseButtonUp(1) && currentCameraMove == CameraMove.NORMAL)
+                currentCameraMove = CameraMove.NONE;
+            if (Input.GetMouseButtonUp(2) && currentCameraMove == CameraMove.MOUSE_DRAG)
+                currentCameraMove = CameraMove.NONE;
+            #endregion
 
             // Camera speed can be changed at any time
             ManageMoveSpeed();
