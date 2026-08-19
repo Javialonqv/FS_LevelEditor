@@ -242,9 +242,13 @@ namespace FS_LevelEditor
             Transform player = Controls.Instance.player.transform;
             Transform playerCam = Controls.Instance.gameCamera.transform;
 
+            Vector3 globalMovement = Controls.Instance.transform.InverseTransformDirection(Controls.Instance.m_walkingMovement);
+
             player.localEulerAngles = new Vector3(0, script.RespawnRotation.y, 0);
             playerCam.localEulerAngles = new Vector3(script.RespawnRotation.x, playerCam.localEulerAngles.y, playerCam.localEulerAngles.z);
             Controls.Instance.AdjustYawPitchBasedOnCurrent(false, true, true);
+            Controls.Instance.m_walkingMovement = Controls.Instance.transform.TransformDirection(globalMovement);
+            
 
             // And since Angle doesn't INSTANTLY move the camera, but it moves it slowly when it's drastically changed... force it ourselves :)
             //Controls.Instance.transform.eulerAngles = script.respawnRotation;
