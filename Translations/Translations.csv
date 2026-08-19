@@ -237,6 +237,7 @@ EventsTargetObjectFieldTooltip,"The [b]Target Object Field[/b] supports the foll
 - [b]Wait:[/b] [00FFFF]Wait[-] [FFFF00]Xs or Xms[-] Example: [00FFFF]Wait 3s[-].
 - [b]Groups:[/b] [00FFFF]Group[-] [FFFF00]ID[-] Example: [00FFFF]Group 2[-].",,
 RespawnAnim,Respawn Animation,Animación de Reaparición,
+WithOffset,With Offset,Compensar Diferencia,
 ,,,
 # Broken translations in the main game.,,,
 Notification_FlashlightNotOperational,Flashlight is not available! ,,
