@@ -2788,7 +2788,7 @@ public class LE_Event
             if (!property.CanWrite)
                 continue;
 
-            property.SetValue(this, property.GetValue(toCopy));
+            property.SetValue(this, FS_LevelEditor.Utils.CreateCopyOf(property.GetValue(toCopy)));
         }
     }
 

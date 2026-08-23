@@ -712,6 +712,9 @@ namespace FS_LevelEditor
 
         public static object CreateCopyOf(object value)
         {
+            if (value is null)
+                return null;
+
             switch (value)
             {
                 case int i:
@@ -746,8 +749,8 @@ namespace FS_LevelEditor
 
             if (value.GetType().IsValueType)
             {
-                Logger.Warning($"Couldn't copy object of type \"{value.GetType().Name}\", but it's an struct so who cares, " +
-                    $"don't worry user, everything's fine :)");
+                //Logger.Warning($"Couldn't copy object of type \"{value.GetType().Name}\", but it's an struct so who cares, " +
+                //    $"don't worry user, everything's fine :)");
             }
             else
             {
