@@ -29,6 +29,16 @@ namespace FS_LevelEditor
             base.Awake();
         }
 
+        public override void OnInstantiated(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                transform.localScale = Vector3.one;
+            }
+
+            base.OnInstantiated(scene);
+        }
+
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>()

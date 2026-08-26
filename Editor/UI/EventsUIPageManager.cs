@@ -2854,7 +2854,7 @@ public class LE_Event
     public float delay { get; set; } = 0f;
 
     public enum SpawnState { Do_Nothing, Spawn, Despawn, Toggle }
-    public SpawnState spawn { get; set; } = SpawnState.Toggle;
+    public SpawnState spawn { get; set; } = SpawnState.Do_Nothing;
     public enum ColliderState { Do_Nothing, Enable, Disable, Toggle }
     public ColliderState colliderState { get; set; } = ColliderState.Do_Nothing;
     public enum MoveState { Do_Nothing, Start_Moving, Stop_Moving, Start_Or_Stop_Moving }
@@ -2893,7 +2893,7 @@ public class LE_Event
 
     #region Laser Options
     public enum LaserState { Do_Nothing, Activate, Deactivate, Toggle_State }
-    public LaserState laserState = LaserState.Toggle_State;
+    public LaserState laserState { get; set; } = LaserState.Toggle_State;
     #endregion
 
     #region Mine Options

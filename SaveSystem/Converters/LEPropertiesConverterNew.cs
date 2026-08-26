@@ -36,24 +36,17 @@ namespace FS_LevelEditor.SaveSystem.Converters
                 JsonElement rawValue = prop.Value;
                 object value = null;
 
-                if (rawValue.ValueKind == JsonValueKind.Object && rawValue.TryGetProperty("Type", out var rawType) && rawValue.TryGetProperty("Value", out var realRawValue))
+                // If this is the Global Properties dictionary.
+                if (LevelData.GetDefaultGlobalProperties().ContainsKey(prop.Name))
                 {
-                    value = LegacyDeserealize(rawType, realRawValue);
+                    var valueType = LevelData.GetDefaultGlobalProperties()[prop.Name].GetType();
+                    value = JsonSerializer.Deserialize(rawValue.GetRawText(), valueType);
                 }
-                else
+                else // Default deserialization, take it as if it were a normal object properties entry.
                 {
-                    // If this is the Global Properties dictionary.
-                    if (LevelData.GetDefaultGlobalProperties().ContainsKey(prop.Name))
-                    {
-                        var valueType = LevelData.GetDefaultGlobalProperties()[prop.Name].GetType();
-                        value = JsonSerializer.Deserialize(rawValue.GetRawText(), valueType);
-                    }
-                    else // Default deserialization, take it as if it were a normal object properties entry.
-                    {
-                        // It the json value isn't a primitive type (int, float, string, etc.) this will result in a JsonElement, but this is parsed later with SetProperty()
-                        // in LE_Object.
-                        value = JsonSerializer.Deserialize<object>(rawValue.GetRawText(), options);
-                    }
+                    // It the json value isn't a primitive type (int, float, string, etc.) this will result in a JsonElement, but this is parsed later with SetProperty()
+                    // in LE_Object.
+                    value = JsonSerializer.Deserialize<object>(rawValue.GetRawText(), options);
                 }
 
                 deserialized.Add(prop.Name, value);
@@ -62,36 +55,14 @@ namespace FS_LevelEditor.SaveSystem.Converters
             return deserialized;
         }
 
-        object LegacyDeserealize(JsonElement rawType, JsonElement rawValue)
-        {
-            string realTypeName = rawType.GetString();
-            if (realTypeName == null)
-            {
-                Logger.Error("[SAVE FILE] [LEGACY] Couldn't get value type, value type was a null string.");
-                throw new JsonException("[SAVE FILE] [LEGACY] Couldn't get value type, value type was a null string.");
-            }
-            Type realType = Type.GetType(SavePatches.GetCorrectTypeNameForLegacySystem(realTypeName));
-            if (realType == null)
-            {
-                Logger.Error($"[SAVE FILE] [LEGACY] Couldn't find type of name \"{realTypeName}\".");
-                throw new JsonException($"[SAVE FILE] [LEGACY] Couldn't find type of name \"{realTypeName}\".");
-            }
-
-            return JsonSerializer.Deserialize(rawValue.GetRawText(), realType);
-        }
         public static object NewDeserealize(Type type, JsonElement rawValue)
         {
             try
             {
-                if (SavePatches.IsOldSawWaypointsSave(rawValue, out var convertedWaypoints))
-                {
-                    return convertedWaypoints;
-                }
-
                 // The properties only contain the ORIGINAL type, but what if the save data contains info about an object with a CUSTOM serialization type?
                 // Example: property value type is Vector3, but the saved type is actually Vector3Serializable.
-                Type typeToDeserealize = SavePatches.ConvertTypeToSerializedObjectType(type);
-                return JsonSerializer.Deserialize(rawValue.GetRawText(), typeToDeserealize, SavePatches.OnReadSaveFileOptions);
+                Type typeToDeserealize = SavePatchesLegacy.ConvertTypeToSerializedObjectType(type);
+                return JsonSerializer.Deserialize(rawValue.GetRawText(), typeToDeserealize, SavePatchesLegacy.OnReadSaveFileOptions);
             }
             catch
             {

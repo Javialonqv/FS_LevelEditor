@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
@@ -107,6 +108,7 @@ namespace FS_LevelEditor.SaveSystem
     [Serializable]
     public class LevelData
     {
+        public int schemaVersion { get; set; }
         public string levelName { get; set; }
         public string authorName { get; set; }
         public string tags { get; set; }
@@ -127,6 +129,7 @@ namespace FS_LevelEditor.SaveSystem
         public static LevelData CreateLevelData(string levelName)
         {
             LevelData data = new LevelData();
+            data.schemaVersion = SaveMigrator.CURRENT_SCHEMA_VERSION;
             data.levelName = levelName;
             data.cameraPosition = Camera.main.transform.position;
             EditorCameraMovement editorCamera = Camera.main.GetComponent<EditorCameraMovement>();
@@ -212,7 +215,7 @@ namespace FS_LevelEditor.SaveSystem
                 }
 
                 string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-                File.WriteAllText(filePath, JsonSerializer.Serialize(data, SavePatches.OnWriteSaveFileOptions));
+                File.WriteAllText(filePath, JsonSerializer.Serialize(data, SavePatchesLegacy.OnWriteSaveFileOptions));
 
                 Logger.Log("Level saved! Path: " + filePath);
             }
@@ -234,18 +237,18 @@ namespace FS_LevelEditor.SaveSystem
             }
         }
 
-        public static LevelData GetLevelData(string levelFileNameWithoutExtension, bool printLogs = false)
+        public static LevelData GetLevelData(string levelFileNameWithoutExtension)
         {
             string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             LevelData data = null;
-            LevelObjectDataConverter.RefreshCounters();
 
-            if (!LevelFileEixsts(levelFileNameWithoutExtension)) return null;
+            if (!LevelFileEixsts(levelFileNameWithoutExtension))
+                return null;
 
             try
             {
-                data = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(filePath), SavePatches.OnReadSaveFileOptions);
-                if (printLogs) LevelObjectDataConverter.PrintLogs();
+                string json = File.ReadAllText(filePath);
+                data = SaveMigrator.DeserializeLevelData(json, Path.GetFileName(filePath));
             }
             catch { }
 
@@ -264,7 +267,7 @@ namespace FS_LevelEditor.SaveSystem
                 LevelData levelData = null;
                 try
                 {
-                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), SavePatches.OnReadSaveFileOptions);
+                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), SavePatchesLegacy.OnReadSaveFileOptions);
                 }
                 catch { }
                 levels.Add(Path.GetFileNameWithoutExtension(levelPath), levelData);
@@ -277,21 +280,21 @@ namespace FS_LevelEditor.SaveSystem
         static LevelData LoadLevelData(string levelFileNameWithoutExtension)
         {
             Stopwatch watch = Stopwatch.StartNew();
-            Logger.DebugLog("LOADING LEVEL DATA FOR LEVEL: " + levelFileNameWithoutExtension);
-            LevelData data = GetLevelData(levelFileNameWithoutExtension, true);
-            Logger.DebugLog("LOADED LEVEL DATA FROM JSON IN (STILL NOT DONE): " + watch.Elapsed);
+            Logger.Log("[SAVE SYSTEM] [DESERIALIZATON] LOADING LEVEL DATA FOR LEVEL: " + levelFileNameWithoutExtension);
+            LevelData data = GetLevelData(levelFileNameWithoutExtension);
+            Logger.Log("[SAVE SYSTEM] [DESERIALIZATION] DESERIALIZED DATA FROM JSON (NO ID CHECKS DONE YET): " + watch.Elapsed);
             watch.Restart();
 
-            SavePatches.ReevaluateOldProperties(ref data);
+            // SavePatchesLegacy.ReevaluateOldProperties(ref data);
 
             List<LE_ObjectData> toCheck = data.objects;
             if (Utils.ListHasMultipleObjectsWithSameID(toCheck, false))
             {
-                Logger.Warning("Multiple objects with same ID detected, trying to fix...");
+                Logger.Warning("[SAVE SYSTEM] [DESERIALIZATION] Multiple objects with same ID detected, trying to fix...");
                 toCheck = FixMultipleObjectsWithSameID(toCheck);
             }
             data.objects = toCheck;
-            Logger.DebugLog("FINISHED LEVEL DATA LOADING IN: " + watch.Elapsed);
+            Logger.Log("[SAVE SYSTEM] [DESERIALIZATION] FINISHED LEVEL DATA LOADING IN (ID CHECKS DONE): " + watch.Elapsed);
 
             watch.Stop();
 
@@ -303,7 +306,7 @@ namespace FS_LevelEditor.SaveSystem
             IsCurrentlyLoadingData = true;
 
             Stopwatch watch = Stopwatch.StartNew();
-            Logger.DebugLog("LOADING LEVEL IN THE EDITOR...");
+            Logger.Log("[SAVE SYSTEM] [EDITOR] LOADING LEVEL IN THE EDITOR...");
             LevelData data = LoadLevelData(levelFileNameWithoutExtension);
 
             // Set camera properties in batch
@@ -324,7 +327,7 @@ namespace FS_LevelEditor.SaveSystem
                     obj.objScale
                 ));
             }
-            Logger.DebugLog("BATCH COLLECTED DATA IN: " + watch.Elapsed);
+            Logger.Log("[SAVE SYSTEM] [EDITOR] COLLECTED REQUIRED DATA IN: " + watch.Elapsed);
             watch.Restart();
 
             // Clear existing objects
@@ -347,7 +350,7 @@ namespace FS_LevelEditor.SaveSystem
                     instantiatedObjects.Add((objInstance, data.objects[instantiatedObjects.Count]));
                 }
             }
-            Logger.DebugLog("BATCH INSTANTIATED IN: " + watch.Elapsed);
+            Logger.Log("[SAVE SYSTEM] [EDITOR] INSTANTIATED OBJECTS IN: " + watch.Elapsed);
             watch.Restart();
 
             // Batch configure objects
@@ -361,7 +364,7 @@ namespace FS_LevelEditor.SaveSystem
                     obj.SetTransparentMaterials();
                 }
             }
-            Logger.DebugLog("BATCH CONFIGURED IN: " + watch.Elapsed);
+            Logger.Log("[SAVE SYSTEM] [EDITOR] CONFIGURED OBJECTS' PROPERTIES IN: " + watch.Elapsed);
             watch.Restart();
 
             // Batch apply global properties
@@ -379,11 +382,12 @@ namespace FS_LevelEditor.SaveSystem
                     }
                 }
             }
-            Logger.DebugLog("BATCH APPLIED GLOBAL PROPS IN: " + watch.Elapsed);
-            watch.Restart();
-
+            Logger.Log("[SAVE SYSTEM] [EDITOR] APPLIED GLOBAL PROPERTIES IN: " + watch.Elapsed);
             watch.Stop();
+
             EditorController.Instance.AfterFinishedLoadingLevel();
+
+            Logger.Log("[SAVE SYSTEM] [EDITOR] FINISHED LOADING LEVEL IN THE EDITOR");
 
             IsCurrentlyLoadingData = false;
         }
@@ -394,6 +398,9 @@ namespace FS_LevelEditor.SaveSystem
             // Initialize essential components first
             LE_Object.GetTemplatesReferences();
             PlayModeController playModeCtrl = new GameObject("PlayModeController").AddComponent<PlayModeController>();
+
+            Stopwatch watch = Stopwatch.StartNew();
+            Logger.Log("[SAVE SYSTEM] [PLAYMODE] LOADING LEVEL IN PLAYMODE...");
 
             // Pre-load level data before any instantiation
             LevelData data = LoadLevelData(levelFileNameWithoutExtension);
@@ -406,14 +413,9 @@ namespace FS_LevelEditor.SaveSystem
             int objectCount = data.objects.Count;
             var objectsToInstantiate = new List<(LE_ObjectData data, GameObject obj)>(objectCount);
 
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
             // First pass: Create all GameObjects without configuring them
             foreach (LE_ObjectData obj in data.objects)
             {
-                Stopwatch watch = new Stopwatch();
-                watch.Start();
-
                 var objInstance = playModeCtrl.PlaceObject(
                     obj.objectType,
                     obj.objPosition,
@@ -426,11 +428,9 @@ namespace FS_LevelEditor.SaveSystem
                 {
                     objectsToInstantiate.Add((obj, objInstance));
                 }
-
-                watch.Stop();
-                //if (watch.Elapsed.TotalMilliseconds > 100) Debugger.Break();
             }
-            timer.Stop();
+            Logger.Log("[SAVE SYSTEM] [PLAYMODE] INSTANTIATED OBJECTS IN " + watch.Elapsed);
+            watch.Restart();
 
             // Second pass: Configure all objects in batch
             foreach (var (objData, objInstance) in objectsToInstantiate)
@@ -445,6 +445,8 @@ namespace FS_LevelEditor.SaveSystem
                     objClassInstance.Start();
                 }
             }
+            Logger.Log("[SAVE SYSTEM] [PLAYMODE] CONFIGURED OBJECTS' PROPERTIES IN: " + watch.Elapsed);
+            watch.Restart();
 
             // Set controller properties once
             playModeCtrl.levelFileNameWithoutExtension = levelFileNameWithoutExtension;
@@ -467,6 +469,10 @@ namespace FS_LevelEditor.SaveSystem
                     }
                 }
             }
+            Logger.Log("[SAVE SYSTEM] [PLAYMODE] APPLIED GLOBAL PROPERTIES IN: " + watch.Elapsed);
+            watch.Stop();
+
+            Logger.Log("[SAVE SYSTEM] [PLAYMODE] FINISHED LOADING LEVEL IN PLAYMODE");
 
             IsCurrentlyLoadingData = false;
         }

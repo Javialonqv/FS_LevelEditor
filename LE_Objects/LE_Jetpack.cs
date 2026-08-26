@@ -67,7 +67,7 @@ namespace FS_LevelEditor
         }
         void ExecuteOnPickUpEvents()
         {
-            LE_Dummy_Checkpoint.UpdateHasGunAndJetpackValues();
+            LE_Dummy_Checkpoint.UpdateStaticValues();
         }
     }
 

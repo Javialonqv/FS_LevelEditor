@@ -54,7 +54,6 @@ namespace FS_LevelEditor
         }
         public void OnInstantiated(LEScene scene)
         {
-            UpdateLEEventsToTheNewSystem();
             if (scene == LEScene.Editor)
             {
                 CreateInEditorLinksToTargetObjects();
@@ -109,76 +108,6 @@ namespace FS_LevelEditor
         {
             editorLinksParent.SetActive(false);
             dontDisableLinksParentWhenCreating = false;
-        }
-
-        // This method is used to update the LE_Event targetObjType and targetObjID properties in case it comes from a previous version that used targetObjName.
-        void UpdateLEEventsToTheNewSystem()
-        {
-            foreach (string evenKey in originalObject.GetAvailableEventsIDs())
-            {
-                foreach (var @event in (List<LE_Event>)originalObject.properties[evenKey])
-                {
-                    bool isPlayer = string.Equals(@event.targetObjName, Loc.Get("Player"), StringComparison.OrdinalIgnoreCase);
-                    bool isTaser = string.Equals(@event.targetObjName, Loc.Get("Taser"), StringComparison.OrdinalIgnoreCase);
-                    bool isJetpack = string.Equals(@event.targetObjName, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase);
-                    bool isObjective = @event.targetObjName.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase);
-
-                    if (!@event.isForPlayer && isPlayer) // If the targetObjName is "Player" but the BOOL is false, it's using the old system.
-                    {
-                        @event.isForPlayer = true;
-                        @event.isForTaser = false;
-                        @event.isForJetpack = false;
-                        @event.isForObjective = false;
-                        @event.targetObjType = null;
-                        @event.targetObjID = 0;
-                        @event.targetObjName = "";
-                    }
-                    else if (!@event.isForTaser && isTaser) // If the targetObjName is "Taser" but the BOOL is false, it's using the old system.
-                    {
-                        @event.isForTaser = true;
-                        @event.isForPlayer = false;
-                        @event.isForJetpack = false;
-                        @event.isForObjective = false;
-                        @event.targetObjType = null;
-                        @event.targetObjID = 0;
-                        @event.targetObjName = "";
-                    }
-                    else if (!@event.isForJetpack && isJetpack) // If the targetObjName is "Jetpack" but the BOOL is false, it's using the old system.
-                    {
-                        @event.isForJetpack = true;
-                        @event.isForPlayer = false;
-                        @event.isForTaser = false;
-                        @event.isForObjective = false;
-                        @event.targetObjType = null;
-                        @event.targetObjID = 0;
-                        @event.targetObjName = "";
-                    }
-                    else if (!@event.isForObjective && isObjective) // If the targetObjName starts with "Objective_" but the BOOL is false, it's using the old system.
-                    {
-                        @event.isForObjective = true;
-                        @event.isForPlayer = false;
-                        @event.isForTaser = false;
-                        @event.isForJetpack = false;
-                        @event.targetObjType = null;
-                        @event.targetObjID = 0;
-                        @event.objectiveName = @event.targetObjName.Substring(4);
-                        @event.targetObjName = "";
-                    }
-                    // IsValid can't be used now because it's now a property that uses the current variables, use the obsolete one.
-                    else if (@event.targetObjType == null && @event.isValid && !string.IsNullOrEmpty(@event.targetObjName) && !isPlayer)
-                    {
-                        var objData = Utils.SplitTypeAndId(@event.targetObjName);
-                        var objType = LE_Object.ConvertNameToObjectType(objData.type);
-
-                        if (objType != null)
-                        {
-                            @event.targetObjType = objType;
-                            @event.targetObjID = objData.id;
-                            @event.targetObjName = ""; // Clear the name, since we are using the type and ID now.
-                        }
-                    }
-                }
-            }
         }
 
         public void CreateEditorLinksParent()

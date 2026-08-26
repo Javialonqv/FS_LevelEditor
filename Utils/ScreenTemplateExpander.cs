@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using MelonLoader;
 using UnityEngine;
 using Il2CppTMPro;
+using Il2CppSteamworks;
 
 namespace FS_LevelEditor
 {
@@ -63,27 +64,18 @@ namespace FS_LevelEditor
 
 		static string GetUserName()
 		{
-			// Try Steam persona name via reflection to avoid hard dependency on symbol names
 			try
 			{
-				// Steamworks.NET typical namespace is Steamworks with class SteamFriends
-				var steamFriendsType = Type.GetType("Steamworks.SteamFriends, Il2Cppcom.rlabrecque.steamworks.net");
-				if (steamFriendsType != null)
-				{
-					var method = steamFriendsType.GetMethod("GetPersonaName", BindingFlags.Public | BindingFlags.Static);
-					if (method != null)
-					{
-						var result = method.Invoke(null, null) as string;
-						if (!string.IsNullOrWhiteSpace(result)) return result;
-					}
-				}
+				string steamUsername = SteamFriends.GetPersonaName();
+				return steamUsername;
 			}
 			catch { }
 
 			// Fallback to OS user name (Windows only requirement, but works cross-platform if allowed)
 			try
 			{
-				return Environment.UserName;
+				string osName = Environment.UserName;
+				return osName;
 			}
 			catch { }
 
