@@ -2,7 +2,7 @@
 	<Import Project="LocalPaths.props" Condition="Exists('LocalPaths.props')" />
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net48</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>disable</Nullable>
 		<RootNamespace>FS_LevelEditor</RootNamespace>
@@ -15,6 +15,14 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Configurations>Debug;Release;Visible T bonds;Release NON EXP;Release NO UNITY 6</Configurations>
+		<NoStdLib>true</NoStdLib>
+		
+		<!-- Why did Charles make two separate properties that point to the exact same path? -->
+		<GameManaged>$(FSPath)\Fractal_Space_Data\Managed</GameManaged>
+		<GameScripts Condition="'$(GameScripts)' == ''">$(GameManaged)</GameScripts>
+		<GameExe>$(FSPath)\Fractal_Space.exe</GameExe>
+		
+		<OutputPath>$(USERPROFILE)\AppData\LocalLow\Haze Games\Fractal Space MOD\Mods\</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -196,435 +204,91 @@
 	  <EmbeddedResource Include="Translations\Translations.csv" />
 	</ItemGroup>
 
+	<!-- All references resolve from $(GameManaged); Private=False so none are copied next to the mod DLL. -->
 	<ItemGroup>
-	  <Reference Include="0Harmony">
-	    <HintPath>$(FSPath)\MelonLoader\net6\0Harmony.dll</HintPath>
-	  </Reference>
-	  <Reference Include="AsmResolver">
-	    <HintPath>$(FSPath)\MelonLoader\net6\AsmResolver.dll</HintPath>
-	  </Reference>
-	  <Reference Include="AsmResolver.DotNet">
-	    <HintPath>$(FSPath)\MelonLoader\net6\AsmResolver.DotNet.dll</HintPath>
-	  </Reference>
-	  <Reference Include="AsmResolver.PE">
-	    <HintPath>$(FSPath)\MelonLoader\net6\AsmResolver.PE.dll</HintPath>
-	  </Reference>
-	  <Reference Include="AsmResolver.PE.File">
-	    <HintPath>$(FSPath)\MelonLoader\net6\AsmResolver.PE.File.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Assembly-CSharp">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Assembly-CSharp-firstpass">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Assembly-CSharp-firstpass.dll</HintPath>
-	  </Reference>
-	  <Reference Include="AssetRipper.Primitives">
-	    <HintPath>$(FSPath)\MelonLoader\net6\AssetRipper.Primitives.dll</HintPath>
-	  </Reference>
-	  <Reference Include="AssetsTools.NET">
-	    <HintPath>$(FSPath)\MelonLoader\net6\AssetsTools.NET.dll</HintPath>
-	  </Reference>
-	  <Reference Include="bHapticsLib">
-	    <HintPath>$(FSPath)\MelonLoader\net6\bHapticsLib.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Iced">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Iced.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppAmazingAssets.TerrainToMesh">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppAmazingAssets.TerrainToMesh.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2Cppcom.rlabrecque.steamworks.net">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2Cppcom.rlabrecque.steamworks.net.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppInControl">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppInControl.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppInterop.Common">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppInterop.Generator">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Il2CppInterop.Generator.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppInterop.HarmonySupport">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Il2CppInterop.HarmonySupport.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppInterop.Runtime">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2Cppmscorlib">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppNewtonsoft.Json">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppNewtonsoft.Json.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppReformSim.RaindropEffect">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppReformSim.RaindropEffect.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppScreenSpaceReflections">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppScreenSpaceReflections.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppSystem">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppSystem.Configuration">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Configuration.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppSystem.Core">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Core.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppSystem.Data">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Data.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppSystem.Drawing">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Drawing.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppSystem.Numerics">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Numerics.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppSystem.Runtime.Serialization">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Runtime.Serialization.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppSystem.Xml">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Xml.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Il2CppSystem.Xml.Linq">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Il2CppSystem.Xml.Linq.dll</HintPath>
-	  </Reference>
-	  <Reference Include="IndexRange">
-	    <HintPath>$(FSPath)\MelonLoader\net6\IndexRange.dll</HintPath>
-	  </Reference>
-	  <Reference Include="MelonLoader">
-	    <HintPath>$(FSPath)\MelonLoader\net6\MelonLoader.dll</HintPath>
-	  </Reference>
-	  <Reference Include="MelonLoader.NativeHost">
-	    <HintPath>$(FSPath)\MelonLoader\net6\MelonLoader.NativeHost.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Bcl.AsyncInterfaces">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Diagnostics.NETCore.Client">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Diagnostics.NETCore.Client.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Diagnostics.Runtime">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Diagnostics.Runtime.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Extensions.Configuration">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Configuration.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Extensions.Configuration.Abstractions">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Extensions.Configuration.Binder">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Extensions.Logging">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Logging.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Extensions.Logging.Abstractions">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Extensions.Options">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Options.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Microsoft.Extensions.Primitives">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Microsoft.Extensions.Primitives.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Mono.Cecil">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Mono.Cecil.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Mono.Cecil.Mdb">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Mono.Cecil.Mdb.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Mono.Cecil.Pdb">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Mono.Cecil.Pdb.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Mono.Cecil.Rocks">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Mono.Cecil.Rocks.dll</HintPath>
-	  </Reference>
-	  <Reference Include="MonoMod">
-	    <HintPath>$(FSPath)\MelonLoader\net6\MonoMod.dll</HintPath>
-	  </Reference>
-	  <Reference Include="MonoMod.Backports">
-	    <HintPath>$(FSPath)\MelonLoader\net6\MonoMod.Backports.dll</HintPath>
-	  </Reference>
-	  <Reference Include="MonoMod.ILHelpers">
-	    <HintPath>$(FSPath)\MelonLoader\net6\MonoMod.ILHelpers.dll</HintPath>
-	  </Reference>
-	  <Reference Include="MonoMod.RuntimeDetour">
-	    <HintPath>$(FSPath)\MelonLoader\net6\MonoMod.RuntimeDetour.dll</HintPath>
-	  </Reference>
-	  <Reference Include="MonoMod.Utils">
-	    <HintPath>$(FSPath)\MelonLoader\net6\MonoMod.Utils.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Newtonsoft.Json">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Newtonsoft.Json.dll</HintPath>
-	  </Reference>
-	  <Reference Include="System.Configuration.ConfigurationManager">
-	    <HintPath>$(FSPath)\MelonLoader\net6\System.Configuration.ConfigurationManager.dll</HintPath>
-	  </Reference>
-	  <Reference Include="System.Security.Cryptography.ProtectedData">
-	    <HintPath>$(FSPath)\MelonLoader\net6\System.Security.Cryptography.ProtectedData.dll</HintPath>
-	  </Reference>
-	  <Reference Include="System.Security.Permissions">
-	    <HintPath>$(FSPath)\MelonLoader\net6\System.Security.Permissions.dll</HintPath>
-	  </Reference>
-	  <Reference Include="System.Windows.Extensions">
-	    <HintPath>$(FSPath)\MelonLoader\net6\System.Windows.Extensions.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Tomlet">
-	    <HintPath>$(FSPath)\MelonLoader\net6\Tomlet.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Postprocessing.Runtime">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Postprocessing.Runtime.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Analytics">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Analytics.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Core">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Core.Configuration">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Configuration.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Core.Device">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Device.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Core.Environments">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Environments.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Core.Environments.Internal">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Environments.Internal.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Core.Internal">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Internal.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Core.Registration">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Registration.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Core.Scheduler">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Scheduler.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Core.Telemetry">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Telemetry.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.Services.Core.Threading">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.Services.Core.Threading.dll</HintPath>
-	  </Reference>
-	  <Reference Include="Unity.TextMeshPro">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\Unity.TextMeshPro.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.AccessibilityModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AccessibilityModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.AIModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AIModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.AndroidJNIModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AndroidJNIModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.AnimationModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AnimationModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.ARModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ARModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.AssetBundleModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AssetBundleModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.AudioModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.AudioModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.ClothModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ClothModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.ContentLoadModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ContentLoadModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.CoreModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.CrashReportingModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.CrashReportingModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.DirectorModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.DirectorModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.DSPGraphModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.DSPGraphModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.GameCenterModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.GameCenterModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.GIModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.GIModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.GridModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.GridModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.HotReloadModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.HotReloadModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.Il2CppAssetBundleManager">
-	    <HintPath>$(FSPath)\MelonLoader\net6\UnityEngine.Il2CppAssetBundleManager.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.Il2CppImageConversionManager">
-	    <HintPath>$(FSPath)\MelonLoader\net6\UnityEngine.Il2CppImageConversionManager.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.ImageConversionModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ImageConversionModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.IMGUIModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.IMGUIModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.InputLegacyModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.InputLegacyModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.InputModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.InputModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.JSONSerializeModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.JSONSerializeModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.LocalizationModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.LocalizationModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.ParticleSystemModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ParticleSystemModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.PerformanceReportingModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.PerformanceReportingModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.Physics2DModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.Physics2DModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.PhysicsModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.PhysicsModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.ProfilerModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ProfilerModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.PropertiesModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.PropertiesModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.ScreenCaptureModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.ScreenCaptureModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.SharedInternalsModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.SharedInternalsModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.SpriteMaskModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.SpriteMaskModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.SpriteShapeModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.SpriteShapeModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.StreamingModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.StreamingModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.SubstanceModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.SubstanceModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.SubsystemsModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.SubsystemsModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.TerrainModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TerrainModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.TerrainPhysicsModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TerrainPhysicsModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.TextCoreFontEngineModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextCoreFontEngineModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.TextCoreTextEngineModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextCoreTextEngineModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.TextRenderingModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TextRenderingModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.TilemapModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TilemapModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.TLSModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.TLSModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UI">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UI.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UIElementsModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UIElementsModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UIModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UIModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UmbraModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UmbraModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityAnalyticsCommonModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityAnalyticsCommonModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityAnalyticsModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityAnalyticsModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityConnectModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityConnectModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityCurlModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityCurlModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityTestProtocolModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityTestProtocolModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityWebRequestAssetBundleModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityWebRequestAudioModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityWebRequestModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityWebRequestTextureModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.UnityWebRequestWWWModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.VehiclesModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.VehiclesModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.VFXModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.VFXModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.VideoModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.VideoModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.VRModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.VRModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.WindModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.WindModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="UnityEngine.XRModule">
-	    <HintPath>$(FSPath)\MelonLoader\Il2CppAssemblies\UnityEngine.XRModule.dll</HintPath>
-	  </Reference>
-	  <Reference Include="WebSocketDotNet">
-	    <HintPath>$(FSPath)\MelonLoader\net6\WebSocketDotNet.dll</HintPath>
-	  </Reference>
+		<Reference Include="0Harmony"><HintPath>$(GameManaged)\0Harmony.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="AmazingAssets.TerrainToMesh"><HintPath>$(GameManaged)\AmazingAssets.TerrainToMesh.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Assembly-CSharp-firstpass"><HintPath>$(GameManaged)\Assembly-CSharp-firstpass.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Assembly-CSharp"><HintPath>$(GameScripts)\Assembly-CSharp.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="InControl"><HintPath>$(GameManaged)\InControl.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Mono.Security"><HintPath>$(GameManaged)\Mono.Security.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Newtonsoft.Json"><HintPath>$(GameManaged)\Newtonsoft.Json.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="ReformSim.RaindropEffect"><HintPath>$(GameManaged)\ReformSim.RaindropEffect.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="ScreenSpaceReflections"><HintPath>$(GameManaged)\ScreenSpaceReflections.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="System.Configuration"><HintPath>$(GameManaged)\System.Configuration.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="System.Core"><HintPath>$(GameManaged)\System.Core.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="System.Data"><HintPath>$(GameManaged)\System.Data.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="System.Drawing"><HintPath>$(GameManaged)\System.Drawing.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="System.Numerics"><HintPath>$(GameManaged)\System.Numerics.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="System.Runtime.Serialization"><HintPath>$(GameManaged)\System.Runtime.Serialization.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="System.Xml.Linq"><HintPath>$(GameManaged)\System.Xml.Linq.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="System.Xml"><HintPath>$(GameManaged)\System.Xml.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="System"><HintPath>$(GameManaged)\System.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.MemoryProfiler"><HintPath>$(GameManaged)\Unity.MemoryProfiler.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Postprocessing.Runtime"><HintPath>$(GameManaged)\Unity.Postprocessing.Runtime.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Services.Analytics"><HintPath>$(GameManaged)\Unity.Services.Analytics.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Services.Core.Configuration"><HintPath>$(GameManaged)\Unity.Services.Core.Configuration.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Services.Core.Device"><HintPath>$(GameManaged)\Unity.Services.Core.Device.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Services.Core.Environments.Internal"><HintPath>$(GameManaged)\Unity.Services.Core.Environments.Internal.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Services.Core.Internal"><HintPath>$(GameManaged)\Unity.Services.Core.Internal.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Services.Core.Registration"><HintPath>$(GameManaged)\Unity.Services.Core.Registration.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Services.Core.Scheduler"><HintPath>$(GameManaged)\Unity.Services.Core.Scheduler.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Services.Core.Telemetry"><HintPath>$(GameManaged)\Unity.Services.Core.Telemetry.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Services.Core.Threading"><HintPath>$(GameManaged)\Unity.Services.Core.Threading.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.Services.Core"><HintPath>$(GameManaged)\Unity.Services.Core.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="Unity.TextMeshPro"><HintPath>$(GameManaged)\Unity.TextMeshPro.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.AIModule"><HintPath>$(GameManaged)\UnityEngine.AIModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.AccessibilityModule"><HintPath>$(GameManaged)\UnityEngine.AccessibilityModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.AdaptivePerformanceModule"><HintPath>$(GameManaged)\UnityEngine.AdaptivePerformanceModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.AndroidJNIModule"><HintPath>$(GameManaged)\UnityEngine.AndroidJNIModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.AnimationModule"><HintPath>$(GameManaged)\UnityEngine.AnimationModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.AssetBundleModule"><HintPath>$(GameManaged)\UnityEngine.AssetBundleModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.AudioModule"><HintPath>$(GameManaged)\UnityEngine.AudioModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.CoreModule"><HintPath>$(GameManaged)\UnityEngine.CoreModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.CrashReportingModule"><HintPath>$(GameManaged)\UnityEngine.CrashReportingModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.DirectorModule"><HintPath>$(GameManaged)\UnityEngine.DirectorModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.GridModule"><HintPath>$(GameManaged)\UnityEngine.GridModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.HierarchyCoreModule"><HintPath>$(GameManaged)\UnityEngine.HierarchyCoreModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.IMGUIModule"><HintPath>$(GameManaged)\UnityEngine.IMGUIModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.IdentifiersModule"><HintPath>$(GameManaged)\UnityEngine.IdentifiersModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.ImageConversionModule"><HintPath>$(GameManaged)\UnityEngine.ImageConversionModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.InputForUIModule"><HintPath>$(GameManaged)\UnityEngine.InputForUIModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(GameManaged)\UnityEngine.InputLegacyModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.InputModule"><HintPath>$(GameManaged)\UnityEngine.InputModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.JSONSerializeModule"><HintPath>$(GameManaged)\UnityEngine.JSONSerializeModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.MultiplayerModule"><HintPath>$(GameManaged)\UnityEngine.MultiplayerModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.ParticleSystemModule"><HintPath>$(GameManaged)\UnityEngine.ParticleSystemModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.Physics2DModule"><HintPath>$(GameManaged)\UnityEngine.Physics2DModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.PhysicsModule"><HintPath>$(GameManaged)\UnityEngine.PhysicsModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.PropertiesModule"><HintPath>$(GameManaged)\UnityEngine.PropertiesModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.ScreenCaptureModule"><HintPath>$(GameManaged)\UnityEngine.ScreenCaptureModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.SharedInternalsModule"><HintPath>$(GameManaged)\UnityEngine.SharedInternalsModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.SpriteShapeModule"><HintPath>$(GameManaged)\UnityEngine.SpriteShapeModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.SubsystemsModule"><HintPath>$(GameManaged)\UnityEngine.SubsystemsModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.TerrainModule"><HintPath>$(GameManaged)\UnityEngine.TerrainModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.TextCoreFontEngineModule"><HintPath>$(GameManaged)\UnityEngine.TextCoreFontEngineModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.TextCoreTextEngineModule"><HintPath>$(GameManaged)\UnityEngine.TextCoreTextEngineModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.TextRenderingModule"><HintPath>$(GameManaged)\UnityEngine.TextRenderingModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.TilemapModule"><HintPath>$(GameManaged)\UnityEngine.TilemapModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UI"><HintPath>$(GameManaged)\UnityEngine.UI.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UIElementsModule"><HintPath>$(GameManaged)\UnityEngine.UIElementsModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UIModule"><HintPath>$(GameManaged)\UnityEngine.UIModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UnityAnalyticsCommonModule"><HintPath>$(GameManaged)\UnityEngine.UnityAnalyticsCommonModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UnityAnalyticsModule"><HintPath>$(GameManaged)\UnityEngine.UnityAnalyticsModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UnityConsentModule"><HintPath>$(GameManaged)\UnityEngine.UnityConsentModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UnityWebRequestAssetBundleModule"><HintPath>$(GameManaged)\UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UnityWebRequestAudioModule"><HintPath>$(GameManaged)\UnityEngine.UnityWebRequestAudioModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UnityWebRequestModule"><HintPath>$(GameManaged)\UnityEngine.UnityWebRequestModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UnityWebRequestTextureModule"><HintPath>$(GameManaged)\UnityEngine.UnityWebRequestTextureModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.UnityWebRequestWWWModule"><HintPath>$(GameManaged)\UnityEngine.UnityWebRequestWWWModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.VFXModule"><HintPath>$(GameManaged)\UnityEngine.VFXModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.VRModule"><HintPath>$(GameManaged)\UnityEngine.VRModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.VideoModule"><HintPath>$(GameManaged)\UnityEngine.VideoModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine.XRModule"><HintPath>$(GameManaged)\UnityEngine.XRModule.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="UnityEngine"><HintPath>$(GameManaged)\UnityEngine.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="mscorlib"><HintPath>$(GameManaged)\mscorlib.dll</HintPath><Private>False</Private></Reference>
 	</ItemGroup>
 	
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(FSPath)\Mods&quot;" />
-	</Target>
 	<Target Name="InjectBuildDate" AfterTargets="BeforeCompile">
 		<PropertyGroup>
 			<BuildDate>$([System.DateTime]::Now.ToString("yyyy-MM-dd HH:mm:ss"))</BuildDate>
