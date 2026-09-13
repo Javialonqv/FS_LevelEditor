@@ -102,7 +102,7 @@ namespace FS_LevelEditor.Editor.UI
             selectButton.onClick += OnSelectButtonPressed;
 
             UIButtonScale scale = selectButton.GetComponent<UIButtonScale>();
-            AccessTools.Field(typeof(UIButtonScale), "scale").SetValue(scale, Vector3.one);
+            AccessTools.Field(typeof(UIButtonScale), "mScale").SetValue(scale, Vector3.one);
             scale.hover = Vector3.one * 1.02f;
             scale.pressed = Vector3.one * 0.98f;
         }

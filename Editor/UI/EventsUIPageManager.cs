@@ -433,7 +433,7 @@ namespace FS_LevelEditor.Editor.UI
 
                 // Change button scale options, because with the default values it looks too big.
                 UIButtonScale scale = eventButton.GetComponent<UIButtonScale>();
-                AccessTools.Field(typeof(UIButtonScale), "scale").SetValue(scale, Vector3.one);
+                AccessTools.Field(typeof(UIButtonScale), "mScale").SetValue(scale, Vector3.one);
                 scale.hover = Vector3.one;
                 scale.pressed = Vector3.one * 0.98f;
 

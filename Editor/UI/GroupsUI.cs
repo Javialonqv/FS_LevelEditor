@@ -275,7 +275,7 @@ namespace FS_LevelEditor.Editor.UI
             selectAllObjectsBtn.gameObject.SetActive(true);
 
             UIButtonScale scale = selectAllObjectsBtn.GetComponent<UIButtonScale>();
-            AccessTools.Field(typeof(UIButtonScale), "scale").SetValue(scale, Vector3.one);
+            AccessTools.Field(typeof(UIButtonScale), "mScale").SetValue(scale, Vector3.one);
             scale.hover = Vector3.one;
             scale.pressed = Vector3.one * 0.98f;
 
@@ -289,7 +289,7 @@ namespace FS_LevelEditor.Editor.UI
             deleteGroupBtn.gameObject.SetActive(true);
 
             UIButtonScale scale = deleteGroupBtn.GetComponent<UIButtonScale>();
-            AccessTools.Field(typeof(UIButtonScale), "scale").SetValue(scale, Vector3.one);
+            AccessTools.Field(typeof(UIButtonScale), "mScale").SetValue(scale, Vector3.one);
             scale.hover = Vector3.one;
             scale.pressed = Vector3.one * 0.98f;
 
@@ -327,7 +327,7 @@ namespace FS_LevelEditor.Editor.UI
                 button.onClick += () => SelectObject(objectID);
 
                 UIButtonScale scale = button.GetComponent<UIButtonScale>();
-                AccessTools.Field(typeof(UIButtonScale), "scale").SetValue(scale, Vector3.one);
+                AccessTools.Field(typeof(UIButtonScale), "mScale").SetValue(scale, Vector3.one);
                 scale.hover = Vector3.one;
                 scale.pressed = Vector3.one * 0.98f;
 

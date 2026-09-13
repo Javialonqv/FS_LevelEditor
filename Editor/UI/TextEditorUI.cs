@@ -120,7 +120,7 @@ namespace FS_LevelEditor.Editor.UI
             textField = NGUI_Utils.CreateInputField(editorPanel.transform, new Vector3(0, -150), new Vector3Int(1600, 500, 0),
                 27, "", false, inputType: UICustomInputField.UIInputType.PLAIN_TEXT, depth: 5);
             textField.name = "TextField";
-            AccessTools.Field(typeof(UIWidget), "mPivot").SetValue(textField.input, UIWidget.Pivot.TopLeft);
+            AccessTools.Field(typeof(UIInput), "mPivot").SetValue(textField.input, UIWidget.Pivot.TopLeft);
             textField.input.onReturnKey = UIInput.OnReturnKey.NewLine;
             textField.input.selectAllTextOnFocus = false;
 
