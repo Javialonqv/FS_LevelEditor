@@ -30,7 +30,7 @@ namespace FS_LevelEditor
 
             blocScript = contentObject.AddComponent<BlocScript>();
             blocScript.activateSwitches = false;
-            blocScript.rigidBodiesInContact = new Il2CppSystem.Collections.Generic.List<UnityEngine.Rigidbody>();
+            blocScript.rigidBodiesInContact = new List<UnityEngine.Rigidbody>();
             blocScript.useMeshSwap = false;
             blocScript.useErrorDifferentMat = true;
             blocScript.mainTransparentMeshRenderer = contentObject.GetChild("PowerCore_TransparentMesh").GetComponent<MeshRenderer>();
@@ -56,7 +56,7 @@ namespace FS_LevelEditor
             blocScript.playerCollisionOnly = contentObject.GetChild("PlayerCollisionOnly");
             blocScript.m_audioSource = contentObject.GetComponent<AudioSource>();
             blocScript.m_authorizeRespawn = true;
-            blocScript.killZonesToIgnore = new Il2CppSystem.Collections.Generic.List<GameObject>();
+            blocScript.killZonesToIgnore = new List<GameObject>();
             blocScript.m_activateSwitchesWhileZeroG = true;
             blocScript.onPickup = new UnityEngine.Events.UnityEvent();
             blocScript.onDrop = new UnityEngine.Events.UnityEvent();
@@ -87,7 +87,7 @@ namespace FS_LevelEditor
             blocScript.ActivateButtonSound = t_powerCore.ActivateButtonSound;
             blocScript.transparentMaterial = t_powerCore.transparentMaterial;
             blocScript.isPowerCore = true;
-            blocScript.allCompoundColliders = new Il2CppSystem.Collections.Generic.List<Collider>();
+            blocScript.allCompoundColliders = new List<Collider>();
             blocScript.character = Controls.Instance.player;
             blocScript.hand = HandController.Instance.gameObject;
             blocScript.handBook = HandController.Instance.handBook;

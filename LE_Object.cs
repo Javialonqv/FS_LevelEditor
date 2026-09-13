@@ -389,7 +389,6 @@ namespace FS_LevelEditor
             otherObjThisIsLinkedTo = null;
         }
 
-        static Dictionary<Type, Il2CppSystem.Type> LETypesInIL2CPP = new Dictionary<Type, Il2CppSystem.Type>();
         /// <summary>
         /// The correct way to add a LE_Object component to a GameObject.
         /// </summary>
@@ -408,8 +407,7 @@ namespace FS_LevelEditor
                     Utils.ShowCustomNotificationRed("Object limit reached for this object.", 2f);
                     return null;
                 }
-                if (!LETypesInIL2CPP.ContainsKey(classType)) LETypesInIL2CPP.Add(classType, Il2CppType.From(classType));
-                LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(LETypesInIL2CPP[classType]);
+                LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(classType);
                 instancedComponent.Init(objectType, classType);
                 instancedComponent.hasItsOwnClass = true;
                 return instancedComponent;

@@ -448,8 +448,8 @@ namespace FS_LevelEditor.Playmode
             objectiveController.currentKine = null;
             objectiveController.onMarkerDisplayed = new UnityEngine.Events.UnityEvent();
             objectiveController.useActivationConditions = false;
-            objectiveController.doorsToBeOpen = new Il2CppSystem.Collections.Generic.List<PorteScript>(0);
-            objectiveController.killPlanesToBeDisabled = new Il2CppSystem.Collections.Generic.List<KillPlaneController>(0);
+            objectiveController.doorsToBeOpen = new List<PorteScript>(0);
+            objectiveController.killPlanesToBeDisabled = new List<KillPlaneController>(0);
             objectiveController.objective = objectiveName;
             objectiveController.Activate();
             objectiveController.currentlyActive = true;

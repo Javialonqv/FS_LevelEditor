@@ -42,7 +42,7 @@ namespace FS_LevelEditor
             blocScript.m_activatedMaterials = t_blocSwitchScript.m_activatedMaterials;
             blocScript.m_deactivatedMaterials = t_blocSwitchScript.m_deactivatedMaterials;
             blocScript.canBeUsed = true;
-            blocScript.currentDroppedBlocs = new Il2CppSystem.Collections.Generic.List<BlocScript>();
+            blocScript.currentDroppedBlocs = new List<BlocScript>();
             blocScript.onDropElements = new Messenger[0];
             blocScript.onRemoveElements = new Messenger[0];
             blocScript.m_meshRenderer = blocScript.gameObject.GetChild("Mesh").GetComponent<MeshRenderer>();

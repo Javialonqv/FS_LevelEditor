@@ -26,7 +26,7 @@ namespace FS_LevelEditor
             BlocScript template = t_cube;
 
             blocScript = gameObject.GetChild("Content").AddComponent<BlocScript>();
-            blocScript.allCompoundColliders = new Il2CppSystem.Collections.Generic.List<Collider>();
+            blocScript.allCompoundColliders = new List<Collider>();
             blocScript.transparentMeshFilter = gameObject.GetChildAt("Content/Bloc_TransparentMesh").GetComponent<MeshFilter>();
             blocScript.normalMesh = template.normalMesh;
             blocScript.errorMesh = template.errorMesh;
@@ -71,7 +71,7 @@ namespace FS_LevelEditor
             blocScript.FromAboveInteractDistMulti = 1.1f;
             blocScript.moreDisableWhenInHands = new GameObject[0];
             blocScript.moreObjectsToSetActiveElement = new GameObject[0];
-            blocScript.moreObjectsToSetActiveOriginalLayerMasks = new Il2CppSystem.Collections.Generic.List<int>();
+            blocScript.moreObjectsToSetActiveOriginalLayerMasks = new List<int>();
             blocScript.onDrop = new UnityEngine.Events.UnityEvent();
             blocScript.onFirstPickup = new UnityEngine.Events.UnityEvent();
             blocScript.onPickup = new UnityEngine.Events.UnityEvent();

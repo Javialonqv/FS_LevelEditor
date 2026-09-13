@@ -71,8 +71,8 @@ namespace FS_LevelEditor
             contentObject.tag = "PowerCoreSlot";
 
             powerCore = contentObject.AddComponent<PowerCoreController>();
-            powerCore.randomKeys = new Il2CppSystem.Collections.Generic.List<string>();
-            powerCore.interactionColliders = new Il2CppSystem.Collections.Generic.List<UnityEngine.Collider>();
+            powerCore.randomKeys = new List<string>();
+            powerCore.interactionColliders = new List<UnityEngine.Collider>();
             powerCore.m_powerCoreHolder = contentObject.GetChild("PowerCoreHolder").transform;
             powerCore.m_insertSound = t_powerSlot.m_insertSound;
             powerCore.m_removeSound = t_powerSlot.m_removeSound;
@@ -103,7 +103,7 @@ namespace FS_LevelEditor
             lightComp.m_light = lightObj.GetChild("Light").GetComponent<Light>();
             lightComp.active = false;
             lightComp.activeEditorState = false;
-            lightComp.allLightConePlanesRenderers = new Il2CppSystem.Collections.Generic.List<MeshRenderer>();
+            lightComp.allLightConePlanesRenderers = new List<MeshRenderer>();
             lightComp.allLightConePlanesRenderers.Add(lightObj.GetChildAt("LightConePlanes/LightConePlane").GetComponent<MeshRenderer>());
             lightComp.allLightConePlanesRenderers.Add(lightObj.GetChildAt("LightConePlanes/LightConePlane (1)").GetComponent<MeshRenderer>());
             lightComp.animStateBeforeShot = true;

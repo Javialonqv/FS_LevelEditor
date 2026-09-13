@@ -58,7 +58,7 @@ namespace FS_LevelEditor
             lightComp.m_light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
             lightComp.active = false;
             lightComp.activeEditorState = false;
-            lightComp.allLightConePlanesRenderers = new Il2CppSystem.Collections.Generic.List<MeshRenderer>();
+            lightComp.allLightConePlanesRenderers = new List<MeshRenderer>();
             lightComp.allLightConePlanesRenderers.Add(gameObject.GetChildAt("Content/LightConePlanes/LightConePlane").GetComponent<MeshRenderer>());
             lightComp.allLightConePlanesRenderers.Add(gameObject.GetChildAt("Content/LightConePlanes/LightConePlane (1)").GetComponent<MeshRenderer>());
             lightComp.animStateBeforeShot = true;

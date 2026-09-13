@@ -95,7 +95,7 @@ namespace FS_LevelEditor
             doorScript.instantCollider = content.GetChild("InstantCollider").GetComponent<BoxCollider>();
             doorScript.isRed = true;
             doorScript.isSkinV2 = false;
-            doorScript.lockingBarsMeshes = new Il2CppSystem.Collections.Generic.List<MeshFilter>();
+            doorScript.lockingBarsMeshes = new List<MeshFilter>();
             doorScript.lockingDeviceIsLocked = true;
             doorScript.m_animation_V1 = doorScript.doorMesh.GetComponent<Animation>();
             //script.m_animation_v2 = script.doorMeshV2.GetComponent<Animation>();
@@ -103,7 +103,7 @@ namespace FS_LevelEditor
             doorScript.m_audioSource = content.GetComponent<AudioSource>();
             doorScript.m_audioSource.outputAudioMixerGroup = t_door.m_audioSource.outputAudioMixerGroup;
             //script.m_greenPillars = content.GetChildAt("Mesh_V2/portev2/DoorPillars/Cyan");
-            //script.m_greenRenderers = new Il2CppSystem.Collections.Generic.List<GameObject>();
+            //script.m_greenRenderers = new List<GameObject>();
             //script.m_greenRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Cyan"));
             //script.m_greenRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Cyan"));
             doorScript.m_leftDoorRedRenderer = content.GetChildAt("Mesh/porte1/gauche/gaucheRed").GetComponent<MeshRenderer>();
@@ -113,7 +113,7 @@ namespace FS_LevelEditor
             doorScript.m_onOpen = new UnityEngine.Events.UnityEvent();
             doorScript.m_onUnlock = new UnityEngine.Events.UnityEvent();
             //script.m_redPillars = content.GetChildAt("Mesh_V2/portev2/DoorPillars/Red");
-            //script.m_redRenderers = new Il2CppSystem.Collections.Generic.List<GameObject>();
+            //script.m_redRenderers = new List<GameObject>();
             //script.m_redRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnTopPart/onPart1Red"));
             //script.m_redRenderers.Add(content.GetChildAt("Mesh_V2/portev2/door_V2_parts/partsHolder/onParts/OnBottomPart/onPart2Red"));
             doorScript.m_rightDoorRedRenderer = content.GetChildAt("Mesh/porte1/droite/droiteRed").GetComponent<MeshRenderer>();
@@ -139,7 +139,7 @@ namespace FS_LevelEditor
             teleport.considerTablets = true;
             teleport.LocalXAxisOnly = true;
             teleport.takeClosest = true;
-            teleport.teleportPoints = new Il2CppSystem.Collections.Generic.List<Transform>();
+            teleport.teleportPoints = new List<Transform>();
             teleport.teleportPoints.Add(doorScript.doorMesh.Find("porte1/TeleportPoint1_Inside"));
             teleport.teleportPoints.Add(doorScript.doorMesh.Find("porte1/TeleportPoint2_Outside"));
             teleport.forceTPPoint_Player = teleport.teleportPoints[0];

@@ -86,7 +86,7 @@ namespace FS_LevelEditor
             script.hasOnMaterials = false;
             script.hitSound = t_movingPlatform.hitSound;
             script.isSmasher = false;
-            script.m_objectsToMove = new Il2CppSystem.Collections.Generic.List<GameObject>();
+            script.m_objectsToMove = new List<GameObject>();
             script.maxVerticalJumpPositiveBoost = -1;
             script.moveSound = t_movingPlatform.moveSound;
             script.moveSound2 = t_movingPlatform.moveSound2;

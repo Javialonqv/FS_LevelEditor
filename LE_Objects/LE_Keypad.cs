@@ -113,7 +113,7 @@ namespace FS_LevelEditor
             KeycodeController keycode = Instantiate(t_keycodeM, t_keycodeM.transform.position, t_keycodeM.transform.rotation, parent.transform);
             keycode.name = "LE_Keycode";
             keycode.onlyOnce = true;
-            keycode.m_messagesOnWin = new Il2CppSystem.Collections.Generic.List<Messenger>();
+            keycode.m_messagesOnWin = new List<Messenger>();
             keycode.switchVisualState = true;
             keycode.attachedSwitch = controller.gameObject;
             keycode.destroyOnWin = true;
@@ -130,14 +130,14 @@ namespace FS_LevelEditor
             // Ensure it's always 4 digits (pad with zeros if needed)
             var digits = keycodeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
 
-            var il2cppDigits = new Il2CppSystem.Collections.Generic.List<int>();
+            var il2cppDigits = new List<int>();
             foreach (var d in digits)
                 il2cppDigits.Add(d);
 
 #if EXP_ONLY
             var alternative_Combo = alternativeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
 
-            var il2cppDigits_alternative = new Il2CppSystem.Collections.Generic.List<int>();
+            var il2cppDigits_alternative = new List<int>();
             foreach (var d in alternative_Combo)
                 il2cppDigits_alternative.Add(d);
 #endif

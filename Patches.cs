@@ -45,9 +45,9 @@ namespace FS_LevelEditor
     [HarmonyPatch(typeof(NavigationBarController), nameof(NavigationBarController.GetActionsList))]
     public static class NavigationBarControllerPatch
     {
-        public static bool Prefix(ref Il2CppSystem.Collections.Generic.List<NavigationBarController.ActionType> __result)
+        public static bool Prefix(ref List<NavigationBarController.ActionType> __result)
         {
-            var toReturn = new Il2CppSystem.Collections.Generic.List<NavigationBarController.ActionType>();
+            var toReturn = new List<NavigationBarController.ActionType>();
             if (EditorPauseMenuPatcher.patcher)
             {
                 // If the patcher exists and the UI context is MainMenu, that means it's in LE and it's paused, since LE is running in Main Menu lol.

@@ -140,8 +140,8 @@ namespace FS_LevelEditor
                 formatter.hasTextMesh = true;
                 formatter.localizationKeys = new string[0];
                 formatter.refreshOnEnable = true;
-                formatter.requirementLevels = new Il2CppSystem.Collections.Generic.List<int>();
-                formatter.requirements = new Il2CppSystem.Collections.Generic.List<string>();
+                formatter.requirementLevels = new List<int>();
+                formatter.requirements = new List<string>();
                 formatter.textMesh = label.GetComponent<TextMeshPro>();
                 formatter.useAutoSizing = true;
                 formatter.values = new string[0];
@@ -240,7 +240,7 @@ namespace FS_LevelEditor
             ComputerInterfaceController.endGameMode = false;
 
             UpgradePageController upgradePage = computerInterface.m_upgradePage.GetComponent<UpgradePageController>();
-            upgradePage.availableUpgrades = new Il2CppSystem.Collections.Generic.List<UpgradePageController.UpgradeType>();
+            upgradePage.availableUpgrades = new List<UpgradePageController.UpgradeType>();
             foreach (var upgrade in GetProperty<List<UpgradeSaveData>>("upgrades"))
             {
                 if (upgrade.active)
@@ -327,7 +327,7 @@ namespace FS_LevelEditor
     public static class GetRightUpgradesPatch1
     {
         public static bool IsCreatingUpgradeButtons = false;
-        public static Il2CppSystem.Collections.Generic.List<UpgradePageController.UpgradeType> CurrentlyCreatingUpgrades;
+        public static List<UpgradePageController.UpgradeType> CurrentlyCreatingUpgrades;
 
         public static void Prefix(UpgradePageController __instance)
         {
@@ -343,7 +343,7 @@ namespace FS_LevelEditor
     [HarmonyLib.HarmonyPatch(typeof(Controls), nameof(Controls.GetMissingUpgradesList))]
     public static class GetRightUpgradesPatch2
     {
-        public static bool Prefix(Controls __instance, out Il2CppSystem.Collections.Generic.List<UpgradePageController.UpgradeType> __result)
+        public static bool Prefix(Controls __instance, out List<UpgradePageController.UpgradeType> __result)
         {
             if (GetRightUpgradesPatch1.IsCreatingUpgradeButtons)
             {

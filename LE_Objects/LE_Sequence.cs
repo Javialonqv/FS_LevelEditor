@@ -44,10 +44,10 @@ namespace FS_LevelEditor
             ledIndicator.m_textMesh.font = t_sequenceController.m_LEDIndicators[0].m_textMesh.font;
 
             sequence = contentObject.GetChild("SequenceSwitchController").AddComponent<SequenceSwitchController>();
-            sequence.requiredSequence = new Il2CppSystem.Collections.Generic.List<SequenceSwitchController.SwitchType>();
+            sequence.requiredSequence = new List<SequenceSwitchController.SwitchType>();
             sequence.requiredSequence.Add(GetProperty<SequenceSwitchController.SwitchType>("Color"));
             sequence.resetOnMistake = true;
-            sequence.associatedLights = new Il2CppSystem.Collections.Generic.List<RealtimeCeilingLight>();
+            sequence.associatedLights = new List<RealtimeCeilingLight>();
             sequence.m_screenLight = t_sequenceController.m_screenLight;
             sequence.onSequenceComplete = new UnityEngine.Events.UnityEvent();
             sequence.onSequenceReset = new UnityEngine.Events.UnityEvent();
@@ -60,7 +60,7 @@ namespace FS_LevelEditor
             sequence.sequenceSuccessSound = t_sequenceController.sequenceSuccessSound;
             sequence.LEDindicatorPrefab = ledIndicator.gameObject;
             sequence.indicatorsInitialized = true;
-            sequence.m_LEDIndicators = new Il2CppSystem.Collections.Generic.List<LEDIndicator>();
+            sequence.m_LEDIndicators = new List<LEDIndicator>();
             sequence.redOffMaterial = t_sequenceController.redOffMaterial;
             sequence.redOnMaterial = t_sequenceController.redOnMaterial;
             sequence.greenOffMaterial = t_sequenceController.greenOffMaterial;
@@ -77,7 +77,7 @@ namespace FS_LevelEditor
             sequence.whiteOnMaterial = t_sequenceController.whiteOnMaterial;
             sequence.magentaOffMaterial = t_sequenceController.magentaOffMaterial;
             sequence.magentaOnMaterial = t_sequenceController.magentaOnMaterial;
-            sequence.m_currentlyDownTypes = new Il2CppSystem.Collections.Generic.List<SequenceSwitchController.SwitchType>();
+            sequence.m_currentlyDownTypes = new List<SequenceSwitchController.SwitchType>();
 
             sequence.audioSource.outputAudioMixerGroup = t_sequenceController.audioSource.outputAudioMixerGroup;
 
@@ -91,7 +91,7 @@ namespace FS_LevelEditor
             blocScript.m_activatedMaterials = t_blocSwitchScript.m_activatedMaterials;
             blocScript.m_deactivatedMaterials = t_blocSwitchScript.m_deactivatedMaterials;
             blocScript.canBeUsed = true;
-            blocScript.currentDroppedBlocs = new Il2CppSystem.Collections.Generic.List<BlocScript>();
+            blocScript.currentDroppedBlocs = new List<BlocScript>();
             blocScript.onDropElements = new Messenger[0];
             blocScript.onRemoveElements = new Messenger[0];
             blocScript.m_meshRenderer = blocScript.gameObject.GetChild("Mesh").GetComponent<MeshRenderer>();

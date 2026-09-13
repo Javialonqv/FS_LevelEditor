@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace FS_LevelEditor.UI_Related
 {
@@ -609,7 +610,7 @@ namespace FS_LevelEditor.UI_Related
         }
 
 
-        public static EventDelegate.Parameter CreateEventDelegateParamter(UnityEngine.Object target, string parameterName, Il2CppSystem.Object value)
+        public static EventDelegate.Parameter CreateEventDelegateParamter(UnityEngine.Object target, string parameterName, Object value)
         {
             return new EventDelegate.Parameter
             {

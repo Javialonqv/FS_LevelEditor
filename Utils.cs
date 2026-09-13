@@ -323,17 +323,17 @@ namespace FS_LevelEditor
             if (reversed) tween.PlayReverse(); else tween.PlayForward();
         }
 
-        public static void SetDirection(this UITweener tween, Il2CppAnimationOrTween.Direction direction)
+        public static void SetDirection(this UITweener tween, AnimationOrTween.Direction direction)
         {
-            if (direction == Il2CppAnimationOrTween.Direction.Forward)
+            if (direction == AnimationOrTween.Direction.Forward)
             {
                 tween.mAmountPerDelta = Mathf.Abs(tween.amountPerDelta);
             }
-            else if (direction == Il2CppAnimationOrTween.Direction.Reverse)
+            else if (direction == AnimationOrTween.Direction.Reverse)
             {
                 tween.mAmountPerDelta = -Mathf.Abs(tween.amountPerDelta);
             }
-            if (direction == Il2CppAnimationOrTween.Direction.Toggle)
+            if (direction == AnimationOrTween.Direction.Toggle)
             {
                 tween.mAmountPerDelta = -tween.amountPerDelta;
             }
