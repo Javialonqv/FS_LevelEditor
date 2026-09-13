@@ -691,8 +691,8 @@ namespace FS_LevelEditor
                     playBtn.onClick += () =>
                     {
                         // Skip editor load and go straight to play mode
-                        Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
-                        Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
+                        Core.Instance.loadCustomLevelOnSceneLoad = true;
+                        Core.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
 
                         // Close menus and load level directly
                         SwitchBetweenMenuAndLEMenu(false);
@@ -763,7 +763,7 @@ namespace FS_LevelEditor
             mainMenu.SetActive(true);
             leMenuPanel.SetActive(false);
 
-            Melon<Core>.Instance.SetupTheWholeEditor(isLoadingLevel);
+            Core.Instance.SetupTheWholeEditor(isLoadingLevel);
 
             // Once SetupTheWholeEditor is done, there's a EditorController instance already.
             if (isLoadingLevel)

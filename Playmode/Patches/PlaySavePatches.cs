@@ -59,7 +59,7 @@ namespace FS_LevelEditor.Playmode.Patches
             }
 
             // Don't save the current level when you're loading playmode (which will be Chapter 4).
-            if (PlayModeController.Instance || Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
+            if (PlayModeController.Instance || Core.Instance.loadCustomLevelOnSceneLoad)
             {
                 if (_key == "Current_Level" || _key == "Last_Checkpoint")
                 {
@@ -102,7 +102,7 @@ namespace FS_LevelEditor.Playmode.Patches
             }
 
             //// Don't save the current level when you're loading playmode (which will be Chapter 4).
-            //if (PlayModeController.Instance || Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
+            //if (PlayModeController.Instance || Core.Instance.loadCustomLevelOnSceneLoad)
             //{
             //    if (_key == "Current_Level" || _key == "Last_Checkpoint")
             //    {
@@ -138,7 +138,7 @@ namespace FS_LevelEditor.Playmode.Patches
         public static bool Prefix()
         {
             // Don't delete quick save files when about to play an LE level.
-            if (PlayModeController.Instance || Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
+            if (PlayModeController.Instance || Core.Instance.loadCustomLevelOnSceneLoad)
             {
                 return false;
             }
@@ -152,7 +152,7 @@ namespace FS_LevelEditor.Playmode.Patches
         public static bool Prefix()
         {
             // Don't delete auto save files when about to play an LE level.
-            if (PlayModeController.Instance || Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
+            if (PlayModeController.Instance || Core.Instance.loadCustomLevelOnSceneLoad)
             {
                 return false;
             }

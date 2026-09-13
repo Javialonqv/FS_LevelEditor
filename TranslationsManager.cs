@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor.UI;
+using I2.Loc;
 using System.Reflection;
 using System.Text;
 

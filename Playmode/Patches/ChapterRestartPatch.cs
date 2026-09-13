@@ -13,7 +13,7 @@ namespace FS_LevelEditor.Playmode.Patches
 
                 // Set this variable true again so when the scene is restarted, the custom level is as well.
                 // The level file name inside of the Core class still there for cases like this one, so we don't need to get it again.
-                Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
+                Core.Instance.loadCustomLevelOnSceneLoad = true;
             }
         }
     }

@@ -2996,8 +2996,8 @@ namespace FS_LevelEditor.Editor
             {
                 enteringPlayMode = true;
 
-                Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
-                Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
+                Core.Instance.loadCustomLevelOnSceneLoad = true;
+                Core.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
                 EditorUIManager.Instance.DeleteUI();
 
                 MenuController.SoftInputAuthorized = true;

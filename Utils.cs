@@ -282,13 +282,13 @@ namespace FS_LevelEditor
             Object[] array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
             if (predicate == null)
             {
-                return array[0].Cast<T>();
+                return (T)array[0];
             }
             else
             {
                 foreach (var obj in array)
                 {
-                    T casted = obj.Cast<T>();
+                    T casted = (T)obj;
                     if (predicate.Invoke(casted))
                     {
                         return casted;
@@ -300,9 +300,9 @@ namespace FS_LevelEditor
         }
         public static T[] FindObjectsOfTypeIncludingDisabled<T>() where T : Component
         {
-            Object[] array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
+            Object[] array = GameObject.FindObjectsByType(typeof(T), FindObjectsSortMode.None);
 
-            return array.Select(obj => obj.Cast<T>()).ToArray();
+            return array.Select(obj => (T)obj).ToArray();
         }
         #endregion
 

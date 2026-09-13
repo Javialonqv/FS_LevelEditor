@@ -2,6 +2,7 @@
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Misc;
 using FS_LevelEditor.Playmode;
+using System.Text.Json;
 using TMPro;
 using UnityEngine;
 
@@ -91,21 +92,21 @@ namespace FS_LevelEditor
             screen.m_contentAnim.clip = t_screen.m_contentAnim.clip;
             foreach (var clip in t_screen.m_contentAnim)
             {
-                AnimationState state = clip.Cast<AnimationState>();
+                AnimationState state = (AnimationState)clip;
                 screen.m_contentAnim.AddClip(state.clip, state.name);
             }
 
             screen.m_mainLabelRenderer.material = t_screen.m_mainLabelRenderer.material;
             screen.m_mainLabelTMP.font = t_screen.m_mainLabelTMP.font;
-            screen.m_mainLabelTMP.m_sharedMaterial = t_screen.m_mainLabelTMP.m_sharedMaterial;
+            screen.m_mainLabelTMP.fontSharedMaterial = t_screen.m_mainLabelTMP.fontSharedMaterial;
 
             screen.m_secondaryLabelRenderer.material = t_screen.m_secondaryLabelRenderer.material;
             screen.m_secondaryLabelTMP.font = t_screen.m_secondaryLabelTMP.font;
-            screen.m_secondaryLabelTMP.m_sharedMaterial = t_screen.m_secondaryLabelTMP.m_sharedMaterial;
+            screen.m_secondaryLabelTMP.fontSharedMaterial = t_screen.m_secondaryLabelTMP.fontSharedMaterial;
 
             screen.m_lockdownLabelRenderer.material = t_screen.m_lockdownLabelRenderer.material;
             screen.m_lockdownLabelTMP.font = t_screen.m_lockdownLabelTMP.font;
-            screen.m_lockdownLabelTMP.m_sharedMaterial = t_screen.m_lockdownLabelTMP.m_sharedMaterial;
+            screen.m_lockdownLabelTMP.fontSharedMaterial = t_screen.m_lockdownLabelTMP.fontSharedMaterial;
 
             content.SetActive(true);
 

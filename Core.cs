@@ -9,6 +9,9 @@ namespace FS_LevelEditor
 {
     public class Core
     {
+        // TODO: Add functionality for this one.
+        public static Core Instance;
+
         public static string currentSceneName;
         public bool loadCustomLevelOnSceneLoad;
         public string levelFileNameWithoutExtensionToLoad;

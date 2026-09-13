@@ -9,9 +9,9 @@ namespace FS_LevelEditor.Playmode.Patches
     {
         public static void Postfix(MenuController __instance)
         {
-            if (Melon<Core>.Instance.loadCustomLevelOnSceneLoad)
+            if (Core.Instance.loadCustomLevelOnSceneLoad)
             {
-                string levelFileName = Melon<Core>.Instance.levelFileNameWithoutExtensionToLoad;
+                string levelFileName = Core.Instance.levelFileNameWithoutExtensionToLoad;
                 LevelData levelData = LevelData.GetLevelData(levelFileName);
 
                 if (levelData != null && !string.IsNullOrEmpty(levelData.thumbnailBase64))

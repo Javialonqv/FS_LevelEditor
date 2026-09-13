@@ -9,13 +9,13 @@ namespace FS_LevelEditor.Playmode.Patches
         {
             if (PlayModeController.Instance != null)
             {
-                Melon<Core>.Instance.totalDeathsInCurrentPlaymodeSession++;
+                Core.Instance.totalDeathsInCurrentPlaymodeSession++;
 
                 PlayModeController.Instance.CleanupAllObjectives();
 
                 // Set this variable true again so when the scene is reloaded, the custom level is as well.
                 // The level file name inside of the Core class still there for cases like this one, so we don't need to get it again.
-                Melon<Core>.Instance.loadCustomLevelOnSceneLoad = true;
+                Core.Instance.loadCustomLevelOnSceneLoad = true;
             }
         }
     }

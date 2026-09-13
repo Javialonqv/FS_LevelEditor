@@ -56,7 +56,7 @@ namespace FS_LevelEditor.Playmode
             CreateBackToLEButton();
             PlaymodePauseMenuPatcher.Create();
 
-            deathsInCurrentLevel = Melon<Core>.Instance.totalDeathsInCurrentPlaymodeSession;
+            deathsInCurrentLevel = Core.Instance.totalDeathsInCurrentPlaymodeSession;
 
             Invoke("DisableTheCurrentScene", 0.2f);
         }
@@ -68,7 +68,7 @@ namespace FS_LevelEditor.Playmode
             // The bundle was already preloaded in Core.OnEarlyInitializeMelon.
             LEBundle = AssetBundleLoader.GetLoadedBundle("level_editor");
 
-            editorObjectsRootFromBundle = LEbundle.LoadAsset<GameObject>("LevelObjectsRoot");
+            editorObjectsRootFromBundle = LEBundle.LoadAsset<GameObject>("LevelObjectsRoot");
             editorObjectsRootFromBundle.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
             foreach (var child in editorObjectsRootFromBundle.GetChilds())
@@ -94,7 +94,7 @@ namespace FS_LevelEditor.Playmode
                 allCategoriesObjectsSorted.Add(categoryObjects);
             }
 
-            otherObjectsFromBundle = LEbundle.LoadAsset<GameObject>("OtherObjects").GetChilds();
+            otherObjectsFromBundle = LEBundle.LoadAsset<GameObject>("OtherObjects").GetChilds();
 
             #region Setup OST
             string[] trackNames = new[]
@@ -112,7 +112,7 @@ namespace FS_LevelEditor.Playmode
             };
             foreach (var trackName in trackNames)
             {
-                AudioClip track = LEbundle.LoadAsset<AudioClip>(trackName);
+                AudioClip track = LEBundle.LoadAsset<AudioClip>(trackName);
                 if (track != null)
                 {
                     track.hideFlags = HideFlags.DontUnloadUnusedAsset;
