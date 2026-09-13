@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using HarmonyLib;
+using System.Collections;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -111,7 +112,7 @@ namespace FS_LevelEditor
 
             while (true)
             {
-                if (Controls.Instance.currentHP > Controls.Instance.m_lowHealthThreshold)
+                if ((float)AccessTools.Field(typeof(Controls), "currentHP").GetValue(Controls.Instance) > (float)AccessTools.Field(typeof(Controls), "m_lowHealthThreshold").GetValue(Controls.Instance))
                 {
                     Controls.Instance.StopHeartBeatSound();
                 }

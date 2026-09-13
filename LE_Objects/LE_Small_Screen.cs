@@ -92,19 +92,19 @@ namespace FS_LevelEditor
             foreach (var clip in t_screen.m_contentAnim)
             {
                 AnimationState state = clip.Cast<AnimationState>();
-                screen.m_contentAnim.AddClipFixed(state.clip, state.name);
+                screen.m_contentAnim.AddClip(state.clip, state.name);
             }
 
             screen.m_mainLabelRenderer.material = t_screen.m_mainLabelRenderer.material;
-            screen.m_mainLabelTMP.m_fontAsset = t_screen.m_mainLabelTMP.m_fontAsset;
+            screen.m_mainLabelTMP.font = t_screen.m_mainLabelTMP.font;
             screen.m_mainLabelTMP.m_sharedMaterial = t_screen.m_mainLabelTMP.m_sharedMaterial;
 
             screen.m_secondaryLabelRenderer.material = t_screen.m_secondaryLabelRenderer.material;
-            screen.m_secondaryLabelTMP.m_fontAsset = t_screen.m_secondaryLabelTMP.m_fontAsset;
+            screen.m_secondaryLabelTMP.font = t_screen.m_secondaryLabelTMP.font;
             screen.m_secondaryLabelTMP.m_sharedMaterial = t_screen.m_secondaryLabelTMP.m_sharedMaterial;
 
             screen.m_lockdownLabelRenderer.material = t_screen.m_lockdownLabelRenderer.material;
-            screen.m_lockdownLabelTMP.m_fontAsset = t_screen.m_lockdownLabelTMP.m_fontAsset;
+            screen.m_lockdownLabelTMP.font = t_screen.m_lockdownLabelTMP.font;
             screen.m_lockdownLabelTMP.m_sharedMaterial = t_screen.m_lockdownLabelTMP.m_sharedMaterial;
 
             content.SetActive(true);

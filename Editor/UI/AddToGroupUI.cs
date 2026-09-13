@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.UI_Related;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor.Editor.UI
@@ -76,7 +77,7 @@ namespace FS_LevelEditor.Editor.UI
             UIPanel panel = addPanel.GetComponent<UIPanel>();
             panel.alpha = 1f;
             panel.depth = 1;
-            panel.GetComponent<TweenAlpha>().mRect = panel;
+            AccessTools.Field(typeof(TweenAlpha), "mRect").SetValue(panel.GetComponent<TweenAlpha>(), panel);
 
             // Change the animation.
             addPanel.GetComponent<TweenScale>().from = Vector3.zero;
@@ -106,7 +107,7 @@ namespace FS_LevelEditor.Editor.UI
             addToExistingGroupButton.onClick += AddToExistingGroup;
 
             UIButtonScale scale = addToExistingGroupButton.GetComponent<UIButtonScale>();
-            scale.mScale = Vector3.one;
+            AccessTools.Field(scale.GetType(), "mScale").SetValue(scale, Vector3.one);
             scale.hover = Vector3.one * 1.02f;
             scale.pressed = Vector3.one * 0.98f;
         }
@@ -118,7 +119,7 @@ namespace FS_LevelEditor.Editor.UI
             addToNewGroupButton.onClick += AddToNewGroup;
 
             UIButtonScale scale = addToNewGroupButton.GetComponent<UIButtonScale>();
-            scale.mScale = Vector3.one;
+            AccessTools.Field(scale.GetType(), "mScale").SetValue(scale, Vector3.one);
             scale.hover = Vector3.one * 1.02f;
             scale.pressed = Vector3.one * 0.98f;
         }

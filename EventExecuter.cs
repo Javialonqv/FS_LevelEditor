@@ -1,6 +1,7 @@
 ﻿using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
+using HarmonyLib;
 using System.Collections;
 using UnityEngine;
 
@@ -331,14 +332,14 @@ namespace FS_LevelEditor
                 switch (@event.taserState)
                 {
                     case LE_Event.TaserState.Give:
-                        if (!Controls.Instance.gunActivated)
+                        if (!(bool)AccessTools.Field(typeof(Controls), "gunActivated").GetValue(Controls.Instance))
                         {
                             Controls.Instance.ActivateWeapon();
                         }
                         break;
 
                     case LE_Event.TaserState.Take_Away:
-                        if (Controls.Instance.gunActivated)
+                        if ((bool)AccessTools.Field(typeof(Controls), "gunActivated").GetValue(Controls.Instance))
                         {
                             Controls.Instance.DeactivateWeaponInstant();
                         }
@@ -346,7 +347,7 @@ namespace FS_LevelEditor
                 }
 
                 // Handle ammo changes (only if gun is activated)
-                if (Controls.Instance.gunActivated)
+                if ((bool)AccessTools.Field(typeof(Controls), "gunActivated").GetValue(Controls.Instance))
                 {
                     LE_Gun.isCurrentlyInfinite = @event.infiniteTaser;
                     if (@event.infiniteTaser)

@@ -1,6 +1,7 @@
 ﻿using FS_LevelEditor;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor.Editor.UI
@@ -261,7 +262,7 @@ namespace FS_LevelEditor.Editor.UI
             UIPanel panel = eventsPanel.GetComponent<UIPanel>();
             panel.alpha = 1f;
             panel.depth = 1;
-            eventsPanel.GetComponent<TweenAlpha>().mRect = panel;
+            AccessTools.Field(typeof(TweenAlpha), "mRect").SetValue(eventsPanel.GetComponent<TweenAlpha>(), panel);
 
             // Change the animation.
             eventsPanel.GetComponent<TweenScale>().from = Vector3.zero;
@@ -433,7 +434,7 @@ namespace FS_LevelEditor.Editor.UI
 
                 // Change button scale options, because with the default values it looks too big.
                 UIButtonScale scale = eventButton.GetComponent<UIButtonScale>();
-                scale.mScale = Vector3.one;
+                AccessTools.Field(typeof(UIButtonScale), "scale").SetValue(scale, Vector3.one);
                 scale.hover = Vector3.one;
                 scale.pressed = Vector3.one * 0.98f;
 
@@ -2143,7 +2144,7 @@ namespace FS_LevelEditor.Editor.UI
             screenNewTextField = NGUI_Utils.CreateInputField(screenObjectsSettings.transform, Vector3.down * 200, new Vector3Int(750, 200, 0), 27, inputType:
                 UICustomInputField.UIInputType.PLAIN_TEXT);
             screenNewTextField.name = "ScreenNewTextField";
-            screenNewTextField.input.mPivot = UIWidget.Pivot.TopLeft;
+            AccessTools.Field(screenNewTextField.input.GetType(), "mPivot").SetValue(screenNewTextField.input, UIWidget.Pivot.TopLeft);
             screenNewTextField.input.onReturnKey = UIInput.OnReturnKey.NewLine;
 
             screenNewTextField.onChange += OnNewScreenTextFieldChanged;

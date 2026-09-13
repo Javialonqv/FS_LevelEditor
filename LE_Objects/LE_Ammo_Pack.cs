@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using HarmonyLib;
+using UnityEngine;
 
 namespace FS_LevelEditor
 {
@@ -55,7 +56,7 @@ namespace FS_LevelEditor
         // Since respawn time is fixed and is changed to default (20) at Start() of Ammo class, change it after 0.1s
         void SetRespawnTime()
         {
-            ammo.respawnTime = (float)GetProperty("RespawnTime");
+            AccessTools.Field(typeof(Ammo), "respawnTime").SetValue(ammo, (float)GetProperty("RespawnTime"));
         }
 
         public override bool SetProperty(string name, object value)
@@ -73,7 +74,8 @@ namespace FS_LevelEditor
                 else if (value is float)
                 {
                     properties["RespawnTime"] = (float)value;
-                    if (ammo) ammo.respawnTime = (float)value;
+                    if (ammo)
+                        AccessTools.Field(typeof(Ammo), "respawnTime").SetValue(ammo, (float)value);
                     return true;
                 }
             }

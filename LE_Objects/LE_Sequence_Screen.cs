@@ -7,6 +7,7 @@
 
 using FS_LevelEditor.Editor;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 namespace FS_LevelEditor

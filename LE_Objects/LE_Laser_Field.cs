@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -38,16 +39,16 @@ namespace FS_LevelEditor
 
             KillPlaneController script = content.AddComponent<KillPlaneController>();
             script.activationAllowed = true;
-            script.currentState = true;
+            AccessTools.Field(script.GetType(), "currentState").SetValue(script, true);
             script.destroyCubes = GetProperty<bool>("DestroyCubes");
             script.destroyOnlyIfNotInHands = true;
-            script.fakeZeroScale = Vector3.one * 0.0001f;
+            AccessTools.Field(script.GetType(), "fakeZeroScale").SetValue(script, Vector3.one * 0.0001f);
             script.generalAnimator = content.GetComponent<Animator>();
-            script.m_desiredScale = Vector3.one * 0.4f;
+            AccessTools.Field(script.GetType(), "m_desiredScale").SetValue(script, Vector3.one * 0.4f);
             script.m_light = content.GetChildAt("Holder/Light").GetComponent<Light>();
             script.m_onTurnOff = new UnityEngine.Events.UnityEvent();
             script.m_onTurnOn = new UnityEngine.Events.UnityEvent();
-            script.m_scaleSpeed = 0.25f;
+            AccessTools.Field(script.GetType(), "m_scaleSpeed").SetValue(script, 0.25f);
             script.onLightIntensity = -1;
 
             // ---------- SETUP TAGS & LAYERS ----------

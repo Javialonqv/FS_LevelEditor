@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Playmode;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -130,7 +131,7 @@ namespace FS_LevelEditor
             {
                 GameObject gameObject;
                 gameObject = collider ? collider.gameObject : null;
-                if (__instance.alive && gameObject)
+                if (__instance.IsAlive() && gameObject)
                 {
                     if (gameObject.CompareTag("Gun") && gameObject.transform.parent && gameObject.transform.parent.TryGetComponent<LE_Gun>(out var gun))
                     {
@@ -141,7 +142,7 @@ namespace FS_LevelEditor
                         Controls.inGameUI.ShowNotification(InGameUIManager.NotificationType.GunPickup, InGameUIManager.NotificationColor.Blue, 0f, 1.7f, false, true);
                         __instance.SetTazerInTutorialMode(gun.infTaser);
                         LE_Gun.isCurrentlyInfinite = gun.infTaser;
-                        __instance.gunController.tmpAmmoDefaultFontSize = 45;
+                        AccessTools.Field(typeof(GunController), "tmpAmmoDefaultFontSize").SetValue(__instance.gunController, 45);
                         __instance.gunController.screenTextTMPLabel.gameObject.SetActive(false);
                         __instance.gunController.screenTextTMPLabel.fontSizeMin = 45;
                         __instance.gunController.screenTextTMPLabel.fontSize = 45;

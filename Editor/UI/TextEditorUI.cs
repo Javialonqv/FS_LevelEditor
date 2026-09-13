@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.UI_Related;
+using HarmonyLib;
 using TMPro;
 using UnityEngine;
 
@@ -95,7 +96,7 @@ namespace FS_LevelEditor.Editor.UI
             UIPanel panel = editorPanel.GetComponent<UIPanel>();
             panel.alpha = 1f;
             panel.depth = 1;
-            editorPanel.GetComponent<TweenAlpha>().mRect = panel;
+            AccessTools.Field(typeof(TweenAlpha), "mRect").SetValue(editorPanel.GetComponent<TweenAlpha>(), panel);
 
             // Change the animation.
             editorPanel.GetComponent<TweenScale>().from = Vector3.zero;
@@ -120,7 +121,7 @@ namespace FS_LevelEditor.Editor.UI
             textField = NGUI_Utils.CreateInputField(editorPanel.transform, new Vector3(0, -150), new Vector3Int(1600, 500, 0),
                 27, "", false, inputType: UICustomInputField.UIInputType.PLAIN_TEXT, depth: 5);
             textField.name = "TextField";
-            textField.input.mPivot = UIWidget.Pivot.TopLeft;
+            AccessTools.Field(typeof(UIWidget), "mPivot").SetValue(textField.input, UIWidget.Pivot.TopLeft);
             textField.input.onReturnKey = UIInput.OnReturnKey.NewLine;
             textField.input.selectAllTextOnFocus = false;
 

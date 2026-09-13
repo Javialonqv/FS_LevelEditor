@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -69,18 +70,13 @@ namespace FS_LevelEditor
 
             script = content.AddComponent<MovingPlatformController>();
             script.accelerationDuration = 0f;
-            script.accelerationMultiplier = 1;
             script.decelerationStartDistance = -1f;
             script.activated = false;
             script.activeDuringKine = true;
             script.additionalMeshFilters = new MeshFilter[0];
-            script.allBlocSwitchesOn = false;
             script.alwaysUseLinearJumpMomentum = false;
-            script.audios = content.GetComponents<AudioSource>().ToArray();
             script.autoKillZoneEnabling = true;
             script.BlocSwitchs = new GameObject[0];
-            script.cachedTransform = content.transform;
-            script.canCallOnReachEvent = false;
             script.controlScript = Controls.Instance;
             script.decelerationStartDistance = 1;
             script.hasOnMaterials = false;
@@ -93,7 +89,6 @@ namespace FS_LevelEditor
             script.moveSoundLoop = t_movingPlatform.moveSoundLoop;
             script.moveSoundStop = t_movingPlatform.moveSoundStop;
             script.movingPlatform = true;
-            script.m_originalMovingSpeed = GetProperty<float>("MoveSpeed");
             script.movingSpeed = GetProperty<float>("MoveSpeed");
             script.offMesh = content.GetComponent<MeshRenderer>();
             script.onActivate = new UnityEngine.Events.UnityEvent();
@@ -105,13 +100,21 @@ namespace FS_LevelEditor
             script.playerOnThisPlatform = false;
             script.playMoveSound = true;
             script.pushPlayerSidesCollider = content.GetChild("PushPlayerTrigger").GetComponent<BoxCollider>();
-            script.rawUnitsPerSecond = 3;
             script.rb = content.GetComponent<Rigidbody>();
             script.revertIfMoving = false;
             script.speedrunModeMultiplier = 1;
             script.timerBeforeNextWaypoint = 0;
             script.useMeshSwap = false;
             script.verticalBoostMultiplier = 1;
+
+            var scriptType = script.GetType();
+            AccessTools.Field(scriptType, "accelerationMultiplier").SetValue(script, 1f);
+            AccessTools.Field(scriptType, "allBlocSwitchesOn").SetValue(script, false);
+            AccessTools.Field(scriptType, "audios").SetValue(script, content.GetComponents<AudioSource>());
+            AccessTools.Field(scriptType, "cachedTransform").SetValue(script, content.transform);
+            AccessTools.Field(scriptType, "canCallOnReachEvent").SetValue(script, false);
+            AccessTools.Field(scriptType, "m_originalMovingSpeed").SetValue(script, GetProperty<float>("MoveSpeed"));
+            AccessTools.Field(scriptType, "rawUnitsPerSecond").SetValue(script, 3f);
 
             script.platformCollider.material = t_movingPlatform.platformCollider.material;
 

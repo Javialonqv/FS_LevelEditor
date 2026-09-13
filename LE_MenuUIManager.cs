@@ -2,6 +2,7 @@ using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
+using HarmonyLib;
 using System.Collections;
 using UnityEngine;
 
@@ -208,7 +209,7 @@ namespace FS_LevelEditor
 
             // Adjust the UIPanel of the TweenAlpha component.
             UIPanel panel = leMenuPanel.GetComponent<UIPanel>();
-            leMenuPanel.GetComponent<TweenAlpha>().mRect = panel;
+            AccessTools.Field(typeof(TweenAlpha), "mRect").SetValue(leMenuPanel.GetComponent<TweenAlpha>(), panel);
 
             // Do I even need to explain WHAT this does?
             leMenuPanel.GetChild("Window").GetComponent<UISprite>().depth = -1;
@@ -570,7 +571,7 @@ namespace FS_LevelEditor
                 {
                     // Set button's new scale properties.
                     UIButtonScale buttonScale = lvlButton.GetComponent<UIButtonScale>();
-                    buttonScale.mScale = Vector3.one;
+                    AccessTools.Field(typeof(UIButtonScale), "mScale").SetValue(buttonScale, Vector3.one);
                     buttonScale.hover = new Vector3(1.02f, 1.02f, 1.02f);
                     buttonScale.pressed = new Vector3(1.01f, 1.01f, 1.01f);
 
@@ -584,7 +585,7 @@ namespace FS_LevelEditor
                     UIEventListener hoverListener = UIEventListener.Get(lvlButton.gameObject);
                     string capturedFileName = levelFileNameWithoutExtension;
                     LevelData capturedData = data;
-                    hoverListener.onHover = (Action<GameObject, bool>)((go, state) =>
+                    hoverListener.onHover = (UIEventListener.BoolDelegate)((go, state) =>
                         {
                             if (state)
                             {
@@ -839,7 +840,7 @@ namespace FS_LevelEditor
                 value = levelFileNameWithoutExtension,
                 obj = this
             };
-            deleteOnClick.mParameters = new EventDelegate.Parameter[] { deleteOnClickParameter };
+            AccessTools.Field(deleteOnClick.GetType(), "mParameters").SetValue(deleteOnClick, new EventDelegate.Parameter[] { deleteOnClickParameter });
             onDeletePopupDeleteButton.GetComponent<UIButton>().onClick.Add(deleteOnClick);
             onDeletePopupDeleteButton.SetActive(true);
 
@@ -924,7 +925,7 @@ namespace FS_LevelEditor
                 value = input,
                 obj = this
             };
-            onSubmit.mParameters = new EventDelegate.Parameter[] { parameter1, parameter2 };
+            AccessTools.Field(onSubmit.GetType(), "mParameters").SetValue(onSubmit, new EventDelegate.Parameter[] { parameter1, parameter2 });
             input.onSubmit.Add(onSubmit);
 
             // So.... for some reason the damn NGUI doesn't call the OnSubmit function when it should, so I had to create my own fix... FUCK!

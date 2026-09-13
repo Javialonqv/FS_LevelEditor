@@ -32,9 +32,9 @@ namespace FS_LevelEditor
             byte[] assetBytes = new byte[assetStream.Length];
             assetStream.Read(assetBytes);
 
-            assetBundle = AssetBundleManager.LoadFromMemory(assetBytes);
+            assetBundle = AssetBundle.LoadFromMemory(assetBytes);
 
-            allBundleSprites = assetbundle.LoadAssetAll<Sprite>();
+            allBundleSprites = assetBundle.LoadAllAssets<Sprite>();
             foreach (var sprite in allBundleSprites)
             {
                 sprite.hideFlags = HideFlags.DontUnloadUnusedAsset;

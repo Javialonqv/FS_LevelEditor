@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -61,17 +62,17 @@ namespace FS_LevelEditor
             lightComp.allLightConePlanesRenderers = new List<MeshRenderer>();
             lightComp.allLightConePlanesRenderers.Add(gameObject.GetChildAt("Content/LightConePlanes/LightConePlane").GetComponent<MeshRenderer>());
             lightComp.allLightConePlanesRenderers.Add(gameObject.GetChildAt("Content/LightConePlanes/LightConePlane (1)").GetComponent<MeshRenderer>());
-            lightComp.animStateBeforeShot = true;
-            lightComp.audioSource = gameObject.GetChild("Content").GetComponent<AudioSource>();
+            Traverse.Create(lightComp).Field("animStateBeforeShot").SetValue(true);
+            Traverse.Create(lightComp).Field("audioSource").SetValue(gameObject.GetChild("Content").GetComponent<AudioSource>());
             lightComp.canBeDestroyedByHS = true;
             lightComp.currentColor = RealtimeCeilingLight.LightColor.DEFAULT;
-            lightComp.editorIntensity = 2;
-            lightComp.frameCount = 2;
+            Traverse.Create(lightComp).Field("editorIntensity").SetValue(2);
+            Traverse.Create(lightComp).Field("frameCount").SetValue(2);
             lightComp.idleAnim = "CeilingLight_Blink_MediumIntensity";
             lightComp.idleOnIntensity = -1;
             lightComp.intensityEditorValue = 2;
             lightComp.isBakedOnly = false;
-            lightComp.isDestroyed = false;
+            Traverse.Create(lightComp).Field("isDestroyed").SetValue(false);
             lightComp.keepProbeEnabled = true;
             lightComp.lightConePlane_default = template.lightConePlane_default;
             lightComp.lightConePlane_greenColor = template.lightConePlane_greenColor;
@@ -83,7 +84,7 @@ namespace FS_LevelEditor
             lightComp.m_flareMultiplier = 7;
             lightComp.m_greenColor = new Color(0.3309f, 1f, 0.4186f, 1f);
             lightComp.m_greenColorNeonMesh = template.m_greenColorNeonMesh;
-            lightComp.m_lensFlare = gameObject.GetChildAt("Content/Flare").GetComponent<LensFlare>();
+            Traverse.Create(lightComp).Field("m_lensFlare").SetValue(gameObject.GetChildAt("Content/Flare").GetComponent<LensFlare>());
             lightComp.m_light = gameObject.GetChildAt("Content/Light").GetComponent<Light>();
             lightComp.m_maxFlair = 1.5f;
             lightComp.m_redColor = new Color(1f, 0.3162f, 0.3162f, 1f);
@@ -99,7 +100,7 @@ namespace FS_LevelEditor
             lightComp.saveColor = true;
             lightComp.soundOff = template.soundOff;
             lightComp.soundOn = template.soundOn;
-            lightComp.useLightConePlanes = true;
+            Traverse.Create(lightComp).Field("useLightConePlanes").SetValue(true);
             lightComp.useTurnOn = true;
             // LOVE YOU CHARLES FOR GIVING ME THIS VARIABLE!!!
             lightComp.stateAtStart = (bool)GetProperty("ActivateOnStart");
@@ -120,8 +121,8 @@ namespace FS_LevelEditor
             // Add ceiling lights animations.
             foreach (var state in template.GetComponent<Animation>())
             {
-                var animState = state.Cast<AnimationState>();
-                lightComp.GetComponent<Animation>().AddClipFixed(animState.clip, animState.name);
+                var animState = (AnimationState)state;
+                lightComp.GetComponent<Animation>().AddClip(animState.clip, animState.name);
             }
 
             gameObject.GetChild("Content").SetActive(true);

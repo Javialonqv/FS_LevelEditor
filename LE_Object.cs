@@ -365,13 +365,13 @@ namespace FS_LevelEditor
                 waypointSupport = gameObject.AddComponent<WaypointSupport>();
                 if (customWaypointSupports.ContainsKey(objectType))
                 {
-                    customWaypointSupport = (WaypointSupport)gameObject.AddComponent(Il2CppType.From(customWaypointSupports[objectType]));
+                    customWaypointSupport = (WaypointSupport)gameObject.AddComponent(customWaypointSupports[objectType]);
                 }
             }
 
             if (objectsWithSingleObjectLink.ContainsKey(objectType))
             {
-                objectLink = (SingleObjectLink)gameObject.AddComponent(Il2CppType.From(objectsWithSingleObjectLink[objectType]));
+                objectLink = (SingleObjectLink)gameObject.AddComponent(objectsWithSingleObjectLink[objectType]);
             }
         }
 

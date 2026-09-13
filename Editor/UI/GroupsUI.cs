@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.UI_Related;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor.Editor.UI
@@ -128,7 +129,7 @@ namespace FS_LevelEditor.Editor.UI
             UIPanel panel = editorPanel.GetComponent<UIPanel>();
             panel.alpha = 1f;
             panel.depth = 1;
-            editorPanel.GetComponent<TweenAlpha>().mRect = panel;
+            AccessTools.Field(typeof(TweenAlpha), "mRect").SetValue(editorPanel.GetComponent<TweenAlpha>(), panel);
 
             // Change the animation.
             editorPanel.GetComponent<TweenScale>().from = Vector3.zero;
@@ -275,7 +276,7 @@ namespace FS_LevelEditor.Editor.UI
             selectAllObjectsBtn.gameObject.SetActive(true);
 
             UIButtonScale scale = selectAllObjectsBtn.GetComponent<UIButtonScale>();
-            scale.mScale = Vector3.one;
+            AccessTools.Field(typeof(UIButtonScale), "scale").SetValue(scale, Vector3.one);
             scale.hover = Vector3.one;
             scale.pressed = Vector3.one * 0.98f;
 
@@ -289,7 +290,7 @@ namespace FS_LevelEditor.Editor.UI
             deleteGroupBtn.gameObject.SetActive(true);
 
             UIButtonScale scale = deleteGroupBtn.GetComponent<UIButtonScale>();
-            scale.mScale = Vector3.one;
+            AccessTools.Field(typeof(UIButtonScale), "scale").SetValue(scale, Vector3.one);
             scale.hover = Vector3.one;
             scale.pressed = Vector3.one * 0.98f;
 
@@ -327,7 +328,7 @@ namespace FS_LevelEditor.Editor.UI
                 button.onClick += () => SelectObject(objectID);
 
                 UIButtonScale scale = button.GetComponent<UIButtonScale>();
-                scale.mScale = Vector3.one;
+                AccessTools.Field(typeof(UIButtonScale), "scale").SetValue(scale, Vector3.one);
                 scale.hover = Vector3.one;
                 scale.pressed = Vector3.one * 0.98f;
 

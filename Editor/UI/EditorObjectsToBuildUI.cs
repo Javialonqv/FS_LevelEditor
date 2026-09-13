@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.UI_Related;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor.Editor.UI
@@ -26,8 +27,6 @@ namespace FS_LevelEditor.Editor.UI
 
         int currentCategoryID;
         int currentGridID;
-
-        public EditorObjectsToBuildUI(IntPtr ptr) : base(ptr) { }
 
         public static void Create(Transform editorUIParent)
         {
@@ -214,7 +213,7 @@ namespace FS_LevelEditor.Editor.UI
                 button.onClick += () => SelectObjToBuild(buttonChildID % 12);
 
                 button.transform.localScale = Vector3.one * 0.8f;
-                button.GetComponent<UIButtonScale>().mScale = Vector3.one * 0.8f;
+                AccessTools.Field(typeof(UIButtonScale), "mScale").SetValue(button.GetComponent<UIButtonScale>(), Vector3.one * 0.8f);
 
                 allActiveSwatches.Add(button.gameObject.GetChild("ActiveSwatch"));
 
@@ -316,18 +315,19 @@ namespace FS_LevelEditor.Editor.UI
         public void HideOrShowCategoryButtons()
         {
             categoryButtonsAreHidden = !categoryButtonsAreHidden;
+            var audioSource = AccessTools.Field(typeof(InGameUIManager), "m_uiAudioSource").GetValue(InGameUIManager.Instance) as AudioSource;
 
             if (categoryButtonsAreHidden)
             {
                 TweenAlpha.Begin(categoryButtonsParent, 0.2f, 0f);
                 TweenPosition.Begin(objectsToBuildMainParent, 0.2f, new Vector3(0f, 410f, 0f));
-                InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.hideHUDSound);
+                audioSource.PlayOneShot(InGameUIManager.Instance.hideHUDSound);
             }
             else
             {
                 TweenAlpha.Begin(categoryButtonsParent, 0.2f, 1f);
                 TweenPosition.Begin(objectsToBuildMainParent, 0.2f, new Vector3(0f, 330f, 0f));
-                InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.showHUDSound);
+                audioSource.PlayOneShot(InGameUIManager.Instance.showHUDSound);
             }
         }
         static Texture GetObjectIcon(LE_Object.ObjectType objectType)

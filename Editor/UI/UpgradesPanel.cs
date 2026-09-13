@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor.Editor.UI
@@ -147,7 +148,7 @@ namespace FS_LevelEditor.Editor.UI
             UIPanel panel = upgradesPanel.GetComponent<UIPanel>();
             panel.alpha = 1f;
             panel.depth = 1;
-            upgradesPanel.GetComponent<TweenAlpha>().mRect = panel;
+            AccessTools.Field(typeof(TweenAlpha), "mRect").SetValue(upgradesPanel.GetComponent<TweenAlpha>(), panel);
 
             // Setup animations
             upgradesPanel.GetComponent<TweenScale>().from = Vector3.zero;

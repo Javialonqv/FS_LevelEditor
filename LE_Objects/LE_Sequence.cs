@@ -1,4 +1,6 @@
 ﻿using FS_LevelEditor.Editor;
+using HarmonyLib;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -35,13 +37,14 @@ namespace FS_LevelEditor
             contentObject.SetActive(false);
 
             LEDIndicator ledIndicator = contentObject.GetChildAt("SequenceSwitchController/LEDIndicatorPrefab").AddComponent<LEDIndicator>();
-            ledIndicator.m_offMaterial = t_sequenceController.m_LEDIndicators[0].m_offMaterial;
-            // On material is already set when InitializeLEDIndicators() is called.
-            ledIndicator.m_renderer = ledIndicator.gameObject.GetChild("Mesh").GetComponent<MeshRenderer>();
+			var indicators = AccessTools.Field(t_sequenceController.GetType(), "m_LEDIndicators").GetValue(t_sequenceController) as List<LEDIndicator>;
+			ledIndicator.m_offMaterial = indicators[0].m_offMaterial;
+			// On material is already set when InitializeLEDIndicators() is called.
+			ledIndicator.m_renderer = ledIndicator.gameObject.GetChild("Mesh").GetComponent<MeshRenderer>();
             ledIndicator.m_textMesh = ledIndicator.gameObject.GetChild("LEDTextMesh").GetComponent<TextMeshPro>();
             // Fucking mesh, assigning it from the Unity proj doesn't work... do it from here.
             ledIndicator.m_renderer.GetComponent<MeshFilter>().mesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
-            ledIndicator.m_textMesh.font = t_sequenceController.m_LEDIndicators[0].m_textMesh.font;
+            ledIndicator.m_textMesh.font = indicators[0].m_textMesh.font;
 
             sequence = contentObject.GetChild("SequenceSwitchController").AddComponent<SequenceSwitchController>();
             sequence.requiredSequence = new List<SequenceSwitchController.SwitchType>();
@@ -59,9 +62,11 @@ namespace FS_LevelEditor
             sequence.stepSuccessSound = t_sequenceController.stepSuccessSound;
             sequence.sequenceSuccessSound = t_sequenceController.sequenceSuccessSound;
             sequence.LEDindicatorPrefab = ledIndicator.gameObject;
-            sequence.indicatorsInitialized = true;
-            sequence.m_LEDIndicators = new List<LEDIndicator>();
-            sequence.redOffMaterial = t_sequenceController.redOffMaterial;
+			AccessTools.Field(sequence.GetType(), "indicatorsInitialized")
+			.SetValue(sequence, true);
+			AccessTools.Field(sequence.GetType(), "m_LEDIndicators")
+			.SetValue(sequence, new List<LEDIndicator>());
+			sequence.redOffMaterial = t_sequenceController.redOffMaterial;
             sequence.redOnMaterial = t_sequenceController.redOnMaterial;
             sequence.greenOffMaterial = t_sequenceController.greenOffMaterial;
             sequence.greenOnMaterial = t_sequenceController.greenOnMaterial;
@@ -120,8 +125,8 @@ namespace FS_LevelEditor
             blocScript.m_animation.clip = t_blocSwitchScript.m_animation.clip;
             foreach (var clip in t_blocSwitchScript.m_animation)
             {
-                AnimationState state = clip.Cast<AnimationState>();
-                blocScript.m_animation.AddClipFixed(state.clip, state.name);
+                AnimationState state = (AnimationState)clip;
+                blocScript.m_animation.AddClip(state.clip, state.name);
             }
 
             ConfigureEvents();
@@ -151,10 +156,14 @@ namespace FS_LevelEditor
                 sequence.LEDHolder = sequence.gameObject.GetChild("LEDHolder").transform;
             }
 
-            sequence.indicatorsInitialized = false;
-            sequence.InitializeLEDIndicators();
+			AccessTools.Field(sequence.GetType(), "indicatorsInitialized")
+			.SetValue(sequence, false);
+			AccessTools.Method(sequence.GetType(), "InitializeLEDIndicators")
+				.Invoke(sequence, null);
 
-            foreach (var led in sequence.m_LEDIndicators)
+			var ledIndicators = AccessTools.Field(sequence.GetType(), "m_LEDIndicators")
+							   .GetValue(sequence) as List<LEDIndicator>;
+			foreach (var led in ledIndicators)
             {
                 led.gameObject.SetActive(true); // They're disabled by default for some reason.
             }

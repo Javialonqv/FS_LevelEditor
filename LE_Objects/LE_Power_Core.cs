@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -63,8 +64,8 @@ namespace FS_LevelEditor
             blocScript.onRespawn = new UnityEngine.Events.UnityEvent();
             blocScript.onFirstPickup = new UnityEngine.Events.UnityEvent();
             blocScript.isFirstPickupEver = true;
-            blocScript.firstEnableEver = false;
-            blocScript.firstInitSinceLevelLoad = false;
+            AccessTools.Field(blocScript.GetType(), "firstEnableEver").SetValue(blocScript, false);
+            AccessTools.Field(blocScript.GetType(), "firstInitSinceLevelLoad").SetValue(blocScript, false);
             blocScript.m_defaultObject = contentObject.GetChild("PowerCore_DefaultMesh");
             blocScript.m_transparentObject = contentObject.GetChild("PowerCore_TransparentMesh");
             blocScript.disableWhenInHands = contentObject.GetChild("InteractionAdditionalCollider");
@@ -88,13 +89,13 @@ namespace FS_LevelEditor
             blocScript.transparentMaterial = t_powerCore.transparentMaterial;
             blocScript.isPowerCore = true;
             blocScript.allCompoundColliders = new List<Collider>();
-            blocScript.character = Controls.Instance.player;
-            blocScript.hand = HandController.Instance.gameObject;
-            blocScript.handBook = HandController.Instance.handBook;
-            blocScript.handLog = HandController.Instance.handLog;
-            blocScript.handPandora = HandController.Instance.handPandora;
-            blocScript.handPowerCore = HandController.Instance.handPowerCore;
-            blocScript.handTablet = HandController.Instance.handTablet;
+            AccessTools.Field(blocScript.GetType(), "character").SetValue(blocScript, Controls.Instance.player);
+            AccessTools.Field(blocScript.GetType(), "hand").SetValue(blocScript, HandController.Instance.gameObject);
+            AccessTools.Field(blocScript.GetType(), "handBook").SetValue(blocScript, HandController.Instance.handBook);
+            AccessTools.Field(blocScript.GetType(), "handLog").SetValue(blocScript, HandController.Instance.handLog);
+            AccessTools.Field(blocScript.GetType(), "handPandora").SetValue(blocScript, HandController.Instance.handPandora);
+            AccessTools.Field(blocScript.GetType(), "handPowerCore").SetValue(blocScript, HandController.Instance.handPowerCore);
+            AccessTools.Field(blocScript.GetType(), "handTablet").SetValue(blocScript, HandController.Instance.handTablet);
             blocScript.respawnPosition = blocScript.transform.position;
             blocScript.respawnEulerAngles = blocScript.transform.eulerAngles;
 
@@ -248,7 +249,7 @@ namespace FS_LevelEditor
         {
             // If we want the OnInsert and OnRemove actions to be executed, _fromSave needs to be false.
             slot.powerCore.OnInsert(core, !executeEvents);
-            core.m_currentlyInsertedPowerCore = slot.powerCore;
+            AccessTools.Field(core.GetType(), "m_currentlyInsertedPowerCore").SetValue(core, slot.powerCore);
             core.m_rigidbody.isKinematic = true;
             core.SetDisabledWhileInHands(false);
             core.SetEnabledWhenInHands(false);

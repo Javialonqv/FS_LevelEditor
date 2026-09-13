@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using HarmonyLib;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -58,9 +59,9 @@ namespace FS_LevelEditor
             button.GetChild("Mesh").tag = "Interrupteur";
             button.SetActive(false);
 
-            button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
-            button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
-            button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
+            button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().font = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].font;
+            button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().font = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].font;
+            button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().font = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].font;
             button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
             button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
             button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
@@ -77,7 +78,8 @@ namespace FS_LevelEditor
             controller.manualInteractionTransitionSpeed = 1;
 
             controller.interactableWhileDodge = true;
-            controller.localizedInteractionString = t_keycode.localizedInteractionString;
+            string localizedInteractionString = (string)AccessTools.Field(t_keycode.GetType(), "localizedInteractionString").GetValue(t_keycode);
+            AccessTools.Field(controller.GetType(), "localizedInteractionString").SetValue(controller, localizedInteractionString);
             controller.m_audioSource = button.GetComponent<AudioSource>();
             controller.m_meshRenderer = button.GetChild("Mesh").GetComponent<MeshRenderer>();
             controller.m_meshTransform = button.GetChild("Mesh").transform;
@@ -89,7 +91,7 @@ namespace FS_LevelEditor
             controller.unusableMaterials = t_keycode.unusableMaterials;
             controller.objectsToDestroy = new GameObject[0];
             controller.objectsToEnableOnly = new GameObject[0];
-            controller.objectToActivate = new GameObject();
+            AccessTools.Field(controller.GetType(), "objectToActivate").SetValue(controller, new GameObject());
             controller.messagesOnActivate = new Messenger[0];
             controller.dialogToActivate = new string[0];
             controller.currentInGameInputTMPLabel = button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TextMeshPro>();
