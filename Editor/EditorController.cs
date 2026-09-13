@@ -1,6 +1,7 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
+using HarmonyLib;
 using System.Collections;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -191,7 +192,7 @@ namespace FS_LevelEditor.Editor
             AssetBundle bundle = AssetBundleLoader.GetLoadedBundle("level_editor");
 
             #region Load LE Objects From Bundle
-            editorObjectsRootFromBundle = bundle.Load<GameObject>("LevelObjectsRoot");
+            editorObjectsRootFromBundle = bundle.LoadAsset<GameObject>("LevelObjectsRoot");
             editorObjectsRootFromBundle.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
             // Get categories
@@ -222,7 +223,7 @@ namespace FS_LevelEditor.Editor
             #endregion
 
             #region Setup Gizmos
-            gizmosRoot = Instantiate(bundle.Load<GameObject>("MoveObjectArrowsNew"));
+            gizmosRoot = Instantiate(bundle.LoadAsset<GameObject>("MoveObjectArrowsNew"));
             gizmosRoot.name = "MoveObjectArrows";
             gizmosRoot.transform.localPosition = Vector3.zero;
             gizmo = gizmosRoot.AddComponent<EditorGizmo>();
@@ -230,24 +231,23 @@ namespace FS_LevelEditor.Editor
             #endregion
 
             #region Setup Snap To Grid Cube
-            snapToGridCube = Instantiate(bundle.Load<GameObject>("SnapToGridCube"));
+            snapToGridCube = Instantiate(bundle.LoadAsset<GameObject>("SnapToGridCube"));
             snapToGridCube.name = "SnapToGridCube";
             snapToGridCube.transform.localPosition = Vector3.zero;
             snapToGridCube.SetActive(false);
             #endregion
 
-            otherObjectsFromBundle = bundle.Load<GameObject>("OtherObjects").GetChilds();
+            otherObjectsFromBundle = bundle.LoadAsset<GameObject>("OtherObjects").GetChilds();
 
             MaterialUtils.LoadMaterials(bundle); // Opaque/Transparent materials for disabled objects and such.
 
             #region Load Grid Material
-            gridLineMaterial = bundle.Load<Material>("GridLine");
-            // Use the Cast function since that's the correct way to cast IL2CPP types.
-            gridTexture = gridLineMaterial.mainTexture.Cast<Texture2D>();
+            gridLineMaterial = bundle.LoadAsset<Material>("GridLine");
+            gridTexture = (Texture2D)gridLineMaterial.mainTexture;
             #endregion
 
             #region Load Skyboxes
-            foreach (var material in bundle.LoadAll<Material>())
+            foreach (var material in bundle.LoadAllAssets<Material>())
             {
                 if (material.name.StartsWith("Skybox"))
                 {
@@ -282,7 +282,7 @@ namespace FS_LevelEditor.Editor
             #endregion
 
             #region Load All Materials
-            foreach (var mat in bundle.LoadAll<Material>())
+            foreach (var mat in bundle.LoadAllAssets<Material>())
             {
                 allMaterialsFromBundle.Add(mat.name, mat);
             }
@@ -304,7 +304,7 @@ namespace FS_LevelEditor.Editor
             };
             foreach (var trackName in trackNames)
             {
-                AudioClip track = bundle.Load<AudioClip>(trackName);
+                AudioClip track = bundle.LoadAsset<AudioClip>(trackName);
                 if (track != null)
                 {
                     track.hideFlags = HideFlags.DontUnloadUnusedAsset;
@@ -350,16 +350,17 @@ namespace FS_LevelEditor.Editor
             return null;
         }
 
+        // Thanks for the AccessTools methods, Cafe!
         void EnsureGameUIIsHidden()
         {
             InGameUIManager ui = InGameUIManager.Instance;
-            ui.HideHealthBarRoutine();
+            AccessTools.Method(ui.GetType(), "HideHealthBarRoutine").Invoke(ui, null);
             ui.HideDodgeCooldown(true);
             ui.HideHoverGauge(true);
             ui.ShowSprintFeedback(false);
             ui.ShowFuelBar(false, 0, 0);
             ui.ForceHideFuelBar();
-            ui.HideFuelBarRoutine(0);
+            AccessTools.Method(ui.GetType(), "HideFuelBarRoutine")?.Invoke(ui, [0]);
         }
 
         void Start()
@@ -1873,7 +1874,6 @@ namespace FS_LevelEditor.Editor
                     // Only consider colliders that are children of objects in the levelObjectsParent
                     var surfaceHit = hits.FirstOrDefault(h =>
                         h.collider is Collider &&
-                        !(h.collider is TerrainCollider) &&
                         h.collider.transform.IsChildOf(levelObjectsParent.transform) &&
                         h.collider.enabled &&
                         h.collider.gameObject.activeInHierarchy

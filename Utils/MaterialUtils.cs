@@ -46,26 +46,26 @@ namespace FS_LevelEditor
 
         public static void LoadMaterials(AssetBundle bundle)
         {
-            propsMat = bundle.Load<Material>("Props_Mat");
-            propsTransMat = bundle.Load<Material>("PropsTransparent_Mat");
+            propsMat = bundle.LoadAsset<Material>("Props_Mat");
+            propsTransMat = bundle.LoadAsset<Material>("PropsTransparent_Mat");
 
-            propsNoSpecMat = bundle.Load<Material>("Props_NoSpec");
-            propsTransNoSpecMat = bundle.Load<Material>("PropsTransparent_NoSpec");
+            propsNoSpecMat = bundle.LoadAsset<Material>("Props_NoSpec");
+            propsTransNoSpecMat = bundle.LoadAsset<Material>("PropsTransparent_NoSpec");
 
-            newPropsv1Mat = bundle.Load<Material>("NewProps_v1");
-            newPropsv1TransMat = bundle.Load<Material>("NewProps_v1_Transparent");
+            newPropsv1Mat = bundle.LoadAsset<Material>("NewProps_v1");
+            newPropsv1TransMat = bundle.LoadAsset<Material>("NewProps_v1_Transparent");
 
-            newPropsv2Mat = bundle.Load<Material>("NewProps_v2");
-            newPropsv2TransMat = bundle.Load<Material>("NewProps_v2_Transparent");
+            newPropsv2Mat = bundle.LoadAsset<Material>("NewProps_v2");
+            newPropsv2TransMat = bundle.LoadAsset<Material>("NewProps_v2_Transparent");
 
-            newPropsv3Mat = bundle.Load<Material>("NewProps_v3");
-            newPropsv3TransMat = bundle.Load<Material>("NewProps_v3_Transparent");
+            newPropsv3Mat = bundle.LoadAsset<Material>("NewProps_v3");
+            newPropsv3TransMat = bundle.LoadAsset<Material>("NewProps_v3_Transparent");
 
-            propsXMASLitMat = bundle.Load<Material>("Props_XMAS_Lit");
-            propsXMASLitTransMat = bundle.Load<Material>("Props_XMAS_Lit_Transparent");
+            propsXMASLitMat = bundle.LoadAsset<Material>("Props_XMAS_Lit");
+            propsXMASLitTransMat = bundle.LoadAsset<Material>("Props_XMAS_Lit_Transparent");
 
-            propsXMASUnlitMat = bundle.Load<Material>("Props_XMAS_Unlit");
-            propsXMASUnlitTransMat = bundle.Load<Material>("Props_XMAS_Unlit_Transparent");
+            propsXMASUnlitMat = bundle.LoadAsset<Material>("Props_XMAS_Unlit");
+            propsXMASUnlitTransMat = bundle.LoadAsset<Material>("Props_XMAS_Unlit_Transparent");
         }
 
         public static void SetTransparentMaterials(this GameObject gameObject)

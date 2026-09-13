@@ -633,7 +633,7 @@ namespace FS_LevelEditor.Editor.UI
             {
                 if (target.TryGetComponent<TweenScale>(out var tweenScale))
                 {
-                    tweenScale.SetDirection(Il2CppAnimationOrTween.Direction.Forward);
+                    tweenScale.SetDirection(AnimationOrTween.Direction.Forward);
 
                     if (showInstantly)
                     {
@@ -651,7 +651,7 @@ namespace FS_LevelEditor.Editor.UI
                 }
                 else if (target.TryGetComponent<TweenPosition>(out var tweenPosition))
                 {
-                    tweenPosition.SetDirection(Il2CppAnimationOrTween.Direction.Forward);
+                    tweenPosition.SetDirection(AnimationOrTween.Direction.Forward);
 
                     if (showInstantly)
                     {
@@ -744,7 +744,7 @@ namespace FS_LevelEditor.Editor.UI
             #region Play The Animation
             if (target.TryGetComponent<TweenScale>(out var tweenScale))
             {
-                tweenScale.SetDirection(Il2CppAnimationOrTween.Direction.Forward);
+                tweenScale.SetDirection(AnimationOrTween.Direction.Forward);
 
                 if (instant)
                 {
@@ -761,7 +761,7 @@ namespace FS_LevelEditor.Editor.UI
             }
             else if (target.TryGetComponent<TweenPosition>(out var tweenPosition))
             {
-                tweenPosition.SetDirection(Il2CppAnimationOrTween.Direction.Forward);
+                tweenPosition.SetDirection(AnimationOrTween.Direction.Forward);
 
                 if (instant)
                 {

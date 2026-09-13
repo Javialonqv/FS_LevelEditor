@@ -68,7 +68,7 @@ namespace FS_LevelEditor.Playmode
             // The bundle was already preloaded in Core.OnEarlyInitializeMelon.
             LEBundle = AssetBundleLoader.GetLoadedBundle("level_editor");
 
-            editorObjectsRootFromBundle = LEBundle.Load<GameObject>("LevelObjectsRoot");
+            editorObjectsRootFromBundle = LEbundle.LoadAsset<GameObject>("LevelObjectsRoot");
             editorObjectsRootFromBundle.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
             foreach (var child in editorObjectsRootFromBundle.GetChilds())
@@ -94,7 +94,7 @@ namespace FS_LevelEditor.Playmode
                 allCategoriesObjectsSorted.Add(categoryObjects);
             }
 
-            otherObjectsFromBundle = LEBundle.Load<GameObject>("OtherObjects").GetChilds();
+            otherObjectsFromBundle = LEbundle.LoadAsset<GameObject>("OtherObjects").GetChilds();
 
             #region Setup OST
             string[] trackNames = new[]
@@ -112,7 +112,7 @@ namespace FS_LevelEditor.Playmode
             };
             foreach (var trackName in trackNames)
             {
-                AudioClip track = LEBundle.Load<AudioClip>(trackName);
+                AudioClip track = LEbundle.LoadAsset<AudioClip>(trackName);
                 if (track != null)
                 {
                     track.hideFlags = HideFlags.DontUnloadUnusedAsset;
@@ -281,7 +281,7 @@ namespace FS_LevelEditor.Playmode
         void SetupLevelSkybox(int skyboxID)
         {
             string skyboxMatName = $"Skybox_CH{skyboxID + 1}";
-            Material skyboxMat = LEBundle.Load<Material>(skyboxMatName);
+            Material skyboxMat = LEbundle.LoadAsset<Material>(skyboxMatName);
 
             // Apply the same shader logic as the editor
             if (Regex.Match(skyboxMatName, @"(?:9|10|11|12|13)$").Success)

@@ -34,7 +34,7 @@ namespace FS_LevelEditor
 
             assetBundle = AssetBundleManager.LoadFromMemory(assetBytes);
 
-            allBundleSprites = assetBundle.LoadAll<Sprite>();
+            allBundleSprites = assetbundle.LoadAssetAll<Sprite>();
             foreach (var sprite in allBundleSprites)
             {
                 sprite.hideFlags = HideFlags.DontUnloadUnusedAsset;
