@@ -5,19 +5,27 @@ using FS_LevelEditor.Playmode.Patches;
 using FS_LevelEditor.SaveSystem;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor
 {
     public class Core
     {
+        // MOD METADATA
+        public const string ModName = "Level Editor";
+        public const string Author = "Javialon_qv & Cafe";
+        public const string Version = "1.0.0";
+        public const string Description = "An unofficial Level Editor made for Fractal Space!";
+        public const bool SupportsHotReload = false;
+
+
         // TODO: Add functionality for these ones.
-        public static Core Instance;
-        public Harmony HarmonyInstance;
+        public static Harmony HarmonyInstance;
 
         public static string currentSceneName;
-        public bool loadCustomLevelOnSceneLoad;
-        public string levelFileNameWithoutExtensionToLoad;
-        public int totalDeathsInCurrentPlaymodeSession = 0;
+        public static bool loadCustomLevelOnSceneLoad;
+        public static string levelFileNameWithoutExtensionToLoad;
+        public static int totalDeathsInCurrentPlaymodeSession = 0;
         public static string LevelNameJustQuitFrom = "";
         public static bool JustQuitPlaymode = false;
 
@@ -25,21 +33,27 @@ namespace FS_LevelEditor
 
         public static bool isQuitting;
 
-        public void OnInitializeMelon()
+        public static void OnModLoaded()
         {
+            Logger.Log("Level Editor mod loaded!");
+
             LE_CustomErrorPopups.Init();
-
             FixedUpdateProvider.Init();
-        }
 
-        public void OnEarlyInitializeMelon()
-        {
             AssetBundleLoader.PreloadEmbeddedBundle("level_editor");
             AssetBundleLoader.PreloadEmbeddedBundle("leveleditoricons");
+
+            SceneManager.sceneLoaded += OnSceneWasLoaded;
+            // Since the mod gets loaded AFTER the Menu scene is loaded, call OnSceneWasLoaded manually for the Menu scene.
+            if (SceneManager.GetActiveScene().name.Contains("Menu"))
+                OnSceneWasLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Additive);
         }
 
-        public void OnSceneWasLoaded(int buildIndex, string sceneName)
+        public static void OnSceneWasLoaded(Scene scene, LoadSceneMode loadMode)
         {
+            int buildIndex = scene.buildIndex;
+            string sceneName = scene.name;
+
             currentSceneName = sceneName;
 
             MaterialUtils.ResetMaterialWithColorsReferences();
@@ -82,7 +96,7 @@ namespace FS_LevelEditor
             }
         }
 
-        public void SetupTheWholeEditor(bool willLoadALevel = false)
+        public static void SetupTheWholeEditor(bool willLoadALevel = false)
         {
             SetupEditorBasics();
 
@@ -97,7 +111,7 @@ namespace FS_LevelEditor
             }
         }
 
-        void SetupEditorBasics()
+        static void SetupEditorBasics()
         {
             // Disable the Menu Level objects.
             GameObject.Find("Level").SetActive(false);
@@ -112,7 +126,7 @@ namespace FS_LevelEditor
             camera.AddComponent<EditorCameraMovement>();
         }
 
-        void SpawnBase()
+        static void SpawnBase()
         {
             for (int width = 0; width < 3; width++)
             {
@@ -127,13 +141,13 @@ namespace FS_LevelEditor
             }
         }
 
-        public GameObject CreateDirectionalLight(Vector3 position, Vector3 rotation)
+        static public GameObject CreateDirectionalLight(Vector3 position, Vector3 rotation)
         {
             GameObject lightObj = EditorController.Instance.PlaceObject(LE_Object.ObjectType.DIRECTIONAL_LIGHT, position, rotation, Vector3.one, false);
             return lightObj;
         }
 
-        public GameObject CreatePlayerSpawn(Vector3 position, Vector3 rotation)
+        static public GameObject CreatePlayerSpawn(Vector3 position, Vector3 rotation)
         {
             GameObject playerSpanw = EditorController.Instance.PlaceObject(LE_Object.ObjectType.PLAYER_SPAWN, position, rotation, Vector3.one, false);
             return playerSpanw;

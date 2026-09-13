@@ -2996,8 +2996,8 @@ namespace FS_LevelEditor.Editor
             {
                 enteringPlayMode = true;
 
-                Core.Instance.loadCustomLevelOnSceneLoad = true;
-                Core.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
+                Core.loadCustomLevelOnSceneLoad = true;
+                Core.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
                 EditorUIManager.Instance.DeleteUI();
 
                 MenuController.SoftInputAuthorized = true;

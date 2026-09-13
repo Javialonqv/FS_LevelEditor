@@ -8,7 +8,7 @@
             // Check if we're in a custom level by verifying both PlayModeController exists 
             // and Core.loadCustomLevelOnSceneLoad was true when loading
             if (key == "Chapter4" && PlayModeController.Instance &&
-                Core.Instance.levelFileNameWithoutExtensionToLoad != null)
+                Core.levelFileNameWithoutExtensionToLoad != null)
             {
                 __result = PlayModeController.Instance.levelName;
                 return false; // Skip the original method

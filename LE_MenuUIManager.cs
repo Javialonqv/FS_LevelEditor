@@ -691,8 +691,8 @@ namespace FS_LevelEditor
                     playBtn.onClick += () =>
                     {
                         // Skip editor load and go straight to play mode
-                        Core.Instance.loadCustomLevelOnSceneLoad = true;
-                        Core.Instance.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
+                        Core.loadCustomLevelOnSceneLoad = true;
+                        Core.levelFileNameWithoutExtensionToLoad = levelFileNameWithoutExtension;
 
                         // Close menus and load level directly
                         SwitchBetweenMenuAndLEMenu(false);
@@ -763,7 +763,7 @@ namespace FS_LevelEditor
             mainMenu.SetActive(true);
             leMenuPanel.SetActive(false);
 
-            Core.Instance.SetupTheWholeEditor(isLoadingLevel);
+            Core.SetupTheWholeEditor(isLoadingLevel);
 
             // Once SetupTheWholeEditor is done, there's a EditorController instance already.
             if (isLoadingLevel)

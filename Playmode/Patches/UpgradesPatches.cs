@@ -77,14 +77,14 @@ namespace FS_LevelEditor.Playmode.Patches
             if (applied)
                 return;
 
-            HarmonyLib.Harmony harmony = Core.Instance.HarmonyInstance;
+            HarmonyLib.Harmony harmony = Core.HarmonyInstance;
 
             harmony.Patch(getIntMethod, new HarmonyMethod(getIntMethodPrefix), null, null);
             harmony.Patch(getBoolMethod, new HarmonyMethod(getBoolMethodPrefix), null, null);
         }
         public static void Unpatch()
         {
-            HarmonyLib.Harmony harmony = Core.Instance.HarmonyInstance;
+            HarmonyLib.Harmony harmony = Core.HarmonyInstance;
 
             harmony.Unpatch(getIntMethod, HarmonyPatchType.All);
             harmony.Unpatch(getBoolMethod, HarmonyPatchType.All);

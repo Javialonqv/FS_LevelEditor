@@ -56,7 +56,7 @@ namespace FS_LevelEditor.Playmode
             CreateBackToLEButton();
             PlaymodePauseMenuPatcher.Create();
 
-            deathsInCurrentLevel = Core.Instance.totalDeathsInCurrentPlaymodeSession;
+            deathsInCurrentLevel = Core.totalDeathsInCurrentPlaymodeSession;
 
             Invoke("DisableTheCurrentScene", 0.2f);
         }
