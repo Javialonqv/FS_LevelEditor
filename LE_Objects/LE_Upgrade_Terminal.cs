@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
+using HarmonyLib;
 using TMPro;
 using UnityEngine;
 
@@ -52,7 +53,7 @@ namespace FS_LevelEditor
             interrupteur.delayBetweenSpeedrunMultiplier = 1;
             interrupteur.dialogToActivate = new string[0];
             interrupteur.doorsToClose = new GameObject[0];
-            interrupteur.hasUnusableMaterials = true;
+            AccessTools.Field(interrupteur.GetType(), "hasUnusableMaterials").SetValue(interrupteur, true);
             interrupteur.iconActivationSound = t_upgradeTerminal.iconActivationSound;
             interrupteur.iconDeactivationSound = t_upgradeTerminal.iconDeactivationSound;
             interrupteur.ignoreColorPlane = true;

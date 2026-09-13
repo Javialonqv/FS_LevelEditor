@@ -6,6 +6,7 @@
 */
 
 using FS_LevelEditor.Editor;
+using HarmonyLib;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -52,7 +53,8 @@ namespace FS_LevelEditor
         }
         IEnumerator WaitForSequenceInit()
         {
-            while (targetSequencer.sequence == null || targetSequencer.sequence.m_LEDIndicators == null)
+            var sequence = targetSequencer.sequence;
+            while (targetSequencer.sequence == null || AccessTools.Field(sequence.GetType(), "m_LEDIndicators").GetValue(sequence) == null)
                 yield return null;
 
             // It may've already been set in SetProperty, force it to be assigned again here so OnObjectLinkTargetChanged is called.
@@ -65,15 +67,24 @@ namespace FS_LevelEditor
         {
             if (targetSequencer == null || targetSequencer.sequence == null) return;
 
-            // Force the first LED to be active
-            targetSequencer.sequence.m_LEDIndicators[0].SetOnMaterial();
+            var sequence = targetSequencer.sequence;
 
-            // Force the LEDs to be in the right values
-            foreach (var led in targetSequencer.sequence.m_LEDIndicators)
+            var ledIndicators = AccessTools.Field(sequence.GetType(), "m_LEDIndicators").GetValue(sequence) as LEDIndicator[];
+
+            if (ledIndicators != null && ledIndicators.Length > 0)
             {
-                led.m_textMesh.transform.localPosition = new Vector3(-0.8f, 0, 0);
-                led.m_textMesh.transform.localEulerAngles = new Vector3(0, 90, 0);
-                led.m_textMesh.alignment = TextAlignmentOptions.Center;
+                // Force the first LED to be active
+                ledIndicators[0].SetOnMaterial();
+
+                // Force the LEDs to be in the right values
+                foreach (var led in ledIndicators)
+                {
+                    if (led == null) continue;
+
+                    led.m_textMesh.transform.localPosition = new Vector3(-0.8f, 0, 0);
+                    led.m_textMesh.transform.localEulerAngles = new Vector3(0, 90, 0);
+                    led.m_textMesh.alignment = TextAlignmentOptions.Center;
+                }
             }
         }
 

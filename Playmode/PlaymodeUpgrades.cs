@@ -1,6 +1,7 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode.Patches;
 using FS_LevelEditor.SaveSystem;
+using HarmonyLib;
 
 namespace FS_LevelEditor.Playmode
 {
@@ -147,7 +148,8 @@ namespace FS_LevelEditor.Playmode
             Controls.RefreshUpgradeVariables();
             GunController.Instance.RefreshTaserModules();
 
-            Controls.Instance.currentHP = Controls.Instance.currentMaxHP; // Heal to full after upgrades have been applied.
+            // Heal to full after upgrades have been applied.
+            AccessTools.Field(Controls.Instance.GetType(), "currentHP").SetValue(Controls.Instance, Controls.Instance.currentMaxHP);
 
             UpgradePatches.Init();
 

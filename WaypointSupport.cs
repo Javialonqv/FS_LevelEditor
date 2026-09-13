@@ -658,6 +658,10 @@ namespace FS_LevelEditor
             bool thereWasOldObject = objectWithPlayerAbove;
             bool newObjIsDifferent = newObjectWithPlayerAbove != objectWithPlayerAbove;
 
+            var hitField = AccessTools.Field(typeof(Controls), "m_currentControllerColliderHit");
+            var accelField = AccessTools.Field(typeof(Controls), "m_currentWalkingAcceleration");
+            var decelField = AccessTools.Field(typeof(Controls), "m_currentWalkingDeceleration");
+
             if (newObjIsDifferent)
             {
                 if (isOnObjectNow && thereWasOldObject && newObjIsDifferent)
@@ -667,8 +671,8 @@ namespace FS_LevelEditor
                     Controls.Instance.currentMovingPlatform = null;
                     newObjectWithPlayerAbove.playerIsAbove = true;
                     Controls.Instance.playerOnMovingPlatform = true;
-                    Controls.Instance.m_currentWalkingDeceleration = Controls.Instance.m_groundedDeceleration;
-                    Controls.Instance.m_currentWalkingAcceleration = Controls.Instance.m_groundedAcceleration;
+                    decelField.SetValue(Controls.Instance, Controls.Instance.m_groundedDeceleration);
+                    accelField.SetValue(Controls.Instance, Controls.Instance.m_groundedAcceleration);
                     Controls.Instance.m_movingPlatformMomentumMovement = Vector3.zero;
                     Controls.Instance.m_isJumping = false;
                 }
@@ -678,8 +682,8 @@ namespace FS_LevelEditor
                     newObjectWithPlayerAbove.playerIsAbove = true;
                     Controls.Instance.currentMovingPlatform = null;
                     Controls.Instance.m_movingPlatformMomentumMovement = Vector3.zero;
-                    Controls.Instance.m_currentWalkingDeceleration = Controls.Instance.m_groundedDeceleration;
-                    Controls.Instance.m_currentWalkingAcceleration = Controls.Instance.m_groundedAcceleration;
+                    decelField.SetValue(Controls.Instance, Controls.Instance.m_groundedDeceleration);
+                    accelField.SetValue(Controls.Instance, Controls.Instance.m_groundedAcceleration);
                     Controls.Instance.m_isJumping = false;
                 }
                 else if (thereWasOldObject && !isOnObjectNow)
@@ -688,8 +692,8 @@ namespace FS_LevelEditor
                     Controls.Instance.CurrentPlatformVelocity = Vector3.zero;
                     if (Controls.Instance.currentGround == null)
                     {
-                        Controls.Instance.m_currentWalkingDeceleration = Controls.Instance.m_airDeceleration;
-                        Controls.Instance.m_currentWalkingAcceleration = Controls.Instance.m_airAcceleration;
+                        decelField.SetValue(Controls.Instance, Controls.Instance.m_airDeceleration);
+                        accelField.SetValue(Controls.Instance, Controls.Instance.m_airAcceleration);
                         if (objectWithPlayerAbove.currentlyMoving && Controls.Instance.m_movingPlatformMomentumMovement == Vector3.zero)
                         {
                             Controls.Instance.m_movingPlatformMomentumMovement = objectWithPlayerAbove.currentVelocity.normalized * objectWithPlayerAbove.currentMovingSpeed;
@@ -703,14 +707,14 @@ namespace FS_LevelEditor
                     objectWithPlayerAbove.playerIsAbove = false;
                     Controls.Instance.playerOnMovingPlatform = false;
                     Controls.Instance.currentMovingPlatform = null;
-                    Controls.Instance.m_currentControllerColliderHit = null;
+                    hitField.SetValue(Controls.Instance, null);
                 }
             }
             else if (Controls.Instance.playerOnMovingPlatform && !isOnObjectNow)
             {
                 Controls.Instance.playerOnMovingPlatform = false;
                 Controls.Instance.currentMovingPlatform = null;
-                Controls.Instance.m_currentControllerColliderHit = null;
+                hitField.SetValue(Controls.Instance, null);
                 Controls.Instance.m_currentMovingPlatformMovement = Vector3.zero;
                 Controls.Instance.m_movingPlatformMomentumMovement = Vector3.zero;
                 Controls.Instance.CurrentPlatformVelocity = Vector3.zero;

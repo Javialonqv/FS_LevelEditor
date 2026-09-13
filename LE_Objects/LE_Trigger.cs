@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Playmode;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -123,12 +124,13 @@ namespace FS_LevelEditor
                     // OnTriggerExit won't be called automatically, just reset canBeReactivated to true.
                     Utils.InvokeAfterOneFrame(() =>
                     {
-                        triggerScript.canBeReactivated = true;
+                        AccessTools.Field(triggerScript.GetType(), "canBeReactivated").SetValue(triggerScript, true);
                     });
                     // And only call OnTriggerExit (to execute events) if the prop is true.
                     if (GetProperty<bool>("ExecIfDespawned"))
                     {
-                        player.OnTriggerExit(trigger);
+                        AccessTools.Method(player.GetType(), "OnTriggerExit", [typeof(Collider)])
+                            ?.Invoke(player, [trigger]);
                     }
                     break;
                 }

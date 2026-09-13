@@ -281,7 +281,7 @@ namespace FS_LevelEditor.Playmode
         void SetupLevelSkybox(int skyboxID)
         {
             string skyboxMatName = $"Skybox_CH{skyboxID + 1}";
-            Material skyboxMat = LEbundle.LoadAsset<Material>(skyboxMatName);
+            Material skyboxMat = LEBundle.LoadAsset<Material>(skyboxMatName);
 
             // Apply the same shader logic as the editor
             if (Regex.Match(skyboxMatName, @"(?:9|10|11|12|13)$").Success)

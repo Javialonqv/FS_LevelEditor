@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.WaypointSupports;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -18,7 +19,7 @@ namespace FS_LevelEditor
             ScieScript sawScript = gameObject.GetChild("Content").GetComponent<ScieScript>();
 
             sawScript.currentWaypoint = spawnedWaypoints[0].gameObject;
-            sawScript.currentWaypointScript = spawnedWaypoints[0].GetComponent<Waypoint>();
+            AccessTools.Field(sawScript.GetType(), "currentWaypointScript").SetValue(sawScript, spawnedWaypoints[0].GetComponent<Waypoint>());
             sawScript.movingSaw = true;
 
             // CRITICAL FIX: Add rotation applier that will rotate the saw to match waypoint rotation

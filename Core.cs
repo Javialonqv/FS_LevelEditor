@@ -3,14 +3,16 @@ using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.Playmode.Patches;
 using FS_LevelEditor.SaveSystem;
+using HarmonyLib;
 using UnityEngine;
 
 namespace FS_LevelEditor
 {
     public class Core
     {
-        // TODO: Add functionality for this one.
+        // TODO: Add functionality for these ones.
         public static Core Instance;
+        public Harmony HarmonyInstance;
 
         public static string currentSceneName;
         public bool loadCustomLevelOnSceneLoad;

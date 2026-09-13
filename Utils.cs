@@ -1,6 +1,7 @@
 ﻿using FS_LevelEditor.Editor;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem;
+using HarmonyLib;
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
@@ -16,7 +17,9 @@ namespace FS_LevelEditor
 
         static Dictionary<string, Coroutine> invokeCoroutines = new Dictionary<string, Coroutine>();
 
-        public static bool theresAnInputFieldSelected
+		private static readonly AccessTools.FieldRef<UITweener, float> AmountPerDeltaRef = AccessTools.FieldRefAccess<UITweener, float>("mAmountPerDelta");
+
+		public static bool theresAnInputFieldSelected
         {
             get
             {
@@ -279,7 +282,7 @@ namespace FS_LevelEditor
 
         public static T FindObjectOfType<T>(Func<T, bool> predicate = null) where T : Component
         {
-            Object[] array = GameObject.FindObjectsOfTypeAll(Il2CppType.From(typeof(T)));
+            Object[] array = Resources.FindObjectsOfTypeAll(typeof(T));
             if (predicate == null)
             {
                 return (T)array[0];
@@ -325,19 +328,21 @@ namespace FS_LevelEditor
 
         public static void SetDirection(this UITweener tween, AnimationOrTween.Direction direction)
         {
-            if (direction == AnimationOrTween.Direction.Forward)
-            {
-                tween.mAmountPerDelta = Mathf.Abs(tween.amountPerDelta);
-            }
-            else if (direction == AnimationOrTween.Direction.Reverse)
-            {
-                tween.mAmountPerDelta = -Mathf.Abs(tween.amountPerDelta);
-            }
-            if (direction == AnimationOrTween.Direction.Toggle)
-            {
-                tween.mAmountPerDelta = -tween.amountPerDelta;
-            }
-        }
+			float currentAmount = AmountPerDeltaRef(tween);
+			switch (direction)
+			{
+				case AnimationOrTween.Direction.Forward:
+					AmountPerDeltaRef(tween) = Mathf.Abs(currentAmount);
+					break;
+				case AnimationOrTween.Direction.Reverse:
+					AmountPerDeltaRef(tween) = -Mathf.Abs(currentAmount);
+					break;
+				case AnimationOrTween.Direction.Toggle:
+					AmountPerDeltaRef(tween) = -currentAmount;
+					break;
+
+			}
+		}
         public static void SetSample(this UITweener tween, float factor, bool isFinished)
         {
             tween.Sample(factor, isFinished);
@@ -573,11 +578,13 @@ namespace FS_LevelEditor
                 notificationPanel.GetChildAt("Holder/Background").GetComponent<UISprite>().color = new Color32(255, 120, 120, 160);
                 notificationPanel.GetChildAt("Holder/BorderLines").GetComponent<UISprite>().color = new Color32(255, 120, 120, 255);
 
-                // Play the notification sound.
-                InGameUIManager.Instance.m_uiAudioSource.PlayOneShot(InGameUIManager.Instance.m_notificationSound_bad);
+				// Play the notification sound.
+				var manager = InGameUIManager.Instance;
+				var audioSource = AccessTools.Field(typeof(InGameUIManager), "m_uiAudioSource").GetValue(manager) as AudioSource;
+				audioSource?.PlayOneShot(InGameUIManager.Instance.m_notificationSound_bad);
 
-                // Enable the panel and start the fade in.
-                notificationPanel.SetActive(true);
+				// Enable the panel and start the fade in.
+				notificationPanel.SetActive(true);
                 TweenAlpha.Begin(notificationPanel, 0.2f, 1f);
                 // Set the text and start the typing effect while the fade is occurring.
                 var notificationLabel = notificationPanel.GetChildAt("Holder/Label").GetComponent<UILabel>();

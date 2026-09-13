@@ -59,12 +59,12 @@ namespace FS_LevelEditor
 
         static string GetUserName()
         {
-            try
-            {
-                string steamUsername = SteamFriends.GetPersonaName();
-                return steamUsername;
-            }
-            catch { }
+            //try
+            //{
+            //    string steamUsername = SteamFriends.GetPersonaName();
+            //    return steamUsername;
+            //}
+            //catch { }
 
             // Fallback to OS user name (Windows only requirement, but works cross-platform if allowed)
             try

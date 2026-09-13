@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using HarmonyLib;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace FS_LevelEditor.UI_Related
@@ -610,7 +611,7 @@ namespace FS_LevelEditor.UI_Related
         }
 
 
-        public static EventDelegate.Parameter CreateEventDelegateParamter(UnityEngine.Object target, string parameterName, Object value)
+        public static EventDelegate.Parameter CreateEventDelegateParamter(UnityEngine.Object target, string parameterName, System.Object value)
         {
             return new EventDelegate.Parameter
             {
@@ -623,7 +624,8 @@ namespace FS_LevelEditor.UI_Related
         public static EventDelegate CreateEvenDelegate(MonoBehaviour target, string methodName, params EventDelegate.Parameter[] parameters)
         {
             EventDelegate eventDelegate = new EventDelegate(target, methodName);
-            eventDelegate.mParameters = parameters;
+            AccessTools.Field(eventDelegate.GetType(), "mParameters")
+                .SetValue(eventDelegate, parameters);
 
             return eventDelegate;
         }

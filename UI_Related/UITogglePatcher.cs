@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using HarmonyLib;
+using UnityEngine;
 
 namespace FS_LevelEditor.UI_Related
 {
@@ -56,19 +57,19 @@ namespace FS_LevelEditor.UI_Related
                 isUndefined = false;
             }
 
-            if (newState == toggle.isChecked)
+            if (newState == toggle.value)
             {
 
             }
 
             this.executeOnChange = executeOnChange;
             toggle.instantTween = instant;
-            if (newState != toggle.isChecked)
+            if (newState != toggle.value)
             {
                 toggle.Set(newState);
 
                 // The toggle hasn't been initialized yet, so it won't call onChange, call it manually.
-                if (!toggle.mStarted && executeOnChange)
+                if (!(bool)AccessTools.Field(toggle.GetType(), "mStarted").GetValue(toggle) && executeOnChange)
                 {
                     onClick.Invoke(newState);
                 }

@@ -13,8 +13,7 @@ namespace FS_LevelEditor
 
         public static void Init()
         {
-            Application.add_logMessageReceived((Application.LogCallback)OnLogReceived);
-            MelonLogger.ErrorCallbackHandler += OnMelonError;
+            Application.logMessageReceived += OnLogReceived;
         }
 
         public static void OnLogReceived(string condition, string stackTrace, LogType type)

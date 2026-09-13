@@ -1,10 +1,11 @@
 ﻿using System.Collections;
+using UnityEngine;
 
 namespace FS_LevelEditor
 {
     public static class CoroutineUtils
     {
-        static Dictionary<string, List<object>> executingCoroutinesWithIDs = new();
+        static Dictionary<string, List<Coroutine>> executingCoroutinesWithIDs = new();
 
         public static void Start(IEnumerator coroutine)
         {
@@ -15,13 +16,13 @@ namespace FS_LevelEditor
             if (!executingCoroutinesWithIDs.ContainsKey(id))
                 executingCoroutinesWithIDs.Add(id, new());
 
-            object coroutineToken = NativeModLoader.Instance.StartCoroutine(coroutine);
+            Coroutine coroutineToken = NativeModLoader.Instance.StartCoroutine(coroutine);
             executingCoroutinesWithIDs[id].Add(coroutineToken);
 
             return coroutineToken;
         }
 
-        public static void Stop(object coroutineToken)
+        public static void Stop(Coroutine coroutineToken)
         {
             foreach (var keyPair in executingCoroutinesWithIDs)
             {

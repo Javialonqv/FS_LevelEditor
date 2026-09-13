@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using HarmonyLib;
+using UnityEngine;
 
 namespace FS_LevelEditor.UI_Related
 {
@@ -101,7 +102,7 @@ namespace FS_LevelEditor.UI_Related
             if (!initialized)
             {
                 UIEventListener listener = UIEventListener.Get(input.gameObject);
-                listener.onSelect = (UIEventListener.BoolDelegate)new Action<GameObject, bool>((go, selected) => OnFieldSelected(selected));
+                listener.onSelect = (UIEventListener.BoolDelegate)((go, selected) => OnFieldSelected(selected));
 
                 EventDelegate.Add(input.onChange, new EventDelegate(this, nameof(OnChange)));
                 EventDelegate.Add(input.onSubmit, new EventDelegate(this, nameof(OnSubmit)));
@@ -153,12 +154,13 @@ namespace FS_LevelEditor.UI_Related
                     if (input.selectionStart == input.selectionEnd) // No text is selected specifically, copy it all.
                         GUIUtility.systemCopyBuffer = input.value;
                     else // There IS a selection, only copy that.
-                        GUIUtility.systemCopyBuffer = input.GetSelection();
+                        GUIUtility.systemCopyBuffer = AccessTools.Method(typeof(UIInput), "GetSelection")?.Invoke(input, null) as string;
                 }
                 else if (e.keyCode == KeyCode.V)
                 {
                     e.Use(); // Prevent NGUI for using its weird system.
-                    input.Insert(GUIUtility.systemCopyBuffer);
+                    AccessTools.Method(typeof(UIInput), "Insert", new[] { typeof(string) })
+                        ?.Invoke(input, new object[] { GUIUtility.systemCopyBuffer });
                 }
             }
         }

@@ -23,7 +23,7 @@ namespace FS_LevelEditor
             byte[] bytes = new byte[stream.Length];
             stream.Read(bytes);
 
-            AssetBundle bundle = AssetBundleManager.LoadFromMemory(bytes);
+            AssetBundle bundle = AssetBundle.LoadFromMemory(bytes);
 
             string bundleName = Path.GetFileNameWithoutExtension(bundlePath);
             loadedBundles.Add(bundleName, bundle);

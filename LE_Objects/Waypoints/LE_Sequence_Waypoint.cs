@@ -71,7 +71,7 @@ namespace FS_LevelEditor
             blocScript.m_animation.clip = t_blocSwitchScript.m_animation.clip;
             foreach (var clip in t_blocSwitchScript.m_animation)
             {
-                AnimationState state = clip.Cast<AnimationState>();
+                AnimationState state = (AnimationState)clip;
                 blocScript.m_animation.AddClip(state.clip, state.name);
             }
 

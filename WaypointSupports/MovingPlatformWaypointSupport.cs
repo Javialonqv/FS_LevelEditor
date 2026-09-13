@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using HarmonyLib;
+using UnityEngine;
 
 namespace FS_LevelEditor.WaypointSupports
 {
@@ -18,7 +19,7 @@ namespace FS_LevelEditor.WaypointSupports
             MovingPlatformController platformScript = gameObject.GetChild("Content").GetComponent<MovingPlatformController>();
 
             platformScript.currentWaypoint = spawnedWaypoints[0].gameObject;
-            platformScript.currentWaypointScript = spawnedWaypoints[0].GetComponent<Waypoint>();
+            AccessTools.Field(platformScript.GetType(), "currentWaypointScript").SetValue(platformScript, spawnedWaypoints[0].GetComponent<Waypoint>());
 
             // CRITICAL FIX: Add rotation applier that will rotate the platform to match waypoint rotation
             // AFTER reaching each waypoint, not during transit. This prevents waypoint rotation from

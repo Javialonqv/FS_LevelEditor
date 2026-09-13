@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -115,7 +116,8 @@ namespace FS_LevelEditor
             controller.IGCType = Controls.InGamePlayerKineType.MANUAL_BUTTON_INTERACTION;
             controller.interactableWhileDodge = true;
             controller.leverSound = t_switch.leverSound;
-            controller.localizedInteractionString = "Activate";
+            AccessTools.Field(controller.GetType(), "localizedInteractionString")
+            .SetValue(controller, "Activate");
             controller.lockboxAnimTrigger = "IGC_Open";
             controller.m_audioSource = button.GetComponent<AudioSource>();
             controller.m_audioSource.outputAudioMixerGroup = t_switch.m_audioSource.outputAudioMixerGroup;
@@ -139,7 +141,8 @@ namespace FS_LevelEditor
             controller.objectsToActivate = new GameObject[0];
             controller.objectsToDestroy = new GameObject[0];
             controller.objectsToEnableOnly = new GameObject[0];
-            controller.objectToActivate = gameObject;
+            AccessTools.Field(controller.GetType(), "objectToActivate")
+            .SetValue(controller, gameObject);
             controller.m_onActivate = new UnityEngine.Events.UnityEvent();
             controller.m_onActivate_HandOnly = new UnityEngine.Events.UnityEvent();
             controller.m_onActivate_TaserOnly = new UnityEngine.Events.UnityEvent();
