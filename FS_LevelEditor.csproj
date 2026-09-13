@@ -27,6 +27,10 @@
          has a higher version"). The game's netstandard.dll (2.1) is referenced below instead. -->
 		<ImplicitlyExpandNETStandardFacades Condition="Exists('$(GameManaged)\netstandard.dll')">false</ImplicitlyExpandNETStandardFacades>
 		
+		<!-- Remove the net48 folder from the output path -->
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		
 		<OutputPath>$(USERPROFILE)\AppData\LocalLow\Haze Games\Fractal Space MOD\Mods\</OutputPath>
 	</PropertyGroup>
 
