@@ -2,7 +2,7 @@
 
 namespace FS_LevelEditor.Playmode.Patches
 {
-    [HarmonyPatch(typeof(MenuController), nameof(MenuController.ConfigureMenuForPause))]
+    [HarmonyPatch(typeof(MenuController), "ConfigureMenuForPause")]
     public static class GamePauseCurrentLevelPath
     {
         public static void Prefix()

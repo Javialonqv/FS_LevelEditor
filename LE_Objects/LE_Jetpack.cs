@@ -67,7 +67,7 @@ namespace FS_LevelEditor
         }
     }
 
-    [HarmonyLib.HarmonyPatch(typeof(JetPack), nameof(JetPack.Update))]
+    [HarmonyLib.HarmonyPatch(typeof(JetPack), "Update")]
     public static class JetpackRotationPatch
     {
         public static bool Prefix(JetPack __instance)

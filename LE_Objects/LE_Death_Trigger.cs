@@ -211,7 +211,7 @@ namespace FS_LevelEditor
         }
     }
 
-    [HarmonyLib.HarmonyPatch(typeof(Controls), nameof(Controls.OnTriggerExit))]
+    [HarmonyLib.HarmonyPatch(typeof(Controls), "OnTriggerExit")]
     public static class InstantRespawnPatch
     {
         public static bool Prefix(Collider collider)

@@ -158,7 +158,7 @@ namespace FS_LevelEditor
     }
 
     // Avoid Tazer object from rotating if "Rotate" checkbox is off
-    [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.Update))]
+    [HarmonyLib.HarmonyPatch(typeof(Gun), "Update")]
     public static class TazerRotFix
     {
         public static bool Prefix(Gun __instance)

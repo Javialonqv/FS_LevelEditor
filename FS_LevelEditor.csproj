@@ -103,7 +103,6 @@
 		<Compile Include="SingleObjectLink.cs" />
 		<Compile Include="SingleObjectLinks\SequencerScreenObjectLink.cs" />
 		<Compile Include="UI_Related\UIVector3Fields.cs" />
-		<Compile Include="Utils\AnimationUtils.cs" />
 		<Compile Include="Utils\AssetBundleLoader.cs" />
 		<Compile Include="Utils\CoroutineUtils.cs" />
 		<Compile Include="Utils\FixedUpdateProvider.cs" />
