@@ -1,4 +1,7 @@
-﻿namespace FS_LevelEditor.SaveSystem
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+
+namespace FS_LevelEditor.SaveSystem
 {
     public static class SaveMigratorHelpers
     {

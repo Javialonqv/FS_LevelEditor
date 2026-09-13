@@ -204,6 +204,10 @@
 	  <EmbeddedResource Include="Translations\Translations.csv" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="System.Text.Json" Version="10.0.12" />
+	</ItemGroup>
+
 	<!-- All references resolve from $(GameManaged); Private=False so none are copied next to the mod DLL. -->
 	<ItemGroup>
 		<Reference Include="0Harmony"><HintPath>$(GameManaged)\0Harmony.dll</HintPath><Private>False</Private></Reference>

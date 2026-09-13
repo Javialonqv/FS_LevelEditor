@@ -5,6 +5,7 @@ using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
 using HarmonyLib;
 using System.Collections;
+using System.Text.Json.Serialization;
 using UnityEngine;
 
 namespace FS_LevelEditor

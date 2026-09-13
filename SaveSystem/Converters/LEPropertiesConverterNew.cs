@@ -1,4 +1,7 @@
-﻿namespace FS_LevelEditor.SaveSystem.Converters
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace FS_LevelEditor.SaveSystem.Converters
 {
     public class LEPropertiesConverterNew : JsonConverter<Dictionary<string, object>>
     {
