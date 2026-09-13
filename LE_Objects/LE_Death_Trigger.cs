@@ -259,7 +259,7 @@ namespace FS_LevelEditor
 
             if (patchRoutine != null)
             {
-                MelonCoroutines.Stop(patchRoutine);
+                NativeModLoader.Instance.StopCoroutine(patchRoutine);
             }
         }
         void OnTriggerExit(Collider collider)
@@ -267,7 +267,7 @@ namespace FS_LevelEditor
             // Only respond to the player, not other objects like mines or debris
             if (collider.tag != "Player") return;
 
-            patchRoutine = (Coroutine)MelonCoroutines.Start(PatchRoutine());
+            patchRoutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(PatchRoutine());
         }
 
         IEnumerator PatchRoutine()

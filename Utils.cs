@@ -382,7 +382,7 @@ namespace FS_LevelEditor
         #region Invoke Utils
         public static void Invoke(Action action, float delay, string id = "")
         {
-            Coroutine coroutine = (Coroutine)MelonCoroutines.Start(InvokeCoroutine(action, delay, id));
+            Coroutine coroutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(InvokeCoroutine(action, delay, id));
             if (coroutine == null)
             {
                 Logger.Error($"An error occured while trying to start the invoke coroutine. (Delay: {delay}, ID: \"{id}\").");
@@ -397,7 +397,7 @@ namespace FS_LevelEditor
         {
             if (invokeCoroutines.ContainsKey(id))
             {
-                MelonCoroutines.Stop(invokeCoroutines[id]);
+                NativeModLoader.Instance.StopCoroutine(invokeCoroutines[id]);
                 invokeCoroutines.Remove(id);
             }
             else
@@ -418,7 +418,7 @@ namespace FS_LevelEditor
 
         public static void InvokeAfterOneFrame(Action action)
         {
-            MelonCoroutines.Start(InvokeAfterOneFrameCoroutine(action));
+            NativeModLoader.Instance.StartCoroutine(InvokeAfterOneFrameCoroutine(action));
         }
         static IEnumerator InvokeAfterOneFrameCoroutine(Action action)
         {
@@ -558,10 +558,10 @@ namespace FS_LevelEditor
         {
             if (customNotificationCoroutine != null)
             {
-                MelonCoroutines.Stop(customNotificationCoroutine);
+                NativeModLoader.Instance.StopCoroutine(customNotificationCoroutine);
             }
 
-            customNotificationCoroutine = (UnityEngine.Coroutine)MelonCoroutines.Start(Coroutine());
+            customNotificationCoroutine = (UnityEngine.Coroutine)NativeModLoader.Instance.StartCoroutine(Coroutine());
             IEnumerator Coroutine()
             {
                 // Get the variable.

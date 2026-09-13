@@ -60,7 +60,6 @@ namespace FS_LevelEditor.Editor.UI
 
         public UILabel statsLabel;
 
-        public EditorUIManager(IntPtr ptr) : base(ptr) { }
 
         void Awake()
         {
@@ -458,7 +457,7 @@ namespace FS_LevelEditor.Editor.UI
                 return;
             }
 
-            MelonCoroutines.Start(Coroutine());
+            NativeModLoader.Instance.StartCoroutine(Coroutine());
 
             IEnumerator Coroutine()
             {
@@ -492,7 +491,7 @@ namespace FS_LevelEditor.Editor.UI
         public void ShowExitPopup() => EditorPauseMenuPatcher.patcher.ShowExitPopup();
         public void ExitToMenu(bool saveDataBeforeExit = false)
         {
-            MelonCoroutines.Start(Coroutine());
+            NativeModLoader.Instance.StartCoroutine(Coroutine());
 
             IEnumerator Coroutine()
             {
@@ -528,7 +527,7 @@ namespace FS_LevelEditor.Editor.UI
         public void DeleteUI()
         {
             // If the coroutine was already played, stop it if it's currently playing to "restart" it.
-            if (savingLevelLabelRoutine != null) MelonCoroutines.Stop(savingLevelLabelRoutine);
+            if (savingLevelLabelRoutine != null) NativeModLoader.Instance.StopCoroutine(savingLevelLabelRoutine);
 
             // To avoid bugs, reset the MainMenu UI Camera depth to its default value.
             GameObject.Find("MainMenu/Camera").GetComponent<Camera>().depth = 10;

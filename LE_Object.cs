@@ -238,7 +238,6 @@ namespace FS_LevelEditor
 
         public bool currentCollisionState = true;
 
-        public LE_Object(IntPtr ptr) : base(ptr) { }
         public LE_Object() { }
 
         #region Object Templates References
@@ -1152,7 +1151,6 @@ namespace FS_LevelEditor
     {
         public MeshRenderer targetRenderer;
 
-        public DisabledMeshEnforcer(IntPtr ptr) : base(ptr) { }
 
         void LateUpdate()
         {

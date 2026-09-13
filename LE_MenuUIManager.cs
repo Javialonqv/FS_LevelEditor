@@ -736,7 +736,7 @@ namespace FS_LevelEditor
             if (levelButtonsWasClicked) return;
             levelButtonsWasClicked = true;
 
-            MelonCoroutines.Start(EnterEditorRoutine(isLoadingLevel, levelFileNameWithoutExtension, levelName));
+            NativeModLoader.Instance.StartCoroutine(EnterEditorRoutine(isLoadingLevel, levelFileNameWithoutExtension, levelName));
         }
         IEnumerator EnterEditorRoutine(bool isLoadingLevel = false, string levelFileNameWithoutExtension = "", string levelName = "")
         {
@@ -1060,7 +1060,7 @@ namespace FS_LevelEditor
 
             NavigationBarController.Instance.RefreshNavigationBarActions();
 
-            MelonCoroutines.Start(Animation());
+            NativeModLoader.Instance.StartCoroutine(Animation());
 
             IEnumerator Animation()
             {

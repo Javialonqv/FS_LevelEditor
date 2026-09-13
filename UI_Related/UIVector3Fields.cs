@@ -13,7 +13,6 @@ namespace FS_LevelEditor.UI_Related
         public Action<string> onChange;
         public Action<string> onDeselected;
 
-        public UIVector3Fields(IntPtr ptr) : base(ptr) { }
 
         public void Assign(UICustomInputField xField, UICustomInputField yField, UICustomInputField zField)
         {

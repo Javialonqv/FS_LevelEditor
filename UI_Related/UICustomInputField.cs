@@ -31,7 +31,6 @@ namespace FS_LevelEditor.UI_Related
         public Action onDeselected;
         bool executeOnChange = true;
 
-        public UICustomInputField(IntPtr ptr) : base(ptr) { }
 
         void Awake()
         {

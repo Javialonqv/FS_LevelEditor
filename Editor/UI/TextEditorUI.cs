@@ -29,7 +29,6 @@ namespace FS_LevelEditor.Editor.UI
         UIButtonAsToggle textLeft, textCenter, textRight;
         UIButtonAsToggle textBottomLeft, textBottom, textBottomRight;
 
-        public TextEditorUI(IntPtr ptr) : base(ptr) { }
 
         public static void Create()
         {

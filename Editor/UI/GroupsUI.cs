@@ -49,7 +49,6 @@ namespace FS_LevelEditor.Editor.UI
         int currentObjectsPage;
         #endregion
 
-        public GroupsUI(IntPtr ptr) : base(ptr) { }
 
         public static void Create()
         {

@@ -138,7 +138,7 @@ namespace FS_LevelEditor
                 if (leScript.smallHealPatchCoroutine == null)
                 {
                     Logger.Log($"A heal area \"{leScript.objectFullNameWithID}\" was reached! Patching small heal bug...");
-                    leScript.smallHealPatchCoroutine = (Coroutine)MelonCoroutines.Start(leScript.SmallHealPatchRoutine());
+                    leScript.smallHealPatchCoroutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(leScript.SmallHealPatchRoutine());
                 }
             }
         }
@@ -155,7 +155,7 @@ namespace FS_LevelEditor
                 if (leScript.smallHealPatchCoroutine != null)
                 {
                     Logger.Log($"A heal area \"{leScript.objectFullNameWithID}\" stopped healing! Undoing small heal patch...");
-                    MelonCoroutines.Stop(leScript.smallHealPatchCoroutine);
+                    NativeModLoader.Instance.StopCoroutine(leScript.smallHealPatchCoroutine);
                     leScript.smallHealPatchCoroutine = null;
                 }
             }

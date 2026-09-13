@@ -28,7 +28,6 @@ namespace FS_LevelEditor.Editor.UI
         private bool isSliding = false; // Track if we're currently animating
         private bool isFullyVisible = false; // Track if notification is fully visible and ready for updates
 
-        public NotificationSystem(IntPtr ptr) : base(ptr) { }
 
         public static void Create(Transform parent)
         {
@@ -122,16 +121,16 @@ namespace FS_LevelEditor.Editor.UI
                 // Stop and restart the timer
                 if (currentNotificationCoroutine != null)
                 {
-                    MelonCoroutines.Stop(currentNotificationCoroutine);
+                    NativeModLoader.Instance.StopCoroutine(currentNotificationCoroutine);
                 }
-                currentNotificationCoroutine = (Coroutine)MelonCoroutines.Start(WaitAndHideCoroutine());
+                currentNotificationCoroutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(WaitAndHideCoroutine());
                 return;
             }
 
             // If there's already a notification showing but not fully visible, stop it
             if (currentNotificationCoroutine != null)
             {
-                MelonCoroutines.Stop(currentNotificationCoroutine);
+                NativeModLoader.Instance.StopCoroutine(currentNotificationCoroutine);
                 currentNotificationCoroutine = null;
             }
 
@@ -144,7 +143,7 @@ namespace FS_LevelEditor.Editor.UI
             UpdateNotificationHeight();
 
             // Start the notification coroutine
-            currentNotificationCoroutine = (Coroutine)MelonCoroutines.Start(ShowNotificationCoroutine());
+            currentNotificationCoroutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(ShowNotificationCoroutine());
         }
 
         void UpdateNotificationHeight()
@@ -232,7 +231,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             if (currentNotificationCoroutine != null)
             {
-                MelonCoroutines.Stop(currentNotificationCoroutine);
+                NativeModLoader.Instance.StopCoroutine(currentNotificationCoroutine);
             }
             Instance = null;
         }

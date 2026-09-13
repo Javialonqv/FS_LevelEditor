@@ -96,7 +96,6 @@ namespace FS_LevelEditor.Editor.UI
             }
         }
 
-        public UpgradesPanel(IntPtr ptr) : base(ptr) { }
 
         void OnDestroy()
         {
@@ -540,6 +539,5 @@ namespace FS_LevelEditor.Editor.UI
 
         public UpgradeSaveData attachedSaveData;
 
-        public UpgradeUIButton(IntPtr ptr) : base(ptr) { }
     }
 }

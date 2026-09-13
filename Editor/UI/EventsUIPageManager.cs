@@ -169,7 +169,6 @@ namespace FS_LevelEditor.Editor.UI
 
         #endregion
 
-        public EventsUIPageManager(IntPtr ptr) : base(ptr) { }
 
         public static void Create()
         {

@@ -17,15 +17,15 @@ namespace FS_LevelEditor.Misc
             if (existing)
             {
                 if (existing.scaleRoutine != null)
-                    MelonCoroutines.Stop(existing.scaleRoutine);
+                    NativeModLoader.Instance.StopCoroutine(existing.scaleRoutine);
 
-                existing.scaleRoutine = (Coroutine)MelonCoroutines.Start(existing.DoScale(targetScale, duration));
+                existing.scaleRoutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(existing.DoScale(targetScale, duration));
                 return existing;
             }
 
             // Create new tweener.
             ScaleTweener tweener = obj.AddComponent<ScaleTweener>();
-            tweener.scaleRoutine = (Coroutine)MelonCoroutines.Start(tweener.DoScale(targetScale, duration));
+            tweener.scaleRoutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(tweener.DoScale(targetScale, duration));
 
             return tweener;
         }
@@ -61,7 +61,7 @@ namespace FS_LevelEditor.Misc
         {
             if (scaleRoutine != null)
             {
-                MelonCoroutines.Stop(scaleRoutine);
+                NativeModLoader.Instance.StopCoroutine(scaleRoutine);
             }
         }
 
@@ -70,7 +70,7 @@ namespace FS_LevelEditor.Misc
             ScaleTweener tweener = obj.GetComponent<ScaleTweener>();
             if (tweener && tweener.scaleRoutine != null)
             {
-                MelonCoroutines.Stop(tweener.scaleRoutine);
+                NativeModLoader.Instance.StopCoroutine(tweener.scaleRoutine);
             }
         }
     }

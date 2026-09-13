@@ -20,7 +20,6 @@ namespace FS_LevelEditor.Editor.UI
         bool isShowing = false;
         bool wasPausedBeforeShow = false;
 
-        public SaveMetadataPopup(IntPtr ptr) : base(ptr) { }
 
         public static void Create()
         {

@@ -1269,10 +1269,10 @@ namespace FS_LevelEditor.Editor
         {
             if (previewRotationCoroutine != null)
             {
-                MelonCoroutines.Stop(previewRotationCoroutine);
+                NativeModLoader.Instance.StopCoroutine(previewRotationCoroutine);
                 previewRotationCoroutine = null;
             }
-            previewRotationCoroutine = (Coroutine)MelonCoroutines.Start(SmoothRotatePreview(oldOffset, newOffset));
+            previewRotationCoroutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(SmoothRotatePreview(oldOffset, newOffset));
         }
         IEnumerator SmoothRotatePreview(Vector3 oldOffset, Vector3 newOffset)
         {
@@ -1305,10 +1305,10 @@ namespace FS_LevelEditor.Editor
         {
             if (rotationCoroutine != null)
             {
-                MelonCoroutines.Stop(rotationCoroutine);
+                NativeModLoader.Instance.StopCoroutine(rotationCoroutine);
                 rotationCoroutine = null;
             }
-            rotationCoroutine = (Coroutine)MelonCoroutines.Start(SmoothRotate(obj, oldRot, newRot));
+            rotationCoroutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(SmoothRotate(obj, oldRot, newRot));
         }
         IEnumerator SmoothRotate(GameObject obj, Quaternion oldRotation, Quaternion newRotation)
         {
@@ -1454,7 +1454,7 @@ namespace FS_LevelEditor.Editor
             // Clean up any ongoing preview rotation when changing modes
             if (previewRotationCoroutine != null)
             {
-                MelonCoroutines.Stop(previewRotationCoroutine);
+                NativeModLoader.Instance.StopCoroutine(previewRotationCoroutine);
                 previewRotationCoroutine = null;
             }
 
@@ -2990,7 +2990,7 @@ namespace FS_LevelEditor.Editor
                 return;
             }
 
-            MelonCoroutines.Start(Coroutine());
+            NativeModLoader.Instance.StartCoroutine(Coroutine());
 
             IEnumerator Coroutine()
             {
@@ -3094,7 +3094,7 @@ namespace FS_LevelEditor.Editor
             // Clean up any ongoing preview rotation
             if (previewRotationCoroutine != null)
             {
-                MelonCoroutines.Stop(previewRotationCoroutine);
+                NativeModLoader.Instance.StopCoroutine(previewRotationCoroutine);
                 previewRotationCoroutine = null;
             }
 

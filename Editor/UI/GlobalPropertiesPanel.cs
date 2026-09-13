@@ -29,7 +29,6 @@ namespace FS_LevelEditor.Editor.UI
             root.AddComponent<GlobalPropertiesPanel>();
         }
 
-        public GlobalPropertiesPanel(IntPtr ptr) : base(ptr) { }
 
         void Awake()
         {

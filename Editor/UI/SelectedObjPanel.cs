@@ -162,7 +162,6 @@ namespace FS_LevelEditor.Editor.UI
         Quaternion objRotationWhenSelectedField;
         Vector3 objScaleWhenSelectedField;
 
-        public SelectedObjPanel(IntPtr ptr) : base(ptr) { }
 
         public static void Create(Transform editorUIParent)
         {

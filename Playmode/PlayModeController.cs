@@ -147,7 +147,7 @@ namespace FS_LevelEditor.Playmode
         {
             TeleportPlayer();
             ConfigureGlobalProperties();
-            MelonCoroutines.Start(SetupEnvCam());
+            NativeModLoader.Instance.StartCoroutine(SetupEnvCam());
 
             Utils.Invoke(() => ParticlesPatch.GetObjectsWithParticlesReferences(), 0.1f);                       // Delay the invoke, so objects are initialized correctly first.
             Utils.Invoke(() => LE_Dummy_Checkpoint.UpdateSavedObjetsHolderCheckpointsWithLevelOnes(), 0.1f);    // Delay the invoke, so objects are initialized correctly first.
@@ -308,7 +308,7 @@ namespace FS_LevelEditor.Playmode
         // Other stuff...
         public void PatchPauseCurrentLevelNameInResumeButton()
         {
-            MelonCoroutines.Start(Coroutine());
+            NativeModLoader.Instance.StartCoroutine(Coroutine());
             IEnumerator Coroutine()
             {
                 yield return new WaitForSecondsRealtime(0.025f);

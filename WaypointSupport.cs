@@ -288,7 +288,7 @@ namespace FS_LevelEditor
             if (usesCustomMoveSystem) return;
             if (moveObjectCoroutine != null) return; // There's already a coroutine running, don't do shit.
 
-            moveObjectCoroutine = (Coroutine)MelonCoroutines.Start(MoveObject());
+            moveObjectCoroutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(MoveObject());
             Logger.Log("Started waypoint movement for object object: " + gameObject.name);
         }
         IEnumerator MoveObject()
@@ -403,7 +403,7 @@ namespace FS_LevelEditor
         {
             if (moveObjectCoroutine == null) return; // Just in case trying to stop a null coroutine throws an error.
 
-            MelonCoroutines.Stop(moveObjectCoroutine);
+            NativeModLoader.Instance.StopCoroutine(moveObjectCoroutine);
             moveObjectCoroutine = null;
             currentVelocity = Vector3.zero;
 

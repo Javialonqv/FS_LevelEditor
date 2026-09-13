@@ -45,7 +45,7 @@ namespace FS_LevelEditor
 
             if (scene == LEScene.Playmode)
             {
-                if (targetSequencer) MelonCoroutines.Start(WaitForSequenceInit());
+                if (targetSequencer) NativeModLoader.Instance.StartCoroutine(WaitForSequenceInit());
             }
 
             base.ObjectStart(scene);

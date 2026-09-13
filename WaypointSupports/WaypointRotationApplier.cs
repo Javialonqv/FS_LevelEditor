@@ -70,11 +70,11 @@ namespace FS_LevelEditor.WaypointSupports
             // Stop any existing rotation
             if (rotationCoroutine != null)
             {
-                MelonCoroutines.Stop(rotationCoroutine);
+                NativeModLoader.Instance.StopCoroutine(rotationCoroutine);
             }
 
             // Start smooth rotation to target
-            rotationCoroutine = (Coroutine)MelonCoroutines.Start(SmoothRotateToTarget(targetRotation));
+            rotationCoroutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(SmoothRotateToTarget(targetRotation));
         }
 
         IEnumerator SmoothRotateToTarget(Quaternion targetRotation)
@@ -114,7 +114,7 @@ namespace FS_LevelEditor.WaypointSupports
         {
             if (rotationCoroutine != null)
             {
-                MelonCoroutines.Stop(rotationCoroutine);
+                NativeModLoader.Instance.StopCoroutine(rotationCoroutine);
             }
         }
     }

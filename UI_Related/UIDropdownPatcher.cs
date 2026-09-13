@@ -28,7 +28,6 @@ namespace FS_LevelEditor
             }
         }
 
-        public UIDropdownPatcher(IntPtr ptr) : base(ptr) { }
 
         void Awake()
         {

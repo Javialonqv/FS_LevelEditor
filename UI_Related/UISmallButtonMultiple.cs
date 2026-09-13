@@ -15,7 +15,6 @@ namespace FS_LevelEditor.UI_Related
         List<(string text, Color color)> options = new List<(string text, Color color)>();
         public int currentOption;
 
-        public UISmallButtonMultiple(IntPtr ptr) : base(ptr) { }
 
         void Awake()
         {

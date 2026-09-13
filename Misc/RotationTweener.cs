@@ -20,14 +20,14 @@ public class RotationTweener : MonoBehaviour
         RotationTweener existing = obj.GetComponent<RotationTweener>();
         if (existing)
         {
-            if (existing.rotationCoroutine != null) MelonCoroutines.Stop(existing.rotationCoroutine);
-            existing.rotationCoroutine = (Coroutine)MelonCoroutines.Start(existing.DoRotation(targetEuler, duration, path));
+            if (existing.rotationCoroutine != null) NativeModLoader.Instance.StopCoroutine(existing.rotationCoroutine);
+            existing.rotationCoroutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(existing.DoRotation(targetEuler, duration, path));
             return existing;
         }
 
         // Create new tweener.
         RotationTweener tweener = obj.AddComponent<RotationTweener>();
-        tweener.rotationCoroutine = (Coroutine)MelonCoroutines.Start(tweener.DoRotation(targetEuler, duration, path));
+        tweener.rotationCoroutine = (Coroutine)NativeModLoader.Instance.StartCoroutine(tweener.DoRotation(targetEuler, duration, path));
 
         return tweener;
     }
@@ -84,7 +84,7 @@ public class RotationTweener : MonoBehaviour
     {
         if (rotationCoroutine != null)
         {
-            MelonCoroutines.Stop(rotationCoroutine);
+            NativeModLoader.Instance.StopCoroutine(rotationCoroutine);
         }
     }
 
@@ -93,7 +93,7 @@ public class RotationTweener : MonoBehaviour
         RotationTweener tweener = obj.GetComponent<RotationTweener>();
         if (tweener && tweener.rotationCoroutine != null)
         {
-            MelonCoroutines.Stop(tweener.rotationCoroutine);
+            NativeModLoader.Instance.StopCoroutine(tweener.rotationCoroutine);
             //DestroyImmediate(tweener);
         }
     }

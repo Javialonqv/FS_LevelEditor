@@ -16,7 +16,6 @@ namespace FS_LevelEditor.UI_Related
         public bool isChecked => toggle.isChecked;
         public bool isUndefined = false;
 
-        public UITogglePatcher(IntPtr ptr) : base(ptr) { }
 
         void Awake()
         {

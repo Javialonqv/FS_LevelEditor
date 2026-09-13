@@ -8,14 +8,14 @@ namespace FS_LevelEditor
 
         public static void Start(IEnumerator coroutine)
         {
-            MelonCoroutines.Start(coroutine);
+            NativeModLoader.Instance.StartCoroutine(coroutine);
         }
         public static object Start(IEnumerator coroutine, string id)
         {
             if (!executingCoroutinesWithIDs.ContainsKey(id))
                 executingCoroutinesWithIDs.Add(id, new());
 
-            object coroutineToken = MelonCoroutines.Start(coroutine);
+            object coroutineToken = NativeModLoader.Instance.StartCoroutine(coroutine);
             executingCoroutinesWithIDs[id].Add(coroutineToken);
 
             return coroutineToken;
@@ -31,7 +31,7 @@ namespace FS_LevelEditor
                 }
             }
 
-            MelonCoroutines.Stop(coroutineToken);
+            NativeModLoader.Instance.StopCoroutine(coroutineToken);
         }
         public static void StopAllCoroutines(string coroutinesID)
         {
@@ -41,7 +41,7 @@ namespace FS_LevelEditor
             foreach (var coroutine in executingCoroutinesWithIDs[coroutinesID])
             {
                 if (coroutine != null)
-                    MelonCoroutines.Stop(coroutine);
+                    NativeModLoader.Instance.StopCoroutine(coroutine);
             }
 
             executingCoroutinesWithIDs.Remove(coroutinesID);
