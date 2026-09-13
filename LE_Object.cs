@@ -5,13 +5,8 @@ using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SingleObjectLinks;
 using FS_LevelEditor.WaypointSupports;
-using Harmony;
-using Il2Cpp;
-using Il2CppInterop.Runtime;
-using Il2CppTMPro;
-using System.Diagnostics;
 using System.Reflection;
-using System.Text.Json;
+using TMPro;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -22,7 +17,7 @@ namespace FS_LevelEditor
         Playmode
     }
 
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Object : MonoBehaviour
     {
         public enum ObjectType // NEVER MODIFY THE ORDER OF ANY OF THE ELEMENTS HERE.
@@ -66,7 +61,7 @@ namespace FS_LevelEditor
             SCREEN,
             SMALL_SCREEN,
             BREAKABLE_WINDOW,
-			TRIGGER,
+            TRIGGER,
             DOOR,
             LASER_FIELD,
             DOOR_V2,
@@ -77,7 +72,7 @@ namespace FS_LevelEditor
             ARROW,
             MOVING_PLATFORM,
             MOVING_PLATFORM_WAYPOINT,
-			CROW,
+            CROW,
             DESTRUCTIBLE_WALL,
             BRIDGE,
             CUBE_KILLPLANE,
@@ -204,7 +199,7 @@ namespace FS_LevelEditor
 
         public Dictionary<string, object> properties = new Dictionary<string, object>();
         public List<WaypointData> waypoints = new List<WaypointData>();
-        
+
         public EventExecuter eventExecuter;
         public WaypointSupport waypointSupport;
         public WaypointSupport customWaypointSupport;
@@ -231,7 +226,7 @@ namespace FS_LevelEditor
                 return gameObject.GetChild(contentObjectName);
             }
         }
-        public bool canUndoDeletion { get; protected set; }  = true;
+        public bool canUndoDeletion { get; protected set; } = true;
         public bool canBeUsedInEventsTab { get; protected set; } = true;
         public bool canBeDisabledAtStart { get; protected set; } = true;
         public bool canHaveWaypoints { get; protected set; } = true;
@@ -260,12 +255,12 @@ namespace FS_LevelEditor
         public static ScreenController t_screen;
         public static BreakableWindowController t_window;
         public static DestructibleWall t_breakableWall;
-		public static PorteScript t_door;
+        public static PorteScript t_door;
         public static PorteScript t_doorV2;
         public static MovingPlatformController t_movingPlatform;
-		public static KeycodeController t_keycodeM;
-		public static InterrupteurController t_keycode;
-		public static BridgeController t_bridge;
+        public static KeycodeController t_keycodeM;
+        public static InterrupteurController t_keycode;
+        public static BridgeController t_bridge;
         public static PowerCoreBlocController t_powerCoreBloc;
         public static SequenceSwitchController t_sequenceController;
         public static BlocSwitchScript t_blocSwitchScript;
@@ -274,26 +269,26 @@ namespace FS_LevelEditor
         public static InterrupteurController t_upgradeTerminal;
 
         public static void GetTemplatesReferences()
-		{
-			t_ammoPack = FindObjectOfType<Ammo>();
-			t_healthPack = FindObjectOfType<Health>();
-			t_saw = FindObjectOfType<ScieScript>();
-			t_switch = FindObjectOfType<InterrupteurController>();
-			t_cube = Utils.FindObjectOfType<BlocScript>(x => x.IsCube());
-			t_laser = FindObjectOfType<Laser_H_Controller>();
+        {
+            t_ammoPack = FindObjectOfType<Ammo>();
+            t_healthPack = FindObjectOfType<Health>();
+            t_saw = FindObjectOfType<ScieScript>();
+            t_switch = FindObjectOfType<InterrupteurController>();
+            t_cube = Utils.FindObjectOfType<BlocScript>(x => x.IsCube());
+            t_laser = FindObjectOfType<Laser_H_Controller>();
             t_mine = Utils.FindObjectOfType<Laser_H_Controller>(x => x.isMine);
-			t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
-			t_flameTrap = FindObjectOfType<FlameTrapController>();
-			t_pressurePlate = Utils.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer == null);
-			t_screen = FindObjectOfType<ScreenController>();
-			t_window = Utils.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
-			t_door = Utils.FindObjectOfType<PorteScript>(x => !x.isSkinV2);
-			t_doorV2 = Utils.FindObjectOfType<PorteScript>(x => x.isSkinV2);
-			t_movingPlatform = Utils.FindObjectOfType<MovingPlatformController>(x => x.movingPlatform);
-			t_breakableWall = FindObjectOfType<DestructibleWall>();
-			t_keycodeM = Utils.FindObjectOfType<KeycodeController>(x => x.gameObject.layer == LayerMask.NameToLayer("MiniGames"));
-			t_keycode = Utils.FindObjectOfType<InterrupteurController>(x => x.CompareTag("Keypad"));
-			t_bridge = FindObjectOfType<BridgeController>();
+            t_ceilingLight = FindObjectOfType<RealtimeCeilingLight>();
+            t_flameTrap = FindObjectOfType<FlameTrapController>();
+            t_pressurePlate = Utils.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer == null);
+            t_screen = FindObjectOfType<ScreenController>();
+            t_window = Utils.FindObjectOfType<BreakableWindowController>(x => x.name.Contains("BreakableWindow"));
+            t_door = Utils.FindObjectOfType<PorteScript>(x => !x.isSkinV2);
+            t_doorV2 = Utils.FindObjectOfType<PorteScript>(x => x.isSkinV2);
+            t_movingPlatform = Utils.FindObjectOfType<MovingPlatformController>(x => x.movingPlatform);
+            t_breakableWall = FindObjectOfType<DestructibleWall>();
+            t_keycodeM = Utils.FindObjectOfType<KeycodeController>(x => x.gameObject.layer == LayerMask.NameToLayer("MiniGames"));
+            t_keycode = Utils.FindObjectOfType<InterrupteurController>(x => x.CompareTag("Keypad"));
+            t_bridge = FindObjectOfType<BridgeController>();
             t_powerCoreBloc = FindObjectOfType<PowerCoreBlocController>();
             t_sequenceController = FindObjectOfType<SequenceSwitchController>();
             t_blocSwitchScript = Utils.FindObjectOfType<BlocSwitchScript>(x => x.m_associatedSequencer != null);
@@ -301,9 +296,9 @@ namespace FS_LevelEditor
             t_powerSlot = Utils.FindObjectOfType<PowerCoreController>(x => !x.isTabletSlot);
             t_upgradeTerminal = Utils.FindObjectOfType<InterrupteurController>(x => x.name.Contains("Upgrade"));
         }
-		#endregion
+        #endregion
 
-		public virtual void Start()
+        public virtual void Start()
         {
             if (EditorController.Instance && !onInstantiatedCalled) OnInstantiated(LEScene.Editor);
             else if (PlayModeController.Instance && !onInstantiatedCalled) OnInstantiated(LEScene.Playmode);
@@ -1093,7 +1088,7 @@ namespace FS_LevelEditor
                 transform.parent = groupObj.transform;
             }
 
-            if (updateGlobalVariable) 
+            if (updateGlobalVariable)
                 groupID = newGroupID;
         }
 
@@ -1154,7 +1149,7 @@ namespace FS_LevelEditor
         }
     }
 
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class DisabledMeshEnforcer : MonoBehaviour
     {
         public MeshRenderer targetRenderer;

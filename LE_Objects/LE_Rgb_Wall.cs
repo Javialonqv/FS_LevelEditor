@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Rgb_Wall : LE_Object
     {
         MeshRenderer wallRenderer;

@@ -1,23 +1,13 @@
-using FS_LevelEditor.UI_Related;
-using Il2Cpp;
-using Il2CppInControl;
-using MelonLoader;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
 using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
+using FS_LevelEditor.UI_Related;
+using System.Collections;
+using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_MenuUIManager : MonoBehaviour
     {
         public static LE_MenuUIManager Instance;

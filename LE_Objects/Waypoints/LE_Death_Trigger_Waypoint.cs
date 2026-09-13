@@ -1,15 +1,9 @@
 ﻿using FS_LevelEditor.WaypointSupports;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using static FS_LevelEditor.LE_Death_Trigger;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Death_Trigger_Waypoint : LE_Waypoint
     {
         GameObject sprite;
@@ -58,13 +52,13 @@ namespace FS_LevelEditor
         public override bool SetProperty(string name, object value)
         {
             if (name == "RotatePlayer")
-			{
-				if (value is bool)
-				{
-					properties["RotatePlayer"] = (bool)value;
-					return true;
-				}
-			}
+            {
+                if (value is bool)
+                {
+                    properties["RotatePlayer"] = (bool)value;
+                    return true;
+                }
+            }
 
             return base.SetProperty(name, value);
         }

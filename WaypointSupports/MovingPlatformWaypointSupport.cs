@@ -1,15 +1,8 @@
-﻿using Il2Cpp;
-using Microsoft.Diagnostics.Runtime;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FS_LevelEditor.WaypointSupports
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class MovingPlatformWaypointSupport : WaypointSupport
     {
         public override List<WaypointData> targetWaypointsData => targetObject.GetProperty<List<WaypointData>>("waypoints");

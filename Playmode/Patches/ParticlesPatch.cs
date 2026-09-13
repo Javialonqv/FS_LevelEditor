@@ -1,11 +1,4 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FS_LevelEditor.Playmode.Patches
+﻿namespace FS_LevelEditor.Playmode.Patches
 {
     [HarmonyLib.HarmonyPatch(typeof(Controls), nameof(Controls.UpdateAllParticleObjects))]
     public static class ParticlesPatch

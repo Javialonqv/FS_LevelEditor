@@ -1,14 +1,10 @@
-﻿using FS_LevelEditor.Editor;
-using FS_LevelEditor.Playmode;
-using Il2Cpp;
-using Il2CppDiscord;
+﻿using FS_LevelEditor.Playmode;
 using UnityEngine;
 using UnityEngine.Events;
-using static MelonLoader.MelonLogger;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Jetpack : LE_Object
     {
         JetPack jetpack;

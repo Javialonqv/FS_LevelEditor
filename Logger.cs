@@ -1,10 +1,4 @@
-﻿using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 namespace FS_LevelEditor
 {
@@ -37,7 +31,7 @@ namespace FS_LevelEditor
         public static void Error(object message, bool passive = false)
         {
             IncomingErrorIsPassive = passive;
-            
+
             // Capture the stack trace this way so it also gets the calling functions and all.
             string stackTrace = new StackTrace(1, true).ToString(); // "1" to skip this (Logger.Error) function call frame, and only include the CALLING function.
 

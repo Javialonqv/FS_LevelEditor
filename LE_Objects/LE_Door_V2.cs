@@ -1,17 +1,11 @@
 ﻿using FS_LevelEditor.Editor;
-using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using InitialState = FS_LevelEditor.LE_Door.InitialState;
 using InitialStateAuto = FS_LevelEditor.LE_Door.InitialStateAuto;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     internal class LE_Door_V2 : LE_Object
     {
         GameObject cyanPillars, redPillars;

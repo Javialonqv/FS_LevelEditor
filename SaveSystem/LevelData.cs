@@ -1,21 +1,9 @@
 ﻿using FS_LevelEditor.Editor;
-using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
-using Harmony;
-using Il2Cpp;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor.SaveSystem
 {

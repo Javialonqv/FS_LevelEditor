@@ -1,12 +1,6 @@
 ﻿using FS_LevelEditor.Editor.UI;
-using Il2Cpp;
-using Il2CppI2.Loc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FS_LevelEditor
 {

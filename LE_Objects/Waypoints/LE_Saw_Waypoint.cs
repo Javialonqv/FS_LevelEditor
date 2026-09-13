@@ -1,18 +1,9 @@
 ﻿using FS_LevelEditor;
-using FS_LevelEditor.WaypointSupports;
-using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using FS_LevelEditor.Editor;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Saw_Waypoint : LE_Waypoint
     {
         // Override the LE_Waypoint implementation.

@@ -1,18 +1,10 @@
-﻿using Il2Cpp;
-using MelonLoader;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Death_Trigger : LE_Object
     {
         public enum TriggerType { RELOCATION, IMMINENT }
@@ -134,7 +126,7 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-			else if (name == "Delay")
+            else if (name == "Delay")
             {
                 if (value is string)
                 {
@@ -158,22 +150,22 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
-			else if (name == "waypoints")
-			{
-				if (value is List<WaypointData>)
-				{
-					properties["waypoints"] = (List<WaypointData>)value;
-					return true;
-				}
-			}
-			else if (GetAvailableEventsIDs().Contains(name))
-			{
-				if (value is List<LE_Event>)
-				{
-					properties[name] = (List<LE_Event>)value;
-				}
-			}
-			return base.SetProperty(name, value);
+            else if (name == "waypoints")
+            {
+                if (value is List<WaypointData>)
+                {
+                    properties["waypoints"] = (List<WaypointData>)value;
+                    return true;
+                }
+            }
+            else if (GetAvailableEventsIDs().Contains(name))
+            {
+                if (value is List<LE_Event>)
+                {
+                    properties[name] = (List<LE_Event>)value;
+                }
+            }
+            return base.SetProperty(name, value);
         }
         public override bool TriggerAction(string actionName)
         {
@@ -186,17 +178,17 @@ namespace FS_LevelEditor
             return base.TriggerAction(actionName);
         }
 
-	    void ConfigureEvents(ContainmentBox script)
-		{
-			script.onTeleport = new UnityEngine.Events.UnityEvent();
-			script.onTeleport.AddListener((UnityAction)ExecuteOnTeleportEvents);
-		}
-		public void ExecuteOnTeleportEvents()
-		{
-			// OnTeleport is a one-shot activating event for AND logic purposes
-			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnTeleport"], "OnTeleport", true);
-		}
-		public static new Color GetDefaultObjectColor(LEObjectContext context)
+        void ConfigureEvents(ContainmentBox script)
+        {
+            script.onTeleport = new UnityEngine.Events.UnityEvent();
+            script.onTeleport.AddListener((UnityAction)ExecuteOnTeleportEvents);
+        }
+        public void ExecuteOnTeleportEvents()
+        {
+            // OnTeleport is a one-shot activating event for AND logic purposes
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnTeleport"], "OnTeleport", true);
+        }
+        public static new Color GetDefaultObjectColor(LEObjectContext context)
         {
             return new Color(1f, 0f, 0f, 0.05f);
         }
@@ -249,7 +241,7 @@ namespace FS_LevelEditor
         }
     }
 
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class DeathTriggerRespawnRotationPatcher : MonoBehaviour
     {
         LE_Death_Trigger script;

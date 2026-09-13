@@ -1,20 +1,10 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
-using Il2Cpp;
-using Il2CppSystem;
-using Il2CppSystem.Security.Cryptography;
-using Il2CppTMPro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using static Il2Cpp.UpgradePageController;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Upgrade_Terminal : LE_Object
     {
         public override string contentObjectName => "Computer";

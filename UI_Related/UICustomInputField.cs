@@ -1,13 +1,8 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FS_LevelEditor.UI_Related
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class UICustomInputField : MonoBehaviour
     {
         public enum UIInputType

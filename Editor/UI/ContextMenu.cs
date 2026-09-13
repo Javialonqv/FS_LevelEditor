@@ -1,17 +1,9 @@
 ﻿using FS_LevelEditor.UI_Related;
-using Il2Cpp;
-using Il2CppVLB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace FS_LevelEditor.Editor.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class ContextMenu : MonoBehaviour
     {
         UIPanel mainPanel;
@@ -85,7 +77,7 @@ namespace FS_LevelEditor.Editor.UI
         void GetDirections()
         {
             Vector3 mousePos = Input.mousePosition;
-            
+
             horizontalDir = ((mousePos.x + optionsWidth) > Screen.width) ? HorizontalDirection.Left : HorizontalDirection.Right;
             verticalDir = ((mousePos.y - (optionsHeight * menuOptions.Count)) < 0) ? VerticalDirection.Up :
                 VerticalDirection.Down;
@@ -198,7 +190,7 @@ namespace FS_LevelEditor.Editor.UI
             }
 
             // ---------- CREATE SUBOPTIONS ----------
-            
+
             Transform subOptionsParent = null;
             for (int i = 0; i < option.subOptions.Count; i++)
             {
@@ -279,7 +271,7 @@ namespace FS_LevelEditor.Editor.UI
         }
     }
 
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class ContextMenuButton : MonoBehaviour
     {
         static bool requestedToHideSubOptions = false;

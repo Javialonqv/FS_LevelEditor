@@ -1,18 +1,11 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
-using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace FS_LevelEditor.Editor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class EditorPauseMenuPatcher : MonoBehaviour
     {
         public static EditorPauseMenuPatcher patcher;
@@ -288,13 +281,13 @@ namespace FS_LevelEditor.Editor
         public void SaveLevelWithPauseMenuButton()
         {
             Logger.Log("Saving Level Data from pause menu...");
-            
+
             // Show "Saving..." notification immediately
             if (NotificationSystem.Instance != null)
             {
                 NotificationSystem.Instance.ShowNotification("Saving level...", "WhiteSquare");
             }
-            
+
             // Check if level has metadata - if not, show metadata popup
             if (!LevelData.HasMetadata(EditorController.Instance.levelFileNameWithoutExtension))
             {
@@ -307,7 +300,7 @@ namespace FS_LevelEditor.Editor
                 }
                 return;
             }
-            
+
             // Has metadata - just save directly, preserving existing metadata
             LevelData.SaveLevelData(EditorController.Instance.levelName, EditorController.Instance.levelFileNameWithoutExtension);
             EditorController.Instance.levelHasBeenModified = false;

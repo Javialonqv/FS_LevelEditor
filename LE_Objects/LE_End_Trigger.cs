@@ -1,16 +1,10 @@
 ﻿using FS_LevelEditor;
 using FS_LevelEditor.Playmode;
-using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_End_Trigger : LE_Object
     {
         void Awake()
@@ -55,7 +49,7 @@ public static class EndCheckpointReachedPatch
             _objectCollided.SetActive(false);
             PlayModeController.Instance.endTriggerReached = true;
             LE_MenuUIManager.Instance.GoBackToLEWhileInPlayMode(
-                PlayModeController.Instance.levelFileNameWithoutExtension, 
+                PlayModeController.Instance.levelFileNameWithoutExtension,
                 PlayModeController.Instance.levelName
             );
         }

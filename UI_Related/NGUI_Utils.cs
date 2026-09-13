@@ -1,13 +1,4 @@
-﻿using FS_LevelEditor.Editor.UI;
-using Il2Cpp;
-using Il2CppI2.Loc;
-using Il2CppInControl.NativeDeviceProfiles;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FS_LevelEditor.UI_Related
 {
@@ -65,22 +56,22 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
-		static UIFont _juraFont;
-		public static UIFont juraFont
-		{
-			get
-			{
-				if (!_juraFont)
-				{
-					var titleObj = GameObject.Find("MainMenu/Camera/Holder/Options/Title");
-					if (titleObj)
-						_juraFont = titleObj.GetComponent<UILabel>().font;
-					else
-						_juraFont = labelFont; // fallback
-				}
-				return _juraFont;
-			}
-		}
+        static UIFont _juraFont;
+        public static UIFont juraFont
+        {
+            get
+            {
+                if (!_juraFont)
+                {
+                    var titleObj = GameObject.Find("MainMenu/Camera/Holder/Options/Title");
+                    if (titleObj)
+                        _juraFont = titleObj.GetComponent<UILabel>().font;
+                    else
+                        _juraFont = labelFont; // fallback
+                }
+                return _juraFont;
+            }
+        }
         static UIFont _notoSansFont;
         public static UIFont notoSansFont
         {
@@ -91,8 +82,8 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
-		// Color
-		public static Color fsPauseButtonsDefaultColor
+        // Color
+        public static Color fsPauseButtonsDefaultColor
         {
             get { return new Color(0f, 0.3603f, 0.3603f, 1f); }
         }

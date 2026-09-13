@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FS_LevelEditor.SaveSystem.SerializableTypes;
 using UnityEngine;
-using FS_LevelEditor.SaveSystem.SerializableTypes;
 
 namespace FS_LevelEditor.SaveSystem
 {
@@ -31,7 +25,7 @@ namespace FS_LevelEditor.SaveSystem
         public Vector3Serializable objPosition { get; set; }
         public Vector3Serializable objRotation { get; set; }
         public Vector3Serializable objScale { get; set; } = new Vector3Serializable(Vector3.one);
-        
+
         public LE_ObjectData()
         {
 
@@ -52,7 +46,7 @@ namespace FS_LevelEditor.SaveSystem
             groupID = originalObj.groupID;
 
             SavePatchesLegacy.AddPropertiesToObjectToSave(this, originalObj);
-            waypoints = new (originalObj.waypoints);
+            waypoints = new(originalObj.waypoints);
 
             objPosition = originalObj.transform.localPosition;
             objRotation = originalObj.transform.localEulerAngles;

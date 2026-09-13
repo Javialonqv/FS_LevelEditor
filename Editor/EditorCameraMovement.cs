@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Il2Cpp;
-using Il2CppInControl;
-using MelonLoader;
+﻿using FS_LevelEditor.Editor.UI;
 using UnityEngine;
-using FS_LevelEditor.Editor.UI;
 
 namespace FS_LevelEditor.Editor
 {
-    [RegisterTypeInIl2Cpp]
+
     public class EditorCameraMovement : MonoBehaviour
     {
         public enum CameraMove { NONE, NORMAL, MOUSE_DRAG }
@@ -24,11 +16,11 @@ namespace FS_LevelEditor.Editor
         public float xRotation = 0f;
         public float yRotation = 0f;
 
-		//To jaiv - this one is to make sure no "sudden rotation" happens.
+        //To jaiv - this one is to make sure no "sudden rotation" happens.
         // Alright, but at least make the code somehow readable lmao. - Jav.
-		bool rotationInitialized;
+        bool rotationInitialized;
 
-		private const float MIN_MOVE_SPEED = 5f;
+        private const float MIN_MOVE_SPEED = 5f;
         private const float MAX_MOVE_SPEED = 60f;
         private const float SPEED_CHANGE_RATE = 5f;
 
@@ -50,31 +42,31 @@ namespace FS_LevelEditor.Editor
             Instance = this;
 
             InitializeRotationFromTransform();
-		}
-		void OnEnable()
-		{
-			// In case object is disabled/enabled from editor, ensure rotation stays in sync
-			InitializeRotationFromTransform();
-		}
+        }
+        void OnEnable()
+        {
+            // In case object is disabled/enabled from editor, ensure rotation stays in sync
+            InitializeRotationFromTransform();
+        }
 
-		void InitializeRotationFromTransform()
-		{
-			if (rotationInitialized) return;
+        void InitializeRotationFromTransform()
+        {
+            if (rotationInitialized) return;
 
-			// Use current transform local euler so first mouse movement does not snap to (0,0,0)
-			Vector3 e = transform.localEulerAngles;
+            // Use current transform local euler so first mouse movement does not snap to (0,0,0)
+            Vector3 e = transform.localEulerAngles;
 
-			// Convert Unity's 0..360 representation to -180..180 for the X axis so clamp works correctly
-			float ex = e.x;
-			if (ex > 180f) ex -= 360f;
+            // Convert Unity's 0..360 representation to -180..180 for the X axis so clamp works correctly
+            float ex = e.x;
+            if (ex > 180f) ex -= 360f;
 
-			xRotation = Mathf.Clamp(ex, -90f, 90f); // respect existing clamp
-			yRotation = e.y; // yaw can wrap freely
+            xRotation = Mathf.Clamp(ex, -90f, 90f); // respect existing clamp
+            yRotation = e.y; // yaw can wrap freely
 
-			rotationInitialized = true;
-		}
+            rotationInitialized = true;
+        }
 
-		void Update()
+        void Update()
         {
             if (!EditorController.IsCurrentState(EditorState.NORMAL) && !EditorController.IsCurrentState(EditorState.SELECTING_TARGET_OBJ))
                 return;
@@ -122,13 +114,13 @@ namespace FS_LevelEditor.Editor
         }
         void MoveCamera()
         {
-			float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? moveSpeed * 2f : moveSpeed;
-			float inputX = InControlSingleton.Instance.playerActions.Move.X;
+            float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? moveSpeed * 2f : moveSpeed;
+            float inputX = InControlSingleton.Instance.playerActions.Move.X;
             float inputZ = InControlSingleton.Instance.playerActions.Move.Y;
-			Vector3 toMove = transform.right * inputX * currentSpeed * Time.deltaTime +
-				 transform.forward * inputZ * currentSpeed * Time.deltaTime;
+            Vector3 toMove = transform.right * inputX * currentSpeed * Time.deltaTime +
+                 transform.forward * inputZ * currentSpeed * Time.deltaTime;
 
-			transform.position += toMove;
+            transform.position += toMove;
         }
         void ManageMoveSpeed()
         {
@@ -222,8 +214,8 @@ namespace FS_LevelEditor.Editor
         {
             xRotation = eulerAngles.x;
             yRotation = eulerAngles.y;
-			rotationInitialized = true;
-			RotateCamera();
+            rotationInitialized = true;
+            RotateCamera();
         }
 
         void ManageDownAndUp()

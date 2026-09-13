@@ -1,15 +1,9 @@
-﻿using MelonLoader;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace FS_LevelEditor.Misc
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class ScaleTweener : MonoBehaviour
     {
         Coroutine scaleRoutine;

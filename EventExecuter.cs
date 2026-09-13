@@ -1,15 +1,8 @@
-﻿using Il2Cpp;
-using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using FS_LevelEditor.Editor;
+﻿using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
 using System.Collections;
+using UnityEngine;
 
 namespace FS_LevelEditor
 {
@@ -35,7 +28,7 @@ namespace FS_LevelEditor
         }
     }
 
-    [RegisterTypeInIl2Cpp]
+
     public class EventExecuter : MonoBehaviour
     {
         LE_Object originalObject;
@@ -97,7 +90,7 @@ namespace FS_LevelEditor
         void Start()
         {
             ReValidateEditorLinks();
-        } 
+        }
         public void OnSelect()
         {
             ReValidateEditorLinks();
@@ -322,8 +315,8 @@ namespace FS_LevelEditor
                 {
                     PlayModeController.Instance.InvertPlayerGravity();
                 }
-                
-                if(!@event.flashlightEnabled)
+
+                if (!@event.flashlightEnabled)
                     Controls.Instance.SetFlashlightNotAllowed();
                 else
                     Controls.Instance.SetFlashlightAllowed();

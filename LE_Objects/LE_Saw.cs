@@ -1,12 +1,9 @@
 ﻿using FS_LevelEditor.Editor;
-using FS_LevelEditor.Playmode;
-using Il2Cpp;
-using Il2CppDiscord;
 using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Saw : LE_Object
     {
         ScieScript script;

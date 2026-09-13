@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MelonLoader;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FS_LevelEditor.Misc
 {
-    [RegisterTypeInIl2Cpp]
+
     public class GlobalScaleChanger : MonoBehaviour
     {
         public Transform relativeTo;

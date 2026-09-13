@@ -1,24 +1,14 @@
-﻿using System;
-using System.Collections;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using UnityEngine;
-using Il2Cpp;
-using MelonLoader;
-using UnityEngine.UIElements;
-using System.Runtime.CompilerServices;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class ExternalSpriteLoader : MonoBehaviour
     {
         public static ExternalSpriteLoader Instance;
 
-        Il2CppAssetBundle assetBundle;
+        AssetBundle assetBundle;
         Sprite[] allBundleSprites;
 
         Dictionary<Texture2D, List<Sprite>> sprites = new Dictionary<Texture2D, List<Sprite>>();
@@ -42,7 +32,7 @@ namespace FS_LevelEditor
             byte[] assetBytes = new byte[assetStream.Length];
             assetStream.Read(assetBytes);
 
-            assetBundle = Il2CppAssetBundleManager.LoadFromMemory(assetBytes);
+            assetBundle = AssetBundleManager.LoadFromMemory(assetBytes);
 
             allBundleSprites = assetBundle.LoadAll<Sprite>();
             foreach (var sprite in allBundleSprites)

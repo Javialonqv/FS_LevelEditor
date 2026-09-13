@@ -1,19 +1,11 @@
 ﻿using FS_LevelEditor.Editor;
-using FS_LevelEditor.Misc;
 using FS_LevelEditor.Playmode;
-using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
-using static MelonLoader.MelonLaunchOptions;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Power_Slot : LE_Object
     {
         public enum PowerSlotState

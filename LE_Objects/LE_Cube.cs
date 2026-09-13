@@ -1,17 +1,9 @@
-﻿using Il2Cpp;
-using Il2CppInControl.UnityDeviceProfiles;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FS_LevelEditor.Editor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using FS_LevelEditor.Editor;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Cube : LE_Object
     {
         BlocScript blocScript;

@@ -1,15 +1,8 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using static FS_LevelEditor.LE_Door;
+﻿using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Flame_Trap : LE_Object
     {
         FlameTrapController trap;

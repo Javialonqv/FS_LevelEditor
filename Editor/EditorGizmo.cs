@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FS_LevelEditor.Editor
 {
     public enum GizmosArrow { None, X, Y, Z }
 
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class EditorGizmo : MonoBehaviour
     {
         public EditorGizmo Instance;
@@ -46,7 +41,7 @@ namespace FS_LevelEditor.Editor
 
         public GizmosArrow GetHoveredArrow(out Ray usedRay)
         {
-             usedRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+            usedRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             return GetHoveredArrow(usedRay);
         }

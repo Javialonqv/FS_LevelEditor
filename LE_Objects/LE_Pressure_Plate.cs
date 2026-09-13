@@ -1,17 +1,10 @@
 ﻿using FS_LevelEditor.Editor;
-using FS_LevelEditor.Editor.UI;
-using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Pressure_Plate : LE_Object
     {
         MeshRenderer redPlane, greenPlane;
@@ -84,7 +77,7 @@ namespace FS_LevelEditor
             script.meshDynamic = content.GetChild("MeshDynamic").GetComponent<MeshRenderer>();
             script.onRemove = new Messenger();
             script.canBeCancelled = true;
-            
+
             script.worksWithCubes = true;
             script.switchType = SequenceSwitchController.SwitchType.RED;
             //script.onDropEvent = new UnityEngine.Events.UnityEvent();

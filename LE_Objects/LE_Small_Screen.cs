@@ -2,19 +2,12 @@
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Misc;
 using FS_LevelEditor.Playmode;
-using Il2Cpp;
-using Il2CppTMPro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Small_Screen : LE_Object
     {
         public static Color textCyanColor = new Color(0.184f, 0.9297f, 1f);
@@ -29,10 +22,10 @@ namespace FS_LevelEditor
         GameObject greenMesh, redMesh;
         TextMeshPro screenText;
 
-		//Made for templates feature
-		string _rawTemplateText;
+        //Made for templates feature
+        string _rawTemplateText;
 
-		void Awake()
+        void Awake()
         {
             wholeMesh = gameObject.GetChildAt("Content/Mesh");
             greenMesh = gameObject.GetChildAt("Content/Mesh/GreenPlane");
@@ -62,11 +55,11 @@ namespace FS_LevelEditor
         public override void ObjectStart(LEScene scene)
         {
             SetScreenColor(GetProperty<ScreenColorType>("ColorType"));
-			_rawTemplateText = GetProperty<string>("Text");
-			SetScreenText(_rawTemplateText);
-			UpdateScreenTextFont();
+            _rawTemplateText = GetProperty<string>("Text");
+            SetScreenText(_rawTemplateText);
+            UpdateScreenTextFont();
 
-			base.ObjectStart(scene);
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()
@@ -225,23 +218,23 @@ namespace FS_LevelEditor
                 }
             }
             else if (name == "Text")
-			{
-				properties["Text"] = value.ToString();
-				_rawTemplateText = value.ToString();
-				if (PlayModeController.Instance)
-				{
-					SetScreenText(_rawTemplateText); // Only requires manually update in playmode.
-				}
+            {
+                properties["Text"] = value.ToString();
+                _rawTemplateText = value.ToString();
+                if (PlayModeController.Instance)
+                {
+                    SetScreenText(_rawTemplateText); // Only requires manually update in playmode.
+                }
 
-				// Since this will convert the value to string no matter what, it'll catch the JsonElement before base.SetProperty() does, so, skip the warning in case it is
-				// JsonElement.
-				if (value is not string && value is not JsonElement)
-				{
-					Logger.Warning($"The value wasn't a string, that's not expected, the value type was \"{value.GetType().Name}\".");
-				}
-			}
+                // Since this will convert the value to string no matter what, it'll catch the JsonElement before base.SetProperty() does, so, skip the warning in case it is
+                // JsonElement.
+                if (value is not string && value is not JsonElement)
+                {
+                    Logger.Warning($"The value wasn't a string, that's not expected, the value type was \"{value.GetType().Name}\".");
+                }
+            }
 
-			return base.SetProperty(name, value);
+            return base.SetProperty(name, value);
         }
         public override bool TriggerAction(string actionName)
         {
@@ -250,16 +243,16 @@ namespace FS_LevelEditor
                 TextEditorUI.Instance.ShowTextEditor(this);
                 return true;
             }
-			else if (actionName == "OnTextEditorClose")
-			{
-				// NOT update the screen mesh color since that's in another property that's NOT in the text editor.
-				_rawTemplateText = GetProperty<string>("Text");
-				SetScreenText(_rawTemplateText);
-				UpdateScreenTextFont();
-				return true;
-			}
+            else if (actionName == "OnTextEditorClose")
+            {
+                // NOT update the screen mesh color since that's in another property that's NOT in the text editor.
+                _rawTemplateText = GetProperty<string>("Text");
+                SetScreenText(_rawTemplateText);
+                UpdateScreenTextFont();
+                return true;
+            }
 
-			else if (actionName == "InvertText")
+            else if (actionName == "InvertText")
             {
                 if (screen.isInverted)
                 {
@@ -357,10 +350,10 @@ namespace FS_LevelEditor
             screenText.alignment = alignment;
         }
         void SetScreenText(string raw)
-		{
-			string expanded = ScreenTemplateExpander.Expand(raw);
-			screenText.text = expanded;
-			ScreenTemplateExpander.EnsureUpdater(screenText, raw);
-		}
-	}
+        {
+            string expanded = ScreenTemplateExpander.Expand(raw);
+            screenText.text = expanded;
+            ScreenTemplateExpander.EnsureUpdater(screenText, raw);
+        }
+    }
 }

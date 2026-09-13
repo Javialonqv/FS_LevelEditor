@@ -1,21 +1,10 @@
 ﻿using FS_LevelEditor.Editor;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem;
-using Il2Cpp;
-using Il2CppI2.Loc;
-using Il2CppInControl.NativeDeviceProfiles;
-using Il2CppInterop.Runtime;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using MelonLoader;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -815,15 +804,15 @@ namespace FS_LevelEditor
             }
         }
 
-		/// <summary>
-		/// Gets the hierarchical path of a GameObject from the root to the object.
-		/// </summary>
-		/// <param name="obj">The GameObject to get the path for.</param>
-		/// <param name="separator">The separator to use between path segments. Default is "/".</param>
-		/// <param name="includeScene">Whether to include the scene name at the beginning of the path.</param>
-		/// <returns>The hierarchical path as a string.</returns>
-		public static string GetGameObjectPath(this GameObject obj, string separator = "/", bool includeScene = false)
-		{
+        /// <summary>
+        /// Gets the hierarchical path of a GameObject from the root to the object.
+        /// </summary>
+        /// <param name="obj">The GameObject to get the path for.</param>
+        /// <param name="separator">The separator to use between path segments. Default is "/".</param>
+        /// <param name="includeScene">Whether to include the scene name at the beginning of the path.</param>
+        /// <returns>The hierarchical path as a string.</returns>
+        public static string GetGameObjectPath(this GameObject obj, string separator = "/", bool includeScene = false)
+        {
             if (obj == null)
                 return string.Empty;
 
@@ -859,5 +848,5 @@ namespace FS_LevelEditor
 
             return null;
         }
-	}
+    }
 }

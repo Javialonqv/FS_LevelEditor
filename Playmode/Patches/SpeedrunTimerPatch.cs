@@ -1,7 +1,4 @@
 ﻿using HarmonyLib;
-using Il2Cpp;
-using MelonLoader;
-using UnityEngine.SceneManagement;
 
 namespace FS_LevelEditor.Playmode.Patches
 {
@@ -17,23 +14,23 @@ namespace FS_LevelEditor.Playmode.Patches
                 if (FractalSave.HasKey($"{PlayModeController.Instance.levelName}_LETime"))
                 {
                     __instance.currentLevelBestTimeLabel.bestTimeLabel.text = Controls.GetFormattedElapsedTimeFromSeconds(FractalSave.GetInt($"{PlayModeController.Instance.levelName}_Time"));
-                   
+
                 }
 
             }
         }
     }
 
-	[HarmonyPatch(typeof(Controls), "UpdateLevelLeaderboard")]
-	public class NoUpdates
-	{
-		public static bool Prefix()
-		{
-			if (PlayModeController.Instance)
-			{
-				return false;
-			}
-			return true;
-		}
-	}
+    [HarmonyPatch(typeof(Controls), "UpdateLevelLeaderboard")]
+    public class NoUpdates
+    {
+        public static bool Prefix()
+        {
+            if (PlayModeController.Instance)
+            {
+                return false;
+            }
+            return true;
+        }
+    }
 }

@@ -1,15 +1,10 @@
 ﻿using FS_LevelEditor.Editor;
 using FS_LevelEditor.Playmode;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class SingleObjectLink : MonoBehaviour
     {
         public virtual LE_Object.ObjectType? targetObjectType => null;

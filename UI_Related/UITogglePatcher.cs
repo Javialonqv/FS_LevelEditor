@@ -1,14 +1,8 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FS_LevelEditor.UI_Related
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class UITogglePatcher : MonoBehaviour
     {
         bool initialized = false;
@@ -22,7 +16,7 @@ namespace FS_LevelEditor.UI_Related
         public bool isChecked => toggle.isChecked;
         public bool isUndefined = false;
 
-        public UITogglePatcher(IntPtr ptr) : base (ptr) { }
+        public UITogglePatcher(IntPtr ptr) : base(ptr) { }
 
         void Awake()
         {
@@ -65,7 +59,7 @@ namespace FS_LevelEditor.UI_Related
 
             if (newState == toggle.isChecked)
             {
-               
+
             }
 
             this.executeOnChange = executeOnChange;
@@ -101,7 +95,8 @@ namespace FS_LevelEditor.UI_Related
             }
 
             // Re-enable after a small delay to avoid a bug where OnToggleChange() was called from an still unknown code, and onClick was executed when it shouldn't.
-            Utils.Invoke(() => {
+            Utils.Invoke(() =>
+            {
                 this.executeOnChange = true;
             }, 0.1f);
         }

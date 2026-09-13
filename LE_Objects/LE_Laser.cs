@@ -1,17 +1,10 @@
 ﻿using FS_LevelEditor;
-using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
 using FS_LevelEditor.Editor;
-using Il2CppAmazingAssets.TerrainToMesh;
+using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Laser : LE_Object
     {
         Laser_H_Controller laser;

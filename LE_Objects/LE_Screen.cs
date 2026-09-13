@@ -2,14 +2,7 @@
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Misc;
 using FS_LevelEditor.Playmode;
-using Il2Cpp;
-using Il2CppTMPro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -21,7 +14,7 @@ namespace FS_LevelEditor
         RED = 2
     }
 
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Screen : LE_Object
     {
         public static Color textCyanColor = new Color(0.184f, 0.9297f, 1f);
@@ -36,10 +29,10 @@ namespace FS_LevelEditor
         GameObject greenMesh, redMesh;
         TextMeshPro screenText;
 
-		//Made for templates feature
-		string _rawTemplateText;
+        //Made for templates feature
+        string _rawTemplateText;
 
-		void Awake()
+        void Awake()
         {
             wholeMesh = gameObject.GetChildAt("Content/Mesh");
             greenMesh = gameObject.GetChildAt("Content/Mesh/GreenPlane");
@@ -70,9 +63,9 @@ namespace FS_LevelEditor
         {
             // No matter the scene (Editor/Playmode) change the mesh.
             SetScreenColor(GetProperty<ScreenColorType>("ColorType"));
-			_rawTemplateText = GetProperty<string>("Text");
-			SetScreenText(_rawTemplateText);
-			UpdateScreenTextFont();
+            _rawTemplateText = GetProperty<string>("Text");
+            SetScreenText(_rawTemplateText);
+            UpdateScreenTextFont();
 
             base.ObjectStart(scene);
         }
@@ -260,10 +253,10 @@ namespace FS_LevelEditor
             }
             else if (actionName == "OnTextEditorClose")
             {
-				// NOT update the screen mesh color since that's in another property that's NOT in the text editor.
-				_rawTemplateText = GetProperty<string>("Text");
-				SetScreenText(_rawTemplateText);
-				UpdateScreenTextFont();
+                // NOT update the screen mesh color since that's in another property that's NOT in the text editor.
+                _rawTemplateText = GetProperty<string>("Text");
+                SetScreenText(_rawTemplateText);
+                UpdateScreenTextFont();
                 return true;
             }
 

@@ -1,55 +1,45 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.Services.Analytics;
+﻿using FS_LevelEditor.Editor;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using FS_LevelEditor.Editor.UI;
-using FS_LevelEditor.Editor;
-using Il2CppTMPro;
-using Il2CppSystem.Runtime.CompilerServices;
 
 namespace FS_LevelEditor
 {
-	[MelonLoader.RegisterTypeInIl2Cpp]
-	public class LE_Keypad : LE_Object
-	{
-		public override string contentObjectName => "LE_Keypad";
+
+    public class LE_Keypad : LE_Object
+    {
+        public override string contentObjectName => "LE_Keypad";
 
         public override string[] EventsIDs =>
-		[
+        [
             "onWinEvents",
             "onFailEvents"
         ];
 
-		InterrupteurController controller;
-		private int keycodeValue = 0;
-		private int alternativeValue = 0;
-		public void Awake()
-		{
-			if (EditorController.Instance)
-			{
-				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(false);
-				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(false);
-			}
-			else
-			{
-				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(true);
-				gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(true);
-			}
-		}
+        InterrupteurController controller;
+        private int keycodeValue = 0;
+        private int alternativeValue = 0;
+        public void Awake()
+        {
+            if (EditorController.Instance)
+            {
+                gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(false);
+                gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(false);
+            }
+            else
+            {
+                gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(true);
+                gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(true);
+            }
+        }
 
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
             {
                 { "Keycode", 1234 },
-				{ "LeaveOnIncorrect", false },
-				{ "canBeUsed", true },
+                { "LeaveOnIncorrect", false },
+                { "canBeUsed", true },
                 { "allCorrect", false },
                 { "onWinEvents", new List<LE_Event>() },
                 { "onFailEvents", new List<LE_Event>() },
@@ -61,88 +51,88 @@ namespace FS_LevelEditor
         }
 
         public override void InitComponent()
-		{
-			GameObject button = gameObject.GetChild("LE_Keypad");
+        {
+            GameObject button = gameObject.GetChild("LE_Keypad");
 
-			button.tag = "Keypad";
-			button.GetChild("Mesh").tag = "Interrupteur";
-			button.SetActive(false);
+            button.tag = "Keypad";
+            button.GetChild("Mesh").tag = "Interrupteur";
+            button.SetActive(false);
 
-			button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
-			button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
-			button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
-			button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
-			button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
-			button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
+            button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
+            button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
+            button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().m_fontAsset = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].m_fontAsset;
+            button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
+            button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
+            button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TMP_Text>().fontMaterial = t_keycode.GetComponentsInChildren<TextMeshPro>()[0].fontMaterial;
 
-			controller = button.AddComponent<InterrupteurController>();
+            controller = button.AddComponent<InterrupteurController>();
 
-			controller.ActivateButtonSound = t_keycode.ActivateButtonSound;
-			controller.allowWhenSwitchingUIContext = true;
-			controller.canBeUsed = GetProperty<bool>("canBeUsed");
-			controller.controlScript = Controls.Instance;
-			controller.iconActivationSound = t_keycode.iconActivationSound;
-			controller.iconDeactivationSound = t_keycode.iconDeactivationSound;
-			controller.IGCType = Controls.InGamePlayerKineType.NONE;
-			controller.manualInteractionTransitionSpeed = 1;
+            controller.ActivateButtonSound = t_keycode.ActivateButtonSound;
+            controller.allowWhenSwitchingUIContext = true;
+            controller.canBeUsed = GetProperty<bool>("canBeUsed");
+            controller.controlScript = Controls.Instance;
+            controller.iconActivationSound = t_keycode.iconActivationSound;
+            controller.iconDeactivationSound = t_keycode.iconDeactivationSound;
+            controller.IGCType = Controls.InGamePlayerKineType.NONE;
+            controller.manualInteractionTransitionSpeed = 1;
 
-			controller.interactableWhileDodge = true;
-			controller.localizedInteractionString = t_keycode.localizedInteractionString;
-			controller.m_audioSource = button.GetComponent<AudioSource>();
-			controller.m_meshRenderer = button.GetChild("Mesh").GetComponent<MeshRenderer>();
-			controller.m_meshTransform = button.GetChild("Mesh").transform;
-			controller.offColor = InterrupteurController.ColorType.RED;
-			controller.offMaterials = t_keycode.offMaterials;
-			controller.onColor = InterrupteurController.ColorType.GREEN;
-			controller.onMaterials = t_keycode.onMaterials;
-			controller.unusableColor = InterrupteurController.ColorType.BLACK;
-			controller.unusableMaterials = t_keycode.unusableMaterials;
-			controller.objectsToDestroy = new GameObject[0];
-			controller.objectsToEnableOnly = new GameObject[0];
-			controller.objectToActivate = new GameObject();
-			controller.messagesOnActivate = new Messenger[0];
-			controller.dialogToActivate = new string[0];
-			controller.currentInGameInputTMPLabel = button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TextMeshPro>();
-			controller.titleInGameInputTMPLabel = button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TextMeshPro>();
-			controller.resetInGameInputTMPLabel = button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TextMeshPro>();
-			controller.useManualInteractionSystem = false;
+            controller.interactableWhileDodge = true;
+            controller.localizedInteractionString = t_keycode.localizedInteractionString;
+            controller.m_audioSource = button.GetComponent<AudioSource>();
+            controller.m_meshRenderer = button.GetChild("Mesh").GetComponent<MeshRenderer>();
+            controller.m_meshTransform = button.GetChild("Mesh").transform;
+            controller.offColor = InterrupteurController.ColorType.RED;
+            controller.offMaterials = t_keycode.offMaterials;
+            controller.onColor = InterrupteurController.ColorType.GREEN;
+            controller.onMaterials = t_keycode.onMaterials;
+            controller.unusableColor = InterrupteurController.ColorType.BLACK;
+            controller.unusableMaterials = t_keycode.unusableMaterials;
+            controller.objectsToDestroy = new GameObject[0];
+            controller.objectsToEnableOnly = new GameObject[0];
+            controller.objectToActivate = new GameObject();
+            controller.messagesOnActivate = new Messenger[0];
+            controller.dialogToActivate = new string[0];
+            controller.currentInGameInputTMPLabel = button.GetChildAt("TMP_Display/KeypadInputInGame_TMP").GetComponent<TextMeshPro>();
+            controller.titleInGameInputTMPLabel = button.GetChildAt("TMP_Display/KeypadTitle_TMP").GetComponent<TextMeshPro>();
+            controller.resetInGameInputTMPLabel = button.GetChildAt("TMP_Display/KeypadReset_TMP").GetComponent<TextMeshPro>();
+            controller.useManualInteractionSystem = false;
 
-			controller.usableOnce = false;
-			controller.ignoreLaser = true;
-			controller.interactionDistanceMultiplier = .8f;
-			controller.isKeypad = true;
-			controller.successfulKeypadColor = t_keycode.successfulKeypadColor;
-			controller.defaultKeypadColor = t_keycode.defaultKeypadColor;
+            controller.usableOnce = false;
+            controller.ignoreLaser = true;
+            controller.interactionDistanceMultiplier = .8f;
+            controller.isKeypad = true;
+            controller.successfulKeypadColor = t_keycode.successfulKeypadColor;
+            controller.defaultKeypadColor = t_keycode.defaultKeypadColor;
 
-			GameObject parent = new GameObject("LE_KeypadOffset");
-			parent.transform.SetParent(GameObject.Find("2DGUI/Camera/MiniGames").transform);
-			parent.transform.localPosition = new Vector3(0, 760, 0);
-			parent.transform.localScale = Vector3.one;
-			parent.layer = LayerMask.NameToLayer("MiniGames");
+            GameObject parent = new GameObject("LE_KeypadOffset");
+            parent.transform.SetParent(GameObject.Find("2DGUI/Camera/MiniGames").transform);
+            parent.transform.localPosition = new Vector3(0, 760, 0);
+            parent.transform.localScale = Vector3.one;
+            parent.layer = LayerMask.NameToLayer("MiniGames");
 
-			KeycodeController keycode = Instantiate(t_keycodeM, t_keycodeM.transform.position, t_keycodeM.transform.rotation, parent.transform);
-			keycode.name = "LE_Keycode";
-			keycode.onlyOnce = true;
-			keycode.m_messagesOnWin = new Il2CppSystem.Collections.Generic.List<Messenger>();
-			keycode.switchVisualState = true;
-			keycode.attachedSwitch = controller.gameObject;
-			keycode.destroyOnWin = true;
-			keycode.onWinEvents = new UnityEvent();
-			keycode.onFailEvents = new UnityEvent();
-			keycode.gameObject.SetActive(false);
-			keycode.sourceToPlayOn = Controls.Instance.m_audioSource;
+            KeycodeController keycode = Instantiate(t_keycodeM, t_keycodeM.transform.position, t_keycodeM.transform.rotation, parent.transform);
+            keycode.name = "LE_Keycode";
+            keycode.onlyOnce = true;
+            keycode.m_messagesOnWin = new Il2CppSystem.Collections.Generic.List<Messenger>();
+            keycode.switchVisualState = true;
+            keycode.attachedSwitch = controller.gameObject;
+            keycode.destroyOnWin = true;
+            keycode.onWinEvents = new UnityEvent();
+            keycode.onFailEvents = new UnityEvent();
+            keycode.gameObject.SetActive(false);
+            keycode.sourceToPlayOn = Controls.Instance.m_audioSource;
 
-			keycodeValue = (int)GetProperty<int>("Keycode");
+            keycodeValue = (int)GetProperty<int>("Keycode");
 #if EXP_ONLY
-			alternativeValue = (int)GetProperty<int>("AlternativeComb");
+            alternativeValue = (int)GetProperty<int>("AlternativeComb");
 #endif
 
-			// Ensure it's always 4 digits (pad with zeros if needed)
-			var digits = keycodeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
+            // Ensure it's always 4 digits (pad with zeros if needed)
+            var digits = keycodeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
 
-			var il2cppDigits = new Il2CppSystem.Collections.Generic.List<int>();
-			foreach (var d in digits)
-				il2cppDigits.Add(d);
+            var il2cppDigits = new Il2CppSystem.Collections.Generic.List<int>();
+            foreach (var d in digits)
+                il2cppDigits.Add(d);
 
 #if EXP_ONLY
             var alternative_Combo = alternativeValue.ToString("D4").Select(c => int.Parse(c.ToString())).ToList();
@@ -152,27 +142,27 @@ namespace FS_LevelEditor
                 il2cppDigits_alternative.Add(d);
 #endif
 
-			keycode.keycode.combination = il2cppDigits;
-			keycode.keycode.label = keycode.gameObject.GetChildAt("Screen/Label/Label.Label").GetComponent<UILabel>();
-			keycode.keycode.keycodeController = keycode;
+            keycode.keycode.combination = il2cppDigits;
+            keycode.keycode.label = keycode.gameObject.GetChildAt("Screen/Label/Label.Label").GetComponent<UILabel>();
+            keycode.keycode.keycodeController = keycode;
 #if EXP_ONLY
             keycode.keycode.useAlternativeCombination = GetProperty<bool>("Alternative");
-			keycode.keycode.alternateCombination = il2cppDigits_alternative;
+            keycode.keycode.alternateCombination = il2cppDigits_alternative;
 #endif
-			keycode.keycode.birthdayInput = GetProperty<bool>("allCorrect");	
+            keycode.keycode.birthdayInput = GetProperty<bool>("allCorrect");
 
-			controller.objectsToActivate = new GameObject[] { keycode.gameObject };
+            controller.objectsToActivate = new GameObject[] { keycode.gameObject };
 
-			button.name = "LE_Keypad";
+            button.name = "LE_Keypad";
 
-			button.SetActive(true);
+            button.SetActive(true);
 
-			button.GetChild("AdditionalInteractionCollider").layer = LayerMask.NameToLayer("ActivableCheck");
-			button.GetChild("AdditionalInteractionCollider_Radial").layer = LayerMask.NameToLayer("ActivableCheck");
-			button.GetChild("AdditionalInteractionCollider").tag = "InteractionCollider";
-			button.GetChild("AdditionalInteractionCollider_Radial").tag = "InteractionCollider";
+            button.GetChild("AdditionalInteractionCollider").layer = LayerMask.NameToLayer("ActivableCheck");
+            button.GetChild("AdditionalInteractionCollider_Radial").layer = LayerMask.NameToLayer("ActivableCheck");
+            button.GetChild("AdditionalInteractionCollider").tag = "InteractionCollider";
+            button.GetChild("AdditionalInteractionCollider_Radial").tag = "InteractionCollider";
 
-			ConfigureEvents(keycode);
+            ConfigureEvents(keycode);
 
             if (GetProperty<bool>("LeaveOnIncorrect"))
             {
@@ -180,33 +170,33 @@ namespace FS_LevelEditor
             }
 
             initialized = true;
-		}
-		public override bool SetProperty(string name, object value)
-		{
+        }
+        public override bool SetProperty(string name, object value)
+        {
 
-			if (GetAvailableEventsIDs().Contains(name))
-			{
-				if (value is List<LE_Event>)
-				{
-					properties[name] = (List<LE_Event>)value;
-				}
-			}
-			else if (name == "Keycode")
-			{
-				if (value is int)
-				{
-					properties["Keycode"] = (int)value;
-					return true;
-				}
-				else if (value is string)
-				{
-					if (int.TryParse((string)value, out int result))
-					{
-						properties["Keycode"] = result;
-						return true;
-					}
-				}
-			}
+            if (GetAvailableEventsIDs().Contains(name))
+            {
+                if (value is List<LE_Event>)
+                {
+                    properties[name] = (List<LE_Event>)value;
+                }
+            }
+            else if (name == "Keycode")
+            {
+                if (value is int)
+                {
+                    properties["Keycode"] = (int)value;
+                    return true;
+                }
+                else if (value is string)
+                {
+                    if (int.TryParse((string)value, out int result))
+                    {
+                        properties["Keycode"] = result;
+                        return true;
+                    }
+                }
+            }
             else if (name == "AlternativeComb")
             {
                 if (value is int)
@@ -248,63 +238,63 @@ namespace FS_LevelEditor
                 }
             }
             else if (name == "allCorrect")
-			{
-				if (value is bool)
-				{
-					properties["allCorrect"] = (bool)value;
-					return true;
-				}
-			}
+            {
+                if (value is bool)
+                {
+                    properties["allCorrect"] = (bool)value;
+                    return true;
+                }
+            }
 
-			return base.SetProperty(name, value);
-		}
-	void ConfigureEvents(KeycodeController script)
-		{
-			script.onWinEvents = new UnityEngine.Events.UnityEvent();
-			script.onWinEvents.AddListener((UnityAction)ExecuteOnWinEvents);
-
-			script.onFailEvents = new UnityEngine.Events.UnityEvent();
-			script.onFailEvents.AddListener((UnityAction)ExecuteOnFailEvents);
-		}
-		void ExecuteOnWinEvents()
-		{
-			// OnWin is a one-shot activating event (permanently latched as "active" for AND logic)
-			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["onWinEvents"], "onWinEvents", true);
-		}
-		void ExecuteOnFailEvents()
-		{
-			// OnFail is a one-shot event, treated as activating for AND logic purposes
-			eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["onFailEvents"], "onFailEvents", true);
-		}
-
-		public override bool TriggerAction(string actionName)
-		{
-			if (actionName == "SetCanBeUsed_True")
-			{
-				if (controller != null) controller.canBeUsed = true;
-				return true;
-			}
-			else if (actionName == "SetCanBeUsed_False")
-			{
-				if (controller != null) controller.canBeUsed = false;
-				return true;
-			}
-			else if (actionName == "ToggleCanBeUsed")
-			{
-				if (controller != null) controller.canBeUsed = !controller.canBeUsed;
-				return true;
-			}
-
-			return base.TriggerAction(actionName);
-		}
-
-		public override void SetCollidersStateForEdgeCase(bool newEnabledState)
-        {
-			BoxCollider collider = contentObject.GetComponent<BoxCollider>();
-            collider.isTrigger = !newEnabledState;
-			collider.gameObject.layer = LayerMask.NameToLayer(newEnabledState ? "Default" : "Ignore Raycast");
-			
-			contentObject.GetChild("Mesh").layer = LayerMask.NameToLayer(newEnabledState ? "Default" : "Ignore Raycast");
+            return base.SetProperty(name, value);
         }
-	}
+        void ConfigureEvents(KeycodeController script)
+        {
+            script.onWinEvents = new UnityEngine.Events.UnityEvent();
+            script.onWinEvents.AddListener((UnityAction)ExecuteOnWinEvents);
+
+            script.onFailEvents = new UnityEngine.Events.UnityEvent();
+            script.onFailEvents.AddListener((UnityAction)ExecuteOnFailEvents);
+        }
+        void ExecuteOnWinEvents()
+        {
+            // OnWin is a one-shot activating event (permanently latched as "active" for AND logic)
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["onWinEvents"], "onWinEvents", true);
+        }
+        void ExecuteOnFailEvents()
+        {
+            // OnFail is a one-shot event, treated as activating for AND logic purposes
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["onFailEvents"], "onFailEvents", true);
+        }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "SetCanBeUsed_True")
+            {
+                if (controller != null) controller.canBeUsed = true;
+                return true;
+            }
+            else if (actionName == "SetCanBeUsed_False")
+            {
+                if (controller != null) controller.canBeUsed = false;
+                return true;
+            }
+            else if (actionName == "ToggleCanBeUsed")
+            {
+                if (controller != null) controller.canBeUsed = !controller.canBeUsed;
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
+        }
+
+        public override void SetCollidersStateForEdgeCase(bool newEnabledState)
+        {
+            BoxCollider collider = contentObject.GetComponent<BoxCollider>();
+            collider.isTrigger = !newEnabledState;
+            collider.gameObject.layer = LayerMask.NameToLayer(newEnabledState ? "Default" : "Ignore Raycast");
+
+            contentObject.GetChild("Mesh").layer = LayerMask.NameToLayer(newEnabledState ? "Default" : "Ignore Raycast");
+        }
+    }
 }

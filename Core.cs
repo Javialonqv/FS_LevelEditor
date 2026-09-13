@@ -1,21 +1,13 @@
-﻿using Il2Cpp;
-using Il2CppInControl;
-using MelonLoader;
-using System.Reflection;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using FS_LevelEditor.Editor;
+﻿using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
-using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.Playmode.Patches;
-
-[assembly: MelonInfo(typeof(FS_LevelEditor.Core), "FS_LevelEditor", "0.3.0", "Javialon_qv and Gray", null)]
-[assembly: MelonGame("Haze Games", "Fractal Space")]
+using FS_LevelEditor.SaveSystem;
+using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    public class Core : MelonMod
+    public class Core
     {
         public static string currentSceneName;
         public bool loadCustomLevelOnSceneLoad;
@@ -28,20 +20,20 @@ namespace FS_LevelEditor
 
         public static bool isQuitting;
 
-        public override void OnInitializeMelon()
+        public void OnInitializeMelon()
         {
             LE_CustomErrorPopups.Init();
 
             FixedUpdateProvider.Init();
         }
 
-        public override void OnEarlyInitializeMelon()
+        public void OnEarlyInitializeMelon()
         {
             AssetBundleLoader.PreloadEmbeddedBundle("level_editor");
             AssetBundleLoader.PreloadEmbeddedBundle("leveleditoricons");
         }
 
-        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+        public void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             currentSceneName = sceneName;
 
@@ -156,7 +148,7 @@ namespace FS_LevelEditor
             return null;
         }
 
-        public override void OnApplicationQuit()
+        public void OnApplicationQuit()
         {
             isQuitting = true;
         }

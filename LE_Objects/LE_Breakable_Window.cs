@@ -1,16 +1,9 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Audio;
-using static FS_LevelEditor.LE_Pressure_Plate;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Breakable_Window : LE_Object
     {
         // These values are the same for all of the windows.

@@ -1,5 +1,4 @@
-﻿using MelonLoader;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public enum RotationPath
@@ -8,7 +7,7 @@ public enum RotationPath
     Longest
 }
 
-[RegisterTypeInIl2Cpp]
+
 public class RotationTweener : MonoBehaviour
 {
     Coroutine rotationCoroutine;

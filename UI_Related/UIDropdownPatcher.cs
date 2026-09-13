@@ -1,13 +1,8 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class UIDropdownPatcher : MonoBehaviour
     {
         static List<UIDropdownPatcher> instances = new List<UIDropdownPatcher>();

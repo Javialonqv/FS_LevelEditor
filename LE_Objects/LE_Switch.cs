@@ -1,21 +1,10 @@
 ﻿using FS_LevelEditor.Editor;
-using FS_LevelEditor.Editor.UI;
-using Il2Cpp;
-using Il2CppTMPro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.Services.Analytics;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using static Il2Cpp.KeycodeController;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Switch : LE_Object
     {
         public enum SwitchState
@@ -177,13 +166,16 @@ namespace FS_LevelEditor
             if (GetProperty<bool>("Cyan"))
             {
                 controller.onColor = InterrupteurController.ColorType.CYAN;
-                controller.m_onActivate.AddListener((UnityEngine.Events.UnityAction)delegate {
+                controller.m_onActivate.AddListener((UnityEngine.Events.UnityAction)delegate
+                {
                     controller.offColor = InterrupteurController.ColorType.CYAN;
                 });
-                controller.m_onActivate_HandOnly.AddListener((UnityEngine.Events.UnityAction)delegate {
+                controller.m_onActivate_HandOnly.AddListener((UnityEngine.Events.UnityAction)delegate
+                {
                     controller.offColor = InterrupteurController.ColorType.CYAN;
                 });
-                controller.m_onActivate_TaserOnly.AddListener((UnityEngine.Events.UnityAction)delegate {
+                controller.m_onActivate_TaserOnly.AddListener((UnityEngine.Events.UnityAction)delegate
+                {
                     controller.offColor = InterrupteurController.ColorType.CYAN;
                 });
 

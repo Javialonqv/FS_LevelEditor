@@ -1,18 +1,10 @@
 ﻿using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
-using Il2Cpp;
-using MelonLoader;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace FS_LevelEditor.Editor
 {
@@ -31,7 +23,7 @@ namespace FS_LevelEditor.Editor
         WaypointsAndObjectsWithWaypoints
     }
 
-    [RegisterTypeInIl2Cpp]
+
     public class EditorController : MonoBehaviour
     {
         public static EditorController Instance { get; private set; }
@@ -164,7 +156,7 @@ namespace FS_LevelEditor.Editor
         public Dictionary<string, object> globalProperties = LevelData.GetDefaultGlobalProperties();
         List<Material> skyboxes = new List<Material>();
         List<AudioClip> tracks = new();
-        Il2CppAssetBundle editorAssetBundle; // Keep reference to prevent GC and allow FMOD to access audio data
+        AssetBundle editorAssetBundle; // Keep reference to prevent GC and allow FMOD to access audio data
 
         void Awake()
         {
@@ -196,7 +188,7 @@ namespace FS_LevelEditor.Editor
             Stopwatch watch = Stopwatch.StartNew();
 
             // The bundle was already preloaded in Core.OnEarlyInitializeMelon.
-            Il2CppAssetBundle bundle = AssetBundleLoader.GetLoadedBundle("level_editor");
+            AssetBundle bundle = AssetBundleLoader.GetLoadedBundle("level_editor");
 
             #region Load LE Objects From Bundle
             editorObjectsRootFromBundle = bundle.Load<GameObject>("LevelObjectsRoot");
@@ -3181,14 +3173,14 @@ namespace FS_LevelEditor.Editor
         }
 
         /// <summary>
-     /// Returns if a ray from the mouse position to real world is colliding with a gizmos arrow of an object.
+        /// Returns if a ray from the mouse position to real world is colliding with a gizmos arrow of an object.
         /// Uses prioritization to select the most appropriate axis when multiple colliders overlap.
         /// </summary>
         /// <returns></returns>
         GizmosArrow GetCollidingWithAnArrow()
         {
             GizmosArrow arrow = gizmo.GetHoveredArrow(out Ray ray);
-            
+
             if (arrow != GizmosArrow.None) StartMovingObject(arrow.ToString(), ray);
             return arrow;
         }

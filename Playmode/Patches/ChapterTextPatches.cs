@@ -1,12 +1,5 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using FS_LevelEditor.UI_Related;
 using HarmonyLib;
-using FS_LevelEditor.UI_Related;
 
 namespace FS_LevelEditor.Playmode.Patches
 {

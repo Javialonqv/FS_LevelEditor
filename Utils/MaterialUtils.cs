@@ -1,8 +1,4 @@
 ﻿using FS_LevelEditor.Editor;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -48,7 +44,7 @@ namespace FS_LevelEditor
             createdMaterialsWithColors.Clear();
         }
 
-        public static void LoadMaterials(Il2CppAssetBundle bundle)
+        public static void LoadMaterials(AssetBundle bundle)
         {
             propsMat = bundle.Load<Material>("Props_Mat");
             propsTransMat = bundle.Load<Material>("PropsTransparent_Mat");
@@ -90,7 +86,7 @@ namespace FS_LevelEditor
                     else if (matName.Contains("Props_NoSpec"))
                         toAssign = propsTransNoSpecMat;
                     else if (matName.Contains("NewProps_v1_Light_")) { }
-                        // Do nothing
+                    // Do nothing
                     else if (matName.Contains("NewProps_v1"))
                         toAssign = newPropsv1TransMat;
                     else if (matName.Contains("NewProps_v2"))

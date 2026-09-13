@@ -1,12 +1,4 @@
-﻿using FS_LevelEditor.SaveSystem.SerializableTypes;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 namespace FS_LevelEditor.SaveSystem
 {
@@ -50,7 +42,7 @@ namespace FS_LevelEditor.SaveSystem
             while (schemaVersion < CURRENT_SCHEMA_VERSION)
             {
                 Stopwatch watch = Stopwatch.StartNew();
-                Logger.Log($"[SAVE SYSTEM] [MIGRATOR] Migrating save file from V{schemaVersion} to V{schemaVersion+1}...");
+                Logger.Log($"[SAVE SYSTEM] [MIGRATOR] Migrating save file from V{schemaVersion} to V{schemaVersion + 1}...");
 
                 switch (schemaVersion)
                 {
@@ -64,7 +56,7 @@ namespace FS_LevelEditor.SaveSystem
                 }
 
                 watch.Stop();
-                Logger.Log($"[SAVE SYSTEM] [MIGRATOR] Finished migrating from V{schemaVersion} to V{schemaVersion+1}! Took: {watch.Elapsed}");
+                Logger.Log($"[SAVE SYSTEM] [MIGRATOR] Finished migrating from V{schemaVersion} to V{schemaVersion + 1}! Took: {watch.Elapsed}");
 
                 schemaVersion++;
                 root["schemaVersion"] = schemaVersion;

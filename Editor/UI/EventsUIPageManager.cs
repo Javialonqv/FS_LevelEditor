@@ -1,22 +1,11 @@
 ﻿using FS_LevelEditor;
-using FS_LevelEditor.Editor;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
-using Il2Cpp;
-using Il2CppSystem.Runtime.Remoting.Messaging;
-using MelonLoader;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace FS_LevelEditor.Editor.UI
 {
-    [RegisterTypeInIl2Cpp]
+
     public class EventsUIPageManager : MonoBehaviour
     {
         public static EventsUIPageManager Instance { get; private set; }
@@ -179,7 +168,7 @@ namespace FS_LevelEditor.Editor.UI
 
         #endregion
 
-        public EventsUIPageManager(IntPtr ptr) : base (ptr) { }
+        public EventsUIPageManager(IntPtr ptr) : base(ptr) { }
 
         public static void Create()
         {
@@ -2749,7 +2738,7 @@ namespace FS_LevelEditor.Editor.UI
         }
     }
 
-    [RegisterTypeInIl2Cpp]
+
     public class EventButton : MonoBehaviour
     {
         public EventsUIPageManager eventsManager;

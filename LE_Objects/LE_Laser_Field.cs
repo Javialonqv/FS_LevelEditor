@@ -1,15 +1,9 @@
 ﻿using FS_LevelEditor.Editor;
-using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Laser_Field : LE_Object
     {
         GameObject edgesParent;

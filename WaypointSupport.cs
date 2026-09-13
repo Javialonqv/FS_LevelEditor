@@ -3,16 +3,9 @@ using FS_LevelEditor.Misc;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
-using Il2Cpp;
-using MelonLoader;
-using System;
-using System.Collections;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using UnityEngine;
 using HarmonyLib;
+using System.Collections;
+using UnityEngine;
 
 namespace FS_LevelEditor
 {
@@ -42,7 +35,7 @@ namespace FS_LevelEditor
         LOOP
     }
 
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class WaypointSupport : MonoBehaviour
     {
         public LE_Object targetObject;
@@ -535,16 +528,16 @@ namespace FS_LevelEditor
                 waypoint = Instantiate(template, waypointsParent);
                 waypoint.SetActive(true); // Ensure the waypoint is enabled, since the template obj may not.
                 if (!alwaysShowOnEditor) waypoint.SetTransparentMaterials();
-                if(targetObject.objectType == LE_Object.ObjectType.CEILING_LIGHT || targetObject.objectType == LE_Object.ObjectType.POINT_LIGHT 
+                if (targetObject.objectType == LE_Object.ObjectType.CEILING_LIGHT || targetObject.objectType == LE_Object.ObjectType.POINT_LIGHT
                     || targetObject.objectType == LE_Object.ObjectType.DIRECTIONAL_LIGHT)
                 {
                     waypoint.GetComponentInChildren<Light>().range = targetObject.GetProperty<float>("Range");
                     targetObject.TryGetProperty("Intensity", out object intensity);
-                    if(intensity != null)
+                    if (intensity != null)
                     {
-						waypoint.GetComponentInChildren<Light>().intensity = (float)intensity;
-					}
-				}
+                        waypoint.GetComponentInChildren<Light>().intensity = (float)intensity;
+                    }
+                }
                 // DESTROY EVERY FUCKING RIGIDBODY WE FIND.
                 foreach (var rigidBody in waypoint.TryGetComponents<Rigidbody>(true))
                 {
@@ -728,7 +721,7 @@ namespace FS_LevelEditor
 
     #region Patches for objects with MovingPlatformProxy
     // Small class to register when a MovingPlatformProxy contacts with a custom object waypoint system instead of a normal MP.
-    [RegisterTypeInIl2Cpp]
+
     public class MovingPlatformProxyWithCustomPlatform : MonoBehaviour
     {
         public WaypointSupport attachedWaypointObj;

@@ -1,14 +1,10 @@
-﻿using FS_LevelEditor;
-using FS_LevelEditor.Editor;
-using FS_LevelEditor.Playmode;
-using Il2Cpp;
-using Il2CppDiscord;
+﻿using FS_LevelEditor.Playmode;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Gun : LE_Object
     {
         Gun gun;
@@ -81,23 +77,23 @@ namespace FS_LevelEditor
                     properties[name] = (List<LE_Event>)value;
                 }
             }
-			else if (name == "Ammo")
-			{
-				if (value is int)
-				{
-					properties["Ammo"] = Math.Min((int)value, 99);
-					return true;
-				}
-				else if (value is string)
-				{
-					if (int.TryParse((string)value, out int result))
-					{
-						properties["Ammo"] = Math.Min(result, 99);
-						return true;
-					}
-				}
-			}
-			else if (name == "Rotate")
+            else if (name == "Ammo")
+            {
+                if (value is int)
+                {
+                    properties["Ammo"] = Math.Min((int)value, 99);
+                    return true;
+                }
+                else if (value is string)
+                {
+                    if (int.TryParse((string)value, out int result))
+                    {
+                        properties["Ammo"] = Math.Min(result, 99);
+                        return true;
+                    }
+                }
+            }
+            else if (name == "Rotate")
             {
                 if (value is bool)
                 {

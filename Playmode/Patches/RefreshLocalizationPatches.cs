@@ -1,7 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
 using HarmonyLib;
-using Il2Cpp;
-using UnityEngine;
 
 namespace FS_LevelEditor.Playmode.Patches
 {

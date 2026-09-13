@@ -5,24 +5,13 @@
  * In case you don't mind that, user discretion is highly recommended.
 */
 
-using Il2Cpp;
-using Il2CppInterop.Runtime;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using UnityEngine;
 using FS_LevelEditor.Editor;
-using FS_LevelEditor.Playmode;
-using Il2CppTMPro;
 using System.Collections;
-using MelonLoader;
+using UnityEngine;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Sequence_Screen : LE_Object
     {
         public GameObject screenObject;

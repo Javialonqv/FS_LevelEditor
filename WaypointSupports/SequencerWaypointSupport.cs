@@ -1,15 +1,8 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FS_LevelEditor.WaypointSupports
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class SequencerWaypointSupport : WaypointSupport
     {
         public override List<WaypointData> targetWaypointsData => targetObject.GetProperty<List<WaypointData>>("waypoints");

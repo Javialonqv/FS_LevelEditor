@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Reflection;
+﻿using System.Reflection;
 using UnityEngine;
 
 using Object = UnityEngine.Object;
@@ -11,7 +7,7 @@ namespace FS_LevelEditor
 {
     public static class AssetBundleLoader
     {
-        static Dictionary<string, Il2CppAssetBundle> loadedBundles = new Dictionary<string, Il2CppAssetBundle>();
+        static Dictionary<string, AssetBundle> loadedBundles = new Dictionary<string, AssetBundle>();
 
         public static void PreloadEmbeddedBundle(string bundlePath)
         {
@@ -27,13 +23,13 @@ namespace FS_LevelEditor
             byte[] bytes = new byte[stream.Length];
             stream.Read(bytes);
 
-            Il2CppAssetBundle bundle = Il2CppAssetBundleManager.LoadFromMemory(bytes);
+            AssetBundle bundle = AssetBundleManager.LoadFromMemory(bytes);
 
             string bundleName = Path.GetFileNameWithoutExtension(bundlePath);
             loadedBundles.Add(bundleName, bundle);
         }
 
-        public static Il2CppAssetBundle GetLoadedBundle(string bundleName)
+        public static AssetBundle GetLoadedBundle(string bundleName)
         {
             if (!loadedBundles.TryGetValue(bundleName, out var bundle))
             {

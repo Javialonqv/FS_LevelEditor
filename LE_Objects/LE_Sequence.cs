@@ -1,19 +1,10 @@
 ﻿using FS_LevelEditor.Editor;
-using FS_LevelEditor.SingleObjectLinks;
-using Il2Cpp;
-using Il2CppTMPro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
-using static Il2Cpp.Interop;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Sequence : LE_Object
     {
         public SequenceSwitchController sequence;

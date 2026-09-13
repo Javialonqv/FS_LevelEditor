@@ -1,8 +1,3 @@
-using FS_LevelEditor.Editor.UI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace FS_LevelEditor.Playmode
 {
     /// <summary>
@@ -165,7 +160,7 @@ namespace FS_LevelEditor.Playmode
             var targetType = leEvent.targetObjType;
 
             // For doors - only check if target is a door
-            if ((targetType == LE_Object.ObjectType.DOOR || targetType == LE_Object.ObjectType.DOOR_V2) 
+            if ((targetType == LE_Object.ObjectType.DOOR || targetType == LE_Object.ObjectType.DOOR_V2)
                 && leEvent.doorState != LE_Event.DoorState.Do_Nothing)
             {
                 return "Door_" + leEvent.doorState.ToString();

@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FS_LevelEditor.UI_Related;
 using UnityEngine;
-using Il2Cpp;
-using FS_LevelEditor.UI_Related;
 
 namespace FS_LevelEditor.Editor.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class FindObjectUI : MonoBehaviour
     {
         public static FindObjectUI Instance;

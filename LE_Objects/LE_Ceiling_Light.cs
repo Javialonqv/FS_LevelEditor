@@ -1,15 +1,9 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FS_LevelEditor.Editor;
 using UnityEngine;
-using FS_LevelEditor.Editor;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Ceiling_Light : LE_Object
     {
         GameObject lightObj;

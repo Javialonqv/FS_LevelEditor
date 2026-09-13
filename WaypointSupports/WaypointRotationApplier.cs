@@ -1,5 +1,3 @@
-using Il2Cpp;
-using MelonLoader;
 using System.Collections;
 using UnityEngine;
 
@@ -10,7 +8,7 @@ namespace FS_LevelEditor.WaypointSupports
     /// This ensures objects only rotate to face movement direction while traveling, then smoothly
     /// rotate to the waypoint's rotation once arrived.
     /// </summary>
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class WaypointRotationApplier : MonoBehaviour
     {
         public Transform targetTransform; // The saw/platform's Content transform

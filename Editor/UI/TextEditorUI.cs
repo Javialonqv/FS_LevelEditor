@@ -1,17 +1,10 @@
 ﻿using FS_LevelEditor.UI_Related;
-using Il2Cpp;
-using Il2CppTMPro;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
-using static Il2Cpp.NGUIText;
 
 namespace FS_LevelEditor.Editor.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class TextEditorUI : MonoBehaviour
     {
         public static TextEditorUI Instance;
@@ -35,7 +28,7 @@ namespace FS_LevelEditor.Editor.UI
         UIButtonAsToggle textLeft, textCenter, textRight;
         UIButtonAsToggle textBottomLeft, textBottom, textBottomRight;
 
-        public TextEditorUI(IntPtr ptr) : base (ptr) { }
+        public TextEditorUI(IntPtr ptr) : base(ptr) { }
 
         public static void Create()
         {
@@ -200,7 +193,7 @@ namespace FS_LevelEditor.Editor.UI
             textTopRight.name = "TopRight";
             textTopRight.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.TopRight);
 
-            
+
             textLeft = NGUI_Utils.CreateButtonAsToggleWithSprite(textAlignButtonsContainer.transform, new Vector3(-70, 0), Vector3Int.one * 50, 1, "Text_Left", Vector2Int.one * 40);
             textLeft.name = "Left";
             textLeft.onClick += (isChecked) => OnTextAlignmentButtonClicked(TextAlignmentOptions.Left);

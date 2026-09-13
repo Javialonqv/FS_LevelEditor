@@ -1,15 +1,9 @@
 ﻿using FS_LevelEditor.UI_Related;
-using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace FS_LevelEditor.Editor.UI
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class AddToGroupUI : MonoBehaviour
     {
         public static AddToGroupUI Instance;
@@ -100,7 +94,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateExistingInputField()
         {
-            existingField = NGUI_Utils.CreateInputField(addPanel.transform, new Vector3(-200, 50), new Vector3Int(300, 60, 0), defaultText: "Enter existing group ID", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_INT, depth:2);
+            existingField = NGUI_Utils.CreateInputField(addPanel.transform, new Vector3(-200, 50), new Vector3Int(300, 60, 0), defaultText: "Enter existing group ID", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_INT, depth: 2);
             existingField.name = "ExistingGroupInputField";
             existingField.setFieldColorAutomatically = false;
             existingField.onChange += OnExistingFieldChanged;
@@ -119,7 +113,7 @@ namespace FS_LevelEditor.Editor.UI
         void CreateNewGroupButton()
         {
             // Leave the default text blank, so no UILocalize is created.
-            addToNewGroupButton = NGUI_Utils.CreateButton(addPanel.transform, new Vector3(0, -100), new Vector3Int(750, 60, 0), "", 2); 
+            addToNewGroupButton = NGUI_Utils.CreateButton(addPanel.transform, new Vector3(0, -100), new Vector3Int(750, 60, 0), "", 2);
             addToNewGroupButton.name = "AddToNewGroupButton";
             addToNewGroupButton.onClick += AddToNewGroup;
 

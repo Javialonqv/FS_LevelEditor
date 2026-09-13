@@ -1,15 +1,5 @@
-﻿using HarmonyLib;
-using Il2Cpp;
-using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using UnityEngine;
-using static Il2CppDiscord.RelationshipManager.FFIMethods;
 
 namespace FS_LevelEditor
 {

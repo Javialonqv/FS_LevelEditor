@@ -1,18 +1,9 @@
-﻿using Il2Cpp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 using UnityEngine;
-using UnityEngine.Events;
-using HarmonyLib;
-using MelonLoader;
-using System.Collections;
 
 namespace FS_LevelEditor
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
+
     public class LE_Heal_Area : LE_Object
     {
         HealArea script;
