@@ -22,6 +22,11 @@
 		<GameScripts Condition="'$(GameScripts)' == ''">$(GameManaged)</GameScripts>
 		<GameExe>$(FSPath)\Fractal_Space.exe</GameExe>
 		
+		<!-- Unity 6's engine DLLs are built against netstandard 2.1. Without this, Visual Studio / dotnet silently add
+         .NET Framework's OWN netstandard 2.0 facade and the build fails with CS1705 ("uses netstandard 2.1.0.0 which
+         has a higher version"). The game's netstandard.dll (2.1) is referenced below instead. -->
+		<ImplicitlyExpandNETStandardFacades Condition="Exists('$(GameManaged)\netstandard.dll')">false</ImplicitlyExpandNETStandardFacades>
+		
 		<OutputPath>$(USERPROFILE)\AppData\LocalLow\Haze Games\Fractal Space MOD\Mods\</OutputPath>
 	</PropertyGroup>
 
@@ -290,6 +295,7 @@
 		<Reference Include="UnityEngine.XRModule"><HintPath>$(GameManaged)\UnityEngine.XRModule.dll</HintPath><Private>False</Private></Reference>
 		<Reference Include="UnityEngine"><HintPath>$(GameManaged)\UnityEngine.dll</HintPath><Private>False</Private></Reference>
 		<Reference Include="mscorlib"><HintPath>$(GameManaged)\mscorlib.dll</HintPath><Private>False</Private></Reference>
+		<Reference Include="netstandard" Condition="Exists('$(GameManaged)\netstandard.dll')"><HintPath>$(GameManaged)\netstandard.dll</HintPath><Private>False</Private></Reference>
 	</ItemGroup>
 	
 	<Target Name="InjectBuildDate" AfterTargets="BeforeCompile">
