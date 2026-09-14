@@ -47,9 +47,17 @@ namespace FS_LevelEditor
             HarmonyInstance.PatchAll();
 
             SceneManager.sceneLoaded += OnSceneWasLoaded;
+
             // Since the mod gets loaded AFTER the Menu scene is loaded, call OnSceneWasLoaded manually for the Menu scene.
             if (SceneManager.GetActiveScene().name.Contains("Menu"))
+            {
+                Logger.Log("LE loaded manually from the Fractal Loader menu!");
                 OnSceneWasLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Additive);
+            }
+            else
+            {
+                Logger.Log("LE loaded automatically at the game's startup!");
+            }
         }
 
         public static void OnSceneWasLoaded(Scene scene, LoadSceneMode loadMode)
