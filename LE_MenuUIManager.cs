@@ -174,6 +174,9 @@ namespace FS_LevelEditor
             // without adding it manually to the UIButton via code... good to know :)
             LE_UIButtonActionCtrl onClickClass = levelEditorUIButton.AddComponent<LE_UIButtonActionCtrl>();
 
+            // Force the table to reposition itself.
+            levelEditorUIButton.transform.parent.GetComponent<UITable>().repositionNow = true;
+
             // Finally, enable the button.
             levelEditorUIButton.SetActive(true);
         }
