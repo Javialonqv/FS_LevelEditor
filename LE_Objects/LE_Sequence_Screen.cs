@@ -53,8 +53,8 @@ namespace FS_LevelEditor
         }
         IEnumerator WaitForSequenceInit()
         {
-            var sequence = targetSequencer.sequence;
-            while (targetSequencer.sequence == null || AccessTools.Field(sequence.GetType(), "m_LEDIndicators").GetValue(sequence) == null)
+            // Do NOT use a cached variable for targetSequencer.sequence, because otherwise once AccessTools tries to read it, it might be null even tho the REAL one (targetSequencer.sequence) isn't anymore.
+            while (targetSequencer.sequence == null || AccessTools.Field(targetSequencer.sequence.GetType(), "m_LEDIndicators").GetValue(targetSequencer.sequence) == null)
                 yield return null;
 
             // It may've already been set in SetProperty, force it to be assigned again here so OnObjectLinkTargetChanged is called.
