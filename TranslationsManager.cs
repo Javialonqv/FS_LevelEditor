@@ -2,6 +2,7 @@
 using I2.Loc;
 using System.Reflection;
 using System.Text;
+using UnityEngine.Rendering;
 
 namespace FS_LevelEditor
 {
@@ -179,7 +180,14 @@ namespace FS_LevelEditor
                 if (LocalizationManager.Sources[0].ContainsTerm(key))
                 {
                     UILocalizePatch.DontPatchNextGet(); // Avoid StackOverFlow.
-                    return Localization.Get(key);
+                    try
+                    {
+                        return Localization.Get(key);
+                    }
+                    finally
+                    {
+                        UILocalizePatch.ClearSupression();
+                    }
                 }
                 else // If nothing of this works, just return the key, fuck it.
                 {
@@ -222,7 +230,14 @@ namespace FS_LevelEditor
                 if (LocalizationManager.Sources[0].ContainsTerm(key))
                 {
                     UILocalizePatch.DontPatchNextGet(); // Avoid StackOverFlow.
-                    translation = Localization.Get(key);
+                    try
+                    {
+                        translation = Localization.Get(key);
+                    }
+                    finally
+                    {
+                        UILocalizePatch.ClearSupression();
+                    }
                     return true;
                 }
                 else
@@ -286,21 +301,32 @@ namespace FS_LevelEditor
     [HarmonyLib.HarmonyPatch(typeof(Localization), nameof(Localization.Get))]
     public static class UILocalizePatch
     {
-        public static bool patch = true;
+        // Depth counter, not a bool: suppression must stay active for the ENTIRE
+        // duration of the wrapped call, including anything Localization.Get calls
+        // internally/recursively while resolving that key.
+        static int suppressDepth = 0;
+
         public static void DontPatchNextGet()
         {
-            patch = false;
+            suppressDepth++;
+        }
+        public static void ClearSupression()
+        {
+            if (suppressDepth > 0)
+                suppressDepth--;
         }
 
         public static bool Prefix(ref string __result, string key)
         {
-            if (patch && Loc.HasKey(key, out string translation)) // If the translation was succesfully.
+            if (suppressDepth > 0)
+                return true; // let the real, un-patched call (and any nested calls) run untouched
+
+            if (Loc.HasKey(key, out string translation)) // If the translation was succesfully.
             {
                 __result = translation;
                 return false;
             }
 
-            if (!patch) patch = true;
             return true;
         }
     }
