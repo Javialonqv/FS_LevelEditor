@@ -43,6 +43,9 @@ namespace FS_LevelEditor
             AssetBundleLoader.PreloadEmbeddedBundle("level_editor");
             AssetBundleLoader.PreloadEmbeddedBundle("leveleditoricons");
 
+            HarmonyInstance = new Harmony("com.javialon_qv.leveleditor");
+            HarmonyInstance.PatchAll();
+
             SceneManager.sceneLoaded += OnSceneWasLoaded;
             // Since the mod gets loaded AFTER the Menu scene is loaded, call OnSceneWasLoaded manually for the Menu scene.
             if (SceneManager.GetActiveScene().name.Contains("Menu"))
