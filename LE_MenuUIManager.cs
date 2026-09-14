@@ -403,7 +403,7 @@ namespace FS_LevelEditor
             GameObject.Destroy(credits.GetComponent<UILocalize>());
 
             UILabel creditsLabel = credits.GetComponent<UILabel>();
-            creditsLabel.text = "Created by Javialon_qv and Gray";
+            creditsLabel.text = "Created by Javialon_qv & Cafe";
             creditsLabel.fontSize = 25;
             creditsLabel.alignment = NGUIText.Alignment.Left;
             creditsLabel.pivot = UIWidget.Pivot.Left;
