@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor;
 using FS_LevelEditor.Editor;
+using LunarCatsStudio.SuperCombiner;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -354,10 +355,17 @@ namespace FS_LevelEditor
             {
                 // Divide by parent scale to compensate for the mine's default scale
                 Vector3 parentScale = gameObject.transform.localScale;
+
+                float safeX = Mathf.Abs(parentScale.x) > 0.0001f ? parentScale.x : 1f;
+                float safeY = Mathf.Abs(parentScale.y) > 0.0001f ? parentScale.y : 1f;
+                float safeZ = Mathf.Abs(parentScale.z) > 0.0001f ? parentScale.z : 1f;
+
+                float diameter = range * 2;
+
                 Vector3 rangeSphereScale = new Vector3(
-                    (range * 2) / parentScale.x,
-                    (range * 2) / parentScale.y,
-                    (range * 2) / parentScale.z
+                    (diameter) / safeX,
+                    (diameter) / safeY,
+                    (diameter) / safeZ
                 );
                 contactRangeSphere.transform.localScale = rangeSphereScale;
             }
@@ -369,10 +377,17 @@ namespace FS_LevelEditor
             {
                 // Divide by parent scale to compensate for the mine's default scale
                 Vector3 parentScale = gameObject.transform.localScale;
+
+                float safeX = Mathf.Abs(parentScale.x) > 0.0001f ? parentScale.x : 1f;
+                float safeY = Mathf.Abs(parentScale.y) > 0.0001f ? parentScale.y : 1f;
+                float safeZ = Mathf.Abs(parentScale.z) > 0.0001f ? parentScale.z : 1f;
+
+                float diameter = range * 2;
+
                 Vector3 rangeSphereScale = new Vector3(
-                    (range * 2) / parentScale.x,
-                    (range * 2) / parentScale.y,
-                    (range * 2) / parentScale.z
+                    (diameter) / safeX,
+                    (diameter) / safeY,
+                    (diameter) / safeZ
                 );
                 proximityRangeSphere.transform.localScale = rangeSphereScale;
             }
@@ -384,10 +399,17 @@ namespace FS_LevelEditor
             {
                 // Divide by parent scale to compensate for the mine's default scale
                 Vector3 parentScale = gameObject.transform.localScale;
+
+                float safeX = Mathf.Abs(parentScale.x) > 0.0001f ? parentScale.x : 1f;
+                float safeY = Mathf.Abs(parentScale.y) > 0.0001f ? parentScale.y : 1f;
+                float safeZ = Mathf.Abs(parentScale.z) > 0.0001f ? parentScale.z : 1f;
+
+                float diameter = range * 2;
+
                 Vector3 rangeSphereScale = new Vector3(
-                    (range * 2) / parentScale.x,
-                    (range * 2) / parentScale.y,
-                    (range * 2) / parentScale.z
+                    (diameter) / safeX,
+                    (diameter) / safeY,
+                    (diameter) / safeZ
                 );
                 remoteRangeSphere.transform.localScale = rangeSphereScale;
             }
