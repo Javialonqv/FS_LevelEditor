@@ -1,21 +1,21 @@
 ﻿using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
+using Newtonsoft.Json;
 using System.Collections;
 using UnityEngine;
-using System.Text.Json;
 
 namespace FS_LevelEditor.SaveSystem
 {
     public static class SavePatchesLegacy
     {
-        public static readonly JsonSerializerOptions OnWriteSaveFileOptions = new JsonSerializerOptions
+        public static readonly JsonSerializerSettings OnWriteSaveFileOptions = new JsonSerializerSettings
         {
 #if DEBUG
-            WriteIndented = true,
+            Formatting = Formatting.Indented,
 #endif
             Converters = { new LEIgnoreDefaultValuesInLEEvents() }
         };
-        public static readonly JsonSerializerOptions OnReadSaveFileOptions = new JsonSerializerOptions
+        public static readonly JsonSerializerSettings OnReadSaveFileOptions = new JsonSerializerSettings
         {
             Converters =
             {

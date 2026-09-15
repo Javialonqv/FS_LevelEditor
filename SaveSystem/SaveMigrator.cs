@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Nodes;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 
 namespace FS_LevelEditor.SaveSystem
 {
@@ -10,16 +10,14 @@ namespace FS_LevelEditor.SaveSystem
 
         public static LevelData DeserializeLevelData(string json, string fileName)
         {
-            JsonObject root = JsonNode.Parse(json)?.AsObject();
+            JObject root = JObject.Parse(json);
 
             UpgradeToCurrent(root, fileName);
 
-            return JsonSerializer.Deserialize<LevelData>(
-                root.ToJsonString(),
-                SavePatchesLegacy.OnReadSaveFileOptions);
+            return root.ToObject<LevelData>(JsonSerializer.Create(SavePatchesLegacy.OnReadSaveFileOptions));
         }
 
-        static void UpgradeToCurrent(JsonObject root, string fileName)
+        static void UpgradeToCurrent(JObject root, string fileName)
         {
             int schemaVersion = ReadSchemaVersion(root);
 
@@ -69,15 +67,22 @@ namespace FS_LevelEditor.SaveSystem
                 Logger.Log("[SAVE SYSTEM] [MIGRATOR] FINISHED MIGRATING LEVEL SAVE FILE");
             }
         }
-        static int ReadSchemaVersion(JsonObject root)
+        static int ReadSchemaVersion(JObject root)
         {
-            if (!root.TryGetPropertyValue("schemaVersion", out JsonNode node) || node == null)
+            if (!root.TryGetValue("schemaVersion", out JToken node) || node.Type == JTokenType.Null)
                 return 0;
 
-            return node.GetValue<int>();
+            return node.Value<int>();
         }
 
-        static void MigrateV0ToV1(JsonObject root)
+        // In Newtonsoft a JSON null is a REAL JValue (Type == Null), not a C# null like in System.Text.Json.
+        // Every "== null" check from the old code has to go through here to keep the same behaviour.
+        static bool IsNullOrMissing(JToken token)
+        {
+            return token == null || token.Type == JTokenType.Null;
+        }
+
+        static void MigrateV0ToV1(JObject root)
         {
             // LEGACY "OldPropertiesRename" FUNCTIONALITY HERE!!
             // TARGET: LE_Event
@@ -94,15 +99,14 @@ namespace FS_LevelEditor.SaveSystem
                 bool isOldEvent = obj.ContainsKey("setActive") || obj.ContainsKey("moveObject");
                 if (isOldEvent)
                 {
-                    SaveMigratorHelpers.RenameProperty(obj.AsObject(), "setActive", "spawn");
-                    SaveMigratorHelpers.RenameProperty(obj.AsObject(), "moveObject", "moveState");
+                    SaveMigratorHelpers.RenameProperty(obj, "setActive", "spawn");
+                    SaveMigratorHelpers.RenameProperty(obj, "moveObject", "moveState");
 
-                    if (obj.TryGetPropertyValue("moveState", out var moveState))
+                    if (obj.TryGetValue("moveState", out var moveState))
                     {
-                        var valueKind = moveState.GetValueKind();
-                        if (valueKind == JsonValueKind.True || valueKind == JsonValueKind.False)
+                        if (moveState.Type == JTokenType.Boolean)
                         {
-                            var enumValue = moveState.GetValue<bool>()
+                            var enumValue = moveState.Value<bool>()
                                 ? LE_Event.MoveState.Start_Moving
                                 : LE_Event.MoveState.Do_Nothing;
 
@@ -117,11 +121,11 @@ namespace FS_LevelEditor.SaveSystem
 
                 // This is to fix a bug where "upgrades" used to be null by default, which caused some issues in playmode. Changing the default value in LE_Event fixes it from now on.
                 // But we need to use this code to intercept any null value from old levels and force it to be a correct list.
-                if (isPlayerEvent && obj.TryGetPropertyValue("upgrades", out var upgrades))
+                if (isPlayerEvent && obj.TryGetValue("upgrades", out var upgrades))
                 {
-                    if (upgrades.GetValueKind() == JsonValueKind.Null)
+                    if (upgrades.Type == JTokenType.Null)
                     {
-                        obj["upgrades"] = new JsonArray();
+                        obj["upgrades"] = new JArray();
                     }
                 }
             }
@@ -132,9 +136,10 @@ namespace FS_LevelEditor.SaveSystem
             //  - objectOriginalName STRING -> objectType ENUM and objectID INT
             foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
             {
-                var obj = objNode.AsObject();
+                if (objNode is not JObject obj)
+                    continue;
 
-                if (obj.TryGetPropertyValue("objectOriginalName", out var objNameNode))
+                if (obj.TryGetValue("objectOriginalName", out var objNameNode))
                 {
                     string objName = objNameNode.ToString();
                     var convertedType = LE_Object.ConvertNameToObjectType(objName);
@@ -172,7 +177,9 @@ namespace FS_LevelEditor.SaveSystem
                 bool isJetpack = string.Equals(targetObjName, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase);
                 bool isObjective = targetObjName.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase);
 
-                bool isValid = obj["isValid"] is JsonValue validValue && validValue.TryGetValue<bool>(out bool parsedIsValid) && parsedIsValid;
+                bool isValid = obj["isValid"] is JValue validValue
+                    && validValue.Type == JTokenType.Boolean
+                    && validValue.Value<bool>();
 
                 if (isPlayer)
                 {
@@ -215,7 +222,7 @@ namespace FS_LevelEditor.SaveSystem
                     obj["objectiveName"] = targetObjName.Substring(4);
                     obj.Remove("targetObjName");
                 }
-                else if (obj["targetObjType"] == null && isValid && !string.IsNullOrEmpty(targetObjName))
+                else if (IsNullOrMissing(obj["targetObjType"]) && isValid && !string.IsNullOrEmpty(targetObjName))
                 {
                     var objData = Utils.SplitTypeAndId(targetObjName);
                     var objType = LE_Object.ConvertNameToObjectType(objData.type);
@@ -240,14 +247,15 @@ namespace FS_LevelEditor.SaveSystem
             //  propName: Value OBJECT
             foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
             {
-                var obj = objNode.AsObject();
-
-                if (!obj.TryGetPropertyValue("properties", out var properties))
+                if (objNode is not JObject obj)
                     continue;
 
-                MigrateLegacyTypedProperties(properties.AsObject());
+                if (obj["properties"] is not JObject properties)
+                    continue;
+
+                MigrateLegacyTypedProperties(properties);
             }
-            if (root["globalProperties"] is JsonObject globalProperties)
+            if (root["globalProperties"] is JObject globalProperties)
             {
                 MigrateLegacyTypedProperties(globalProperties);
             }
@@ -260,14 +268,15 @@ namespace FS_LevelEditor.SaveSystem
             //  - OnChangeEvents        ->      WhenInvertingEvents
             foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
             {
-                var obj = objNode.AsObject();
-
-                if (!obj.TryGetPropertyValue("properties", out var properties))
+                if (objNode is not JObject obj)
                     continue;
 
-                SaveMigratorHelpers.RenameProperty(properties.AsObject(), "OnActivatedEvents", "WhenActivatingEvents");
-                SaveMigratorHelpers.RenameProperty(properties.AsObject(), "OnDeactivatedEvents", "WhenDeactivatingEvents");
-                SaveMigratorHelpers.RenameProperty(properties.AsObject(), "OnChangeEvents", "WhenInvertingEvents");
+                if (obj["properties"] is not JObject properties)
+                    continue;
+
+                SaveMigratorHelpers.RenameProperty(properties, "OnActivatedEvents", "WhenActivatingEvents");
+                SaveMigratorHelpers.RenameProperty(properties, "OnDeactivatedEvents", "WhenDeactivatingEvents");
+                SaveMigratorHelpers.RenameProperty(properties, "OnChangeEvents", "WhenInvertingEvents");
             }
 
             // LEGACY "SavePatchesLegacy.IsOldSawWaypointsSave" FUNCTIONALITY HERE!!
@@ -277,16 +286,17 @@ namespace FS_LevelEditor.SaveSystem
             //  - waypointRotation      ->      rotation
             foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
             {
-                var obj = objNode.AsObject();
-
-                // This only works for SAW waypoints.
-                if (obj["objectType"] is not JsonValue objectType || objectType.GetValue<int>() != (int)LE_Object.ObjectType.SAW)
+                if (objNode is not JObject obj)
                     continue;
 
-                if (obj["properties"] is not JsonObject properties          // properties exist.
-                    || properties["waypoints"] is not JsonArray waypoints   // waypoints exist.
+                // This only works for SAW waypoints.
+                if (obj["objectType"] is not JValue objectType || objectType.Type != JTokenType.Integer || objectType.Value<int>() != (int)LE_Object.ObjectType.SAW)
+                    continue;
+
+                if (obj["properties"] is not JObject properties             // properties exist.
+                    || properties["waypoints"] is not JArray waypoints      // waypoints exist.
                     || waypoints.Count == 0                                 // waypoints aren't empty.
-                    || waypoints[0] is not JsonObject firstWaypoint         // first waypoint is an object.
+                    || waypoints[0] is not JObject firstWaypoint            // first waypoint is an object.
                     || !firstWaypoint.ContainsKey("waypointPosition"))      // waypoint has the old position prop.
                     continue;
 
@@ -295,7 +305,7 @@ namespace FS_LevelEditor.SaveSystem
 
                 foreach (var waypointNode in waypoints)
                 {
-                    if (waypointNode is not JsonObject waypoint)
+                    if (waypointNode is not JObject waypoint)
                         continue;
 
                     SaveMigratorHelpers.RenameProperty(waypoint, "waypointPosition", "position");
@@ -303,13 +313,13 @@ namespace FS_LevelEditor.SaveSystem
                 }
             }
         }
-        static void MigrateLegacyTypedProperties(JsonObject properties)
+        static void MigrateLegacyTypedProperties(JObject properties)
         {
-            foreach (var property in properties.ToList())
+            foreach (var property in properties.Properties().ToList())
             {
-                if (property.Value is JsonObject propertyObj
-                    && propertyObj.TryGetPropertyValue("Type", out var typeNode)
-                    && propertyObj.TryGetPropertyValue("Value", out var valueNode))
+                if (property.Value is JObject propertyObj
+                    && propertyObj.TryGetValue("Type", out var typeNode)
+                    && propertyObj.TryGetValue("Value", out var valueNode))
                 {
                     string realTypeName = typeNode.ToString();
                     if (realTypeName == null)
@@ -325,33 +335,36 @@ namespace FS_LevelEditor.SaveSystem
                     }
 
                     // Create a copy of the node because it already belongs to the property.
-                    properties[property.Key] = valueNode.DeepClone();
+                    properties[property.Name] = valueNode.DeepClone();
                 }
             }
         }
 
-        static void MigrateV1ToV2(JsonObject root)
+        static void MigrateV1ToV2(JObject root)
         {
             // For V2, the default spawn state changed from: Toggle -> Do Nothing.
             // Make sure every value in V1 stays as is.
             // Iterate through each event and when we find one that does NOT have spawn specified,
             // then we know that, since it's from V1, it has to be Toggle, specify it.
-            foreach (var obj in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
+            foreach (var objNode in SaveMigratorHelpers.EnumerateAllLevelObjects(root))
             {
-                if (!obj.AsObject().TryGetPropertyValue("properties", out var propertiesNode) || propertiesNode is not JsonObject properties)
+                if (objNode is not JObject obj)
+                    continue;
+
+                if (obj["properties"] is not JObject properties)
                     continue;
 
                 // we don't have a proper way to tell if a property has event lists or not, so...
                 foreach (var prop in properties)
                 {
                     #region Check The Prop Entry Is A Events Array
-                    if (prop.Value is not JsonArray array) // Events ARE arrays.
+                    if (prop.Value is not JArray array) // Events ARE arrays.
                         continue;
 
                     if (array.Count == 0) // Skip empty arrays.
                         continue;
 
-                    if (array[0] is not JsonObject firstItem) // The elements in the events' arrays are objects.
+                    if (array[0] is not JObject firstItem) // The elements in the events' arrays are objects.
                         continue;
 
                     // MOMENT OF TRUTH: An event needs to have AT LEAST one of these properties, this way we make sure that this array indeed contains events.
@@ -361,10 +374,13 @@ namespace FS_LevelEditor.SaveSystem
 
                     foreach (var item in array)
                     {
-                        if (item.AsObject().TryGetPropertyValue("spawn", out _)) // Skips ones that ALREADY have spawn specified.
+                        if (item is not JObject eventObj)
                             continue;
 
-                        item.AsObject()["spawn"] = (int)LE_Event.SpawnState.Toggle;
+                        if (eventObj.ContainsKey("spawn")) // Skips ones that ALREADY have spawn specified.
+                            continue;
+
+                        eventObj["spawn"] = (int)LE_Event.SpawnState.Toggle;
                     }
                 }
             }

@@ -1,123 +1,71 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
+﻿
+using Newtonsoft.Json.Linq;
 
 namespace FS_LevelEditor.SaveSystem
 {
     public static class SaveMigratorHelpers
     {
-        public static void RenameProperty(JsonObject objectNode, string oldName, string newName)
+        public static void RenameProperty(JObject objectNode, string oldName, string newName)
         {
-            if (!objectNode.TryGetPropertyValue(oldName, out JsonNode oldValue))
+            if (!objectNode.TryGetValue(oldName, out JToken oldValue))
                 return;
 
             objectNode.Remove(oldName);
             objectNode.Add(newName, oldValue);
         }
 
-        public static JsonArray EnumerateAllLevelObjects(JsonObject root)
+        public static JArray EnumerateAllLevelObjects(JObject root)
         {
-            if (!root.TryGetPropertyValue("objects", out JsonNode objects))
+            if (!root.TryGetValue("objects", out JToken objects))
                 return null;
 
-            return objects.AsArray();
+            return objects as JArray;
         }
 
-        public static IEnumerable<JsonObject> EnumerateAllJsonObjects(JsonNode node)
+        public static IEnumerable<JObject> EnumerateAllJsonObjects(JToken node)
         {
-            if (node is JsonObject jsonObject)
+            if (node is JObject jsonObject)
             {
                 yield return jsonObject;
 
-                foreach (JsonNode child in jsonObject
+                foreach (JToken child in jsonObject.Properties()
                     .Select(pair => pair.Value)
                     .Where(value => value != null)
                     .ToArray())
                 {
-                    foreach (JsonObject nestedObject in EnumerateAllJsonObjects(child))
+                    foreach (JObject nestedObject in EnumerateAllJsonObjects(child))
                         yield return nestedObject;
                 }
 
                 yield break;
             }
 
-            if (node is JsonArray jsonArray)
+            if (node is JArray jsonArray)
             {
-                foreach (JsonNode child in jsonArray
+                foreach (JToken child in jsonArray
                     .Where(value => value != null)
                     .ToArray())
                 {
-                    foreach (JsonObject nestedObject in EnumerateAllJsonObjects(child))
+                    foreach (JObject nestedObject in EnumerateAllJsonObjects(child))
                         yield return nestedObject;
                 }
             }
         }
 
-        public static IEnumerable<JsonArray> EnumerateAllEvents(JsonObject root)
+        public static T GetValueNoException<T>(this JObject jsonObj, string propertyName, T defaultValue)
         {
-            if (!root.TryGetPropertyValue("objects", out var objects) || objects is not JsonArray)
-                yield break;
-
-
-        }
-
-        // JsonNode.GetValueKind wasn't introduced until .NET 8 or so, here it's .NET 6, do it ourselves.
-        public static JsonValueKind GetValueKind(this JsonNode node)
-        {
-            if (node == null)
-                return JsonValueKind.Null;
-            if (node is JsonObject)
-                return JsonValueKind.Object;
-            if (node is JsonArray)
-                return JsonValueKind.Array;
-
-            if (node is JsonValue value && value.TryGetValue(out JsonElement element))
-                return element.ValueKind;
-
-            return JsonValueKind.Undefined;
-        }
-
-        // JsonNode.DeepClone wasn't introduced until .NET 8 or so, here it's .NET 6, do it ourselves.
-        public static JsonNode DeepClone(this JsonNode node)
-        {
-            if (node == null) return null;
-
-            // If an Object { }, iterate throught its properties.
-            if (node is JsonObject obj)
-            {
-                var newObj = new JsonObject();
-                foreach (var property in obj)
-                {
-                    // Add a copy of each property.
-                    newObj.Add(property.Key, property.Value?.DeepClone());
-                }
-                return newObj;
-            }
-
-            // If an Array [ ], iterate throught its properties.
-            if (node is JsonArray arr)
-            {
-                var newArr = new JsonArray();
-                foreach (var element in arr)
-                {
-                    // Add a copy of each element.
-                    newArr.Add(element?.DeepClone());
-                }
-                return newArr;
-            }
-
-            // If it's a primitive value (string, int, bool, null), clone it directly.
-            return JsonValue.Create(node.AsValue().GetValue<object>());
-        }
-
-        public static T GetValueNoException<T>(this JsonObject jsonObj, string propertyName, T defaultValue)
-        {
-            if (jsonObj[propertyName] is not JsonValue propValue)
+            JToken token = jsonObj[propertyName];
+            if (token == null || token.Type == JTokenType.Null)
                 return defaultValue;
 
-            if (propValue.TryGetValue<T>(out var result))
-                return result;
-            else
+            try
+            {
+                return token.Value<T>();
+            }
+            catch
+            {
                 return defaultValue;
+            }
         }
     }
 }

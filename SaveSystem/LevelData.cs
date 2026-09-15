@@ -2,8 +2,9 @@
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SaveSystem.SerializableTypes;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Diagnostics;
-using System.Text.Json;
 using UnityEngine;
 
 namespace FS_LevelEditor.SaveSystem
@@ -204,7 +205,7 @@ namespace FS_LevelEditor.SaveSystem
                 }
 
                 string filePath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
-                File.WriteAllText(filePath, JsonSerializer.Serialize(data, SavePatchesLegacy.OnWriteSaveFileOptions));
+                File.WriteAllText(filePath, JsonConvert.SerializeObject(data, SavePatchesLegacy.OnWriteSaveFileOptions));
 
                 Logger.Log("Level saved! Path: " + filePath);
             }
@@ -256,7 +257,7 @@ namespace FS_LevelEditor.SaveSystem
                 LevelData levelData = null;
                 try
                 {
-                    levelData = JsonSerializer.Deserialize<LevelData>(File.ReadAllText(levelPath), SavePatchesLegacy.OnReadSaveFileOptions);
+                    levelData = JsonConvert.DeserializeObject<LevelData>(File.ReadAllText(levelPath), SavePatchesLegacy.OnReadSaveFileOptions);
                 }
                 catch { }
                 levels.Add(Path.GetFileNameWithoutExtension(levelPath), levelData);
@@ -446,11 +447,11 @@ namespace FS_LevelEditor.SaveSystem
             {
                 if (playModeCtrl.globalProperties.ContainsKey(keyPair.Key))
                 {
-                    // Handle JsonElement conversion in batch
-                    if (keyPair.Value is JsonElement jsonElement)
+                    // Handle JToken conversion in batch
+                    if (keyPair.Value is JToken token)
                     {
                         var targetType = playModeCtrl.globalProperties[keyPair.Key].GetType();
-                        playModeCtrl.globalProperties[keyPair.Key] = LEPropertiesConverterNew.NewDeserealize(targetType, jsonElement);
+                        playModeCtrl.globalProperties[keyPair.Key] = LEPropertiesConverterNew.NewDeserealize(targetType, token);
                     }
                     else
                     {

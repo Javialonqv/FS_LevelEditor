@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using System.Text.Json;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -23,7 +23,7 @@ namespace FS_LevelEditor
                 if (customWaypointSupport.targetWaypointsData != null && customWaypointSupport.targetWaypointsData.Count > 0)
                 {
                     // Since it's the waypoint DATA itself and not the spawned one, it's stored as JsonElement.
-                    return ((JsonElement)customWaypointSupport.targetWaypointsData[0].properties["RotatePlayer"]).GetBoolean();
+                    return ((JToken)customWaypointSupport.targetWaypointsData[0].properties["RotatePlayer"]).Value<bool>();
                 }
 
                 return false;

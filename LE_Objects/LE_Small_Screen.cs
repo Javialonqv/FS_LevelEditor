@@ -2,7 +2,7 @@
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Misc;
 using FS_LevelEditor.Playmode;
-using System.Text.Json;
+using Newtonsoft.Json.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -228,8 +228,8 @@ namespace FS_LevelEditor
                 }
 
                 // Since this will convert the value to string no matter what, it'll catch the JsonElement before base.SetProperty() does, so, skip the warning in case it is
-                // JsonElement.
-                if (value is not string && value is not JsonElement)
+                // JToken.
+                if (value is not string && value is not JToken)
                 {
                     Logger.Warning($"The value wasn't a string, that's not expected, the value type was \"{value.GetType().Name}\".");
                 }

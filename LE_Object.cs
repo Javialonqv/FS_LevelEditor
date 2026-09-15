@@ -5,8 +5,8 @@ using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.SaveSystem.Converters;
 using FS_LevelEditor.SingleObjectLinks;
 using FS_LevelEditor.WaypointSupports;
+using Newtonsoft.Json.Linq;
 using System.Reflection;
-using System.Text.Json;
 using TMPro;
 using UnityEngine;
 
@@ -626,10 +626,10 @@ namespace FS_LevelEditor
         /// <returns>True ff the property was setted correctly or false if there's some invalid value.</returns>
         public virtual bool SetProperty(string name, object value)
         {
-            if (properties.ContainsKey(name) && value is JsonElement)
+            if (properties.ContainsKey(name) && value is JToken)
             {
                 Type toConvert = properties[name].GetType();
-                object converted = LEPropertiesConverterNew.NewDeserealize(toConvert, (JsonElement)value);
+                object converted = LEPropertiesConverterNew.NewDeserealize(toConvert, (JToken)value);
                 if (converted != null)
                 {
                     // converted should be an original value OR an object with a custom serialization type (ColorSerializable), convert it back to original.
