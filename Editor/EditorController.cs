@@ -3471,7 +3471,7 @@ namespace FS_LevelEditor.Editor
                 {
                     SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(targetObj.transform);
                 }
-                editor.SetSelectedObj(targetObj);
+                editor.SetSelectedObj(targetObj, EditorController.SelectionType.ForceSingle);
             }
         }
         void UndoRotateObject(EditorController editor)
@@ -3501,7 +3501,7 @@ namespace FS_LevelEditor.Editor
                 {
                     SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(targetObj.transform);
                 }
-                editor.SetSelectedObj(targetObj);
+                editor.SetSelectedObj(targetObj, EditorController.SelectionType.ForceSingle);
             }
         }
         void UndoScaleObject(EditorController editor)
@@ -3524,7 +3524,7 @@ namespace FS_LevelEditor.Editor
                 {
                     SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(targetObj.transform);
                 }
-                editor.SetSelectedObj(targetObj);
+                editor.SetSelectedObj(targetObj, EditorController.SelectionType.ForceSingle);
             }
         }
         void UndoDeleteObject(EditorController editor)
@@ -3540,7 +3540,7 @@ namespace FS_LevelEditor.Editor
             {
                 targetObj.GetComponent<LE_Object>().OnUndoDeletion();
                 targetObj.SetActive(true);
-                editor.SetSelectedObj(targetObj);
+                editor.SetSelectedObj(targetObj, EditorController.SelectionType.ForceSingle);
             }
         }
     }
