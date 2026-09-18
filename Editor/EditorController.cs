@@ -551,18 +551,14 @@ namespace FS_LevelEditor.Editor
             {
                 if (selectionBox != null && selectionBox.activeSelf)
                     selectionBox.SetActive(false); //hide the box in case
-                                                   // Move the object.
-                MoveObject(collidingArrow);
+
+                if (currentSelectedObj)
+                    MoveObject(collidingArrow);
             }
             else if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.MOVING_OBJECT))
             {
-                // Only reset state after fully handling the movement
-                RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected,
-                    objLocalPositionWhenStartedMoving, currentSelectedObj.transform.localPosition, null, null);
-
-                levelHasBeenModified = true;
-                SetCurrentEditorState(EditorState.NORMAL);
-                collidingArrow = GizmosArrow.None;
+                if (currentSelectedObj)
+                    StopMovingObject();
             }
             #endregion
 
@@ -645,7 +641,7 @@ namespace FS_LevelEditor.Editor
                 {
                     SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(multipleSelectedObjsParent.transform);
                 }
-                else
+                else if (currentSelectedObj) // The current selected object CAN be deselected WHILE moving the gizmo.
                 {
                     SelectedObjPanel.Instance.UpdateGlobalObjectAttributes(currentSelectedObj.transform);
                 }
@@ -2114,6 +2110,10 @@ namespace FS_LevelEditor.Editor
                 }
             }
 
+            // Make sure to FORCE STOP moving an object if the user was currently doing so.
+            if (obj == null && Input.GetMouseButton(0) && collidingArrow != GizmosArrow.None)
+                StopMovingObject();
+
             // Get when the user is pressing Left Control, normally, that's for when the user wanna select multiple objects.
             // Also only execute this when the use is NOT duplicating objects, due to some interferences when then user is pressing Ctrl BUT to duplicate.
             if ((Input.GetKey(KeyCode.LeftControl) || selectionType == SelectionType.ForceMultiple) && obj != null && obj != multipleSelectedObjsParent && !isDuplicatingObj &&
@@ -2695,6 +2695,16 @@ namespace FS_LevelEditor.Editor
                     currentSelectedObj.transform.position = newPosition;
                 }
             }
+        }
+        void StopMovingObject()
+        {
+            // Only reset state after fully handling the movement
+            RegisterLEAction(LEAction.LEActionType.MoveObject, currentSelectedObj, multipleObjectsSelected,
+                objLocalPositionWhenStartedMoving, currentSelectedObj.transform.localPosition, null, null);
+
+            levelHasBeenModified = true;
+            SetCurrentEditorState(EditorState.NORMAL);
+            collidingArrow = GizmosArrow.None;
         }
         void DuplicateSelectedObject()
         {
