@@ -224,12 +224,16 @@ namespace FS_LevelEditor
             }
             else if (actionName == "Activate")
             {
-                script.Activate();
+                // Make sure this only gets called WHEN IT SHOULD BE, Activate and Deactivate are just inverting the bool, so if the saw is already activated, calling Activate will deactivate it, which is not what we want.
+                if (!script.activated)
+                    script.Activate();
                 return true;
             }
             else if (actionName == "Deactivate")
             {
-                script.Deactivate();
+                // Make sure this only gets called WHEN IT SHOULD BE, Activate and Deactivate are just inverting the bool, so if the saw is already activated, calling Activate will deactivate it, which is not what we want.
+                if (script.activated)
+                    script.Deactivate();
                 return true;
             }
             else if (actionName == "ToggleActivated")

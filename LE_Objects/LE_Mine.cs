@@ -319,12 +319,16 @@ namespace FS_LevelEditor
         {
             if (actionName == "Activate")
             {
-                mine.Activate();
+                // Make sure this only gets called WHEN IT SHOULD BE, Activate and Deactivate are just inverting the bool, so if the mine is already activated, calling Activate will deactivate it, which is not what we want.
+                if (!mine.activated)
+                    mine.Activate();
                 return true;
             }
             else if (actionName == "Deactivate")
             {
-                mine.Deactivate();
+                // Make sure this only gets called WHEN IT SHOULD BE, Activate and Deactivate are just inverting the bool, so if the mine is already activated, calling Activate will deactivate it, which is not what we want.
+                if (mine.activated)
+                    mine.Deactivate();
                 return true;
             }
             else if (actionName == "ToggleActivated")
