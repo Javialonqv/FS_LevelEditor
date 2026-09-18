@@ -119,7 +119,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             cubeRespawnNotifies = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 210f), new Vector3Int(200, 42, 1), "CubeRespNotify");
             cubeRespawnNotifies.gameObject.name = "cubeRespawnNotifies";
-            cubeRespawnNotifies.onClick += (state) => SetGlobalProperty("cubeRespawnNotifies", debugAllowed.isChecked);
+            cubeRespawnNotifies.onClick += (state) => SetGlobalProperty("cubeRespawnNotifies", cubeRespawnNotifies.isChecked);
         }
         void CreateDeathYLimitField()
         {
