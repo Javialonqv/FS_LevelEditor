@@ -1109,7 +1109,10 @@ namespace FS_LevelEditor
 
         public static bool ObjectsAreOfTheSameType(params List<LE_Object> objects)
         {
-            if (objects.Count == 1) return true;
+            if (objects.Count == 0)
+                return false;
+            if (objects.Count == 1)
+                return true;
 
             ObjectType? first = objects[0].objectType;
 
