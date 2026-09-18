@@ -1420,6 +1420,12 @@ namespace FS_LevelEditor.Editor
         {
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
             {
+                if (IsCurrentState(EditorState.MOVING_OBJECT))
+                {
+                    Logger.Log("Tried to undid an action BUT the user is currently moving an object! Aborting...");
+                    return;
+                }
+
                 if (actionsMade.Count > 0)
                 {
                     LEAction toUndo = actionsMade.Last();
