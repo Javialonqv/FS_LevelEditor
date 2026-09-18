@@ -251,6 +251,9 @@ namespace FS_LevelEditor.Playmode
 
         void ConfigureGlobalProperties()
         {
+            Patches.DebudModePatch.DebugAllowed = (bool)GetGlobalProperty("DebugAllowed");
+            Patches.NotificationPatches.CubeDestroyedNotifications = (bool)GetGlobalProperty("cubeRespawnNotifies");
+            Patches.NotificationPatches.FlashlightNotifications = (bool)GetGlobalProperty("flashlightNotifies");
             if (!(bool)GetGlobalProperty("HasTaser"))
             {
                 Controls.Instance.DeactivateWeapon();
@@ -261,7 +264,6 @@ namespace FS_LevelEditor.Playmode
             }
             bool hasJetpackGlobal = (bool)GetGlobalProperty("HasJetpack");
             Controls.Instance.hasJetPack = hasJetpackGlobal;
-            Patches.DebudModePatch.DebugAllowed = (bool)GetGlobalProperty("DebugAllowed");
 
             SetupLevelSkybox((int)GetGlobalProperty("Skybox"));
             SetupLevelMusic((int)GetGlobalProperty("Music"));
