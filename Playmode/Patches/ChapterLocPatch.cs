@@ -1,4 +1,6 @@
-﻿namespace FS_LevelEditor.Playmode.Patches
+﻿using System.Security.Policy;
+
+namespace FS_LevelEditor.Playmode.Patches
 {
     [HarmonyLib.HarmonyPatch(typeof(Localization), nameof(Localization.Get))]
     public static class ChapterLocPatch

@@ -110,7 +110,9 @@
 		<Compile Include="LE_Objects\Waypoints\LE_Sequence_Waypoint.cs" />
 		<Compile Include="Misc\ScaleTweener.cs" />
 		<Compile Include="Playmode\AndLogicManager.cs" />
+		<Compile Include="Playmode\Patches\NotificationPatches.cs" />
 		<Compile Include="Playmode\Patches\DebugModePatch.cs" />
+		<Compile Include="Playmode\Patches\LastPosGlitchFix.cs" />
 		<Compile Include="Playmode\Patches\ParticlesPatch.cs" />
 		<Compile Include="Playmode\Patches\RefreshLocalizationPatches.cs" />
 		<Compile Include="Playmode\PlaymodeUpgrades.cs" />

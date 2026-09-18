@@ -620,6 +620,8 @@ namespace FS_LevelEditor.SaveSystem
                 { "HasJetpack", true },
                 { "HasFlashlight", true },
                 { "DebugAllowed", true },
+                { "cubeRespawnNotifies", true },
+                { "flashlightNotifies", true },
                 { "DeathYLimit", 100f },
                 { "Skybox", 0 },
                 { "Music", 4 },

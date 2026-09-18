@@ -14,6 +14,8 @@ namespace FS_LevelEditor.Editor.UI
         UITogglePatcher hasJetpackToggle;
         UITogglePatcher hasFlashlight;
         UITogglePatcher debugAllowed;
+        UITogglePatcher cubeRespawnNotifies;
+        UITogglePatcher flashlightNotifies;
         UICustomInputField deathYLimitField;
         UIButtonAsToggle visualizeDeathYLimitButton;
         UIDropdownPatcher skyboxDropdown;
@@ -40,6 +42,8 @@ namespace FS_LevelEditor.Editor.UI
             CreateHasJetpackToggle();
             CreateHasFlashlightToggle();
             CreateAllowDebugToggle();
+            CreateFlashLightNotifyToggle();
+            CreateCubeRespawnNotifyToggle();
             CreateDeathYLimitField();
             CreateLevelSkyboxDropdown();
             CreateLevelMusicDropdown();
@@ -104,6 +108,18 @@ namespace FS_LevelEditor.Editor.UI
             debugAllowed = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 270f), new Vector3Int(200, 42, 1), "DebugAllowed");
             debugAllowed.gameObject.name = "debugAllowedToggle";
             debugAllowed.onClick += (state) => SetGlobalProperty("DebugAllowed", debugAllowed.isChecked);
+        }
+        void CreateFlashLightNotifyToggle()
+        {
+            flashlightNotifies = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 210f), new Vector3Int(200, 42, 1), "FlashlightNotify");
+            flashlightNotifies.gameObject.name = "flashlightNotifies";
+            flashlightNotifies.onClick += (state) => SetGlobalProperty("flashlightNotifies", flashlightNotifies.isChecked);
+        }
+        void CreateCubeRespawnNotifyToggle()
+        {
+            cubeRespawnNotifies = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 210f), new Vector3Int(200, 42, 1), "CubeRespNotify");
+            cubeRespawnNotifies.gameObject.name = "cubeRespawnNotifies";
+            cubeRespawnNotifies.onClick += (state) => SetGlobalProperty("cubeRespawnNotifies", debugAllowed.isChecked);
         }
         void CreateDeathYLimitField()
         {
@@ -192,6 +208,8 @@ namespace FS_LevelEditor.Editor.UI
             hasJetpackToggle.Set((bool)GetGlobalProperty("HasJetpack"), false, true);
             hasFlashlight.Set((bool)GetGlobalProperty("HasFlashlight"), false, true);
             debugAllowed.Set((bool)GetGlobalProperty("DebugAllowed"), false, true);
+            flashlightNotifies.Set((bool)GetGlobalProperty("flashlightNotifies"), false, true);
+            cubeRespawnNotifies.Set((bool)GetGlobalProperty("cubeRespawnNotifies"), false, true);
             deathYLimitField.SetText((float)GetGlobalProperty("DeathYLimit"), false);
             skyboxDropdown.SelectOption((int)GetGlobalProperty("Skybox"));
             musicDropdown.SelectOption((int)GetGlobalProperty("Music"));
