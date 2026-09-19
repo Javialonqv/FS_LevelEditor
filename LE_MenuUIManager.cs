@@ -794,7 +794,7 @@ namespace FS_LevelEditor
 
             yield return new WaitForSecondsRealtime(1.5f);
             InGameUIManager.Instance.StartTotalFadeIn(3, true);
-            yield return EditorController.EndTransitionBlockAfter(3f);
+            yield return EditorController.EndTransitionBlockAfter(1.5f);
             levelButtonsWasClicked = false;
         }
 

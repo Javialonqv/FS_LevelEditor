@@ -706,6 +706,11 @@ namespace FS_LevelEditor.Editor
                     EventsUIPageManager.Instance.HideEventsPage();
                     return;
                 }
+                else if(EditorUIManager.IsCurrentUIContext(EditorUIContext.GLOBAL_PROPERTIES))
+                {
+                    GlobalPropertiesPanel.Instance.ShowOrHideGlobalPropertiesPanel();
+                    return;
+                }
                 else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.TEXT_EDITOR))
                 {
                     TextEditorUI.Instance.HideTextEditor();
