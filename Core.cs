@@ -1,4 +1,5 @@
-﻿using FS_LevelEditor.Editor;
+﻿using DemoMod;
+using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.Playmode.Patches;
@@ -58,6 +59,8 @@ namespace FS_LevelEditor
             {
                 Logger.Log("LE loaded automatically at the game's startup!");
             }
+            //TODO: Remove when it's the time
+            ModConsole.SecondaryToggleKey = KeyCode.None;
         }
 
         public static void OnSceneWasLoaded(Scene scene, LoadSceneMode loadMode)
@@ -182,5 +185,6 @@ namespace FS_LevelEditor
         {
             isQuitting = true;
         }
+
     }
 }
