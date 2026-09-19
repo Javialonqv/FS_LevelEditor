@@ -60,7 +60,8 @@ namespace FS_LevelEditor
                 Logger.Log("LE loaded automatically at the game's startup!");
             }
             //TODO: Remove when it's the time
-            ModConsole.SecondaryToggleKey = KeyCode.None;
+            if(ModConsole.SecondaryToggleKey == KeyCode.Escape)
+                ModConsole.SecondaryToggleKey = KeyCode.None;
         }
 
         public static void OnSceneWasLoaded(Scene scene, LoadSceneMode loadMode)
