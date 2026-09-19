@@ -739,6 +739,8 @@ namespace FS_LevelEditor
             if (levelButtonsWasClicked) return;
             levelButtonsWasClicked = true;
 
+            EditorController.BeginTransitionBlock();
+
             NativeModLoader.Instance.StartCoroutine(EnterEditorRoutine(isLoadingLevel, levelFileNameWithoutExtension, levelName));
         }
         IEnumerator EnterEditorRoutine(bool isLoadingLevel = false, string levelFileNameWithoutExtension = "", string levelName = "")
@@ -792,6 +794,8 @@ namespace FS_LevelEditor
 
             yield return new WaitForSecondsRealtime(1.5f);
             InGameUIManager.Instance.StartTotalFadeIn(3, true);
+            yield return EditorController.EndTransitionBlockAfter(3f);
+            levelButtonsWasClicked = false;
         }
 
         public void GoBackToLEWhileInPlayMode(string levelFileNameWithoutExtension, string levelName)

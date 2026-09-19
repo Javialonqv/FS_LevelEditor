@@ -150,6 +150,8 @@ namespace FS_LevelEditor.Editor
         public bool waypointRotation = true;
         #endregion
 
+        public static bool transitionInputBlocked = false; //for the menu fix
+
         // Misc?
         public DeathYPlaneCtrl deathYPlane;
 
@@ -3399,6 +3401,34 @@ namespace FS_LevelEditor.Editor
             GL.End();
             GL.PopMatrix();
         }
+        public static void BeginTransitionBlock()
+        {
+            transitionInputBlocked = true;
+
+            MenuController mc = MenuController.GetInstance();
+            if (mc != null) mc.InputNotAllowed();
+            MenuController.SoftInputNotAllowed();
+        }
+        public static IEnumerator EndTransitionBlockAfter(float seconds)
+        {
+            float t = seconds;
+            while (t > 0f)
+            {
+                t -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            // Wait until the player lets go of everything they were mashing.
+            while (Input.anyKey)
+                yield return null;
+
+            transitionInputBlocked = false;
+
+            MenuController mc = MenuController.GetInstance();
+            if (mc != null) mc.InputAllowed();
+            MenuController.SoftInputAllowed();
+        }
+
     }
 
     public struct LEAction
