@@ -182,6 +182,7 @@ namespace FS_LevelEditor.Editor
             Camera.main.nearClipPlane = 0.1f; // To prevent disappearing when near objects.
 
             currentEditorState = EditorState.NORMAL; // Ensure state is initialized
+            MenuController.GetInstance().InputNotAllowed();
         }
 
         void LoadAssetBundle()
@@ -376,11 +377,13 @@ namespace FS_LevelEditor.Editor
         public void AfterFinishedLoadingLevel()
         {
             SetupSkybox((int)globalProperties["Skybox"]);
+            MenuController.GetInstance().InputAllowed();
         }
 
         void Update()
         {
             if (enteringPlayMode) return;
+            if (transitionInputBlocked) return;
 
             ManageEscAction();
 
@@ -3543,5 +3546,8 @@ namespace FS_LevelEditor.Editor
                 editor.SetSelectedObj(targetObj, EditorController.SelectionType.ForceSingle);
             }
         }
+
+        //Fix for the menu bug
+
     }
 }
