@@ -301,6 +301,7 @@ namespace FS_LevelEditor.Playmode
         {
             if (musicID >= 0 && musicID < tracks.Count)
             {
+                Controls.Instance.m_levelNormalMusicClip = tracks[musicID];
                 MusicManager.Instance.SetCurrentLevelNormalMusic(tracks[musicID]);
                 MusicManager.Instance.PauseMenuMusic();
                 MusicManager.Instance.m_context = MusicManager.MusicContext.NORMAL;
