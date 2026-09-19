@@ -120,6 +120,7 @@ namespace FS_LevelEditor.Editor
         private GameObject selectionBox;
         private UISprite selectionBoxSprite;
         BulkSelectionMode currentBulkSelectionMode = BulkSelectionMode.Everything;
+        private HashSet<GameObject> preSelectedObjects = new HashSet<GameObject>();
         #endregion
 
         #region Grid
@@ -603,18 +604,48 @@ namespace FS_LevelEditor.Editor
                     if (!selectionBox.activeSelf)
                         selectionBox.SetActive(true);
                     UpdateSelectionBox();
+
+                    if (currentMode == Mode.Selection)
+                    {
+                        List<GameObject> currentlyHovered = GetObjectsInRectangle(selectionStartScreen, selectionEndScreen);
+
+                        foreach (var obj in preSelectedObjects)
+                        {
+                            if (!currentlyHovered.Contains(obj) && obj != null)
+                            {
+                                if (!currentSelectedObjects.Contains(obj) && currentSelectedObj != obj)
+                                {
+                                    obj.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.NORMAL);
+                                }
+                            }
+                        }
+
+                        foreach (var obj in currentlyHovered)
+                        {
+                            if (!preSelectedObjects.Contains(obj) && obj != null)
+                            {
+                                obj.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.SELECT);
+                            }
+                        }
+
+                        preSelectedObjects = new HashSet<GameObject>(currentlyHovered);
+                    }
                 }
                 else
                 {
                     if (selectionBox != null && selectionBox.activeSelf)
                         selectionBox.SetActive(false);
+
+                    ClearPreSelection(); // Clears highlights if you drag back to the starting point
                 }
             }
             else if (isSelecting && Input.GetKey(KeyCode.F))
             {
-                // If F is pressed during selection, hide the box
+                // If F is pressed during selection, hide the box and clear highlights
                 if (selectionBox != null && selectionBox.activeSelf)
                     selectionBox.SetActive(false);
+
+                ClearPreSelection();
             }
 
             // End selection (only if Shift was held)
@@ -624,17 +655,18 @@ namespace FS_LevelEditor.Editor
                 if (selectionBox != null)
                     selectionBox.SetActive(false);
 
+                // Clear the hover tracking list (the actual selection methods will handle final colors)
+                preSelectedObjects.Clear();
+
                 float dragDistance = (selectionEndScreen - selectionStartScreen).magnitude;
                 float heldTime = Time.unscaledTime - selectionStartTime;
 
-                // Only perform rectangle selection if it was a drag, not snapping, and Shift was held
                 if (!IsCurrentState(EditorState.MOVING_OBJECT) && !Input.GetKey(KeyCode.F) && heldTime > 0 && Input.GetKey(KeyCode.LeftShift))
                 {
                     if (dragDistance >= minDragDistance && currentMode == Mode.Selection)
                     {
                         SelectObjectsInRectangle(selectionStartScreen, selectionEndScreen);
                     }
-                    // else: short click already handled in Select Object region
                 }
             }
             #endregion
@@ -1575,32 +1607,24 @@ namespace FS_LevelEditor.Editor
         {
             return currentBulkSelectionMode;
         }
-        private void SelectObjectsInRectangle(Vector2 start, Vector2 end)
+        private List<GameObject> GetObjectsInRectangle(Vector2 start, Vector2 end)
         {
-            // Calculate selection rectangle boundaries
             float minX = Mathf.Min(start.x, end.x);
             float maxX = Mathf.Max(start.x, end.x);
             float minY = Mathf.Min(start.y, end.y);
             float maxY = Mathf.Max(start.y, end.y);
 
-            // Check if selection rectangle is too small
-            float width = maxX - minX;
-            float height = maxY - minY;
-            if (width < minDragDistance && height < minDragDistance)
-            {
-                SetSelectedObj(null);
-                return;
-            }
+            if (maxX - minX < minDragDistance && maxY - minY < minDragDistance)
+                return new List<GameObject>();
 
             Camera cam = Camera.main;
-            var selectedObjects = new List<GameObject>();
+            var objectsInRect = new List<GameObject>();
 
             foreach (var obj in currentInstantiatedObjects)
             {
                 if (obj == null || obj.isDeleted || !obj.gameObject.activeSelf)
                     continue;
 
-                // Filter by bulk selection mode
                 switch (currentBulkSelectionMode)
                 {
                     case BulkSelectionMode.ObjectsOnly:
@@ -1612,66 +1636,82 @@ namespace FS_LevelEditor.Editor
                         break;
                 }
 
-                // Get all renderers for this object
                 var renderers = obj.gameObject.GetComponentsInChildren<Renderer>(true);
                 if (renderers.Length == 0) continue;
 
-                // Frustum culling first
                 Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(cam);
                 Bounds? combinedBounds = null;
                 foreach (var renderer in renderers)
                 {
-                    if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
-                        continue;
-                    if (combinedBounds == null)
-                        combinedBounds = renderer.bounds;
-                    else
-                        combinedBounds.Value.Encapsulate(renderer.bounds);
+                    if (!renderer.enabled || !renderer.gameObject.activeInHierarchy) continue;
+                    if (combinedBounds == null) combinedBounds = renderer.bounds;
+                    else combinedBounds.Value.Encapsulate(renderer.bounds);
                 }
+
                 if (combinedBounds == null || !GeometryUtility.TestPlanesAABB(frustumPlanes, combinedBounds.Value))
                     continue;
 
-                // Sample mesh vertices and project to screen space
                 bool isInSelection = false;
                 foreach (var renderer in renderers)
                 {
-                    if (!renderer.enabled || !renderer.gameObject.activeInHierarchy)
-                        continue;
+                    if (!renderer.enabled || !renderer.gameObject.activeInHierarchy) continue;
 
-                    MeshFilter meshFilter = renderer.GetComponent<MeshFilter>();
-                    if (meshFilter == null || meshFilter.sharedMesh == null)
-                        continue;
-
-                    Mesh mesh = meshFilter.sharedMesh;
-                    Transform transform = renderer.transform;
-                    Vector3[] vertices = mesh.vertices;
-
-                    // Sample vertices (use step for performance on large meshes)
-                    int step = Mathf.Max(1, vertices.Length / 100);
-                    for (int i = 0; i < vertices.Length; i += step)
+                    Bounds bounds = renderer.bounds;
+                    Vector3[] corners = new Vector3[8]
                     {
-                        Vector3 worldPos = transform.TransformPoint(vertices[i]);
-                        Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
+                bounds.min, bounds.max,
+                new Vector3(bounds.min.x, bounds.min.y, bounds.max.z),
+                new Vector3(bounds.min.x, bounds.max.y, bounds.min.z),
+                new Vector3(bounds.max.x, bounds.min.y, bounds.min.z),
+                new Vector3(bounds.min.x, bounds.max.y, bounds.max.z),
+                new Vector3(bounds.max.x, bounds.min.y, bounds.max.z),
+                new Vector3(bounds.max.x, bounds.max.y, bounds.min.z)
+                    };
 
-                        // Check if vertex is in front of camera and inside rectangle
-                        if (screenPos.z > 0 &&
-                            screenPos.x >= minX && screenPos.x <= maxX &&
-                            screenPos.y >= minY && screenPos.y <= maxY)
+                    float objMinX = float.MaxValue, objMaxX = float.MinValue;
+                    float objMinY = float.MaxValue, objMaxY = float.MinValue;
+                    bool anyFront = false;
+
+                    foreach (var corner in corners)
+                    {
+                        Vector3 screenPos = cam.WorldToScreenPoint(corner);
+                        if (screenPos.z > 0)
                         {
-                            isInSelection = true;
-                            break;
+                            anyFront = true;
+                            objMinX = Mathf.Min(objMinX, screenPos.x);
+                            objMaxX = Mathf.Max(objMaxX, screenPos.x);
+                            objMinY = Mathf.Min(objMinY, screenPos.y);
+                            objMaxY = Mathf.Max(objMaxY, screenPos.y);
                         }
                     }
 
-                    if (isInSelection)
+                    if (anyFront && objMinX <= maxX && objMaxX >= minX && objMinY <= maxY && objMaxY >= minY)
+                    {
+                        isInSelection = true;
                         break;
+                    }
                 }
 
-                if (isInSelection)
+                if (isInSelection) objectsInRect.Add(obj.gameObject);
+            }
+            return objectsInRect;
+        }
+
+        private void ClearPreSelection()
+        {
+            // Reset colors for objects that were highlighted but are no longer in the box
+            foreach (var obj in preSelectedObjects)
+            {
+                if (obj != null && !currentSelectedObjects.Contains(obj) && currentSelectedObj != obj)
                 {
-                    selectedObjects.Add(obj.gameObject);
+                    obj.GetComponent<LE_Object>().SetObjectColor(LE_Object.LEObjectContext.NORMAL);
                 }
             }
+            preSelectedObjects.Clear();
+        }
+        private void SelectObjectsInRectangle(Vector2 start, Vector2 end)
+        {
+            List<GameObject> selectedObjects = GetObjectsInRectangle(start, end);
 
             if (selectedObjects.Count == 0)
             {
