@@ -565,6 +565,12 @@ namespace FS_LevelEditor.Editor
             {
                 if (currentSelectedObj)
                     StopMovingObject();
+                else
+                {
+                    SetCurrentEditorState(EditorState.NORMAL);
+                    collidingArrow = GizmosArrow.None;
+                    gizmo.ShowAllArrows();
+                }
             }
             #endregion
 
@@ -2665,7 +2671,10 @@ namespace FS_LevelEditor.Editor
                     return;
                 }
                 if (!IsCurrentState(EditorState.MOVING_OBJECT))
+                {
                     SetCurrentEditorState(EditorState.MOVING_OBJECT);
+                    gizmo.ShowOnlyArrow(collidingArrow);
+                }
 
                 // Calculate offset based on movement mode
                 Vector3 offset;
@@ -2751,6 +2760,7 @@ namespace FS_LevelEditor.Editor
                     currentSelectedObj.transform.position = newPosition;
                 }
             }
+
         }
         void StopMovingObject()
         {
@@ -2761,6 +2771,7 @@ namespace FS_LevelEditor.Editor
             levelHasBeenModified = true;
             SetCurrentEditorState(EditorState.NORMAL);
             collidingArrow = GizmosArrow.None;
+            gizmo.ShowAllArrows();
         }
         void DuplicateSelectedObject()
         {

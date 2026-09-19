@@ -37,7 +37,7 @@ namespace FS_LevelEditor.Editor.UI
             Instance = this;
 
             CreatePanelBackground();
-            CreateTitle();
+            CreateHeader();
             CreateHasTaserToggle();
             CreateHasJetpackToggle();
             CreateHasFlashlightToggle();
@@ -64,7 +64,7 @@ namespace FS_LevelEditor.Editor.UI
             background.atlas = NGUI_Utils.UITexturesAtlas;
             background.spriteName = "Square_Border_Beveled_HighOpacity";
             background.type = UIBasicSprite.Type.Sliced;
-            background.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            background.color = new Color(0.0039f, 0.3568f, 0.3647f, 1f);
             background.width = 650;
             background.height = 1010;
 
@@ -77,9 +77,25 @@ namespace FS_LevelEditor.Editor.UI
             tween.duration = 0.2f;
             tween.Play(false);
         }
-        void CreateTitle()
+        void CreateHeader()
         {
-            titleLabel = NGUI_Utils.CreateLabel(transform, new Vector3(0, 460), new Vector3Int(600, 50, 0), "GlobalProperties",
+            GameObject header = new GameObject("Header");
+            header.transform.parent = transform;
+            header.transform.localPosition = new Vector3(0f, 475f, 0f);
+            header.transform.localScale = Vector3.one;
+
+            UISprite sprite = header.AddComponent<UISprite>();
+            sprite.atlas = NGUI_Utils.UITexturesAtlas;
+            sprite.spriteName = "Square_Border_Beveled_HighOpacity";
+            sprite.type = UIBasicSprite.Type.Sliced;
+            sprite.color = new Color(0.218f, 0.6464f, 0.6509f, 1f);
+            sprite.width = 650;
+            sprite.height = 60;
+
+            BoxCollider collider = header.AddComponent<BoxCollider>();
+            collider.size = new Vector3(650f, 60f, 1f);
+
+            titleLabel = NGUI_Utils.CreateLabel(header.transform, Vector3.zero, new Vector3Int(600, 60, 0), "GlobalProperties",
                 NGUIText.Alignment.Center, UIWidget.Pivot.Center);
             titleLabel.name = "Title";
             titleLabel.depth = 1;

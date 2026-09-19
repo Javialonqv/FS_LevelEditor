@@ -73,6 +73,19 @@ namespace FS_LevelEditor.Editor
 
             return arrow;
         }
+        public void ShowOnlyArrow(GizmosArrow arrow)
+        {
+            xObj.SetActive(arrow == GizmosArrow.X);
+            yObj.SetActive(arrow == GizmosArrow.Y);
+            zObj.SetActive(arrow == GizmosArrow.Z);
+        }
+
+        public void ShowAllArrows()
+        {
+            xObj.SetActive(true);
+            yObj.SetActive(true);
+            zObj.SetActive(true);
+        }
 
         public void HighlightArrow(GizmosArrow arrow, bool unhighlightOthers = true)
         {
