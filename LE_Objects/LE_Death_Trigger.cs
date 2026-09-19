@@ -225,20 +225,20 @@ namespace FS_LevelEditor
 
                 if (deathTrigger.GetProperty<float>("Delay") == 0 && deathTrigger.GetProperty<LE_Death_Trigger.TriggerType>("Type") == LE_Death_Trigger.TriggerType.RELOCATION)
                 {
-                    // The rotation of the player is still handled by the DeathTriggerRespawnRotationPatcher.
-                    Controls.Instance.TeleportPlayerToPosition(deathTrigger.script.m_resetTransform.position, true);
-
-                    if (deathTrigger.RotatePlayer)
-                        DeathTriggerRespawnRotationPatcher.RotatePlayerNow(deathTrigger);
-
-                    // onTeleport in ContainmentBox is not called for some reason, execute the events manually.
-                    deathTrigger.ExecuteOnTeleportEvents();
-
+                    NativeModLoader.Instance.StartCoroutine(TeleportInstantlySafe(deathTrigger));
                     return false;
                 }
             }
 
             return true;
+        }
+        private static IEnumerator TeleportInstantlySafe(LE_Death_Trigger deathTrigger)
+        {
+            yield return new WaitForEndOfFrame();
+            Controls.Instance.TeleportPlayerToPosition(deathTrigger.script.m_resetTransform.position, true);
+            if (deathTrigger.RotatePlayer)
+                DeathTriggerRespawnRotationPatcher.RotatePlayerNow(deathTrigger);
+            deathTrigger.ExecuteOnTeleportEvents();
         }
     }
 
