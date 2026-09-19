@@ -512,21 +512,24 @@ namespace FS_LevelEditor.SaveSystem
                 File.Delete(path);
             }
         }
-        public static void RenameLevel(string levelFileNameWithoutExtension, string newLevelName)
+        public static void RenameLevel(string levelFileNameWithoutExtension, string newLevelName, string newMetadataName)
         {
             LevelData toRename = GetLevelData(levelFileNameWithoutExtension);
 
-            toRename.levelName = newLevelName.Trim();
-
-            // Save the file with the new name.
+            toRename.levelName = newMetadataName.Trim();
             SaveLevelData(newLevelName, levelFileNameWithoutExtension, toRename);
 
             string oldPath = Path.Combine(levelsDirectory, levelFileNameWithoutExtension + ".lvl");
             string newPath = Path.Combine(levelsDirectory, Utils.SanitizeFileName(newLevelName) + ".lvl");
 
+            if (oldPath == newPath)
+            {
+                return;
+            }
+
             if (File.Exists(newPath))
             {
-                newPath = Path.Combine(levelsDirectory, GetAvailableLevelName(newLevelName) + ".lvl");
+                newPath = Path.Combine(levelsDirectory, GetAvailableLevelName(Utils.SanitizeFileName(newLevelName)) + ".lvl");
             }
 
             Logger.Log("New level file path is: " + newPath);

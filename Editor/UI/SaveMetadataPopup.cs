@@ -282,8 +282,9 @@ namespace FS_LevelEditor.Editor.UI
             // Check if level name changed - need to rename the file
             if (levelName != oldLevelName)
             {
+                string cleanFileName = Utils.GetCleanFileName(levelName);
                 // Sanitize the new level name for use as filename
-                string newFileNameWithoutExtension = Utils.SanitizeFileName(levelName);
+                string newFileNameWithoutExtension = Utils.SanitizeFileName(cleanFileName);
 
                 // Check if a file with the new name already exists
                 string levelsDirectory = Path.Combine(Application.persistentDataPath, "Custom Levels");
@@ -292,7 +293,7 @@ namespace FS_LevelEditor.Editor.UI
                 if (File.Exists(newFilePath) && newFileNameWithoutExtension != oldFileNameWithoutExtension)
                 {
                     // File already exists, get an available name
-                    newFileNameWithoutExtension = LevelData.GetAvailableLevelName(levelName);
+                    newFileNameWithoutExtension = LevelData.GetAvailableLevelName(cleanFileName);
                     newFileNameWithoutExtension = Utils.SanitizeFileName(newFileNameWithoutExtension);
                 }
 

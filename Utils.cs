@@ -543,6 +543,24 @@ namespace FS_LevelEditor
 
             return objFound;
         }
+        public static string GetCleanFileName(string inputName)
+        {
+            if (string.IsNullOrEmpty(inputName)) return "Unnamed_Level";
+
+            // Remove any BBCode tags like [c], [ff0000], [b], etc.
+            string cleanName = Regex.Replace(inputName, @"\[.*?\]", "");
+
+            // Remove invalid file path characters (like / \ : * ? " < > |)
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                cleanName = cleanName.Replace(c.ToString(), "");
+            }
+
+            cleanName = cleanName.Trim();
+            if (string.IsNullOrEmpty(cleanName)) cleanName = "Unnamed_Level";
+
+            return cleanName;
+        }
 
         public static bool IsMouseOverUIElement()
         {

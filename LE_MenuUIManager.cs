@@ -4,6 +4,7 @@ using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
 using HarmonyLib;
 using System.Collections;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace FS_LevelEditor
@@ -787,9 +788,13 @@ namespace FS_LevelEditor
             else
             {
                 string newLevelName = string.IsNullOrEmpty(levelName) ? LevelData.GetAvailableLevelName() : levelName;
+
+                string cleanFileName = Utils.GetCleanFileName(newLevelName);
+
                 EditorController.Instance.levelName = newLevelName;
-                EditorController.Instance.levelFileNameWithoutExtension = newLevelName;
-                LevelData.SaveLevelData(newLevelName, newLevelName);
+                EditorController.Instance.levelFileNameWithoutExtension = cleanFileName;
+
+                LevelData.SaveLevelData(cleanFileName, newLevelName);
             }
 
             yield return new WaitForSecondsRealtime(1.5f);
@@ -951,8 +956,11 @@ namespace FS_LevelEditor
             // Trim the text.
             input.text = input.text.Trim();
 
-            // Rename the level.
-            LevelData.RenameLevel(levelFileNameWithoutExtension, input.text);
+            string newMetadataLevelName = input.text;
+            string cleanFileName = Utils.GetCleanFileName(newMetadataLevelName);
+
+            LevelData.RenameLevel(levelFileNameWithoutExtension, cleanFileName, newMetadataLevelName);
+
             CreateLevelsList();
         }
 
@@ -1289,13 +1297,10 @@ namespace FS_LevelEditor
             contentContainer.SetActive(true);
 
             // Truncate level name if too long (max 20 characters)
-            const int maxLevelNameLength = 20;
-            string displayName = data.levelName;
-            if (displayName.Length > maxLevelNameLength)
-            {
-                displayName = displayName.Substring(0, maxLevelNameLength) + "...";
-            }
+            string displayName = TruncateWithBBCode(data.levelName, 20);
+            previewLevelNameLabel.text = displayName;
 
+            previewLevelNameLabel.overflowMethod = UILabel.Overflow.ClampContent;
             // Update labels
             previewLevelNameLabel.text = displayName;
             previewObjectCountLabel.text = $"Objects: {data.objects.Count}";
@@ -1333,6 +1338,37 @@ namespace FS_LevelEditor
                 previewThumbnailTexture.enabled = false;
                 noPreviewLabel.enabled = true;
             }
+        }
+        private string TruncateWithBBCode(string text, int maxVisibleLength)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+
+            int visibleCount = 0;
+            int index = 0;
+
+            while (index < text.Length)
+            {
+                // If we hit an NGUI tag, skip over it
+                if (text[index] == '[')
+                {
+                    int closeBracket = text.IndexOf(']', index);
+                    if (closeBracket != -1)
+                    {
+                        index = closeBracket + 1;
+                        continue;
+                    }
+                }
+
+                visibleCount++;
+                index++;
+
+                if (visibleCount >= maxVisibleLength)
+                {
+                    return text.Substring(0, index) + "...[-]";
+                }
+            }
+
+            return text;
         }
 
         public void HideMetadataPreview()
