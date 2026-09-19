@@ -240,6 +240,7 @@ namespace FS_LevelEditor
         public bool isDeleted = false;
 
         public bool currentCollisionState = true;
+        public bool currentIMState = true;
 
         public LE_Object() { }
 
@@ -719,6 +720,18 @@ namespace FS_LevelEditor
             {
                 SetCollidersState(!currentCollisionState);
             }
+            else if (actionName == "SetInvisibleMeshState_True")
+            {
+                SetInvisibleMeshState(true);
+            }
+            else if (actionName == "SetInvisibleMeshState_False")
+            {
+                SetInvisibleMeshState(false);
+            }
+            else if (actionName == "SetInvisibleMeshState_Toggle")
+            {
+                SetInvisibleMeshState(!currentIMState);
+            }
             else if (actionName == "ManageEvents")
             {
                 EventsUIPageManager.Instance.ShowEventsPage(this);
@@ -935,6 +948,16 @@ namespace FS_LevelEditor
             }
 
             currentCollisionState = newEnabledState;
+        }
+        public void SetInvisibleMeshState(bool newEnabledState)
+        {
+            if (!contentObject)
+            {
+                Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
+                return;
+            }
+            SetMeshRenderersState(newEnabledState);
+            currentIMState = newEnabledState;
         }
         /// <summary>
         /// SetCollidersState should work like 99% of the time, except for some edge cases where it doesn't work for some objects for some stupid reason.

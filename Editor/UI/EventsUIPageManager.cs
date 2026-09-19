@@ -72,6 +72,9 @@ namespace FS_LevelEditor.Editor.UI
         GameObject defaultObjectsSettings;
         UIDropdownPatcher spawnOptionsDropdown;
         UIDropdownPatcher colliderStateDropdown;
+
+        UIDropdownPatcher invisibleMeshDropdown;
+
         UITogglePatcher useAndLogicToggle;
         //-----------------------------------
         GameObject globalObjectsSettings;
@@ -1111,7 +1114,6 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     currentActiveObjectPanel = GetOptionsPanelForObject(currentSelectedEvent.targetObjType.Value);
                 }
-
                 if (currentActiveObjectPanel) // User can decided if it shows global options or object-specific options.
                 {
                     moreGlobalOptionsButton.gameObject.SetActive(true);
@@ -1255,6 +1257,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             spawnOptionsDropdown.SelectOption((int)@event.spawn);
             colliderStateDropdown.SelectOption((int)@event.colliderState);
+            invisibleMeshDropdown.SelectOption((int)@event.invisibleMesh);
             useAndLogicToggle.Set(@event.useAndLogic);
             movingStateToggle.SelectOption((int)@event.moveState);
             resetMovementToggle.Set(@event.resetMovement);
@@ -1392,6 +1395,7 @@ namespace FS_LevelEditor.Editor.UI
 
             CreateSpawnOptionsDropdown();
             CreateColliderStateDropdown();
+            CreateInvisibleMeshStateDropdown();
             CreateUseAndLogicToggle();
             CreateMoreGlobalOptionsButton();
         }
@@ -1424,6 +1428,21 @@ namespace FS_LevelEditor.Editor.UI
 
             this.colliderStateDropdown = colliderStateDropdown;
             colliderStateDropdown.gameObject.SetActive(true);
+        }
+        void CreateInvisibleMeshStateDropdown()
+        {           
+            var invisibleMeshStateDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(-210, 25), Vector3.one * 0.8f);
+            invisibleMeshStateDropdown.name = "InvisibleMeshStateDropdown";
+            invisibleMeshStateDropdown.SetTitle("Invisible Mesh");
+            invisibleMeshStateDropdown.AddOption("Do Nothing", true);
+            invisibleMeshStateDropdown.AddOption("Enable", false);
+            invisibleMeshStateDropdown.AddOption("Disable", false);
+            invisibleMeshStateDropdown.AddOption("Toggle", false);
+
+            invisibleMeshStateDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnInvisibleMeshStateDropdownChanged)));
+
+            this.invisibleMeshDropdown = invisibleMeshStateDropdown;
+            invisibleMeshStateDropdown.gameObject.SetActive(true);
         }
         void CreateUseAndLogicToggle()
         {
@@ -2360,6 +2379,10 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.colliderState = (LE_Event.ColliderState)colliderStateDropdown.currentlySelectedID;
         }
+        void OnInvisibleMeshStateDropdownChanged()
+        {
+            currentSelectedEvent.invisibleMesh = (LE_Event.InvisibleMesh)invisibleMeshDropdown.currentlySelectedID;
+        }
         void OnUseAndLogicToggleChanged()
         {
             currentSelectedEvent.useAndLogic = useAndLogicToggle.isChecked;
@@ -2846,6 +2869,8 @@ public class LE_Event
     public SpawnState spawn { get; set; } = SpawnState.Do_Nothing;
     public enum ColliderState { Do_Nothing, Enable, Disable, Toggle }
     public ColliderState colliderState { get; set; } = ColliderState.Do_Nothing;
+    public enum InvisibleMesh { Do_Nothing, Enable, Disable, Toggle}
+    public InvisibleMesh invisibleMesh { get; set; } = InvisibleMesh.Do_Nothing;
     public enum MoveState { Do_Nothing, Start_Moving, Stop_Moving, Start_Or_Stop_Moving }
     public MoveState moveState { get; set; } = MoveState.Do_Nothing;
     public bool resetMovement { get; set; } = false;

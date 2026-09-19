@@ -433,6 +433,7 @@ namespace FS_LevelEditor
                     // Only setup global options values manually.
                     newEvent.spawn = @event.spawn;
                     newEvent.colliderState = @event.colliderState;
+                    newEvent.invisibleMesh = @event.invisibleMesh;
                     newEvent.moveState = @event.moveState;
                     newEvent.resetMovement = @event.resetMovement;
 
@@ -487,6 +488,20 @@ namespace FS_LevelEditor
                     {
                         targetObj.TriggerAction("SetColliderState_True");
                     }
+                    break;
+            }
+            switch (@event.invisibleMesh)
+            {
+                case LE_Event.InvisibleMesh.Enable:
+                    targetObj.TriggerAction("SetInvisibleMeshState_True");
+                    break;
+
+                case LE_Event.InvisibleMesh.Disable:
+                    targetObj.TriggerAction("SetInvisibleMeshState_False");
+                    break;
+
+                case LE_Event.InvisibleMesh.Toggle:
+                    targetObj.TriggerAction("SetInvisibleMeshState_Toggle");
                     break;
             }
             if (targetObj.TryGetComponent<WaypointSupport>(out var waypointSupport))

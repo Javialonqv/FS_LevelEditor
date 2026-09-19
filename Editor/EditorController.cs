@@ -161,7 +161,6 @@ namespace FS_LevelEditor.Editor
         List<Material> skyboxes = new List<Material>();
         List<AudioClip> tracks = new();
         AssetBundle editorAssetBundle; // Keep reference to prevent GC and allow FMOD to access audio data
-        private Dictionary<Light, bool> originalLightStates = new Dictionary<Light, bool>();
 
         void Awake()
         {
@@ -3366,34 +3365,14 @@ namespace FS_LevelEditor.Editor
             else
             {
                 RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-                RenderSettings.ambientIntensity = 1f;
+                RenderSettings.ambientIntensity = 0f;
                 RenderSettings.ambientLight = Color.white;
             }
 
             var allLights = FindObjectsOfType<Light>();
-
-            if (!lightingEnabled)
+            foreach (var light in allLights)
             {
-                originalLightStates.Clear();
-                foreach (var light in allLights)
-                {
-                    originalLightStates[light] = light.enabled;
-                    light.enabled = false;
-                }
-            }
-            else
-            {
-                foreach (var light in allLights)
-                {
-                    if (originalLightStates.TryGetValue(light, out bool wasEnabled))
-                    {
-                        light.enabled = wasEnabled;
-                    }
-                    else
-                    {
-                        light.enabled = true;
-                    }
-                }
+                light.enabled = lightingEnabled;
             }
 
             // Show notification to user
