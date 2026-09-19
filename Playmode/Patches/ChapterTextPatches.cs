@@ -26,7 +26,7 @@ namespace FS_LevelEditor.Playmode.Patches
         {
             if (PlayModeController.Instance != null)
             {
-                __result = PlayModeController.Instance.levelName.ToUpper();
+                __result = PlayModeController.Instance.levelName;
                 return false;
             }
             else
