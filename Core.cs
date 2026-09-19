@@ -30,7 +30,7 @@ namespace FS_LevelEditor
         public static string LevelNameJustQuitFrom = "";
         public static bool JustQuitPlaymode = false;
 
-        static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-17f, 121f, -72f);
+        static readonly Vector3 groundBaseTopLeftPivot = new Vector3(-16f, 121f, -64f);
 
         public static bool isQuitting;
 
@@ -120,8 +120,8 @@ namespace FS_LevelEditor
             if (!willLoadALevel)
             {
                 SpawnBase();
-                CreateDirectionalLight(new Vector3(-13f, 130f, -56f), new Vector3(45f, 180f, 0f));
-                CreatePlayerSpawn(new Vector3(-13f, 121.5f, -68f), Vector3.zero);
+                CreateDirectionalLight(new Vector3(-12f, 130f, -56f), new Vector3(45f, 180f, 0f));
+                CreatePlayerSpawn(new Vector3(-12f, 121.5f, -68f), Vector3.zero);
             }
         }
 
@@ -133,7 +133,7 @@ namespace FS_LevelEditor
             // Set camera's new position and rotation.
             GameObject camera = GameObject.Find("Main Camera");
             GameObject.Destroy(camera.GetComponent<Animation>());
-            camera.transform.position = new Vector3(-15f, 125f, -75f);
+            camera.transform.position = new Vector3(-12f, 125f, -75f);
             camera.transform.localEulerAngles = new Vector3(45f, 0f, 0f);
 
             // Add the camera movement component to... well... the camera.
@@ -148,7 +148,8 @@ namespace FS_LevelEditor
                 {
                     Vector3 position = groundBaseTopLeftPivot;
                     position.x += width * 4f;
-                    position.z += height * 4f;
+                    position.z -= height * 4f;
+
 
                     EditorController.Instance.PlaceObject(LE_Object.ObjectType.GROUND, position, Vector3.zero, Vector3.one, false);
                 }
