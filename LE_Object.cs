@@ -147,9 +147,11 @@ namespace FS_LevelEditor
         {
             { ObjectType.TRIGGER, new Vector3(3.8f, 3.8f, 0.01f) },
             { ObjectType.DOOR, new Vector3(1f, 1.05f, 1f) },
-            { ObjectType.BREAKABLE_WINDOW, new Vector3(1, 1.065f, 1) },
+            { ObjectType.BREAKABLE_WINDOW, new Vector3(1.002f, 1.062f, 1.012f) },
             { ObjectType.DESTRUCTIBLE_WALL, new Vector3(1, 1.065f, 1) },
-            { ObjectType.MINE, new Vector3(0.6f, 0.5f, 0.6f) }
+            { ObjectType.MINE, new Vector3(0.6f, 0.5f, 0.6f) },
+            { ObjectType.X_WALL, new Vector3(1, 1, 0.85f) },
+            { ObjectType.WINDOW, new Vector3(1,1, 0.951f) },
         };
 
         public static Dictionary<ObjectType, HashSet<int>> alreadyUsedIDsPerType = new Dictionary<ObjectType, HashSet<int>>();
@@ -993,6 +995,11 @@ namespace FS_LevelEditor
                 {
                     // This renderer is for text, skip.
                     if (tmpro.renderer == renderer) continue;
+                }
+                // Apparently special characters are also fucking objects, and they are being hidden??????
+                if (renderer.gameObject.TryGetComponent<TMPro.TMP_SubMesh>(out var tmpSubMesh))
+                {
+                    if (tmpSubMesh.renderer == renderer) continue;
                 }
 
                 // Skip waypoint renderers if this object has waypoints

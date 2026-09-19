@@ -380,6 +380,7 @@ namespace FS_LevelEditor
                         break;
                     case LE_Event.JetpackState.Take_Away:
                         Controls.Instance.BreakJetPack();
+                        InGameUIManager.Instance.StartCoroutine("HideFuelBarRoutine", 0f);
                         break;
                 }
                 return;
