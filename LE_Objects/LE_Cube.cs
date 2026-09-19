@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.Editor;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 
 namespace FS_LevelEditor
 {
@@ -7,16 +8,34 @@ namespace FS_LevelEditor
     public class LE_Cube : LE_Object
     {
         BlocScript blocScript;
+        GameObject light;
 
         void Awake()
         {
+            gameObject.GetChildAt("Content/OnlyForPC").SetActive(true);
+            light = gameObject.GetChildAt("Content/OnlyForPC/Light");
             if (EditorController.Instance)
             {
                 // COME ON, STUPID CUBE PHYSICS, I HATE YOU!!!!
                 Destroy(gameObject.GetChild("Content").GetComponent<Rigidbody>());
             }
         }
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "Light", false }
+            };
+        }
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                SetLightState(GetProperty<bool>("Light"));
+            }
 
+            base.ObjectStart(scene);
+        }
         public override void InitComponent()
         {
             gameObject.GetChild("Content").SetActive(false);
@@ -117,6 +136,9 @@ namespace FS_LevelEditor
 
             gameObject.GetChild("Content").SetActive(true);
 
+            SetLightState(GetProperty<bool>("Light"));
+            gameObject.GetChildAt("Content/OnlyForPC").SetActive(true);
+
             // This is one of the worst bugfixes you'll ever see in game development, but HEY!! IT WORKS LOL.
             // This forces the CheckForRespawn method to be called, just like it does in the BlocScript class.
             blocScript.InvokeRepeating(nameof(BlocScript.CheckForRespawn), 2f, 2f);
@@ -140,6 +162,31 @@ namespace FS_LevelEditor
             }
 
             return base.TriggerAction(actionName);
+        }
+        public override bool SetProperty(string name, object value)
+        {
+            if (name == "Light")
+            {
+                if (value is bool boolValue)
+                {
+                    properties["Light"] = boolValue;
+                    if (EditorController.Instance) SetLightState(boolValue);
+                }
+            }
+
+            return base.SetProperty(name, value);
+        }
+        void SetLightState(bool enabled)
+        {
+            light.SetActive(enabled);
+
+            if (EditorController.Instance)
+            {
+                foreach (var waypoint in waypointSupport.spawnedWaypoints)
+                {
+                    waypoint.gameObject.GetChildAt("Content/OnlyForPC/Light").SetActive(enabled);
+                }
+            }
         }
     }
 

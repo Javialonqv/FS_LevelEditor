@@ -1,6 +1,8 @@
-﻿using FS_LevelEditor.Playmode;
+﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Playmode;
 using UnityEngine;
 using UnityEngine.Events;
+using static UnityEngine.ParticleSystem;
 
 namespace FS_LevelEditor
 {
@@ -8,13 +10,29 @@ namespace FS_LevelEditor
     public class LE_Jetpack : LE_Object
     {
         JetPack jetpack;
+        GameObject light;
+
+        void Awake()
+        {
+            light = gameObject.GetChildAt("Content/Mesh/JetPack/JetpackPickupLight");
+        }
 
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>
             {
-                { "Rotate", true }
+                { "Rotate", true },
+                { "Light", true }
             };
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            if(scene == LEScene.Editor)
+            {
+                SetLightState(GetProperty<bool>("Light"));
+            }
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()
@@ -31,6 +49,7 @@ namespace FS_LevelEditor
             jetpack.jetpackMaterial = content.GetChildAt("Mesh/JetPack").GetComponent<Renderer>().material;
             jetpack.jetpackLight = content.GetChildAt("Mesh/JetPack/JetpackPickupLight").GetComponent<Light>();
             jetpack.jetpackFlare = new GameObject("ShouldBeSaved").AddComponent<LensFlare>();
+            SetLightState(GetProperty<bool>("Light"));
             ConfigureEvents(jetpack);
 
             // --------- SETUP TAGS & LAYERS ---------
@@ -52,6 +71,14 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "Light")
+            {
+                if (value is bool boolValue)
+                {
+                    properties["Light"] = boolValue;
+                    if (EditorController.Instance) SetLightState(boolValue);
+                }
+            }
 
             return base.SetProperty(name, value);
         }
@@ -64,6 +91,18 @@ namespace FS_LevelEditor
         void ExecuteOnPickUpEvents()
         {
             LE_Dummy_Checkpoint.UpdateStaticValues();
+        }
+        void SetLightState(bool enabled)
+        {
+            light.SetActive(enabled);
+
+            if (EditorController.Instance)
+            {
+                foreach (var waypoint in waypointSupport.spawnedWaypoints)
+                {
+                    waypoint.gameObject.GetChildAt("Content/Mesh/JetPack/JetpackPickupLight").SetActive(enabled);
+                }
+            }
         }
     }
 

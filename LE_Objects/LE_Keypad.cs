@@ -3,6 +3,7 @@ using HarmonyLib;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using static UnityEngine.ParticleSystem;
 
 namespace FS_LevelEditor
 {
@@ -18,6 +19,7 @@ namespace FS_LevelEditor
         ];
 
         InterrupteurController controller;
+        GameObject light;
         private int keycodeValue = 0;
         private int alternativeValue = 0;
         public void Awake()
@@ -32,6 +34,8 @@ namespace FS_LevelEditor
                 gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider").SetActive(true);
                 gameObject.GetChildAt("LE_Keypad/AdditionalInteractionCollider_Radial").SetActive(true);
             }
+
+            light = gameObject.GetChildAt("LE_Keypad/Light");
         }
 
         public static Dictionary<string, object> GetDefaultProperties()
@@ -42,6 +46,7 @@ namespace FS_LevelEditor
                 { "LeaveOnIncorrect", false },
                 { "canBeUsed", true },
                 { "allCorrect", false },
+                { "Light", true },
                 { "onWinEvents", new List<LE_Event>() },
                 { "onFailEvents", new List<LE_Event>() },
 #if EXP_ONLY
@@ -50,11 +55,19 @@ namespace FS_LevelEditor
 #endif
             };
         }
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                SetLightState(GetProperty<bool>("Light"));
+            }
 
+            base.ObjectStart(scene);
+        }
         public override void InitComponent()
         {
             GameObject button = gameObject.GetChild("LE_Keypad");
-
+            SetLightState(GetProperty<bool>("Light"));
             button.tag = "Keypad";
             button.GetChild("Mesh").tag = "Interrupteur";
             button.SetActive(false);
@@ -247,6 +260,14 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "Light")
+            {
+                if (value is bool boolValue)
+                {
+                    properties["Light"] = boolValue;
+                    if (EditorController.Instance) SetLightState(boolValue);
+                }
+            }
 
             return base.SetProperty(name, value);
         }
@@ -287,6 +308,7 @@ namespace FS_LevelEditor
                 return true;
             }
 
+
             return base.TriggerAction(actionName);
         }
 
@@ -297,6 +319,18 @@ namespace FS_LevelEditor
             collider.gameObject.layer = LayerMask.NameToLayer(newEnabledState ? "Default" : "Ignore Raycast");
 
             contentObject.GetChild("Mesh").layer = LayerMask.NameToLayer(newEnabledState ? "Default" : "Ignore Raycast");
+        }
+        void SetLightState(bool enabled)
+        {
+            light.SetActive(enabled);
+
+            if (EditorController.Instance)
+            {
+                foreach (var waypoint in waypointSupport.spawnedWaypoints)
+                {
+                    waypoint.gameObject.GetChildAt("LE_Keypad/Light").SetActive(enabled);
+                }
+            }
         }
     }
 }

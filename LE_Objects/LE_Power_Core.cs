@@ -1,6 +1,7 @@
 ﻿using FS_LevelEditor.Editor;
 using HarmonyLib;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 
 namespace FS_LevelEditor
 {
@@ -8,6 +9,7 @@ namespace FS_LevelEditor
     public class LE_Power_Core : LE_Object
     {
         public BlocScript blocScript;
+        GameObject light;
 
         public bool insertToPowerSlotOnStart = false;
         public LE_Power_Slot powerSlotToPreInsertTo = null;
@@ -16,13 +18,20 @@ namespace FS_LevelEditor
 
         void Awake()
         {
+            light = gameObject.GetChildAt("Content/Light");
             if (EditorController.Instance)
             {
                 // COME ON, STUPID *POWER CORE PHYSICS, I HATE YOU!!!!
                 Destroy(gameObject.GetChild("Content").GetComponent<Rigidbody>());
             }
         }
-
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>()
+            {
+                { "Light", true }
+            };
+        }
         public override void InitComponent()
         {
             contentObject.SetActive(false);
@@ -140,6 +149,8 @@ namespace FS_LevelEditor
             blocScript.m_collisionAudioSource.outputAudioMixerGroup = t_powerCore.m_collisionAudioSource.outputAudioMixerGroup;
             blocScript.m_collisionAudioSource2.outputAudioMixerGroup = t_powerCore.m_collisionAudioSource2.outputAudioMixerGroup;
 
+            SetLightState(GetProperty<bool>("Light"));
+
             #region Compound Colliders
             var compoundColliders = contentObject.GetChild("CompoundColliders");
             List<GameObject> objectsToSetAsActiveElement = new List<GameObject>();
@@ -241,10 +252,26 @@ namespace FS_LevelEditor
 
                 ForceInsertion(powerSlotToPreInsertTo, blocScript, true);
             }
+            if (scene == LEScene.Editor)
+            {
+                SetLightState(GetProperty<bool>("Light"));
+            }
 
             base.ObjectStart(scene);
         }
+        public override bool SetProperty(string name, object value)
+        {
+           if (name == "Light")
+            {
+                if (value is bool boolValue)
+                {
+                    properties["Light"] = boolValue;
+                    if (EditorController.Instance) SetLightState(boolValue);
+                }
+            }
 
+            return base.SetProperty(name, value);
+        }
         public static void ForceInsertion(LE_Power_Slot slot, BlocScript core, bool executeEvents)
         {
             // If we want the OnInsert and OnRemove actions to be executed, _fromSave needs to be false.
@@ -255,6 +282,18 @@ namespace FS_LevelEditor
             core.SetEnabledWhenInHands(false);
             if (core.playerCollisionOnly)
                 core.playerCollisionOnly.SetActive(false);
+        }
+        void SetLightState(bool enabled)
+        {
+            light.SetActive(enabled);
+
+            if (EditorController.Instance)
+            {
+                foreach (var waypoint in waypointSupport.spawnedWaypoints)
+                {
+                    waypoint.gameObject.GetChildAt("Content/Light").SetActive(enabled);
+                }
+            }
         }
     }
 
