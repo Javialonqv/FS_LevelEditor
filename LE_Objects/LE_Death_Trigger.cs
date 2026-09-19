@@ -16,6 +16,8 @@ namespace FS_LevelEditor
         public Vector3 RespawnPosition { get; private set; }
         public Vector3 RespawnRotation { get; private set; }
 
+        public int lastInstantTeleportFrame = -1;
+
         public bool RotatePlayer
         {
             get
@@ -217,28 +219,41 @@ namespace FS_LevelEditor
     {
         public static bool Prefix(Collider collider)
         {
-            LE_Death_Trigger deathTrigger = collider.GetComponentInParent<LE_Death_Trigger>();
-            if (deathTrigger)
-            {
-                if (deathTrigger.GetProperty<bool>("WithOffset"))
-                    WithOffsetRespawnPatch.AboutToTeleportTo = deathTrigger;
+            LE_Death_Trigger t = collider.GetComponentInParent<LE_Death_Trigger>();
+            if (!t) return true;
 
-                if (deathTrigger.GetProperty<float>("Delay") == 0 && deathTrigger.GetProperty<LE_Death_Trigger.TriggerType>("Type") == LE_Death_Trigger.TriggerType.RELOCATION)
-                {
-                    NativeModLoader.Instance.StartCoroutine(TeleportInstantlySafe(deathTrigger));
+            bool isInstantRelocation =
+                t.GetProperty<float>("Delay") == 0 &&
+                t.GetProperty<LE_Death_Trigger.TriggerType>("Type") == LE_Death_Trigger.TriggerType.RELOCATION;
+
+            if (isInstantRelocation)
+            {
+                // Duplicate prefix invocation in the same frame: swallow it.
+                if (t.lastInstantTeleportFrame == Time.frameCount)
                     return false;
-                }
+                t.lastInstantTeleportFrame = Time.frameCount;
+
+                if (t.GetProperty<bool>("WithOffset"))
+                    WithOffsetRespawnPatch.AboutToTeleportTo = t;
+
+                NativeModLoader.Instance.StartCoroutine(TeleportInstantlySafe(t));
+                return false;
             }
+
+            if (t.GetProperty<bool>("WithOffset"))
+                WithOffsetRespawnPatch.AboutToTeleportTo = t;
 
             return true;
         }
-        private static IEnumerator TeleportInstantlySafe(LE_Death_Trigger deathTrigger)
+
+        private static IEnumerator TeleportInstantlySafe(LE_Death_Trigger t)
         {
             yield return new WaitForEndOfFrame();
-            Controls.Instance.TeleportPlayerToPosition(deathTrigger.script.m_resetTransform.position, true);
-            if (deathTrigger.RotatePlayer)
-                DeathTriggerRespawnRotationPatcher.RotatePlayerNow(deathTrigger);
-            deathTrigger.ExecuteOnTeleportEvents();
+
+            Controls.Instance.TeleportPlayerToPosition(t.script.m_resetTransform.position, true);
+            if (t.RotatePlayer)
+                DeathTriggerRespawnRotationPatcher.RotatePlayerNow(t);
+            t.ExecuteOnTeleportEvents();
         }
     }
 
