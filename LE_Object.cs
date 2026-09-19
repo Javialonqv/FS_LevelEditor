@@ -957,7 +957,6 @@ namespace FS_LevelEditor
                 return;
             }
             SetMeshRenderersState(newEnabledState);
-            currentIMState = newEnabledState;
         }
         /// <summary>
         /// SetCollidersState should work like 99% of the time, except for some edge cases where it doesn't work for some objects for some stupid reason.
@@ -995,7 +994,7 @@ namespace FS_LevelEditor
                 Logger.Error($"\"{objectType}\" object doesn't contain a Content object for some reason???");
                 return;
             }
-
+            currentIMState = newEnabledState;
             // Get all mesh renderers recursively from content
             MeshRenderer[] renderers = contentObject.TryGetComponents<MeshRenderer>(true);
             if (renderers == null || renderers.Length == 0)
@@ -1041,38 +1040,43 @@ namespace FS_LevelEditor
                     }
                 }
 
-                // If disabling, remove all materials
+                var enforcer = renderer.gameObject.GetComponent<DisabledMeshEnforcer>();
+
                 if (!newEnabledState)
                 {
-                    // Add enforcer component using GetComponent instead of TryGetComponent
-                    if (renderer.gameObject != null)
+                    if (enforcer == null)
                     {
-                        var existingEnforcer = renderer.gameObject.GetComponent<DisabledMeshEnforcer>();
-                        if (existingEnforcer == null)
+                        // Capture BEFORE AddComponent, since the enforcer may force the renderer off right away.
+                        bool wasEnabled = renderer.enabled;
+
+                        enforcer = renderer.gameObject.AddComponent<DisabledMeshEnforcer>();
+                        if (enforcer != null)
                         {
-                            var enforcer = renderer.gameObject.AddComponent<DisabledMeshEnforcer>();
-                            if (enforcer != null)
-                            {
-                                enforcer.targetRenderer = renderer;
-                            }
+                            enforcer.targetRenderer = renderer;
+                            enforcer.originalEnabled = wasEnabled;
                         }
                     }
+                    // If an enforcer already exists, don't touch originalEnabled:
+                    // the renderer is already off, so we'd record the wrong value.
+
+                    renderer.enabled = false;
                 }
                 else
                 {
-                    // If enabling, remove the enforcer component if it exists using GetComponent
-                    if (renderer.gameObject != null)
+                    // No enforcer means we never hid this renderer, so leave it alone.
+                    if (enforcer != null)
                     {
-                        var enforcer = renderer.gameObject.GetComponent<DisabledMeshEnforcer>();
-                        if (enforcer != null)
-                        {
-                            Destroy(enforcer);
-                        }
+                        bool restoreTo = enforcer.originalEnabled;
+
+                        // Destroy is deferred to the end of the frame, so stop the enforcer
+                        // from fighting us in the meantime.
+                        enforcer.enabled = false;
+                        Destroy(enforcer);
+
+                        // Restore the original state instead of blindly enabling.
+                        renderer.enabled = restoreTo;
                     }
                 }
-
-                // Set the renderer enabled state
-                renderer.enabled = newEnabledState;
             }
         }
 
@@ -1184,7 +1188,7 @@ namespace FS_LevelEditor
     public class DisabledMeshEnforcer : MonoBehaviour
     {
         public MeshRenderer targetRenderer;
-
+        public bool originalEnabled;
 
         void LateUpdate()
         {
