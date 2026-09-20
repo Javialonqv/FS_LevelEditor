@@ -8,10 +8,12 @@ namespace FS_LevelEditor
     public class LE_Laser_Field : LE_Object
     {
         GameObject edgesParent;
+        GameObject holder;
 
         void Awake()
         {
             edgesParent = gameObject.GetChildAt("Content/Edges");
+            holder = gameObject.GetChildAt("Content/Holder");
         }
 
         public static Dictionary<string, object> GetDefaultProperties()
@@ -85,6 +87,29 @@ namespace FS_LevelEditor
             }
 
             return base.SetProperty(name, value);
+        }
+
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "Activate")
+            {
+                if (!holder.activeSelf)
+                    holder.SetActive(true);
+                return true;
+            }
+            else if (actionName == "Deactivate")
+            {
+                if (holder.activeSelf)
+                    holder.SetActive(false);
+                return true;
+            }
+            else if (actionName == "ToggleActivated")
+            {
+                holder.SetActive(!holder.activeSelf);
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
         }
 
         void EnableEdges(bool enable)

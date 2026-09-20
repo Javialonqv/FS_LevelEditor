@@ -176,6 +176,9 @@ namespace FS_LevelEditor.Editor.UI
         GameObject deathYSettings;
         UIDropdownPatcher deathYActionDropdown;
         UICustomInputField newDeathYLevelInputField;
+        //-----------------------------------
+        GameObject laserFieldObjectsSettings;
+        UIDropdownPatcher laserFieldStateButton;
         #endregion
 
         #endregion
@@ -213,6 +216,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateObjectiveSettings();
                 Instance.CreateCubeObjectSettings();
                 Instance.CreateLaserObjectSettings();
+                Instance.CreateLaserFieldObjectSettings();
                 Instance.CreateMineObjectSettings();
                 Instance.CreateLightObjectSettings();
                 Instance.CreateCeilingLightObjectSettings();
@@ -1217,6 +1221,10 @@ namespace FS_LevelEditor.Editor.UI
             {
                 return laserObjectsSettings;
             }
+            else if (targetObj == LE_Object.ObjectType.LASER_FIELD)
+            {
+                return laserFieldObjectsSettings;
+            }
             else if (targetObj == LE_Object.ObjectType.MINE)
             {
                 return mineObjectsSettings;
@@ -1347,6 +1355,10 @@ namespace FS_LevelEditor.Editor.UI
             else if (@event.targetObjType == LE_Object.ObjectType.LASER)
             {
                 laserStateButton.SelectOption((int)@event.laserState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.LASER_FIELD)
+            {
+                laserFieldStateButton.SelectOption((int)@event.laserFieldState);
             }
             else if (@event.targetObjType == LE_Object.ObjectType.MINE)
             {
@@ -1812,6 +1824,37 @@ namespace FS_LevelEditor.Editor.UI
             laserStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnLaserStateDropdownChanged)));
 
             laserStateButton.gameObject.SetActive(true);
+        }
+        #endregion
+
+        #region Laser Field Options
+        void CreateLaserFieldObjectSettings()
+        {
+            laserFieldObjectsSettings = new GameObject("Laser Field");
+            laserFieldObjectsSettings.transform.parent = eventOptionsParent.transform;
+            laserFieldObjectsSettings.transform.localPosition = Vector3.zero;
+            laserFieldObjectsSettings.transform.localScale = Vector3.one;
+            laserFieldObjectsSettings.SetActive(false);
+
+            CreateLaserFieldObjectsTitleLabel();
+            CreateLaserFieldStateDropdown();
+        }
+        void CreateLaserFieldObjectsTitleLabel()
+        {
+            UILabel label = NGUI_Utils.CreateLabel(laserFieldObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "LASER FIELD OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
+        }
+        void CreateLaserFieldStateDropdown()
+        {
+            laserFieldStateButton = NGUI_Utils.CreateDropdown(laserFieldObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            laserFieldStateButton.SetTitle("Laser Field State");
+            laserFieldStateButton.AddOption("Do Nothing", true);
+            laserFieldStateButton.AddOption("Activate", false);
+            laserFieldStateButton.AddOption("Deactivate", false);
+            laserFieldStateButton.AddOption("Toggle State", false);
+            laserFieldStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnLaserFieldStateDropdownChanged)));
+
+            laserFieldStateButton.gameObject.SetActive(true);
         }
         #endregion
 
@@ -2662,6 +2705,13 @@ namespace FS_LevelEditor.Editor.UI
         }
         #endregion
 
+        #region Laser Field Options
+        void OnLaserFieldStateDropdownChanged()
+        {
+            currentSelectedEvent.laserFieldState = (LE_Event.LaserFieldState)laserFieldStateButton.currentlySelectedID;
+        }
+        #endregion
+
         #region Mine Options
         void OnMineStateDropdownChanged()
         {
@@ -3071,6 +3121,11 @@ public class LE_Event
     #region Laser Options
     public enum LaserState { Do_Nothing, Activate, Deactivate, Toggle_State }
     public LaserState laserState { get; set; } = LaserState.Toggle_State;
+    #endregion
+
+    #region Laser Field Options
+    public enum LaserFieldState { Do_Nothing, Activate, Deactivate, Toggle_State }
+    public LaserFieldState laserFieldState { get; set; } = LaserFieldState.Toggle_State;
     #endregion
 
     #region Mine Options

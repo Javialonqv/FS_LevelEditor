@@ -609,6 +609,23 @@ namespace FS_LevelEditor
                         break;
                 }
             }
+            else if (targetObj is LE_Laser_Field) 
+            {
+                switch (@event.laserFieldState)
+                {
+                    case LE_Event.LaserFieldState.Activate:
+                        targetObj.TriggerAction("Activate");
+                        break;
+
+                    case LE_Event.LaserFieldState.Deactivate:
+                        targetObj.TriggerAction("Deactivate");
+                        break;
+
+                    case LE_Event.LaserFieldState.Toggle_State:
+                        targetObj.TriggerAction("ToggleActivated");
+                        break;
+                }
+            }
             else if (targetObj is LE_Mine)
             {
                 if (@event.mineState == LE_Event.MineState.Activate)
