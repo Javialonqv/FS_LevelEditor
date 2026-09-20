@@ -3406,11 +3406,11 @@ namespace FS_LevelEditor.Editor
                 RenderSettings.ambientLight = Color.white;
             }
 
-            var allLights = FindObjectsOfType<Light>();
-            foreach (var light in allLights)
-            {
-                light.enabled = lightingEnabled;
-            }
+            //var allLights = FindObjectsOfType<Light>();
+            //foreach (var light in allLights)
+            //{
+            //    light.enabled = lightingEnabled;
+            //}
 
             // Show notification to user
             string state = lightingEnabled ? "Lit" : "Unlit";
