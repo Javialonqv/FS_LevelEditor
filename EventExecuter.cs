@@ -403,6 +403,23 @@ namespace FS_LevelEditor
                 }
                 return;
             }
+            if (@event.isForMusic)
+            {
+                switch (@event.musicAction)
+                {
+                    case LE_Event.MusicAction.Play:
+                        PlayModeController.Instance.SetupLevelMusic(@event.newMusicTrackID);
+                        break;
+
+                    case LE_Event.MusicAction.Stop:
+                        PlayModeController.Instance.StopLevelMusic();
+                        break;
+
+                    case LE_Event.MusicAction.Do_Nothing:
+                        break;
+                }
+                return;
+            }
             // Logic for wait events is on ExecuteEventsInternal().
             if (@event.isForGroup)
             {

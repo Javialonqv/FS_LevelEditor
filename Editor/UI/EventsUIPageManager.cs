@@ -168,6 +168,10 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject terminalObjectsSettings;
         UIDropdownPatcher terminalActiveStateButton;
+        //-----------------------------------
+        GameObject musicSettings;
+        UIDropdownPatcher musicActionDropdown;
+        UIDropdownPatcher newMusicTrackDropdown;
         #endregion
 
         #endregion
@@ -220,6 +224,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateDestructibleWallObjectSettings();
                 Instance.CreateFragileWindowObjectSettings();
                 Instance.CreateUpgradeTerminalObjectSettings();
+                Instance.CreateMusicSettings();
 
                 Instance.CreateDetails();
             }
@@ -1030,6 +1035,10 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     targetObjInputField.SetText(Loc.Get("Jetpack"));
                 }
+                else if (currentSelectedEvent.isForMusic)
+                {
+                    targetObjInputField.SetText("Music");
+                }
                 else if (currentSelectedEvent.isForObjective)
                 {
                     targetObjInputField.SetText("Obj_" + currentSelectedEvent.objectiveName);
@@ -1077,7 +1086,7 @@ namespace FS_LevelEditor.Editor.UI
 
                 bool hasGlobalOptions = false;
                 if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack && !currentSelectedEvent.isForObjective &&
-                    !currentSelectedEvent.isForWait)
+                    !currentSelectedEvent.isForWait && !currentSelectedEvent.isForMusic)
                 {
                     hasGlobalOptions = true;
                 }
@@ -1097,6 +1106,10 @@ namespace FS_LevelEditor.Editor.UI
                 else if (currentSelectedEvent.isForObjective)
                 {
                     currentActiveObjectPanel = objectiveSettings;
+                }
+                else if (currentSelectedEvent.isForMusic)
+                {
+                    currentActiveObjectPanel = musicSettings;
                 }
                 else if (currentSelectedEvent.isForGroup)
                 {
@@ -1152,6 +1165,7 @@ namespace FS_LevelEditor.Editor.UI
                 currentSelectedEvent.isForJetpack = false;
                 currentSelectedEvent.isForObjective = false;
                 currentSelectedEvent.isForWait = false;
+                currentSelectedEvent.isForMusic = false;
                 currentSelectedEvent.targetObjType = null;
                 currentSelectedEvent.targetObjID = 0;
                 currentSelectedEvent.targetObjName = inputText;
@@ -1283,6 +1297,13 @@ namespace FS_LevelEditor.Editor.UI
             else if (@event.isForObjective)
             {
                 objectiveStateButton.SelectOption((int)@event.objectiveState);
+            }
+            else if (@event.isForMusic)
+            {
+                musicActionDropdown.SelectOption((int)@event.musicAction);
+                newMusicTrackDropdown.SelectOption(@event.newMusicTrackID);
+
+                newMusicTrackDropdown.gameObject.SetActive(@event.musicAction == LE_Event.MusicAction.Play);
             }
             else if (@event.isForGroup && @event.allObjectsInGroupAreTheSame)
             {
@@ -2365,7 +2386,56 @@ namespace FS_LevelEditor.Editor.UI
             terminalActiveStateButton.gameObject.SetActive(true);
         }
         #endregion
+        #region Music Options
+        void CreateMusicSettings()
+        {
+            musicSettings = new GameObject("Music");
+            musicSettings.transform.parent = eventOptionsParent.transform;
+            musicSettings.transform.localPosition = Vector3.zero;
+            musicSettings.transform.localScale = Vector3.one;
+            musicSettings.SetActive(false);
 
+            CreateMusicTitleLabel();
+            CreateMusicActionDropdown();
+            CreateNewMusicTrackDropdown(); // CHANGED: Calls the dropdown creator now
+        }
+        void CreateMusicTitleLabel()
+        {
+            UILabel label = NGUI_Utils.CreateLabel(musicSettings.transform, new Vector3(0, 120), new Vector3Int(700, 40, 0), "MUSIC OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
+        }
+        void CreateMusicActionDropdown()
+        {
+            musicActionDropdown = NGUI_Utils.CreateDropdown(musicSettings.transform, new Vector3(-200, 20), Vector3.one * 0.8f);
+            musicActionDropdown.SetTitle("Action");
+            musicActionDropdown.AddOption("Do Nothing", true);
+            musicActionDropdown.AddOption("Play Track", false);
+            musicActionDropdown.AddOption("Stop Music", false);
+            musicActionDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnMusicActionDropdownChanged)));
+
+            musicActionDropdown.gameObject.SetActive(true);
+        }
+        void CreateNewMusicTrackDropdown()
+        {
+            newMusicTrackDropdown = NGUI_Utils.CreateDropdown(musicSettings.transform, new Vector3(203f, 20f, 0f), Vector3.one * 0.8f);
+            newMusicTrackDropdown.name = "NewMusicTrackDropdown";
+            newMusicTrackDropdown.SetTitle("Track");
+            newMusicTrackDropdown.AddOption("Chapter 1 PE", false);
+            newMusicTrackDropdown.AddOption("Chapter 2 OLD", false);
+            newMusicTrackDropdown.AddOption("Chapter 2", false);
+            newMusicTrackDropdown.AddOption("Chapter 3", false);
+            newMusicTrackDropdown.AddOption("Chapter 4", true);
+            newMusicTrackDropdown.AddOption("Chapter 5 PE", false);
+            newMusicTrackDropdown.AddOption("Fractaloween", false);
+            newMusicTrackDropdown.AddOption("Fractalentine", false);
+            newMusicTrackDropdown.AddOption("FractalXMAS", false);
+            newMusicTrackDropdown.AddOption("Space Run 3D", false);
+
+            newMusicTrackDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnNewMusicTrackDropdownChanged)));
+
+            newMusicTrackDropdown.gameObject.SetActive(false); // Only active if playing a track
+        }
+        #endregion
         #endregion
 
         #region Logic For Objects UI Options
@@ -2716,6 +2786,20 @@ namespace FS_LevelEditor.Editor.UI
         }
         #endregion
 
+        #region Music Options
+        void OnMusicActionDropdownChanged()
+        {
+            currentSelectedEvent.musicAction = (LE_Event.MusicAction)musicActionDropdown.currentlySelectedID;
+
+            // Only show the track dropdown if the action is set to "Play Track"
+            newMusicTrackDropdown.gameObject.SetActive(currentSelectedEvent.musicAction == LE_Event.MusicAction.Play);
+        }
+        void OnNewMusicTrackDropdownChanged()
+        {
+            // Save the selected dropdown ID to the event
+            currentSelectedEvent.newMusicTrackID = newMusicTrackDropdown.currentlySelectedID;
+        }
+        #endregion
         #endregion
 
         public void ShowEventsPage(LE_Object targetObj, bool refresh = true)
@@ -3017,6 +3101,12 @@ public class LE_Event
     public TerminalActiveState terminalActiveState { get; set; }
     #endregion
 
+    #region Music
+    public bool isForMusic { get; set; } = false;
+    public enum MusicAction { Do_Nothing, Play, Stop }
+    public MusicAction musicAction { get; set; } = MusicAction.Do_Nothing;
+    public int newMusicTrackID { get; set; } = 4;
+    #endregion
 
     public bool VerifyNormalEventValidity(string inputText)
     {
@@ -3054,6 +3144,7 @@ public class LE_Event
         isForJetpack = false;
         isForObjective = false;
         isForGroup = false;
+        isForMusic = false;
         isForWait = false;
         targetObjType = null;
         targetObjID = 0;
@@ -3070,6 +3161,11 @@ public class LE_Event
         else if (string.Equals(inputText, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase))
         {
             isForJetpack = true;
+        }
+        else if (string.Equals(inputText, "Music", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(inputText, Loc.Get("Music"), StringComparison.OrdinalIgnoreCase))
+        {
+            isForMusic = true;
         }
         else if (inputText.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase))
         {
@@ -3142,10 +3238,10 @@ public class LE_Event
 
     public bool IsNormalEventThatRequriesTargetObject()
     {
-        return !isForPlayer && !isForTaser && !isForJetpack && !isForObjective && !isForWait && !isForGroup;
+        return !isForPlayer && !isForTaser && !isForJetpack && !isForObjective && !isForWait && !isForGroup && !isForMusic;
     }
     public bool IsAtLeastOneTypeOfEvent()
     {
-        return isForPlayer || isForTaser || isForJetpack || isForObjective || isForWait || isForGroup;
+        return isForPlayer || isForTaser || isForJetpack || isForObjective || isForWait || isForGroup || isForMusic;
     }
 }

@@ -297,7 +297,7 @@ namespace FS_LevelEditor.Playmode
 
             RenderSettings.skybox = skyboxMat;
         }
-        void SetupLevelMusic(int musicID)
+        public void SetupLevelMusic(int musicID)
         {
             if (musicID >= 0 && musicID < tracks.Count)
             {
@@ -306,6 +306,16 @@ namespace FS_LevelEditor.Playmode
                 MusicManager.Instance.PauseMenuMusic();
                 MusicManager.Instance.m_context = MusicManager.MusicContext.NORMAL;
             }
+        }
+
+        public void StopLevelMusic()
+        {
+            Controls.Instance.m_levelNormalMusicClip = null;
+            MusicManager.Instance.SetCurrentLevelNormalMusic(null);
+            MusicManager.Instance.m_context = MusicManager.MusicContext.NORMAL;
+
+            MusicManager.Instance.PauseLevelMusic();
+            MusicManager.Instance.PauseActiveMusic();
         }
 
         // Other stuff...
