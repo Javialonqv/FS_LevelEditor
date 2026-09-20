@@ -131,7 +131,7 @@ namespace FS_LevelEditor.Editor.UI
             autoFontSizeToggle = NGUI_Utils.CreateToggle(editorPanel.transform, new Vector3(-600, 250), new Vector3Int(250, 48, 0),
                 "Auto Font Size");
             autoFontSizeToggle.gameObject.name = "AutoFontSizeToggle";
-            autoFontSizeToggle.onClick += (state) => OnAutoFontSizeToggleChanged();
+            autoFontSizeToggle.onClick += (state) => OnAutoFontSizeToggleClicked(state);
         }
         void CreateFontSizeField()
         {
@@ -223,46 +223,29 @@ namespace FS_LevelEditor.Editor.UI
         void UpdateTextEditorUIValues()
         {
             textField.SetText(targetObj.GetProperty<string>("Text"));
-            autoFontSizeToggle.Set(targetObj.GetProperty<bool>("AutoFontSize"));
+            bool isAuto = targetObj.GetProperty<bool>("AutoFontSize");
+            autoFontSizeToggle.Set(isAuto);
+
             fontSizeField.SetText(targetObj.GetProperty<float>("FontSize"));
             minFontSizeField.SetText(targetObj.GetProperty<float>("MinFontSize"));
             maxFontSizeField.SetText(targetObj.GetProperty<float>("MaxFontSize"));
             UpdateTextAlignmentButtons(targetObj.GetProperty<TextAlignmentOptions>("TextAlign"));
 
             // Update the visibility of fields based on the AutoFontSize toggle state
-            OnAutoFontSizeToggleChanged();
+            UpdateFontSizeFieldsVisibility(isAuto);
         }
 
         void OnTextFieldSubmited()
         {
             targetObj.SetProperty("Text", textField.GetText());
         }
-        void OnAutoFontSizeToggleChanged()
+        void OnAutoFontSizeToggleClicked(bool state)
         {
-            targetObj.SetProperty("AutoFontSize", autoFontSizeToggle.isChecked);
+            // Save the data to the object
+            targetObj.SetProperty("AutoFontSize", state);
 
-            if (autoFontSizeToggle.isChecked)
-            {
-                fontSizeLabel.gameObject.SetActive(false);
-                fontSizeField.gameObject.SetActive(false);
-
-                minFontSizeLabel.gameObject.SetActive(true);
-                minFontSizeField.gameObject.SetActive(true);
-
-                maxFontSizeLabel.gameObject.SetActive(true);
-                maxFontSizeField.gameObject.SetActive(true);
-            }
-            else
-            {
-                fontSizeLabel.gameObject.SetActive(true);
-                fontSizeField.gameObject.SetActive(true);
-
-                minFontSizeLabel.gameObject.SetActive(false);
-                minFontSizeField.gameObject.SetActive(false);
-
-                maxFontSizeLabel.gameObject.SetActive(false);
-                maxFontSizeField.gameObject.SetActive(false);
-            }
+            // Update the UI fields
+            UpdateFontSizeFieldsVisibility(state);
         }
         void OnFontSizeFieldChanged()
         {
@@ -314,6 +297,17 @@ namespace FS_LevelEditor.Editor.UI
 
             EditorController.Instance.SetCurrentEditorState(EditorState.NORMAL);
             EditorUIManager.Instance.SetEditorUIContext(EditorUIContext.NORMAL);
+        }
+        void UpdateFontSizeFieldsVisibility(bool isAuto)
+        {
+            fontSizeLabel.gameObject.SetActive(!isAuto);
+            fontSizeField.gameObject.SetActive(!isAuto);
+
+            minFontSizeLabel.gameObject.SetActive(isAuto);
+            minFontSizeField.gameObject.SetActive(isAuto);
+
+            maxFontSizeLabel.gameObject.SetActive(isAuto);
+            maxFontSizeField.gameObject.SetActive(isAuto);
         }
     }
 }
