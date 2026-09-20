@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Playmode;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Events;
@@ -395,6 +396,11 @@ namespace FS_LevelEditor
             contentObject.GetChild("AdditionalInteractionCollider_Vertical").GetComponent<BoxCollider>().enabled = newEnabledState;
             contentObject.GetChild("InteractionOccluder").GetComponent<BoxCollider>().enabled = newEnabledState;
             contentObject.GetChild("AutoAimCollider").GetComponent<BoxCollider>().enabled = newEnabledState;
+            if (PlayModeController.Instance)
+            {
+                controller.ignoreLaser = !newEnabledState;
+            }
+            
         }
     }
 }
