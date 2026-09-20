@@ -131,6 +131,7 @@ namespace FS_LevelEditor.Editor.UI
 
 			{ (LE_Object.ObjectType.SWITCH, "OnlyByTaser"), ("CanUseTaser", true) },
             { (LE_Object.ObjectType.END_TRIGGER, "TitleCardText"), ("TitleCard", true) },
+            { (LE_Object.ObjectType.POINT_LIGHT, "SpotAngle"), ("Type", LE_Point_Light.Type.SPOT) },
 
             { (LE_Object.ObjectType.SAW, "WaitTime"), ("waypoints", null) }, // If it's checking for waypoints, the code already checks if the list count is greater than 0.
 
@@ -1580,7 +1581,18 @@ namespace FS_LevelEditor.Editor.UI
                         }
                         else
                         {
-                            setActive = Equals(currentSelectedObj.GetProperty(requiredPropName), value.requiredPropValue);
+                            object actualPropValue = currentSelectedObj.GetProperty(requiredPropName);
+
+                            // Safely compare Enums and Ints by converting both to Int32
+                            if ((actualPropValue is Enum || actualPropValue is int) &&
+                                (value.requiredPropValue is Enum || value.requiredPropValue is int))
+                            {
+                                setActive = Convert.ToInt32(actualPropValue) == Convert.ToInt32(value.requiredPropValue);
+                            }
+                            else
+                            {
+                                setActive = Equals(actualPropValue, value.requiredPropValue);
+                            }
                         }
 
                         if (!setActive) break; // If there's just one required prop that's not true, break the loop and DON'T SHOW IT.
@@ -1588,6 +1600,7 @@ namespace FS_LevelEditor.Editor.UI
 
                     attributesPanels[type].GetChild(prop.Key.propName).SetActive(setActive);
                 }
+
             }
         }
         #endregion
@@ -1686,6 +1699,11 @@ namespace FS_LevelEditor.Editor.UI
             if (SetPropertyForCurrentSelectedObjects(propertyName, button.currentOption))
             {
                 EditorController.Instance.levelHasBeenModified = true;
+            }
+
+            if (EditorController.Instance.currentSelectedObjComponent != null)
+            {
+                UpdateOptionalPropertiesVisibility(EditorController.Instance.currentSelectedObjComponent.objectType);
             }
         }
         public void TriggerAction(string actionName)

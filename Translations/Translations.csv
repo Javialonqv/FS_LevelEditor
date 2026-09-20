@@ -17,7 +17,7 @@ object.WALL_NO_COLOR,Wall No Color,Pared Sin Color,Стіна без кольо�
 object.X_WALL,X Wall,Pared X,Стіна Х
 object.WINDOW,Window,Ventana,Вікно
 object.DIRECTIONAL_LIGHT,Directional Light,Luz Direccional,Направлене світло
-object.POINT_LIGHT,Point Light,Luz Puntual,Точкове світло
+object.POINT_LIGHT,Light,Luz Puntual,Точкове світло
 object.CEILING_LIGHT,Ceiling Light,Lámpara,Стельове світло
 object.VENT_WITH_SMOKE_GREEN,Vent With Smoke Green,Ventilación Verde,Вентиляція з зеленим димом
 object.VENT_WITH_SMOKE_CYAN,Vent With Smoke Cyan,Ventilación Cyan,Вентиляція з голубим димом
