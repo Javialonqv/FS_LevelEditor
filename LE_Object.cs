@@ -1002,6 +1002,9 @@ namespace FS_LevelEditor
                 return; // No renderers to modify
             }
 
+            //Exceptions
+            bool shouldHideTMP = (objectType == ObjectType.KEYPAD || objectType == ObjectType.UPGRADE_TERMINAL);
+
             foreach (var renderer in renderers)
             {
                 if (renderer == null)
@@ -1016,12 +1019,12 @@ namespace FS_LevelEditor
                 if (renderer.gameObject.TryGetComponent<TextMeshPro>(out var tmpro))
                 {
                     // This renderer is for text, skip.
-                    if (tmpro.renderer == renderer) continue;
+                    if (!shouldHideTMP && tmpro.renderer == renderer) continue;
                 }
                 // Apparently special characters are also fucking objects, and they are being hidden??????
                 if (renderer.gameObject.TryGetComponent<TMPro.TMP_SubMesh>(out var tmpSubMesh))
                 {
-                    if (tmpSubMesh.renderer == renderer) continue;
+                    if (!shouldHideTMP && tmpSubMesh.renderer == renderer) continue;
                 }
 
                 // Skip waypoint renderers if this object has waypoints

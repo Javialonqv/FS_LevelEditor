@@ -110,6 +110,12 @@ namespace FS_LevelEditor.Editor
         public LEAction currentExecutingAction;
         #endregion
 
+        #region Undo
+        private bool wasInputFieldSelected = false;
+        private GameObject objBeforeUIEdit;
+        private Vector3 posBeforeUIEdit;
+        #endregion
+
         #region Bulk Selection
         private bool isSelecting = false;
         private Vector2 selectionStartScreen;
@@ -695,7 +701,27 @@ namespace FS_LevelEditor.Editor
             ManageSomeShortcuts();
 
             ManageUndo();
+            if (Utils.theresAnInputFieldSelected && !wasInputFieldSelected)
+            {
+                wasInputFieldSelected = true;
+                objBeforeUIEdit = currentSelectedObj;
 
+                if (objBeforeUIEdit)
+                    posBeforeUIEdit = objBeforeUIEdit.transform.localPosition;
+            }
+            else if (!Utils.theresAnInputFieldSelected && wasInputFieldSelected)
+            {
+                wasInputFieldSelected = false;
+
+                // If the object still exists and its position changed, register a MoveObject action
+                if (objBeforeUIEdit && objBeforeUIEdit.transform.localPosition != posBeforeUIEdit)
+                {
+                    RegisterLEAction(LEAction.LEActionType.MoveObject, objBeforeUIEdit, multipleObjectsSelected,
+                        oldPos: posBeforeUIEdit, newPos: objBeforeUIEdit.transform.localPosition);
+
+                    levelHasBeenModified = true;
+                }
+            }
             // If the user's typing and then he uses an arrow key to navigate to another character of the field... well... the arrow also moves the object LOL.
             // We need to avoid that.
             if (!Utils.theresAnInputFieldSelected && currentMode == Mode.Selection) ManageMoveObjectShortcuts();
