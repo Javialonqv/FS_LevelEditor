@@ -130,6 +130,7 @@ namespace FS_LevelEditor.Editor.UI
 			{ (LE_Object.ObjectType.DEATH_TRIGGER_WAYPOINT, "AddWaypoint"), ("", null) }, // If requiredPropName is null, it'll be disabled :)
 
 			{ (LE_Object.ObjectType.SWITCH, "OnlyByTaser"), ("CanUseTaser", true) },
+            { (LE_Object.ObjectType.END_TRIGGER, "TitleCardText"), ("TitleCard", true) },
 
             { (LE_Object.ObjectType.SAW, "WaitTime"), ("waypoints", null) }, // If it's checking for waypoints, the code already checks if the list count is greater than 0.
 
@@ -575,6 +576,7 @@ namespace FS_LevelEditor.Editor.UI
                 string targetPropName = prop.Key;
                 string tooltipKey = null;
                 bool dontChangeYPos = false;
+                int? customMaxLength = null;
 
                 if (value is Color colorValue)
                 {
@@ -582,6 +584,22 @@ namespace FS_LevelEditor.Editor.UI
                     propType = AttributeType.INPUT_FIELD;
                     inputType = UICustomInputField.UIInputType.HEX_COLOR;
                     defaultValue = Utils.ColorToHex(colorValue);
+                }
+                else if (value is string stringValue)
+                {
+                    locName = prop.Key;
+                    propType = AttributeType.INPUT_FIELD;
+                    if (stringValue.Length > 8 || stringValue.Contains(" ") || stringValue.Contains("\n"))
+                    {
+                        inputType = UICustomInputField.UIInputType.PLAIN_TEXT;
+                        customMaxLength = 200;
+                    }
+                    else
+                    {
+                        inputType = UICustomInputField.UIInputType.HEX_COLOR;
+                    }
+
+                    defaultValue = stringValue;
                 }
                 else if (value is float floatValue)
                 {
@@ -639,7 +657,7 @@ namespace FS_LevelEditor.Editor.UI
                 // In case the loc key is not the same as the prop name, set it.
                 if (correctLocKeysForProps.TryGetValue(prop.Key, out string correctLocKey)) locName = correctLocKey;
 
-                var created = CreateObjectAttribute(locName, propType, defaultValue, inputType, targetPropName, inputType == UICustomInputField.UIInputType.HEX_COLOR, tooltipKey, dontChangeYPos);
+                var created = CreateObjectAttribute(locName, propType, defaultValue, inputType, targetPropName, inputType == UICustomInputField.UIInputType.HEX_COLOR, tooltipKey, dontChangeYPos, customMaxLength);
 
                 #region Add Options To Small Button If It Is
                 if (created is UISmallButtonMultiple smallBtn)
