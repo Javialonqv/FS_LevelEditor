@@ -420,6 +420,18 @@ namespace FS_LevelEditor
                 }
                 return;
             }
+            if (@event.isForDeathY)
+            {
+                switch (@event.deathYAction)
+                {
+                    case LE_Event.DeathYAction.Change:
+                        PlayModeController.Instance.globalProperties["DeathYLimit"] = @event.newDeathYLevel;
+                        break;
+                    case LE_Event.DeathYAction.Do_Nothing:
+                        break;
+                }
+                return;
+            }
             // Logic for wait events is on ExecuteEventsInternal().
             if (@event.isForGroup)
             {

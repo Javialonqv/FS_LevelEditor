@@ -172,6 +172,10 @@ namespace FS_LevelEditor.Editor.UI
         GameObject musicSettings;
         UIDropdownPatcher musicActionDropdown;
         UIDropdownPatcher newMusicTrackDropdown;
+        //-----------------------------------
+        GameObject deathYSettings;
+        UIDropdownPatcher deathYActionDropdown;
+        UICustomInputField newDeathYLevelInputField;
         #endregion
 
         #endregion
@@ -225,6 +229,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateFragileWindowObjectSettings();
                 Instance.CreateUpgradeTerminalObjectSettings();
                 Instance.CreateMusicSettings();
+                Instance.CreateDeathYSettings();
 
                 Instance.CreateDetails();
             }
@@ -1039,6 +1044,10 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     targetObjInputField.SetText("Music");
                 }
+                else if (currentSelectedEvent.isForDeathY)
+                {
+                    targetObjInputField.SetText("DeathY");
+                }
                 else if (currentSelectedEvent.isForObjective)
                 {
                     targetObjInputField.SetText("Obj_" + currentSelectedEvent.objectiveName);
@@ -1086,7 +1095,7 @@ namespace FS_LevelEditor.Editor.UI
 
                 bool hasGlobalOptions = false;
                 if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack && !currentSelectedEvent.isForObjective &&
-                    !currentSelectedEvent.isForWait && !currentSelectedEvent.isForMusic)
+                    !currentSelectedEvent.isForWait && !currentSelectedEvent.isForMusic && !currentSelectedEvent.isForDeathY)
                 {
                     hasGlobalOptions = true;
                 }
@@ -1110,6 +1119,10 @@ namespace FS_LevelEditor.Editor.UI
                 else if (currentSelectedEvent.isForMusic)
                 {
                     currentActiveObjectPanel = musicSettings;
+                }
+                else if (currentSelectedEvent.isForDeathY)
+                {
+                    currentActiveObjectPanel = deathYSettings;
                 }
                 else if (currentSelectedEvent.isForGroup)
                 {
@@ -1166,6 +1179,7 @@ namespace FS_LevelEditor.Editor.UI
                 currentSelectedEvent.isForObjective = false;
                 currentSelectedEvent.isForWait = false;
                 currentSelectedEvent.isForMusic = false;
+                currentSelectedEvent.isForDeathY = false;
                 currentSelectedEvent.targetObjType = null;
                 currentSelectedEvent.targetObjID = 0;
                 currentSelectedEvent.targetObjName = inputText;
@@ -1304,6 +1318,13 @@ namespace FS_LevelEditor.Editor.UI
                 newMusicTrackDropdown.SelectOption(@event.newMusicTrackID);
 
                 newMusicTrackDropdown.gameObject.SetActive(@event.musicAction == LE_Event.MusicAction.Play);
+            }
+            else if (@event.isForDeathY)
+            {
+                deathYActionDropdown.SelectOption((int)@event.deathYAction);
+                newDeathYLevelInputField.SetText(@event.newDeathYLevel.ToString(), true);
+
+                newDeathYLevelInputField.gameObject.SetActive(@event.deathYAction == LE_Event.DeathYAction.Change);
             }
             else if (@event.isForGroup && @event.allObjectsInGroupAreTheSame)
             {
@@ -2386,6 +2407,7 @@ namespace FS_LevelEditor.Editor.UI
             terminalActiveStateButton.gameObject.SetActive(true);
         }
         #endregion
+
         #region Music Options
         void CreateMusicSettings()
         {
@@ -2436,6 +2458,47 @@ namespace FS_LevelEditor.Editor.UI
             newMusicTrackDropdown.gameObject.SetActive(false); // Only active if playing a track
         }
         #endregion
+
+        #region DeathY Options
+        void CreateDeathYSettings()
+        {
+            deathYSettings = new GameObject("DeathY");
+            deathYSettings.transform.parent = eventOptionsParent.transform;
+            deathYSettings.transform.localPosition = Vector3.zero;
+            deathYSettings.transform.localScale = Vector3.one;
+            deathYSettings.SetActive(false);
+
+            CreateDeathYTitleLabel();
+            CreateDeathYActionDropdown();
+            CreateNewDeathYLevelInputField();
+        }
+        void CreateDeathYTitleLabel()
+        {
+            UILabel label = NGUI_Utils.CreateLabel(deathYSettings.transform, new Vector3(0, 120), new Vector3Int(700, 40, 0), "DEATH Y OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
+        }
+        void CreateDeathYActionDropdown()
+        {
+            deathYActionDropdown = NGUI_Utils.CreateDropdown(deathYSettings.transform, new Vector3(-200, 20), Vector3.one * 0.8f);
+            deathYActionDropdown.SetTitle("Action");
+            deathYActionDropdown.AddOption("Do Nothing", true);
+            deathYActionDropdown.AddOption("Change", false);
+            deathYActionDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnDeathYActionDropdownChanged)));
+
+            deathYActionDropdown.gameObject.SetActive(true);
+        }
+        void CreateNewDeathYLevelInputField()
+        {
+            UICustomInputField inputField = NGUI_Utils.CreateInputField(deathYSettings.transform, new Vector3(203f, 20f, 0f),
+                new Vector3Int(250, 40, 1), 27, "100", inputType: UICustomInputField.UIInputType.PLAIN_TEXT);
+            inputField.name = "NewDeathYLevelInputField";
+            inputField.onChange += OnNewDeathYLevelInputFieldChanged;
+
+            newDeathYLevelInputField = inputField.GetComponent<UICustomInputField>();
+            newDeathYLevelInputField.gameObject.SetActive(false); // Only active if Action is 'Change'
+        }
+        #endregion
+
         #endregion
 
         #region Logic For Objects UI Options
@@ -2800,6 +2863,22 @@ namespace FS_LevelEditor.Editor.UI
             currentSelectedEvent.newMusicTrackID = newMusicTrackDropdown.currentlySelectedID;
         }
         #endregion
+
+        #region DeathY Options
+        void OnDeathYActionDropdownChanged()
+        {
+            currentSelectedEvent.deathYAction = (LE_Event.DeathYAction)deathYActionDropdown.currentlySelectedID;
+            newDeathYLevelInputField.gameObject.SetActive(currentSelectedEvent.deathYAction == LE_Event.DeathYAction.Change);
+        }
+        void OnNewDeathYLevelInputFieldChanged()
+        {
+            if (newDeathYLevelInputField.isValid)
+            {
+                currentSelectedEvent.newDeathYLevel = Utils.ParseFloat(newDeathYLevelInputField.GetText());
+            }
+        }
+        #endregion
+
         #endregion
 
         public void ShowEventsPage(LE_Object targetObj, bool refresh = true)
@@ -3108,6 +3187,13 @@ public class LE_Event
     public int newMusicTrackID { get; set; } = 4;
     #endregion
 
+    #region DeathY
+    public bool isForDeathY { get; set; } = false;
+    public enum DeathYAction { Do_Nothing, Change}
+    public DeathYAction deathYAction { get; set; } = DeathYAction.Do_Nothing;
+    public float newDeathYLevel { get; set; } = 100f;
+    #endregion
+
     public bool VerifyNormalEventValidity(string inputText)
     {
         targetInstanceObject = FS_LevelEditor.Editor.EditorController.Instance.currentInstantiatedObjects.FirstOrDefault(obj => string.Equals(obj.objectFullNameWithID, inputText,
@@ -3145,6 +3231,7 @@ public class LE_Event
         isForObjective = false;
         isForGroup = false;
         isForMusic = false;
+        isForDeathY = false;
         isForWait = false;
         targetObjType = null;
         targetObjID = 0;
@@ -3166,6 +3253,11 @@ public class LE_Event
              string.Equals(inputText, Loc.Get("Music"), StringComparison.OrdinalIgnoreCase))
         {
             isForMusic = true;
+        }
+        else if (string.Equals(inputText, "DeathY", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(inputText, Loc.Get("DeathY"), StringComparison.OrdinalIgnoreCase))
+        {
+            isForDeathY = true;
         }
         else if (inputText.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase))
         {
@@ -3238,10 +3330,10 @@ public class LE_Event
 
     public bool IsNormalEventThatRequriesTargetObject()
     {
-        return !isForPlayer && !isForTaser && !isForJetpack && !isForObjective && !isForWait && !isForGroup && !isForMusic;
+        return !isForPlayer && !isForTaser && !isForJetpack && !isForObjective && !isForWait && !isForGroup && !isForMusic && !isForDeathY;
     }
     public bool IsAtLeastOneTypeOfEvent()
     {
-        return isForPlayer || isForTaser || isForJetpack || isForObjective || isForWait || isForGroup || isForMusic;
+        return isForPlayer || isForTaser || isForJetpack || isForObjective || isForWait || isForGroup || isForMusic || isForDeathY;
     }
 }
