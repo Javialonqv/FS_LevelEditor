@@ -567,7 +567,7 @@ namespace FS_LevelEditor.Editor
                 if (currentSelectedObj)
                     MoveObject(collidingArrow);
             }
-            else if (Input.GetMouseButtonUp(0) && IsCurrentState(EditorState.MOVING_OBJECT))
+            else if (!Input.GetMouseButton(0) && (IsCurrentState(EditorState.MOVING_OBJECT) || collidingArrow != GizmosArrow.None))
             {
                 if (currentSelectedObj)
                     StopMovingObject();
