@@ -90,9 +90,11 @@ namespace FS_LevelEditor.Editor.UI
         UIDropdownPatcher objectiveStateButton;
         //-----------------------------------
         GameObject playerSettings;
-        UITogglePatcher zeroGToggle;
-        UITogglePatcher invertGravityToggle;
+        UIDropdownPatcher zeroGDropdown;
+        UIDropdownPatcher invertGravityDropdown;
         UITogglePatcher flashlightToggle;
+        //-----------------------------------
+        GameObject upgradesSettings;
         UIButtonPatcher upgradesButton;
         //-----------------------------------
         GameObject taserSettings;
@@ -211,6 +213,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateGlobalObjectsSettings();
                 Instance.CreateSawObjectSettings();
                 Instance.CreatePlayerSettings();
+                Instance.CreateUpgradesSettings();
                 Instance.CreateTaserSettings();
                 Instance.CreateJetpackSettings();
                 Instance.CreateObjectiveSettings();
@@ -1044,6 +1047,10 @@ namespace FS_LevelEditor.Editor.UI
                 {
                     targetObjInputField.SetText(Loc.Get("Jetpack"));
                 }
+                else if (currentSelectedEvent.isForUpgrades)
+                {
+                    targetObjInputField.SetText(Loc.Get("Upgrades") ?? "Upgrades");
+                }
                 else if (currentSelectedEvent.isForMusic)
                 {
                     targetObjInputField.SetText("Music");
@@ -1098,7 +1105,7 @@ namespace FS_LevelEditor.Editor.UI
                 currentActiveObjectPanel = null;
 
                 bool hasGlobalOptions = false;
-                if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack && !currentSelectedEvent.isForObjective &&
+                if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForUpgrades && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack && !currentSelectedEvent.isForObjective &&
                     !currentSelectedEvent.isForWait && !currentSelectedEvent.isForMusic && !currentSelectedEvent.isForDeathY)
                 {
                     hasGlobalOptions = true;
@@ -1111,6 +1118,10 @@ namespace FS_LevelEditor.Editor.UI
                 else if (currentSelectedEvent.isForTaser)
                 {
                     currentActiveObjectPanel = taserSettings;
+                }
+                else if (currentSelectedEvent.isForUpgrades)
+                {
+                    currentActiveObjectPanel = upgradesSettings;
                 }
                 else if (currentSelectedEvent.isForJetpack)
                 {
@@ -1181,6 +1192,7 @@ namespace FS_LevelEditor.Editor.UI
                 currentSelectedEvent.isForTaser = false;
                 currentSelectedEvent.isForJetpack = false;
                 currentSelectedEvent.isForObjective = false;
+                currentSelectedEvent.isForUpgrades = false;
                 currentSelectedEvent.isForWait = false;
                 currentSelectedEvent.isForMusic = false;
                 currentSelectedEvent.isForDeathY = false;
@@ -1301,8 +1313,8 @@ namespace FS_LevelEditor.Editor.UI
 
             if (@event.isForPlayer)
             {
-                zeroGToggle.Set(@event.enableOrDisableZeroG);
-                invertGravityToggle.Set(@event.invertGravity);
+                zeroGDropdown.SelectOption((int)@event.enableOrDisableZeroG);
+                invertGravityDropdown.SelectOption((int)@event.invertGravity);
                 flashlightToggle.Set(@event.flashlightEnabled);
             }
             else if (@event.isForTaser)
@@ -1606,29 +1618,40 @@ namespace FS_LevelEditor.Editor.UI
             playerSettings.SetActive(false);
 
             CreatePlayerSettingsTitleLabel();
-            CreateZeroGToggle();
-            CreateInvertGravityToggle();
+            CreateZeroGDropdown();
+            CreateInvertGravityDropdown();
             CreateFlashlightToggle();
-            CreateUpgradesButton();
         }
         void CreatePlayerSettingsTitleLabel()
         {
             UILabel label = NGUI_Utils.CreateLabel(playerSettings.transform, new Vector3(0, 120), new Vector3Int(700, 40, 0), "PLAYER OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
             label.name = "TitleLabel";
         }
-        void CreateZeroGToggle()
+        void CreateZeroGDropdown()
         {
-            zeroGToggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(-380f, 50f, 0f),
-                new Vector3Int(250, 48, 1), "Enable/Disable Zero G");
-            zeroGToggle.gameObject.name = "EnableOrDisableZeroGToggle";
-            zeroGToggle.onClick += (state) => OnZeroGToggleChanged();
+            zeroGDropdown = NGUI_Utils.CreateDropdown(playerSettings.transform, new Vector3(-200f, 50f, 0f), Vector3.one * 0.8f);
+            zeroGDropdown.gameObject.name = "ZeroGDropdown";
+            zeroGDropdown.SetTitle("Zero G");
+            zeroGDropdown.AddOption("Do Nothing", true);
+            zeroGDropdown.AddOption("Enable", false);
+            zeroGDropdown.AddOption("Disable", false);
+            zeroGDropdown.AddOption("Toggle", false);
+            zeroGDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnZeroGDropdownChanged)));
+
+            zeroGDropdown.gameObject.SetActive(true);
         }
-        void CreateInvertGravityToggle()
+        void CreateInvertGravityDropdown()
         {
-            invertGravityToggle = NGUI_Utils.CreateToggle(playerSettings.transform, new Vector3(50f, 50f, 0f),
-                new Vector3Int(250, 48, 1), "Invert Gravity");
-            invertGravityToggle.gameObject.name = "InvertGravityToggle";
-            invertGravityToggle.onClick += (state) => OnInvertGravityToggleChanged();
+            invertGravityDropdown = NGUI_Utils.CreateDropdown(playerSettings.transform, new Vector3(200f, 50f, 0f), Vector3.one * 0.8f);
+            invertGravityDropdown.gameObject.name = "InvertGravityDropdown";
+            invertGravityDropdown.SetTitle("Invert Gravity");
+            invertGravityDropdown.AddOption("Do Nothing", true);
+            invertGravityDropdown.AddOption("Enable", false);
+            invertGravityDropdown.AddOption("Disable", false);
+            invertGravityDropdown.AddOption("Toggle", false);
+            invertGravityDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnInvertGravityDropdownChanged)));
+
+            invertGravityDropdown.gameObject.SetActive(true);
         }
         void CreateFlashlightToggle()
         {
@@ -1639,9 +1662,28 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateUpgradesButton()
         {
-            upgradesButton = NGUI_Utils.CreateButton(playerSettings.transform, new Vector3(0, -100), new Vector3Int(300, 50, 0), "Player Upgrades");
+            upgradesButton = NGUI_Utils.CreateButton(upgradesSettings.transform, new Vector3(0, -100), new Vector3Int(300, 50, 0), "Player Upgrades");
             upgradesButton.name = "UpgradesButton";
             upgradesButton.onClick += OnUpgradesButtonPressed;
+        }
+        #endregion
+
+        #region Upgrades Options
+        void CreateUpgradesSettings()
+        {
+            upgradesSettings = new GameObject("Upgrades");
+            upgradesSettings.transform.parent = eventOptionsParent.transform;
+            upgradesSettings.transform.localPosition = Vector3.zero;
+            upgradesSettings.transform.localScale = Vector3.one;
+            upgradesSettings.SetActive(false);
+
+            CreateUpgradesSettingsTitleLabel();
+            CreateUpgradesButton();
+        }
+        void CreateUpgradesSettingsTitleLabel()
+        {
+            UILabel label = NGUI_Utils.CreateLabel(upgradesSettings.transform, new Vector3(0, 120), new Vector3Int(700, 40, 0), "UPGRADES OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
         }
         #endregion
 
@@ -2606,26 +2648,26 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
 
         #region Player Options
-        void OnZeroGToggleChanged()
+        void OnZeroGDropdownChanged()
         {
-            currentSelectedEvent.enableOrDisableZeroG = zeroGToggle.isChecked;
-            // Both toggles can't be enabled!
-            if (zeroGToggle.isChecked && invertGravityToggle.isChecked)
+            currentSelectedEvent.enableOrDisableZeroG = (LE_Event.PlayerSettingState)zeroGDropdown.currentlySelectedID;
+            // Both can't be enabled simultaneously!
+            if (currentSelectedEvent.enableOrDisableZeroG == LE_Event.PlayerSettingState.Enable && currentSelectedEvent.invertGravity == LE_Event.PlayerSettingState.Enable)
             {
-                invertGravityToggle.Set(false, true);
+                invertGravityDropdown.SelectOption((int)LE_Event.PlayerSettingState.Disable);
             }
         }
         void OnFlashlightToggleChanged()
         {
             currentSelectedEvent.flashlightEnabled = flashlightToggle.isChecked;
         }
-        void OnInvertGravityToggleChanged()
+        void OnInvertGravityDropdownChanged()
         {
-            currentSelectedEvent.invertGravity = invertGravityToggle.isChecked;
-            // Both toggles can't be enabled!
-            if (invertGravityToggle.isChecked && zeroGToggle.isChecked)
+            currentSelectedEvent.invertGravity = (LE_Event.PlayerSettingState)invertGravityDropdown.currentlySelectedID;
+            // Both can't be enabled simultaneously!
+            if (currentSelectedEvent.invertGravity == LE_Event.PlayerSettingState.Enable && currentSelectedEvent.enableOrDisableZeroG == LE_Event.PlayerSettingState.Enable)
             {
-                zeroGToggle.Set(false, true);
+                zeroGDropdown.SelectOption((int)LE_Event.PlayerSettingState.Disable);
             }
         }
         void OnUpgradesButtonPressed()
@@ -3058,7 +3100,7 @@ public class LE_Event
 
     public bool isForPlayer { get; set; } = false;
     public bool isForTaser { get; set; } = false;
-
+    public bool isForUpgrades { get; set; } = false;
     public bool isForJetpack { get; set; } = false;
 
     public string targetObjName { get; set; } = "";
@@ -3094,8 +3136,9 @@ public class LE_Event
     #endregion
 
     #region Player Options
-    public bool enableOrDisableZeroG { get; set; } = false;
-    public bool invertGravity { get; set; } = false;
+    public enum PlayerSettingState { Do_Nothing, Enable, Disable, Toggle }
+    public PlayerSettingState enableOrDisableZeroG { get; set; } = PlayerSettingState.Do_Nothing;
+    public PlayerSettingState invertGravity { get; set; } = PlayerSettingState.Do_Nothing;
     public bool flashlightEnabled { get; set; } = true;
     public List<UpgradeSaveData> upgrades { get; set; } = new();
     #endregion
@@ -3285,6 +3328,7 @@ public class LE_Event
         isForJetpack = false;
         isForObjective = false;
         isForGroup = false;
+        isForUpgrades = false;
         isForMusic = false;
         isForDeathY = false;
         isForWait = false;
@@ -3303,6 +3347,11 @@ public class LE_Event
         else if (string.Equals(inputText, Loc.Get("Jetpack"), StringComparison.OrdinalIgnoreCase))
         {
             isForJetpack = true;
+        }
+        else if (string.Equals(inputText, "Upgrades", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(inputText, Loc.Get("Upgrades"), StringComparison.OrdinalIgnoreCase))
+        {
+            isForUpgrades = true;
         }
         else if (string.Equals(inputText, "Music", StringComparison.OrdinalIgnoreCase) ||
              string.Equals(inputText, Loc.Get("Music"), StringComparison.OrdinalIgnoreCase))
@@ -3385,10 +3434,10 @@ public class LE_Event
 
     public bool IsNormalEventThatRequriesTargetObject()
     {
-        return !isForPlayer && !isForTaser && !isForJetpack && !isForObjective && !isForWait && !isForGroup && !isForMusic && !isForDeathY;
+        return !isForPlayer && !isForUpgrades && !isForTaser && !isForJetpack && !isForObjective && !isForWait && !isForGroup && !isForMusic && !isForDeathY;
     }
     public bool IsAtLeastOneTypeOfEvent()
     {
-        return isForPlayer || isForTaser || isForJetpack || isForObjective || isForWait || isForGroup || isForMusic || isForDeathY;
+        return isForPlayer || isForUpgrades || isForTaser || isForJetpack || isForObjective || isForWait || isForGroup || isForMusic || isForDeathY;
     }
 }

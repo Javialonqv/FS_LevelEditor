@@ -307,14 +307,30 @@ namespace FS_LevelEditor
             if (@event.isForPlayer)
             {
                 // Only one of these can be enabled, it's either Zero-G or Inverse Gravity.
-                if (@event.enableOrDisableZeroG)
+                switch (@event.enableOrDisableZeroG)
                 {
-                    if (Controls.Instance.IsInZeroGravity()) Controls.Instance.DisableZeroGravityFromButton();
-                    else Controls.Instance.EnableZeroGravityFromButton();
+                    case LE_Event.PlayerSettingState.Enable:
+                        if (!Controls.Instance.IsInZeroGravity()) Controls.Instance.EnableZeroGravityFromButton();
+                        break;
+                    case LE_Event.PlayerSettingState.Disable:
+                        if (Controls.Instance.IsInZeroGravity()) Controls.Instance.DisableZeroGravityFromButton();
+                        break;
+                    case LE_Event.PlayerSettingState.Toggle:
+                        if (Controls.Instance.IsInZeroGravity()) Controls.Instance.DisableZeroGravityFromButton();
+                        else Controls.Instance.EnableZeroGravityFromButton();
+                        break;
                 }
-                else if (@event.invertGravity)
+                switch (@event.invertGravity)
                 {
-                    PlayModeController.Instance.InvertPlayerGravity();
+                    case LE_Event.PlayerSettingState.Enable:
+                        PlayModeController.Instance.InvertPlayerGravity();
+                        break;
+                    case LE_Event.PlayerSettingState.Disable:
+                        PlayModeController.Instance.InvertPlayerGravity();
+                        break;
+                    case LE_Event.PlayerSettingState.Toggle:
+                        PlayModeController.Instance.InvertPlayerGravity();
+                        break;
                 }
 
                 if (!@event.flashlightEnabled)
@@ -322,8 +338,11 @@ namespace FS_LevelEditor
                 else
                     Controls.Instance.SetFlashlightAllowed();
 
+                return;
+            }
+            if(@event.isForUpgrades)
+            {
                 PlaymodeUpgrades.ApplyUpgrades(@event.upgrades);
-
                 return;
             }
             if (@event.isForTaser)
