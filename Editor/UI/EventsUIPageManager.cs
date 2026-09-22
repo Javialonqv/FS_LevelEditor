@@ -140,6 +140,7 @@ namespace FS_LevelEditor.Editor.UI
         UITogglePatcher executeSwitchActionsToggle;
         UIDropdownPatcher switchUsableStateButton;
         UIDropdownPatcher switchCanBeUsedStateButton;
+        UITogglePatcher stopExecutingToggle;
         //-----------------------------------
         GameObject keypadObjectsSettings;
         UIDropdownPatcher keypadCanBeUsedStateButton;
@@ -1412,6 +1413,8 @@ namespace FS_LevelEditor.Editor.UI
 
                 switchUsableStateButton.SelectOption((int)@event.switchUsableState);
                 switchCanBeUsedStateButton.SelectOption((int)@event.canBeUsedState);
+
+                stopExecutingToggle.Set(@event.stopExecuting, instant: true);
             }
             else if (@event.targetObjType == LE_Object.ObjectType.KEYPAD)
             {
@@ -2129,6 +2132,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateExecuteSwitchActionsToggle();
             CreateSwitchUsableStateSettings();
             CreateSwitchCanBeUsedStateSettings();
+            CreateStopExecutingToggle();
         }
         void CreateSwitchObjectsTitleLabel()
         {
@@ -2177,6 +2181,13 @@ namespace FS_LevelEditor.Editor.UI
             switchCanBeUsedStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnSwitchCanBeUsedStateDropdownChanged)));
 
             switchCanBeUsedStateButton.gameObject.SetActive(true);
+        }
+        void CreateStopExecutingToggle()
+        {
+            stopExecutingToggle = NGUI_Utils.CreateToggle(switchObjectsSettings.transform, new Vector3(50f, -120f, 0f), // Placed next to executeSwitchActionsToggle
+                new Vector3Int(250, 48, 1), "Stop Executing");
+            stopExecutingToggle.gameObject.name = "StopExecutingToggle";
+            stopExecutingToggle.onClick += (state) => OnStopExecutingToggleChanged();
         }
         #endregion
 
@@ -2915,6 +2926,10 @@ namespace FS_LevelEditor.Editor.UI
         {
             currentSelectedEvent.canBeUsedState = (LE_Event.CanBeUsedState)switchCanBeUsedStateButton.currentlySelectedID;
         }
+        void OnStopExecutingToggleChanged()
+        {
+            currentSelectedEvent.stopExecuting = stopExecutingToggle.isChecked;
+        }
         #endregion
 
         #region Keypad Options
@@ -3268,6 +3283,7 @@ public class LE_Event
     public SwitchUsableState switchUsableState { get; set; } = SwitchUsableState.Do_Nothing;
     public enum CanBeUsedState { Do_Nothing, Enable, Disable, Toggle }
     public CanBeUsedState canBeUsedState { get; set; } = CanBeUsedState.Do_Nothing;
+    public bool stopExecuting { get; set; } = false;
     #endregion
 
     #region Pressure Plate Options

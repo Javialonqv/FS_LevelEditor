@@ -198,6 +198,11 @@ namespace FS_LevelEditor
             editorLinks = null;
         }
 
+        public void StopExecuting()
+        {
+            CoroutineUtils.StopAllCoroutines(coroutinesID);
+        }
+
         /// <summary>
         /// Executes events without AND logic support (legacy method).
         /// </summary>
@@ -711,6 +716,17 @@ namespace FS_LevelEditor
             {
                 switchObj.alreadyChangedStateThroughtEvents = true;
 
+                if (@event.stopExecuting)
+                {
+                    // Trigger the action if LE_Switch handles it
+                    targetObj.TriggerAction("StopExecuting");
+                    
+                    // Directly stop the EventExecuter on the target switch
+                    if (targetObj.TryGetComponent<EventExecuter>(out var targetExecuter))
+                    {
+                        targetExecuter.StopExecuting();
+                    }
+                }
                 switch (@event.switchState)
                 {
                     case LE_Event.SwitchState.Activated:
