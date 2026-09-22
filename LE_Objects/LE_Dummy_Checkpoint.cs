@@ -22,6 +22,7 @@ namespace FS_LevelEditor
         static bool HasFlashlight;
         static BlocScript ActiveBloc;
         public static Controls.GravityState gravityState = Controls.GravityState.DEFAULT;
+        static bool isZeroG;
 
         public override void InitComponent()
         {
@@ -111,13 +112,29 @@ namespace FS_LevelEditor
             // We could use Controls.Instance.ActivateJetpack/DeactivateJetpack instead, but whatever.
             Controls.Instance.hasJetPack = HasJetpack;
             Controls.Instance.jetPackObject.SetActive(HasJetpack);
-
+            // Self explainatory
             FlashlightController.Instance.isAuthorized = HasFlashlight;
+            // OFFICIAL fix for the DOTs and checkpoints, btw.
+            DOT[] allHazards = UnityEngine.Object.FindObjectsByType<DOT>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+            foreach (DOT hazard in allHazards)
+            {
+                hazard.StopDamaging();
+                hazard.StopPushingAnyObjects();
+
+                if (hazard.gameObject.activeSelf)
+                {
+                    hazard.gameObject.SetActive(false);
+                    hazard.gameObject.SetActive(true);
+                }
+            }
 
             if (ActiveBloc)
                 ActivableController.activeCubeForInteraction = ActiveBloc;
 
             Controls.Instance.SetNewGravityState(gravityState, true);
+
+            Controls.Instance.SetZeroGravity(isZeroG, true, true, false, false, true);
 
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnRespawn"], "OnRespawn", true);
         }
@@ -130,6 +147,7 @@ namespace FS_LevelEditor
             HasFlashlight = FlashlightController.Instance.isAuthorized;
             ActiveBloc = ActivableController.activeCubeForInteraction;
             gravityState = Controls.currentGravityState;
+            isZeroG = Controls.Instance.IsInZeroGravity();
         }
 
         // FS uses SavedObjeTsHolder.AllCheckpoints to find the current checkpoint (because it's not cached for some reason), and then read the variables from it.

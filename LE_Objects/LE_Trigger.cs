@@ -297,6 +297,13 @@ namespace FS_LevelEditor
             {
                 parentTrigger.OnCubeEnter(other.gameObject);
             }
+            else if (other.GetComponent<Controls>() != null)
+            {
+                if(ActivableController.activeCubeForInteraction != null)
+                {
+                    parentTrigger.OnCubeEnter(ActivableController.activeCubeForInteraction.gameObject);
+                }
+            }
         }
 
         private void OnTriggerExit(Collider other)
@@ -305,6 +312,13 @@ namespace FS_LevelEditor
             if (IsCube(other.gameObject))
             {
                 parentTrigger.OnCubeExit(other.gameObject);
+            }
+            else if (other.GetComponent<Controls>() != null)
+            {
+                if (ActivableController.activeCubeForInteraction != null)
+                {
+                    parentTrigger.OnCubeExit(ActivableController.activeCubeForInteraction.gameObject);
+                }
             }
         }
 
