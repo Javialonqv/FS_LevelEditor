@@ -1,19 +1,40 @@
 ﻿using HarmonyLib;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
+using FS_LevelEditor.Editor;
 
 namespace FS_LevelEditor
 {
-
     public class LE_Ammo_Pack : LE_Object
     {
         Ammo ammo;
+        Light ammoLight;
+        GameObject ammoFlare;
+
+        void Awake()
+        {
+            ammoLight = gameObject.GetChildAt("Content/Mesh/PC_Only").GetComponent<Light>();
+            ammoFlare = gameObject.GetChildAt("Content/Mesh/AmmoFlare");
+        }
 
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>()
             {
-                { "RespawnTime", 20f }
+                { "RespawnTime", 20f },
+                { "Light", false }
             };
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                SetLightState(GetProperty<bool>("Light"));
+            }
+
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()
@@ -48,6 +69,8 @@ namespace FS_LevelEditor
             ammo.m_flare = gameObject.GetChildAt("Content/Mesh/AmmoFlare").GetComponent<LensFlare>();
             ammo.m_dissolve = disolve;
 
+            SetLightState(GetProperty<bool>("Light"));
+
             gameObject.GetChild("Content").SetActive(true);
 
             initialized = true;
@@ -79,6 +102,15 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "Light")
+            {
+                if (value is bool boolValue)
+                {
+                    properties["Light"] = boolValue;
+                    if (EditorController.Instance) SetLightState(boolValue);
+                    return true;
+                }
+            }
 
             return base.SetProperty(name, value);
         }
@@ -97,6 +129,12 @@ namespace FS_LevelEditor
         {
             contentObject.GetComponent<BoxCollider>().enabled = newEnabledState;
             contentObject.GetChildAt("Mesh/PreciseCollider").SetActive(newEnabledState);
+        }
+
+        void SetLightState(bool enabled)
+        {
+            if (ammoLight) ammoLight.enabled = enabled;
+            if (ammoFlare) ammoFlare.SetActive(enabled);
         }
     }
 }

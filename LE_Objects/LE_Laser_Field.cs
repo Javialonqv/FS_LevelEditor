@@ -21,7 +21,8 @@ namespace FS_LevelEditor
             return new Dictionary<string, object>()
             {
                 { "InvisibleEdges", false },
-                { "DestroyCubes", true }
+                { "DestroyCubes", true },
+                { "Light", true }
             };
         }
 
@@ -52,6 +53,10 @@ namespace FS_LevelEditor
             script.m_onTurnOn = new UnityEngine.Events.UnityEvent();
             AccessTools.Field(script.GetType(), "m_scaleSpeed").SetValue(script, 0.25f);
             script.onLightIntensity = -1;
+            if (!GetProperty<bool>("Light"))
+            {
+                script.onLightIntensity = 0;
+            }
 
             // ---------- SETUP TAGS & LAYERS ----------
 
@@ -74,6 +79,14 @@ namespace FS_LevelEditor
                 {
                     properties["InvisibleEdges"] = (bool)value;
                     if (EditorController.Instance != null) EnableEdges(!(bool)value);
+                    return true;
+                }
+            }
+            else if (name == "Light")
+            {
+                if (value is bool)
+                {
+                    properties["Light"] = (bool)value;
                     return true;
                 }
             }

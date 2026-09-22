@@ -1,18 +1,38 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
+using FS_LevelEditor.Editor;
 
 namespace FS_LevelEditor
 {
-
     public class LE_Health_Pack : LE_Object
     {
         Health health;
+        Light healthLight;
+        GameObject healthFlare;
+
+        void Awake()
+        {
+            healthLight = gameObject.GetChildAt("Content/Mesh/PC_Only").GetComponent<Light>();
+            healthFlare = gameObject.GetChildAt("Content/Mesh/HealthFlare");
+        }
 
         public static Dictionary<string, object> GetDefaultProperties()
         {
             return new Dictionary<string, object>()
             {
-                { "RespawnTime", 60f }
+                { "RespawnTime", 60f },
+                { "Light", false }
             };
+        }
+
+        public override void ObjectStart(LEScene scene)
+        {
+            if (scene == LEScene.Editor)
+            {
+                SetLightState(GetProperty<bool>("Light"));
+            }
+
+            base.ObjectStart(scene);
         }
 
         public override void InitComponent()
@@ -49,6 +69,8 @@ namespace FS_LevelEditor
             health.zScaleSpeed = 1;
             health.m_dissolve = disolve;
 
+            SetLightState(GetProperty<bool>("Light"));
+
             gameObject.GetChild("Content").SetActive(true);
 
             initialized = true;
@@ -79,6 +101,15 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "Light")
+            {
+                if (value is bool boolValue)
+                {
+                    properties["Light"] = boolValue;
+                    if (EditorController.Instance) SetLightState(boolValue);
+                    return true;
+                }
+            }
 
             return base.SetProperty(name, value);
         }
@@ -97,6 +128,12 @@ namespace FS_LevelEditor
         {
             contentObject.GetComponent<BoxCollider>().enabled = newEnabledState;
             contentObject.GetChildAt("Mesh/PreciseCollider").SetActive(newEnabledState);
+        }
+
+        void SetLightState(bool enabled)
+        {
+            if (healthLight) healthLight.enabled = enabled;
+            if (healthFlare) healthFlare.SetActive(enabled);
         }
     }
 }
