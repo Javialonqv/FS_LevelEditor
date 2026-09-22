@@ -19,6 +19,7 @@ namespace FS_LevelEditor
 
         static bool HasGun;
         static bool HasJetpack;
+        static bool HasFlashlight;
         static BlocScript ActiveBloc;
         public static Controls.GravityState gravityState = Controls.GravityState.DEFAULT;
 
@@ -111,6 +112,8 @@ namespace FS_LevelEditor
             Controls.Instance.hasJetPack = HasJetpack;
             Controls.Instance.jetPackObject.SetActive(HasJetpack);
 
+            FlashlightController.Instance.isAuthorized = HasFlashlight;
+
             if (ActiveBloc)
                 ActivableController.activeCubeForInteraction = ActiveBloc;
 
@@ -124,7 +127,7 @@ namespace FS_LevelEditor
             // NOTE: They're static, it's intended that the player keeps the taser/jetpack even if he didn't have it when he reached the checkpoint (as long as he acquired them lol).
             HasGun = Controls.Instance.HasTaser();
             HasJetpack = Controls.Instance.hasJetPack;
-
+            HasFlashlight = FlashlightController.Instance.isAuthorized;
             ActiveBloc = ActivableController.activeCubeForInteraction;
             gravityState = Controls.currentGravityState;
         }
