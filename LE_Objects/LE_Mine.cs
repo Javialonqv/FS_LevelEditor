@@ -36,6 +36,7 @@ namespace FS_LevelEditor
                 { "ContactRadius", 3f },
                 { "RemoteRadius", 1f },
                 { "ProximityRadius", 5f },
+                { "Light", false }
             };
         }
 
@@ -103,7 +104,7 @@ namespace FS_LevelEditor
             #region Rendering
             mine.hasParticles = false;
             mine.useSSR = true;
-            mine.forceDynLighting = false;
+            mine.forceDynLighting = GetProperty<bool>("Light");
             mine.flareMultiplier = 1;
             mine.showIfTouchesNothing = false;
             mine.isUnderwater = false;
@@ -223,6 +224,14 @@ namespace FS_LevelEditor
                 if (value is bool)
                 {
                     properties["InstaKill"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "Light")
+            {
+                if (value is bool)
+                {
+                    properties["Light"] = (bool)value;
                     return true;
                 }
             }

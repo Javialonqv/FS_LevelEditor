@@ -152,6 +152,8 @@ namespace FS_LevelEditor.Playmode
             Utils.Invoke(() => ParticlesPatch.GetObjectsWithParticlesReferences(), 0.1f);                       // Delay the invoke, so objects are initialized correctly first.
             Utils.Invoke(() => LE_Dummy_Checkpoint.UpdateSavedObjetsHolderCheckpointsWithLevelOnes(), 0.1f);    // Delay the invoke, so objects are initialized correctly first.
             SetSpeedrunTimerFont();
+            Controls.Instance.SetNewGravityState(Controls.GravityState.DEFAULT, true);
+            LE_Dummy_Checkpoint.gravityState = Controls.GravityState.DEFAULT;
         }
 
         void CreateBackToLEButton()
@@ -331,7 +333,14 @@ namespace FS_LevelEditor.Playmode
         }
         public void InvertPlayerGravity()
         {
-            Controls.Instance.InverseGravity();
+            if(Controls.currentGravityState == Controls.GravityState.INVERTED)
+            {
+                Controls.Instance.SetNewGravityState(Controls.GravityState.DEFAULT, false);
+            }
+            else
+            {
+                Controls.Instance.SetNewGravityState(Controls.GravityState.INVERTED, false);
+            }
 
             foreach (var screen in screensOnTheLevel)
             {
@@ -412,6 +421,7 @@ namespace FS_LevelEditor.Playmode
 
             Core.LevelNameJustQuitFrom = levelName;
             Core.JustQuitPlaymode = true;
+            Controls.currentGravityState = Controls.GravityState.DEFAULT;
         }
 
         // Objectives management methods

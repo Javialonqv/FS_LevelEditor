@@ -20,6 +20,7 @@ namespace FS_LevelEditor
         static bool HasGun;
         static bool HasJetpack;
         static BlocScript ActiveBloc;
+        public static Controls.GravityState gravityState = Controls.GravityState.DEFAULT;
 
         public override void InitComponent()
         {
@@ -113,6 +114,8 @@ namespace FS_LevelEditor
             if (ActiveBloc)
                 ActivableController.activeCubeForInteraction = ActiveBloc;
 
+            Controls.Instance.SetNewGravityState(gravityState, true);
+
             eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnRespawn"], "OnRespawn", true);
         }
 
@@ -123,6 +126,7 @@ namespace FS_LevelEditor
             HasJetpack = Controls.Instance.hasJetPack;
 
             ActiveBloc = ActivableController.activeCubeForInteraction;
+            gravityState = Controls.currentGravityState;
         }
 
         // FS uses SavedObjeTsHolder.AllCheckpoints to find the current checkpoint (because it's not cached for some reason), and then read the variables from it.

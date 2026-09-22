@@ -13,7 +13,8 @@ namespace FS_LevelEditor
             {
                 { "ActivateOnStart", true },
                 { "Constant", false },
-                { "DPS", 80 }
+                { "DPS", 80 },
+                { "Light", false }
             };
         }
 
@@ -58,6 +59,8 @@ namespace FS_LevelEditor
 
             trap.loopAudioSource.outputAudioMixerGroup = t_flameTrap.loopAudioSource.outputAudioMixerGroup;
 
+            trap.useLight = GetProperty<bool>("Light");
+
             content.SetActive(true);
 
             initialized = true;
@@ -88,6 +91,14 @@ namespace FS_LevelEditor
                 if (value is bool)
                 {
                     properties["Constant"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "Light")
+            {
+                if (value is bool)
+                {
+                    properties["Light"] = (bool)value;
                     return true;
                 }
             }
