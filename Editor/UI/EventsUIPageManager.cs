@@ -120,6 +120,9 @@ namespace FS_LevelEditor.Editor.UI
         UITogglePatcher changeLightColorToggle;
         UILabel newLightColorTitleLabel;
         UIInput newLightColorInputField;
+        UITogglePatcher changeLightIntensityToggle;
+        UILabel newLightIntensityTitleLabel;
+        UICustomInputField newLightIntensityInputField;
         //-----------------------------------
         GameObject ceilingLightObjectsSettings;
         UIDropdownPatcher ceilingLightStateButton;
@@ -1355,6 +1358,14 @@ namespace FS_LevelEditor.Editor.UI
                 UpdateEventOptionsWithEvent(newEvent);
                 return;
             }
+            else if (@event.targetObjType == LE_Object.ObjectType.DIRECTIONAL_LIGHT || @event.targetObjType == LE_Object.ObjectType.POINT_LIGHT)
+            {
+                changeLightColorToggle.Set(@event.changeLightColor);
+                newLightColorInputField.text = @event.newLightColor;
+
+                changeLightIntensityToggle.Set(@event.changeLightIntensity);
+                newLightIntensityInputField.SetText(@event.newLightIntensity, true);
+            }
             else if (@event.targetObjType == LE_Object.ObjectType.SAW)
             {
                 sawStateButton.SelectOption((int)@event.sawState);
@@ -1944,6 +1955,9 @@ namespace FS_LevelEditor.Editor.UI
             CreateChangeLightColorToggle();
             CreateNewLightColorTitleLabel();
             CreateNewLightColorInputField();
+            CreateChangeLightIntensityToggle();
+            CreateNewLightIntensityTitleLabel();
+            CreateNewLightIntensityInputField();
         }
         void CreateLightObjectsTitleLabel()
         {
@@ -1972,6 +1986,31 @@ namespace FS_LevelEditor.Editor.UI
             inputField.onChange += OnNewLightColorInputFieldChanged;
 
             newLightColorInputField = inputField.GetComponent<UIInput>();
+        }
+        void CreateChangeLightIntensityToggle()
+        {
+            changeLightIntensityToggle = NGUI_Utils.CreateToggle(lightObjectsSettings.transform, new Vector3(-380f, -80f, 0f),
+                new Vector3Int(250, 48, 1), "Change Intensity");
+            changeLightIntensityToggle.gameObject.name = "ChangeLightIntensityToggle";
+            changeLightIntensityToggle.onClick += (state) => OnChangeLightIntensityToggleChanged();
+        }
+
+        void CreateNewLightIntensityTitleLabel()
+        {
+            UILabel label = NGUI_Utils.CreateLabel(lightObjectsSettings.transform, new Vector3(50, -80), new Vector3Int(150, 40, 0), "Intensity", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 27, false);
+            label.name = "NewLightIntensityTitleLabel";
+
+            newLightIntensityTitleLabel = label;
+        }
+
+        void CreateNewLightIntensityInputField()
+        {
+            UICustomInputField inputField = NGUI_Utils.CreateInputField(lightObjectsSettings.transform, new Vector3(270f, -80f, 0f),
+                new Vector3Int(250, 40, 1), 27, "1", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            inputField.name = "NewLightIntensityInputField";
+            inputField.onChange += OnNewLightIntensityInputFieldChanged;
+
+            newLightIntensityInputField = inputField.GetComponent<UICustomInputField>();
         }
         #endregion
 
@@ -2791,6 +2830,21 @@ namespace FS_LevelEditor.Editor.UI
 
             currentSelectedEvent.newLightColor = newLightColorInputField.text;
         }
+        void OnChangeLightIntensityToggleChanged()
+        {
+            currentSelectedEvent.changeLightIntensity = changeLightIntensityToggle.isChecked;
+
+            newLightIntensityTitleLabel.gameObject.SetActive(changeLightIntensityToggle.isChecked);
+            newLightIntensityInputField.gameObject.SetActive(changeLightIntensityToggle.isChecked);
+        }
+
+        void OnNewLightIntensityInputFieldChanged()
+        {
+            if (newLightIntensityInputField.isValid)
+            {
+                currentSelectedEvent.newLightIntensity = Utils.ParseFloat(newLightIntensityInputField.GetText());
+            }
+        }
         #endregion
 
         #region Ceiling Light Options
@@ -3179,6 +3233,9 @@ public class LE_Event
     #region Light Options
     public bool changeLightColor { get; set; } = false;
     public string newLightColor { get; set; } = "FFFFFF";
+
+    public bool changeLightIntensity { get; set; } = false;
+    public float newLightIntensity { get; set; } = 1f;
     #endregion
 
     #region Ceiling Light Options

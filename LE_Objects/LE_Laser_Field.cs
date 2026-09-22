@@ -1,19 +1,21 @@
 ﻿using FS_LevelEditor.Editor;
 using HarmonyLib;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FS_LevelEditor
 {
-
     public class LE_Laser_Field : LE_Object
     {
         GameObject edgesParent;
         GameObject holder;
+        Light laserLight;
 
         void Awake()
         {
             edgesParent = gameObject.GetChildAt("Content/Edges");
             holder = gameObject.GetChildAt("Content/Holder");
+            laserLight = gameObject.GetChildAt("Content/Holder/Light").GetComponent<Light>();
         }
 
         public static Dictionary<string, object> GetDefaultProperties()
@@ -30,6 +32,11 @@ namespace FS_LevelEditor
         {
             // Execute on editor and on playmode.
             EnableEdges(!GetProperty<bool>("InvisibleEdges"));
+
+            if (scene == LEScene.Editor)
+            {
+                SetLightState(GetProperty<bool>("Light"));
+            }
 
             base.ObjectStart(scene);
         }
@@ -52,6 +59,7 @@ namespace FS_LevelEditor
             script.m_onTurnOff = new UnityEngine.Events.UnityEvent();
             script.m_onTurnOn = new UnityEngine.Events.UnityEvent();
             AccessTools.Field(script.GetType(), "m_scaleSpeed").SetValue(script, 0.25f);
+
             script.onLightIntensity = -1;
             if (!GetProperty<bool>("Light"))
             {
@@ -75,26 +83,35 @@ namespace FS_LevelEditor
         {
             if (name == "InvisibleEdges")
             {
-                if (value is bool)
+                if (value is bool boolValue)
                 {
-                    properties["InvisibleEdges"] = (bool)value;
-                    if (EditorController.Instance != null) EnableEdges(!(bool)value);
+                    properties["InvisibleEdges"] = boolValue;
+                    if (EditorController.Instance != null) EnableEdges(!boolValue);
                     return true;
                 }
             }
             else if (name == "Light")
             {
-                if (value is bool)
+                if (value is bool boolValue)
                 {
-                    properties["Light"] = (bool)value;
+                    properties["Light"] = boolValue;
+                    if (EditorController.Instance) SetLightState(boolValue);
+
+                    // If the component is already initialized, update the script's intensity target as well
+                    if (contentObject)
+                    {
+                        KillPlaneController script = contentObject.GetComponent<KillPlaneController>();
+                        if (script) script.onLightIntensity = boolValue ? -1 : 0;
+                    }
+
                     return true;
                 }
             }
             else if (name == "DestroyCubes")
             {
-                if (value is bool)
+                if (value is bool boolValue)
                 {
-                    properties["DestroyCubes"] = (bool)value;
+                    properties["DestroyCubes"] = boolValue;
                     return true;
                 }
             }
@@ -127,7 +144,12 @@ namespace FS_LevelEditor
 
         void EnableEdges(bool enable)
         {
-            edgesParent.SetActive(enable);
+            if (edgesParent) edgesParent.SetActive(enable);
+        }
+
+        void SetLightState(bool enabled)
+        {
+            if (laserLight) laserLight.enabled = enabled;
         }
     }
 }

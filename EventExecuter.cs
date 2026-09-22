@@ -597,6 +597,18 @@ namespace FS_LevelEditor
                         break;
                 }
             }
+            else if (targetObj is LE_Directional_Light || targetObj is LE_Point_Light)
+            {
+                if (@event.changeLightColor)
+                {
+                    targetObj.SetProperty("Color", Utils.HexToColor(@event.newLightColor, false, null));
+                }
+
+                if (@event.changeLightIntensity)
+                {
+                    targetObj.SetProperty("Intensity", @event.newLightIntensity);
+                }
+            }
             else if (targetObj is LE_Cube)
             {
                 if (@event.respawnCube)
