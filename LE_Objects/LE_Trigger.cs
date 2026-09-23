@@ -16,6 +16,7 @@ namespace FS_LevelEditor
     public class LE_Trigger : LE_Object
     {
         private bool hasBeenTriggered = false; // Track if trigger has been activated (for Once mode)
+        private bool hasExitBeenTriggered = false;
         private HashSet<GameObject> cubesInTrigger = new HashSet<GameObject>(); // Track cubes currently in trigger
 
         TriggerScript triggerScript;
@@ -219,6 +220,7 @@ namespace FS_LevelEditor
                 if (ShouldAllowRetriggerForObjective())
                 {
                     hasBeenTriggered = false; // Reset so it can trigger again
+                    hasExitBeenTriggered = false;
                 }
                 else
                 {
@@ -270,11 +272,30 @@ namespace FS_LevelEditor
             // Skip player triggers when in cube-only mode (cubes are handled by OnCubeExit)
             if (mode == TriggerMode.CUBE_ONLY) return;
 
+            if (mode == TriggerMode.ONCE && hasExitBeenTriggered)
+            {
+                if (ShouldAllowRetriggerForObjective())
+                {
+                    hasExitBeenTriggered = false;
+                    hasBeenTriggered = false;
+                }
+                else
+                {
+                    return; // Don't trigger exit again
+                }
+            }
+
             // For Once and Multiple modes, trigger exit events
             // Note: Exit events can still trigger even if OnEnter was already used in Once mode
-            if (mode == TriggerMode.ONCE || mode == TriggerMode.MULTIPLE)
+            if ((mode == TriggerMode.ONCE && !hasExitBeenTriggered) || mode == TriggerMode.MULTIPLE)
             {
                 eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnExit"], "OnExit", false);
+
+                // NEW: Mark as triggered for Once mode
+                if (mode == TriggerMode.ONCE)
+                {
+                    hasExitBeenTriggered = true;
+                }
             }
         }
 
