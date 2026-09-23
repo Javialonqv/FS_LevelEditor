@@ -13,8 +13,8 @@ namespace FS_LevelEditor
         public static Vector3 RESPAWN_POINT_POS_OFFSET => new Vector3(0f, 0.3f);
 
         public ContainmentBox script;
-        public Vector3 RespawnPosition { get; private set; }
-        public Vector3 RespawnRotation { get; private set; }
+        public Vector3 RespawnPosition => script != null && script.m_resetTransform != null ? script.m_resetTransform.position : Vector3.zero;
+        public Vector3 RespawnRotation => script != null && script.m_resetTransform != null ? script.m_resetTransform.eulerAngles : Vector3.zero;
 
         public int lastInstantTeleportFrame = -1;
 
@@ -72,6 +72,14 @@ namespace FS_LevelEditor
             script.currentRespawnIndex = 0;
             script.m_resetTransform = content.GetChild("Spawn").transform;
 
+            if (customWaypointSupport != null && customWaypointSupport.targetWaypointsData != null && customWaypointSupport.targetWaypointsData.Count > 0)
+            {
+                if (customWaypointSupport.spawnedWaypoints != null && customWaypointSupport.spawnedWaypoints.Count > 0)
+                {
+                    script.m_resetTransform.SetParent(customWaypointSupport.spawnedWaypoints[0].transform);
+                }
+            }
+
             // If not using custom coords, and since respawnPosition uses GLOBAL coords, use this object itself pivot as the respawn coords.
             if (customWaypointSupport.targetWaypointsData == null || customWaypointSupport.targetWaypointsData.Count == 0)
             {
@@ -107,12 +115,13 @@ namespace FS_LevelEditor
         // Add this method so DeathTriggerWaypointSupport.SetupForCustomSystem can call it to update the respawn point, since it's called after InitComponent().
         public void SetRespawnPointPositionAndRotation(Vector3 position, Vector3 rotation)
         {
-            RespawnPosition = position + RESPAWN_POINT_POS_OFFSET;
-            RespawnRotation = rotation;
-
-            script.m_resetTransform.position = RespawnPosition;
-            script.m_resetTransform.eulerAngles = RespawnRotation;
+            if (script != null && script.m_resetTransform != null)
+            {
+                script.m_resetTransform.position = position + RESPAWN_POINT_POS_OFFSET;
+                script.m_resetTransform.eulerAngles = rotation;
+            }
         }
+
 
         public override bool SetProperty(string name, object value)
         {
