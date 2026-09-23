@@ -204,7 +204,7 @@ namespace FS_LevelEditor
             else if (actionName == "InvertState")
             {
                 // Check if the platform is currently active
-                bool isActive = willUseFakeActivation ? isFakeActivated : script.activated;
+                bool isActive = (willUseFakeActivation || script.currentWaypoint == null) ? isFakeActivated : script.activated;
                 if (isActive)
                 {
                     TriggerAction("Deactivate");
@@ -222,7 +222,7 @@ namespace FS_LevelEditor
         void ActivateMP(bool activate)
         {
             // User will be using GLOBAL waypoints.
-            if (willUseFakeActivation)
+            if (willUseFakeActivation || script.currentWaypoint == null)
             {
                 // Just fake it. Global waypoints will do the rest of the moving logic.
                 if (activate)
