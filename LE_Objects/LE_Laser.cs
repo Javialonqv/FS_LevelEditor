@@ -18,7 +18,8 @@ namespace FS_LevelEditor
                 { "Damage", 34 },
                 { "Blinking", false },
                 { "OffDuration", 1f },
-                { "OnDuration", 1f }
+                { "OnDuration", 1f },
+                { "Light", false}
             };
         }
 
@@ -66,7 +67,6 @@ namespace FS_LevelEditor
             laser.collisionOn = gameObject.GetChildAt("Content/MeshOn").GetComponent<BoxCollider>();
             laser.collisionOff = gameObject.GetChildAt("Content/MeshOff").GetComponent<BoxCollider>();
             laser.hasParticles = true;
-            laser.forceDynLighting = true;
             laser.breakWindowsOnExplode = true;
             laser.explodeWithInvalidPosObj = true;
             laser.cachedTransform = laser.transform;
@@ -160,7 +160,10 @@ namespace FS_LevelEditor
                 Invoke("ActivateLaserDelayed", 0.2f);
             }
 
+            laser.forceDynLighting = GetProperty<bool>("Light");
+
             initialized = true;
+            laser.AdjustLightingComplexity();
         }
 
         // This method is meant to be invoked with Invoke().
@@ -185,6 +188,14 @@ namespace FS_LevelEditor
                 if (value is bool)
                 {
                     properties["InstaKill"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "Light")
+            {
+                if (value is bool)
+                {
+                    properties["Light"] = (bool)value;
                     return true;
                 }
             }
@@ -298,6 +309,17 @@ public static class LaserInstaKillPatch
             {
                 Controls.Instance.KillCharacter(true);
             }
+        }
+    }
+}
+[HarmonyLib.HarmonyPatch(typeof(Laser_H_Controller), nameof(Laser_H_Controller.IsLightAllowed))]
+public static class LightAllowedPatch
+{
+    public static void Prefix(Laser_H_Controller __instance, ref bool __result)
+    {
+        if (__instance.transform.parent != null && __instance.transform.parent.GetComponent<LE_Laser>())
+        {
+            __result = (bool)__instance.transform.parent.GetComponent<LE_Laser>().GetProperty("Light");
         }
     }
 }
