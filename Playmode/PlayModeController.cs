@@ -1,4 +1,5 @@
-﻿using FS_LevelEditor.Playmode.Patches;
+﻿using FS_LevelEditor.LE_Objects;
+using FS_LevelEditor.Playmode.Patches;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
 using System.Collections;
@@ -250,7 +251,22 @@ namespace FS_LevelEditor.Playmode
 
             return obj;
         }
+        public GameObject PlaceCustomObject(string customObjectType, Vector3 position, Vector3 rotation, Vector3 scale, bool isActive = true)
+        {
+            if (!ModObjectRegistry.TryGet(customObjectType, out var registeredData))
+            {
+                Logger.Error($"Cannot spawn in playmode: '{customObjectType}' is not registered.");
+                return null;
+            }
 
+            GameObject newObj = Instantiate(registeredData.PrefabTemplate, position, Quaternion.Euler(rotation), levelObjectsParent.transform);
+            newObj.transform.localScale = scale;
+            newObj.SetActive(isActive);
+
+            LE_Object leObj = LE_Object.AddComponentToObject(newObj, customObjectType);
+
+            return newObj;
+        }
         void ConfigureGlobalProperties()
         {
             Patches.DebudModePatch.DebugAllowed = (bool)GetGlobalProperty("DebugAllowed");

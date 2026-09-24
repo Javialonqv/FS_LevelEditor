@@ -1,5 +1,6 @@
 ﻿using FS_LevelEditor.Editor;
 using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.LE_Objects;
 using FS_LevelEditor.Playmode;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.SaveSystem.Converters;
@@ -164,6 +165,7 @@ namespace FS_LevelEditor
         public virtual string[] EventsIDs => [];
 
         public ObjectType? objectType;
+        public string customObjectType;
         public int objectID;
         public string objectLocalizatedName
         {
@@ -176,14 +178,18 @@ namespace FS_LevelEditor
         {
             get
             {
+                // for new objects
+                string baseName = !string.IsNullOrEmpty(customObjectType)
+                    ? customObjectType
+                    : objectLocalizatedName;
+
                 if (GetMaxInstances(GetType()) == 1)
                 {
-                    // Since there can only be 1 instance of this object, we don't need to add the ID to the name.
-                    return objectLocalizatedName;
+                    return baseName;
                 }
                 else
                 {
-                    return objectLocalizatedName + " " + objectID;
+                    return baseName + " " + objectID;
                 }
             }
         }
@@ -421,6 +427,31 @@ namespace FS_LevelEditor
                 instancedComponent.Init(objectType, null);
                 return instancedComponent;
             }
+        }
+        /// <summary>
+        /// The other correct way to add a LE_Object component, this time a custom one, to a GameObject.
+        /// </summary>
+        /// <param name="targetObj">The GameObject to attatch this component to.</param>
+        /// <param name="customObjectTypeStr">The name of the class.</param>
+        /// <returns></returns>
+        public static LE_Object AddComponentToObject(GameObject targetObj, string customObjectTypeStr)
+        {
+            if (ModObjectRegistry.TryGet(customObjectTypeStr, out var registeredData))
+            {
+                Type componentType = registeredData.LogicComponentType ?? typeof(LE_Object);
+                LE_Object instancedComponent = (LE_Object)targetObj.AddComponent(componentType);
+
+                // Populate base properties from Registry data
+                instancedComponent.customObjectType = registeredData.Classname;
+                instancedComponent.properties = new Dictionary<string, object>(registeredData.DefaultProperties);
+
+                // Complete initialization pipeline
+                instancedComponent.InitComponent();
+                return instancedComponent;
+            }
+
+            Logger.Error($"Custom object type {customObjectTypeStr} is missing from the Mods folder.");
+            return null;
         }
 
         void SetNameAndType(ObjectType objectTypeToSet, bool fromSave)

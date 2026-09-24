@@ -305,13 +305,14 @@ namespace FS_LevelEditor.SaveSystem
             cam.GetComponent<EditorCameraMovement>().SetRotation(data.cameraRotation);
 
             // Pre-allocate capacity for better performance
-            var objectsToInstantiate = new List<(LE_Object.ObjectType type, Vector3 pos, Vector3 rot, Vector3 scale)>(data.objects.Count);
+            var objectsToInstantiate = new List<(LE_Object.ObjectType? type, string customType, Vector3 pos, Vector3 rot, Vector3 scale)>(data.objects.Count);
 
             // Batch collect object data
             foreach (LE_ObjectData obj in data.objects)
             {
-                objectsToInstantiate.Add(((LE_Object.ObjectType type, Vector3 pos, Vector3 rot, Vector3 scale))(
+                objectsToInstantiate.Add((
                     obj.objectType,
+                    obj.customObjectType,
                     obj.objPosition,
                     obj.objRotation,
                     obj.objScale
@@ -328,13 +329,29 @@ namespace FS_LevelEditor.SaveSystem
             var instantiatedObjects = new List<(GameObject obj, LE_ObjectData data)>(data.objects.Count);
             foreach (var objData in objectsToInstantiate)
             {
-                var objInstance = EditorController.Instance.PlaceObject(
-                    objData.type,
-                    objData.pos,
-                    objData.rot,
-                    objData.scale,
-                    false
-                );
+                GameObject objInstance = null;
+
+                if (!string.IsNullOrEmpty(objData.customType))
+                {
+                    objInstance = EditorController.Instance.PlaceCustomObject(
+                        objData.customType,
+                        objData.pos,
+                        objData.rot,
+                        objData.scale,
+                        false
+                    );
+                }
+                else if (objData.type.HasValue)
+                {
+                    objInstance = EditorController.Instance.PlaceObject(
+                        objData.type.Value,
+                        objData.pos,
+                        objData.rot,
+                        objData.scale,
+                        false
+                    );
+                }
+
                 if (objInstance != null)
                 {
                     instantiatedObjects.Add((objInstance, data.objects[instantiatedObjects.Count]));
@@ -406,13 +423,30 @@ namespace FS_LevelEditor.SaveSystem
             // First pass: Create all GameObjects without configuring them
             foreach (LE_ObjectData obj in data.objects)
             {
-                var objInstance = playModeCtrl.PlaceObject(
-                    obj.objectType,
-                    obj.objPosition,
-                    obj.objRotation,
-                    obj.objScale,
-                    false
-                );
+                GameObject objInstance = null;
+
+                if (!string.IsNullOrEmpty(obj.customObjectType))
+                {
+                    // 1. It's a Modded Object
+                    objInstance = playModeCtrl.PlaceCustomObject(
+                        obj.customObjectType,
+                        obj.objPosition,
+                        obj.objRotation,
+                        obj.objScale,
+                        false
+                    );
+                }
+                else if (obj.objectType.HasValue)
+                {
+                    // 2. It's a Base Game Object (Legacy)
+                    objInstance = playModeCtrl.PlaceObject(
+                        obj.objectType.Value,
+                        obj.objPosition,
+                        obj.objRotation,
+                        obj.objScale,
+                        false
+                    );
+                }
 
                 if (objInstance != null)
                 {

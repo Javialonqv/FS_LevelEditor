@@ -7,6 +7,7 @@ namespace FS_LevelEditor.SaveSystem
     public class LE_ObjectData
     {
         public LE_Object.ObjectType? objectType { get; set; }
+        public string customObjectType { get; set; }
         public int objectID { get; set; }
         public bool setActiveAtStart { get; set; } = true;
         public bool collision { get; set; } = true;
@@ -33,6 +34,7 @@ namespace FS_LevelEditor.SaveSystem
         public LE_ObjectData(LE_Object originalObj)
         {
             objectType = originalObj.objectType;
+            customObjectType = originalObj.customObjectType;
             objectID = originalObj.objectID;
             setActiveAtStart = originalObj.setActiveAtStart;
             collision = originalObj.collision;

@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor.UI;
+using FS_LevelEditor.LE_Objects;
 using FS_LevelEditor.SaveSystem;
 using FS_LevelEditor.UI_Related;
 using HarmonyLib;
@@ -2144,7 +2145,36 @@ namespace FS_LevelEditor.Editor
 
             return obj;
         }
+        public GameObject PlaceCustomObject(string customObjectType, Vector3 position, Vector3 rotation, Vector3 scale, bool selectObj = true)
+        {
+            if (!ModObjectRegistry.TryGet(customObjectType, out var registeredData))
+            {
+                Logger.Error($"Cannot place object: '{customObjectType}' is not registered in the ModObjectRegistry.");
+                return null;
+            }
 
+            // 1. Instantiate the prefab loaded from the mod's AssetBundle
+            GameObject newObj = Instantiate(registeredData.PrefabTemplate, position, Quaternion.Euler(rotation), levelObjectsParent.transform);
+            newObj.transform.localScale = scale;
+
+            // Ensure it's active in the editor
+            newObj.SetActive(true);
+
+            // 2. Attach the logic component (using the string overload we created earlier)
+            LE_Object leObj = LE_Object.AddComponentToObject(newObj, customObjectType);
+
+            // 3. Handle selection state
+            if (selectObj)
+            {
+                SetSelectedObj(newObj);
+            }
+            else
+            {
+                leObj.OnDeselect(null);
+            }
+
+            return newObj;
+        }
         public enum SelectionType { Normal, ForceSingle, ForceMultiple }
         public void SetSelectedObj(GameObject obj, SelectionType selectionType = SelectionType.Normal)
         {

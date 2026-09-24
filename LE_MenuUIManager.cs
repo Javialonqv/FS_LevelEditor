@@ -375,7 +375,7 @@ namespace FS_LevelEditor
             // Ik this this inaccessible code, it's just I'll change that bool when I release the public build.
             string currentModVersion = $"{BuildInfo.BuildDate}";
 #if DEBUG
-            currentModVersion += " DEV BUILD";
+            currentModVersion += " DEV BUILD - NEW OBJECT SYSTEM";
 #endif
 
             // Destroy the FUCKING UI LOCALIZE COMPONENT.
