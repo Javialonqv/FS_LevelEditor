@@ -85,9 +85,17 @@ namespace FS_LevelEditor
             if (waterMat != null)
             {
                 waterMat.shader = Shader.Find("Lux Water/WaterSurface");
-                waterMeshRenderer.material = waterMat;
-                LuxWater_PlanarReflection planarReflection = waterVisuals.AddComponent<LuxWater_PlanarReflection>();
+                waterMeshRenderer.sharedMaterial = waterMat;
+                
+                waterMat.SetVector("_FinalBumpSpeed01", new Vector4(.2f,.2f,.2f,.2f));
+                waterMat.SetVector("_FinalBumpSpeed23", new Vector4(.2f,.2f,.2f,.2f));
+
+
+                var planarReflection = waterVisuals.AddComponent<LuxWater.LuxWater_PlanarReflection>();
                 planarReflection.WaterMaterials = new Material[] { waterMat };
+                planarReflection.reflectionMask = 32771;
+                planarReflection.farClipPlane = 300f;
+                planarReflection.renderShadows = false;
             }
             else
             {
