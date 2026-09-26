@@ -64,6 +64,7 @@ object.POWER_SLOT,Power Slot,Entrada de Energía,
 object.UPGRADE_TERMINAL,Upgrade Terminal,Terminal de Mejora,
 object.XMAS_TREE,XMAS Tree,Árbol de Navidad,
 object.DUMMY_CHECKPOINT,Dummy Checkpoint,Punto de Control Parcial,
+object.WATER,Water
 Player,Player,Jugador,Гравець
 Jetpack,Jetpack,Mochila Propulsora,Джетпак
 Taser,Taser,Taser,Тазер

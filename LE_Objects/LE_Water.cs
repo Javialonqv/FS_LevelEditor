@@ -28,6 +28,14 @@ namespace FS_LevelEditor
                 { "OnExit", new List<LE_Event>() }
             };
         }
+        public static Dictionary<string, object> GetDefaultProperties()
+        {
+            return new Dictionary<string, object>
+            {
+                { "OnEnter", new List<LE_Event>() },
+                { "OnExit", new List<LE_Event>() },
+            };
+        }
 
         public override void OnInstantiated(LEScene scene)
         {
@@ -86,9 +94,9 @@ namespace FS_LevelEditor
             {
                 waterMat.shader = Shader.Find("Lux Water/WaterSurface");
                 waterMeshRenderer.sharedMaterial = waterMat;
-                
-                waterMat.SetVector("_FinalBumpSpeed01", new Vector4(.2f,.2f,.2f,.2f));
-                waterMat.SetVector("_FinalBumpSpeed23", new Vector4(.2f,.2f,.2f,.2f));
+
+                waterMat.SetVector("_FinalBumpSpeed01", new Vector4(.2f, .2f, .2f, .2f));
+                waterMat.SetVector("_FinalBumpSpeed23", new Vector4(.2f, .2f, .2f, .2f));
 
 
                 var planarReflection = waterVisuals.AddComponent<LuxWater.LuxWater_PlanarReflection>();
@@ -115,6 +123,7 @@ namespace FS_LevelEditor
             WaterPatch waterPatch = water.AddComponent<WaterPatch>();
             float surfaceY = worldBounds.max.y;
             waterPatch.waterSurfaceY = surfaceY;
+            waterPatch.parentWater = this; // so WaterPatch can fire this object's OnEnter/OnExit events (LE_Water.ExecuteOnEnterEvents/ExecuteOnExitEvents)
 
             SetupUnderwaterCamera(surfaceY);
             water.SetActive(true);
@@ -135,12 +144,16 @@ namespace FS_LevelEditor
             return base.SetProperty(name, value);
         }
 
-        void ExecuteOnEnterEvents()
+        // Called by WaterPatch when the player actually enters the water volume.
+        // Made public (was private) so WaterPatch, which is a separate MonoBehaviour, can call it.
+        public void ExecuteOnEnterEvents()
         {
             eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnEnter"]);
         }
 
-        void ExecuteOnExitEvents()
+        // Called by WaterPatch when the player actually exits the water volume.
+        // Made public (was private) so WaterPatch, which is a separate MonoBehaviour, can call it.
+        public void ExecuteOnExitEvents()
         {
             eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnExit"]);
         }
@@ -221,14 +234,37 @@ namespace FS_LevelEditor
         {
             public float waterSurfaceY;
             public LayerMask groundLayerMask = 1; // What layers count as ground
+            public LE_Water parentWater; // Owning LE_Water, used to fire its OnEnter/OnExit events
+
             private bool playerInWater = false; // Track water state
             private float lastWaterStateChange = 0f; // Cooldown timer
             private const float WATER_STATE_COOLDOWN = 0.5f; // Half second cooldown
             private bool hadJetpack = false;
+            
+            // Cache the camera effect so we don't call GameObject.Find in a physics loop
+            private UnderwaterPostEffect cachedPostEffect;
+
+            private UnderwaterPostEffect GetPostEffect()
+            {
+                if (cachedPostEffect == null)
+                {
+                    GameObject envCamObj = GameObject.Find("EnvCam");
+                    if (envCamObj != null)
+                    {
+                        cachedPostEffect = envCamObj.GetComponent<UnderwaterPostEffect>();
+                    }
+                }
+                return cachedPostEffect;
+            }
+            
+            // FIXED: Changed from void to float
+            private float GetCurrentSurfaceY()
+            {
+                return parentWater != null ? parentWater.GetMeshTopY() : waterSurfaceY;
+            }
 
             private void OnTriggerEnter(Collider other)
             {
-                // Give dynamic physics objects buoyancy immediately when entering local water bounds
                 if (!other.CompareTag("Player"))
                 {
                     var rb = other.GetComponent<Rigidbody>();
@@ -239,7 +275,7 @@ namespace FS_LevelEditor
                             floater = other.gameObject.AddComponent<CubeFloatSystem>();
 
                         floater.enabled = true;
-                        floater.waterLevel = waterSurfaceY; // Dynamically pass this volume's exact surface height
+                        floater.waterLevel = GetCurrentSurfaceY(); 
                     }
                 }
             }
@@ -248,18 +284,17 @@ namespace FS_LevelEditor
             {
                 if (other.CompareTag("Player"))
                 {
+                    float currentWaterSurfaceY = GetCurrentSurfaceY();
+
                     if (Time.time - lastWaterStateChange < WATER_STATE_COOLDOWN) return;
 
                     Vector3 playerPos = other.transform.position;
-                    // Use standard bounding to ensure player enters state securely
-                    bool shouldBeInWater = playerPos.y <= waterSurfaceY + 0.2f;
+                    bool shouldBeInWater = playerPos.y <= currentWaterSurfaceY + 0.2f;
 
-                    // Player should enter water
                     if (shouldBeInWater && !playerInWater)
                     {
                         EnterWaterState();
                     }
-                    // Player should exit water
                     else if (!shouldBeInWater && playerInWater)
                     {
                         bool canExit = CanPlayerExitWater(Controls.Instance.transform);
@@ -268,14 +303,22 @@ namespace FS_LevelEditor
                             ExitWaterState();
                         }
                     }
+                    else if (playerInWater)
+                    {
+                        // NEW: Continuously update visual effects height if the water moves while swimming
+                        var postEffect = GetPostEffect();
+                        if (postEffect != null)
+                        {
+                            postEffect.surfaceYLevel = currentWaterSurfaceY;
+                        }
+                    }
                 }
                 else
                 {
-                    // Ensure props retain dynamic surface height if water surface is moving or modified
                     var floater = other.GetComponent<CubeFloatSystem>();
                     if (floater != null)
                     {
-                        floater.waterLevel = waterSurfaceY;
+                        floater.waterLevel = GetCurrentSurfaceY();
                     }
                 }
             }
@@ -286,37 +329,30 @@ namespace FS_LevelEditor
                 {
                     if (playerInWater)
                     {
-                        // Force exit when leaving trigger completely
                         ExitWaterState();
                     }
                 }
                 else
                 {
-                    // Prop leaves water volume; cancel local floating behavior
                     var floater = other.GetComponent<CubeFloatSystem>();
                     if (floater != null)
                     {
-                        floater.waterLevel = -99999f; // Moves threshold securely out of bounds to restore natural physics gravity
+                        floater.waterLevel = -99999f; 
                     }
                 }
             }
 
             private void ExitWaterState()
             {
-                if (!playerInWater) return; // Already exited
+                float currentWaterSurfaceY = GetCurrentSurfaceY();
+                if (!playerInWater) return; 
 
-                // 1. Attempt to remove camera effects, but DO NOT abort if camera isn't found
-                GameObject envCamObj = GameObject.Find("EnvCam");
-                if (envCamObj != null)
+                var postEffect = GetPostEffect();
+                if (postEffect != null)
                 {
-                    UnderwaterPostEffect postEffect = envCamObj.GetComponent<UnderwaterPostEffect>();
-                    if (postEffect != null && Mathf.Approximately(postEffect.surfaceYLevel, waterSurfaceY))
-                    {
-                        postEffect.SetWaterState(false, waterSurfaceY);
-                    }
+                    postEffect.SetWaterState(false, currentWaterSurfaceY);
                 }
 
-                // 2. ALWAYS execute player mechanical state restore
                 Controls.Instance.OnWaterExit(false, false);
                 Controls.Instance.SetFlashlightAllowed();
                 playerInWater = false;
@@ -324,55 +360,56 @@ namespace FS_LevelEditor
 
                 if (hadJetpack) Controls.Instance.hasJetPack = true;
                 hadJetpack = false;
+
+                parentWater?.ExecuteOnExitEvents();
             }
 
             private void EnterWaterState()
             {
-                if (playerInWater) return; // Already in water
+                if (playerInWater) return; 
 
-                // 1. Attempt to apply visual camera effects, but DO NOT abort if camera isn't found
-                GameObject envCamObj = GameObject.Find("EnvCam");
-                if (envCamObj != null)
+                // FIXED: Dynamically fetch current height rather than relying on the static load state
+                float currentWaterSurfaceY = GetCurrentSurfaceY();
+
+                var postEffect = GetPostEffect();
+                if (postEffect != null)
                 {
-                    UnderwaterPostEffect postEffect = envCamObj.GetComponent<UnderwaterPostEffect>();
-                    if (postEffect != null)
-                    {
-                        postEffect.SetWaterState(true, waterSurfaceY);
-                    }
+                    postEffect.SetWaterState(true, currentWaterSurfaceY);
                 }
 
-                // 2. ALWAYS execute player mechanical state (this is what allows swimming)
-                Controls.Instance.OnWaterEnter(waterSurfaceY);
-                Controls.Instance.SetFlashlightNotAllowed();
+                // FIXED: Pass current height instead of static waterSurfaceY
+                Controls.Instance.OnWaterEnter(currentWaterSurfaceY);
                 playerInWater = true;
                 lastWaterStateChange = Time.time;
 
                 if (Controls.Instance.hasJetPack) hadJetpack = true;
                 Controls.Instance.hasJetPack = false;
+
+                parentWater?.ExecuteOnEnterEvents();
             }
 
             private bool CanPlayerExitWater(Transform playerTransform)
             {
                 Vector3 playerPos = playerTransform.position;
+                // FIXED: Fetch current height dynamically
+                float currentWaterSurfaceY = GetCurrentSurfaceY(); 
 
-                // Check if player is above water surface
-                if (playerPos.y <= waterSurfaceY)
+                // FIXED: Check against dynamic height instead of static waterSurfaceY
+                if (playerPos.y <= currentWaterSurfaceY) 
                 {
                     return false;
                 }
 
-                // Get player controller height
                 CharacterController controller = playerTransform.GetComponent<CharacterController>();
-                float controllerHeight = 0.82f; // Default fallback
+                float controllerHeight = 0.82f; 
 
-                // Cast downward from player position to check for ground within controller height
                 RaycastHit hit;
                 if (Physics.Raycast(playerPos, Vector3.down, out hit, controllerHeight, groundLayerMask))
                 {
-                    return true; // Player can touch ground below
+                    return true; 
                 }
 
-                return false; // No ground within reach
+                return false; 
             }
         }
 
@@ -429,7 +466,6 @@ namespace FS_LevelEditor
             public float floatForce = 12f;
             public float waterDrag = 4f;
             public float waterAngularDrag = 0.95f;
-            public float objectMass = 2.6f;
 
             public float detectionOffset = 0.5f; // How deep before floating starts
 
@@ -446,9 +482,6 @@ namespace FS_LevelEditor
                     Debug.LogError("CubeFloatSystem requires a Rigidbody component!");
                     return;
                 }
-
-                // Set object mass
-                rb.mass = objectMass;
 
                 // Store original drag values
                 originalDrag = rb.linearDamping;

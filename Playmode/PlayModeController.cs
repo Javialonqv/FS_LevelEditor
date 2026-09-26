@@ -391,6 +391,9 @@ namespace FS_LevelEditor.Playmode
             UpgradePatches.Unpatch();
             CleanupAllObjectives();
 
+            //water patches
+            Controls.Instance.SetUnderwaterEffects(false);
+
             // Do not unload the asset bundle, it may be used for the editor again.
 
             Instance = null;
