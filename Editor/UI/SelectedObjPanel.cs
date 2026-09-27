@@ -581,7 +581,7 @@ namespace FS_LevelEditor.Editor.UI
 
                 if (value is Color colorValue)
                 {
-                    locName = "ColorHex";
+                    // locName = "ColorHex";
                     propType = AttributeType.INPUT_FIELD;
                     inputType = UICustomInputField.UIInputType.HEX_COLOR;
                     defaultValue = Utils.ColorToHex(colorValue);
