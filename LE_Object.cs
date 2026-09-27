@@ -90,7 +90,8 @@ namespace FS_LevelEditor
             UPGRADE_TERMINAL,
             XMAS_TREE,
             DUMMY_CHECKPOINT,
-            WATER
+            WATER,
+            POWER_BEAM
         }
 
         // This is used to specify the objects that use the same snap triggers.
@@ -271,6 +272,7 @@ namespace FS_LevelEditor
         public static BlocScript t_powerCore;
         public static PowerCoreController t_powerSlot;
         public static InterrupteurController t_upgradeTerminal;
+        public static LightLaserController t_beam;
 
         public static void GetTemplatesReferences()
         {
@@ -299,6 +301,7 @@ namespace FS_LevelEditor
             t_powerCore = Utils.FindObjectOfType<BlocScript>(x => x.isPowerCore);
             t_powerSlot = Utils.FindObjectOfType<PowerCoreController>(x => !x.isTabletSlot);
             t_upgradeTerminal = Utils.FindObjectOfType<InterrupteurController>(x => x.name.Contains("Upgrade"));
+            t_beam = Utils.FindObjectOfType<LightLaserController>(x => x.isPowerBeamCH4);
         }
         #endregion
 
@@ -403,7 +406,6 @@ namespace FS_LevelEditor
         {
             string className = "LE_" + Utils.ObjectTypeToFormatedName(objectType).Replace(' ', '_');
             Type classType = Type.GetType("FS_LevelEditor." + className);
-
             if (classType != null)
             {
                 if (HasReachedObjectLimit(classType))

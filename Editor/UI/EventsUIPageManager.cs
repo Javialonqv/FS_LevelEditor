@@ -129,6 +129,9 @@ namespace FS_LevelEditor.Editor.UI
         UITogglePatcher changeCeilingLightColorToggle;
         UIInput newCeilingLightColorInputField;
         //-----------------------------------
+        GameObject powerBeamObjectsSettings;
+        UIDropdownPatcher powerBeamStateButton;
+        //-----------------------------------
         GameObject healthAmmoPacksObjectsSettings;
         UITogglePatcher changePackRespawnTimeToggle;
         UILabel newPackRespawnTimeTitleLabel;
@@ -233,6 +236,7 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreatePressurePlateObjectSettings();
                 Instance.CreateFlameTrapObjectSettings();
                 Instance.CreateScreenObjectSettings();
+                Instance.CreatePowerBeamObjectSettings();
                 Instance.CreateDoorObjectSettings();
                 Instance.CreateMovingPlatformObjectSettings();
                 Instance.CreateBridgeObjectSettings();
@@ -1237,6 +1241,10 @@ namespace FS_LevelEditor.Editor.UI
             {
                 return laserObjectsSettings;
             }
+            else if (targetObj == LE_Object.ObjectType.POWER_BEAM)
+            {
+                return powerBeamObjectsSettings;
+            }
             else if (targetObj == LE_Object.ObjectType.LASER_FIELD)
             {
                 return laserFieldObjectsSettings;
@@ -1383,6 +1391,10 @@ namespace FS_LevelEditor.Editor.UI
             else if (@event.targetObjType == LE_Object.ObjectType.LASER_FIELD)
             {
                 laserFieldStateButton.SelectOption((int)@event.laserFieldState);
+            }
+            else if (@event.targetObjType == LE_Object.ObjectType.POWER_BEAM)
+            {
+                powerBeamStateButton.SelectOption((int)@event.powerBeamState);
             }
             else if (@event.targetObjType == LE_Object.ObjectType.MINE)
             {
@@ -2291,6 +2303,7 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
 
         #region Screen Options
+
         void CreateScreenObjectSettings()
         {
             screenObjectsSettings = new GameObject("Screen");
@@ -2346,6 +2359,36 @@ namespace FS_LevelEditor.Editor.UI
         }
         #endregion
 
+        #region Power Beam Options
+        void CreatePowerBeamObjectSettings()
+        {
+            powerBeamObjectsSettings = new GameObject("PowerBeam");
+            powerBeamObjectsSettings.transform.parent = eventOptionsParent.transform;
+            powerBeamObjectsSettings.transform.localPosition = Vector3.zero;
+            powerBeamObjectsSettings.transform.localScale = Vector3.one;
+            powerBeamObjectsSettings.SetActive(false);
+
+            CreatePowerBeamObjectsTitleLabel();
+            CreatePowerBeamStateDropdown();
+        }
+        void CreatePowerBeamObjectsTitleLabel()
+        {
+            UILabel label = NGUI_Utils.CreateLabel(powerBeamObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "POWER BEAM OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
+        }
+        void CreatePowerBeamStateDropdown()
+        {
+            powerBeamStateButton = NGUI_Utils.CreateDropdown(powerBeamObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
+            powerBeamStateButton.SetTitle("Power Beam State");
+            powerBeamStateButton.AddOption("Do Nothing", false);
+            powerBeamStateButton.AddOption("Activate", false);
+            powerBeamStateButton.AddOption("Deactivate", false);
+            powerBeamStateButton.AddOption("Toggle State", true);
+            powerBeamStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnPowerBeamStateDropdownChanged)));
+
+            powerBeamStateButton.gameObject.SetActive(true);
+        }
+        #endregion
         #region Door Options
         void CreateDoorObjectSettings()
         {
@@ -2975,6 +3018,13 @@ namespace FS_LevelEditor.Editor.UI
         }
         #endregion
 
+        #region Power Beam Options
+        void OnPowerBeamStateDropdownChanged()
+        {
+            currentSelectedEvent.powerBeamState = (LE_Event.PowerBeamState)powerBeamStateButton.currentlySelectedID;
+        }
+        #endregion
+
         #region Moving Platform Options
         void OnMovingPlatformStateButtonChanged()
         {
@@ -3243,6 +3293,11 @@ public class LE_Event
     #region Mine Options
     public enum MineState { Do_Nothing, Activate, Deactivate, Toggle_State }
     public MineState mineState { get; set; } = MineState.Toggle_State;
+    #endregion
+
+    #region Power Beam Options
+    public enum PowerBeamState { Do_Nothing, Activate, Deactivate, Toggle_State }
+    public PowerBeamState powerBeamState { get; set; } = PowerBeamState.Do_Nothing;
     #endregion
 
     #region Light Options

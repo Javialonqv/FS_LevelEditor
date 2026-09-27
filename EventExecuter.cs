@@ -645,7 +645,7 @@ namespace FS_LevelEditor
                         break;
                 }
             }
-            else if (targetObj is LE_Laser_Field) 
+            else if (targetObj is LE_Laser_Field)
             {
                 switch (@event.laserFieldState)
                 {
@@ -658,6 +658,23 @@ namespace FS_LevelEditor
                         break;
 
                     case LE_Event.LaserFieldState.Toggle_State:
+                        targetObj.TriggerAction("ToggleActivated");
+                        break;
+                }
+            }
+            else if (targetObj is LE_Power_Beam)
+            {
+                switch (@event.powerBeamState)
+                {
+                    case LE_Event.PowerBeamState.Activate:
+                        targetObj.TriggerAction("Activate");
+                        break;
+
+                    case LE_Event.PowerBeamState.Deactivate:
+                        targetObj.TriggerAction("Deactivate");
+                        break;
+
+                    case LE_Event.PowerBeamState.Toggle_State:
                         targetObj.TriggerAction("ToggleActivated");
                         break;
                 }
@@ -720,7 +737,7 @@ namespace FS_LevelEditor
                 {
                     // Trigger the action if LE_Switch handles it
                     targetObj.TriggerAction("StopExecuting");
-                    
+
                     // Directly stop the EventExecuter on the target switch
                     if (targetObj.TryGetComponent<EventExecuter>(out var targetExecuter))
                     {
