@@ -158,6 +158,7 @@ namespace FS_LevelEditor
             { ObjectType.MINE, new Vector3(0.6f, 0.5f, 0.6f) },
             { ObjectType.X_WALL, new Vector3(1, 1, 0.85f) },
             { ObjectType.WINDOW, new Vector3(1,1, 0.951f) },
+            { ObjectType.TRIGGER_LOOK_AREA_WAYPOINT }
         };
 
         public static Dictionary<ObjectType, HashSet<int>> alreadyUsedIDsPerType = new Dictionary<ObjectType, HashSet<int>>();
