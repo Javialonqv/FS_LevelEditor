@@ -31,7 +31,7 @@
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		
-		<OutputPath>$(USERPROFILE)\AppData\LocalLow\Haze Games\Fractal Space MOD\Mods\</OutputPath>
+		<OutputPath Condition="'$(OutputPath)' == ''">$(USERPROFILE)\AppData\LocalLow\Haze Games\Fractal Space MOD\Mods\</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -42,6 +42,7 @@
 	  <None Remove="KeybindsList.txt" />
 	  <None Remove="leveleditoricons" />
 	  <None Remove="level_editor" />
+	  <None Remove="level_fog" />
 	  <None Remove="level_editor_sprites" />
 	  <None Remove="Translations\Translations.csv" />
 	</ItemGroup>
@@ -83,6 +84,7 @@
 		<Compile Include="Editor\UI\ContextMenu.cs" />
 		<Compile Include="Editor\UI\EditorObjectsToBuildUI.cs" />
 		<Compile Include="Editor\UI\FindObjectUI.cs" />
+		<Compile Include="Editor\UI\FogPanel.cs" />
 		<Compile Include="Editor\UI\GlobalPropertiesPanel.cs" />
 		<Compile Include="Editor\UI\GroupsUI.cs" />
 		<Compile Include="Editor\UI\NotificationSystem.cs" />
@@ -99,8 +101,10 @@
 		<Compile Include="ExternalSpriteLoader.cs" />
 		<Compile Include="LE_Objects\LE_Dummy_Checkpoint.cs" />
 		<Compile Include="LE_Objects\LE_Heal_Area.cs" />
+		<Compile Include="LE_Objects\LE_Pocket_Mirror.cs" />
 		<Compile Include="LE_Objects\LE_Power_Beam.cs" />
 		<Compile Include="LE_Objects\LE_Power_Core.cs" />
+		<Compile Include="LE_Objects\LE_Power_Reciever.cs" />
 		<Compile Include="LE_Objects\LE_Power_Slot.cs" />
 		<Compile Include="LE_Objects\LE_Rgb_Wall.cs" />
 		<Compile Include="LE_Objects\LE_Sequence.cs" />
@@ -110,6 +114,7 @@
 		<Compile Include="LE_Objects\LE_Window.cs" />
 		<Compile Include="LE_Objects\LE_Xmas_Tree.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Death_Trigger_Waypoint.cs" />
+		<Compile Include="LE_Objects\Waypoints\LE_Trigger_Look_Area_Waypoint.cs" />
 		<Compile Include="LE_Objects\Waypoints\LE_Sequence_Waypoint.cs" />
 		<Compile Include="Misc\ScaleTweener.cs" />
 		<Compile Include="Playmode\AndLogicManager.cs" />
@@ -132,6 +137,9 @@
 		<Compile Include="Utils\AssetBundleLoader.cs" />
 		<Compile Include="Utils\CoroutineUtils.cs" />
 		<Compile Include="Utils\FixedUpdateProvider.cs" />
+		<Compile Include="Utils\LevelFog.cs" />
+		<Compile Include="Utils\LevelRain.cs" />
+		<Compile Include="Utils\LevelSnow.cs" />
 		<Compile Include="Utils\MaterialUtils.cs" />
 		<Compile Include="WaypointSupport.cs" />
 		<Compile Include="LE_Objects\LE_Bridge.cs" />
@@ -168,6 +176,7 @@
 		<Compile Include="Playmode\Patches\SpeedrunTimerPatch.cs" />
 		<Compile Include="Playmode\Patches\UpgradesPatches.cs" />
 		<Compile Include="Playmode\PlayModeController.cs" />
+		<Compile Include="Playmode\StaticMeshCombiner.cs" />
 		<Compile Include="LE_Objects\LE_Ammo_Pack.cs" />
 		<Compile Include="LE_Objects\LE_Breakable_Window.cs" />
 		<Compile Include="LE_Objects\LE_Ceiling_Light.cs" />
@@ -214,6 +223,7 @@
 		<Compile Include="Utils.cs" />
 		<Compile Include="Utils\ScreenTemplateExpander.cs" />
 		<Compile Include="WaypointSupports\DeathTriggerWaypointSupport.cs" />
+		<Compile Include="WaypointSupports\TriggerLookAreaWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\MovingPlatformWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\SawWaypointSupport.cs" />
 		<Compile Include="WaypointSupports\SequencerWaypointSupport.cs" />
@@ -225,6 +235,7 @@
 	  <EmbeddedResource Include="KeybindsList.txt" />
 	  <EmbeddedResource Include="leveleditoricons" />
 	  <EmbeddedResource Include="level_editor" />
+	  <EmbeddedResource Include="level_fog" />
 	  <EmbeddedResource Include="level_editor_sprites" />
 	  <EmbeddedResource Include="Translations\Translations.csv" />
 	</ItemGroup>

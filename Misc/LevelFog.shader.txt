@@ -1,0 +1,61 @@
+Shader "Hidden/FS_LevelEditor/LevelFog"
+{
+    Properties
+    {
+        _MainTex ("Texture", 2D) = "white" {}
+    }
+    SubShader
+    {
+        Cull Off ZWrite Off ZTest Always
+
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert_img
+            #pragma fragment frag
+            #include "UnityCG.cginc"
+
+            sampler2D _MainTex;
+            sampler2D_float _CameraDepthTexture;
+            float4 _FogColor;
+            float _FogDensity;
+            float _FogStart;
+            float _FogEnd;
+
+            fixed4 frag (v2f_img i) : SV_Target
+            {
+                fixed4 col = tex2D(_MainTex, i.uv);
+
+                float rawDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
+
+                // Sky/far plane pixels (nothing was rendered there) count as infinitely far, so they get fully fogged too.
+                #if defined(UNITY_REVERSED_Z)
+                    bool isSky = rawDepth <= 0.00001;
+                #else
+                    bool isSky = rawDepth >= 0.99999;
+                #endif
+
+                float fog = 1.0;
+                if (!isSky)
+                {
+                    // LinearEyeDepth is the distance along the camera's forward axis, which changes when the camera rotates.
+                    // Convert it to the real distance from the camera (radial) so the fog doesn't depend on where you look.
+                    float eyeDepth = LinearEyeDepth(rawDepth);
+                    float2 ndc = i.uv * 2.0 - 1.0;
+                    float3 viewRay = float3(ndc.x / unity_CameraProjection._m00, ndc.y / unity_CameraProjection._m11, 1.0);
+                    float dist = eyeDepth * length(viewRay);
+                    float d = max(dist - _FogStart, 0);
+
+                    // Exponential build-up after the start distance, and everything past the end distance is fully fogged.
+                    fog = 1.0 - exp(-_FogDensity * d);
+                    float endRange = max(_FogEnd - _FogStart, 0.0001);
+                    fog = lerp(fog, 1.0, smoothstep(0.8, 1.0, d / endRange));
+                }
+
+                col.rgb = lerp(col.rgb, _FogColor.rgb, saturate(fog));
+                return col;
+            }
+            ENDCG
+        }
+    }
+}

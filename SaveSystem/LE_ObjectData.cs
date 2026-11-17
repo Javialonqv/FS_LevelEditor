@@ -12,6 +12,7 @@ namespace FS_LevelEditor.SaveSystem
         public bool collision { get; set; } = true;
         public bool invisibleMesh { get; set; } = false;
         public bool moveStart { get; set; } = false;
+        public bool stopAtEveryWaypoint { get; set; } = false;
         public float movingSpeed { get; set; } = 5f;
         public float startDelay { get; set; } = 1f;
         public float waitTime { get; set; } = 0f;
@@ -38,6 +39,7 @@ namespace FS_LevelEditor.SaveSystem
             collision = originalObj.collision;
             invisibleMesh = originalObj.invisibleMesh;
             moveStart = originalObj.startMovingAtStart;
+            stopAtEveryWaypoint = originalObj.stopAtEveryWaypoint;
             movingSpeed = originalObj.movingSpeed;
             startDelay = originalObj.startDelay;
             waitTime = originalObj.waitTime;

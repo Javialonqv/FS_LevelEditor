@@ -91,7 +91,10 @@ namespace FS_LevelEditor
             XMAS_TREE,
             DUMMY_CHECKPOINT,
             WATER,
-            POWER_BEAM
+            POWER_BEAM,
+            POWER_RECIEVER,
+            TRIGGER_LOOK_AREA_WAYPOINT,
+            POCKET_MIRROR
         }
 
         // This is used to specify the objects that use the same snap triggers.
@@ -139,7 +142,8 @@ namespace FS_LevelEditor
             { ObjectType.SAW, typeof(SawWaypointSupport) },
             { ObjectType.MOVING_PLATFORM, typeof(MovingPlatformWaypointSupport) },
             { ObjectType.DEATH_TRIGGER, typeof(DeathTriggerWaypointSupport) },
-            { ObjectType.SEQUENCE, typeof(SequencerWaypointSupport) }
+            { ObjectType.SEQUENCE, typeof(SequencerWaypointSupport) },
+            { ObjectType.TRIGGER, typeof(TriggerLookAreaWaypointSupport) }
         };
         public readonly static Dictionary<ObjectType, Type> objectsWithSingleObjectLink = new Dictionary<ObjectType, Type>()
         {
@@ -195,6 +199,7 @@ namespace FS_LevelEditor
         public bool collision = true;
         public bool invisibleMesh = false;
         public bool startMovingAtStart = false;
+        public bool stopAtEveryWaypoint = false;
         public float movingSpeed = 5f;
         public float startDelay = 0f;
         public float waitTime = 0f;
@@ -273,6 +278,8 @@ namespace FS_LevelEditor
         public static PowerCoreController t_powerSlot;
         public static InterrupteurController t_upgradeTerminal;
         public static LightLaserController t_beam;
+        public static InterrupteurController t_receiver;
+        public static BlocScript t_mirror;
 
         public static void GetTemplatesReferences()
         {
@@ -301,7 +308,9 @@ namespace FS_LevelEditor
             t_powerCore = Utils.FindObjectOfType<BlocScript>(x => x.isPowerCore);
             t_powerSlot = Utils.FindObjectOfType<PowerCoreController>(x => !x.isTabletSlot);
             t_upgradeTerminal = Utils.FindObjectOfType<InterrupteurController>(x => x.name.Contains("Upgrade"));
-            t_beam = Utils.FindObjectOfType<LightLaserController>(x => x.isPowerBeamCH4);
+            t_beam = Utils.FindObjectOfType<LightLaserController>(x => x.isPowerBeamCH4 && x.name == "LightLaserPC_Large");
+            t_receiver = Utils.FindObjectOfType<InterrupteurController>(x => x.isLightLaserSwitch);
+            t_mirror = Utils.FindObjectOfType<BlocScript>(x => x.isMirror);
         }
         #endregion
 
@@ -485,7 +494,7 @@ namespace FS_LevelEditor
         }
         public static ObjectType? ConvertNameToObjectType(string objName)
         {
-            string objTypeName = objName.ToUpper().Replace(' ', '_');
+            string objTypeName = objName.Trim().ToUpper().Replace(' ', '_');
             if (Enum.TryParse<ObjectType>(objTypeName, true, out ObjectType result))
             {
                 return result;
@@ -520,6 +529,17 @@ namespace FS_LevelEditor
 
             return currentInstances >= maxInstances;
         }
+        public static string GetFullNameWithID(ObjectType objectType, int objectID)
+        {
+            string localizedName = Loc.Get("object." + objectType.ToString());
+            Type classType = Type.GetType("FS_LevelEditor.LE_" + Utils.ObjectTypeToFormatedName(objectType).Replace(' ', '_'));
+
+            if (classType != null && GetMaxInstances(classType) == 1)
+                return localizedName;
+
+            return localizedName + " " + objectID;
+        }
+
         static int GetMaxInstances(Type objectCompType)
         {
             FieldInfo maxInstancesField = objectCompType.GetField("maxInstances", BindingFlags.NonPublic | BindingFlags.Static);
@@ -594,6 +614,11 @@ namespace FS_LevelEditor
             if (name == "StartMovingAtStart")
             {
                 startMovingAtStart = (bool)value;
+                return true;
+            }
+            else if (name == "StopAtEveryWaypoint")
+            {
+                stopAtEveryWaypoint = (bool)value;
                 return true;
             }
             else if (name == "MovingSpeed")

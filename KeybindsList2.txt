@@ -10,7 +10,8 @@
 /Keyboard_Black_Mouse_Previous\ and /Keyboard_Black_Mouse_Next\ Precise object movement up and down.
 
 /Keyboard_Black_PositiveScrollWheel\ or /Keyboard_Black_NegativeScrollWheel\ Move grid up and down.
-/Keyboard_G\ Toggle grid view.
+/Keyboard_G\ Show or hide the grid (does not change the snapping).
+/Keyboard_Left Shift\ + /Keyboard_G\ Enable or disable the grid snapping.
 /Keyboard_Left Control\ + /Keyboard_Black_PositiveScrollWheel\ Increase grid size.
 /Keyboard_Left Control\ + /Keyboard_Black_NegativeScrollWheel\ Decrease grid size.
 /Keyboard_Left Shift\ + /Keyboard_Black_PositiveScrollWheel\ Increase grid height.

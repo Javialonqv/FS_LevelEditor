@@ -43,6 +43,7 @@ namespace FS_LevelEditor
 
             AssetBundleLoader.PreloadEmbeddedBundle("level_editor");
             AssetBundleLoader.PreloadEmbeddedBundle("leveleditoricons");
+            AssetBundleLoader.PreloadEmbeddedBundle("level_fog");
 
             HarmonyInstance = new Harmony("com.javialon_qv.leveleditor");
             HarmonyInstance.PatchAll();

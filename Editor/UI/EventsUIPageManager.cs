@@ -131,6 +131,8 @@ namespace FS_LevelEditor.Editor.UI
         //-----------------------------------
         GameObject powerBeamObjectsSettings;
         UIDropdownPatcher powerBeamStateButton;
+        UITogglePatcher powerBeamChangeThicknessToggle;
+        UICustomInputField powerBeamThicknessInputField;
         //-----------------------------------
         GameObject healthAmmoPacksObjectsSettings;
         UITogglePatcher changePackRespawnTimeToggle;
@@ -185,6 +187,21 @@ namespace FS_LevelEditor.Editor.UI
         GameObject deathYSettings;
         UIDropdownPatcher deathYActionDropdown;
         UICustomInputField newDeathYLevelInputField;
+        //-----------------------------------
+        GameObject rainSettings;
+        UIDropdownPatcher rainStateDropdown;
+        //-----------------------------------
+        GameObject snowSettings;
+        UIDropdownPatcher snowStateDropdown;
+        //-----------------------------------
+        GameObject fogSettings;
+        GameObject fogValuesParent;
+        UIDropdownPatcher fogStateDropdown;
+        UITogglePatcher fogChangeSettingsToggle;
+        UICustomInputField fogColorInputField;
+        UICustomInputField fogDensityInputField;
+        UICustomInputField fogStartInputField;
+        UICustomInputField fogEndInputField;
         //-----------------------------------
         GameObject laserFieldObjectsSettings;
         UIDropdownPatcher laserFieldStateButton;
@@ -245,6 +262,9 @@ namespace FS_LevelEditor.Editor.UI
                 Instance.CreateUpgradeTerminalObjectSettings();
                 Instance.CreateMusicSettings();
                 Instance.CreateDeathYSettings();
+                Instance.CreateRainSettings();
+                Instance.CreateFogSettings();
+                Instance.CreateSnowSettings();
 
                 Instance.CreateDetails();
             }
@@ -1038,7 +1058,7 @@ namespace FS_LevelEditor.Editor.UI
         {
             if (currentSelectedEvent.targetObjType != null)
             {
-                var nameToSet = Loc.Get("object." + currentSelectedEvent.targetObjType) + " " + currentSelectedEvent.targetObjID;
+                var nameToSet = LE_Object.GetFullNameWithID(currentSelectedEvent.targetObjType.Value, currentSelectedEvent.targetObjID);
                 targetObjInputField.SetText(nameToSet);
             }
             else
@@ -1066,6 +1086,18 @@ namespace FS_LevelEditor.Editor.UI
                 else if (currentSelectedEvent.isForDeathY)
                 {
                     targetObjInputField.SetText("DeathY");
+                }
+                else if (currentSelectedEvent.isForRain)
+                {
+                    targetObjInputField.SetText("Rain");
+                }
+                else if (currentSelectedEvent.isForFog)
+                {
+                    targetObjInputField.SetText("Fog");
+                }
+                else if (currentSelectedEvent.isForSnow)
+                {
+                    targetObjInputField.SetText("Snow");
                 }
                 else if (currentSelectedEvent.isForObjective)
                 {
@@ -1114,7 +1146,7 @@ namespace FS_LevelEditor.Editor.UI
 
                 bool hasGlobalOptions = false;
                 if (!currentSelectedEvent.isForPlayer && !currentSelectedEvent.isForUpgrades && !currentSelectedEvent.isForTaser && !currentSelectedEvent.isForJetpack && !currentSelectedEvent.isForObjective &&
-                    !currentSelectedEvent.isForWait && !currentSelectedEvent.isForMusic && !currentSelectedEvent.isForDeathY)
+                    !currentSelectedEvent.isForWait && !currentSelectedEvent.isForMusic && !currentSelectedEvent.isForDeathY && !currentSelectedEvent.isForRain && !currentSelectedEvent.isForFog && !currentSelectedEvent.isForSnow)
                 {
                     hasGlobalOptions = true;
                 }
@@ -1146,6 +1178,18 @@ namespace FS_LevelEditor.Editor.UI
                 else if (currentSelectedEvent.isForDeathY)
                 {
                     currentActiveObjectPanel = deathYSettings;
+                }
+                else if (currentSelectedEvent.isForRain)
+                {
+                    currentActiveObjectPanel = rainSettings;
+                }
+                else if (currentSelectedEvent.isForFog)
+                {
+                    currentActiveObjectPanel = fogSettings;
+                }
+                else if (currentSelectedEvent.isForSnow)
+                {
+                    currentActiveObjectPanel = snowSettings;
                 }
                 else if (currentSelectedEvent.isForGroup)
                 {
@@ -1204,6 +1248,9 @@ namespace FS_LevelEditor.Editor.UI
                 currentSelectedEvent.isForWait = false;
                 currentSelectedEvent.isForMusic = false;
                 currentSelectedEvent.isForDeathY = false;
+                currentSelectedEvent.isForRain = false;
+                currentSelectedEvent.isForFog = false;
+                currentSelectedEvent.isForSnow = false;
                 currentSelectedEvent.targetObjType = null;
                 currentSelectedEvent.targetObjID = 0;
                 currentSelectedEvent.targetObjName = inputText;
@@ -1269,7 +1316,7 @@ namespace FS_LevelEditor.Editor.UI
             {
                 return switchObjectsSettings;
             }
-            else if (targetObj == LE_Object.ObjectType.KEYPAD)
+            else if (targetObj == LE_Object.ObjectType.KEYPAD || targetObj == LE_Object.ObjectType.POWER_RECIEVER)
             {
                 return keypadObjectsSettings;
             }
@@ -1351,6 +1398,24 @@ namespace FS_LevelEditor.Editor.UI
 
                 newMusicTrackDropdown.gameObject.SetActive(@event.musicAction == LE_Event.MusicAction.Play);
             }
+            else if (@event.isForRain)
+            {
+                rainStateDropdown.SelectOption((int)@event.rainState);
+            }
+            else if (@event.isForSnow)
+            {
+                snowStateDropdown.SelectOption((int)@event.snowState);
+            }
+            else if (@event.isForFog)
+            {
+                fogStateDropdown.SelectOption((int)@event.fogState);
+                fogChangeSettingsToggle.Set(@event.fogChangeSettings, false, true);
+                fogColorInputField.SetText(@event.fogColor, false);
+                fogDensityInputField.SetText(@event.fogDensity, false);
+                fogStartInputField.SetText(@event.fogStartDistance, false);
+                fogEndInputField.SetText(@event.fogEndDistance, false);
+                fogValuesParent.SetActive(@event.fogChangeSettings);
+            }
             else if (@event.isForDeathY)
             {
                 deathYActionDropdown.SelectOption((int)@event.deathYAction);
@@ -1395,6 +1460,9 @@ namespace FS_LevelEditor.Editor.UI
             else if (@event.targetObjType == LE_Object.ObjectType.POWER_BEAM)
             {
                 powerBeamStateButton.SelectOption((int)@event.powerBeamState);
+                powerBeamChangeThicknessToggle.Set(@event.powerBeamChangeThickness);
+                powerBeamThicknessInputField.SetText(@event.powerBeamThickness);
+                powerBeamThicknessInputField.gameObject.SetActive(@event.powerBeamChangeThickness);
             }
             else if (@event.targetObjType == LE_Object.ObjectType.MINE)
             {
@@ -1428,7 +1496,7 @@ namespace FS_LevelEditor.Editor.UI
 
                 stopExecutingToggle.Set(@event.stopExecuting, instant: true);
             }
-            else if (@event.targetObjType == LE_Object.ObjectType.KEYPAD)
+            else if (@event.targetObjType == LE_Object.ObjectType.KEYPAD || @event.targetObjType == LE_Object.ObjectType.POWER_RECIEVER)
             {
                 keypadCanBeUsedStateButton.SelectOption((int)@event.canBeUsedState);
             }
@@ -1491,11 +1559,15 @@ namespace FS_LevelEditor.Editor.UI
             CreateUseAndLogicToggle();
             CreateMoreGlobalOptionsButton();
         }
+        // Narrower than the template so the three dropdowns fit in a row (the template is ~425 wide, the target is ~265).
+        const float DefaultObjectsDropdownWidthMultiplier = 0.62f;
+
         void CreateSpawnOptionsDropdown()
         {
-            UIDropdownPatcher spawnOptionsDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(-210, 105), Vector3.one * 0.8f);
+            UIDropdownPatcher spawnOptionsDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(-267, 105), Vector3.one * 0.8f);
+            spawnOptionsDropdown.SetWidthMultiplier(DefaultObjectsDropdownWidthMultiplier);
             spawnOptionsDropdown.name = "SetActiveDropdownPanel";
-            spawnOptionsDropdown.SetTitle("Spawn Options");
+            spawnOptionsDropdown.SetTitle("Spawn");
             spawnOptionsDropdown.AddOption("Do Nothing", true);
             spawnOptionsDropdown.AddOption("Spawn", false);
             spawnOptionsDropdown.AddOption("Despawn", false);
@@ -1508,9 +1580,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateColliderStateDropdown()
         {
-            var colliderStateDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(150, 105), Vector3.one * 0.8f);
+            var colliderStateDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(-35, 105), Vector3.one * 0.8f);
+            colliderStateDropdown.SetWidthMultiplier(DefaultObjectsDropdownWidthMultiplier);
             colliderStateDropdown.name = "ColliderStateDropdown";
-            colliderStateDropdown.SetTitle("Collider State");
+            colliderStateDropdown.SetTitle("Collision");
             colliderStateDropdown.AddOption("Do Nothing", true);
             colliderStateDropdown.AddOption("Enable", false);
             colliderStateDropdown.AddOption("Disable", false);
@@ -1523,9 +1596,10 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateInvisibleMeshStateDropdown()
         {           
-            var invisibleMeshStateDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(-210, 25), Vector3.one * 0.8f);
+            var invisibleMeshStateDropdown = NGUI_Utils.CreateDropdown(defaultObjectsSettings.transform, new Vector3(197, 105), Vector3.one * 0.8f);
+            invisibleMeshStateDropdown.SetWidthMultiplier(DefaultObjectsDropdownWidthMultiplier);
             invisibleMeshStateDropdown.name = "InvisibleMeshStateDropdown";
-            invisibleMeshStateDropdown.SetTitle("Invisible Mesh");
+            invisibleMeshStateDropdown.SetTitle("Inv. Mesh");
             invisibleMeshStateDropdown.AddOption("Do Nothing", true);
             invisibleMeshStateDropdown.AddOption("Enable", false);
             invisibleMeshStateDropdown.AddOption("Disable", false);
@@ -2370,23 +2444,37 @@ namespace FS_LevelEditor.Editor.UI
 
             CreatePowerBeamObjectsTitleLabel();
             CreatePowerBeamStateDropdown();
+            CreatePowerBeamThicknessSettings();
         }
         void CreatePowerBeamObjectsTitleLabel()
         {
-            UILabel label = NGUI_Utils.CreateLabel(powerBeamObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "POWER BEAM OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            UILabel label = NGUI_Utils.CreateLabel(powerBeamObjectsSettings.transform, new Vector3(0, 40), new Vector3Int(700, 40, 0), "PowerBeamOptions", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
             label.name = "TitleLabel";
         }
         void CreatePowerBeamStateDropdown()
         {
             powerBeamStateButton = NGUI_Utils.CreateDropdown(powerBeamObjectsSettings.transform, new Vector3(0, -50), Vector3.one * 0.8f);
-            powerBeamStateButton.SetTitle("Power Beam State");
-            powerBeamStateButton.AddOption("Do Nothing", false);
+            powerBeamStateButton.SetTitle("PowerBeamState");
+            powerBeamStateButton.AddOption("DoNothing", false);
             powerBeamStateButton.AddOption("Activate", false);
             powerBeamStateButton.AddOption("Deactivate", false);
-            powerBeamStateButton.AddOption("Toggle State", true);
+            powerBeamStateButton.AddOption("ToggleState", true);
             powerBeamStateButton.AddOnChangeOption(new EventDelegate(this, nameof(OnPowerBeamStateDropdownChanged)));
 
             powerBeamStateButton.gameObject.SetActive(true);
+        }
+        void CreatePowerBeamThicknessSettings()
+        {
+            powerBeamChangeThicknessToggle = NGUI_Utils.CreateToggle(powerBeamObjectsSettings.transform, new Vector3(-330f, -130f, 0f),
+                new Vector3Int(300, 48, 1), "ChangeThickness");
+            powerBeamChangeThicknessToggle.gameObject.name = "PowerBeamChangeThicknessToggle";
+            powerBeamChangeThicknessToggle.onClick += (state) => OnPowerBeamChangeThicknessToggleChanged();
+
+            powerBeamThicknessInputField = NGUI_Utils.CreateInputField(powerBeamObjectsSettings.transform, new Vector3(150f, -130f, 0f),
+                new Vector3Int(250, 40, 1), 27, "0.2", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
+            powerBeamThicknessInputField.name = "PowerBeamThicknessInputField";
+            powerBeamThicknessInputField.onChange += OnPowerBeamThicknessInputFieldChanged;
+            powerBeamThicknessInputField.gameObject.SetActive(false);
         }
         #endregion
         #region Door Options
@@ -2634,6 +2722,105 @@ namespace FS_LevelEditor.Editor.UI
             newMusicTrackDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnNewMusicTrackDropdownChanged)));
 
             newMusicTrackDropdown.gameObject.SetActive(false); // Only active if playing a track
+        }
+        #endregion
+
+        #region Rain Options
+        void CreateRainSettings()
+        {
+            rainSettings = new GameObject("Rain");
+            rainSettings.transform.parent = eventOptionsParent.transform;
+            rainSettings.transform.localPosition = Vector3.zero;
+            rainSettings.transform.localScale = Vector3.one;
+            rainSettings.SetActive(false);
+
+            UILabel label = NGUI_Utils.CreateLabel(rainSettings.transform, new Vector3(0, 120), new Vector3Int(700, 40, 0), "RAIN OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
+
+            rainStateDropdown = NGUI_Utils.CreateDropdown(rainSettings.transform, new Vector3(0, 20), Vector3.one * 0.8f);
+            rainStateDropdown.SetTitle("Rain");
+            rainStateDropdown.AddOption("Do Nothing", true);
+            rainStateDropdown.AddOption("Enable", false);
+            rainStateDropdown.AddOption("Disable", false);
+            rainStateDropdown.AddOption("Toggle", false);
+            rainStateDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnRainStateDropdownChanged)));
+            rainStateDropdown.gameObject.SetActive(true);
+        }
+        #endregion
+
+        #region Snow Options
+        void CreateSnowSettings()
+        {
+            snowSettings = new GameObject("Snow");
+            snowSettings.transform.parent = eventOptionsParent.transform;
+            snowSettings.transform.localPosition = Vector3.zero;
+            snowSettings.transform.localScale = Vector3.one;
+            snowSettings.SetActive(false);
+
+            UILabel label = NGUI_Utils.CreateLabel(snowSettings.transform, new Vector3(0, 120), new Vector3Int(700, 40, 0), "SNOW OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            label.name = "TitleLabel";
+
+            snowStateDropdown = NGUI_Utils.CreateDropdown(snowSettings.transform, new Vector3(0, 20), Vector3.one * 0.8f);
+            snowStateDropdown.SetTitle("Snow");
+            snowStateDropdown.AddOption("Do Nothing", true);
+            snowStateDropdown.AddOption("Enable", false);
+            snowStateDropdown.AddOption("Disable", false);
+            snowStateDropdown.AddOption("Toggle", false);
+            snowStateDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnSnowStateDropdownChanged)));
+            snowStateDropdown.gameObject.SetActive(true);
+        }
+        #endregion
+
+        #region Fog Options
+        void CreateFogSettings()
+        {
+            fogSettings = new GameObject("Fog");
+            fogSettings.transform.parent = eventOptionsParent.transform;
+            fogSettings.transform.localPosition = Vector3.zero;
+            fogSettings.transform.localScale = Vector3.one;
+            fogSettings.SetActive(false);
+
+            UILabel title = NGUI_Utils.CreateLabel(fogSettings.transform, new Vector3(0, 120), new Vector3Int(700, 40, 0), "FOG OPTIONS", NGUIText.Alignment.Center, UIWidget.Pivot.Center, 35, false);
+            title.name = "TitleLabel";
+
+            fogStateDropdown = NGUI_Utils.CreateDropdown(fogSettings.transform, new Vector3(-200, 20), Vector3.one * 0.8f);
+            fogStateDropdown.SetTitle("Fog");
+            fogStateDropdown.AddOption("Do Nothing", true);
+            fogStateDropdown.AddOption("Enable", false);
+            fogStateDropdown.AddOption("Disable", false);
+            fogStateDropdown.AddOption("Toggle", false);
+            fogStateDropdown.AddOnChangeOption(new EventDelegate(this, nameof(OnFogStateDropdownChanged)));
+            fogStateDropdown.gameObject.SetActive(true);
+
+            fogChangeSettingsToggle = NGUI_Utils.CreateToggle(fogSettings.transform, new Vector3(54f, 50f, 0f), new Vector3Int(250, 48, 1), "Change Settings");
+            fogChangeSettingsToggle.gameObject.name = "FogChangeSettingsToggle";
+            fogChangeSettingsToggle.onClick += (state) => OnFogChangeSettingsToggleChanged();
+
+            // The values, only shown when "Change Settings" is checked. One row: a small label above each field.
+            fogValuesParent = new GameObject("FogValues");
+            fogValuesParent.transform.parent = fogSettings.transform;
+            fogValuesParent.transform.localPosition = Vector3.zero;
+            fogValuesParent.transform.localScale = Vector3.one;
+            fogValuesParent.SetActive(false);
+
+            fogColorInputField = CreateFogValueField("FogColor", -285f, "#808080", UICustomInputField.UIInputType.HEX_COLOR, 0);
+            fogColorInputField.onChange += OnFogColorInputFieldChanged;
+            fogDensityInputField = CreateFogValueField("FogDensity", -95f, "0.01", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, 3);
+            fogDensityInputField.onChange += () => OnFogFloatInputFieldChanged(fogDensityInputField, v => currentSelectedEvent.fogDensity = v);
+            fogStartInputField = CreateFogValueField("FogStartDistance", 95f, "0", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, 0);
+            fogStartInputField.onChange += () => OnFogFloatInputFieldChanged(fogStartInputField, v => currentSelectedEvent.fogStartDistance = v);
+            fogEndInputField = CreateFogValueField("FogEndDistance", 285f, "300", UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT, 0);
+            fogEndInputField.onChange += () => OnFogFloatInputFieldChanged(fogEndInputField, v => currentSelectedEvent.fogEndDistance = v);
+        }
+        UICustomInputField CreateFogValueField(string locKey, float x, string defaultText, UICustomInputField.UIInputType inputType, int maxDecimals)
+        {
+            UILabel label = NGUI_Utils.CreateLabel(fogValuesParent.transform, new Vector3(x, -45f), new Vector3Int(180, 30, 0), locKey, NGUIText.Alignment.Center, UIWidget.Pivot.Center, 20, false);
+            label.name = locKey + "Label";
+
+            UICustomInputField field = NGUI_Utils.CreateInputField(fogValuesParent.transform, new Vector3(x, -85f, 0f), new Vector3Int(170, 40, 1), 24, defaultText,
+                inputType: inputType, maxDecimals: maxDecimals);
+            field.name = locKey + "InputField";
+            return field;
         }
         #endregion
 
@@ -3019,6 +3206,18 @@ namespace FS_LevelEditor.Editor.UI
         #endregion
 
         #region Power Beam Options
+        void OnPowerBeamChangeThicknessToggleChanged()
+        {
+            currentSelectedEvent.powerBeamChangeThickness = powerBeamChangeThicknessToggle.isChecked;
+            powerBeamThicknessInputField.gameObject.SetActive(powerBeamChangeThicknessToggle.isChecked);
+        }
+        void OnPowerBeamThicknessInputFieldChanged()
+        {
+            if (powerBeamThicknessInputField.isValid)
+            {
+                currentSelectedEvent.powerBeamThickness = Utils.ParseFloat(powerBeamThicknessInputField.GetText());
+            }
+        }
         void OnPowerBeamStateDropdownChanged()
         {
             currentSelectedEvent.powerBeamState = (LE_Event.PowerBeamState)powerBeamStateButton.currentlySelectedID;
@@ -3072,6 +3271,41 @@ namespace FS_LevelEditor.Editor.UI
         {
             // Save the selected dropdown ID to the event
             currentSelectedEvent.newMusicTrackID = newMusicTrackDropdown.currentlySelectedID;
+        }
+        #endregion
+
+        #region Snow Options
+        void OnSnowStateDropdownChanged()
+        {
+            currentSelectedEvent.snowState = (LE_Event.SnowState)snowStateDropdown.currentlySelectedID;
+        }
+        #endregion
+
+        #region Fog Options
+        void OnFogStateDropdownChanged()
+        {
+            currentSelectedEvent.fogState = (LE_Event.FogState)fogStateDropdown.currentlySelectedID;
+        }
+        void OnFogChangeSettingsToggleChanged()
+        {
+            currentSelectedEvent.fogChangeSettings = fogChangeSettingsToggle.isChecked;
+            fogValuesParent.SetActive(fogChangeSettingsToggle.isChecked);
+        }
+        void OnFogColorInputFieldChanged()
+        {
+            Color? color = Utils.HexToColor(fogColorInputField.GetText(), false, null);
+            if (color.HasValue) currentSelectedEvent.fogColor = Utils.ColorToHex(color.Value);
+        }
+        void OnFogFloatInputFieldChanged(UICustomInputField field, System.Action<float> apply)
+        {
+            if (Utils.TryParseFloat(field.GetText(), out float value)) apply(value);
+        }
+        #endregion
+
+        #region Rain Options
+        void OnRainStateDropdownChanged()
+        {
+            currentSelectedEvent.rainState = (LE_Event.RainState)rainStateDropdown.currentlySelectedID;
         }
         #endregion
 
@@ -3298,6 +3532,8 @@ public class LE_Event
     #region Power Beam Options
     public enum PowerBeamState { Do_Nothing, Activate, Deactivate, Toggle_State }
     public PowerBeamState powerBeamState { get; set; } = PowerBeamState.Do_Nothing;
+    public bool powerBeamChangeThickness { get; set; } = false;
+    public float powerBeamThickness { get; set; } = 0.2f;
     #endregion
 
     #region Light Options
@@ -3413,6 +3649,30 @@ public class LE_Event
     public int newMusicTrackID { get; set; } = 4;
     #endregion
 
+    #region Fog
+    public bool isForFog { get; set; } = false;
+    public enum FogState { Do_Nothing, Enable, Disable, Toggle }
+    public FogState fogState { get; set; } = FogState.Do_Nothing;
+    // When enabled, the event also changes the fog values below.
+    public bool fogChangeSettings { get; set; } = false;
+    public string fogColor { get; set; } = "#808080";
+    public float fogDensity { get; set; } = 0.01f;
+    public float fogStartDistance { get; set; } = 0f;
+    public float fogEndDistance { get; set; } = 300f;
+    #endregion
+
+    #region Snow
+    public bool isForSnow { get; set; } = false;
+    public enum SnowState { Do_Nothing, Enable, Disable, Toggle }
+    public SnowState snowState { get; set; } = SnowState.Do_Nothing;
+    #endregion
+
+    #region Rain
+    public bool isForRain { get; set; } = false;
+    public enum RainState { Do_Nothing, Enable, Disable, Toggle }
+    public RainState rainState { get; set; } = RainState.Do_Nothing;
+    #endregion
+
     #region DeathY
     public bool isForDeathY { get; set; } = false;
     public enum DeathYAction { Do_Nothing, Change}
@@ -3459,6 +3719,9 @@ public class LE_Event
         isForUpgrades = false;
         isForMusic = false;
         isForDeathY = false;
+        isForRain = false;
+        isForFog = false;
+        isForSnow = false;
         isForWait = false;
         targetObjType = null;
         targetObjID = 0;
@@ -3490,6 +3753,21 @@ public class LE_Event
              string.Equals(inputText, Loc.Get("DeathY"), StringComparison.OrdinalIgnoreCase))
         {
             isForDeathY = true;
+        }
+        else if (string.Equals(inputText, "Snow", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(inputText, Loc.Get("Snow"), StringComparison.OrdinalIgnoreCase))
+        {
+            isForSnow = true;
+        }
+        else if (string.Equals(inputText, "Fog", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(inputText, Loc.Get("Fog"), StringComparison.OrdinalIgnoreCase))
+        {
+            isForFog = true;
+        }
+        else if (string.Equals(inputText, "Rain", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(inputText, Loc.Get("Rain"), StringComparison.OrdinalIgnoreCase))
+        {
+            isForRain = true;
         }
         else if (inputText.StartsWith("Obj_", StringComparison.OrdinalIgnoreCase))
         {
@@ -3562,10 +3840,10 @@ public class LE_Event
 
     public bool IsNormalEventThatRequriesTargetObject()
     {
-        return !isForPlayer && !isForUpgrades && !isForTaser && !isForJetpack && !isForObjective && !isForWait && !isForGroup && !isForMusic && !isForDeathY;
+        return !isForPlayer && !isForUpgrades && !isForTaser && !isForJetpack && !isForObjective && !isForWait && !isForGroup && !isForMusic && !isForDeathY && !isForRain && !isForFog && !isForSnow;
     }
     public bool IsAtLeastOneTypeOfEvent()
     {
-        return isForPlayer || isForUpgrades || isForTaser || isForJetpack || isForObjective || isForWait || isForGroup || isForMusic || isForDeathY;
+        return isForPlayer || isForUpgrades || isForTaser || isForJetpack || isForObjective || isForWait || isForGroup || isForMusic || isForDeathY || isForRain || isForFog || isForSnow;
     }
 }

@@ -308,7 +308,10 @@ namespace FS_LevelEditor
 
             yield return new WaitForSeconds(targetObject.startDelay);
 
-            currentMovingSpeed = targetObject.movingSpeed;
+            // A waypoint's MoveSpeed applies to the movement that starts from it. When resuming after a stop, keep the speed of the waypoint we're resuming from instead of resetting to the object's speed.
+            currentMovingSpeed = currentWaypointID > 0 && currentWaypointID <= spawnedWaypoints.Count
+                ? spawnedWaypoints[currentWaypointID - 1].GetProperty<float>("MoveSpeed")
+                : targetObject.movingSpeed;
 
             for (/*Do not reset currentWaypointID to 0*/; currentWaypointID < spawnedWaypoints.Count; currentWaypointID++)
             {
@@ -326,9 +329,9 @@ namespace FS_LevelEditor
                 float totalRotDuration = totalRotDiff.magnitude > 0.001f ? totalRotDiff.magnitude / currentMovingSpeed : 0f;
                 float totalScaleDuration = totalScaleDiff.magnitude > 0.001f ? totalScaleDiff.magnitude / currentMovingSpeed : 0f;
 
-                // Use distance diff by default, if 0, then use the max value of either rotation or scale duration.
-                float totalDuration = totalPosDuration;
-                if (totalDuration == 0)
+                // Use distance diff by default (but never shorter than the scale change needs), if 0, then use the max value of either rotation or scale duration.
+                float totalDuration = Mathf.Max(totalPosDuration, totalScaleDuration);
+                if (totalPosDuration == 0)
                 {
                     totalDuration = Mathf.Max(totalPosDuration, totalRotDuration, totalScaleDuration);
                 }
@@ -343,7 +346,7 @@ namespace FS_LevelEditor
                 {
                     Vector3 oldPos = transform.position;
                     float posSpeed = totalPosDuration > 0.001f ? totalPosDistance.magnitude / totalDuration : 0f;
-                    Vector3 newPos = Vector3.MoveTowards(transform.position, cachedWaypointPositions[currentWaypointID], Time.deltaTime * currentMovingSpeed);
+                    Vector3 newPos = Vector3.MoveTowards(transform.position, cachedWaypointPositions[currentWaypointID], Time.deltaTime * (posSpeed > 0f ? posSpeed : currentMovingSpeed));
                     Vector3 difference = newPos - oldPos;
                     currentVelocity = difference;
 
@@ -378,9 +381,12 @@ namespace FS_LevelEditor
 
                 yield return new WaitForSeconds(currentWaypoint.GetProperty<float>("WaitTime"));
 
-                if (currentWaypoint.GetProperty<bool>("StopHere"))
+                if (targetObject.stopAtEveryWaypoint || currentWaypoint.GetProperty<bool>("StopHere"))
                 {
                     currentWaypointID++;
+                    // With Loop/TravelBack, wrap around so the next activation continues from the first waypoint.
+                    if (currentWaypointID >= spawnedWaypoints.Count && (targetObject.waypointMode == WaypointMode.LOOP || targetObject.waypointMode == WaypointMode.TRAVEL_BACK))
+                        currentWaypointID = 0;
                     StopObjectMovement();
 
                     // We're about to stop the routine execution, make sure to execute the events NOW because the other statement below won't be hit.

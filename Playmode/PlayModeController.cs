@@ -151,6 +151,7 @@ namespace FS_LevelEditor.Playmode
 
             Utils.Invoke(() => ParticlesPatch.GetObjectsWithParticlesReferences(), 0.1f);                       // Delay the invoke, so objects are initialized correctly first.
             Utils.Invoke(() => LE_Dummy_Checkpoint.UpdateSavedObjetsHolderCheckpointsWithLevelOnes(), 0.1f);    // Delay the invoke, so objects are initialized correctly first.
+            Utils.Invoke(() => StaticMeshCombiner.Combine(this), 0.3f);                                         // Experimental, only does something if the level has "CombineStaticMeshes" enabled.
             SetSpeedrunTimerFont();
             Controls.Instance.SetNewGravityState(Controls.GravityState.DEFAULT, true);
             LE_Dummy_Checkpoint.gravityState = Controls.GravityState.DEFAULT;
@@ -268,6 +269,19 @@ namespace FS_LevelEditor.Playmode
             Controls.Instance.hasJetPack = hasJetpackGlobal;
 
             SetupLevelSkybox((int)GetGlobalProperty("Skybox"));
+            // Only add the fog effect when the level asks for it.
+            if (LevelFog.IsEnabled(globalProperties))
+            {
+                LevelFog.Apply(globalProperties);
+            }
+            if (LevelRain.IsEnabled(globalProperties))
+            {
+                LevelRain.Start();
+            }
+            if (LevelSnow.IsEnabled(globalProperties))
+            {
+                LevelSnow.Start();
+            }
             SetupLevelMusic((int)GetGlobalProperty("Music"));
 
             PlaymodeUpgrades.ApplyUpgrades((List<UpgradeSaveData>)GetGlobalProperty("Upgrades"));
@@ -390,6 +404,9 @@ namespace FS_LevelEditor.Playmode
             PlaymodePauseMenuPatcher.DestroyPatcher();
             UpgradePatches.Unpatch();
             CleanupAllObjectives();
+            LevelFog.Clear();
+            LevelRain.Stop();
+            LevelSnow.Stop();
 
             //water patches
             Controls.Instance.SetUnderwaterEffects(false);

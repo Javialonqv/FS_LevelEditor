@@ -61,6 +61,8 @@ object.SEQUENCE_WAYPOINT,Sequencer Step,Etapa del Secuenciador,
 object.SEQUENCE_SCREEN,Sequence Screen,Pantalla del Secuenciador,
 object.POWER_CORE,Power Core,Núcleo de Energía,
 object.POWER_SLOT,Power Slot,Entrada de Energía,
+object.POWER_BEAM,Power Beam,Rayo de Energía,Промінь енергії
+object.POWER_RECIEVER,Power Receiver,,
 object.UPGRADE_TERMINAL,Upgrade Terminal,Terminal de Mejora,
 object.XMAS_TREE,XMAS Tree,Árbol de Navidad,
 object.DUMMY_CHECKPOINT,Dummy Checkpoint,Punto de Control Parcial,
@@ -106,6 +108,8 @@ ColorHex,Color (Hex),Color (Hex),Колір (Hex)
 Intensity,Intensity,Intensidad,Інтенсивність
 Range,Range,Rango,Діапазон
 ActivateOnStart,Start Enabled,Activar Al Inicio,Активувати на старті
+RevertOnOff,Revert On Off,,
+BeamThickness,Beam Thickness,Grosor del Rayo,Товщина променя
 Damage,Damage,Daño,Шкода
 TravelBack,Travel Back,Regresarse,Повернутись назад
 AddGlobalWaypoint,+ Add Global Waypoint,+ Añadir Waypoint Global,+ Додати глобальну точку переміщення
@@ -246,3 +250,25 @@ WithOffset,With Offset,Compensar Diferencia,
 Notification_FlashlightNotOperational,Flashlight is not available!,,
 Notification_FlashlightOperational,Flashlight is now available!,,
 Notification_TASER_WATER_UNUSABLE,Cannot use Taser underwater!,,
+Fog,Fog,,
+FogColor,Fog Color,,
+FogDensity,Fog Density,,
+FogStartDistance,Fog Start Distance,,
+FogEndDistance,Fog End Distance,,
+FogSettings,Fog Settings,,
+Rain,Rain,,
+Snow,Snow,,
+LookMode,Look Mode,Modo de Mirada,
+AddTriggerLookArea,+ Add Look Area,+ Añadir Área de Mirada,
+LookDelay,Look Delay,Retraso de Mirada,
+events.onTurnOn,When Turned On,Cuando Se Enciende,Коли увімкнено
+events.onTurnOff,When Turned Off,Cuando Se Apaga,Коли вимкнено
+PowerBeamOptions,POWER BEAM OPTIONS,OPCIONES DEL RAYO DE ENERGÍA,ПАРАМЕТРИ ПРОМЕНЯ ЕНЕРГІЇ
+PowerBeamState,Power Beam State,Estado del Rayo de Energía,Стан променя енергії
+Activate,Activate,Activar,Активувати
+Deactivate,Deactivate,Desactivar,Деактивувати
+ToggleState,Toggle State,Alternar Estado,Перемкнути стан
+ChangeThickness,Change Thickness,Cambiar Grosor,Змінити товщину
+CombineStaticMeshes,Combine Static Meshes (Experimental),Combinar Mallas Estáticas (Experimental),Об'єднувати статичні меші (експериментально)
+object.TRIGGER_LOOK_AREA_WAYPOINT,Look Area,Área de Mirada,Область погляду
+object.POCKET_MIRROR,Pocket Mirror,Espejo de Bolsillo,Кишенькове дзеркало

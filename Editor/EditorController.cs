@@ -801,6 +801,11 @@ namespace FS_LevelEditor.Editor
                     UpgradesPanel.Instance.HideUpgradesPanel();
                     return;
                 }
+                else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.FOG_PANEL))
+                {
+                    FogPanel.Instance.Hide();
+                    return;
+                }
                 else if (EditorUIManager.IsCurrentUIContext(EditorUIContext.SAVE_METADATA_PANEL))
                 {
                     SaveMetadataPopup.Instance.OnCancelButtonClicked();
@@ -1064,18 +1069,20 @@ namespace FS_LevelEditor.Editor
             #endregion
 
             #region Grid Shortcuts
-            // Toggle grid visibility.
+            // Toggle ONLY the grid visuals, the snapping stays as it is.
             if (EditorKeybinds.ToggleGridVisibility)
             {
                 SetGridVisible(!gridVisible);
+                ShowGridNotification(gridVisible ? "Grid visible" : "Grid hidden");
             }
 
-            // Toggle grid enabled AND visibility
+            // Toggle the grid snapping (and show/hide the grid with it).
             if (EditorKeybinds.ToggleGridState)
             {
-                bool newState = !gridEnabled;
-                SetGridEnabled(newState);
-                SetGridVisible(newState);
+                SetGridEnabled(!gridEnabled);
+                SetGridVisible(gridEnabled);
+                ShowGridNotification(gridEnabled ? "Grid enabled" : "Grid disabled");
+                EditorUIManager.Instance.UpdateStatsLabel();
             }
 
             // Adjust grid size/height.
@@ -1161,14 +1168,19 @@ namespace FS_LevelEditor.Editor
 
             if (gridEnabled)
             {
+                newPosition = oldPosition;
+
                 if (movingY)
                 {
-                    newPosition.y = Mathf.Round(newPosition.y / gridSize) * gridSize;
+                    newPosition.y = NextGridLine(oldPosition.y, toMove.y > 0f ? 1 : -1);
+                }
+                else if (Mathf.Abs(toMove.x) >= Mathf.Abs(toMove.z))
+                {
+                    newPosition.x = NextGridLine(oldPosition.x, toMove.x > 0f ? 1 : -1);
                 }
                 else
                 {
-                    newPosition.x = Mathf.Round(newPosition.x / gridSize) * gridSize;
-                    newPosition.z = Mathf.Round(newPosition.z / gridSize) * gridSize;
+                    newPosition.z = NextGridLine(oldPosition.z, toMove.z > 0f ? 1 : -1);
                 }
             }
 
@@ -1830,23 +1842,36 @@ namespace FS_LevelEditor.Editor
         public void SetGridEnabled(bool enabled)
         {
             gridEnabled = enabled;
-            // Hide grid if disabled
-            if (!gridEnabled)
-                SetGridVisible(false);
         }
         public void SetGridVisible(bool visible)
         {
-            // Allow toggling visibility even if grid is disabled
             gridVisible = visible;
-            // Re-enable grid if becoming visible
-            if (visible && !gridEnabled)
-            {
-                gridEnabled = true;
-            }
         }
         public float GetGridSize()
         {
             return gridSize;
+        }
+        public bool GetGridEnabled()
+        {
+            return gridEnabled;
+        }
+        // The next grid line strictly after (direction 1) or before (direction -1) the value, so an object that is off the grid goes to the
+        // closest line in that direction instead of jumping a whole cell and then being rounded.
+        float NextGridLine(float value, int direction)
+        {
+            const float epsilon = 1e-4f;
+            float cells = value / gridSize;
+
+            cells = direction > 0 ? Mathf.Floor(cells + epsilon) + 1f : Mathf.Ceil(cells - epsilon) - 1f;
+
+            return cells * gridSize;
+        }
+        void ShowGridNotification(string message)
+        {
+            if (NotificationSystem.Instance != null)
+            {
+                NotificationSystem.Instance.ShowNotification(message, "WhiteSquare");
+            }
         }
         #endregion
 
@@ -2836,6 +2861,7 @@ namespace FS_LevelEditor.Editor
                     newPlacedObjComp.collision = objComp.collision;
                     newPlacedObjComp.invisibleMesh = objComp.invisibleMesh;
                     newPlacedObjComp.startMovingAtStart = objComp.startMovingAtStart;
+                    newPlacedObjComp.stopAtEveryWaypoint = objComp.stopAtEveryWaypoint;
                     newPlacedObjComp.movingSpeed = objComp.movingSpeed;
                     newPlacedObjComp.startDelay = objComp.startDelay;
                     newPlacedObjComp.waitTime = objComp.waitTime;
@@ -2887,6 +2913,7 @@ namespace FS_LevelEditor.Editor
                 newPlacedObjComp.collision = objComponent.collision;
                 newPlacedObjComp.invisibleMesh = objComponent.invisibleMesh;
                 newPlacedObjComp.startMovingAtStart = objComponent.startMovingAtStart;
+                newPlacedObjComp.stopAtEveryWaypoint = objComponent.stopAtEveryWaypoint;
                 newPlacedObjComp.movingSpeed = objComponent.movingSpeed;
                 newPlacedObjComp.startDelay = objComponent.startDelay;
                 newPlacedObjComp.waitTime = objComponent.waitTime;
@@ -2998,7 +3025,11 @@ namespace FS_LevelEditor.Editor
                     float enter = 0f;
                     if (gridPlane.Raycast(ray, out enter))
                     {
-                        currentSelectedObj.transform.position = ray.GetPoint(enter);
+                        Vector3 gridPoint = ray.GetPoint(enter);
+                        gridPoint.x = Mathf.Round(gridPoint.x / gridSize) * gridSize;
+                        gridPoint.y = gridHeight;
+                        gridPoint.z = Mathf.Round(gridPoint.z / gridSize) * gridSize;
+                        currentSelectedObj.transform.position = gridPoint;
                     }
                 }
             }

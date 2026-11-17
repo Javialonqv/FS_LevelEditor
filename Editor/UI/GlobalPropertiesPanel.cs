@@ -20,6 +20,9 @@ namespace FS_LevelEditor.Editor.UI
         UIButtonAsToggle visualizeDeathYLimitButton;
         UIDropdownPatcher skyboxDropdown;
         UIDropdownPatcher musicDropdown;
+        UITogglePatcher rainToggle;
+        UITogglePatcher snowToggle;
+        UITogglePatcher combineStaticMeshesToggle;
 
         public static void Create(Transform parent)
         {
@@ -48,6 +51,10 @@ namespace FS_LevelEditor.Editor.UI
             CreateLevelSkyboxDropdown();
             CreateLevelMusicDropdown();
             CreateUpgradesButton();
+            CreateFogButton();
+            CreateRainToggle();
+            CreateSnowToggle();
+            CreateCombineStaticMeshesToggle();
         }
         void Start()
         {
@@ -103,54 +110,54 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateHasTaserToggle()
         {
-            hasTaserToggle = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 350f), new Vector3Int(200, 42, 1), "HasTaser");
+            hasTaserToggle = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 400f), new Vector3Int(200, 42, 1), "HasTaser");
             hasTaserToggle.gameObject.name = "HasTaserToggle";
             hasTaserToggle.onClick += (state) => SetGlobalProperty("HasTaser", hasTaserToggle.isChecked);
         }
         void CreateHasJetpackToggle()
         {
-            hasJetpackToggle = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 350f), new Vector3Int(200, 42, 1), "HasJetpack");
+            hasJetpackToggle = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 400f), new Vector3Int(200, 42, 1), "HasJetpack");
             hasJetpackToggle.gameObject.name = "HasJetpackToggle";
             hasJetpackToggle.onClick += (state) => SetGlobalProperty("HasJetpack", hasJetpackToggle.isChecked);
         }
         void CreateHasFlashlightToggle()
         {
-            hasFlashlight = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 270f), new Vector3Int(200, 42, 1), "HasFlashlight");
+            hasFlashlight = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 330f), new Vector3Int(200, 42, 1), "HasFlashlight");
             hasFlashlight.gameObject.name = "hasFlashlightToggle";
             hasFlashlight.onClick += (state) => SetGlobalProperty("HasFlashlight", hasFlashlight.isChecked);
         }
         void CreateAllowDebugToggle()
         {
-            debugAllowed = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 270f), new Vector3Int(200, 42, 1), "DebugAllowed");
+            debugAllowed = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 330f), new Vector3Int(200, 42, 1), "DebugAllowed");
             debugAllowed.gameObject.name = "debugAllowedToggle";
             debugAllowed.onClick += (state) => SetGlobalProperty("DebugAllowed", debugAllowed.isChecked);
         }
         void CreateFlashLightNotifyToggle()
         {
-            flashlightNotifies = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 210f), new Vector3Int(200, 42, 1), "FlashlightNotify");
+            flashlightNotifies = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, 260f), new Vector3Int(200, 42, 1), "FlashlightNotify");
             flashlightNotifies.gameObject.name = "flashlightNotifies";
             flashlightNotifies.onClick += (state) => SetGlobalProperty("flashlightNotifies", flashlightNotifies.isChecked);
         }
         void CreateCubeRespawnNotifyToggle()
         {
-            cubeRespawnNotifies = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 210f), new Vector3Int(200, 42, 1), "CubeRespNotify");
+            cubeRespawnNotifies = NGUI_Utils.CreateToggle(transform, new Vector3(40f, 260f), new Vector3Int(200, 42, 1), "CubeRespNotify");
             cubeRespawnNotifies.gameObject.name = "cubeRespawnNotifies";
             cubeRespawnNotifies.onClick += (state) => SetGlobalProperty("cubeRespawnNotifies", cubeRespawnNotifies.isChecked);
         }
         void CreateDeathYLimitField()
         {
-            UILabel deathYLimitLabel = NGUI_Utils.CreateLabel(transform, new Vector3(-300, 160), new Vector3Int(350, 50, 0), "DeathYLimit");
+            UILabel deathYLimitLabel = NGUI_Utils.CreateLabel(transform, new Vector3(-300, 190), new Vector3Int(350, 50, 0), "DeathYLimit");
             deathYLimitLabel.name = "DeathYLimitLabel";
             deathYLimitLabel.depth = 1;
             deathYLimitLabel.fontSize = 30;
 
-            deathYLimitField = NGUI_Utils.CreateInputField(transform, new Vector3(150f, 160f, 0f),
+            deathYLimitField = NGUI_Utils.CreateInputField(transform, new Vector3(150f, 190f, 0f),
                 new Vector3Int(200, 50, 0), 30, "100", inputType: UICustomInputField.UIInputType.NON_NEGATIVE_FLOAT);
             deathYLimitField.name = "DeathYLimit";
             deathYLimitField.onChange += () => SetGlobalPropertyWithInput("DeathYLimit", deathYLimitField);
 
             visualizeDeathYLimitButton = NGUI_Utils.CreateButtonAsToggleWithSprite(transform,
-                new Vector3(285f, 160f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);
+                new Vector3(285f, 190f, 0f), new Vector3Int(48, 48, 1), 1, "WhiteSquare", Vector2Int.one * 20);
             visualizeDeathYLimitButton.name = "VisualizeDeathYLimitBtnToggle";
             visualizeDeathYLimitButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             visualizeDeathYLimitButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 1.02f;
@@ -158,7 +165,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateLevelSkyboxDropdown()
         {
-            skyboxDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 60f), Vector3.one * 0.8f);
+            skyboxDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, 85f), Vector3.one * 0.8f);
             skyboxDropdown.gameObject.name = "SkyboxDropdown";
             skyboxDropdown.SetTitle("Skybox");
             skyboxDropdown.AddOption("Chapter 1", false);
@@ -178,7 +185,7 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateLevelMusicDropdown()
         {
-            musicDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, -40f), Vector3.one * 0.8f);
+            musicDropdown = NGUI_Utils.CreateDropdown(transform, new Vector3(0f, -20f), Vector3.one * 0.8f);
             musicDropdown.gameObject.name = "MusicDropdown";
             musicDropdown.SetTitle("Music");
             musicDropdown.AddOption("Chapter 1 PE", false);
@@ -196,13 +203,42 @@ namespace FS_LevelEditor.Editor.UI
         }
         void CreateUpgradesButton()
         {
-            UIButtonPatcher upgradesButton = NGUI_Utils.CreateButton(transform, new Vector3(0f, -110f), new Vector3Int(300, 50, 0), "Player Upgrades");
+            UIButtonPatcher upgradesButton = NGUI_Utils.CreateButton(transform, new Vector3(0f, -93f), new Vector3Int(300, 50, 0), "Player Upgrades");
             upgradesButton.name = "UpgradesButton";
             upgradesButton.buttonSprite.depth = 1;
             upgradesButton.buttonLabel.fontSize = 28;
             upgradesButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
             upgradesButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
             upgradesButton.onClick += () => UpgradesPanel.Instance.ShowUpgradesPanel((List<UpgradeSaveData>)EditorController.Instance.globalProperties["Upgrades"], "Global");
+        }
+
+        void CreateRainToggle()
+        {
+            rainToggle = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, -233f), new Vector3Int(200, 42, 1), "Rain");
+            rainToggle.gameObject.name = "RainToggle";
+            rainToggle.onClick += (state) => SetGlobalProperty("GlobalRain", rainToggle.isChecked);
+        }
+        void CreateSnowToggle()
+        {
+            snowToggle = NGUI_Utils.CreateToggle(transform, new Vector3(40f, -233f), new Vector3Int(200, 42, 1), "Snow");
+            snowToggle.gameObject.name = "SnowToggle";
+            snowToggle.onClick += (state) => SetGlobalProperty("GlobalSnow", snowToggle.isChecked);
+        }
+        void CreateCombineStaticMeshesToggle()
+        {
+            combineStaticMeshesToggle = NGUI_Utils.CreateToggle(transform, new Vector3(-300f, -303f), new Vector3Int(560, 42, 1), "CombineStaticMeshes");
+            combineStaticMeshesToggle.gameObject.name = "CombineStaticMeshesToggle";
+            combineStaticMeshesToggle.onClick += (state) => SetGlobalProperty("CombineStaticMeshes", combineStaticMeshesToggle.isChecked);
+        }
+        void CreateFogButton()
+        {
+            UIButtonPatcher fogButton = NGUI_Utils.CreateButton(transform, new Vector3(0f, -163f), new Vector3Int(300, 50, 0), "FogSettings");
+            fogButton.name = "FogSettingsButton";
+            fogButton.buttonSprite.depth = 1;
+            fogButton.buttonLabel.fontSize = 28;
+            fogButton.GetComponent<UIButtonScale>().hover = Vector3.one * 1.05f;
+            fogButton.GetComponent<UIButtonScale>().pressed = Vector3.one * 0.95f;
+            fogButton.onClick += () => FogPanel.Instance.Show();
         }
 
         public void ShowOrHideGlobalPropertiesPanel()
@@ -227,6 +263,9 @@ namespace FS_LevelEditor.Editor.UI
             flashlightNotifies.Set((bool)GetGlobalProperty("flashlightNotifies"), false, true);
             cubeRespawnNotifies.Set((bool)GetGlobalProperty("cubeRespawnNotifies"), false, true);
             deathYLimitField.SetText((float)GetGlobalProperty("DeathYLimit"), false);
+            rainToggle.Set((bool)GetGlobalProperty("GlobalRain"), false, true);
+            snowToggle.Set((bool)GetGlobalProperty("GlobalSnow"), false, true);
+            combineStaticMeshesToggle.Set((bool)GetGlobalProperty("CombineStaticMeshes"), false, true);
             skyboxDropdown.SelectOption((int)GetGlobalProperty("Skybox"));
             musicDropdown.SelectOption((int)GetGlobalProperty("Music"));
         }

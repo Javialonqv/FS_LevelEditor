@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Playmode;
+using FS_LevelEditor.WaypointSupports;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Events;
@@ -9,7 +10,14 @@ namespace FS_LevelEditor
     {
         ONCE = 0,        // Default, can only be triggered once by player
         MULTIPLE = 1,    // Can be triggered multiple times by player
-        CUBE_ONLY = 2     // Only triggered by cube
+        CUBE_ONLY = 2,    // Only triggered by cube
+        LOOK = 3
+    }
+
+    public enum LookMode
+    {
+        ONCE = 0,
+        MULTIPLE = 1
     }
 
 
@@ -22,6 +30,10 @@ namespace FS_LevelEditor
         TriggerScript triggerScript;
         BoxCollider trigger;
         public bool skipTriggerWithPlayerThisFrame = false;
+        bool wasLookingAtArea = false;
+        float lookHeldTime = 0f;
+        bool lookEnterUsed = false;
+        bool lookExitUsed = false;
 
         public override string[] EventsIDs =>
         [
@@ -34,6 +46,9 @@ namespace FS_LevelEditor
             return new Dictionary<string, object>
             {
                 { "TriggerMode", TriggerMode.ONCE },
+                { "LookMode", LookMode.ONCE },
+                { "LookDelay", 0f },
+                { "waypoints", new List<WaypointData>() },
                 { "OnEnter", new List<LE_Event>() },
                 { "OnExit", new List<LE_Event>() },
                 { "ExecIfInside", true },
@@ -157,6 +172,43 @@ namespace FS_LevelEditor
                     return true;
                 }
             }
+            else if (name == "LookMode")
+            {
+                if (value is int)
+                {
+                    properties[name] = (LookMode)value;
+                    return true;
+                }
+                else if (value is LookMode)
+                {
+                    properties[name] = value;
+                    return true;
+                }
+            }
+            else if (name == "LookDelay")
+            {
+                if (value is string)
+                {
+                    if (Utils.TryParseFloat((string)value, out float result))
+                    {
+                        properties[name] = Mathf.Max(0f, result);
+                        return true;
+                    }
+                }
+                else if (value is float)
+                {
+                    properties[name] = Mathf.Max(0f, (float)value);
+                    return true;
+                }
+            }
+            else if (name == "waypoints")
+            {
+                if (value is List<WaypointData>)
+                {
+                    properties[name] = (List<WaypointData>)value;
+                    return true;
+                }
+            }
             else if (name == "ExecIfInside")
             {
                 if (value is bool)
@@ -185,6 +237,113 @@ namespace FS_LevelEditor
             return base.SetProperty(name, value);
         }
 
+        public override bool TriggerAction(string actionName)
+        {
+            if (actionName == "AddWaypoint")
+            {
+                LE_Waypoint area = customWaypointSupport.AddWaypoint();
+                if (area)
+                {
+                    area.transform.localPosition = Vector3.forward * 3f;
+                    area.transform.localScale = Vector3.one * 3f;
+                }
+                return true;
+            }
+
+            return base.TriggerAction(actionName);
+        }
+
+        void Update()
+        {
+            if (!initialized || !PlayModeController.Instance || !Controls.Instance || Time.timeScale == 0f)
+                return;
+
+            if ((TriggerMode)properties["TriggerMode"] != TriggerMode.LOOK)
+                return;
+
+            if (IsPlayerInsideTrigger() && IsLookingAtArea())
+            {
+                lookHeldTime += Time.deltaTime;
+                if (!wasLookingAtArea && lookHeldTime >= GetProperty<float>("LookDelay"))
+                {
+                    wasLookingAtArea = true;
+                    ExecuteOnLookEnterEvents();
+                }
+            }
+            else
+            {
+                lookHeldTime = 0f;
+                if (wasLookingAtArea)
+                {
+                    wasLookingAtArea = false;
+                    ExecuteOnLookExitEvents();
+                }
+            }
+        }
+
+        bool IsPlayerInsideTrigger()
+        {
+            Vector3 local = trigger.transform.InverseTransformPoint(Controls.Instance.transform.position) - trigger.center;
+            Vector3 half = trigger.size / 2f;
+
+            return Mathf.Abs(local.x) <= half.x && Mathf.Abs(local.y) <= half.y && Mathf.Abs(local.z) <= half.z;
+        }
+
+        bool IsLookingAtArea()
+        {
+            if (customWaypointSupport == null || customWaypointSupport.spawnedWaypoints == null || customWaypointSupport.spawnedWaypoints.Count == 0)
+                return false;
+
+            Transform area = customWaypointSupport.spawnedWaypoints[0].transform;
+            Transform cam = Controls.Instance.gameCamera.transform;
+
+            Vector3 origin = area.InverseTransformPoint(cam.position);
+            Vector3 direction = area.InverseTransformVector(cam.forward);
+
+            float tMin = float.NegativeInfinity;
+            float tMax = float.PositiveInfinity;
+            for (int axis = 0; axis < 3; axis++)
+            {
+                if (Mathf.Abs(direction[axis]) < 1e-8f)
+                {
+                    if (Mathf.Abs(origin[axis]) > 0.5f) return false;
+                    continue;
+                }
+
+                float t1 = (-0.5f - origin[axis]) / direction[axis];
+                float t2 = (0.5f - origin[axis]) / direction[axis];
+                if (t1 > t2) (t1, t2) = (t2, t1);
+
+                tMin = Mathf.Max(tMin, t1);
+                tMax = Mathf.Min(tMax, t2);
+                if (tMin > tMax) return false;
+            }
+
+            return tMax >= 0f;
+        }
+
+        void ExecuteOnLookEnterEvents()
+        {
+            if ((LookMode)properties["LookMode"] == LookMode.ONCE)
+            {
+                if (lookEnterUsed) return;
+                lookEnterUsed = true;
+            }
+
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnEnter"], "OnEnter", true);
+        }
+
+        void ExecuteOnLookExitEvents()
+        {
+            if ((LookMode)properties["LookMode"] == LookMode.ONCE)
+            {
+                if (lookExitUsed) return;
+                lookExitUsed = true;
+            }
+
+            eventExecuter.ExecuteEventsWithAndLogic((List<LE_Event>)properties["OnExit"], "OnExit", false);
+        }
+
         // Called when cube enters trigger (only for cube-only mode)
         public void OnCubeEnter(GameObject cube)
         {
@@ -210,7 +369,7 @@ namespace FS_LevelEditor
             TriggerMode mode = (TriggerMode)properties["TriggerMode"];
 
             // Skip player triggers when in cube-only mode (cubes are handled by OnCubeEnter)
-            if (mode == TriggerMode.CUBE_ONLY) return;
+            if (mode == TriggerMode.CUBE_ONLY || mode == TriggerMode.LOOK) return;
 
             // Check if this is Once mode and already triggered
             if (mode == TriggerMode.ONCE && hasBeenTriggered)
@@ -270,7 +429,7 @@ namespace FS_LevelEditor
             TriggerMode mode = (TriggerMode)properties["TriggerMode"];
 
             // Skip player triggers when in cube-only mode (cubes are handled by OnCubeExit)
-            if (mode == TriggerMode.CUBE_ONLY) return;
+            if (mode == TriggerMode.CUBE_ONLY || mode == TriggerMode.LOOK) return;
 
             if (mode == TriggerMode.ONCE && hasExitBeenTriggered)
             {

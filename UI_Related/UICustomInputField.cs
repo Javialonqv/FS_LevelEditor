@@ -229,17 +229,26 @@ namespace FS_LevelEditor.UI_Related
             }
         }
 
+        /// <summary>
+        /// Programmatic refreshes (executeOnChange == false) must never overwrite a field the user is currently typing in,
+        /// otherwise half-typed values like "0." get reformatted to "0" and the cursor/characters get lost.
+        /// </summary>
+        bool ShouldSkipRefresh(bool executeOnChange)
+        {
+            return !executeOnChange && input != null && input.isSelected;
+        }
+
         public void SetText(string newText, bool executeOnChange = true)
         {
+            if (ShouldSkipRefresh(executeOnChange)) return;
+
             this.executeOnChange = executeOnChange;
             input.text = newText;
             this.executeOnChange = true;
         }
         public void SetText(float value, bool executeOnChange = true)
         {
-            this.executeOnChange = executeOnChange;
-            input.text = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            this.executeOnChange = true;
+            SetText(value.ToString(System.Globalization.CultureInfo.InvariantCulture), executeOnChange);
         }
         public void SetText(float value, int maxDecimals, bool executeOnChange = true)
         {
@@ -247,9 +256,7 @@ namespace FS_LevelEditor.UI_Related
             if (maxDecimals > 0)
                 format += "." + new string('#', maxDecimals);
 
-            this.executeOnChange = executeOnChange;
-            input.text = value.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
-            this.executeOnChange = true;
+            SetText(value.ToString(format, System.Globalization.CultureInfo.InvariantCulture), executeOnChange);
         }
 
         public void SetAsUndefined()

@@ -1,4 +1,5 @@
 ﻿using FS_LevelEditor.Editor;
+using FS_LevelEditor.Playmode;
 using HarmonyLib;
 using UnityEngine;
 
@@ -10,6 +11,8 @@ namespace FS_LevelEditor
         public MovingPlatformController script;
         bool willUseFakeActivation = false;
         bool isFakeActivated = false;
+        bool objectStarted = false;
+        bool? activationRequestedBeforeStart = null;
 
         void Awake()
         {
@@ -46,8 +49,6 @@ namespace FS_LevelEditor
         {
             if (scene == LEScene.Playmode)
             {
-                if (GetProperty<bool>("ActivateOnStart")) ActivateMP(true);
-
                 // Deceleration set to -1 will disable it completely.
                 // Do this on ObjectStart 'cause MPs seem to be reseting it on start or something, idk. - Jav.
                 script.decelerationStartDistance = -1f;
@@ -62,6 +63,20 @@ namespace FS_LevelEditor
             }
 
             base.ObjectStart(scene);
+
+            if (scene == LEScene.Playmode)
+            {
+                objectStarted = true;
+
+                if (GetProperty<bool>("ActivateOnStart") && !activationRequestedBeforeStart.HasValue) ActivateMP(true);
+
+                if (activationRequestedBeforeStart.HasValue)
+                {
+                    bool requested = activationRequestedBeforeStart.Value;
+                    activationRequestedBeforeStart = null;
+                    ActivateMP(requested);
+                }
+            }
         }
 
         public override void InitComponent()
@@ -204,7 +219,9 @@ namespace FS_LevelEditor
             else if (actionName == "InvertState")
             {
                 // Check if the platform is currently active
-                bool isActive = (willUseFakeActivation || script.currentWaypoint == null) ? isFakeActivated : script.activated;
+                bool isActive;
+                if (!objectStarted && PlayModeController.Instance) isActive = activationRequestedBeforeStart ?? GetProperty<bool>("ActivateOnStart");
+                else isActive = (willUseFakeActivation || script.currentWaypoint == null) ? isFakeActivated : script.activated;
                 if (isActive)
                 {
                     TriggerAction("Deactivate");
@@ -221,6 +238,13 @@ namespace FS_LevelEditor
 
         void ActivateMP(bool activate)
         {
+            // Spawned (or activated) before its waypoints exist: they're set up in ObjectStart, which for objects that start disabled only runs on the next frame after spawning.
+            if (!objectStarted && PlayModeController.Instance)
+            {
+                activationRequestedBeforeStart = activate;
+                return;
+            }
+
             // User will be using GLOBAL waypoints.
             if (willUseFakeActivation || script.currentWaypoint == null)
             {

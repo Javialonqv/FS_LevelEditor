@@ -476,6 +476,7 @@ namespace FS_LevelEditor.SaveSystem
             spawnedObject.invisibleMesh = objectData.invisibleMesh;
             spawnedObject.waypoints = objectData.waypoints;
             spawnedObject.startMovingAtStart = objectData.moveStart;
+            spawnedObject.stopAtEveryWaypoint = objectData.stopAtEveryWaypoint;
             spawnedObject.movingSpeed = objectData.movingSpeed;
             spawnedObject.startDelay = objectData.startDelay;
             spawnedObject.waitTime = objectData.waitTime;
@@ -626,6 +627,17 @@ namespace FS_LevelEditor.SaveSystem
                 { "cubeRespawnNotifies", true },
                 { "flashlightNotifies", true },
                 { "DeathYLimit", 100f },
+                // Fog (UI only for now, not applied to the scene yet). GlobalFogColor is a hex string ("#RRGGBB") like the HEX_COLOR input fields.
+                // The "Global" prefix is NOT cosmetic: LEPropertiesConverterNew treats ANY property whose name matches a key here as a global
+                // property (even inside an object's properties), so these names must never collide with an object property (LE_Water has "FogColor").
+                { "GlobalRain", false },
+                { "GlobalSnow", false },
+                { "GlobalFog", false },
+                { "GlobalFogColor", "#808080" },
+                { "GlobalFogDensity", 0.01f },
+                { "GlobalFogStartDistance", 0f },
+                { "GlobalFogEndDistance", 300f },
+                { "CombineStaticMeshes", false },
                 { "Skybox", 0 },
                 { "Music", 4 },
                 { "Upgrades", GetDefaultUpgradeSaveData() }

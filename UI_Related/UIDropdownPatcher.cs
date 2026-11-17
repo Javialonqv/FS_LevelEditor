@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using HarmonyLib;
+using System.Reflection;
+using UnityEngine;
 
 namespace FS_LevelEditor
 {
@@ -11,6 +13,7 @@ namespace FS_LevelEditor
         public List<string> optionsLocKeys = new List<string>();
 
         UIPopupList popupScript;
+        public bool isNarrowed { get; private set; }
         Action<int> onClickAlt;
 
         public string currentlySelected
@@ -49,6 +52,31 @@ namespace FS_LevelEditor
             GameObject.Destroy(popupScript.gameObject.GetChild("LanguageTite").GetComponent<UILocalize>());
 
             popupScript.onChange.Add(new EventDelegate(this, nameof(OnDropdownChange)));
+        }
+
+        /// <summary>
+        /// Makes the dropdown narrower/wider without changing its scale (so the text keeps its size).
+        /// Resizes every widget (backgrounds, borders, labels) and the click collider.
+        /// </summary>
+        /// <param name="multiplier">1 = original width.</param>
+        public void SetWidthMultiplier(float multiplier)
+        {
+            isNarrowed = !Mathf.Approximately(multiplier, 1f);
+
+            foreach (UIWidget widget in GetComponentsInChildren<UIWidget>(true))
+            {
+                widget.width = Mathf.RoundToInt(widget.width * multiplier);
+            }
+            foreach (BoxCollider collider in GetComponentsInChildren<BoxCollider>(true))
+            {
+                Vector3 size = collider.size;
+                size.x *= multiplier;
+                collider.size = size;
+
+                Vector3 center = collider.center;
+                center.x *= multiplier;
+                collider.center = center;
+            }
         }
 
         public void SetTitle(string title)
@@ -132,6 +160,37 @@ namespace FS_LevelEditor
             {
                 if (instance != null) instance.RefreshLocalization();
             }
+        }
+    }
+
+    /// <summary>
+    /// UIPopupList opens its list at the left edge of the popup's own widget bounds, which still match the template's width
+    /// for dropdowns narrowed with SetWidthMultiplier, so the list appeared offset. This aligns it with the dropdown's title bar.
+    /// </summary>
+    [HarmonyPatch(typeof(UIPopupList), nameof(UIPopupList.Show))]
+    public static class UIPopupListNarrowedDropdownPatch
+    {
+        static readonly FieldInfo childField = AccessTools.Field(typeof(UIPopupList), "mChild");
+        static readonly FieldInfo panelField = AccessTools.Field(typeof(UIPopupList), "mPanel");
+
+        static void Postfix(UIPopupList __instance)
+        {
+            UIDropdownPatcher dropdown = __instance.GetComponentInParent<UIDropdownPatcher>();
+            if (dropdown == null || !dropdown.isNarrowed) return;
+
+            GameObject list = (GameObject)childField.GetValue(null);
+            UIPanel panel = (UIPanel)panelField.GetValue(__instance);
+            Transform background = __instance.transform.Find("Background");
+            if (list == null || panel == null || background == null) return;
+
+            UIWidget backgroundWidget = background.GetComponent<UIWidget>();
+            if (backgroundWidget == null) return;
+
+            // worldCorners[0] is the bottom-left corner.
+            Vector3 left = panel.cachedTransform.InverseTransformPoint(backgroundWidget.worldCorners[0]);
+            Vector3 position = list.transform.localPosition;
+            position.x = Mathf.Round(left.x);
+            list.transform.localPosition = position;
         }
     }
 }

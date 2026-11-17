@@ -18,6 +18,7 @@ namespace FS_LevelEditor.Editor.UI
         GROUPS_PANEL,
         ADD_TO_GROUP_PANEL,
         UPGRADES_PANEL,
+        FOG_PANEL,
         SAVE_METADATA_PANEL,
         FIND_OBJECT
     }
@@ -116,6 +117,7 @@ namespace FS_LevelEditor.Editor.UI
             GroupsUI.Create();
             AddToGroupUI.Create();
             UpgradesPanel.Create();
+            FogPanel.Create();
             SaveMetadataPopup.Create();
             FindObjectUI.Create();
 
@@ -401,7 +403,7 @@ namespace FS_LevelEditor.Editor.UI
             StringBuilder stats = new StringBuilder();
 
             stats.AppendLine($"Camera Speed: {EditorCameraMovement.Instance.moveSpeed:0.###}");
-            stats.AppendLine($"Grid Size: {EditorController.Instance.GetGridSize():0.###}");
+            stats.AppendLine($"Grid Size: {EditorController.Instance.GetGridSize():0.###}" + (EditorController.Instance.GetGridEnabled() ? "" : " [c][FF0000](Off)[-][/c]"));
             stats.AppendLine("Waypoint Rotation: " + (EditorController.Instance.waypointRotation ? "[c][00FF00]Enabled[-][/c]" : "[c][FF0000]Disabled[-][/c]"));
 
             statsLabel.text = stats.ToString();
@@ -551,7 +553,8 @@ namespace FS_LevelEditor.Editor.UI
             // Cases where only the previous context needs to be hidden instatly.
             if ((newContext == EditorUIContext.HELP_PANEL && currentUIContext == EditorUIContext.GLOBAL_PROPERTIES) || // Global Properties --> Help Panel
                      (newContext == EditorUIContext.SELECTING_TARGET_OBJ && currentUIContext == EditorUIContext.EVENTS_PANEL) || // Events Panel --> Selecting Target Object
-                     (newContext == EditorUIContext.UPGRADES_PANEL && currentUIContext == EditorUIContext.GLOBAL_PROPERTIES)) // Global Properties --> Upgrades Panel
+                     (newContext == EditorUIContext.UPGRADES_PANEL && currentUIContext == EditorUIContext.GLOBAL_PROPERTIES) || // Global Properties --> Upgrades Panel
+                     (newContext == EditorUIContext.FOG_PANEL && currentUIContext == EditorUIContext.GLOBAL_PROPERTIES)) // Global Properties --> Fog Panel
             {
                 HideEditorUIContext(currentUIContext, true);
             }
@@ -606,6 +609,10 @@ namespace FS_LevelEditor.Editor.UI
 
                 case EditorUIContext.UPGRADES_PANEL:
                     target = UpgradesPanel.Instance.upgradesPanel;
+                    break;
+
+                case EditorUIContext.FOG_PANEL:
+                    target = FogPanel.Instance.fogPanel;
                     break;
 
                 case EditorUIContext.SAVE_METADATA_PANEL:
@@ -728,6 +735,10 @@ namespace FS_LevelEditor.Editor.UI
 
                 case EditorUIContext.UPGRADES_PANEL:
                     target = UpgradesPanel.Instance.upgradesPanel;
+                    break;
+
+                case EditorUIContext.FOG_PANEL:
+                    target = FogPanel.Instance.fogPanel;
                     break;
 
                 case EditorUIContext.SAVE_METADATA_PANEL:

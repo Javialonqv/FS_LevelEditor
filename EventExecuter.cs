@@ -444,6 +444,64 @@ namespace FS_LevelEditor
                 }
                 return;
             }
+            if (@event.isForFog)
+            {
+                // The runtime copy of the global properties is the live state of the fog, the same one the Global Properties panel configured at the start.
+                var props = PlayModeController.Instance.globalProperties;
+                if (@event.fogChangeSettings)
+                {
+                    props["GlobalFogColor"] = @event.fogColor;
+                    props["GlobalFogDensity"] = @event.fogDensity;
+                    props["GlobalFogStartDistance"] = @event.fogStartDistance;
+                    props["GlobalFogEndDistance"] = @event.fogEndDistance;
+                }
+
+                bool currentlyEnabled = LevelFog.IsEnabled(props);
+                bool newState = @event.fogState switch
+                {
+                    LE_Event.FogState.Enable => true,
+                    LE_Event.FogState.Disable => false,
+                    LE_Event.FogState.Toggle => !currentlyEnabled,
+                    _ => currentlyEnabled
+                };
+                props["GlobalFog"] = newState;
+
+                // Apply() removes the fog when it's disabled, and updates it when it's enabled.
+                if (@event.fogState != LE_Event.FogState.Do_Nothing || @event.fogChangeSettings) LevelFog.Apply(props);
+                return;
+            }
+            if (@event.isForSnow)
+            {
+                switch (@event.snowState)
+                {
+                    case LE_Event.SnowState.Enable:
+                        LevelSnow.SetEnabled(true);
+                        break;
+                    case LE_Event.SnowState.Disable:
+                        LevelSnow.SetEnabled(false);
+                        break;
+                    case LE_Event.SnowState.Toggle:
+                        LevelSnow.SetEnabled(!LevelSnow.IsRunning);
+                        break;
+                }
+                return;
+            }
+            if (@event.isForRain)
+            {
+                switch (@event.rainState)
+                {
+                    case LE_Event.RainState.Enable:
+                        LevelRain.SetEnabled(true);
+                        break;
+                    case LE_Event.RainState.Disable:
+                        LevelRain.SetEnabled(false);
+                        break;
+                    case LE_Event.RainState.Toggle:
+                        LevelRain.SetEnabled(!LevelRain.IsRunning);
+                        break;
+                }
+                return;
+            }
             if (@event.isForDeathY)
             {
                 switch (@event.deathYAction)
@@ -664,6 +722,9 @@ namespace FS_LevelEditor
             }
             else if (targetObj is LE_Power_Beam)
             {
+                if (@event.powerBeamChangeThickness)
+                    targetObj.SetProperty("BeamThickness", @event.powerBeamThickness);
+
                 switch (@event.powerBeamState)
                 {
                     case LE_Event.PowerBeamState.Activate:
@@ -792,7 +853,7 @@ namespace FS_LevelEditor
                         break;
                 }
             }
-            else if (targetObj is LE_Keypad)
+            else if (targetObj is LE_Keypad || targetObj is LE_Power_Reciever)
             {
                 switch (@event.canBeUsedState)
                 {

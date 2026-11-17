@@ -117,7 +117,10 @@ namespace FS_LevelEditor
             GameObject water = gameObject.GetChildAt("Content");
             waterRoot = water;
             water.tag = "Water";
-            water.layer = LayerMask.NameToLayer("Water");
+            // The trigger volume must NOT live on the "Water" layer: the taser's shoot/aim raycasts include it
+            // (and hit triggers), so a big water box would swallow shots meant for switches behind/inside it.
+            // "Ignore Raycast" still collides with the player/cubes (switch ActivateTriggers rely on that too).
+            water.layer = LayerMask.NameToLayer("Ignore Raycast");
             water.SetActive(false);
 
             GameObject triggerMesh = water.GetChild("Mesh");
@@ -277,6 +280,18 @@ namespace FS_LevelEditor
             return base.SetProperty(name, value);
         }
 
+        public override void SetCollidersStateForEdgeCase(bool newEnabledState)
+        {
+            BoxCollider swimVolume = waterRoot != null ? waterRoot.GetComponent<BoxCollider>() : null;
+
+            foreach (var collider in contentObject.TryGetComponents<Collider>(true))
+            {
+                if (collider == swimVolume) continue;
+
+                collider.enabled = newEnabledState;
+            }
+        }
+
         public void ExecuteOnEnterEvents() => eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnEnter"]);
         public void ExecuteOnExitEvents() => eventExecuter.ExecuteEvents((List<LE_Event>)properties["OnExit"]);
         public static new Color GetDefaultObjectColor(LEObjectContext context) => new Color(1f, 1f, 0.07843138f);
@@ -336,9 +351,17 @@ namespace FS_LevelEditor
             public LE_Water parentWater;
             public BoxCollider volumeCollider;
 
+            public static readonly HashSet<WaterPatch> allPatches = new HashSet<WaterPatch>();
+
             private void Awake()
             {
                 volumeCollider = GetComponent<BoxCollider>();
+                allPatches.Add(this);
+            }
+
+            private void OnDestroy()
+            {
+                allPatches.Remove(this);
             }
 
             private void Update()
@@ -379,6 +402,31 @@ namespace FS_LevelEditor
                 }
             }
 
+            /// <summary>
+            /// If a world point is really inside this volume's box. The trigger fires as soon as the player's collider TOUCHES the box, which can happen with the
+            /// player's position well outside of it (standing next to it, on its edge...), so the swim logic must not rely on the trigger alone.
+            /// </summary>
+            /// <param name="horizontalTolerance">How far outside of the sides (in world units) still counts, used to avoid flickering at the edges.</param>
+            /// <param name="verticalMarginAbove">How far above the top (in world units) still counts.</param>
+            public bool ContainsPoint(Vector3 worldPoint, float horizontalTolerance, float verticalMarginAbove)
+            {
+                if (volumeCollider == null) return false;
+
+                Transform t = volumeCollider.transform;
+                Vector3 local = t.InverseTransformPoint(worldPoint) - volumeCollider.center;
+                Vector3 half = volumeCollider.size * 0.5f;
+                Vector3 scale = t.lossyScale;
+
+                float tolX = horizontalTolerance / Mathf.Max(Mathf.Abs(scale.x), 0.0001f);
+                float tolZ = horizontalTolerance / Mathf.Max(Mathf.Abs(scale.z), 0.0001f);
+                float marginY = verticalMarginAbove / Mathf.Max(Mathf.Abs(scale.y), 0.0001f);
+
+                return Mathf.Abs(local.x) <= half.x + tolX
+                    && Mathf.Abs(local.z) <= half.z + tolZ
+                    && local.y >= -half.y
+                    && local.y <= half.y + marginY;
+            }
+
             public Vector3 GetSurfaceUp() => parentWater != null ? parentWater.GetSurfaceUp() : Vector3.up;
             public Vector3 GetSurfaceWorldPoint() => parentWater != null ? parentWater.GetSurfaceWorldPoint() : transform.position;
 
@@ -401,6 +449,8 @@ namespace FS_LevelEditor
             private const float ENTER_MARGIN = 0.2f;
             private const float EXIT_MARGIN = 0.4f;
             private const float STATE_CHANGE_COOLDOWN = 0.15f;
+            private const float SWIM_EDGE_TOLERANCE_ENTER = 0.05f; // Barely outside of the sides still counts as inside...
+            private const float SWIM_EDGE_TOLERANCE_EXIT = 0.3f;   // ...and a bit more once swimming, so the edges don't make it flicker.
 
             public static bool isManagedStateChange = false;
             private static System.Reflection.FieldInfo cachedWaterField = null;
@@ -416,16 +466,43 @@ namespace FS_LevelEditor
             public static void UnregisterVolume(WaterPatch patch)
             {
                 if (activeVolumes.Remove(patch)) patch.FireExitEvents();
-                if (activeVolumes.Count == 0 && isSwimming) ExitSwimState();
+                if (activeVolumes.Count == 0)
+                {
+                    // ProcessActiveVolumes early-outs with no volumes, so nobody else would ever turn the
+                    // underwater post effect off again -- it'd stay on (fog over the whole level) below the old surface Y.
+                    GetPostEffect()?.SetWaterState(false, 0f);
+                    if (isSwimming) ExitSwimState();
+                }
             }
 
             public static void ProcessActiveVolumes()
             {
-                if (Time.frameCount == lastProcessedFrame || activeVolumes.Count == 0) return;
+                if (Time.frameCount == lastProcessedFrame) return;
                 lastProcessedFrame = Time.frameCount;
 
                 Transform playerTransform = Controls.Instance?.transform;
-                if (playerTransform != null) UpdatePlayerSwimAndEffectState(playerTransform.position);
+                if (playerTransform == null) return;
+
+                RegisterVolumesContainingPlayer(playerTransform.position);
+
+                if (activeVolumes.Count == 0) return;
+                UpdatePlayerSwimAndEffectState(playerTransform.position);
+            }
+
+            private static readonly List<WaterPatch> patchesToCheck = new List<WaterPatch>();
+
+            private static void RegisterVolumesContainingPlayer(Vector3 playerPos)
+            {
+                patchesToCheck.Clear();
+                patchesToCheck.AddRange(WaterPatch.allPatches);
+
+                foreach (var patch in patchesToCheck)
+                {
+                    if (patch == null || !patch.isActiveAndEnabled || patch.volumeCollider == null || !patch.volumeCollider.enabled) continue;
+                    if (activeVolumes.Contains(patch)) continue;
+
+                    if (patch.ContainsPoint(playerPos, isSwimming ? SWIM_EDGE_TOLERANCE_EXIT : SWIM_EDGE_TOLERANCE_ENTER, isSwimming ? EXIT_MARGIN : ENTER_MARGIN)) RegisterVolume(patch);
+                }
             }
 
             private static void UpdatePlayerSwimAndEffectState(Vector3 playerPos)
@@ -444,6 +521,10 @@ namespace FS_LevelEditor
                     float surfaceProj = Vector3.Dot(surfacePoint, surfaceUp);
                     float playerProj = Vector3.Dot(playerPos, surfaceUp);
                     float margin = isSwimming ? EXIT_MARGIN : ENTER_MARGIN;
+
+                    // The volume is only registered because the player's collider touched its trigger. That says nothing about the player's position: it can be
+                    // standing next to the volume, level with its surface, and would be "swimming" in mid-air. It has to be really inside the volume.
+                    if (!patch.ContainsPoint(playerPos, isSwimming ? SWIM_EDGE_TOLERANCE_EXIT : SWIM_EDGE_TOLERANCE_ENTER, margin)) continue;
 
                     if (playerProj <= surfaceProj + margin)
                     {

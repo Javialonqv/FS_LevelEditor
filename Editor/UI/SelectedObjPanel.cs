@@ -24,6 +24,7 @@ namespace FS_LevelEditor.Editor.UI
         UITogglePatcher invisibleMeshToggle;
         UIButtonPatcher addWaypointButton;
         UITogglePatcher startMovingAtStartToggle;
+        UITogglePatcher stopAtEveryWaypointToggle;
         UICustomInputField movingSpeedField;
         UICustomInputField startDelayField;
         UICustomInputField waitTimeField;
@@ -128,6 +129,10 @@ namespace FS_LevelEditor.Editor.UI
 
             { (LE_Object.ObjectType.DEATH_TRIGGER, "AddWaypoint"), ("not_waypoints", true) }, // Yes, I just added the AND (||) operator just for this one.
 			{ (LE_Object.ObjectType.DEATH_TRIGGER_WAYPOINT, "AddWaypoint"), ("", null) }, // If requiredPropName is null, it'll be disabled :)
+			{ (LE_Object.ObjectType.TRIGGER_LOOK_AREA_WAYPOINT, "AddWaypoint"), ("", null) },
+			{ (LE_Object.ObjectType.TRIGGER, "AddWaypoint"), ("not_waypoints||TriggerMode", TriggerMode.LOOK) },
+			{ (LE_Object.ObjectType.TRIGGER, "LookMode"), ("TriggerMode", TriggerMode.LOOK) },
+			{ (LE_Object.ObjectType.TRIGGER, "LookDelay"), ("TriggerMode", TriggerMode.LOOK) },
 
 			{ (LE_Object.ObjectType.SWITCH, "OnlyByTaser"), ("CanUseTaser", true) },
             { (LE_Object.ObjectType.END_TRIGGER, "TitleCardText"), ("TitleCard", true) },
@@ -148,6 +153,9 @@ namespace FS_LevelEditor.Editor.UI
             { LE_Object.ObjectType.MOVING_PLATFORM_WAYPOINT, "AddMovingPlatformWaypoint" },
 
             { LE_Object.ObjectType.DEATH_TRIGGER, "AddDeathTriggerWaypoint" },
+
+            { LE_Object.ObjectType.TRIGGER, "AddTriggerLookArea" },
+            { LE_Object.ObjectType.TRIGGER_LOOK_AREA_WAYPOINT, "AddTriggerLookArea" },
 
             { LE_Object.ObjectType.SEQUENCE, "AddSequencerWaypoint" },
             { LE_Object.ObjectType.SEQUENCE_WAYPOINT, "AddSequencerWaypoint" }
@@ -313,6 +321,7 @@ namespace FS_LevelEditor.Editor.UI
             CreateRemoveFromGroupButton();
             CreateAddWaypointButton();
             CreateStartMovingAtStartToggle();
+            CreateStopAtEveryWaypointToggle();
             CreateMovingSpeedField();
             CreateStartDelayField();
             CreateWaitTimeField();
@@ -435,6 +444,23 @@ namespace FS_LevelEditor.Editor.UI
             startMovingAtStartToggle.gameObject.name = "Toggle";
             startMovingAtStartToggle.onClick += (state) => SetStartMovingAtStart();
             startMovingAtStartToggle.toggle.instantTween = true;
+
+            yPosForGlobalProps -= 50;
+        }
+        void CreateStopAtEveryWaypointToggle()
+        {
+            Transform toggleParent = new GameObject("StopAtEveryWaypoint").transform;
+            toggleParent.parent = globalObjectPanelsParent;
+            toggleParent.localPosition = Vector3.zero;
+            toggleParent.localScale = Vector3.one;
+
+            UILabel title = NGUI_Utils.CreateLabel(toggleParent, new Vector3(-230, yPosForGlobalProps), new Vector3Int(395, 38, 0), "StopHere");
+            title.name = "Title";
+
+            stopAtEveryWaypointToggle = NGUI_Utils.CreateToggle(toggleParent, new Vector3(200, yPosForGlobalProps), Vector3Int.one * 48);
+            stopAtEveryWaypointToggle.gameObject.name = "Toggle";
+            stopAtEveryWaypointToggle.onClick += (state) => SetStopAtEveryWaypoint();
+            stopAtEveryWaypointToggle.toggle.instantTween = true;
 
             yPosForGlobalProps -= 50;
         }
@@ -1281,6 +1307,10 @@ namespace FS_LevelEditor.Editor.UI
         {
             SetPropertyWithToggle(null, "StartMovingAtStart", startMovingAtStartToggle.isChecked);
         }
+        public void SetStopAtEveryWaypoint()
+        {
+            SetPropertyWithToggle(null, "StopAtEveryWaypoint", stopAtEveryWaypointToggle.isChecked);
+        }
         public void SetCarriesPlayer()
         {
             SetPropertyWithToggle(null, "CarriesPlayer", carriesPlayerToggle.isChecked);
@@ -1394,6 +1424,7 @@ namespace FS_LevelEditor.Editor.UI
             if (EvaluateInAllSelectedObjects((obj) => obj.canHaveWaypoints && obj.HasWaypoints()))
             {
                 startMovingAtStartToggle.transform.parent.gameObject.SetActive(true);
+                stopAtEveryWaypointToggle.transform.parent.gameObject.SetActive(true);
                 movingSpeedField.transform.parent.gameObject.SetActive(true);
                 startDelayField.transform.parent.gameObject.SetActive(true);
                 waitTimeField.transform.parent.gameObject.SetActive(true);
@@ -1401,6 +1432,7 @@ namespace FS_LevelEditor.Editor.UI
                 carriesPlayerToggle.transform.parent.gameObject.SetActive(true);
 
                 SetPropInToggleDependingOfPropInObjects(startMovingAtStartToggle, (obj) => obj.startMovingAtStart, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
+                SetPropInToggleDependingOfPropInObjects(stopAtEveryWaypointToggle, (obj) => obj.stopAtEveryWaypoint, (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
                 SetPropInFieldDependingOfPropInObjects(movingSpeedField, (obj) => obj.movingSpeed.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
                 SetPropInFieldDependingOfPropInObjects(startDelayField, (obj) => obj.startDelay.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
                 SetPropInFieldDependingOfPropInObjects(waitTimeField, (obj) => obj.waitTime.ToString(), (obj) => obj.canHaveWaypoints && obj.HasWaypoints());
@@ -1410,6 +1442,7 @@ namespace FS_LevelEditor.Editor.UI
             else
             {
                 startMovingAtStartToggle.transform.parent.gameObject.SetActive(false);
+                stopAtEveryWaypointToggle.transform.parent.gameObject.SetActive(false);
                 movingSpeedField.transform.parent.gameObject.SetActive(false);
                 startDelayField.transform.parent.gameObject.SetActive(false);
                 waitTimeField.transform.parent.gameObject.SetActive(false);

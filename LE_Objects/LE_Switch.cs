@@ -49,6 +49,7 @@ namespace FS_LevelEditor
                 { "WhenInvertingEvents", new List<LE_Event>() },
                 { "WhenActivatingEvents", new List<LE_Event>() },
                 { "WhenDeactivatingEvents", new List<LE_Event>() },
+                { "taserIgnore", false},
             };
         }
 
@@ -84,8 +85,19 @@ namespace FS_LevelEditor
         {
             GameObject button = gameObject.GetChild("Content");
 
+            // The switch's root object comes with the "Laser" tag from the asset bundle prefab. The taser's hover code
+            // (GunController.LateUpdate) refuses to show the "Button" screen when the hit collider's parent is tagged "Laser"
+            // (that tag marks laser-grid objects), so hovering over a switch showed nothing.
+            gameObject.tag = "Untagged";
+
             #region Setup tags and layers
+
             button.tag = "Interrupteur";
+            if ((bool)GetProperty("taserIgnore"))
+            {
+                button.tag = "Laser";
+            }
+
             button.GetChild("ActivateTrigger").tag = "ActivateTrigger";
             button.GetChild("ActivateTrigger").layer = LayerMask.NameToLayer("Ignore Raycast");
 
@@ -244,6 +256,14 @@ namespace FS_LevelEditor
                 if (value is bool)
                 {
                     properties["canBeUsed"] = (bool)value;
+                    return true;
+                }
+            }
+            else if (name == "taserIgnore")
+            {
+                if (value is bool)
+                {
+                    properties["taserIgnore"] = (bool)value;
                     return true;
                 }
             }
